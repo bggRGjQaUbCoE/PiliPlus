@@ -60,16 +60,7 @@ class _MainReplyPageState extends State<MainReplyPage>
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(title: const Text('查看评论')),
-      body: NotificationListener<UserScrollNotification>(
-        onNotification: (notification) {
-          final direction = notification.direction;
-          if (direction == .forward) {
-            showFab();
-          } else if (direction == .reverse) {
-            hideFab();
-          }
-          return false;
-        },
+      body: fabAnimWrapper(
         child: refreshIndicator(
           onRefresh: _controller.onRefresh,
           child: Padding(

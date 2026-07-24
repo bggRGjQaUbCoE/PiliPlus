@@ -1,0 +1,15 @@
+diff --git a/packages/flutter/lib/src/widgets/editable_text.dart b/packages/flutter/lib/src/widgets/editable_text.dart
+index b1ae878f2cc..8a7540350ef 100644
+--- a/packages/flutter/lib/src/widgets/editable_text.dart
++++ b/packages/flutter/lib/src/widgets/editable_text.dart
+@@ -5046,7 +5046,9 @@ class EditableTextState extends State<EditableText>
+   void userUpdateTextEditingValue(TextEditingValue value, SelectionChangedCause? cause) {
+     // Compare the current TextEditingValue with the pre-format new
+     // TextEditingValue value, in case the formatter would reject the change.
+-    final shouldShowCaret = widget.readOnly ? _value.selection != value.selection : _value != value;
++    final shouldShowCaret =
++        cause != SelectionChangedCause.drag &&
++        (widget.readOnly ? _value.selection != value.selection : _value != value);
+     if (shouldShowCaret) {
+       _scheduleShowCaretOnScreen(withAnimation: true);
+     }

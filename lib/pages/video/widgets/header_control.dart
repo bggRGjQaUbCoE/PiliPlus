@@ -572,7 +572,17 @@ class HeaderControlState extends State<HeaderControl>
                               onTap: () {
                                 plPlayerController.onlyPlayAudio.value =
                                     !onlyPlayAudio;
-                                widget.videoDetailCtr.playerInit();
+                                final player =
+                                    plPlayerController.videoPlayerController!;
+                                if (onlyPlayAudio &&
+                                    player.state.tracks.video.length <= 2) {
+                                  videoDetailCtr.playerInit();
+                                } else {
+                                  player.setProperty(
+                                    'file-local-options/vid',
+                                    onlyPlayAudio ? 'auto' : 'no',
+                                  );
+                                }
                               },
                               text: " 听视频 ",
                               selectStatus: onlyPlayAudio,
@@ -1320,14 +1330,14 @@ class HeaderControlState extends State<HeaderControl>
 
         void updateFontScaleFS(double val) {
           plPlayerController
-            ..subtitleFontScaleFS = val
+            ..subtitleFontScaleFS = val.toPrecision(2)
             ..updateSubtitleStyle();
           setState(() {});
         }
 
         void updateFontScale(double val) {
           plPlayerController
-            ..subtitleFontScale = val
+            ..subtitleFontScale = val.toPrecision(2)
             ..updateSubtitleStyle();
           setState(() {});
         }
@@ -1377,7 +1387,7 @@ class HeaderControlState extends State<HeaderControl>
                         min: 0.5,
                         max: 2.5,
                         value: subtitleFontScale,
-                        divisions: 20,
+                        divisions: 200,
                         label:
                             '${(subtitleFontScale * 100).toStringAsFixed(1)}%',
                         onChanged: updateFontScale,
@@ -1406,7 +1416,7 @@ class HeaderControlState extends State<HeaderControl>
                         min: 0.5,
                         max: 2.5,
                         value: subtitleFontScaleFS,
-                        divisions: 20,
+                        divisions: 200,
                         label:
                             '${(subtitleFontScaleFS * 100).toStringAsFixed(1)}%',
                         onChanged: updateFontScaleFS,
@@ -1520,7 +1530,9 @@ class HeaderControlState extends State<HeaderControl>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('背景不透明度 ${(subtitleBgOpacity * 100).toInt()}%'),
+                      Text(
+                        '背景不透明度 ${(subtitleBgOpacity * 100).toStringAsFixed(1)}%',
+                      ),
                       resetBtn(theme, '67%', () => updateOpacity(0.67)),
                     ],
                   ),
@@ -1536,6 +1548,7 @@ class HeaderControlState extends State<HeaderControl>
                       child: Slider(
                         min: 0,
                         max: 1,
+                        divisions: 100,
                         value: subtitleBgOpacity,
                         onChanged: updateOpacity,
                       ),

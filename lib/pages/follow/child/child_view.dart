@@ -112,18 +112,7 @@ class _FollowChildPageState extends State<FollowChildPage>
       return Stack(
         clipBehavior: Clip.none,
         children: [
-          NotificationListener<UserScrollNotification>(
-            onNotification: (notification) {
-              final direction = notification.direction;
-              if (direction == .forward) {
-                showFab();
-              } else if (direction == .reverse) {
-                hideFab();
-              }
-              return false;
-            },
-            child: child,
-          ),
+          fabAnimWrapper(child: child),
           Positioned(
             right: kFloatingActionButtonMargin + padding.right,
             bottom: 0,

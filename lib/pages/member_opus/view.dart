@@ -59,16 +59,7 @@ class _MemberOpusState extends State<MemberOpus>
       children: [
         refreshIndicator(
           onRefresh: _controller.onRefresh,
-          child: NotificationListener<UserScrollNotification>(
-            onNotification: (notification) {
-              final direction = notification.direction;
-              if (direction == .forward) {
-                showFab();
-              } else if (direction == .reverse) {
-                hideFab();
-              }
-              return false;
-            },
+          child: fabAnimWrapper(
             child: CustomScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [

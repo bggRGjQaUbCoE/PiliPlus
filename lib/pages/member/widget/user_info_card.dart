@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/avatars.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
+import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/member/user_info_type.dart';
@@ -311,7 +312,7 @@ class UserInfoCard extends StatelessWidget {
   Widget _buildSign() {
     return Padding(
       padding: const .only(left: 20, top: 6, right: 20),
-      child: SelectableText(
+      child: SelectionText(
         card.sign!.trim().replaceAll(RegExp(r'\n{2,}'), '\n'),
         style: const TextStyle(fontSize: 14),
       ),
@@ -394,6 +395,7 @@ class UserInfoCard extends StatelessWidget {
   }
 
   Column _buildRight(ColorScheme colorScheme) => Column(
+    spacing: 5,
     mainAxisSize: .min,
     children: [
       Row(
@@ -417,7 +419,6 @@ class UserInfoCard extends StatelessWidget {
             .skip(1)
             .toList(),
       ),
-      const SizedBox(height: 5),
       Row(
         spacing: 10,
         mainAxisSize: .min,
@@ -440,33 +441,46 @@ class UserInfoCard extends StatelessWidget {
                 }
               },
               icon: const Icon(Icons.mail_outline, size: 21),
-              style: IconButton.styleFrom(
-                side: BorderSide(
-                  width: 1.0,
-                  color: colorScheme.outline.withValues(alpha: 0.3),
+              style: ButtonStyle(
+                side: WidgetStatePropertyAll(
+                  BorderSide(
+                    width: 1.0,
+                    color: colorScheme.outline.withValues(alpha: 0.3),
+                  ),
                 ),
-                padding: .zero,
-                tapTargetSize: .padded,
+                padding: const WidgetStatePropertyAll(.zero),
+                tapTargetSize: .shrinkWrap,
                 visualDensity: .compact,
               ),
             ),
           Expanded(
             child: FilledButton.tonal(
-              onPressed: onFollow,
-              style: FilledButton.styleFrom(
+              onPressed: !isOwner && relation == -1 ? null : onFollow,
+              style: ButtonStyle(
+                padding: const WidgetStatePropertyAll(.zero),
                 backgroundColor: relation != 0
-                    ? colorScheme.onInverseSurface
+                    ? WidgetStatePropertyAll(colorScheme.onInverseSurface)
                     : null,
                 tapTargetSize: .padded,
                 visualDensity: const VisualDensity(vertical: -1.8),
               ),
               child: Text.rich(
-                style: TextStyle(
-                  color: relation != 0 ? colorScheme.outline : null,
-                ),
+                style: relation != 0
+                    ? TextStyle(color: colorScheme.outline)
+                    : null,
                 TextSpan(
                   children: [
-                    if (relation != 0 && relation != 128) ...[
+                    if (relation == -1) ...[
+                      WidgetSpan(
+                        alignment: .middle,
+                        child: Icon(
+                          Icons.block,
+                          size: 16,
+                          color: colorScheme.outline,
+                        ),
+                      ),
+                      const TextSpan(text: ' '),
+                    ] else if (relation != 0 && relation != 128) ...[
                       WidgetSpan(
                         alignment: .middle,
                         child: Icon(
@@ -481,7 +495,7 @@ class UserInfoCard extends StatelessWidget {
                       text: isOwner
                           ? '编辑资料'
                           : switch (relation) {
-                              0 => '关注',
+                              0 || -1 => '关注',
                               1 => '悄悄关注',
                               2 => '已关注',
                               // 3 => '回关',

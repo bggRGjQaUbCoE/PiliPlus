@@ -14,6 +14,7 @@ class SuperChatItem {
   String backgroundBottomColor;
   String backgroundPriceColor;
   String messageFontColor;
+  int startSime;
   int endTime;
   String message;
   String token;
@@ -32,6 +33,7 @@ class SuperChatItem {
     required this.backgroundBottomColor,
     required this.backgroundPriceColor,
     required this.messageFontColor,
+    required this.startSime,
     required this.endTime,
     required this.message,
     required this.token,
@@ -40,29 +42,33 @@ class SuperChatItem {
     this.medalInfo,
   });
 
-  static SuperChatItem get random => SuperChatItem.fromJson({
-    "id": Utils.random.nextInt(2147483647),
-    "uid": 0,
-    "price": 66,
-    "end_time": DateTime.now().millisecondsSinceEpoch ~/ 1000 + 5,
-    "message": Utils.generateRandomString(55),
-    "user_info": {
-      "face": "",
-      "uname": "UNAME",
-    },
-    'token': '',
-    'ts': 0,
-    'uinfo': {
-      'medal': {
-        "name": "Medal",
-        "level": Utils.random.nextInt(40),
-        "id": 123,
-        "ruid": 456,
-        "v2_medal_color_start": "#4C7DFF99",
-        "v2_medal_color_text": "#FFFFFF",
+  static SuperChatItem get random {
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    return SuperChatItem.fromJson({
+      "id": Utils.random.nextInt(2147483647),
+      "uid": 0,
+      "price": 66,
+      "start_time": now,
+      "end_time": now + 5,
+      "message": Utils.generateRandomString(55),
+      "user_info": {
+        "face": "",
+        "uname": "UNAME",
       },
-    },
-  });
+      'token': '',
+      'ts': now,
+      'uinfo': {
+        'medal': {
+          "name": "Medal",
+          "level": Utils.random.nextInt(40),
+          "id": 123,
+          "ruid": 456,
+          "v2_medal_color_start": "#4C7DFF99",
+          "v2_medal_color_text": "#FFFFFF",
+        },
+      },
+    });
+  }
 
   factory SuperChatItem.fromJson(Map<String, dynamic> json) => SuperChatItem(
     id: safeToInt(json['id']) ?? Utils.random.nextInt(2147483647),
@@ -73,6 +79,7 @@ class SuperChatItem {
     backgroundBottomColor: json['background_bottom_color'] ?? '#2A60B2',
     backgroundPriceColor: json['background_price_color'] ?? '#7497CD',
     messageFontColor: json['message_font_color'] ?? '#FFFFFF',
+    startSime: safeToInt(json['start_time'])!,
     endTime: safeToInt(json['end_time'])!,
     message: json['message'],
     token: json['token'],
@@ -91,6 +98,7 @@ class SuperChatItem {
     String? backgroundBottomColor,
     String? backgroundPriceColor,
     String? messageFontColor,
+    int? startSime,
     int? endTime,
     String? message,
     String? token,
@@ -108,6 +116,7 @@ class SuperChatItem {
           backgroundBottomColor ?? this.backgroundBottomColor,
       backgroundPriceColor: backgroundPriceColor ?? this.backgroundPriceColor,
       messageFontColor: messageFontColor ?? this.messageFontColor,
+      startSime: startSime ?? this.startSime,
       endTime: endTime ?? this.endTime,
       message: message ?? this.message,
       token: token ?? this.token,
@@ -126,6 +135,7 @@ class SuperChatItem {
     'background_bottom_color': backgroundBottomColor,
     'background_price_color': backgroundPriceColor,
     'message_font_color': messageFontColor,
+    'start_time': startSime,
     'end_time': endTime,
     'message': message,
     'token': token,

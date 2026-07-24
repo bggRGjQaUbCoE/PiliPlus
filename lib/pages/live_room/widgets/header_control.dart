@@ -184,28 +184,25 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
               ),
             ),
           Obx(
-            () {
-              final onlyPlayAudio = plPlayerController.onlyPlayAudio.value;
-              return ComBtn(
-                height: 30,
-                tooltip: '仅播放音频',
-                onTap: () {
-                  plPlayerController.onlyPlayAudio.value = !onlyPlayAudio;
-                  widget.onPlayAudio();
-                },
-                icon: onlyPlayAudio
-                    ? const Icon(
-                        size: 18,
-                        MdiIcons.musicCircle,
-                        color: Colors.white,
-                      )
-                    : const Icon(
-                        size: 18,
-                        MdiIcons.musicCircleOutline,
-                        color: Colors.white,
-                      ),
-              );
-            },
+            () => ComBtn(
+              height: 30,
+              tooltip: '仅播放音频',
+              onTap: () {
+                plPlayerController.onlyPlayAudio.toggle();
+                widget.onPlayAudio();
+              },
+              icon: plPlayerController.onlyPlayAudio.value
+                  ? const Icon(
+                      size: 18,
+                      MdiIcons.musicCircle,
+                      color: Colors.white,
+                    )
+                  : const Icon(
+                      size: 18,
+                      MdiIcons.musicCircleOutline,
+                      color: Colors.white,
+                    ),
+            ),
           ),
           if (PlatformUtils.isMobile)
             Obx(() {

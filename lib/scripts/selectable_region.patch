@@ -1,16 +1,244 @@
+diff --git a/packages/flutter/lib/src/rendering/paragraph.dart b/packages/flutter/lib/src/rendering/paragraph.dart
+index 97a41dafb8d..0be1766148e 100644
+--- a/packages/flutter/lib/src/rendering/paragraph.dart
++++ b/packages/flutter/lib/src/rendering/paragraph.dart
+@@ -1925,9 +1925,9 @@ class _SelectableFragment
+     final Matrix4 transform = paragraph.getTransformTo(null);
+     transform.invert();
+     final Offset localPosition = MatrixUtils.transformPoint(transform, globalPosition);
+-    if (_rect.isEmpty) {
+-      return SelectionUtils.getResultBasedOnRect(_rect, localPosition);
+-    }
++    // if (_rect.isEmpty) {
++    //   return SelectionUtils.getResultBasedOnRect(_rect, localPosition);
++    // }
+     final Offset adjustedOffset = SelectionUtils.adjustDragOffset(
+       _rect,
+       localPosition,
+@@ -3568,7 +3568,10 @@ class _SelectableFragment
+       final selectionPaint = Paint()
+         ..style = PaintingStyle.fill
+         ..color = paragraph.selectionColor!;
+-      for (final TextBox textBox in paragraph.getBoxesForSelection(selection)) {
++      for (final TextBox textBox in paragraph.getBoxesForSelection(
++        selection,
++        boxHeightStyle: ui.BoxHeightStyle.max,
++      )) {
+         context.canvas.drawRect(textBox.toRect().shift(offset), selectionPaint);
+       }
+     }
+diff --git a/packages/flutter/lib/src/rendering/selection.dart b/packages/flutter/lib/src/rendering/selection.dart
+index a813e141dc4..78b9bb84c0e 100644
+--- a/packages/flutter/lib/src/rendering/selection.dart
++++ b/packages/flutter/lib/src/rendering/selection.dart
+@@ -114,6 +114,8 @@ abstract class SelectionHandler implements ValueListenable<SelectionGeometry> {
+ 
+   /// The length of the content in this object.
+   int get contentLength;
++
++  Object? get separator;
+ }
+ 
+ /// This class stores the range information of the selection under a [Selectable]
+@@ -236,6 +238,8 @@ class SelectedContent with Diagnosticable {
+ /// See also:
+ ///  * [SelectableRegion], which provides an overview of selection system.
+ mixin Selectable implements SelectionHandler {
++  Object? get separator => null;
++
+   /// {@macro flutter.rendering.RenderObject.getTransformTo}
+   Matrix4 getTransformTo(RenderObject? ancestor);
+ 
+diff --git a/packages/flutter/lib/src/widgets/scrollable.dart b/packages/flutter/lib/src/widgets/scrollable.dart
+index 9df2d633f16..54d30883245 100644
+--- a/packages/flutter/lib/src/widgets/scrollable.dart
++++ b/packages/flutter/lib/src/widgets/scrollable.dart
+@@ -1177,6 +1177,9 @@ class _ScrollableSelectionContainerDelegate extends MultiSelectableSelectionCont
+     _position.addListener(_scheduleLayoutChange);
+   }
+ 
++  @override
++  Object separator = '\n';
++
+   // Pointer drag is a single point, it should not have a size.
+   static const double _kDefaultDragTargetSize = 0;
+ 
 diff --git a/packages/flutter/lib/src/widgets/selectable_region.dart b/packages/flutter/lib/src/widgets/selectable_region.dart
-index 59de8bae20b..07ac6981c78 100644
+index 59de8bae20b..39bfeb2b4f0 100644
 --- a/packages/flutter/lib/src/widgets/selectable_region.dart
 +++ b/packages/flutter/lib/src/widgets/selectable_region.dart
-@@ -2822,7 +2822,10 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
+@@ -401,9 +401,11 @@ class SelectableRegionState extends State<SelectableRegion>
+   final LayerLink _startHandleLayerLink = LayerLink();
+   final LayerLink _endHandleLayerLink = LayerLink();
+   final LayerLink _toolbarLayerLink = LayerLink();
+-  final StaticSelectionContainerDelegate _selectionDelegate = StaticSelectionContainerDelegate();
++  final StaticSelectionContainerDelegate _selectionDelegate = StaticSelectionContainerDelegate(separator: '\n');
++  StaticSelectionContainerDelegate get selectionDelegate => _selectionDelegate;
+   // there should only ever be one selectable, which is the SelectionContainer.
+   Selectable? _selectable;
++  Selectable? get selectable => _selectable;
+ 
+   bool get _hasSelectionOverlayGeometry =>
+       _selectionDelegate.value.startSelectionPoint != null ||
+@@ -599,48 +601,32 @@ class SelectableRegionState extends State<SelectableRegion>
+   //
+   // This method should be used in all instances when details.consecutiveTapCount
+   // would be used.
+-  int _getEffectiveConsecutiveTapCount(int rawCount) {
+-    var maxConsecutiveTap = 3;
++  static int _getEffectiveConsecutiveTapCount(int rawCount) {
+     switch (defaultTargetPlatform) {
+       case TargetPlatform.android:
+       case TargetPlatform.fuchsia:
+-        if (_lastPointerDeviceKind != null && _lastPointerDeviceKind != PointerDeviceKind.mouse) {
+-          // When the pointer device kind is not precise like a mouse, native
+-          // Android resets the tap count at 2. For example, this is so the
+-          // selection can collapse on the third tap.
+-          maxConsecutiveTap = 2;
+-        }
+-        // From observation, these platforms reset their tap count to 0 when
+-        // the number of consecutive taps exceeds the max consecutive tap supported.
+-        // For example on native Android, when going past a triple click,
+-        // on the fourth click the selection is moved to the precise click
+-        // position, on the fifth click the word at the position is selected, and
+-        // on the sixth click the paragraph at the position is selected.
+-        return rawCount <= maxConsecutiveTap
+-            ? rawCount
+-            : (rawCount % maxConsecutiveTap == 0
+-                  ? maxConsecutiveTap
+-                  : rawCount % maxConsecutiveTap);
+       case TargetPlatform.linux:
+-        // From observation, these platforms reset their tap count to 0 when
+-        // the number of consecutive taps exceeds the max consecutive tap supported.
+-        // For example on Debian Linux with GTK, when going past a triple click,
+-        // on the fourth click the selection is moved to the precise click
+-        // position, on the fifth click the word at the position is selected, and
+-        // on the sixth click the paragraph at the position is selected.
+-        return rawCount <= maxConsecutiveTap
+-            ? rawCount
+-            : (rawCount % maxConsecutiveTap == 0
+-                  ? maxConsecutiveTap
+-                  : rawCount % maxConsecutiveTap);
++        // From observation, these platform's reset their tap count to 0 when
++        // the number of consecutive taps exceeds 3. For example on Debian Linux
++        // with GTK, when going past a triple click, on the fourth click the
++        // selection is moved to the precise click position, on the fifth click
++        // the word at the position is selected, and on the sixth click the
++        // paragraph at the position is selected.
++        return rawCount <= 3 ? rawCount : (rawCount % 3 == 0 ? 3 : rawCount % 3);
+       case TargetPlatform.iOS:
+       case TargetPlatform.macOS:
++        // From observation, these platform's either hold their tap count at 3.
++        // For example on macOS, when going past a triple click, the selection
++        // should be retained at the paragraph that was first selected on triple
++        // click.
++        return min(rawCount, 3);
+       case TargetPlatform.windows:
+-        // From observation, these platforms hold their tap count at the max
+-        // consecutive tap supported. For example on macOS, when going past a triple
+-        // click, the selection should be retained at the paragraph that was first
+-        // selected on triple click.
+-        return min(rawCount, maxConsecutiveTap);
++        // From observation, this platform's consecutive tap actions alternate
++        // between double click and triple click actions. For example, after a
++        // triple click has selected a paragraph, on the next click the word at
++        // the clicked position will be selected, and on the next click the
++        // paragraph at the position is selected.
++        return rawCount < 2 ? rawCount : 2 + rawCount % 2;
+     }
+   }
+ 
+@@ -782,22 +768,8 @@ class SelectableRegionState extends State<SelectableRegion>
+             _selectionStatusNotifier.value = SelectableRegionSelectionStatus.changing;
+         }
+       case 3:
+-        switch (defaultTargetPlatform) {
+-          case TargetPlatform.android:
+-          case TargetPlatform.fuchsia:
+-          case TargetPlatform.iOS:
+-            if (details.kind != null && _isPrecisePointerDevice(details.kind!)) {
+-              // Triple tap on static text is only supported on mobile
+-              // platforms using a precise pointer device.
+-              _selectParagraphAt(offset: details.globalPosition);
+-              _selectionStatusNotifier.value = SelectableRegionSelectionStatus.changing;
+-            }
+-          case TargetPlatform.macOS:
+-          case TargetPlatform.linux:
+-          case TargetPlatform.windows:
+-            _selectParagraphAt(offset: details.globalPosition);
+-            _selectionStatusNotifier.value = SelectableRegionSelectionStatus.changing;
+-        }
++        _selectParagraphAt(offset: details.globalPosition);
++        _selectionStatusNotifier.value = SelectableRegionSelectionStatus.changing;
+     }
+     _updateSelectedContentIfNeeded();
+   }
+@@ -1049,10 +1021,10 @@ class SelectableRegionState extends State<SelectableRegion>
+       case TargetPlatform.windows:
+         // If _lastSecondaryTapDownPosition is within the current selection then
+         // keep the current selection, if not then collapse it.
+-        final bool lastSecondaryTapDownPositionWasOnActiveSelection = _positionIsOnActiveSelection(
+-          globalPosition: details.globalPosition,
+-        );
+-        if (lastSecondaryTapDownPositionWasOnActiveSelection) {
++        // final bool lastSecondaryTapDownPositionWasOnActiveSelection = _positionIsOnActiveSelection(
++        //   globalPosition: details.globalPosition,
++        // );
++        if (_selectionDelegate.value.selectionRects.isNotEmpty) {
+           // Restore _lastSecondaryTapDownPosition since it may be cleared if a user
+           // accesses contextMenuAnchors.
+           _lastSecondaryTapDownPosition = details.globalPosition;
+@@ -1957,6 +1929,8 @@ class SelectableRegionState extends State<SelectableRegion>
+         // the region on non-web platforms.
+         if (kIsWeb) {
+           _focusNode.unfocus();
++        } else {
++          clearSelection();
+         }
+       },
+       child: CompositedTransformTarget(
+@@ -2087,6 +2061,11 @@ class _DirectionallyExtendCaretSelectionAction<T extends DirectionalCaretMovemen
+ ///  * [MultiSelectableSelectionContainerDelegate], for the class that provides
+ ///  the main implementation details of this [SelectionContainerDelegate].
+ class StaticSelectionContainerDelegate extends MultiSelectableSelectionContainerDelegate {
++  StaticSelectionContainerDelegate({this.separator});
++
++  @override
++  final Object? separator;
++
+   /// The set of [Selectable]s that have received start events.
+   final Set<Selectable> _hasReceivedStartEvent = <Selectable>{};
+ 
+@@ -2822,8 +2801,17 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
        return null;
      }
      final buffer = StringBuffer();
 -    for (final selection in selections) {
-+    for (final (i, selection) in selections.indexed) {
-+      if (i != 0) {
-+        buffer.write('\n');
+-      buffer.write(selection.plainText);
++    if (separator != null) {
++      for (final (i, selection) in selections.indexed) {
++        if (i != 0) {
++          buffer.write(separator);
++        }
++        buffer.write(selection.plainText);
 +      }
-       buffer.write(selection.plainText);
++    } else {
++      for (final selection in selections) {
++        buffer.write(selection.plainText);
++      }
      }
      return SelectedContent(plainText: buffer.toString());
+   }
+diff --git a/packages/flutter/lib/src/widgets/selection_container.dart b/packages/flutter/lib/src/widgets/selection_container.dart
+index 5d5a2386a7a..92e7d1eb70a 100644
+--- a/packages/flutter/lib/src/widgets/selection_container.dart
++++ b/packages/flutter/lib/src/widgets/selection_container.dart
+@@ -270,6 +270,8 @@ class SelectionRegistrarScope extends InheritedWidget {
+ /// This delegate needs to implement [SelectionRegistrar] to register
+ /// [Selectable]s in the [SelectionContainer] subtree.
+ abstract class SelectionContainerDelegate implements SelectionHandler, SelectionRegistrar {
++  Object? get separator => null;
++
+   BuildContext? _selectionContainerContext;
+ 
+   /// Gets the paint transform from the [Selectable] child to

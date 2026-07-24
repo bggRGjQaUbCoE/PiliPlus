@@ -490,6 +490,13 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
   }
 
   void _receivedPointerSignal(PointerSignalEvent event) {
+    GestureBinding.instance.pointerSignalResolver.register(
+      event,
+      _handlePointerScroll,
+    );
+  }
+
+  void _handlePointerScroll(PointerSignalEvent event) {
     final Offset local = event.localPosition;
     final Offset global = event.position;
     final double scaleChange;
@@ -578,6 +585,7 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
     Offset global,
     bool flip,
   ) {
+    if (_transformer.value[0] == 1.0) return;
     final Offset translation = flip
         ? event.scrollDelta.flip
         : event.scrollDelta;

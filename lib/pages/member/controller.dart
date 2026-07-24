@@ -38,7 +38,10 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
 
   int? isFollowed; // 被关注
   RxInt relation = 0.obs;
-  bool get isFollow => relation.value != 0 && relation.value != 128;
+  bool get isFollow {
+    final relation = this.relation.value;
+    return relation != 0 && relation != 128 && relation != -1;
+  }
 
   SpaceSetting? spaceSetting;
   List<SpaceTab2>? tab2;
@@ -88,14 +91,19 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
 
     reserves = data.reservationCardList;
 
-    if (data.relation == -1) {
-      relation.value = 128;
-    } else {
-      relation.value = card?.relation?.isFollow == 1
-          ? data.relSpecial == 1
-                ? -10
-                : card?.relation?.status ?? 2
-          : 0;
+    switch (data.relation) {
+      case -1:
+        relation.value = 128;
+      case -999:
+        if (data.guestRelation == -1) {
+          relation.value = -1;
+        }
+      default:
+        relation.value = card?.relation?.isFollow == 1
+            ? data.relSpecial == 1
+                  ? -10
+                  : card?.relation?.status ?? 2
+            : data.relation ?? 0;
     }
     tab2 = data.tab2;
     live = data.live;

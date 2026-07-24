@@ -16,4 +16,5 @@ abstract final class Style {
     visualDensity: VisualDensity(horizontal: -2, vertical: -1.25),
     tapTargetSize: .shrinkWrap,
   );
+  static const placeHolder = '\uFFFC';
 }

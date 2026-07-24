@@ -1,5 +1,4 @@
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
-import 'package:PiliPlus/common/widgets/selectable_text.dart';
 import 'package:PiliPlus/models_new/video/video_ai_conclusion/model_result.dart';
 import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
@@ -26,46 +25,47 @@ class AiConclusionPanel extends CommonSlidePage {
     Key? key,
     bool tap = true,
   }) {
-    return CustomScrollView(
-      key: key,
-      shrinkWrap: !tap,
-      physics: const AlwaysScrollableScrollPhysics(),
-      slivers: [
-        if (res.summary?.isNotEmpty == true) ...[
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              child: selectableText(
-                res.summary!,
-                style: const TextStyle(
-                  fontSize: 15,
-                  height: 1.5,
+    final outline = res.outline;
+    final hasOutline = outline != null && outline.isNotEmpty;
+    return SelectionArea(
+      child: CustomScrollView(
+        key: key,
+        shrinkWrap: !tap,
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          if (res.summary?.isNotEmpty == true) ...[
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                child: Text(
+                  res.summary!,
+                  style: const TextStyle(fontSize: 15, height: 1.5),
                 ),
               ),
             ),
-          ),
-          if (res.outline?.isNotEmpty == true)
-            SliverToBoxAdapter(
-              child: Divider(
-                height: 20,
-                color: theme.dividerColor.withValues(alpha: 0.1),
-                thickness: 6,
+            if (hasOutline)
+              SliverToBoxAdapter(
+                child: Divider(
+                  height: 20,
+                  color: theme.dividerColor.withValues(alpha: 0.1),
+                  thickness: 6,
+                ),
               ),
-            ),
-        ],
-        if (res.outline?.isNotEmpty == true)
-          SliverPadding(
-            padding: EdgeInsets.only(
-              left: 14,
-              right: 14,
-              bottom: !tap ? 0 : MediaQuery.viewPaddingOf(context).bottom + 100,
-            ),
-            sliver: SliverList.builder(
-              itemCount: res.outline!.length,
-              itemBuilder: (context, index) {
-                final item = res.outline![index];
-                return SelectionArea(
-                  child: Column(
+          ],
+          if (hasOutline)
+            SliverPadding(
+              padding: EdgeInsets.only(
+                left: 14,
+                right: 14,
+                bottom: !tap
+                    ? 0
+                    : MediaQuery.viewPaddingOf(context).bottom + 100,
+              ),
+              sliver: SliverList.builder(
+                itemCount: outline.length,
+                itemBuilder: (context, index) {
+                  final item = outline[index];
+                  return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (index != 0) const SizedBox(height: 10),
@@ -123,12 +123,12 @@ class AiConclusionPanel extends CommonSlidePage {
                         ),
                       ),
                     ],
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }

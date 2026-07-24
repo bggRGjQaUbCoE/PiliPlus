@@ -17,8 +17,8 @@ class WhisperItemSkeleton extends StatelessWidget {
             color: color,
           ),
         ),
-        title: UnconstrainedBox(
-          alignment: Alignment.centerLeft,
+        title: Align(
+          alignment: .topLeft,
           child: Container(
             width: 100,
             height: 11,

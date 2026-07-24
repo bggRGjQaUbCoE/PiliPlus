@@ -523,7 +523,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       BottomControlType.viewPoints => Obx(
         () {
           if (videoDetailController.viewPointList.isNotEmpty) {
-            final show = videoDetailController.showVP.value;
             return ComBtn(
               width: widgetWidth,
               height: 30,
@@ -531,7 +530,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
               icon: DisabledIcon(
                 iconSize: 22,
                 color: Colors.white,
-                disable: !show,
+                disable: !videoDetailController.showVP.value,
                 child: const Icon(
                   CustomIcons.view_headline_rotate_90,
                   size: 22,
@@ -541,11 +540,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
               onTap: widget.showViewPoints,
               onLongPress: () {
                 Feedback.forLongPress(context);
-                videoDetailController.showVP.value = !show;
+                videoDetailController.showVP.toggle();
               },
               onSecondaryTap: PlatformUtils.isMobile
                   ? null
-                  : () => videoDetailController.showVP.value = !show,
+                  : () => videoDetailController.showVP.toggle(),
             );
           }
           return const SizedBox.shrink();

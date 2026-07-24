@@ -5,12 +5,13 @@
 // ignore_for_file: prefer_initializing_formals
 
 import 'dart:async' show Completer;
-import 'dart:io' show Platform;
 
 import 'package:PiliPlus/common/widgets/scroll_behavior.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart'
+    show BouncingScrollPhysicsExt;
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart'
-    show RefreshScrollPhysics;
+import 'package:extended_nested_scroll_view/src/refresh.dart';
 import 'package:flutter/foundation.dart' show clampDouble;
 import 'package:flutter/material.dart' hide RefreshIndicator;
 
@@ -544,13 +545,22 @@ class RefreshIndicatorState extends State<RefreshIndicator>
           ),
       ],
     );
-    if (!widget.isClampingScrollPhysics &&
-        (Platform.isIOS || Platform.isMacOS)) {
+    if (PlatformUtils.isDarwin) {
+      if (widget.isClampingScrollPhysics) {
+        return ScrollConfiguration(
+          behavior: RefreshScrollBehavior(
+            scrollPhysics: RefreshScrollPhysicsIOS(
+              parent: const RangeMaintainingScrollPhysics(),
+              onDrag: _onDrag,
+            ),
+          ),
+          child: child,
+        );
+      }
       return child;
     }
     return ScrollConfiguration(
       behavior: RefreshScrollBehavior(
-        desktopDragDevices,
         scrollPhysics: RefreshScrollPhysics(
           parent: const RangeMaintainingScrollPhysics(),
           onDrag: _onDrag,
@@ -613,15 +623,46 @@ class RefreshIndicatorState extends State<RefreshIndicator>
 typedef refreshIndicator = RefreshIndicator;
 
 class RefreshScrollBehavior extends CustomScrollBehavior {
-  const RefreshScrollBehavior(
-    super.dragDevices, {
+  const RefreshScrollBehavior({
     required this.scrollPhysics,
   });
 
-  final RefreshScrollPhysics scrollPhysics;
+  final RefreshScrollPhysicsMixin scrollPhysics;
 
   @override
   ScrollPhysics getScrollPhysics(BuildContext context) {
     return scrollPhysics;
+  }
+}
+
+class RefreshScrollPhysics extends ClampingScrollPhysics
+    with RefreshScrollPhysicsMixin {
+  const RefreshScrollPhysics({
+    super.parent,
+    required this.onDrag,
+  });
+
+  @override
+  final OnDrag onDrag;
+
+  @override
+  RefreshScrollPhysics applyTo(ScrollPhysics? ancestor) {
+    return RefreshScrollPhysics(parent: buildParent(ancestor), onDrag: onDrag);
+  }
+}
+
+class RefreshScrollPhysicsIOS extends BouncingScrollPhysicsExt
+    with RefreshScrollPhysicsMixin {
+  const RefreshScrollPhysicsIOS({super.parent, required this.onDrag});
+
+  @override
+  final OnDrag onDrag;
+
+  @override
+  RefreshScrollPhysicsIOS applyTo(ScrollPhysics? ancestor) {
+    return RefreshScrollPhysicsIOS(
+      parent: buildParent(ancestor),
+      onDrag: onDrag,
+    );
   }
 }

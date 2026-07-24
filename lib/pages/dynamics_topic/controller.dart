@@ -109,7 +109,7 @@ class DynTopicController
       } else {
         topState.value.data!.topicItem!.fav += 1;
       }
-      this.isFav.value = !isFav;
+      this.isFav.toggle();
     } else {
       res.toast();
     }
@@ -128,7 +128,7 @@ class DynTopicController
       } else {
         topState.value.data!.topicItem!.like += 1;
       }
-      this.isLike.value = !isLike;
+      this.isLike.toggle();
     } else {
       res.toast();
     }

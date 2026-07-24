@@ -28,7 +28,7 @@ class LiveCardVSearch extends StatelessWidget {
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: .start,
           children: [
             AspectRatio(
               aspectRatio: Style.aspectRatio,
@@ -49,11 +49,7 @@ class LiveCardVSearch extends StatelessWidget {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        child: AnimatedOpacity(
-                          opacity: 1,
-                          duration: const Duration(milliseconds: 200),
-                          child: videoStat(context),
-                        ),
+                        child: videoStat(),
                       ),
                     ],
                   );
@@ -63,7 +59,7 @@ class LiveCardVSearch extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(5, 8, 5, 4),
               child: Text(
-                '${item.title}',
+                item.title.toString(),
                 textAlign: TextAlign.start,
                 style: const TextStyle(
                   letterSpacing: 0.3,
@@ -78,7 +74,7 @@ class LiveCardVSearch extends StatelessWidget {
     );
   }
 
-  Widget videoStat(BuildContext context) {
+  Widget videoStat() {
     return Container(
       height: 50,
       padding: const EdgeInsets.only(top: 26, left: 10, right: 10),
@@ -97,7 +93,7 @@ class LiveCardVSearch extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            '${item.name}',
+            item.name.toString(),
             style: const TextStyle(fontSize: 11, color: Colors.white),
           ),
           if (item.watchedShow?.textLarge case final textLarge?)

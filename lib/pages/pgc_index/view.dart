@@ -197,11 +197,11 @@ class _PgcIndexPageState extends State<PgcIndexPage>
       if (count > 5) ...[
         const SizedBox(height: 8),
         GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () => _ctr.isExpand.value = !_ctr.isExpand.value,
+          behavior: .opaque,
+          onTap: _ctr.isExpand.toggle,
           child: Center(
             child: Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisSize: .min,
               children: [
                 Text(
                   _ctr.isExpand.value ? '收起' : '展开',

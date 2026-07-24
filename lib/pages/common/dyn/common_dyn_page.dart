@@ -86,6 +86,14 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
     padding = MediaQuery.viewPaddingOf(context);
   }
 
+  @override
+  bool onNotification(UserScrollNotification notification) {
+    if (notification.metrics.axisDirection == .down) {
+      return super.onNotification(notification);
+    }
+    return false;
+  }
+
   Widget buildReplyHeader() {
     final secondary = theme.colorScheme.secondary;
     return SliverPinnedHeader(
@@ -331,22 +339,4 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
     tooltip: '评论',
     child: const Icon(Icons.reply),
   );
-
-  Widget fabAnimWrapper(Widget child) {
-    return NotificationListener<UserScrollNotification>(
-      onNotification: (notification) {
-        if (notification.metrics.axisDirection == .down) {
-          switch (notification.direction) {
-            case .forward:
-              showFab();
-            case .reverse:
-              hideFab();
-            default:
-          }
-        }
-        return false;
-      },
-      child: child,
-    );
-  }
 }

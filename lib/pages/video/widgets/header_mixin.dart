@@ -24,22 +24,17 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
     StatefulWidgetBuilder builder, {
     ValueGetter<EdgeInsets>? padding,
   }) {
+    final theme = this.theme;
     return PageUtils.showVideoBottomSheet(
       context,
       maxWidth: 512,
       padding: padding,
-      child: StatefulBuilder(
-        builder: (context, setState) {
-          final theme = this.theme;
-          if (theme != null) {
-            return Theme(
+      child: theme != null
+          ? Theme(
               data: theme,
-              child: builder(this.context, setState),
-            );
-          }
-          return builder(context, setState);
-        },
-      ),
+              child: StatefulBuilder(builder: builder),
+            )
+          : StatefulBuilder(builder: builder),
     );
   }
 
@@ -108,7 +103,7 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
         }
 
         void updateFontSizeFS(double val) {
-          DanmakuOptions.danmakuFontScaleFS = val;
+          DanmakuOptions.danmakuFontScaleFS = val.toPrecision(2);
           setState(() {});
           if (isFullScreen) {
             setOptions();
@@ -116,7 +111,7 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
         }
 
         void updateFontSize(double val) {
-          DanmakuOptions.danmakuFontScale = val;
+          DanmakuOptions.danmakuFontScale = val.toPrecision(2);
           setState(() {});
           if (!isFullScreen) {
             setOptions();
@@ -136,7 +131,7 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
         }
 
         void updateOpacity(double val) {
-          plPlayerController.danmakuOpacity.value = val;
+          plPlayerController.danmakuOpacity.value = val.toPrecision(2);
           setState(() {});
         }
 
@@ -286,7 +281,9 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('显示区域 ${DanmakuOptions.danmakuShowArea * 100}%'),
+                      Text(
+                        '显示区域 ${(DanmakuOptions.danmakuShowArea * 100).toStringAsFixed(1)}%',
+                      ),
                       resetBtn(theme, '50.0%', () => updateShowArea(0.5)),
                     ],
                   ),
@@ -312,7 +309,9 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('不透明度 ${plPlayerController.danmakuOpacity * 100}%'),
+                      Text(
+                        '不透明度 ${(plPlayerController.danmakuOpacity * 100).toStringAsFixed(1)}%',
+                      ),
                       resetBtn(theme, '100.0%', () => updateOpacity(1.0)),
                     ],
                   ),
@@ -329,8 +328,9 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
                         min: 0,
                         max: 1,
                         value: plPlayerController.danmakuOpacity.value,
-                        divisions: 10,
-                        label: '${plPlayerController.danmakuOpacity * 100}%',
+                        divisions: 100,
+                        label:
+                            '${(plPlayerController.danmakuOpacity * 100).toStringAsFixed(1)}%',
                         onChanged: updateOpacity,
                       ),
                     ),
@@ -384,8 +384,7 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
                         max: 5,
                         value: DanmakuOptions.danmakuStrokeWidth,
                         divisions: 10,
-                        label: DanmakuOptions.danmakuStrokeWidth
-                            .toStringAsFixed(0),
+                        label: DanmakuOptions.danmakuStrokeWidth.toString(),
                         onChanged: updateStrokeWidth,
                       ),
                     ),
@@ -412,7 +411,7 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
                         min: 0.5,
                         max: 2.5,
                         value: DanmakuOptions.danmakuFontScale,
-                        divisions: 20,
+                        divisions: 200,
                         label:
                             '${(DanmakuOptions.danmakuFontScale * 100).toStringAsFixed(1)}%',
                         onChanged: updateFontSize,
@@ -441,7 +440,7 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
                         min: 0.5,
                         max: 2.5,
                         value: DanmakuOptions.danmakuFontScaleFS,
-                        divisions: 20,
+                        divisions: 200,
                         label:
                             '${(DanmakuOptions.danmakuFontScaleFS * 100).toStringAsFixed(1)}%',
                         onChanged: updateFontSizeFS,

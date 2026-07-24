@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -70,7 +71,7 @@ void imageSaveDialog({
                 children: [
                   if (title != null)
                     Expanded(
-                      child: SelectableText(
+                      child: SelectionText(
                         title,
                         style: theme.textTheme.titleSmall,
                       ),

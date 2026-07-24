@@ -154,8 +154,8 @@ class _PgcReviewPostPanelState extends State<PgcReviewPostPanel> {
           Padding(
             padding: const EdgeInsets.only(left: 12, right: 12, bottom: 12),
             child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => _shareFeed.value = !_shareFeed.value,
+              behavior: .opaque,
+              onTap: _shareFeed.toggle,
               child: Obx(
                 () {
                   final shareFeed = _shareFeed.value;
@@ -163,7 +163,7 @@ class _PgcReviewPostPanelState extends State<PgcReviewPostPanel> {
                       ? theme.colorScheme.primary
                       : theme.colorScheme.outline;
                   return Row(
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisSize: .min,
                     children: [
                       Icon(
                         size: 22,
@@ -172,10 +172,7 @@ class _PgcReviewPostPanelState extends State<PgcReviewPostPanel> {
                             : Icons.check_box_outline_blank_outlined,
                         color: color,
                       ),
-                      Text(
-                        ' 分享到动态',
-                        style: TextStyle(color: color),
-                      ),
+                      Text(' 分享到动态', style: TextStyle(color: color)),
                     ],
                   );
                 },

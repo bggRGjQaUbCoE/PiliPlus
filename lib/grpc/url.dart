@@ -44,6 +44,7 @@ abstract final class GrpcUrl {
   static const keywordBlockingDelete = '$im2/KeywordBlockingDelete';
   static const syncFetchSessionMsgs = '$im/SyncFetchSessionMsgs';
   static const getTotalUnread = '$im/GetTotalUnread';
+  static const sessionDetail = '$im/SessionDetail';
 
   // view
   static const viewunite = '/bilibili.app.viewunite.v1.View';

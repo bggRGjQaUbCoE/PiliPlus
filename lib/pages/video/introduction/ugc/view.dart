@@ -9,7 +9,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show ReloadScrollPhysics;
-import 'package:PiliPlus/common/widgets/selectable_text.dart';
+import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/common/widgets/translucent_column.dart';
 import 'package:PiliPlus/http/sponsor_block.dart';
@@ -122,7 +122,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  buildTitle(isLoading, isHorizontal, videoDetail),
+                  _buildTitle(isLoading, isHorizontal, videoDetail),
                   const SizedBox(height: 8),
                   Stack(
                     clipBehavior: .none,
@@ -242,7 +242,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
     );
   }
 
-  Widget buildTitle(
+  Widget _buildTitle(
     bool isLoading,
     bool isHorizontal,
     VideoDetailData videoDetail,
@@ -250,29 +250,29 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
     if (isLoading) {
       return _buildVideoTitle(videoDetail);
     } else if (isHorizontal && PlatformUtils.isDesktop) {
-      return SelectionArea(
-        child: _buildVideoTitle(videoDetail, isExpand: true),
-      );
+      return _buildVideoTitle(videoDetail, isSelectable: true);
     }
     return Obx(
       () => ExpandablePanel(
-        collapsed: _expandableTitle(videoDetail),
-        expanded: _expandableTitle(videoDetail, isExpand: true),
+        collapsed: _gestureVideoTitle(videoDetail),
+        expanded: _gestureVideoTitle(videoDetail, isExpand: true),
         expand: introController.expand.value,
       ),
     );
   }
 
-  Widget _expandableTitle(
+  Widget _gestureVideoTitle(
     VideoDetailData videoDetail, {
     bool isExpand = false,
-  }) => GestureDetector(
-    onLongPress: () {
-      Feedback.forLongPress(context);
-      Utils.copyText(videoDetail.title ?? '');
-    },
-    child: _buildVideoTitle(videoDetail, isExpand: isExpand),
-  );
+  }) {
+    return GestureDetector(
+      onLongPress: () {
+        Feedback.forLongPress(context);
+        Utils.copyText(videoDetail.title ?? '');
+      },
+      child: _buildVideoTitle(videoDetail, isExpand: isExpand),
+    );
+  }
 
   List<Widget> _infos(VideoDetailData videoDetail) => [
     const SizedBox(height: 8, width: .infinity),
@@ -285,9 +285,9 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
     ),
     if (videoDetail.descV2 case final descV2? when descV2.isNotEmpty) ...[
       const SizedBox(height: 8),
-      selectableRichText(
+      SelectionText.rich(
+        buildDesc(descV2),
         style: const TextStyle(height: 1.4),
-        buildContent(descV2),
       ),
     ],
     NoTranslucentArea(
@@ -332,79 +332,90 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
   Widget _buildVideoTitle(
     VideoDetailData videoDetail, {
     bool isExpand = false,
+    bool isSelectable = false,
   }) {
-    late final isDark = colorScheme.isDark;
     Widget child() {
       final videoLabel = videoDetailCtr.videoLabel.value;
-      return Text.rich(
-        TextSpan(
-          children: [
-            if (videoLabel.isNotEmpty) ...[
-              WidgetSpan(
-                alignment: .middle,
-                child: Container(
-                  padding: const .symmetric(horizontal: 4, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: colorScheme.secondaryContainer,
-                    borderRadius: const BorderRadius.all(Radius.circular(4)),
-                  ),
-                  child: Row(
-                    mainAxisSize: .min,
-                    children: [
-                      Stack(
-                        clipBehavior: .none,
-                        alignment: .center,
-                        children: [
-                          Icon(
-                            Icons.shield_outlined,
-                            size: 16,
-                            color: colorScheme.onSecondaryContainer,
-                          ),
-                          Icon(
-                            Icons.play_arrow_rounded,
-                            size: 12,
-                            color: colorScheme.onSecondaryContainer,
-                          ),
-                        ],
-                      ),
-                      Text(
-                        videoLabel,
-                        textScaler: TextScaler.noScaling,
-                        strutStyle: const StrutStyle(
-                          leading: 0,
-                          height: 1,
-                          fontSize: 13,
-                        ),
-                        style: TextStyle(
-                          height: 1,
-                          fontSize: 13,
+      final textSpan = TextSpan(
+        children: [
+          if (videoLabel.isNotEmpty) ...[
+            WidgetSpan(
+              alignment: .middle,
+              child: Container(
+                padding: const .symmetric(horizontal: 4, vertical: 2),
+                decoration: BoxDecoration(
+                  color: colorScheme.secondaryContainer,
+                  borderRadius: const BorderRadius.all(Radius.circular(4)),
+                ),
+                child: Row(
+                  mainAxisSize: .min,
+                  children: [
+                    Stack(
+                      clipBehavior: .none,
+                      alignment: Alignment.center,
+                      children: [
+                        Icon(
+                          Icons.shield_outlined,
+                          size: 16,
                           color: colorScheme.onSecondaryContainer,
                         ),
+                        Icon(
+                          Icons.play_arrow_rounded,
+                          size: 12,
+                          color: colorScheme.onSecondaryContainer,
+                        ),
+                      ],
+                    ),
+                    Text(
+                      videoLabel,
+                      textScaler: TextScaler.noScaling,
+                      strutStyle: const StrutStyle(
+                        leading: 0,
+                        height: 1,
+                        fontSize: 13,
                       ),
-                    ],
-                  ),
+                      style: TextStyle(
+                        height: 1,
+                        fontSize: 13,
+                        color: colorScheme.onSecondaryContainer,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const TextSpan(text: ' '),
-            ],
-            if (videoDetail.isUpowerExclusive == true) ...[
-              _labelWidget(
-                '充电专属',
-                isDark ? colorScheme.error : colorScheme.errorContainer,
-                isDark ? colorScheme.onError : colorScheme.onErrorContainer,
-              ),
-              const TextSpan(text: ' '),
-            ] else if (videoDetail.rights?.isSteinGate == 1) ...[
-              _labelWidget(
-                '互动视频',
-                colorScheme.secondaryContainer,
-                colorScheme.onSecondaryContainer,
-              ),
-              const TextSpan(text: ' '),
-            ],
-            TextSpan(text: videoDetail.title ?? ''),
+            ),
+            const TextSpan(text: ' '),
           ],
-        ),
+          if (videoDetail.isUpowerExclusive == true) ...[
+            _labelWidget(
+              '充电专属',
+              colorScheme.isDark
+                  ? colorScheme.error
+                  : colorScheme.errorContainer,
+              colorScheme.isDark
+                  ? colorScheme.onError
+                  : colorScheme.onErrorContainer,
+            ),
+            const TextSpan(text: ' '),
+          ] else if (videoDetail.rights?.isSteinGate == 1) ...[
+            _labelWidget(
+              '互动视频',
+              colorScheme.secondaryContainer,
+              colorScheme.onSecondaryContainer,
+            ),
+            const TextSpan(text: ' '),
+          ],
+          TextSpan(text: videoDetail.title ?? ''),
+        ],
+      );
+      if (isSelectable) {
+        return SelectionText.rich(
+          textSpan,
+          style: const TextStyle(fontSize: 16),
+        );
+      }
+      return Text.rich(
+        textSpan,
         maxLines: isExpand ? null : 2,
         overflow: isExpand ? null : .ellipsis,
         style: const TextStyle(fontSize: 16),
@@ -543,7 +554,8 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
     caseSensitive: false,
   );
 
-  TextSpan buildContent(List<DescV2> descV2) {
+  TextSpan buildDesc(List<DescV2> descV2) {
+    // type
     // 1 普通文本
     // 2 @用户
     final List<TextSpan> spanChildren = descV2.map((currentDesc) {

@@ -61,13 +61,13 @@ class LiveAreaController extends CommonListController<List<AreaList>?, AreaList>
         ids: response.map((e) => e.id).join(','),
       );
       if (res.isSuccess) {
-        isEditing.value = !isEditing.value;
+        isEditing.toggle();
         SmartDialog.showToast('设置成功');
       } else {
         res.toast();
       }
     } else {
-      isEditing.value = !isEditing.value;
+      isEditing.toggle();
     }
   }
 
@@ -75,7 +75,7 @@ class LiveAreaController extends CommonListController<List<AreaList>?, AreaList>
     if (isEditing.value) {
       setFavTag();
     } else {
-      isEditing.value = !isEditing.value;
+      isEditing.toggle();
     }
   }
 

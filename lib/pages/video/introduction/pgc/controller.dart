@@ -472,7 +472,7 @@ class PgcIntroController extends CommonIntroController {
         ? await FavHttp.delFavPugv(seasonId!)
         : await FavHttp.addFavPugv(seasonId!);
     if (res.isSuccess) {
-      this.isFav.value = !isFav;
+      this.isFav.toggle();
       SmartDialog.showToast('${isFav ? '取消' : ''}收藏成功');
     } else {
       res.toast();

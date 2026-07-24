@@ -1,0 +1,222 @@
+diff --git a/packages/flutter/lib/src/painting/inline_span.dart b/packages/flutter/lib/src/painting/inline_span.dart
+index 0c4a0be6177..77baa589699 100644
+--- a/packages/flutter/lib/src/painting/inline_span.dart
++++ b/packages/flutter/lib/src/painting/inline_span.dart
+@@ -315,6 +315,21 @@ abstract class InlineSpan extends DiagnosticableTree {
+     return buffer.toString();
+   }
+ 
++  (String, Map<int, String>) toPlainTextV2({
++    bool includeSemanticsLabels = true,
++    bool includePlaceholders = true,
++  }) {
++    final buffer = StringBuffer();
++    final map = <int, String>{};
++    computeToPlainTextV2(
++      buffer,
++      map,
++      includeSemanticsLabels: includeSemanticsLabels,
++      includePlaceholders: includePlaceholders,
++    );
++    return (buffer.toString(), map);
++  }
++
+   /// Flattens the [InlineSpan] tree to a list of
+   /// [InlineSpanSemanticsInformation] objects.
+   ///
+@@ -358,6 +373,14 @@ abstract class InlineSpan extends DiagnosticableTree {
+     bool includePlaceholders = true,
+   });
+ 
++  @protected
++  void computeToPlainTextV2(
++    StringBuffer buffer,
++    Map<int, String> map, {
++    bool includeSemanticsLabels = true,
++    bool includePlaceholders = true,
++  });
++
+   /// Returns the UTF-16 code unit at the given `index` in the flattened string.
+   ///
+   /// This only accounts for the [TextSpan.text] values and ignores [PlaceholderSpan]s.
+diff --git a/packages/flutter/lib/src/painting/placeholder_span.dart b/packages/flutter/lib/src/painting/placeholder_span.dart
+index 110ff860310..7ad808d05bc 100644
+--- a/packages/flutter/lib/src/painting/placeholder_span.dart
++++ b/packages/flutter/lib/src/painting/placeholder_span.dart
+@@ -45,6 +45,7 @@ abstract class PlaceholderSpan extends InlineSpan {
+     this.alignment = ui.PlaceholderAlignment.bottom,
+     this.baseline,
+     super.style,
++    this.rawText,
+   });
+ 
+   /// The unicode character to represent a placeholder.
+@@ -61,6 +62,8 @@ abstract class PlaceholderSpan extends InlineSpan {
+   /// This is ignored when using other alignment modes.
+   final TextBaseline? baseline;
+ 
++  final String? rawText;
++
+   /// [PlaceholderSpan]s are flattened to a `0xFFFC` object replacement character in the
+   /// plain text representation when `includePlaceholders` is true.
+   @override
+@@ -74,6 +77,21 @@ abstract class PlaceholderSpan extends InlineSpan {
+     }
+   }
+ 
++  @override
++  void computeToPlainTextV2(
++    StringBuffer buffer,
++    Map<int, String> map, {
++    bool includeSemanticsLabels = true,
++    bool includePlaceholders = true,
++  }) {
++    if (includePlaceholders) {
++      if (rawText != null) {
++        map[buffer.length] = rawText!;
++      }
++      buffer.writeCharCode(placeholderCodeUnit);
++    }
++  }
++
+   @override
+   void computeSemanticsInformation(List<InlineSpanSemanticsInformation> collector) {
+     collector.add(InlineSpanSemanticsInformation.placeholder);
+diff --git a/packages/flutter/lib/src/painting/text_span.dart b/packages/flutter/lib/src/painting/text_span.dart
+index 09fba7fc4fb..57ee469358e 100644
+--- a/packages/flutter/lib/src/painting/text_span.dart
++++ b/packages/flutter/lib/src/painting/text_span.dart
+@@ -398,6 +398,31 @@ class TextSpan extends InlineSpan implements HitTestTarget, MouseTrackerAnnotati
+     }
+   }
+ 
++  @override
++  void computeToPlainTextV2(
++    StringBuffer buffer,
++    Map<int, String> map, {
++    bool includeSemanticsLabels = true,
++    bool includePlaceholders = true,
++  }) {
++    assert(debugAssertIsValid());
++    if (semanticsLabel != null && includeSemanticsLabels) {
++      buffer.write(semanticsLabel);
++    } else if (text != null) {
++      buffer.write(text);
++    }
++    if (children != null) {
++      for (final InlineSpan child in children!) {
++        child.computeToPlainTextV2(
++          buffer,
++          map,
++          includeSemanticsLabels: includeSemanticsLabels,
++          includePlaceholders: includePlaceholders,
++        );
++      }
++    }
++  }
++
+   @override
+   void computeSemanticsInformation(
+     List<InlineSpanSemanticsInformation> collector, {
+diff --git a/packages/flutter/lib/src/rendering/paragraph.dart b/packages/flutter/lib/src/rendering/paragraph.dart
+index 97a41dafb8d..00672540c54 100644
+--- a/packages/flutter/lib/src/rendering/paragraph.dart
++++ b/packages/flutter/lib/src/rendering/paragraph.dart
+@@ -502,13 +502,16 @@ class RenderParagraph extends RenderBox
+   }
+ 
+   List<_SelectableFragment> _getSelectableFragments() {
+-    final String plainText = text.toPlainText(includeSemanticsLabels: false);
++    final (String plainText, Map<int, String> placeHolder) = text.toPlainTextV2(
++      includeSemanticsLabels: false,
++    );
+     final result = <_SelectableFragment>[];
+     var start = 0;
+     while (start < plainText.length) {
+       int end = plainText.indexOf(_placeholderCharacter, start);
++      final hasPlaceholder = end != -1;
+       if (start != end) {
+-        if (end == -1) {
++        if (!hasPlaceholder) {
+           end = plainText.length;
+         }
+         result.add(
+@@ -521,6 +524,18 @@ class RenderParagraph extends RenderBox
+         start = end;
+       }
+       start += 1;
++      if (hasPlaceholder) {
++        if (placeHolder[end] case final rawText?) {
++          result.add(
++            _SelectableFragment(
++              paragraph: this,
++              range: TextRange(start: end, end: end + 1),
++              fullText: plainText,
++              rawText: rawText,
++            ),
++          );
++        }
++      }
+     }
+     return result;
+   }
+@@ -1467,7 +1482,7 @@ class RenderParagraph extends RenderBox
+ class _SelectableFragment
+     with Selectable, Diagnosticable, ChangeNotifier
+     implements TextLayoutMetrics {
+-  _SelectableFragment({required this.paragraph, required this.fullText, required this.range})
++  _SelectableFragment({required this.paragraph, required this.fullText, required this.range, this.rawText})
+     : assert(range.isValid && !range.isCollapsed && range.isNormalized) {
+     if (kFlutterMemoryAllocationsEnabled) {
+       ChangeNotifier.maybeDispatchObjectCreation(this);
+@@ -1478,6 +1493,7 @@ class _SelectableFragment
+   final TextRange range;
+   final RenderParagraph paragraph;
+   final String fullText;
++  final String? rawText;
+ 
+   TextPosition? _textSelectionStart;
+   TextPosition? _textSelectionEnd;
+@@ -1626,6 +1642,9 @@ class _SelectableFragment
+     if (_textSelectionStart == null || _textSelectionEnd == null) {
+       return null;
+     }
++    if (rawText != null) {
++      return SelectedContent(plainText: rawText!);
++    }
+     final int start = math.min(_textSelectionStart!.offset, _textSelectionEnd!.offset);
+     final int end = math.max(_textSelectionStart!.offset, _textSelectionEnd!.offset);
+     return SelectedContent(plainText: fullText.substring(start, end));
+@@ -1934,9 +1953,16 @@ class _SelectableFragment
+       direction: paragraph.textDirection,
+     );
+ 
+-    final TextPosition position = _clampTextPosition(
+-      paragraph.getPositionForOffset(adjustedOffset),
+-    );
++    final TextPosition position;
++    if (rawText != null) {
++      position = _clampTextPosition(
++        adjustedOffset.dx * 2 > _rect.left + _rect.right
++            ? TextPosition(offset: range.end)
++            : TextPosition(offset: range.start),
++      );
++    } else {
++      position = _clampTextPosition(paragraph.getPositionForOffset(adjustedOffset));
++    }
+     _setSelectionPosition(position, isEnd: isEnd);
+     if (position.offset == range.end) {
+       return SelectionResult.next;
+diff --git a/packages/flutter/lib/src/widgets/widget_span.dart b/packages/flutter/lib/src/widgets/widget_span.dart
+index 09da3b76525..4a83efb0392 100644
+--- a/packages/flutter/lib/src/widgets/widget_span.dart
++++ b/packages/flutter/lib/src/widgets/widget_span.dart
+@@ -78,7 +78,7 @@ class WidgetSpan extends PlaceholderSpan {
+   ///
+   /// A [TextStyle] may be provided with the [style] property, but only the
+   /// decoration, foreground, background, and spacing options will be used.
+-  const WidgetSpan({required this.child, super.alignment, super.baseline, super.style})
++  const WidgetSpan({required this.child, super.alignment, super.baseline, super.style, super.rawText})
+     : assert(
+         baseline != null ||
+             !(identical(alignment, ui.PlaceholderAlignment.aboveBaseline) ||

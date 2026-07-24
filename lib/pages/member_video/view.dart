@@ -119,18 +119,7 @@ class _MemberVideoState extends State<MemberVideo>
       return Stack(
         clipBehavior: Clip.none,
         children: [
-          NotificationListener<UserScrollNotification>(
-            onNotification: (notification) {
-              final direction = notification.direction;
-              if (direction == .forward) {
-                showFab();
-              } else if (direction == .reverse) {
-                hideFab();
-              }
-              return false;
-            },
-            child: child,
-          ),
+          fabAnimWrapper(child: child),
           Obx(
             () => !_controller.isLocating.value
                 ? Positioned(

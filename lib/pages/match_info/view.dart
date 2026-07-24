@@ -62,7 +62,7 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
         child: fabButton,
       ),
     );
-    return fabAnimWrapper(child);
+    return fabAnimWrapper(child: child);
   }
 
   Widget _buildInfo(LoadingState<MatchContest?> infoState) {

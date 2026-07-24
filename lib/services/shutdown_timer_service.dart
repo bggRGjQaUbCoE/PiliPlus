@@ -7,6 +7,7 @@ import 'package:PiliPlus/pages/video/introduction/ugc/widgets/menu_row.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -145,130 +146,130 @@ class ShutdownTimerService {
     if (isLive) {
       _waitUntilCompleted = false;
     }
+
+    final child = StatefulBuilder(
+      builder: (context, setState) {
+        final ThemeData theme = Theme.of(context);
+        return Padding(
+          padding: const .all(12),
+          child: Material(
+            clipBehavior: .hardEdge,
+            color: theme.colorScheme.surface,
+            borderRadius: const .all(.circular(12)),
+            child: ListView(
+              padding: const .symmetric(vertical: 14),
+              children: [
+                const Center(child: Text('定时关闭', style: titleStyle)),
+                const SizedBox(height: 10),
+                ...{...scheduleTimeMinutes, _durationInMinutes}
+                    .sorted(Comparable.compare)
+                    .map(
+                      (minutes) => ListTile(
+                        dense: true,
+                        onTap: () {
+                          Navigator.pop(context);
+                          _startShutdownTimer(minutes);
+                        },
+                        title: Text(
+                          switch (minutes) {
+                            0 => '禁用',
+                            _ => _format(minutes),
+                          },
+                          style: titleStyle,
+                        ),
+                        trailing: _durationInMinutes == minutes
+                            ? Icon(
+                                size: 20,
+                                Icons.done,
+                                color: theme.colorScheme.primary,
+                              )
+                            : null,
+                      ),
+                    ),
+                ListTile(
+                  dense: true,
+                  onTap: () {
+                    final (int hour, int minute) = _parseMinutes(
+                      _durationInMinutes,
+                    );
+                    showTimePicker(
+                      context: context,
+                      initialEntryMode: .inputOnly,
+                      initialTime: TimeOfDay(hour: hour, minute: minute),
+                      builder: (context, child) => MediaQuery(
+                        data: MediaQuery.of(
+                          context,
+                        ).copyWith(alwaysUse24HourFormat: true),
+                        child: child!,
+                      ),
+                    ).then((time) {
+                      if (time != null) {
+                        _startShutdownTimer(time.hour * 60 + time.minute);
+                        setState(() {});
+                      }
+                    });
+                  },
+                  title: const Text('自定义', style: titleStyle),
+                ),
+                if (!isLive) ...[
+                  Builder(
+                    builder: (context) {
+                      void onChanged([_]) {
+                        _waitUntilCompleted = !_waitUntilCompleted;
+                        (context as Element).markNeedsBuild();
+                      }
+
+                      return ListTile(
+                        dense: true,
+                        onTap: onChanged,
+                        title: const Text('额外等待视频播放完毕', style: titleStyle),
+                        trailing: Transform.scale(
+                          alignment: Alignment.centerRight,
+                          scale: 0.8,
+                          child: Switch(
+                            value: _waitUntilCompleted,
+                            onChanged: onChanged,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+                const SizedBox(height: 5),
+                Padding(
+                  padding: const .only(left: 18),
+                  child: Builder(
+                    builder: (context) {
+                      return Row(
+                        spacing: 12,
+                        children: [
+                          const Text('倒计时结束:', style: titleStyle),
+                          ..._ShutdownType.values.map(
+                            (e) => ActionRowLineItem(
+                              onTap: () {
+                                _shutdownType = e;
+                                (context as Element).markNeedsBuild();
+                              },
+                              text: ' ${e.label} ',
+                              selectStatus: _shutdownType == e,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
     PageUtils.showVideoBottomSheet(
       context,
       maxWidth: 512,
-      child: StatefulBuilder(
-        builder: (_, setState) {
-          final ThemeData theme = Theme.of(context);
-          return Theme(
-            data: theme,
-            child: Padding(
-              padding: const .all(12),
-              child: Material(
-                clipBehavior: .hardEdge,
-                color: theme.colorScheme.surface,
-                borderRadius: const .all(.circular(12)),
-                child: ListView(
-                  padding: const .symmetric(vertical: 14),
-                  children: [
-                    const Center(child: Text('定时关闭', style: titleStyle)),
-                    const SizedBox(height: 10),
-                    ...{...scheduleTimeMinutes, _durationInMinutes}
-                        .sorted(Comparable.compare)
-                        .map(
-                          (minutes) => ListTile(
-                            dense: true,
-                            onTap: () {
-                              Navigator.pop(context);
-                              _startShutdownTimer(minutes);
-                            },
-                            title: Text(
-                              switch (minutes) {
-                                0 => '禁用',
-                                _ => _format(minutes),
-                              },
-                              style: titleStyle,
-                            ),
-                            trailing: _durationInMinutes == minutes
-                                ? Icon(
-                                    size: 20,
-                                    Icons.done,
-                                    color: theme.colorScheme.primary,
-                                  )
-                                : null,
-                          ),
-                        ),
-                    ListTile(
-                      dense: true,
-                      onTap: () {
-                        final (int hour, int minute) = _parseMinutes(
-                          _durationInMinutes,
-                        );
-                        showTimePicker(
-                          context: context,
-                          initialEntryMode: .inputOnly,
-                          initialTime: TimeOfDay(hour: hour, minute: minute),
-                          builder: (context, child) => MediaQuery(
-                            data: MediaQuery.of(
-                              context,
-                            ).copyWith(alwaysUse24HourFormat: true),
-                            child: child!,
-                          ),
-                        ).then((time) {
-                          if (time != null) {
-                            _startShutdownTimer(time.hour * 60 + time.minute);
-                            setState(() {});
-                          }
-                        });
-                      },
-                      title: const Text('自定义', style: titleStyle),
-                    ),
-                    if (!isLive) ...[
-                      Builder(
-                        builder: (context) {
-                          void onChanged([_]) {
-                            _waitUntilCompleted = !_waitUntilCompleted;
-                            (context as Element).markNeedsBuild();
-                          }
-
-                          return ListTile(
-                            dense: true,
-                            onTap: onChanged,
-                            title: const Text('额外等待视频播放完毕', style: titleStyle),
-                            trailing: Transform.scale(
-                              alignment: Alignment.centerRight,
-                              scale: 0.8,
-                              child: Switch(
-                                value: _waitUntilCompleted,
-                                onChanged: onChanged,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                    const SizedBox(height: 5),
-                    Padding(
-                      padding: const .only(left: 18),
-                      child: Builder(
-                        builder: (context) {
-                          return Row(
-                            spacing: 12,
-                            children: [
-                              const Text('倒计时结束:', style: titleStyle),
-                              ..._ShutdownType.values.map(
-                                (e) => ActionRowLineItem(
-                                  onTap: () {
-                                    _shutdownType = e;
-                                    (context as Element).markNeedsBuild();
-                                  },
-                                  text: ' ${e.label} ',
-                                  selectStatus: _shutdownType == e,
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
+      child: isLive ? Theme(data: ThemeUtils.darkTheme, child: child) : child,
     );
   }
 }

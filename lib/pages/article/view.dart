@@ -67,7 +67,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
         child: _buildBottom(),
       ),
     );
-    return fabAnimWrapper(child);
+    return fabAnimWrapper(child: child);
   }
 
   Widget _buildPage() {

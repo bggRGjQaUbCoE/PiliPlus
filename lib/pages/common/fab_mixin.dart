@@ -34,6 +34,24 @@ mixin BaseFabMixin<T extends StatefulWidget> on State<T>, TickerProvider {
       fabAnimationCtr.forward();
     }
   }
+
+  Widget fabAnimWrapper({required Widget child}) {
+    return NotificationListener<UserScrollNotification>(
+      onNotification: onNotification,
+      child: child,
+    );
+  }
+
+  bool onNotification(UserScrollNotification notification) {
+    switch (notification.direction) {
+      case .forward:
+        showFab();
+      case .reverse:
+        hideFab();
+      default:
+    }
+    return false;
+  }
 }
 
 mixin FabMixin<T extends StatefulWidget> on BaseFabMixin<T> {

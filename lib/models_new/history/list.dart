@@ -21,6 +21,18 @@ class HistoryItemModel with MultiSelectData {
   String? tagName;
   int? liveStatus;
 
+  /// The history API uses seconds as the progress unit
+  /// while the player expects milliseconds.
+  ///
+  /// The history API uses `-1` to indicate that the video has been fully watched.
+  /// When reopened, playback should start from the beginning to avoid resuming from
+  /// the last playback position associated with the video streaming account.
+  int? get playbackProgress {
+    final progress = this.progress;
+    if (progress == null) return null;
+    return progress == -1 ? 0 : progress * Duration.millisecondsPerSecond;
+  }
+
   HistoryItemModel({
     this.title,
     this.cover,

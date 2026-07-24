@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
+import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -64,16 +65,7 @@ class _DynTopicPageState extends State<DynTopicPage>
         children: [
           refreshIndicator(
             onRefresh: _controller.onRefresh,
-            child: NotificationListener<UserScrollNotification>(
-              onNotification: (notification) {
-                final direction = notification.direction;
-                if (direction == .forward) {
-                  showFab();
-                } else if (direction == .reverse) {
-                  hideFab();
-                }
-                return false;
-              },
+            child: fabAnimWrapper(
               child: CustomScrollView(
                 controller: _controller.scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -258,7 +250,7 @@ class _DynTopicPageState extends State<DynTopicPage>
                 ),
               ),
               const SizedBox(height: 6),
-              SelectableText(
+              SelectionText(
                 response.topicItem!.description!,
                 style: TextStyle(color: colorScheme.onSurfaceVariant),
               ),
@@ -418,14 +410,15 @@ class _DynTopicPageState extends State<DynTopicPage>
   Widget _buildFoldItem(FoldCardItem item) {
     return Padding(
       padding: const .only(top: 12),
-      child: InkWell(
-        onTap: _controller.topicFold,
-        child: Ink(
-          padding: const .symmetric(vertical: 10),
-          color: colorScheme.outline.withValues(alpha: .05),
-          child: Center(
+      child: Material(
+        color: colorScheme.outline.withValues(alpha: .05),
+        child: InkWell(
+          onTap: _controller.topicFold,
+          child: Padding(
+            padding: const .symmetric(vertical: 10),
             child: Row(
               mainAxisSize: .min,
+              mainAxisAlignment: .center,
               children: [
                 Text(item.foldDesc!),
                 const Icon(Icons.keyboard_arrow_right, size: 22),

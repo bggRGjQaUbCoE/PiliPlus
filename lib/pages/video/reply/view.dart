@@ -68,17 +68,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final child = NotificationListener<UserScrollNotification>(
-      onNotification: (notification) {
-        switch (notification.direction) {
-          case .forward:
-            showFab();
-          case .reverse:
-            hideFab();
-          case _:
-        }
-        return false;
-      },
+    final child = fabAnimWrapper(
       child: refreshIndicator(
         onRefresh: _videoReplyController.onRefresh,
         isClampingScrollPhysics: widget.isNested,

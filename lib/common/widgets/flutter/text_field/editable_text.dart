@@ -4301,7 +4301,7 @@ class EditableTextState extends State<EditableText>
         return;
       }
       _showToolbarOnScreenScheduled = true;
-      SchedulerBinding.instance.addPostFrameCallback((Duration _) {
+      void scheduleToolbar(Duration _) {
         _showToolbarOnScreenScheduled = false;
         if (!mounted || _dataWhenToolbarShowScheduled == null) {
           return;
@@ -4331,7 +4331,25 @@ class EditableTextState extends State<EditableText>
           showToolbar();
           _dataWhenToolbarShowScheduled = null;
         }
-      }, debugLabel: 'EditableText.scheduleToolbar');
+      }
+
+      switch (SchedulerBinding.instance.schedulerPhase) {
+        case SchedulerPhase.idle:
+        case SchedulerPhase.postFrameCallbacks:
+          // During these scheduler phases we cannot guarantee
+          // there will be a frame after, so we use scheduleFrameCallback.
+          SchedulerBinding.instance.scheduleFrameCallback(scheduleToolbar);
+        case SchedulerPhase.transientCallbacks:
+        case SchedulerPhase.midFrameMicrotasks:
+        case SchedulerPhase.persistentCallbacks:
+          // During an active frame we can still schedule
+          // a post-frame callback to be run after the
+          // current frame.
+          SchedulerBinding.instance.addPostFrameCallback(
+            scheduleToolbar,
+            debugLabel: 'EditableText.scheduleToolbar',
+          );
+      }
     }
   }
 
@@ -5111,9 +5129,11 @@ class EditableTextState extends State<EditableText>
   ) {
     // Compare the current TextEditingValue with the pre-format new
     // TextEditingValue value, in case the formatter would reject the change.
-    final shouldShowCaret = widget.readOnly
-        ? _value.selection != value.selection
-        : _value != value;
+    final shouldShowCaret =
+        cause != .drag &&
+        (widget.readOnly
+            ? _value.selection != value.selection
+            : _value != value);
     if (shouldShowCaret) {
       scheduleShowCaretOnScreen(withAnimation: true);
     }
@@ -5930,7 +5950,7 @@ class EditableTextState extends State<EditableText>
         child: Builder(
           builder: (BuildContext context) {
             return TextFieldTapRegion(
-              groupId: widget.groupId,
+              // groupId: widget.groupId,
               onTapOutside: _hasFocus
                   ? (PointerDownEvent event) => _onTapOutside(context, event)
                   : null,

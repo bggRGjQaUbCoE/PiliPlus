@@ -1624,11 +1624,6 @@ class PlPlayerController with BlockConfigMixin {
     }
   }
 
-  void setOnlyPlayAudio() {
-    onlyPlayAudio.toggle();
-    videoPlayerController?.setVideoTrack(onlyPlayAudio.value ? .no() : .auto());
-  }
-
   late final Map<String, ui.Image?> previewCache = {};
   LoadingState<VideoShotData>? videoShot;
   late final RxBool showPreview = false.obs;
@@ -1682,6 +1677,8 @@ class PlPlayerController with BlockConfigMixin {
                 bytes: bytes.buffer.asUint8List(),
                 fileName: 'screenshot_${cid}_$time',
               );
+            } else {
+              SmartDialog.showToast('保存失败');
             }
             Get.back();
           },

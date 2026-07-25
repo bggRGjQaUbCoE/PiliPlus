@@ -293,10 +293,7 @@ class _VideoShotImageState extends State<VideoShotImage> {
 const double _triangleHeight = 5.6;
 
 class _DanmakuTip extends SingleChildRenderObjectWidget {
-  const _DanmakuTip({
-    this.offset = 0,
-    super.child,
-  });
+  const _DanmakuTip({this.offset = 0, super.child});
 
   final double offset;
 
@@ -412,14 +409,16 @@ class _RenderVideoTime extends RenderBox {
 
   String _duration;
   set duration(String value) {
+    if (_duration == value) return;
     _duration = value;
     final paragraph = _buildParagraph(const Color(0xFFD0D0D0), _duration);
     if (paragraph.maxIntrinsicWidth != _cache?.maxIntrinsicWidth) {
       markNeedsLayout();
+    } else {
+      markNeedsSemanticsUpdate();
     }
     _cache?.dispose();
     _cache = paragraph;
-    markNeedsSemanticsUpdate();
   }
 
   String _position;
@@ -431,7 +430,7 @@ class _RenderVideoTime extends RenderBox {
 
   ui.Paragraph? _cache;
 
-  ui.Paragraph _buildParagraph(Color color, String time) {
+  static ui.Paragraph _buildParagraph(Color color, String time) {
     final builder =
         ui.ParagraphBuilder(
             ui.ParagraphStyle(

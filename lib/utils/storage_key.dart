@@ -12,6 +12,7 @@ abstract final class SettingBoxKey {
       defaultToastOp = 'defaultToastOp',
       defaultPicQa = 'defaultPicQa',
       enableHA = 'enableHA',
+      useExoPlayer = 'useExoPlayer',
       audioOutput = 'audioOutput',
       bufferSize = 'bufferSize',
       bufferSec = 'bufferSec',

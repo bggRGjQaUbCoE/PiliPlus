@@ -1,0 +1,226 @@
+import 'dart:async';
+
+import 'package:flutter/services.dart';
+
+class ExoPlayerEvent {
+  const ExoPlayerEvent({
+    required this.generation,
+    required this.type,
+    required this.position,
+    required this.buffered,
+    required this.duration,
+    required this.playing,
+    required this.playWhenReady,
+    required this.buffering,
+    required this.completed,
+    required this.width,
+    required this.height,
+    required this.speed,
+    required this.subtitle,
+    this.error,
+  });
+
+  final int generation;
+  final String type;
+  final Duration position;
+  final Duration buffered;
+  final Duration duration;
+  final bool playing;
+  final bool playWhenReady;
+  final bool buffering;
+  final bool completed;
+  final int width;
+  final int height;
+  final double speed;
+  final String subtitle;
+  final String? error;
+
+  factory ExoPlayerEvent.fromMap(Map<Object?, Object?> map) {
+    int intValue(String key) => (map[key] as num?)?.toInt() ?? 0;
+    return ExoPlayerEvent(
+      generation: intValue('generation'),
+      type: map['type'] as String? ?? 'state',
+      position: Duration(milliseconds: intValue('positionMs')),
+      buffered: Duration(milliseconds: intValue('bufferedMs')),
+      duration: Duration(milliseconds: intValue('durationMs')),
+      playing: map['playing'] as bool? ?? false,
+      playWhenReady: map['playWhenReady'] as bool? ?? false,
+      buffering: map['buffering'] as bool? ?? false,
+      completed: map['completed'] as bool? ?? false,
+      width: intValue('width'),
+      height: intValue('height'),
+      speed: (map['speed'] as num?)?.toDouble() ?? 1,
+      subtitle: map['subtitle'] as String? ?? '',
+      error: map['message'] as String?,
+    );
+  }
+}
+
+class ExoPlayerController {
+  ExoPlayerController._(this.id, this.textureId);
+
+  static const MethodChannel _methods = MethodChannel(
+    'com.example.piliplus/exo_player',
+  );
+  static const EventChannel _events = EventChannel(
+    'com.example.piliplus/exo_player_events',
+  );
+  static int _nextId = 1;
+  static Stream<Map<Object?, Object?>>? _eventStream;
+
+  static Stream<Map<Object?, Object?>> get eventStream =>
+      _eventStream ??= _events.receiveBroadcastStream().map(
+        (event) => Map<Object?, Object?>.from(event as Map),
+      );
+
+  final int id;
+  final int textureId;
+  StreamSubscription<Map<Object?, Object?>>? _subscription;
+  final StreamController<ExoPlayerEvent> _controller =
+      StreamController<ExoPlayerEvent>.broadcast();
+  int _generation = 0;
+  bool _playWhenReady = false;
+
+  ExoPlayerEvent state = const ExoPlayerEvent(
+    generation: 0,
+    type: 'state',
+    position: Duration.zero,
+    buffered: Duration.zero,
+    duration: Duration.zero,
+    playing: false,
+    playWhenReady: false,
+    buffering: false,
+    completed: false,
+    width: 0,
+    height: 0,
+    speed: 1,
+    subtitle: '',
+  );
+
+  Stream<ExoPlayerEvent> get events => _controller.stream;
+  bool get playWhenReady => _playWhenReady;
+
+  static Future<ExoPlayerController> create() async {
+    final id = _nextId++;
+    final textureId = await _methods.invokeMethod<int>('create', {'id': id});
+    if (textureId == null) {
+      throw StateError('ExoPlayer did not create a Flutter texture');
+    }
+    final player = ExoPlayerController._(id, textureId);
+    player._subscription = eventStream
+        .where((event) => (event['id'] as num?)?.toInt() == player.id)
+        .listen((event) {
+          final next = ExoPlayerEvent.fromMap(event);
+          if (next.generation < player._generation) {
+            return;
+          }
+          player._generation = next.generation;
+          if (event.containsKey('playWhenReady')) {
+            player._playWhenReady = next.playWhenReady;
+          }
+          player.state = ExoPlayerEvent(
+            generation: next.generation,
+            type: next.type,
+            position: event.containsKey('positionMs')
+                ? next.position
+                : player.state.position,
+            buffered: event.containsKey('bufferedMs')
+                ? next.buffered
+                : player.state.buffered,
+            duration: event.containsKey('durationMs')
+                ? next.duration
+                : player.state.duration,
+            playing: event.containsKey('playing')
+                ? next.playing
+                : player.state.playing,
+            playWhenReady: event.containsKey('playWhenReady')
+                ? next.playWhenReady
+                : player.state.playWhenReady,
+            buffering: event.containsKey('buffering')
+                ? next.buffering
+                : player.state.buffering,
+            completed: event.containsKey('completed')
+                ? next.completed
+                : player.state.completed,
+            width: event.containsKey('width') ? next.width : player.state.width,
+            height: event.containsKey('height')
+                ? next.height
+                : player.state.height,
+            speed: event.containsKey('speed') ? next.speed : player.state.speed,
+            subtitle: event.containsKey('subtitle')
+                ? next.subtitle
+                : player.state.subtitle,
+            error: next.error,
+          );
+          player._controller.add(player.state);
+        });
+    return player;
+  }
+
+  Future<void> open({
+    required String videoUrl,
+    String? audioUrl,
+    required Map<String, String> headers,
+    Duration position = Duration.zero,
+    bool playWhenReady = false,
+    bool preserveSubtitle = false,
+  }) {
+    final generation = ++_generation;
+    _playWhenReady = playWhenReady;
+    return _methods.invokeMethod<void>('open', {
+      'id': id,
+      'generation': generation,
+      'videoUrl': videoUrl,
+      'audioUrl': audioUrl,
+      'headers': headers,
+      'positionMs': position.inMilliseconds,
+      'playWhenReady': playWhenReady,
+      'preserveSubtitle': preserveSubtitle,
+    });
+  }
+
+  Future<void> play() {
+    _playWhenReady = true;
+    return _invoke('play');
+  }
+
+  Future<void> pause() {
+    _playWhenReady = false;
+    return _invoke('pause');
+  }
+
+  Future<void> seek(Duration position) => _methods.invokeMethod<void>(
+    'seekTo',
+    {'id': id, 'positionMs': position.inMilliseconds},
+  );
+
+  Future<void> setPlaybackSpeed(double speed) => _methods.invokeMethod<void>(
+    'setPlaybackSpeed',
+    {'id': id, 'speed': speed},
+  );
+
+  Future<void> setVolume(double volume) =>
+      _methods.invokeMethod<void>('setVolume', {'id': id, 'volume': volume});
+
+  Future<void> setSubtitle({
+    String? data,
+    String? uri,
+    String? language,
+    String? label,
+  }) => _methods.invokeMethod<void>('setSubtitle', {
+    'id': id,
+    'data': data,
+    'uri': uri,
+    'language': language,
+    'label': label,
+  });
+
+  Future<void> _invoke(String method) =>
+      _methods.invokeMethod<void>(method, {'id': id});
+
+  Future<void> dispose() async {
+    await _subscription?.cancel();
+    await _methods.invokeMethod<void>('dispose', {'id': id});
+    await _controller.close();
+  }
+}

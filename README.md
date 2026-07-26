@@ -1,253 +1,168 @@
 <div align="center">
-    <img width="200" height="200" src="assets/images/logo/logo.png">
+  <img width="180" height="180" src="assets/images/logo/logo.png" alt="pili++ logo">
+  <h1>pili++</h1>
+  <p>使用 Flutter 开发的哔哩哔哩第三方客户端</p>
+
+  ![GitHub repo size](https://img.shields.io/github/repo-size/loneshu7/PiliPlusPlus)
+  ![GitHub Repo stars](https://img.shields.io/github/stars/loneshu7/PiliPlusPlus)
+  ![GitHub all releases](https://img.shields.io/github/downloads/loneshu7/PiliPlusPlus/total)
 </div>
 
+> [!IMPORTANT]
+> pili++ 基于开源项目
+> [bggRGjQaUbCoE/PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus)。
+> 当前 Android 端正在将 mpv 播放后端迁移到 AndroidX Media3
+> ExoPlayer。迁移完成的标准是原 mpv 用户功能全部闭环，而不只是视频能够播放。
 
+## 项目目标
 
-<div align="center">
-    <h1>PiliPlus</h1>
-<div align="center">
-    
-![GitHub repo size](https://img.shields.io/github/repo-size/bggRGjQaUbCoE/PiliPlus) 
-![GitHub Repo stars](https://img.shields.io/github/stars/bggRGjQaUbCoE/PiliPlus) 
-![GitHub all releases](https://img.shields.io/github/downloads/bggRGjQaUbCoE/PiliPlus/total) 
-</div>
-    <p>使用Flutter开发的BiliBili第三方客户端</p>
-    
-<img src="assets/screenshots/510shots_so.png" width="32%" alt="home" />
-<img src="assets/screenshots/174shots_so.png" width="32%" alt="home" />
-<img src="assets/screenshots/850shots_so.png" width="32%" alt="home" />
-<br/>
-<img src="assets/screenshots/main_screen.png" width="96%" alt="home" />
-<br/>
-</div>
+Android 端使用 Media3 ExoPlayer 替代 mpv，同时保留原有 Flutter 播放器的
+控件、手势、弹幕、字幕和业务行为：
 
+- mpv 可用的功能，ExoPlayer 模式也必须可用；
+- 相同入口、控件和手势产生相同结果；
+- 播放状态正确回传到既有 Flutter UI 与业务逻辑；
+- 不通过隐藏入口、静默回退 mpv 或显示“暂不支持”掩盖缺口；
+- Media3 没有直接对应能力时，在原生桥接层或 Flutter 公共层实现等价结果。
 
-<br/>
+详细验收标准见 [Android ExoPlayer 兼容记录](docs/android_exoplayer.md)。
 
-## 适配平台
+## 当前迁移状态
 
-- [x] Android
-- [x] iOS
-- [x] Pad
-- [x] Windows
-- [x] Linux
+| 范围 | 状态 |
+| --- | --- |
+| Flutter `Texture` 视频图层与原控制层叠加 | 已实现 |
+| 单击控制层、双击、滑动、长按 | 已真机验证 |
+| DASH 视频/音频合流与基础播放状态 | 已实现 |
+| 同一 ExoPlayer 切画质、CDN 并保持播放意图 | 已构建，待真机验证 |
+| B 站字幕与外部字幕原生桥接 | 已实现，待完整真机回归 |
+| 全部 mpv 功能的完整替代 | 进行中 |
 
-[![Packaging status](https://repology.org/badge/vertical-allrepos/piliplus.svg)](https://repology.org/project/piliplus/versions)
+“已实现”表示代码和 Release 构建已通过，不等于真机验收完成。未经过真机
+对照验证的项目会明确标记为“待真机验证”。
 
-## refactor
+## 支持平台
 
-- [ ] gRPC [wip]
-- [x] 用户界面
-- [x] 其他
+- Android
+- Android Pad
+- iOS / iPadOS
+- Windows
+- Linux
+- macOS
 
-## feat
+本仓库当前的重点开发和交付平台为 Android，其他平台能力主要继承自上游
+PiliPlus。
 
-- [x] 编辑动态
-- [x] DLNA 投屏
-- [x] 离线缓存/播放
-- [x] 移动端支持点击弹幕悬停，点赞、复制、举报 by [@My-Responsitories](https://github.com/My-Responsitories)
-- [x] 播放音频
-- [x] 跳过番剧片头/片尾
-- [x] 安卓端 `loudnorm` 适配 by [@My-Responsitories](https://github.com/My-Responsitories)
-- [x] Win/Mac 支持极验、短信登录 by [@My-Responsitories](https://github.com/My-Responsitories)
-- [x] 视频截取动图 by [@My-Responsitories](https://github.com/My-Responsitories)
-- [x] AI 原声翻译
-- [x] SuperChat
-- [x] 播放课堂视频
-- [x] 发起投票
-- [x] 发布动态/评论支持`富文本编辑`/`表情显示`/`@用户`
-- [x] 修改消息设置
-- [x] 修改聊天设置
-- [x] 展示折叠消息
-- [x] 查看用户图文
-- [x] 动态话题
-- [x] 直播分区
-- [x] 分享`视频`/`番剧`/`动态`/`专栏`/`直播`至消息
-- [x] 创建/修改/删除关注分组
-- [x] 移除粉丝
-- [x] 直播弹幕发送表情
-- [x] 收藏夹排序
-- [x] 稍后再看 ~~`未看`~~ / `未看完` / ~~`已看完`~~ 分类
-- [x] WebDAV 备份/恢复设置
-- [x] 保存评论/动态
-- [x] 高级弹幕 by [@My-Responsitories](https://github.com/My-Responsitories)
-- [x] 取消/置顶评论
-- [x] 记笔记
-- [x] 多账号支持 by [@My-Responsitories](https://github.com/My-Responsitories)
-- [x] 屏蔽带货动态/评论
-- [x] 互动视频
-- [x] 发评/动态反诈
-- [x] 高能进度条
-- [x] 滑动跳转预览视频缩略图
-- [x] Live Photo
-- [x] 复制/移动/排序收藏夹/稍后再看视频
-- [x] 超分辨率
-- [x] 合并弹幕
-- [x] 会员彩色弹幕
-- [x] 播放全部/继续播放/倒序播放
-- [x] Cookie登录
-- [x] 显示视频分段信息
-- [x] 调节字幕大小
-- [x] 调节全屏弹幕大小
-- [x] 收藏夹/稍后再看多选删除
-- [x] 搜索用户动态
-- [x] 直播弹幕
-- [x] 修改头像/用户名/签名/性别/生日
-- [x] 创建/编辑/删除收藏夹
-- [x] 评论楼中楼查看对话
-- [x] 评论楼中楼定位点击查看的评论
-- [x] 评论楼中楼按热度/时间排序
-- [x] 评论点踩
-- [x] 私信发图
-- [x] 投币动画
-- [x] 取消/追番，更新追番状态
-- [x] 取消/订阅合集
-- [x] SponsorBlock
-- [x] 显示视频完整合集
-- [x] 三连动画
-- [x] 番剧三连
-- [x] 带图评论
-- [x] 视频TAG
-- [x] 筛选搜索
-- [x] 转发动态
-- [x] 合集图片
-- [x] 删除/置顶/撤回私信
-- [x] 举报用户/评论/视频/动态
-- [x] 删除/发布/置顶文本/图片动态
-- [x] 其他
+## 主要功能
 
-## opt
+- 视频、番剧、课程、合集、互动视频与本地视频播放；
+- 画质、音质、解码格式、分P、CDN、倍速和画面比例切换；
+- 弹幕、高级弹幕、字幕、高能进度条、章节、缩略图预览与 SponsorBlock；
+- 双击播放/暂停、长按倍速、横向进度和纵向亮度/音量手势；
+- 全屏、横竖屏、画中画、后台音频和媒体控制；
+- 推荐、热门、动态、搜索、评论、收藏、稍后再看、历史记录和私信；
+- 离线缓存、DLNA、WebDAV 设置备份与多账号。
 
-- [x] 专栏界面
-- [x] 私信界面
-- [x] 收藏面板
-- [x] PIP
-- [x] 视频封面
-- [x] 回复界面
-- [x] 系统通知
-- [x] 评论显示
-- [x] 亮度调节
-- [x] 视频播放
-- [x] 视频staff
-- [x] 防止bottomsheet遮挡全屏视频
-- [x] 其他
+## 下载与安装
 
-## fix
+发布包将上传到
+[PiliPlusPlus Releases](https://github.com/loneshu7/PiliPlusPlus/releases)。
 
-- [x] 番剧分集点赞/投币/收藏
-- [x] bugs
+Android Release APK：
 
-<br/>
+- 用户可见名称为 `pili++`；
+- applicationId 当前为 `com.shudo.plusplus`；
+- 通用包同时包含 `arm64-v8a`、`armeabi-v7a` 和 `x86_64`；
+- 后续版本必须使用同一证书签名，才能覆盖安装并保留应用数据。
 
-## 功能
+不要从非本仓库或其他不可信渠道安装 APK。
 
-- [x] 推荐视频列表(app端)
-- [x] 最热视频列表
-- [x] 热门直播
-- [x] 番剧列表
-- [x] 屏蔽黑名单内用户视频
-- [x] 无痕模式（播放视为未登录）
-- [x] 游客模式（推荐视为未登录）
+## 检查更新
 
-- [x] 用户相关
-  - [x] 粉丝、关注用户、拉黑用户查看
-  - [x] 用户主页查看
-  - [x] 关注/取关用户
-  - [x] 离线缓存
-  - [x] 稍后再看
-  - [x] 观看记录
-  - [x] 我的收藏
-  - [x] 站内私信
-  
-- [x] 动态相关
-  - [x] 全部、投稿、番剧分类查看
-  - [x] 动态评论查看
-  - [x] 动态评论回复功能
+- 默认在应用启动时检查本仓库的 GitHub Releases；
+- 可在“设置 → 其他设置 → 检查更新”启用或关闭启动检查；
+- 可点击“关于 → 当前版本”手动检查；
+- Android 会选择与设备 ABI 匹配的 Release APK，并交给浏览器下载；
+- 当前不在应用内静默下载或自动安装，安装仍由 Android 系统确认。
 
-- [x] 视频播放相关
-  - [x] 双击快进/快退
-  - [x] 双击播放/暂停
-  - [x] 垂直方向调节亮度/音量
-  - [x] 垂直方向上滑全屏、下滑退出全屏
-  - [x] 水平方向手势快进/快退
-  - [x] 全屏方向设置
-  - [x] 倍速选择/长按2倍速
-  - [x] 硬件加速（视机型而定）
-  - [x] 画质选择（高清画质未解锁）
-  - [x] 音质选择（视视频而定）
-  - [x] 解码格式选择（视视频而定）
-  - [x] 弹幕
-  - [x] 字幕
-  - [x] 记忆播放
-  - [x] 视频比例：高度/宽度适应、填充、包含等
-     
-- [x] 搜索相关
-  - [x] 热搜
-  - [x] 搜索历史
-  - [x] 默认搜索词
-  - [x] 投稿、番剧、直播间、用户搜索
-  - [x] 视频搜索排序、按时长筛选
-    
-- [x] 视频详情页相关
-  - [x] 视频选集(分p)切换
-  - [x] 点赞、投币、收藏/取消收藏
-  - [x] 相关视频查看
-  - [x] 评论用户身份标识
-  - [x] 评论(排序)查看、二楼评论查看
-  - [x] 主楼、二楼评论回复功能
-  - [x] 评论点赞
-  - [x] 评论笔记图片查看、保存
+Release APK 文件名必须保留版本号、`versionCode` 和 ABI，更新判断会优先读取
+这些信息。
 
-- [x] 设置相关
-  - [x] 画质、音质、解码方式预设      
-  - [x] 图片质量设定
-  - [x] 主题模式：亮色/暗色/跟随系统
-  - [x] 震动反馈(可选)
-  - [x] 高帧率
-  - [x] 自动全屏
-  - [x] 横屏适配
-- [ ] 等等
+## Android 本地构建
 
-<br/>
+### 环境
 
-## 下载
+- Flutter `3.44.8`
+- Dart `>= 3.12.0`
+- JDK 17
+- Android SDK / Build Tools
 
-可以通过右侧release进行下载或拉取代码到本地进行编译
+### 基础命令
 
-<br/>
+```bash
+flutter pub get
+dart format .
+flutter analyze
+flutter build apk --release
+```
+
+正式发布时还应通过 `--build-name`、`--build-number` 和 `--dart-define`
+写入版本、Git commit 与构建时间。
+
+### Release 签名
+
+Android 签名使用本地 `android/key.properties` 和对应 keystore。以下内容均被
+Git 忽略，不得提交：
+
+- keystore 文件；
+- store password；
+- key alias；
+- key password。
+
+GitHub Actions 发布需配置以下仓库 Secrets：
+
+- `SIGN_KEYSTORE_BASE64`
+- `KEYSTORE_PASSWORD`
+- `KEY_ALIAS`
+- `KEY_PASSWORD`
+
+## 验证要求
+
+每批 Android 播放器修改至少完成：
+
+1. `dart format`；
+2. 相关文件静态分析；
+3. Android Release 构建；
+4. APK 签名、applicationId、版本、ABI 和 SHA-256 校验；
+5. 使用同一视频与 mpv 执行相同操作进行真机对照；
+6. 普通窗口、全屏及适用的前后台/画中画场景回归。
+
+无法在当前环境完成的真机检查必须记录为“待真机验证”。
+
+## 仓库
+
+- 当前仓库：[loneshu7/PiliPlusPlus](https://github.com/loneshu7/PiliPlusPlus)
+- 上游项目：[bggRGjQaUbCoE/PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus)
+- 原始项目：[guozhigq/pilipala](https://github.com/guozhigq/pilipala)
+- 相关上游：[orz12/PiliPalaX](https://github.com/orz12/PiliPalaX)
+
+提交问题前请先搜索
+[现有 Issues](https://github.com/loneshu7/PiliPlusPlus/issues)。
 
 ## 声明
 
-此项目（PiliPlus）是个人为了兴趣而开发，仅用于学习和测试，请于下载后24小时内删除。
-所用API皆从官方网站收集，不提供任何破解内容。
-在此致敬原作者：[guozhigq/pilipala](https://github.com/guozhigq/pilipala)
-在此致敬上游作者：[orz12/PiliPalaX](https://github.com/orz12/PiliPalaX)
-本仓库做了更激进的修改，感谢原作者的开源精神。
-
-感谢使用
-
-
-<br/>
+本项目仅用于学习和测试，不提供任何破解内容。项目使用的接口资料均来自公开
+渠道。使用者应遵守所在地区法律法规、哔哩哔哩用户协议及相关内容版权要求。
 
 ## 致谢
 
 - [bilibili-API-collect](https://github.com/SocialSisterYi/bilibili-API-collect)
-- [flutter_meedu_videoplayer](https://github.com/zezo357/flutter_meedu_videoplayer)
 - [media-kit](https://github.com/media-kit/media-kit)
+- [flutter_meedu_videoplayer](https://github.com/zezo357/flutter_meedu_videoplayer)
 - [dio](https://pub.dev/packages/dio)
-- 等等
 
-<br/>
-<br/>
-<br/>
+感谢所有上游作者和贡献者。
 
-## Star History
+## 许可证
 
-<a href="https://www.star-history.com/#bggRGjQaUbCoE/PiliPlus&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=bggRGjQaUbCoE/PiliPlus&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=bggRGjQaUbCoE/PiliPlus&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=bggRGjQaUbCoE/PiliPlus&type=Date" />
- </picture>
-</a>
+本项目依据 [GNU General Public License v3.0](LICENSE) 发布。

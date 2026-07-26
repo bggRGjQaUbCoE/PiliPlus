@@ -28,16 +28,17 @@ abstract final class Update {
           extra: {'account': const NoAccount()},
         ),
       );
-      if (res.data is Map || res.data.isEmpty) {
+      final responseData = res.data;
+      if (responseData is! List ||
+          responseData.isEmpty ||
+          responseData.first is! Map) {
         if (!isAuto) {
-          SmartDialog.showToast('检查更新失败，GitHub接口未返回数据，请检查网络');
+          SmartDialog.showToast('当前更新源尚未发布可用版本');
         }
         return;
       }
-      final data = res.data[0];
-      final int latest =
-          DateTime.parse(data['created_at']).millisecondsSinceEpoch ~/ 1000;
-      if (BuildConfig.buildTime >= latest) {
+      final data = Map<String, dynamic>.from(responseData.first as Map);
+      if (!_hasUpdate(data)) {
         if (!isAuto) {
           SmartDialog.showToast('已是最新版本');
         }
@@ -112,7 +113,58 @@ abstract final class Update {
       }
     } catch (e) {
       if (kDebugMode) debugPrint('failed to check update: $e');
+      if (!isAuto) {
+        SmartDialog.showToast('检查更新失败，请检查网络或更新源');
+      }
     }
+  }
+
+  static bool _hasUpdate(Map<String, dynamic> release) {
+    final releaseVersionCode = _releaseVersionCode(release);
+    if (releaseVersionCode != null) {
+      return releaseVersionCode > BuildConfig.versionCode;
+    }
+
+    final versionComparison = _compareSemanticVersions(
+      '${release['tag_name'] ?? ''}',
+      BuildConfig.versionName,
+    );
+    if (versionComparison != null) {
+      return versionComparison > 0;
+    }
+
+    final releaseTime = DateTime.tryParse(
+      '${release['created_at'] ?? ''}',
+    )?.millisecondsSinceEpoch;
+    return releaseTime != null && releaseTime ~/ 1000 > BuildConfig.buildTime;
+  }
+
+  static int? _releaseVersionCode(Map<String, dynamic> release) {
+    final assets = release['assets'];
+    if (assets is! List) return null;
+    final pattern = RegExp(r'\+(\d+)(?:_|-|\.)');
+    for (final asset in assets) {
+      if (asset is! Map) continue;
+      final match = pattern.firstMatch('${asset['name'] ?? ''}');
+      final versionCode = int.tryParse(match?.group(1) ?? '');
+      if (versionCode != null) return versionCode;
+    }
+    return null;
+  }
+
+  static int? _compareSemanticVersions(String remote, String local) {
+    final pattern = RegExp(r'(\d+)\.(\d+)\.(\d+)');
+    final remoteMatch = pattern.firstMatch(remote);
+    final localMatch = pattern.firstMatch(local);
+    if (remoteMatch == null || localMatch == null) return null;
+
+    for (var index = 1; index <= 3; index++) {
+      final remotePart = int.parse(remoteMatch.group(index)!);
+      final localPart = int.parse(localMatch.group(index)!);
+      final comparison = remotePart.compareTo(localPart);
+      if (comparison != 0) return comparison;
+    }
+    return 0;
   }
 
   // 下载适用于当前系统的安装包

@@ -30,6 +30,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 import com.github.dart_lang.jni_flutter.JniFlutterPlugin;
+import com.shudo.plusplus.R;
 
 import java.util.ArrayList;
 import java.util.Objects;

@@ -1,16 +1,11 @@
-import 'dart:async';
-
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
+import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:flutter/material.dart';
-import 'package:media_kit/media_kit.dart';
 
 class PlayOrPauseButton extends StatefulWidget {
   final PlPlayerController plPlayerController;
 
-  const PlayOrPauseButton({
-    super.key,
-    required this.plPlayerController,
-  });
+  const PlayOrPauseButton({super.key, required this.plPlayerController});
 
   @override
   PlayOrPauseButtonState createState() => PlayOrPauseButtonState();
@@ -19,30 +14,31 @@ class PlayOrPauseButton extends StatefulWidget {
 class PlayOrPauseButtonState extends State<PlayOrPauseButton>
     with SingleTickerProviderStateMixin {
   late final AnimationController controller;
-  late final StreamSubscription<bool> subscription;
-  late Player player;
+  late final PlPlayerController player;
 
   @override
   void initState() {
     super.initState();
-    player = widget.plPlayerController.videoPlayerController!;
+    player = widget.plPlayerController;
     controller = AnimationController(
       vsync: this,
-      value: player.state.playing ? 1 : 0,
+      value: player.isPlaying ? 1 : 0,
       duration: const Duration(milliseconds: 200),
     );
-    subscription = player.stream.playing.listen((playing) {
-      if (playing) {
-        controller.forward();
-      } else {
-        controller.reverse();
-      }
-    });
+    player.addStatusLister(_onStatusChanged);
+  }
+
+  void _onStatusChanged(PlayerStatus status) {
+    if (status == PlayerStatus.playing) {
+      controller.forward();
+    } else {
+      controller.reverse();
+    }
   }
 
   @override
   void dispose() {
-    subscription.cancel();
+    player.removeStatusLister(_onStatusChanged);
     controller.dispose();
     super.dispose();
   }
@@ -57,7 +53,7 @@ class PlayOrPauseButtonState extends State<PlayOrPauseButton>
         onTap: widget.plPlayerController.onDoubleTapCenter,
         child: Center(
           child: AnimatedIcon(
-            semanticLabel: player.state.playing ? '暂停' : '播放',
+            semanticLabel: player.isPlaying ? '暂停' : '播放',
             progress: controller,
             icon: AnimatedIcons.play_pause,
             color: Colors.white,

@@ -315,7 +315,7 @@ class _PostPanelState extends State<PostPanel>
       SmartDialog.showToast('提交成功');
       list.clear();
       videoDetailController.handleSBData(response);
-      if (videoDetailController.blockListener == null) {
+      if (!videoDetailController.hasBlockListener) {
         videoDetailController.initSkip();
       }
     } else {
@@ -463,43 +463,51 @@ class _PostPanelState extends State<PostPanel>
             tooltip: '预览',
             icon: const Icon(Icons.preview_outlined),
             onPressed: () async {
-              final player = plPlayerController.videoPlayerController;
-              if (player != null) {
+              if (plPlayerController.playerReady) {
                 final start = (item.segment.first * 1000).round();
-                Future<void> seekTo() => player.seek(
-                  Duration(milliseconds: (item.segment.second * 1000).round()),
+                Future<void> seekToEnd() => plPlayerController.seekTo(
+                  Duration(
+                    milliseconds: (item.segment.second * 1000).round(),
+                  ),
+                  isSeek: false,
                 );
                 if (start <= 0) {
-                  seekTo();
-                  if (!player.state.playing) {
-                    await player.play();
+                  await seekToEnd();
+                  if (!plPlayerController.isPlaying) {
+                    await plPlayerController.play();
                   }
                   return;
                 }
                 final seek = max(0, start - 2000);
-                await player.seek(Duration(milliseconds: seek));
-                if (!player.state.playing) {
-                  await player.play();
-                }
+                await plPlayerController.seekTo(
+                  Duration(milliseconds: seek),
+                  isSeek: false,
+                );
                 if (start > seek) {
-                  final posSub = player.stream.position.listen(
-                    null,
-                    cancelOnError: true,
-                  );
-                  final timer = Timer(
-                    const Duration(seconds: 10),
-                    posSub.cancel,
-                  );
                   final duration = Duration(milliseconds: start);
-                  posSub.onData((pos) {
-                    if (pos >= duration) {
-                      seekTo();
-                      timer.cancel();
-                      posSub.cancel();
+                  late final ValueChanged<Duration> listener;
+                  late final Timer timer;
+                  void cancelListener() {
+                    timer.cancel();
+                    plPlayerController.removePositionListener(listener);
+                  }
+
+                  listener = (position) {
+                    if (position >= duration) {
+                      seekToEnd();
+                      cancelListener();
                     }
-                  });
+                  };
+                  timer = Timer(
+                    const Duration(seconds: 10),
+                    () => plPlayerController.removePositionListener(listener),
+                  );
+                  plPlayerController.addPositionListener(listener);
                 } else {
-                  seekTo();
+                  await seekToEnd();
+                }
+                if (!plPlayerController.isPlaying) {
+                  await plPlayerController.play();
                 }
               }
             },

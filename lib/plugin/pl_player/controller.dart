@@ -20,6 +20,7 @@ import 'package:PiliPlus/pages/danmaku/danmaku_model.dart';
 import 'package:PiliPlus/pages/setting/models/play_settings.dart'
     show kMaxVolume;
 import 'package:PiliPlus/pages/sponsor_block/block_mixin.dart';
+import 'package:PiliPlus/plugin/pl_player/exo_player/exo_player_controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/double_tap_type.dart';
@@ -71,6 +72,13 @@ typedef PlayCallback = Future<void>? Function();
 class PlPlayerController with BlockConfigMixin {
   Player? _videoPlayerController;
   VideoController? _videoController;
+  ExoPlayerController? _exoPlayerController;
+  StreamSubscription<ExoPlayerEvent>? _exoSubscription;
+
+  bool get useExoPlayer => Platform.isAndroid && Pref.useExoPlayer && !isLive;
+  bool get playerReady =>
+      useExoPlayer ? _exoPlayerController != null : _videoController != null;
+  ExoPlayerController? get exoPlayerController => _exoPlayerController;
 
   static PlPlayerController? _instance;
 
@@ -84,8 +92,24 @@ class PlPlayerController with BlockConfigMixin {
 
   final RxInt position = RxInt(0);
 
-  int get positionInMilliseconds =>
-      videoPlayerController?.state.position.inMilliseconds ?? 0;
+  int get positionInMilliseconds => useExoPlayer
+      ? _exoPlayerController?.state.position.inMilliseconds ?? 0
+      : videoPlayerController?.state.position.inMilliseconds ?? 0;
+
+  Duration get currentPosition => useExoPlayer
+      ? _exoPlayerController?.state.position ?? Duration.zero
+      : videoPlayerController?.state.position ?? Duration.zero;
+
+  Duration get currentDuration => useExoPlayer
+      ? _exoPlayerController?.state.duration ?? Duration.zero
+      : videoPlayerController?.state.duration ?? Duration.zero;
+
+  bool get isPlaying => useExoPlayer
+      ? _exoPlayerController?.state.playing ?? false
+      : videoPlayerController?.state.playing ?? false;
+
+  bool get playWhenReady =>
+      useExoPlayer ? _exoPlayerController?.playWhenReady ?? false : isPlaying;
 
   final RxInt buffered = RxInt(0);
 
@@ -278,12 +302,17 @@ class PlPlayerController with BlockConfigMixin {
   }
 
   void enterPip({bool autoEnter = false}) {
-    if (videoPlayerController != null) {
-      final state = videoPlayerController!.state;
+    if (playerReady) {
+      final stateWidth = useExoPlayer
+          ? _exoPlayerController?.state.width ?? 0
+          : videoPlayerController?.state.width ?? 0;
+      final stateHeight = useExoPlayer
+          ? _exoPlayerController?.state.height ?? 0
+          : videoPlayerController?.state.height ?? 0;
       PageUtils.enterPip(
         autoEnter: autoEnter,
-        width: state.width == 0 ? width : state.width,
-        height: state.height == 0 ? height : state.height,
+        width: stateWidth == 0 ? width : stateWidth,
+        height: stateHeight == 0 ? height : stateHeight,
         isLive: isLive,
         isPlaying: playerStatus.isPlaying,
       );
@@ -608,6 +637,10 @@ class PlPlayerController with BlockConfigMixin {
   }) async {
     try {
       _processing = true;
+      final previousCid = this.cid;
+      final hasExistingExoPlayer = _exoPlayerController != null;
+      final preserveExoSubtitle =
+          hasExistingExoPlayer && previousCid != null && previousCid == cid;
       this.isLive = isLive;
       _videoType = videoType ?? VideoType.ugc;
       this.width = width;
@@ -631,8 +664,7 @@ class PlPlayerController with BlockConfigMixin {
         _clearPreview();
       }
       cancelLongPressTimer();
-      if (_videoPlayerController != null &&
-          _videoPlayerController!.state.playing) {
+      if (isPlaying) {
         await pause(notify: false);
       }
 
@@ -640,17 +672,25 @@ class PlPlayerController with BlockConfigMixin {
         return;
       }
       // 配置Player 音轨、字幕等等
-      await _createVideoController(dataSource, seekTo, volume);
+      await _createVideoController(
+        dataSource,
+        seekTo,
+        volume,
+        exoPlayWhenReady: hasExistingExoPlayer && autoplay,
+        preserveExoSubtitle: preserveExoSubtitle,
+      );
 
       if (_playerCount == 0) {
         _removeListeners();
         _videoPlayerController?.dispose();
+        _exoPlayerController?.dispose();
         _videoPlayerController = null;
         _videoController = null;
+        _exoPlayerController = null;
         return;
       }
 
-      updateDuration(duration ?? _videoPlayerController!.state.duration);
+      updateDuration(duration ?? currentDuration);
       position.value = buffered.value = seekTo?.inSeconds ?? 0;
 
       dataStatus.value = .loaded;
@@ -776,11 +816,23 @@ class PlPlayerController with BlockConfigMixin {
   Future<void> _createVideoController(
     DataSource dataSource,
     Duration? seekTo,
-    Volume? volume,
-  ) async {
+    Volume? volume, {
+    bool exoPlayWhenReady = false,
+    bool preserveExoSubtitle = false,
+  }) async {
     isBuffering.value = false;
     _heartDuration = 0;
     danmakuController?.clear();
+
+    if (useExoPlayer) {
+      await _createExoPlayerController(
+        dataSource,
+        seekTo,
+        playWhenReady: exoPlayWhenReady,
+        preserveSubtitle: preserveExoSubtitle,
+      );
+      return;
+    }
 
     var player = _videoPlayerController;
 
@@ -832,14 +884,10 @@ class PlPlayerController with BlockConfigMixin {
           audioNormalization = _audioNormalizationParam.replaceFirstMapped(
             loudnormRegExp,
             (i) =>
-                'loudnorm=${volume.format(
-                  Map.fromEntries(
-                    i.group(1)!.split(':').map((item) {
-                      final parts = item.split('=');
-                      return MapEntry(parts[0].toLowerCase(), num.parse(parts[1]));
-                    }),
-                  ),
-                )}',
+                'loudnorm=${volume.format(Map.fromEntries(i.group(1)!.split(':').map((item) {
+                  final parts = item.split('=');
+                  return MapEntry(parts[0].toLowerCase(), num.parse(parts[1]));
+                })))}',
           );
         } else {
           audioNormalization = _audioNormalizationParam.replaceFirst(
@@ -854,16 +902,57 @@ class PlPlayerController with BlockConfigMixin {
     }
 
     await player.open(
-      Media(
-        video,
-        start: seekTo,
-        extras: extras.isEmpty ? null : extras,
-      ),
+      Media(video, start: seekTo, extras: extras.isEmpty ? null : extras),
       play: false,
     );
   }
 
+  Future<void> _createExoPlayerController(
+    DataSource dataSource,
+    Duration? seekTo, {
+    required bool playWhenReady,
+    required bool preserveSubtitle,
+  }) async {
+    final player = _exoPlayerController ??= await ExoPlayerController.create();
+    _startExoListeners(player);
+    await _openExoPlayer(
+      dataSource,
+      seekTo ?? Duration.zero,
+      playWhenReady: playWhenReady,
+      preserveSubtitle: preserveSubtitle,
+    );
+  }
+
+  Future<void> _openExoPlayer(
+    DataSource dataSource,
+    Duration position, {
+    required bool playWhenReady,
+    bool preserveSubtitle = true,
+  }) {
+    final audio = dataSource.audioSource;
+    return _exoPlayerController!.open(
+      videoUrl: onlyPlayAudio.value && audio?.isNotEmpty == true
+          ? audio!
+          : dataSource.videoSource,
+      audioUrl: onlyPlayAudio.value ? null : audio,
+      headers: const {
+        'User-Agent': BrowserUa.pc,
+        'Referer': HttpString.baseUrl,
+      },
+      position: position,
+      playWhenReady: playWhenReady,
+      preserveSubtitle: preserveSubtitle,
+    );
+  }
+
   Future<void>? refreshPlayer() {
+    if (useExoPlayer && _exoPlayerController != null) {
+      return _openExoPlayer(
+        dataSource,
+        currentPosition,
+        playWhenReady: playWhenReady,
+      );
+    }
     if (dataSource is FileSource) {
       return null;
     }
@@ -883,7 +972,10 @@ class PlPlayerController with BlockConfigMixin {
     if (isLive) {
       await setPlaybackSpeed(1.0);
     } else {
-      if (_videoPlayerController?.state.rate != _playbackSpeed.value) {
+      if ((useExoPlayer
+              ? _exoPlayerController?.state.speed
+              : _videoPlayerController?.state.rate) !=
+          _playbackSpeed.value) {
         await setPlaybackSpeed(_playbackSpeed.value);
       }
     }
@@ -907,6 +999,72 @@ class PlPlayerController with BlockConfigMixin {
   List<StreamSubscription>? _subscriptions;
   final Set<ValueChanged<Duration>> _positionListeners = {};
   final Set<ValueChanged<PlayerStatus>> _statusListeners = {};
+
+  void _startExoListeners(ExoPlayerController player) {
+    if (_exoSubscription != null) return;
+    bool? lastPlaying;
+    bool? lastBuffering;
+    bool lastCompleted = false;
+    _exoSubscription = player.events.listen((event) {
+      if (event.error case final error?) {
+        dataStatus.value = .error;
+        Utils.reportError('ExoPlayer: $error');
+        return;
+      }
+
+      final posInSeconds = event.position.inSeconds;
+      if (posInSeconds != position.value) {
+        if (!isSeeking.value) {
+          position.value = posInSeconds;
+        }
+        videoPlayerServiceHandler?.onPositionChange(event.position);
+        makeHeartBeat(posInSeconds);
+      }
+      for (final listener in _positionListeners) {
+        listener(event.position);
+      }
+
+      if (event.duration > Duration.zero) {
+        updateDuration(event.duration);
+      }
+      buffered.value = event.buffered.inSeconds;
+
+      if (lastBuffering != event.buffering) {
+        lastBuffering = event.buffering;
+        isBuffering.value = event.buffering;
+        videoPlayerServiceHandler?.onStatusChange(
+          playerStatus.value,
+          event.buffering,
+          isLive,
+        );
+      }
+
+      if (event.completed && !lastCompleted) {
+        lastCompleted = true;
+        playerStatus.value = .completed;
+        for (final listener in _statusListeners) {
+          listener(.completed);
+        }
+        makeHeartBeat(-1, type: .completed);
+      } else if (!event.completed && lastPlaying != event.playing) {
+        lastCompleted = false;
+        lastPlaying = event.playing;
+        WakelockPlus.toggle(enable: event.playing);
+        playerStatus.value = event.playing ? .playing : .paused;
+        videoPlayerServiceHandler?.onStatusChange(
+          playerStatus.value,
+          event.buffering,
+          isLive,
+        );
+        for (final listener in _statusListeners) {
+          listener(event.playing ? .playing : .paused);
+        }
+        if (event.position > Duration.zero) {
+          makeHeartBeat(event.position.inSeconds, type: .status);
+        }
+      }
+    });
+  }
 
   /// 播放事件监听
   void _startListeners(NativePlayer player) {
@@ -1057,6 +1215,8 @@ class PlPlayerController with BlockConfigMixin {
     _subscriptions?.forEach((e) => e.cancel());
     _subscriptions?.clear();
     _subscriptions = null;
+    _exoSubscription?.cancel();
+    _exoSubscription = null;
   }
 
   void _cancelSubForSeek() {
@@ -1079,18 +1239,24 @@ class PlPlayerController with BlockConfigMixin {
     Future<void> seek() async {
       if (isSeek) {
         /// 拖动进度条调节时，不等待第一帧，防止抖动
-        await _videoPlayerController?.stream.buffer.first;
+        if (!useExoPlayer) {
+          await _videoPlayerController?.stream.buffer.first;
+        }
       }
       danmakuController?.clear();
       try {
-        await _videoPlayerController?.seek(position);
+        if (useExoPlayer) {
+          await _exoPlayerController?.seek(position);
+        } else {
+          await _videoPlayerController?.seek(position);
+        }
       } catch (e) {
         if (kDebugMode) debugPrint('seek failed: $e');
       }
     }
 
     if (duration.value != 0) {
-      seek();
+      await seek();
     } else {
       // if (kDebugMode) debugPrint('seek duration else');
       _subForSeek?.cancel();
@@ -1105,11 +1271,18 @@ class PlPlayerController with BlockConfigMixin {
   Future<void> setPlaybackSpeed(double speed) async {
     lastPlaybackSpeed = playbackSpeed;
 
-    if (speed == _videoPlayerController?.state.rate) {
+    if (speed ==
+        (useExoPlayer
+            ? _exoPlayerController?.state.speed
+            : _videoPlayerController?.state.rate)) {
       return;
     }
 
-    await _videoPlayerController?.setRate(speed);
+    if (useExoPlayer) {
+      await _exoPlayerController?.setPlaybackSpeed(speed);
+    } else {
+      await _videoPlayerController?.setRate(speed);
+    }
     _playbackSpeed.value = speed;
     if (danmakuController != null) {
       try {
@@ -1129,7 +1302,11 @@ class PlPlayerController with BlockConfigMixin {
   // 还原默认速度
   double playSpeedDefault = Pref.playSpeedDefault;
   Future<void> setDefaultSpeed() async {
-    await _videoPlayerController?.setRate(playSpeedDefault);
+    if (useExoPlayer) {
+      await _exoPlayerController?.setPlaybackSpeed(playSpeedDefault);
+    } else {
+      await _videoPlayerController?.setRate(playSpeedDefault);
+    }
     _playbackSpeed.value = playSpeedDefault;
   }
 
@@ -1144,7 +1321,11 @@ class PlPlayerController with BlockConfigMixin {
       await seekTo(Duration.zero, isSeek: false);
     }
 
-    await _videoPlayerController?.play();
+    if (useExoPlayer) {
+      await _exoPlayerController?.play();
+    } else {
+      await _videoPlayerController?.play();
+    }
 
     audioSessionHandler?.setActive(true);
 
@@ -1154,7 +1335,11 @@ class PlPlayerController with BlockConfigMixin {
 
   /// 暂停播放
   Future<void> pause({bool notify = true, bool isInterrupt = false}) async {
-    await _videoPlayerController?.pause();
+    if (useExoPlayer) {
+      await _exoPlayerController?.pause();
+    } else {
+      await _videoPlayerController?.pause();
+    }
     playerStatus.value = PlayerStatus.paused;
 
     // 主动暂停时让出音频焦点
@@ -1193,6 +1378,18 @@ class PlPlayerController with BlockConfigMixin {
   bool volumeInterceptEventStream = false;
 
   final double maxVolume = PlatformUtils.isDesktop ? Pref.maxVolume : 1.0;
+
+  Future<void> setMuted(bool muted) async {
+    if (useExoPlayer) {
+      await _exoPlayerController?.setVolume(muted ? 0 : 1);
+    } else {
+      await _videoPlayerController?.setVolume(
+        muted ? 0 : volume.value * 100,
+      );
+    }
+    isMuted = muted;
+  }
+
   Future<void> setVolume(double volume, {bool showIndicator = true}) async {
     if (this.volume.value != volume) {
       this.volume.value = volume;
@@ -1286,16 +1483,22 @@ class PlPlayerController with BlockConfigMixin {
   }
 
   bool get isCompleted =>
-      videoPlayerController!.state.completed ||
+      (useExoPlayer
+          ? _exoPlayerController?.state.completed ?? false
+          : videoPlayerController?.state.completed ?? false) ||
       durationInMilliseconds - positionInMilliseconds <= 50;
 
   // 双击播放、暂停
   Future<void> onDoubleTapCenter() async {
     if (!isLive && isCompleted) {
-      await videoPlayerController!.seek(Duration.zero);
-      videoPlayerController!.play();
+      await seekTo(Duration.zero, isSeek: false);
+      await play();
     } else {
-      videoPlayerController!.playOrPause();
+      if (isPlaying) {
+        await pause();
+      } else {
+        await play();
+      }
     }
   }
 
@@ -1311,16 +1514,16 @@ class PlPlayerController with BlockConfigMixin {
   }
 
   void onForward(Duration duration) {
-    onForwardBackward(videoPlayerController!.state.position + duration);
+    onForwardBackward(currentPosition + duration);
   }
 
   void onBackward(Duration duration) {
-    onForwardBackward(videoPlayerController!.state.position - duration);
+    onForwardBackward(currentPosition - duration);
   }
 
   void onForwardBackward(Duration duration) {
     seekTo(
-      duration.clamp(Duration.zero, videoPlayerController!.state.duration),
+      duration.clamp(Duration.zero, currentDuration),
       isSeek: false,
     ).whenComplete(play);
   }
@@ -1600,8 +1803,10 @@ class PlPlayerController with BlockConfigMixin {
       debugPrint('dispose player');
     }
     _videoPlayerController?.dispose();
+    _exoPlayerController?.dispose();
     _videoPlayerController = null;
     _videoController = null;
+    _exoPlayerController = null;
     _instance = null;
     videoPlayerServiceHandler?.clear();
   }
@@ -1625,8 +1830,19 @@ class PlPlayerController with BlockConfigMixin {
   }
 
   void setOnlyPlayAudio() {
+    final shouldResume = playWhenReady;
     onlyPlayAudio.toggle();
-    videoPlayerController?.setVideoTrack(onlyPlayAudio.value ? .no() : .auto());
+    if (useExoPlayer) {
+      _openExoPlayer(
+        dataSource,
+        currentPosition,
+        playWhenReady: shouldResume,
+      );
+    } else {
+      videoPlayerController?.setVideoTrack(
+        onlyPlayAudio.value ? .no() : .auto(),
+      );
+    }
   }
 
   late final Map<String, ui.Image?> previewCache = {};
@@ -1665,6 +1881,10 @@ class PlPlayerController with BlockConfigMixin {
   }
 
   Future<void> takeScreenshot() async {
+    if (useExoPlayer) {
+      SmartDialog.showToast('ExoPlayer 实验模式暂不支持截图');
+      return;
+    }
     SmartDialog.showToast('截图中');
     final time = DurationUtils.formatDuration(
       positionInMilliseconds / 1000,

@@ -38,8 +38,13 @@ mixin BlockConfigMixin {
 mixin BlockMixin on GetxController {
   int? _lastBlockPos;
   BlockConfigMixin get blockConfig;
-  StreamSubscription<Duration>? _blockListener;
-  StreamSubscription<Duration>? get blockListener => _blockListener;
+  ValueChanged<Duration>? _blockListener;
+  ValueChanged<bool>? _pendingPlayingListener;
+  bool get hasBlockListener => _blockListener != null;
+  final Map<ValueChanged<Duration>, StreamSubscription<Duration>>
+  _defaultBlockPositionSubscriptions = {};
+  final Map<ValueChanged<bool>, StreamSubscription<bool>>
+  _defaultBlockPlayingSubscriptions = {};
   late final List<SegmentModel> _segmentList = <SegmentModel>[];
   late final RxList<Segment> segmentProgressList = <Segment>[].obs;
 
@@ -49,6 +54,35 @@ mixin BlockMixin on GetxController {
 
   RxString? get videoLabel => null;
   Player? get player;
+  bool get blockPlayerReady => player != null;
+  bool get blockPlayerPlaying => player?.state.playing ?? false;
+
+  void addBlockPositionListener(ValueChanged<Duration> listener) {
+    final player = this.player;
+    if (player != null) {
+      _defaultBlockPositionSubscriptions.remove(listener)?.cancel();
+      _defaultBlockPositionSubscriptions[listener] = player.stream.position
+          .listen(listener);
+    }
+  }
+
+  void removeBlockPositionListener(ValueChanged<Duration> listener) {
+    _defaultBlockPositionSubscriptions.remove(listener)?.cancel();
+  }
+
+  void addBlockPlayingListener(ValueChanged<bool> listener) {
+    final player = this.player;
+    if (player != null) {
+      _defaultBlockPlayingSubscriptions.remove(listener)?.cancel();
+      _defaultBlockPlayingSubscriptions[listener] = player.stream.playing
+          .listen(listener);
+    }
+  }
+
+  void removeBlockPlayingListener(ValueChanged<bool> listener) {
+    _defaultBlockPlayingSubscriptions.remove(listener)?.cancel();
+  }
+
   bool get autoPlay;
   int? get timeLength;
   bool get preInitPlayer;
@@ -78,9 +112,9 @@ mixin BlockMixin on GetxController {
 
   void initSkip() {
     if (isClosed) return;
-    if (_segmentList.isNotEmpty) {
-      _blockListener?.cancel();
-      _blockListener = player?.stream.position.listen((position) {
+    if (_segmentList.isNotEmpty && blockPlayerReady) {
+      _removeBlockPositionListener();
+      void listener(Duration position) {
         int currentPos = position.inSeconds;
         if (currentPos != _lastBlockPos) {
           _lastBlockPos = currentPos;
@@ -111,8 +145,25 @@ mixin BlockMixin on GetxController {
             }
           }
         }
-      });
+      }
+
+      _blockListener = listener;
+      addBlockPositionListener(listener);
     }
+  }
+
+  void _skipWhenPlaying(SegmentModel segment) {
+    _removePendingPlayingListener();
+    late final ValueChanged<bool> listener;
+    listener = (playing) {
+      if (playing) {
+        removeBlockPlayingListener(listener);
+        _pendingPlayingListener = null;
+        onSkip(segment);
+      }
+    };
+    _pendingPlayingListener = listener;
+    addBlockPlayingListener(listener);
   }
 
   Future<void> handleSBData(List<SegmentItemModel> list) async {
@@ -139,28 +190,22 @@ mixin BlockMixin on GetxController {
                         '${videoLabel!.value.isNotEmpty ? '/' : ''}${segmentModel.segmentType.title}';
                   }
 
-                  if (_blockListener == null && autoPlay && player != null) {
+                  if (!hasBlockListener && autoPlay && blockPlayerReady) {
                     final currPos = currPosInMilliseconds;
 
                     if (segmentModel.segment.contains(currPos)) {
-                      _lastBlockPos = currPos;
+                      _lastBlockPos = currPos ~/ 1000;
 
                       switch (segmentModel.skipType) {
                         case SkipType.alwaysSkip:
                         case SkipType.skipOnce:
                           segmentModel.hasSkipped = true;
-                          if (player!.state.playing) {
+                          if (blockPlayerPlaying) {
                             future = onSkip(
                               segmentModel,
                             );
                           } else {
-                            player!.stream.playing.firstWhere((e) {
-                              if (e) {
-                                future = onSkip(segmentModel);
-                                return true;
-                              }
-                              return false;
-                            }, orElse: () => false);
+                            _skipWhenPlaying(segmentModel);
                           }
                           break;
                         case SkipType.skipManually:
@@ -190,7 +235,7 @@ mixin BlockMixin on GetxController {
           }),
         );
 
-        if (_blockListener == null && (autoPlay || preInitPlayer)) {
+        if (!hasBlockListener && (autoPlay || preInitPlayer)) {
           await future;
           initSkip();
         }
@@ -464,9 +509,21 @@ mixin BlockMixin on GetxController {
   }
 
   void cancelBlockListener() {
-    if (_blockListener != null) {
-      _blockListener!.cancel();
+    _removeBlockPositionListener();
+    _removePendingPlayingListener();
+  }
+
+  void _removeBlockPositionListener() {
+    if (_blockListener case final listener?) {
+      removeBlockPositionListener(listener);
       _blockListener = null;
+    }
+  }
+
+  void _removePendingPlayingListener() {
+    if (_pendingPlayingListener case final listener?) {
+      removeBlockPlayingListener(listener);
+      _pendingPlayingListener = null;
     }
   }
 

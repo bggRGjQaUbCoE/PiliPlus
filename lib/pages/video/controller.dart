@@ -529,6 +529,44 @@ class VideoDetailController extends GetxController
   @override
   Player? get player => plPlayerController.videoPlayerController;
   @override
+  bool get blockPlayerReady => plPlayerController.playerReady;
+  @override
+  bool get blockPlayerPlaying => plPlayerController.isPlaying;
+
+  @override
+  void addBlockPositionListener(ValueChanged<Duration> listener) {
+    plPlayerController.addPositionListener(listener);
+  }
+
+  @override
+  void removeBlockPositionListener(ValueChanged<Duration> listener) {
+    plPlayerController.removePositionListener(listener);
+  }
+
+  final Map<ValueChanged<bool>, ValueChanged<PlayerStatus>>
+  _blockPlayingListeners = {};
+
+  @override
+  void addBlockPlayingListener(ValueChanged<bool> listener) {
+    void statusListener(PlayerStatus status) {
+      listener(status.isPlaying);
+    }
+
+    if (_blockPlayingListeners.remove(listener) case final previous?) {
+      plPlayerController.removeStatusLister(previous);
+    }
+    _blockPlayingListeners[listener] = statusListener;
+    plPlayerController.addStatusLister(statusListener);
+  }
+
+  @override
+  void removeBlockPlayingListener(ValueChanged<bool> listener) {
+    if (_blockPlayingListeners.remove(listener) case final statusListener?) {
+      plPlayerController.removeStatusLister(statusListener);
+    }
+  }
+
+  @override
   bool get isFullScreen => plPlayerController.isFullScreen.value;
   @override
   bool get autoPlay => _autoPlay.value;
@@ -678,8 +716,9 @@ class VideoDetailController extends GetxController
   void updatePlayer() {
     final currentVideoQa = this.currentVideoQa.value;
     if (currentVideoQa == null) return;
-    _autoPlay.value = true;
-    playedTime = plPlayerController.videoPlayerController?.state.position;
+    final playWhenReady = plPlayerController.playWhenReady;
+    _autoPlay.value = playWhenReady;
+    playedTime = plPlayerController.currentPosition;
     plPlayerController
       ..isBuffering.value = false
       ..buffered.value = 0;
@@ -696,16 +735,20 @@ class VideoDetailController extends GetxController
       audioUrl = VideoUtils.getCdnUrl(firstAudio.playUrls, isAudio: true);
     }
 
-    playerInit();
+    playerInit(autoplay: playWhenReady);
   }
 
-  Future<void>? _initPlayerIfNeeded(bool autoFullScreenFlag) {
+  Future<void>? _initPlayerIfNeeded(
+    bool autoFullScreenFlag, {
+    bool? autoplay,
+  }) {
     if (_autoPlay.value ||
         (plPlayerController.preInitPlayer && !plPlayerController.processing) &&
             (isFileSource
                 ? true
                 : videoPlayerKey.currentState?.mounted == true)) {
       return playerInit(
+        autoplay: autoplay,
         autoFullScreenFlag: autoFullScreenFlag && _autoPlay.value,
       );
     }
@@ -795,8 +838,14 @@ class VideoDetailController extends GetxController
     bool fromReset = false,
     bool autoFullScreenFlag = false,
   }) async {
+    bool? resetPlayWhenReady() => fromReset && plPlayerController.playerReady
+        ? plPlayerController.playWhenReady
+        : null;
     if (isFileSource) {
-      return _initPlayerIfNeeded(autoFullScreenFlag);
+      return _initPlayerIfNeeded(
+        autoFullScreenFlag,
+        autoplay: resetPlayWhenReady(),
+      );
     }
     if (isQuerying) {
       return;
@@ -885,7 +934,10 @@ class VideoDetailController extends GetxController
           _setVideoHeight();
           currentDecodeFormats = VideoDecodeFormatType.AVC;
           currentVideoQa.value = videoQuality;
-          await _initPlayerIfNeeded(autoFullScreenFlag);
+          await _initPlayerIfNeeded(
+            autoFullScreenFlag,
+            autoplay: resetPlayWhenReady(),
+          );
           isQuerying = false;
           return;
         } else {
@@ -968,7 +1020,10 @@ class VideoDetailController extends GetxController
       } else {
         audioUrl = '';
       }
-      await _initPlayerIfNeeded(autoFullScreenFlag);
+      await _initPlayerIfNeeded(
+        autoFullScreenFlag,
+        autoplay: resetPlayWhenReady(),
+      );
     } else {
       _autoPlay.value = false;
       videoState.value = false;
@@ -1027,7 +1082,11 @@ class VideoDetailController extends GetxController
   // 设定字幕轨道
   Future<void> setSubtitle(int index) async {
     if (index <= 0) {
-      await plPlayerController.videoPlayerController?.setSubtitleTrack(.no());
+      if (plPlayerController.useExoPlayer) {
+        await plPlayerController.exoPlayerController?.setSubtitle();
+      } else {
+        await plPlayerController.videoPlayerController?.setSubtitleTrack(.no());
+      }
       vttSubtitlesIndex.value = index;
       return;
     }
@@ -1039,9 +1098,18 @@ class VideoDetailController extends GetxController
       if (subtitle.isData) {
         subUri = 'memory://$subUri';
       }
-      await plPlayerController.videoPlayerController?.setSubtitleTrack(
-        SubtitleTrack(subUri, sub.lanDoc, sub.lan, uri: true),
-      );
+      if (plPlayerController.useExoPlayer) {
+        await plPlayerController.exoPlayerController?.setSubtitle(
+          data: subtitle.isData ? subtitle.id : null,
+          uri: subtitle.isData ? null : subtitle.id,
+          language: sub.lan,
+          label: sub.lanDoc,
+        );
+      } else {
+        await plPlayerController.videoPlayerController?.setSubtitleTrack(
+          SubtitleTrack(subUri, sub.lanDoc, sub.lan, uri: true),
+        );
+      }
       vttSubtitlesIndex.value = index;
     }
 

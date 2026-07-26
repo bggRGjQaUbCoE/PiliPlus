@@ -23,6 +23,14 @@ import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 List<SettingsModel> get videoSettings => [
+  if (Platform.isAndroid)
+    const SwitchModel(
+      title: '使用 ExoPlayer（实验性）',
+      subtitle: '普通点播使用 Android Media3；直播仍使用 mpv。关闭后完全恢复 mpv。切换后请重新打开视频。',
+      leading: Icon(Icons.play_circle_outline),
+      setKey: SettingBoxKey.useExoPlayer,
+      defaultVal: true,
+    ),
   const SwitchModel(
     title: '开启硬解',
     subtitle: '以较低功耗播放视频，若异常卡死请关闭',
@@ -259,10 +267,7 @@ Future<void> _showVideoCellularQaDialog(
     ),
   );
   if (res != null) {
-    await GStorage.setting.put(
-      SettingBoxKey.defaultVideoQaCellular,
-      res,
-    );
+    await GStorage.setting.put(SettingBoxKey.defaultVideoQaCellular, res);
     setState();
   }
 }
@@ -298,10 +303,7 @@ Future<void> _showAudioCellularQaDialog(
     ),
   );
   if (res != null) {
-    await GStorage.setting.put(
-      SettingBoxKey.defaultAudioQaCellular,
-      res,
-    );
+    await GStorage.setting.put(SettingBoxKey.defaultAudioQaCellular, res);
     setState();
   }
 }
@@ -372,16 +374,11 @@ Future<void> _showAudioOutputDialog(
     builder: (context) => OrderedMultiSelectDialog<String>(
       title: '音频输出设备',
       initValues: Pref.audioOutput.split(','),
-      values: {
-        for (final e in AudioOutput.values) e.name: e.label,
-      },
+      values: {for (final e in AudioOutput.values) e.name: e.label},
     ),
   );
   if (res != null && res.isNotEmpty) {
-    await GStorage.setting.put(
-      SettingBoxKey.audioOutput,
-      res.join(','),
-    );
+    await GStorage.setting.put(SettingBoxKey.audioOutput, res.join(','));
     setState();
   }
 }
@@ -429,10 +426,7 @@ Future<void> _showHwDecDialog(
     ),
   );
   if (res != null && res.isNotEmpty) {
-    await GStorage.setting.put(
-      SettingBoxKey.hardwareDecoding,
-      res.join(','),
-    );
+    await GStorage.setting.put(SettingBoxKey.hardwareDecoding, res.join(','));
     setState();
   }
 }

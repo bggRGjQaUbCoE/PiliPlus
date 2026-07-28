@@ -769,6 +769,9 @@ abstract final class Pref {
   static bool get autoPiP =>
       _setting.get(SettingBoxKey.autoPiP, defaultValue: false);
 
+  static bool get inAppMiniPlayer =>
+      _setting.get(SettingBoxKey.inAppMiniPlayer, defaultValue: false);
+
   static bool get enableSponsorBlock =>
       _setting.get(SettingBoxKey.enableSponsorBlock, defaultValue: false);
 

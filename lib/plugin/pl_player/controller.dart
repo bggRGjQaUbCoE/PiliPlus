@@ -104,6 +104,19 @@ class PlPlayerController with BlockConfigMixin {
       ? _exoPlayerController?.state.duration ?? Duration.zero
       : videoPlayerController?.state.duration ?? Duration.zero;
 
+  Size get naturalVideoSize {
+    final stateWidth = useExoPlayer
+        ? _exoPlayerController?.state.width ?? 0
+        : videoPlayerController?.state.width ?? 0;
+    final stateHeight = useExoPlayer
+        ? _exoPlayerController?.state.height ?? 0
+        : videoPlayerController?.state.height ?? 0;
+    return Size(
+      (stateWidth > 0 ? stateWidth : width ?? 16).toDouble(),
+      (stateHeight > 0 ? stateHeight : height ?? 9).toDouble(),
+    );
+  }
+
   bool get isPlaying => useExoPlayer
       ? _exoPlayerController?.state.playing ?? false
       : videoPlayerController?.state.playing ?? false;
@@ -193,6 +206,7 @@ class PlPlayerController with BlockConfigMixin {
   VideoController? get videoController => _videoController;
 
   bool isMuted = false;
+  double _audioFocusGain = 1;
 
   /// 听视频
   late final RxBool onlyPlayAudio = false.obs;
@@ -288,6 +302,7 @@ class PlPlayerController with BlockConfigMixin {
 
   late bool _isAutoEnterPip = false;
   bool get isAutoEnterPip => _isAutoEnterPip;
+  bool _isInAppMiniPlayer = false;
 
   static bool get _isCurrVideoPage {
     final routing = Get.routing;
@@ -322,6 +337,20 @@ class PlPlayerController with BlockConfigMixin {
   void _disableAutoEnterPip() {
     if (_isAutoEnterPip) {
       PiliAndroidHelper.disableAutoEnterPip();
+    }
+  }
+
+  void _syncAutoEnterPip(bool playing) {
+    if (!playing) {
+      _disableAutoEnterPip();
+      return;
+    }
+    if (_isAutoEnterPip) {
+      if (_isCurrVideoPage || _isInAppMiniPlayer) {
+        enterPip(autoEnter: true);
+      } else {
+        _disableAutoEnterPip();
+      }
     }
   }
 
@@ -502,6 +531,10 @@ class PlPlayerController with BlockConfigMixin {
     return _instance?.setVolume(volumeNew, showIndicator: showIndicator);
   }
 
+  static Future<void>? setAudioFocusGainIfExists(double gain) {
+    return _instance?._setAudioFocusGain(gain);
+  }
+
   Box video = GStorage.video;
 
   bool visible = true;
@@ -584,7 +617,7 @@ class PlPlayerController with BlockConfigMixin {
   }
 
   void _onUserLeaveHint() {
-    if (playerStatus.isPlaying && _isCurrVideoPage) {
+    if (playerStatus.isPlaying && (_isCurrVideoPage || _isInAppMiniPlayer)) {
       enterPip();
     }
   }
@@ -595,6 +628,39 @@ class PlPlayerController with BlockConfigMixin {
     return (_instance ??= PlPlayerController._())
       ..isLive = isLive
       .._playerCount += 1;
+  }
+
+  /// Keeps the current player alive while its video page is being removed.
+  ///
+  /// The in-app mini player owns the retained reference until it is closed or
+  /// another video page takes over playback.
+  bool retainForInAppMiniPlayer() {
+    if (_instance != this || _playerCount == 0 || !playerReady) {
+      return false;
+    }
+    _playerCount += 1;
+    _isInAppMiniPlayer = true;
+    _syncAutoEnterPip(playerStatus.isPlaying);
+    setPlayCallBack(null);
+    controls = false;
+    if (Platform.isAndroid && !setSystemBrightness) {
+      ScreenBrightnessPlatform.instance.resetApplicationScreenBrightness();
+    }
+    return true;
+  }
+
+  /// Releases the reference retained by the in-app mini player.
+  ///
+  /// Restoring to a video route must also restore Android's auto-enter PiP
+  /// parameters because playback continues without emitting a new play event.
+  void releaseFromInAppMiniPlayer({required bool restoredToVideoPage}) {
+    _isInAppMiniPlayer = false;
+    if (restoredToVideoPage) {
+      _syncAutoEnterPip(playerStatus.isPlaying);
+    } else {
+      _disableAutoEnterPip();
+    }
+    dispose();
   }
 
   bool _processing = false;
@@ -665,7 +731,7 @@ class PlPlayerController with BlockConfigMixin {
       }
       cancelLongPressTimer();
       if (isPlaying) {
-        await pause(notify: false);
+        await pause(notify: false, isInterrupt: true);
       }
 
       if (_playerCount == 0) {
@@ -679,6 +745,7 @@ class PlPlayerController with BlockConfigMixin {
         exoPlayWhenReady: hasExistingExoPlayer && autoplay,
         preserveExoSubtitle: preserveExoSubtitle,
       );
+      await _applyPlayerOutputVolume();
 
       if (_playerCount == 0) {
         _removeListeners();
@@ -1007,6 +1074,12 @@ class PlPlayerController with BlockConfigMixin {
     bool lastCompleted = false;
     _exoSubscription = player.events.listen((event) {
       if (event.error case final error?) {
+        _syncAutoEnterPip(false);
+        WakelockPlus.disable();
+        audioSessionHandler?.setActive(false);
+        isBuffering.value = false;
+        playerStatus.value = .paused;
+        videoPlayerServiceHandler?.onStatusChange(.paused, false, isLive);
         dataStatus.value = .error;
         Utils.reportError('ExoPlayer: $error');
         return;
@@ -1041,7 +1114,12 @@ class PlPlayerController with BlockConfigMixin {
 
       if (event.completed && !lastCompleted) {
         lastCompleted = true;
+        _syncAutoEnterPip(false);
+        WakelockPlus.disable();
+        audioSessionHandler?.setActive(false);
+        isBuffering.value = false;
         playerStatus.value = .completed;
+        videoPlayerServiceHandler?.onStatusChange(.completed, false, isLive);
         for (final listener in _statusListeners) {
           listener(.completed);
         }
@@ -1050,6 +1128,7 @@ class PlPlayerController with BlockConfigMixin {
         lastCompleted = false;
         lastPlaying = event.playing;
         WakelockPlus.toggle(enable: event.playing);
+        _syncAutoEnterPip(event.playing);
         playerStatus.value = event.playing ? .playing : .paused;
         videoPlayerServiceHandler?.onStatusChange(
           playerStatus.value,
@@ -1074,19 +1153,8 @@ class PlPlayerController with BlockConfigMixin {
       /// playing
       stream.playing.listen((bool playing) {
         WakelockPlus.toggle(enable: playing);
-        if (playing) {
-          if (_isAutoEnterPip) {
-            if (_isCurrVideoPage) {
-              enterPip(autoEnter: true);
-            } else {
-              _disableAutoEnterPip();
-            }
-          }
-          playerStatus.value = .playing;
-        } else {
-          _disableAutoEnterPip();
-          playerStatus.value = .paused;
-        }
+        _syncAutoEnterPip(playing);
+        playerStatus.value = playing ? .playing : .paused;
 
         videoPlayerServiceHandler?.onStatusChange(
           playerStatus.value,
@@ -1107,7 +1175,12 @@ class PlPlayerController with BlockConfigMixin {
       ///completed
       stream.completed.listen((bool completed) {
         if (completed) {
+          _syncAutoEnterPip(false);
+          WakelockPlus.disable();
+          audioSessionHandler?.setActive(false);
+          isBuffering.value = false;
           playerStatus.value = .completed;
+          videoPlayerServiceHandler?.onStatusChange(.completed, false, isLive);
 
           for (final element in _statusListeners) {
             element(.completed);
@@ -1321,13 +1394,19 @@ class PlPlayerController with BlockConfigMixin {
       await seekTo(Duration.zero, isSeek: false);
     }
 
-    if (useExoPlayer) {
-      await _exoPlayerController?.play();
-    } else {
-      await _videoPlayerController?.play();
-    }
+    final hasAudioFocus = await audioSessionHandler?.setActive(true) ?? true;
+    if (!hasAudioFocus) return;
 
-    audioSessionHandler?.setActive(true);
+    try {
+      if (useExoPlayer) {
+        await _exoPlayerController?.play();
+      } else {
+        await _videoPlayerController?.play();
+      }
+    } catch (_) {
+      await audioSessionHandler?.setActive(false);
+      rethrow;
+    }
 
     playerStatus.value = PlayerStatus.playing;
     // screenManager.setOverlays(false);
@@ -1380,14 +1459,25 @@ class PlPlayerController with BlockConfigMixin {
   final double maxVolume = PlatformUtils.isDesktop ? Pref.maxVolume : 1.0;
 
   Future<void> setMuted(bool muted) async {
-    if (useExoPlayer) {
-      await _exoPlayerController?.setVolume(muted ? 0 : 1);
-    } else {
-      await _videoPlayerController?.setVolume(
-        muted ? 0 : volume.value * 100,
-      );
-    }
     isMuted = muted;
+    await _applyPlayerOutputVolume();
+  }
+
+  double get _basePlayerOutputVolume =>
+      PlatformUtils.isMobile ? Pref.playerVolume / 100 : volume.value;
+
+  Future<void> _setAudioFocusGain(double gain) async {
+    _audioFocusGain = gain.clamp(0, 1);
+    await _applyPlayerOutputVolume();
+  }
+
+  Future<void> _applyPlayerOutputVolume() async {
+    final volume = isMuted ? 0.0 : _basePlayerOutputVolume * _audioFocusGain;
+    if (useExoPlayer) {
+      await _exoPlayerController?.setVolume(volume.clamp(0, 1));
+    } else {
+      await _videoPlayerController?.setVolume(volume * 100);
+    }
   }
 
   Future<void> setVolume(double volume, {bool showIndicator = true}) async {
@@ -1395,7 +1485,7 @@ class PlPlayerController with BlockConfigMixin {
       this.volume.value = volume;
       try {
         if (PlatformUtils.isDesktop) {
-          await _videoPlayerController!.setVolume(volume * 100);
+          await _applyPlayerOutputVolume();
         } else {
           FlutterVolumeController.updateShowSystemUI(false);
           await FlutterVolumeController.setVolume(volume);
@@ -1760,12 +1850,14 @@ class PlPlayerController with BlockConfigMixin {
     }
 
     _playerCount = 0;
+    _isInAppMiniPlayer = false;
     if (removeSafeArea) {
       showSystemBar();
     }
     danmakuController = null;
     _stopOrientationListener();
     _disableAutoEnterPip();
+    audioSessionHandler?.setActive(false);
     setPlayCallBack(null);
     dmState.clear();
     if (showSeekPreview) {

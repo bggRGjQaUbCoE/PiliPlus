@@ -837,11 +837,16 @@ class VideoDetailController extends GetxController
   Future<void> queryVideoUrl({
     bool fromReset = false,
     bool autoFullScreenFlag = false,
+    bool initializePlayer = true,
   }) async {
     bool? resetPlayWhenReady() => fromReset && plPlayerController.playerReady
         ? plPlayerController.playWhenReady
         : null;
     if (isFileSource) {
+      if (!initializePlayer) {
+        videoState.value = true;
+        return;
+      }
       return _initPlayerIfNeeded(
         autoFullScreenFlag,
         autoplay: resetPlayWhenReady(),
@@ -934,18 +939,24 @@ class VideoDetailController extends GetxController
           _setVideoHeight();
           currentDecodeFormats = VideoDecodeFormatType.AVC;
           currentVideoQa.value = videoQuality;
-          await _initPlayerIfNeeded(
-            autoFullScreenFlag,
-            autoplay: resetPlayWhenReady(),
-          );
+          if (initializePlayer) {
+            await _initPlayerIfNeeded(
+              autoFullScreenFlag,
+              autoplay: resetPlayWhenReady(),
+            );
+          } else {
+            videoState.value = true;
+          }
           isQuerying = false;
           return;
         } else {
           SmartDialog.showToast('视频资源不存在');
-          _autoPlay.value = false;
-          videoState.value = false;
-          if (plPlayerController.isFullScreen.value) {
-            plPlayerController.triggerFullScreen(status: false);
+          if (initializePlayer) {
+            _autoPlay.value = false;
+            videoState.value = false;
+            if (plPlayerController.isFullScreen.value) {
+              plPlayerController.triggerFullScreen(status: false);
+            }
           }
           isQuerying = false;
           return;
@@ -1020,15 +1031,21 @@ class VideoDetailController extends GetxController
       } else {
         audioUrl = '';
       }
-      await _initPlayerIfNeeded(
-        autoFullScreenFlag,
-        autoplay: resetPlayWhenReady(),
-      );
+      if (initializePlayer) {
+        await _initPlayerIfNeeded(
+          autoFullScreenFlag,
+          autoplay: resetPlayWhenReady(),
+        );
+      } else {
+        videoState.value = true;
+      }
     } else {
-      _autoPlay.value = false;
-      videoState.value = false;
-      if (plPlayerController.isFullScreen.value) {
-        plPlayerController.triggerFullScreen(status: false);
+      if (initializePlayer) {
+        _autoPlay.value = false;
+        videoState.value = false;
+        if (plPlayerController.isFullScreen.value) {
+          plPlayerController.triggerFullScreen(status: false);
+        }
       }
       result.toast();
     }

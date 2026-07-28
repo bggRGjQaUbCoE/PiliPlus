@@ -68,6 +68,12 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     // await player.seekTo(position);
   }
 
+  @override
+  Future<void> skipToNext() => fastForward();
+
+  @override
+  Future<void> skipToPrevious() => rewind();
+
   void setMediaItem(MediaItem newMediaItem) {
     if (!enableBackgroundPlay) return;
     // if (kDebugMode) {

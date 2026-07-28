@@ -716,6 +716,22 @@ extension type AndroidHelper$ToDart._(jni$_.JObject _$this)
   /// The returned object must be released after use, by calling the [release] method.
   static set onConfigurationChanged(Runnable? value) =>
       _id_onConfigurationChanged.set(_class, Runnable.type, value);
+
+  static final _id_onPictureInPictureModeChanged = _class.staticFieldId(
+    r'onPictureInPictureModeChanged',
+    r'Ljava/lang/Runnable;',
+  );
+
+  /// from: `static public volatile java.lang.Runnable onPictureInPictureModeChanged`
+  /// The returned object must be released after use, by calling the [release] method.
+  static Runnable? get onPictureInPictureModeChanged =>
+      _id_onPictureInPictureModeChanged.getNullable(_class, Runnable.type)
+          as Runnable?;
+
+  /// from: `static public volatile java.lang.Runnable onPictureInPictureModeChanged`
+  /// The returned object must be released after use, by calling the [release] method.
+  static set onPictureInPictureModeChanged(Runnable? value) =>
+      _id_onPictureInPictureModeChanged.set(_class, Runnable.type, value);
 }
 
 final class $AndroidHelper$ToDart$Type$

@@ -1,6 +1,6 @@
 # pili++ 当前项目状态
 
-> 最后核对：2026-07-28 16:26 +08:00
+> 最后核对：2026-07-28 16:40 +08:00
 >
 > 本文件记录会随开发变化、但后续任务必须知道的事实。开始任务时先核对这里与实际
 > Git、源码和构建产物；结束任务前更新。长期规则见 `AGENTS.md`，ExoPlayer 详细兼容
@@ -11,10 +11,12 @@
 - 当前分支：`codex/android-exoplayer`
 - 最新功能快照：`e433cf18720fc15ccbba872a6de73df4715e5c8c`
   (`feat: add in-app mini player lifecycle`)
+- 最新上游合并提交：`0e4e8db250e986c4f8e32652fac2652651ec4168`
+  (`Merge remote-tracking branch 'upstream/main' into codex/android-exoplayer`)
 - 上游：`https://github.com/bggRGjQaUbCoE/PiliPlus.git`
-- 已获取的 `upstream/main`：`e4e70370d1ea16e37f887a4bc18db95b6358afd1`
-- 当前分支与上游的共同基线：`f1b79eeafc586b4dab5b4c067f3936b90fef133c`
-- 上游共同基线之后有 3 个尚未合入提交：`56ca0ca`、`10b723f`、`e4e7037`。
+- 已获取并合入的 `upstream/main`：`5296a8f7f07a22f347ad53bc8c7651e6787bf3ec`
+- 当前分支已包含上游 `56ca0ca`、`10b723f`、`e4e7037`、`91e7899` 和 `5296a8f`；
+  本状态更新提交完成后相对上游为本地领先 5、落后 0。
 - 应用内小窗、音频焦点/媒体控制、系统 PiP 恢复、版本更新和兼容记录已保存到上述
   功能快照。交接时应以实际 `git status` 为准；存在未提交修改时不得直接 merge 或
   rebase。
@@ -67,6 +69,21 @@
 这些记录只代表当时设备和操作范围，不自动覆盖折叠屏、不同 Android 版本、不同芯片
 或后续代码修改后的回归结果。
 
+## 最近一次上游同步验证
+
+- 2026-07-28 已将 `upstream/main@5296a8f` 合入当前分支，无文本冲突。
+- `pubspec.yaml` 同时保留 `2.1.0+2026072806` 和上游 `jnigen ^0.17.0`。
+- JNI 绑定同时保留上游回调参数释放和应用内小窗所需 PiP 模式变化回调；新版
+  `jnigen` 完整生成后文件无差异。
+- 上游涉及的 17 个 Dart 文件通过格式检查，0 个文件需要修改。
+- `dart analyze` 无 error/warning，有 37 条既有 info。
+- `flutter analyze` 被工作区 Flutter SDK 缺失的 iOS 测试资源目录中断，不是仓库
+  分析错误；Android Release 构建随后通过。
+- 合并审计 APK 的 applicationId、应用名、versionName、versionCode、ABI 和签名
+  校验通过，SHA-256 为
+  `79FD550A9BCC82A9370AADE46C02EB09D6EFE8F5E68F5BD29AE1D099EE7991CB`。
+- 上游 UI 和文本选择变化仍需真机回归；审计 APK 不是新版本交付，不更新发布基线。
+
 ## 当前待验证修改
 
 - 应用内小窗在 MPV 和 ExoPlayer 下的播放、暂停、拖动、关闭和恢复；
@@ -90,6 +107,6 @@
 
 1. 在真实 Android 设备上优先验证应用内小窗与系统 PiP 的完整往返流程。
 2. 验证音频焦点、耳机/蓝牙、媒体通知及息屏/亮屏场景。
-3. 在保持工作区修改安全的前提下，分批合入上游 3 个提交；重点人工合并
-   `pubspec.yaml`、`pubspec.lock`、Android Gradle 配置和 JNI 绑定。
-4. 继续处理最高优先级的 ExoPlayer 未闭环项，不得通过隐藏入口或回退 mpv 宣称完成。
+3. 真机回归本次上游同步涉及的视频卡片、UGC 分P列表、动态/评论文本选择和滚动。
+4. 继续跟踪上游；下次同步仍先 fetch、检查重叠文件，再执行合并和完整验证。
+5. 继续处理最高优先级的 ExoPlayer 未闭环项，不得通过隐藏入口或回退 mpv 宣称完成。

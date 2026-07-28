@@ -11,6 +11,7 @@ import 'package:PiliPlus/pages/setting/widgets/slider_dialog.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
+import 'package:PiliPlus/services/in_app_mini_player_service.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -210,6 +211,17 @@ List<SettingsModel> get playSettings => [
       leading: Icon(Icons.motion_photos_pause_outlined),
       setKey: SettingBoxKey.continuePlayInBackground,
       defaultVal: false,
+    ),
+  if (PlatformUtils.isMobile)
+    SwitchModel(
+      title: '应用内小窗播放',
+      subtitle: '离开视频详情页时，在当前应用内继续小窗播放',
+      leading: const Icon(Icons.picture_in_picture_alt_outlined),
+      setKey: SettingBoxKey.inAppMiniPlayer,
+      defaultVal: false,
+      onChanged: (enabled) {
+        if (!enabled) InAppMiniPlayerService.instance.dismiss();
+      },
     ),
   if (Platform.isAndroid) ...[
     SwitchModel(

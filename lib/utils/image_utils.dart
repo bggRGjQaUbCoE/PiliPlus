@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'dart:async' show FutureOr;
 import 'dart:io' show File, Platform;
 import 'dart:math' as math;
 import 'dart:typed_data' show Uint8List;

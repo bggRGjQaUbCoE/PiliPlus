@@ -169,6 +169,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
               opus: controller.opus!,
               images: controller.images,
               maxWidth: maxWidth,
+              opusId: controller.id,
             );
           } else if (controller.opusData?.modules.moduleBlocked
               case final moduleBlocked?) {

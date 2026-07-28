@@ -42,5 +42,6 @@ class MainActivity : AudioServiceActivity() {
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration?) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         AndroidHelper.isPipMode = isInPictureInPictureMode
+        AndroidHelper.ToDart.onPictureInPictureModeChanged?.run()
     }
 }

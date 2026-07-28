@@ -266,6 +266,7 @@ public final class AndroidHelper {
     public static final class ToDart {
         public static volatile Runnable onUserLeaveHint;
         public static Runnable onConfigurationChanged;
+        public static volatile Runnable onPictureInPictureModeChanged;
 
         private ToDart() {
         }

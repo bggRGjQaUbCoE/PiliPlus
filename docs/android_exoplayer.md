@@ -140,17 +140,16 @@ errors, and disposal disable it. Android versions before 12 continue to enter
 PiP through `onUserLeaveHint`.
 
 The user verified automatic PiP on app exit with ExoPlayer on a real Android
-device on 2026-07-26. The remaining fourth-batch audio-focus, background,
-notification, headset/Bluetooth, screen-off/on, and lifecycle scenarios still
-require separate verification.
+device on 2026-07-26. On 2026-07-28, the user also verified audio focus, media
+notification and media-button behavior, and wired-headset/Bluetooth control on
+the current real Android device.
 
 Process-death task restoration is explicitly deferred at the user's request and
 is not counted as verified.
 
-Background playback and media-notification verification is the next active
-fourth-batch item. Completion and Exo playback errors now clear wakelock and
-buffering state and push the final completed/paused state to the shared media
-service, preventing stale playing controls in the notification and lock screen.
+Completion and Exo playback errors clear wakelock and buffering state and push
+the final completed/paused state to the shared media service, preventing stale
+playing controls in the notification and lock screen.
 
 Audio-focus and headset/Bluetooth handling has now been brought through the
 backend-neutral controller path:
@@ -169,12 +168,13 @@ backend-neutral controller path:
   audio-service handler; headset next/previous buttons map to the same
   ten-second forward/rewind behavior instead of becoming no-ops.
 
-The implementation has passed formatting and targeted static analysis. It still
-requires real-device checks with wired headphones, a Bluetooth headset, another
-audio app or phone call, lock-screen controls, and screen off/on before these
-fourth-batch items can be marked verified.
+The implementation passed formatting and targeted static analysis. The user
+reported the audio-focus, notification, media-button, wired-headset, and
+Bluetooth flows verified on the current real Android device on 2026-07-28.
+This result does not replace regression coverage on other Android versions,
+audio devices, chipsets, or later code revisions.
 
-### In-app mini player awaiting real-device verification
+### In-app mini player real-device verification
 
 Video detail routes now retain the backend-neutral player session when the
 route is popped and hand its existing Texture to a Flutter overlay above the
@@ -230,9 +230,9 @@ expand and close actions. The mini-player bounds preserve the current backend's
 reported video aspect ratio, including portrait and square sources, within a
 screen-relative maximum size instead of forcing every source into 16:9.
 
-Formatting and targeted static analysis pass for this implementation. The
-following scenarios remain **pending real-device verification** for both MPV
-and ExoPlayer:
+Formatting and targeted static analysis pass for this implementation. On
+2026-07-28, the user reported the in-app mini-player and system-PiP round trip
+verified on the current real Android device, including:
 
 - pop a playing and a paused VOD route into the in-app mini player;
 - continue playback while navigating across home, search, and detail routes;
@@ -242,4 +242,10 @@ and ExoPlayer:
   buffer, seek, or recreate the native player session;
 - open a different UGC/PGC video while the mini player is active;
 - verify danmaku preference, media notification, audio focus, rotation, and
-  foreground/background transitions during mini-player playback.
+  foreground/background transitions during mini-player playback;
+- background the app from the mini player, enter system PiP, and expand system
+  PiP back to the current video detail route rather than the mini-player state.
+
+These results mark the feature verified for the tested device and flows. Other
+Android versions, form factors, chipsets, and later code revisions still require
+normal regression coverage.

@@ -12,6 +12,12 @@ include: package:flutter_lints/flutter.yaml
 analyzer:
   exclude:
     - lib/grpc/bilibili/**
+    - lib/utils/android/bindings.g.dart
+    - android/**
+    - ios/**
+    - linux/**
+    - macos/**
+    - windows/**
     # - lib/common/widgets/flutter/**
 
 formatter:

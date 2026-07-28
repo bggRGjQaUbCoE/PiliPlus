@@ -45,7 +45,7 @@ $TextFieldPatch = "lib/scripts/text_field.patch"
 
 $ScrollPositionPatch = "lib/scripts/scroll_position.patch"
 
-$SelectionPlaceholderPatch = "lib/scripts/selection_placeholder.patch"
+$ScrollablePatch = "lib/scripts/scrollable.patch"
 
 # TODO: remove
 # https://github.com/flutter/flutter/pull/183261
@@ -80,7 +80,7 @@ $patches = @($ModalBarrierPatch, $TextSelectionPatch, $MouseCursorPatch,
             $ImageAnimPatch, $LayoutBuilderPatch, $NavigationDrawerPatch,
             $PopupMenuPatch, $FABPatch, $SelectableRegionPatch, $SelectableRegionSelectionPatch,
             $EditableTextPatch, $TextFieldPatch, $ScrollPositionPatch,
-            $SelectionPlaceholderPatch)
+            $ScrollablePatch)
 
 switch ($platform.ToLower()) {
     "android" {

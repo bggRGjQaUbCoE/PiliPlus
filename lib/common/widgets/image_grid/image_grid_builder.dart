@@ -499,7 +499,7 @@ class ImageGridRenderObjectElement extends RenderObjectElement {
     List<ImageModel> picArr,
     BoxConstraints layoutInfo,
   ) {
-    final maxWidth = layoutInfo.maxWidth;
+    final maxWidth = math.min(525.0, layoutInfo.maxWidth);
     double imageWidth;
     double imageHeight;
     final length = picArr.length;

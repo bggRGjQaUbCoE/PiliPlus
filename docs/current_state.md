@@ -1,6 +1,6 @@
 # pili++ 当前项目状态
 
-> 最后核对：2026-07-28 17:20 +08:00
+> 最后核对：2026-07-28 19:10 +08:00
 >
 > 本文件记录会随开发变化、但后续任务必须知道的事实。开始任务时先核对这里与实际
 > Git、源码和构建产物；结束任务前更新。长期规则见 `AGENTS.md`，ExoPlayer 详细兼容
@@ -8,7 +8,9 @@
 
 ## 仓库基线
 
-- 当前分支：`codex/android-exoplayer`
+- 当前分支：`main`
+- 最新发布源提交：`859d39c4ff3c77c37e1cc1d7131192df8f8b4241`
+  (`chore: prepare 2.1.2 release`)
 - 最新功能快照：`e433cf18720fc15ccbba872a6de73df4715e5c8c`
   (`feat: add in-app mini player lifecycle`)
 - 最新上游合并提交：`0e4e8db250e986c4f8e32652fac2652651ec4168`
@@ -35,15 +37,14 @@
 
 ## 最近一次交付
 
-- 版本：`2.1.0`
-- versionCode：`2026072806`
+- 版本：`2.1.2`
+- versionCode：`2026072807`
 - ABI：universal (`arm64-v8a`、`armeabi-v7a`、`x86_64`)
-- 文件名：`pili++-2.1.0-2026072806-universal-release.apk`
+- 文件名：`pili++-2.1.2-2026072807-universal-release.apk`
 - APK SHA-256：
-  `C8AFD03AF78F17E1324351CF0F627E599C203543259197E01760F6B1DA2EF099`
-- 2026-07-28 15:52 使用当前源码重新构建了相同版本作为发布校验脚本的审计样本，
-  当前位于 `build/app/outputs/flutter-apk/`；重建哈希与既有交付记录一致，但这不是一次
-  新交付。再次交付仍必须递增 versionCode、重新构建并记录新哈希。
+  `03002D0E8F466357A8F4D24FE41FB9951ED76978A05D3CAF8946D57346282D53`
+- 2026-07-28 19:10 已发布到 GitHub Release `2.1.2`，标签固定在上述发布源提交；
+  通用 APK 已通过 `tool/verify_release.ps1` 的应用身份、版本、ABI 和签名校验。
 
 ## 已确认的产品决定
 

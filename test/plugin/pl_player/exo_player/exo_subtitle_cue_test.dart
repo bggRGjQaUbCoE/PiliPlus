@@ -2,9 +2,12 @@ import 'package:PiliPlus/plugin/pl_player/exo_player/exo_player_controller.dart'
 import 'package:PiliPlus/plugin/pl_player/exo_player/exo_subtitle_cue.dart';
 import 'package:PiliPlus/plugin/pl_player/models/exo_player_failure.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   test('parses structured Media3 cue data from the event channel', () {
     final event = ExoPlayerEvent.fromMap({
       'subtitle': 'Hello',
@@ -182,6 +185,82 @@ void main() {
       ),
       isFalse,
     );
+  });
+
+  test('captures an ExoPlayer frame with the requested transforms', () async {
+    const channel = MethodChannel('com.example.piliplus/exo_player');
+    final calls = <MethodCall>[];
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (call) async {
+          calls.add(call);
+          if (call.method == 'create') return 42;
+          if (call.method == 'captureFrame') return Uint8List.fromList([1, 2]);
+          return null;
+        });
+    addTearDown(
+      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, null),
+    );
+
+    final player = await ExoPlayerController.create();
+    addTearDown(player.dispose);
+    final bytes = await player.captureFrame(flipX: true, flipY: false);
+
+    expect(bytes, [1, 2]);
+    expect(calls.last.method, 'captureFrame');
+    expect(calls.last.arguments, {
+      'id': player.id,
+      'flipX': true,
+      'flipY': false,
+    });
+  });
+
+  test('starts, polls, and cancels animated WebP capture', () async {
+    const channel = MethodChannel('com.example.piliplus/exo_player');
+    final calls = <MethodCall>[];
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (call) async {
+          calls.add(call);
+          return switch (call.method) {
+            'create' => 43,
+            'startAnimatedWebp' => true,
+            'animatedWebpProgress' => .5,
+            _ => null,
+          };
+        });
+    addTearDown(
+      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, null),
+    );
+
+    final player = await ExoPlayerController.create();
+    addTearDown(player.dispose);
+    expect(
+      await player.startAnimatedWebp(
+        taskId: 9,
+        url: 'https://example.com/video.mp4',
+        outFile: '/tmp/test.webp',
+        headers: const {'Referer': 'https://www.bilibili.com'},
+        start: const Duration(seconds: 2),
+        end: const Duration(seconds: 4),
+        preset: 'picture',
+      ),
+      isTrue,
+    );
+    expect(await player.animatedWebpProgress(9), .5);
+    await player.cancelAnimatedWebp(9);
+
+    expect(
+      calls.map((call) => call.method),
+      containsAllInOrder([
+        'create',
+        'startAnimatedWebp',
+        'animatedWebpProgress',
+        'cancelAnimatedWebp',
+      ]),
+    );
+    expect((calls[1].arguments as Map)['startMs'], 2000);
+    expect((calls[1].arguments as Map)['endMs'], 4000);
   });
 
   test('applies span styling without discarding the shared base style', () {

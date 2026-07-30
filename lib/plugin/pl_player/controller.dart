@@ -2352,7 +2352,33 @@ class PlPlayerController with BlockConfigMixin {
 
   Future<PlayerFeatureResult<ui.Image>> captureFrame() async {
     if (useExoPlayer) {
-      return const PlayerFeatureUnavailable('ExoPlayer 截图适配尚未完成');
+      final player = _exoPlayerController;
+      if (player == null) {
+        return const PlayerFeatureUnavailable('播放器尚未就绪');
+      }
+      try {
+        final bytes = await player.captureFrame(
+          flipX: flipX.value,
+          flipY: flipY.value,
+        );
+        final buffer = await ui.ImmutableBuffer.fromUint8List(bytes);
+        try {
+          final codec = await ui.instantiateImageCodecFromBuffer(buffer);
+          try {
+            return PlayerFeatureSuccess((await codec.getNextFrame()).image);
+          } finally {
+            codec.dispose();
+          }
+        } finally {
+          buffer.dispose();
+        }
+      } catch (error, stackTrace) {
+        return PlayerFeatureFailure(
+          '截图失败',
+          error: error,
+          stackTrace: stackTrace,
+        );
+      }
     }
     final player = videoPlayerController;
     if (player == null) {

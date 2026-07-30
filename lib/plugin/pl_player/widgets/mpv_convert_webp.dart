@@ -15,7 +15,13 @@ import 'package:media_kit/generated/libmpv/bindings.dart' as generated;
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit/src/player/native/core/initializer.dart';
 
-class MpvConvertWebp {
+abstract interface class AnimatedWebpConverter {
+  Future<bool> convert();
+
+  void dispose();
+}
+
+class MpvConvertWebp implements AnimatedWebpConverter {
   final _mpv = NativePlayer.mpv;
   late final Pointer<generated.mpv_handle> _ctx;
   final _completer = Completer<bool>();
@@ -71,12 +77,14 @@ class MpvConvertWebp {
     calloc.free(level);
   }
 
+  @override
   void dispose() {
     Initializer.dispose(_ctx);
     _mpv.mpv_terminate_destroy(_ctx);
     if (!_completer.isCompleted) _completer.complete(false);
   }
 
+  @override
   Future<bool> convert() async {
     await _init();
     _command(['loadfile', url]);

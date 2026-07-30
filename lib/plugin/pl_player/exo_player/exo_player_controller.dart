@@ -294,6 +294,55 @@ class ExoPlayerController {
   Future<void> setVolume(double volume) =>
       _methods.invokeMethod<void>('setVolume', {'id': id, 'volume': volume});
 
+  Future<Uint8List> captureFrame({
+    required bool flipX,
+    required bool flipY,
+  }) async {
+    final bytes = await _methods.invokeMethod<Uint8List>('captureFrame', {
+      'id': id,
+      'flipX': flipX,
+      'flipY': flipY,
+    });
+    if (bytes == null || bytes.isEmpty) {
+      throw StateError('ExoPlayer returned an empty captured frame');
+    }
+    return bytes;
+  }
+
+  Future<bool> startAnimatedWebp({
+    required int taskId,
+    required String url,
+    required String outFile,
+    required Map<String, String> headers,
+    required Duration start,
+    required Duration end,
+    required String preset,
+  }) async =>
+      await _methods.invokeMethod<bool>('startAnimatedWebp', {
+        'id': id,
+        'taskId': taskId,
+        'url': url,
+        'outFile': outFile,
+        'headers': headers,
+        'startMs': start.inMilliseconds,
+        'endMs': end.inMilliseconds,
+        'preset': preset,
+      }) ??
+      false;
+
+  Future<double> animatedWebpProgress(int taskId) async =>
+      (await _methods.invokeMethod<num>('animatedWebpProgress', {
+        'id': id,
+        'taskId': taskId,
+      }))?.toDouble() ??
+      0;
+
+  Future<void> cancelAnimatedWebp(int taskId) =>
+      _methods.invokeMethod<void>('cancelAnimatedWebp', {
+        'id': id,
+        'taskId': taskId,
+      });
+
   Future<void> setSubtitle({
     String? data,
     String? uri,

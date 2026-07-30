@@ -36,6 +36,7 @@ import 'package:PiliPlus/pages/video/post_panel/popup_menu_text.dart';
 import 'package:PiliPlus/pages/video/post_panel/view.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
+import 'package:PiliPlus/plugin/pl_player/exo_player/exo_convert_webp.dart';
 import 'package:PiliPlus/plugin/pl_player/exo_player/exo_subtitle_view.dart';
 import 'package:PiliPlus/plugin/pl_player/exo_player/exo_player_view.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_control_type.dart';
@@ -2095,22 +2096,35 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           ),
         ) ??
         false;
-    if (!success) return;
+    if (!success) {
+      if (isPlay) ctr.play();
+      return;
+    }
 
     final progress = 0.0.obs;
     final name =
         '${ctr.cid}-${segment.first.toStringAsFixed(3)}_${segment.second.toStringAsFixed(3)}.webp';
     final file = '$tmpDirPath/$name';
 
-    final mpv = MpvConvertWebp(
-      url!,
-      file,
-      segment.first,
-      segment.second,
-      progress: progress,
-      preset: preset,
-    );
-    final future = mpv.convert().whenComplete(
+    final AnimatedWebpConverter converter = ctr.useExoPlayer
+        ? ExoConvertWebp(
+            ctr.exoPlayerController!,
+            url!,
+            file,
+            segment.first,
+            segment.second,
+            progress: progress,
+            preset: preset,
+          )
+        : MpvConvertWebp(
+            url!,
+            file,
+            segment.first,
+            segment.second,
+            progress: progress,
+            preset: preset,
+          );
+    final future = converter.convert().whenComplete(
       () => SmartDialog.dismiss(status: SmartStatus.loading),
     );
 
@@ -2119,7 +2133,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       builder: (_) => LoadingWidget(progress: progress, msg: '正在保存，可能需要较长时间'),
       onDismiss: () async {
         if (progress.value < 1.0) {
-          mpv.dispose();
+          converter.dispose();
         }
         if (await future) {
           await ImageUtils.saveFileImg(

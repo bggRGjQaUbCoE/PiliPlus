@@ -5,8 +5,12 @@
 package com.example.piliplus
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Matrix
+import android.media.MediaMetadataRetriever
 import android.graphics.Typeface
 import android.net.Uri
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.text.Layout
@@ -20,6 +24,7 @@ import android.text.style.StyleSpan
 import android.text.style.TypefaceSpan
 import android.text.style.UnderlineSpan
 import android.util.Base64
+import android.view.PixelCopy
 import androidx.media3.common.C
 import androidx.media3.common.Format
 import androidx.media3.common.MediaItem
@@ -47,6 +52,14 @@ import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.TextureRegistry
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.RandomAccessFile
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.math.ceil
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 /**
@@ -160,6 +173,43 @@ private class ExoPlayerManager(
                         (call.argument<Number>("volume")?.toFloat() ?: 1f).coerceIn(0f, 1f)
                     result.success(null)
                 }
+                "captureFrame" -> {
+                    requiredSession(call).captureFrame(
+                        flipX = call.argument<Boolean>("flipX") ?: false,
+                        flipY = call.argument<Boolean>("flipY") ?: false,
+                        onSuccess = result::success,
+                        onError = { message -> result.error("capture_frame", message, null) },
+                    )
+                }
+                "startAnimatedWebp" -> {
+                    requiredSession(call).startAnimatedWebp(
+                        taskId = call.requiredLong("taskId"),
+                        url = call.requiredString("url"),
+                        outFile = call.requiredString("outFile"),
+                        headers = call.argument<Map<String, String>>("headers").orEmpty(),
+                        startMs = call.argument<Number>("startMs")?.toLong() ?: 0L,
+                        endMs = call.argument<Number>("endMs")?.toLong() ?: 0L,
+                        preset = call.argument<String>("preset") ?: "default",
+                        onComplete = { success, error ->
+                            if (error == null) {
+                                result.success(success)
+                            } else {
+                                result.error("animated_webp", error, null)
+                            }
+                        },
+                    )
+                }
+                "animatedWebpProgress" -> {
+                    result.success(
+                        requiredSession(call).animatedWebpProgress(
+                            call.requiredLong("taskId"),
+                        ),
+                    )
+                }
+                "cancelAnimatedWebp" -> {
+                    requiredSession(call).cancelAnimatedWebp(call.requiredLong("taskId"))
+                    result.success(null)
+                }
                 "setSubtitle" -> {
                     requiredSession(call).setSubtitle(
                         data = call.argument<String>("data"),
@@ -240,12 +290,16 @@ private class ExoPlayerSession(
 
     private var width = 0
     private var height = 0
+    private var rotationDegrees = 0
     private var mediaRequest: MediaRequest? = null
     private var subtitleRequest: SubtitleRequest? = null
     private var subtitleCues: List<Map<String, Any?>> = emptyList()
     private var videoDecoder: String? = null
     private var audioDecoder: String? = null
     private var mediaGeneration = 0L
+    private val captureExecutor = Executors.newSingleThreadExecutor()
+    private val animatedWebpTasks = ConcurrentHashMap<Long, AnimatedWebpCapture>()
+    private val disposed = AtomicBoolean(false)
     val textureId: Long
         get() = surfaceProducer.id()
 
@@ -428,7 +482,8 @@ private class ExoPlayerSession(
     override fun onVideoSizeChanged(videoSize: VideoSize) {
         val textureWidth = videoSize.width.coerceAtLeast(1)
         val textureHeight = videoSize.height.coerceAtLeast(1)
-        if (videoSize.unappliedRotationDegrees % 180 == 0) {
+        rotationDegrees = videoSize.unappliedRotationDegrees
+        if (rotationDegrees % 180 == 0) {
             width = (videoSize.width * videoSize.pixelWidthHeightRatio)
                 .roundToInt()
                 .coerceAtLeast(1)
@@ -473,6 +528,108 @@ private class ExoPlayerSession(
             prepare()
         }
         emitState()
+    }
+
+    fun captureFrame(
+        flipX: Boolean,
+        flipY: Boolean,
+        onSuccess: (ByteArray) -> Unit,
+        onError: (String) -> Unit,
+    ) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            onError("Frame capture requires Android 7.0 or newer")
+            return
+        }
+        if (disposed.get()) {
+            onError("ExoPlayer session is already disposed")
+            return
+        }
+        val source = surfaceProducer.surface
+        val sourceWidth = surfaceProducer.width
+        val sourceHeight = surfaceProducer.height
+        if (!source.isValid || sourceWidth <= 0 || sourceHeight <= 0) {
+            onError("Video surface is not available")
+            return
+        }
+        val bitmap = Bitmap.createBitmap(
+            sourceWidth,
+            sourceHeight,
+            Bitmap.Config.ARGB_8888,
+        )
+        PixelCopy.request(
+            source,
+            bitmap,
+            { copyResult ->
+                if (disposed.get()) {
+                    bitmap.recycle()
+                    onError("ExoPlayer session was disposed during frame capture")
+                    return@request
+                }
+                if (copyResult != PixelCopy.SUCCESS) {
+                    bitmap.recycle()
+                    onError("PixelCopy failed with code $copyResult")
+                    return@request
+                }
+                runCatching {
+                    captureExecutor.execute {
+                        runCatching {
+                            transformCapturedFrame(bitmap, width, height, rotationDegrees, flipX, flipY)
+                        }.onSuccess { bytes ->
+                            Handler(Looper.getMainLooper()).post {
+                                if (disposed.get()) {
+                                    onError("ExoPlayer session was disposed during frame capture")
+                                } else {
+                                    onSuccess(bytes)
+                                }
+                            }
+                        }.onFailure { error ->
+                            Handler(Looper.getMainLooper()).post {
+                                onError(error.message ?: "Failed to encode captured frame")
+                            }
+                        }
+                    }
+                }.onFailure { error ->
+                    bitmap.recycle()
+                    onError(error.message ?: "Frame capture worker is not available")
+                }
+            },
+            Handler(Looper.getMainLooper()),
+        )
+    }
+
+    fun startAnimatedWebp(
+        taskId: Long,
+        url: String,
+        outFile: String,
+        headers: Map<String, String>,
+        startMs: Long,
+        endMs: Long,
+        preset: String,
+        onComplete: (Boolean, String?) -> Unit,
+    ) {
+        require(endMs > startMs) { "Animated capture end must be after start" }
+        check(!disposed.get()) { "ExoPlayer session is already disposed" }
+        cancelAnimatedWebp(taskId)
+        val task = AnimatedWebpCapture(
+            url = url,
+            outFile = outFile,
+            headers = headers,
+            startMs = startMs,
+            endMs = endMs,
+            preset = preset,
+        )
+        animatedWebpTasks[taskId] = task
+        task.start { success, error ->
+            animatedWebpTasks.remove(taskId, task)
+            Handler(Looper.getMainLooper()).post { onComplete(success, error) }
+        }
+    }
+
+    fun animatedWebpProgress(taskId: Long): Double =
+        animatedWebpTasks[taskId]?.progress ?: 1.0
+
+    fun cancelAnimatedWebp(taskId: Long) {
+        animatedWebpTasks.remove(taskId)?.cancel()
     }
 
     override fun onVideoDecoderInitialized(
@@ -550,12 +707,276 @@ private class ExoPlayerSession(
     }
 
     fun dispose() {
+        if (!disposed.compareAndSet(false, true)) return
+        animatedWebpTasks.values.forEach(AnimatedWebpCapture::cancel)
+        animatedWebpTasks.clear()
         surfaceProducer.setCallback(null)
         player.clearVideoSurface()
         player.removeListener(this)
         player.removeAnalyticsListener(this)
         player.release()
         surfaceProducer.release()
+        captureExecutor.shutdownNow()
+    }
+}
+
+private class AnimatedWebpCapture(
+    private val url: String,
+    private val outFile: String,
+    private val headers: Map<String, String>,
+    private val startMs: Long,
+    private val endMs: Long,
+    private val preset: String,
+) {
+    private val cancelled = AtomicBoolean(false)
+    private val finished = AtomicBoolean(false)
+    private val executor = Executors.newSingleThreadExecutor()
+    private var onComplete: ((Boolean, String?) -> Unit)? = null
+
+    @Volatile
+    var progress: Double = 0.0
+        private set
+
+    fun start(onComplete: (Boolean, String?) -> Unit) {
+        this.onComplete = onComplete
+        executor.execute {
+            val outcome = runCatching(::convert)
+            val success = outcome.getOrDefault(false)
+            progress = if (success) 1.0 else progress
+            finish(
+                success,
+                outcome.exceptionOrNull()?.message?.let(::sanitizeDiagnosticMessage),
+            )
+            executor.shutdown()
+        }
+    }
+
+    fun cancel() {
+        synchronized(animatedWebpPublishLock) {
+            cancelled.set(true)
+            finish(false, null)
+        }
+        executor.shutdownNow()
+    }
+
+    private fun finish(success: Boolean, error: String?) {
+        if (finished.compareAndSet(false, true)) onComplete?.invoke(success, error)
+    }
+
+    private fun convert(): Boolean {
+        val output = File(outFile)
+        output.parentFile?.mkdirs()
+        val workingOutput = File(
+            output.parentFile,
+            "${output.name}.part-${System.nanoTime()}",
+        )
+        val retriever = MediaMetadataRetriever()
+        var file: RandomAccessFile? = null
+        var completed = false
+        return try {
+            if (url.contains("://")) {
+                retriever.setDataSource(url, headers)
+            } else {
+                retriever.setDataSource(url)
+            }
+            val videoRotation = retriever
+                .extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
+                ?.toIntOrNull() ?: 0
+            val durationMs = endMs - startMs
+            val frameIntervalMs = max(
+                1000L / ANIMATED_WEBP_FPS,
+                ceil(durationMs.toDouble() / MAX_ANIMATED_WEBP_FRAMES).toLong(),
+            )
+            val frameCount = ((durationMs + frameIntervalMs - 1) / frameIntervalMs)
+                .coerceAtLeast(1L)
+                .toInt()
+            file = RandomAccessFile(workingOutput, "rw").apply { setLength(0) }
+            var canvasWidth = 0
+            var canvasHeight = 0
+            repeat(frameCount) { index ->
+                if (cancelled.get()) return false
+                val timestampMs = (startMs + index * frameIntervalMs).coerceAtMost(endMs - 1)
+                val source = retriever.getFrameAtTime(
+                    timestampMs * 1000,
+                    MediaMetadataRetriever.OPTION_CLOSEST,
+                ) ?: error("No video frame at ${timestampMs}ms")
+                val frame = rotateBitmap(source, videoRotation)
+                try {
+                    if (index == 0) {
+                        canvasWidth = frame.width
+                        canvasHeight = frame.height
+                        require(canvasWidth in 1..MAX_WEBP_DIMENSION &&
+                            canvasHeight in 1..MAX_WEBP_DIMENSION
+                        ) { "Animated WebP canvas is too large" }
+                        AnimatedWebpMuxer.initialize(file, canvasWidth, canvasHeight)
+                    }
+                    val normalized = if (frame.width == canvasWidth && frame.height == canvasHeight) {
+                        frame
+                    } else {
+                        Bitmap.createScaledBitmap(frame, canvasWidth, canvasHeight, true)
+                    }
+                    try {
+                        val chunks = encodeWebpImageChunks(normalized, webpQuality(preset))
+                        val remaining = endMs - timestampMs
+                        val frameDurationMs = remaining.coerceAtMost(frameIntervalMs).coerceAtLeast(1L)
+                        AnimatedWebpMuxer.writeFrame(
+                            file,
+                            canvasWidth,
+                            canvasHeight,
+                            frameDurationMs.toInt(),
+                            chunks,
+                        )
+                    } finally {
+                        if (normalized !== frame) normalized.recycle()
+                    }
+                } finally {
+                    frame.recycle()
+                }
+                progress = (index + 1).toDouble() / frameCount
+            }
+            if (cancelled.get()) return false
+            AnimatedWebpMuxer.finalize(file)
+            file.close()
+            file = null
+            synchronized(animatedWebpPublishLock) {
+                if (cancelled.get()) return false
+                if (output.exists() && !output.delete()) {
+                    error("Unable to replace existing animated WebP output")
+                }
+                if (!workingOutput.renameTo(output)) {
+                    workingOutput.copyTo(output, overwrite = true)
+                    check(workingOutput.delete()) {
+                        "Unable to remove animated WebP temporary file"
+                    }
+                }
+            }
+            completed = true
+            true
+        } catch (_: InterruptedException) {
+            false
+        } finally {
+            retriever.release()
+            file?.close()
+            if (!completed) workingOutput.delete()
+        }
+    }
+}
+
+private const val ANIMATED_WEBP_FPS = 12L
+private const val MAX_ANIMATED_WEBP_FRAMES = 600
+private val animatedWebpPublishLock = Any()
+
+private fun rotateBitmap(source: Bitmap, rotationDegrees: Int): Bitmap {
+    if (rotationDegrees % 360 == 0) return source
+    return Bitmap.createBitmap(
+        source,
+        0,
+        0,
+        source.width,
+        source.height,
+        Matrix().apply { postRotate(rotationDegrees.toFloat()) },
+        true,
+    ).also { if (it !== source) source.recycle() }
+}
+
+private fun webpQuality(preset: String): Int = when (preset) {
+    "photo" -> 78
+    "picture" -> 82
+    "drawing" -> 88
+    "icon" -> 90
+    "text" -> 92
+    else -> 80
+}
+
+@Suppress("DEPRECATION")
+private fun encodeWebpImageChunks(bitmap: Bitmap, quality: Int): ByteArray {
+    val encoded = ByteArrayOutputStream().use { output ->
+        check(bitmap.compress(Bitmap.CompressFormat.WEBP, quality, output)) {
+            "WebP encoder rejected animation frame"
+        }
+        output.toByteArray()
+    }
+    require(encoded.size >= 20 && encoded.fourCc(0) == "RIFF" && encoded.fourCc(8) == "WEBP") {
+        "Android returned an invalid WebP frame"
+    }
+    val chunks = ByteArrayOutputStream()
+    var offset = 12
+    while (offset + 8 <= encoded.size) {
+        val type = encoded.fourCc(offset)
+        val size = encoded.uint32Le(offset + 4).toInt()
+        val paddedSize = size + (size and 1)
+        require(size >= 0 && offset + 8 + paddedSize <= encoded.size) {
+            "Invalid WebP chunk $type"
+        }
+        if (type == "ALPH" || type == "VP8 " || type == "VP8L") {
+            chunks.write(encoded, offset, 8 + paddedSize)
+        }
+        offset += 8 + paddedSize
+    }
+    return chunks.toByteArray().also {
+        require(it.isNotEmpty()) { "WebP frame contains no image data" }
+    }
+}
+
+private fun ByteArray.fourCc(offset: Int): String =
+    String(this, offset, 4, Charsets.US_ASCII)
+
+private fun ByteArray.uint32Le(offset: Int): Long =
+    (0 until 4).fold(0L) { value, shift ->
+        value or ((this[offset + shift].toLong() and 0xFF) shl (shift * 8))
+    }
+
+private fun transformCapturedFrame(
+    source: Bitmap,
+    displayWidth: Int,
+    displayHeight: Int,
+    rotationDegrees: Int,
+    flipX: Boolean,
+    flipY: Boolean,
+): ByteArray {
+    var bitmap = source
+    try {
+        if (rotationDegrees % 360 != 0) {
+            bitmap = Bitmap.createBitmap(
+                bitmap,
+                0,
+                0,
+                bitmap.width,
+                bitmap.height,
+                Matrix().apply { postRotate(rotationDegrees.toFloat()) },
+                true,
+            ).also { if (it !== source) source.recycle() }
+        }
+        if (displayWidth > 0 && displayHeight > 0 &&
+            (bitmap.width != displayWidth || bitmap.height != displayHeight)
+        ) {
+            val previous = bitmap
+            bitmap = Bitmap.createScaledBitmap(bitmap, displayWidth, displayHeight, true)
+            if (bitmap !== previous) previous.recycle()
+        }
+        if (flipX || flipY) {
+            val previous = bitmap
+            bitmap = Bitmap.createBitmap(
+                bitmap,
+                0,
+                0,
+                bitmap.width,
+                bitmap.height,
+                Matrix().apply {
+                    postScale(if (flipX) -1f else 1f, if (flipY) -1f else 1f)
+                },
+                true,
+            )
+            if (bitmap !== previous) previous.recycle()
+        }
+        return ByteArrayOutputStream().use { output ->
+            check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)) {
+                "PNG encoder rejected captured frame"
+            }
+            output.toByteArray()
+        }
+    } finally {
+        if (!bitmap.isRecycled) bitmap.recycle()
     }
 }
 

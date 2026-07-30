@@ -21,6 +21,7 @@ class PlayerMediaTrack {
     required this.trackIndex,
     required this.selected,
     required this.supported,
+    this.external = false,
     this.title,
     this.language,
     this.codec,
@@ -50,6 +51,7 @@ class PlayerMediaTrack {
       trackIndex: intValue('trackIndex') ?? -1,
       selected: map['selected'] as bool? ?? false,
       supported: map['supported'] as bool? ?? true,
+      external: map['external'] as bool? ?? false,
       title: map['title'] as String?,
       language: map['language'] as String?,
       codec: map['codec'] as String?,
@@ -73,6 +75,7 @@ class PlayerMediaTrack {
   final int trackIndex;
   final bool selected;
   final bool supported;
+  final bool external;
   final String? title;
   final String? language;
   final String? codec;
@@ -119,6 +122,7 @@ class PlayerMediaTrack {
       if (colorInfo != null) 'colorInfo: $colorInfo',
       'selected: $selected',
       'supported: $supported',
+      if (type == PlayerMediaTrackType.subtitle) 'external: $external',
     ];
     return values.join(', ');
   }

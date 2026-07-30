@@ -162,6 +162,7 @@ class PlPlayerController with BlockConfigMixin {
                     entry.value.selected ||
                     entry.value.id == state.track.subtitle.id,
                 supported: true,
+                external: entry.value.uri,
                 title: entry.value.title,
                 language: entry.value.language,
                 codec: entry.value.codec,
@@ -173,6 +174,17 @@ class PlPlayerController with BlockConfigMixin {
 
   PlayerMediaTrack? selectedTrack(PlayerMediaTrackType type) {
     for (final track in tracksFor(type)) {
+      if (track.selected) return track;
+    }
+    return null;
+  }
+
+  List<PlayerMediaTrack> get embeddedSubtitleTracks => tracksFor(
+    PlayerMediaTrackType.subtitle,
+  ).where((track) => !track.external).toList(growable: false);
+
+  PlayerMediaTrack? get selectedEmbeddedSubtitleTrack {
+    for (final track in embeddedSubtitleTracks) {
       if (track.selected) return track;
     }
     return null;

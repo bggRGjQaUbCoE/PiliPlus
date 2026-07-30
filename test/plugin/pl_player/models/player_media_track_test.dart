@@ -37,4 +37,23 @@ void main() {
       throwsFormatException,
     );
   });
+
+  test('marks app-loaded subtitles as external tracks', () {
+    final track = PlayerMediaTrack.fromMap({
+      'type': 'subtitle',
+      'id': 'piliplus-app-subtitle',
+      'groupIndex': 3,
+      'trackIndex': 0,
+      'selected': true,
+      'supported': true,
+      'external': true,
+      'title': '简体中文',
+      'language': 'zh-CN',
+      'mimeType': 'text/vtt',
+    });
+
+    expect(track.external, isTrue);
+    expect(track.displayName, contains('简体中文'));
+    expect(track.details, contains('external: true'));
+  });
 }

@@ -43,6 +43,7 @@ import 'package:PiliPlus/plugin/pl_player/models/data_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/double_tap_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/gesture_type.dart';
+import 'package:PiliPlus/plugin/pl_player/models/player_media_track.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/app_bar_ani.dart';
@@ -227,7 +228,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     }
 
     if (widget.videoDetailController case final controller?) {
-      if (controller.subtitleIndex.value != 0) {
+      if (controller.subtitleIndex.value != 0 ||
+          plPlayerController.selectedTrack(PlayerMediaTrackType.subtitle) !=
+              null) {
         if (visible) {
           const int minPadding = 70;
           if (plPlayerController.subtitlePaddingB < minPadding) {

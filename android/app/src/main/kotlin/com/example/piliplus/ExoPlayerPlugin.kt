@@ -308,6 +308,10 @@ private class ExoPlayerSession(
             )
             else -> null
         }
+        player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
+            .clearOverridesOfType(C.TRACK_TYPE_TEXT)
+            .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, subtitleRequest == null)
+            .build()
         updateSubtitleCues(emptyList())
         if (mediaRequest != null) {
             prepareMedia(player.currentPosition, player.playWhenReady)
@@ -373,6 +377,7 @@ private class ExoPlayerSession(
                     setSubtitleConfigurations(
                         listOf(
                             MediaItem.SubtitleConfiguration.Builder(subtitle.uri)
+                                .setId(APP_SUBTITLE_TRACK_ID)
                                 .setMimeType(subtitle.mimeType)
                                 .setLanguage(subtitle.language)
                                 .setLabel(subtitle.label)
@@ -621,6 +626,7 @@ private fun serializeFormat(
     "trackIndex" to trackIndex,
     "selected" to selected,
     "supported" to supported,
+    "external" to (type == "subtitle" && format.id == APP_SUBTITLE_TRACK_ID),
     "title" to format.label,
     "language" to format.language,
     "codec" to format.codecs,
@@ -644,6 +650,8 @@ private fun Int.unsetToNull(): Int? = takeUnless { it == Format.NO_VALUE }
 private fun Float.unsetToNull(): Float? = takeUnless {
     it == Format.NO_VALUE.toFloat()
 }
+
+private const val APP_SUBTITLE_TRACK_ID = "piliplus-app-subtitle"
 
 private fun serializeCue(cue: Cue): Map<String, Any?>? {
     val text = cue.text ?: return null

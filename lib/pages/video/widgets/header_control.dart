@@ -759,6 +759,32 @@ class HeaderControlState extends State<HeaderControl>
                     );
                   },
                 ),
+              if (plPlayerController.embeddedSubtitleTracks.isNotEmpty)
+                ListTile(
+                  dense: true,
+                  title: const Text('内置字幕轨道', style: titleStyle),
+                  subtitle: Text(
+                    plPlayerController
+                            .selectedEmbeddedSubtitleTrack
+                            ?.displayName ??
+                        '已关闭',
+                    style: subTitleStyle,
+                  ),
+                  leading: const Icon(Icons.closed_caption_outlined, size: 20),
+                  onTap: () async {
+                    Get.back();
+                    final mode = await showTrackSelection(
+                      context,
+                      controller: plPlayerController,
+                      type: PlayerMediaTrackType.subtitle,
+                      tracks: plPlayerController.embeddedSubtitleTracks,
+                      allowAuto: false,
+                    );
+                    if (mode != null) {
+                      videoDetailCtr.subtitleIndex.value = 0;
+                    }
+                  },
+                ),
               if (plPlayerController.playerReady)
                 ListTile(
                   dense: true,
@@ -853,17 +879,21 @@ class HeaderControlState extends State<HeaderControl>
     ];
   }
 
-  static Future<void> showTrackSelection(
+  static Future<PlayerTrackSelectionMode?> showTrackSelection(
     BuildContext context, {
     required PlPlayerController controller,
     required PlayerMediaTrackType type,
+    List<PlayerMediaTrack>? tracks,
+    bool allowAuto = true,
   }) async {
-    final tracks = controller.tracksFor(type);
-    final selected = controller.selectedTrack(type);
+    final availableTracks = tracks ?? controller.tracksFor(type);
+    final selected = availableTracks
+        .where((track) => track.selected)
+        .firstOrNull;
     final title = switch (type) {
       PlayerMediaTrackType.video => '视频轨道',
       PlayerMediaTrackType.audio => '音频轨道',
-      PlayerMediaTrackType.subtitle => '字幕轨道',
+      PlayerMediaTrackType.subtitle => '内置字幕轨道',
     };
     String trackValue(PlayerMediaTrack track) =>
         'track:${track.groupIndex}:${track.trackIndex}:${track.id}';
@@ -881,17 +911,18 @@ class HeaderControlState extends State<HeaderControl>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const RadioListTile<String>(
-                  value: 'auto',
-                  title: Text('自动选择'),
-                  dense: true,
-                ),
+                if (allowAuto)
+                  const RadioListTile<String>(
+                    value: 'auto',
+                    title: Text('自动选择'),
+                    dense: true,
+                  ),
                 const RadioListTile<String>(
                   value: 'disabled',
                   title: Text('关闭'),
                   dense: true,
                 ),
-                ...tracks.map(
+                ...availableTracks.map(
                   (track) => RadioListTile<String>(
                     value: trackValue(track),
                     title: Text(track.displayName),
@@ -915,20 +946,22 @@ class HeaderControlState extends State<HeaderControl>
         ],
       ),
     );
-    if (value == null) return;
+    if (value == null) return null;
     try {
       if (value == 'auto') {
         await controller.setTrackSelection(
           type,
           PlayerTrackSelectionMode.auto,
         );
+        return PlayerTrackSelectionMode.auto;
       } else if (value == 'disabled') {
         await controller.setTrackSelection(
           type,
           PlayerTrackSelectionMode.disabled,
         );
+        return PlayerTrackSelectionMode.disabled;
       } else {
-        final track = tracks.firstWhere(
+        final track = availableTracks.firstWhere(
           (track) => trackValue(track) == value,
         );
         await controller.setTrackSelection(
@@ -936,9 +969,11 @@ class HeaderControlState extends State<HeaderControl>
           PlayerTrackSelectionMode.track,
           track: track,
         );
+        return PlayerTrackSelectionMode.track;
       }
     } catch (error) {
       SmartDialog.showToast('切换$title失败: $error');
+      return null;
     }
   }
 

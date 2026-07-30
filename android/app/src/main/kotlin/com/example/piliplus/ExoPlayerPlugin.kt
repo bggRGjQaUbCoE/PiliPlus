@@ -33,7 +33,10 @@ import androidx.media3.common.text.CueGroup
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.analytics.AnalyticsListener
+import androidx.media3.exoplayer.audio.AudioSink
+import androidx.media3.exoplayer.audio.DefaultAudioSink
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.MergingMediaSource
@@ -108,6 +111,9 @@ private class ExoPlayerManager(
                     val generation = call.requiredLong("generation")
                     val playWhenReady = call.argument<Boolean>("playWhenReady") ?: false
                     val preserveSubtitle = call.argument<Boolean>("preserveSubtitle") ?: false
+                    val audioNormalization = AudioNormalizationConfiguration.fromMap(
+                        call.argument<Map<*, *>>("audioNormalization"),
+                    )
                     player.open(
                         videoUrl,
                         audioUrl,
@@ -116,6 +122,7 @@ private class ExoPlayerManager(
                         playWhenReady,
                         preserveSubtitle,
                         generation,
+                        audioNormalization,
                     )
                     result.success(null)
                 }
@@ -212,7 +219,11 @@ private class ExoPlayerSession(
     private val surfaceProducer: TextureRegistry.SurfaceProducer,
     private val sendEvent: (Map<String, Any?>) -> Unit,
 ) : Player.Listener, AnalyticsListener {
-    val player: ExoPlayer = ExoPlayer.Builder(context).build().also {
+    private val audioNormalizationProcessor = AudioNormalizationProcessor()
+    val player: ExoPlayer = ExoPlayer.Builder(
+        context,
+        NormalizingRenderersFactory(context, audioNormalizationProcessor),
+    ).build().also {
         it.addListener(this)
         it.addAnalyticsListener(this)
         it.playWhenReady = false
@@ -253,9 +264,11 @@ private class ExoPlayerSession(
         playWhenReady: Boolean,
         preserveSubtitle: Boolean,
         generation: Long,
+        audioNormalization: AudioNormalizationConfiguration?,
     ) {
+        audioNormalizationProcessor.setConfiguration(audioNormalization)
         mediaGeneration = generation
-        mediaRequest = MediaRequest(videoUrl, audioUrl, headers)
+        mediaRequest = MediaRequest(videoUrl, audioUrl, headers, audioNormalization)
         videoDecoder = null
         audioDecoder = null
         if (!preserveSubtitle) {
@@ -479,6 +492,7 @@ private class ExoPlayerSession(
                 "videoDecoder" to videoDecoder,
                 "audioDecoder" to audioDecoder,
                 "mediaDescription" to mediaRequest?.description,
+                "audioNormalization" to mediaRequest?.audioNormalization?.filter,
             ),
         )
     }
@@ -519,6 +533,7 @@ private data class MediaRequest(
     val videoUrl: String,
     val audioUrl: String?,
     val headers: Map<String, String>,
+    val audioNormalization: AudioNormalizationConfiguration?,
 ) {
     val description: String
         get() = buildString {
@@ -529,6 +544,21 @@ private data class MediaRequest(
                 append(audioUrl)
             }
         }
+}
+
+private class NormalizingRenderersFactory(
+    context: Context,
+    private val audioNormalizationProcessor: AudioNormalizationProcessor,
+) : DefaultRenderersFactory(context) {
+    override fun buildAudioSink(
+        context: Context,
+        enableFloatOutput: Boolean,
+        enableAudioOutputPlaybackParameters: Boolean,
+    ): AudioSink = DefaultAudioSink.Builder(context)
+        .setAudioProcessors(arrayOf(audioNormalizationProcessor))
+        .setEnableFloatOutput(enableFloatOutput)
+        .setEnableAudioOutputPlaybackParameters(enableAudioOutputPlaybackParameters)
+        .build()
 }
 
 private data class SubtitleRequest(

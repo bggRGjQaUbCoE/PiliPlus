@@ -10,7 +10,6 @@ import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
-import 'package:PiliPlus/models/common/audio_normalization.dart';
 import 'package:PiliPlus/models/common/super_resolution_type.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/user/danmaku_rule.dart';
@@ -21,6 +20,7 @@ import 'package:PiliPlus/pages/setting/models/play_settings.dart'
     show kMaxVolume;
 import 'package:PiliPlus/pages/sponsor_block/block_mixin.dart';
 import 'package:PiliPlus/plugin/pl_player/exo_player/exo_player_controller.dart';
+import 'package:PiliPlus/plugin/pl_player/models/audio_normalization_filter.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/double_tap_type.dart';
@@ -877,8 +877,42 @@ class PlPlayerController with BlockConfigMixin {
   late final _audioNormalization = Pref.audioNormalization;
   late final enableAudioNormalization =
       Platform.isAndroid && _audioNormalization != '0';
-  late final String _audioNormalizationParam =
-      AudioNormalization.getParamFromConfig(_audioNormalization);
+  Volume? _normalizationVolume;
+  String? _lastUnsupportedExoAudioNormalization;
+
+  static final loudnormRegExp = RegExp('loudnorm=([^,]+)');
+
+  String? _resolveAudioNormalizationFilter(Volume? volume) {
+    if (!enableAudioNormalization) return null;
+    return resolveAudioNormalizationFilter(
+      config: _audioNormalization,
+      fallbackConfig: Pref.fallbackNormalization,
+      volume: volume,
+    );
+  }
+
+  Map<String, Object>? _resolveExoAudioNormalization(Volume? volume) {
+    if (!enableAudioNormalization) return null;
+    final resolution = resolveExoAudioNormalization(
+      config: _audioNormalization,
+      fallbackConfig: Pref.fallbackNormalization,
+      volume: volume,
+    );
+    switch (resolution) {
+      case ExoAudioNormalizationConfiguration():
+        _lastUnsupportedExoAudioNormalization = null;
+        return resolution.toMap();
+      case UnsupportedExoAudioNormalization(:final filter):
+        if (_lastUnsupportedExoAudioNormalization != filter) {
+          _lastUnsupportedExoAudioNormalization = filter;
+          SmartDialog.showToast('当前音量均衡参数尚未适配 ExoPlayer，已保持原始音频');
+        }
+        return null;
+      case null:
+        _lastUnsupportedExoAudioNormalization = null;
+        return null;
+    }
+  }
 
   // 初始化资源
   Future<void> setDataSource(
@@ -930,6 +964,7 @@ class PlPlayerController with BlockConfigMixin {
       _epid = epid;
       _seasonId = seasonId;
       _pgcType = pgcType;
+      _normalizationVolume = volume;
 
       if (showSeekPreview) {
         _clearPreview();
@@ -1058,8 +1093,6 @@ class PlPlayerController with BlockConfigMixin {
     }
   }
 
-  static final loudnormRegExp = RegExp('loudnorm=([^,]+)');
-
   Future<Player> _initPlayer() async {
     assert(_videoPlayerController == null);
     final opt = {
@@ -1172,26 +1205,9 @@ class PlPlayerController with BlockConfigMixin {
             // '!delay_open,media_type=audio;'
             '%${isFileSource ? utf8.encode(audio).length : audio.length}%$audio');
       }
-      if (enableAudioNormalization) {
-        final String audioNormalization;
-        if (volume != null && volume.isNotEmpty) {
-          audioNormalization = _audioNormalizationParam.replaceFirstMapped(
-            loudnormRegExp,
-            (i) =>
-                'loudnorm=${volume.format(Map.fromEntries(i.group(1)!.split(':').map((item) {
-                  final parts = item.split('=');
-                  return MapEntry(parts[0].toLowerCase(), num.parse(parts[1]));
-                })))}',
-          );
-        } else {
-          audioNormalization = _audioNormalizationParam.replaceFirst(
-            loudnormRegExp,
-            AudioNormalization.getParamFromConfig(Pref.fallbackNormalization),
-          );
-        }
-        if (audioNormalization.isNotEmpty) {
-          extras['lavfi-complex'] = '"[aid1] $audioNormalization [ao]"';
-        }
+      final audioNormalization = _resolveAudioNormalizationFilter(volume);
+      if (audioNormalization != null) {
+        extras['lavfi-complex'] = '"[aid1] $audioNormalization [ao]"';
       }
     }
 
@@ -1234,6 +1250,9 @@ class PlPlayerController with BlockConfigMixin {
       position: position,
       playWhenReady: playWhenReady,
       preserveSubtitle: preserveSubtitle,
+      audioNormalization: audio?.isNotEmpty != true
+          ? null
+          : _resolveExoAudioNormalization(_normalizationVolume),
     );
   }
 

@@ -227,6 +227,7 @@ class ExoPlayerController {
     Duration position = Duration.zero,
     bool playWhenReady = false,
     bool preserveSubtitle = false,
+    Map<String, Object>? audioNormalization,
   }) {
     final generation = ++_generation;
     _playWhenReady = playWhenReady;
@@ -239,6 +240,7 @@ class ExoPlayerController {
       'positionMs': position.inMilliseconds,
       'playWhenReady': playWhenReady,
       'preserveSubtitle': preserveSubtitle,
+      'audioNormalization': audioNormalization,
     });
   }
 

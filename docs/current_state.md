@@ -1,6 +1,6 @@
 # pili++ 当前项目状态
 
-> 最后核对：2026-07-30 13:50 +08:00
+> 最后核对：2026-07-30 16:39 +08:00
 >
 > 本文件记录会随开发变化、但后续任务必须知道的事实。开始任务时先核对这里与实际
 > Git、源码和构建产物；结束任务前更新。长期规则见 `AGENTS.md`，ExoPlayer 详细兼容
@@ -11,14 +11,14 @@
 - 当前分支：`main`
 - 最新 GitHub 发布源提交：`859d39c4ff3c77c37e1cc1d7131192df8f8b4241`
   (`chore: prepare 2.1.2 release`)
-- 最新功能快照：`c02aea597c6c41184261a8e32aac401b145e39b6`
-  (`feat: expose Media3 tracks and player info`)
+- 最新功能快照：`54babbf8f08577771fb600f0f6e63d039c5b6ead`
+  (`feat: add Media3 loudness normalization`)
 - 最新上游合并提交：`0e4e8db250e986c4f8e32652fac2652651ec4168`
   (`Merge remote-tracking branch 'upstream/main' into codex/android-exoplayer`)
 - 上游：`https://github.com/bggRGjQaUbCoE/PiliPlus.git`
 - 已获取并合入的 `upstream/main`：`5296a8f7f07a22f347ad53bc8c7651e6787bf3ec`
 - 当前分支已包含上游 `56ca0ca`、`10b723f`、`e4e7037`、`91e7899` 和 `5296a8f`；
-  本状态更新提交完成后相对上游为本地领先 19、落后 0。
+  本状态更新提交完成后相对上游为本地领先 21、落后 0。
 - 应用内小窗、音频焦点/媒体控制、系统 PiP 恢复、版本更新和兼容记录已保存到上述
   功能快照。交接时应以实际 `git status` 为准；存在未提交修改时不得直接 merge 或
   rebase。
@@ -100,6 +100,26 @@
 
 ## 当前待验证修改
 
+- ExoPlayer 适配批次 4 实现已提交为
+  `54babbf8f08577771fb600f0f6e63d039c5b6ead`：复用 mpv 当前的 loudnorm 参数生成和
+  B 站服务器 `voiceBalance` 测量数据，将两遍 loudnorm 的目标增益及真峰值限制传入
+  Media3；Android `DefaultAudioSink` 接入 16-bit/float PCM 处理器，声道联动、超峰
+  立即降增益并在 80ms 内平滑恢复，不改变用户音量、静音和音频焦点增益。
+- 批次 4 对 `dynaudnorm`、缺少服务器测量值的单遍 loudnorm、链式及任意自定义
+  FFmpeg 滤镜不虚标兼容：ExoPlayer 保持原始音频并提示一次，相关能力继续列为缺口。
+- 批次 4 全部相关 Dart 文件通过格式检查；完整 `dart analyze` 无 error/warning，
+  保留 37 条既有 info；完整 `flutter test` 共 15 项全部通过，其中新增 6 项归一化
+  参数和边界测试；Android Debug 和 Release 构建均通过。`flutter analyze` 仍在仓库
+  分析前被工作区 Flutter SDK 缺失的 iOS 集成测试资源中断。
+- 批次 4 最终 Android Release 审计包位于
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch4-loudness-audit-v2.apk`，
+  SHA-256 为
+  `6511FB1003B4F7AB8DACBD67F99A152DD2A05162ADBA6F1EF581B3F821665381`；
+  `tool/verify_release.ps1 -AllowAlreadyDelivered` 已确认 applicationId、应用名、版本、
+  universal ABI 和签名证书均符合基线。该包不是新版本交付，不更新发布基线。
+- 批次 4 仍待真机对照：同一含服务器测量参数的视频在 mpv/ExoPlayer 下的安静与
+  已较响素材、扬声器/耳机、播放暂停、跳转、切清晰度/分P、后台、应用内小窗和
+  系统 PiP；未完成上述对照前不得把响度归一化整体标记为完成。
 - ExoPlayer 适配批次 3 实现已提交为
   `c02aea597c6c41184261a8e32aac401b145e39b6`：Media3 音视频/文本轨道的枚举、选中
   状态、支持状态和格式参数已回传 Flutter；公共控制器支持自动、关闭和指定轨道；
@@ -175,18 +195,22 @@
 - 超分辨率入口已不再隐藏或进入 mpv 空对象路径，但 Media3 等价效果尚未实现。
 - 原生音视频轨道枚举/选择和播放器信息已接入 Media3，仍待批次 3 真机对照；内置
   文本轨独立选择入口尚未加入视频设置菜单。
-- mpv `loudnorm` 音频归一化尚无 Media3 等价实现。
+- 服务器提供测量参数的两遍 `loudnorm` 已接入 Media3 PCM 增益与真峰值限制器，仍待
+  真机与 mpv 对照；`dynaudnorm`、无测量值的单遍 loudnorm、链式及任意自定义
+  FFmpeg 滤镜尚无 Media3 等价实现。
 - 网络变化、解码失败、进程重建和更多边缘生命周期仍需继续闭环。
 
 ## 下一步
 
-1. 使用批次 3 审计 APK 在 mpv 与 ExoPlayer 下逐项对照 DASH 独立音视频、本地
+1. 使用批次 4 最终审计 APK 对照服务器测量 loudnorm 的音量和听感，并覆盖切换、
+   后台、应用内小窗和系统 PiP；通过后补充真机验证记录。
+2. 使用批次 3 审计 APK 在 mpv 与 ExoPlayer 下逐项对照 DASH 独立音视频、本地
    多轨、自动/关闭/指定轨道、“听视频”无重载切换及播放信息字段；通过后补充真机
    验证记录。
-2. 继续处理内置文本轨选择入口，或进入下一个最高优先级缺口：Media3 响度归一化、
-   网络/解码错误恢复和错误诊断。
-3. 批次 2 的 bitmap cue、竖排字幕，以及批次 1 的 Media3 截图、动图和超分效果
+3. 下一批优先处理内置文本轨选择入口，或网络/解码错误恢复和错误诊断；动态/自定义
+   音频滤镜仍保留为独立兼容任务。
+4. 批次 2 的 bitmap cue、竖排字幕，以及批次 1 的 Media3 截图、动图和超分效果
    仍是明确功能缺口，不因当前真机流程无异常而关闭。
-4. 修复 Flutter SDK 缺失的 iOS 测试资源后重跑完整 `flutter analyze`。
-5. 真机回归本次上游同步涉及的视频卡片、UGC 分P列表、动态/评论文本选择和滚动。
-6. 继续跟踪上游；下次同步仍先 fetch、检查重叠文件，再执行合并和完整验证。
+5. 修复 Flutter SDK 缺失的 iOS 测试资源后重跑完整 `flutter analyze`。
+6. 真机回归本次上游同步涉及的视频卡片、UGC 分P列表、动态/评论文本选择和滚动。
+7. 继续跟踪上游；下次同步仍先 fetch、检查重叠文件，再执行合并和完整验证。

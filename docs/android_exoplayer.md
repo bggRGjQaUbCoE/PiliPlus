@@ -435,3 +435,53 @@ enumerated by the common/native API and shown in player information, but their
 dedicated user selection entry is not part of this audio/video-track batch.
 The audit APK is not a new delivered version and does not update the release
 baseline.
+
+### Fourth post-mini-player compatibility hardening batch
+
+The fourth follow-up batch connects the server-measured two-pass `loudnorm`
+path to Media3 without changing the existing player-volume, mute, audio-focus,
+background, or PiP state flows:
+
+- the existing Flutter normalization resolver remains the single source of
+  truth for user targets, Bilibili `voiceBalance` measurements, and fallback
+  selection, so MPV and ExoPlayer do not interpret the setting separately;
+- measured integrated loudness and target offset are converted into a PCM gain,
+  while the configured true-peak target is sent separately to Android;
+- Media3 uses an app-local `BaseAudioProcessor` in `DefaultAudioSink`. It
+  supports 16-bit and float PCM, links all channels to the same gain, lowers
+  gain immediately when a decoded frame would exceed the target peak, and
+  releases the limiter over 80 ms instead of hard-clipping each sample;
+- opening, refreshing, changing part/quality, or reusing the player session
+  updates immutable normalization parameters without recreating the ExoPlayer
+  instance. A media event also exposes the applied filter for diagnostics;
+- `dynaudnorm`, a one-pass `loudnorm` without server measurements, chained
+  filters, and arbitrary custom FFmpeg filters are not represented as
+  compatible. ExoPlayer keeps the original audio and shows one explicit notice
+  per unsupported parameter instead of silently no-oping or falling back to
+  MPV.
+
+The implementation commit is
+`54babbf8f08577771fb600f0f6e63d039c5b6ead`. Formatting and full
+`dart analyze` pass; the analyzer reports no errors or warnings and the same
+37 existing info diagnostics. All 15 Flutter tests pass, including six new
+normalization-resolution tests. Android Debug and Release builds pass.
+`flutter analyze` remains blocked before repository analysis by the same
+missing Flutter SDK iOS integration-test resource.
+
+The final Release audit APK passed application ID, label, version, universal
+ABI, and signing-certificate verification:
+
+- APK:
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch4-loudness-audit-v2.apk`
+- SHA-256:
+  `6511FB1003B4F7AB8DACBD67F99A152DD2A05162ADBA6F1EF581B3F821665381`
+- certificate SHA-256:
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+Real-device comparison is still required with the same measured video in MPV
+and ExoPlayer, including quiet and already-loud material, speaker/headphones,
+play/pause, seek, quality/part changes, background playback, app mini-player,
+and system PiP. The current implementation closes only the server-measured
+two-pass `loudnorm` path after that comparison; dynamic and arbitrary FFmpeg
+filters remain explicit compatibility gaps. The audit APK is not a new
+delivered version and does not update the release baseline.

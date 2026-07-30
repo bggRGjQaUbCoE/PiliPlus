@@ -1,6 +1,6 @@
 # pili++ 当前项目状态
 
-> 最后核对：2026-07-30 11:29 +08:00
+> 最后核对：2026-07-30 12:43 +08:00
 >
 > 本文件记录会随开发变化、但后续任务必须知道的事实。开始任务时先核对这里与实际
 > Git、源码和构建产物；结束任务前更新。长期规则见 `AGENTS.md`，ExoPlayer 详细兼容
@@ -11,14 +11,14 @@
 - 当前分支：`main`
 - 最新 GitHub 发布源提交：`859d39c4ff3c77c37e1cc1d7131192df8f8b4241`
   (`chore: prepare 2.1.2 release`)
-- 最新功能快照：`5ac01dd98a29584c1f5e27567fff9d42b25e7337`
-  (`fix: stabilize in-app mini player lifecycle`)
+- 最新功能快照：`ad34b69315e54a1ebfb7890262a29d7d2734604c`
+  (`fix: route player utilities through shared controller`)
 - 最新上游合并提交：`0e4e8db250e986c4f8e32652fac2652651ec4168`
   (`Merge remote-tracking branch 'upstream/main' into codex/android-exoplayer`)
 - 上游：`https://github.com/bggRGjQaUbCoE/PiliPlus.git`
 - 已获取并合入的 `upstream/main`：`5296a8f7f07a22f347ad53bc8c7651e6787bf3ec`
 - 当前分支已包含上游 `56ca0ca`、`10b723f`、`e4e7037`、`91e7899` 和 `5296a8f`；
-  本状态更新提交完成后相对上游为本地领先 13、落后 0。
+  本状态更新提交完成后相对上游为本地领先 15、落后 0。
 - 应用内小窗、音频焦点/媒体控制、系统 PiP 恢复、版本更新和兼容记录已保存到上述
   功能快照。交接时应以实际 `git status` 为准；存在未提交修改时不得直接 merge 或
   rebase。
@@ -95,6 +95,25 @@
 
 ## 当前待验证修改
 
+- ExoPlayer 适配批次 1 实现已提交为
+  `ad34b69315e54a1ebfb7890262a29d7d2734604c`：播放器音量入口改走公共控制器并同时
+  支持 mpv 与 ExoPlayer；普通截图和评论区视频截图改用可区分成功、未适配和失败的
+  公共结果；
+  超分辨率两个入口改走公共控制器，ExoPlayer 下保持关闭并给出明确迁移提示，不再
+  隐藏设置入口或进入 mpv 空对象路径。Media3 原生截图和超分效果仍是后续缺口，
+  本批不标记为已适配。
+- 本批相关文件通过格式检查；完整 `dart analyze` 无 error/warning，保留 37 条既有
+  info；新增的 3 个公共功能结果契约测试全部通过。`flutter analyze` 仍在仓库分析前
+  被工作区 Flutter SDK 缺失的 iOS 集成测试资源中断。
+- Android Release 审计包位于
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch1-audit.apk`，
+  SHA-256 为
+  `35F2FA1E9F3889860FDD354F0E53BDE7A307BF39085414DF2410C50735003802`；
+  `tool/verify_release.ps1 -AllowAlreadyDelivered` 已确认 applicationId、应用名、版本、
+  universal ABI 和签名证书均符合基线。该包不是新版本交付，不更新发布基线。
+- 本批仍待真机对照：mpv/ExoPlayer 播放器音量调整及静音/音频焦点状态；mpv 普通
+  截图回归；ExoPlayer 普通截图和评论区截图的明确反馈；番剧全屏底栏和设置菜单的
+  超分辨率入口在 ExoPlayer 下无异常、mpv 下 Shader 行为不回归。
 - 小窗生命周期修复的三个相关 Dart 文件已通过 `dart format` 和定向
   `dart analyze`；Android Release 构建及
   `tool/verify_release.ps1 -AllowAlreadyDelivered` 审计已通过。审计包位于
@@ -109,16 +128,18 @@
 ## ExoPlayer 已知未闭环项
 
 - 直播仍使用 mpv。
-- 截图和动图截取尚无 ExoPlayer 等价实现。
-- 超分辨率入口在 ExoPlayer 模式下仍被隐藏。
+- 截图和动图截取尚无 ExoPlayer 等价实现；截图调用已公共化且不再静默失败。
+- 超分辨率入口已不再隐藏或进入 mpv 空对象路径，但 Media3 等价效果尚未实现。
 - 原生音视频轨道枚举/选择和完整播放器信息尚未接入 Media3。
 - mpv `loudnorm` 音频归一化尚无 Media3 等价实现。
 - 网络变化、解码失败、进程重建和更多边缘生命周期仍需继续闭环。
 
 ## 下一步
 
-1. 修复 Flutter SDK 缺失的 iOS 测试资源后重跑完整静态分析。
-2. 真机回归本次上游同步涉及的视频卡片、UGC 分P列表、动态/评论文本选择和滚动。
-3. 按适配计划继续处理最高优先级的 ExoPlayer 未闭环项，不得通过隐藏入口或回退
-   mpv 宣称完成。
-4. 继续跟踪上游；下次同步仍先 fetch、检查重叠文件，再执行合并和完整验证。
+1. 使用批次 1 审计 APK 在 mpv 与 ExoPlayer 下完成播放器音量、截图反馈和两个
+   超分辨率入口的真机对照；通过后补充真机验证记录。
+2. 修复 Flutter SDK 缺失的 iOS 测试资源后重跑完整 `flutter analyze`。
+3. 真机回归本次上游同步涉及的视频卡片、UGC 分P列表、动态/评论文本选择和滚动。
+4. 批次 1 验收后按适配计划进入字幕格式闭环，不得把本批的明确迁移提示误记为
+   Media3 截图或超分辨率已完成。
+5. 继续跟踪上游；下次同步仍先 fetch、检查重叠文件，再执行合并和完整验证。

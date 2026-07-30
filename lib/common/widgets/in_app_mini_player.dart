@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 import 'dart:math' as math;
 
@@ -22,6 +23,7 @@ class InAppMiniPlayerHost extends StatefulWidget {
 class _InAppMiniPlayerHostState extends State<InAppMiniPlayerHost>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   static const _animationDuration = Duration(milliseconds: 360);
+  static const _controlsVisibleDuration = Duration(seconds: 3);
 
   late final AnimationController _animationController = AnimationController(
     vsync: this,
@@ -29,6 +31,8 @@ class _InAppMiniPlayerHostState extends State<InAppMiniPlayerHost>
   )..addStatusListener(_onAnimationStatus);
   InAppMiniPlayerSession? _animatedSession;
   Offset? _position;
+  Timer? _controlsHideTimer;
+  bool _controlsVisible = false;
   bool _wasSystemPip = false;
   bool _restoreAfterSystemPip = false;
 
@@ -47,6 +51,7 @@ class _InAppMiniPlayerHostState extends State<InAppMiniPlayerHost>
 
   @override
   void dispose() {
+    _controlsHideTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     InAppMiniPlayerService.instance.removeListener(_onSessionChanged);
     if (Platform.isAndroid) {
@@ -110,7 +115,9 @@ class _InAppMiniPlayerHostState extends State<InAppMiniPlayerHost>
     if (session == null) {
       _animatedSession = null;
       _animationController.stop();
+      _hideMiniPlayerControls();
     } else if (session.phase == .entering || session.phase == .restoring) {
+      _hideMiniPlayerControls();
       if (!identical(_animatedSession, session)) {
         _animatedSession = session;
         _animationController.forward(from: 0);
@@ -120,6 +127,29 @@ class _InAppMiniPlayerHostState extends State<InAppMiniPlayerHost>
       _restoreVideoPageAfterSystemPip();
     }
     if (mounted) setState(() {});
+  }
+
+  void _hideMiniPlayerControls() {
+    _controlsHideTimer?.cancel();
+    _controlsHideTimer = null;
+    if (_controlsVisible) {
+      _controlsVisible = false;
+    }
+  }
+
+  void _showMiniPlayerControls() {
+    final session = InAppMiniPlayerService.instance.value;
+    if (session?.phase != .active) return;
+    _controlsHideTimer?.cancel();
+    if (mounted && !_controlsVisible) {
+      setState(() => _controlsVisible = true);
+    }
+    _controlsHideTimer = Timer(_controlsVisibleDuration, () {
+      if (mounted) {
+        setState(() => _controlsVisible = false);
+      }
+      _controlsHideTimer = null;
+    });
   }
 
   void _onAnimationStatus(AnimationStatus status) {
@@ -233,10 +263,12 @@ class _InAppMiniPlayerHostState extends State<InAppMiniPlayerHost>
                                 );
                               });
                             },
+                            onTap: _showMiniPlayerControls,
                             child: _MiniPlayerCard(
                               session: session,
                               borderRadius: radius,
-                              showControls: interactive,
+                              showControls: interactive && _controlsVisible,
+                              onControlsInteraction: _showMiniPlayerControls,
                             ),
                           ),
                         ),
@@ -258,11 +290,13 @@ class _MiniPlayerCard extends StatelessWidget {
     required this.session,
     required this.borderRadius,
     required this.showControls,
+    required this.onControlsInteraction,
   });
 
   final InAppMiniPlayerSession session;
   final double borderRadius;
   final bool showControls;
+  final VoidCallback onControlsInteraction;
 
   @override
   Widget build(BuildContext context) {
@@ -295,97 +329,118 @@ class _MiniPlayerCard extends StatelessWidget {
                     ),
                   ),
                 ),
-              if (showControls) ...[
-                const DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color(0x66000000),
-                        Colors.transparent,
-                        Color(0x88000000),
-                      ],
-                    ),
-                  ),
-                ),
-                Positioned(
-                  left: 2,
-                  top: 2,
-                  child: _MiniButton(
-                    tooltip: '返回视频',
-                    icon: Icons.open_in_full_rounded,
-                    onPressed: InAppMiniPlayerService.instance.restore,
-                  ),
-                ),
-                Positioned(
-                  right: 2,
-                  top: 2,
-                  child: _MiniButton(
-                    tooltip: '关闭小窗',
-                    icon: Icons.close_rounded,
-                    onPressed: InAppMiniPlayerService.instance.dismiss,
-                  ),
-                ),
-                Center(
-                  child: Obx(() {
-                    final isPlaying = player.playerStatus.value.isPlaying;
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (!player.isLive)
-                          _MiniButton(
-                            tooltip: '后退 10 秒',
-                            icon: Icons.replay_10_rounded,
-                            onPressed: () {
-                              player.seekTo(
-                                player.currentPosition -
-                                    const Duration(seconds: 10),
-                                isSeek: false,
-                              );
-                            },
+              AnimatedOpacity(
+                opacity: showControls ? 1 : 0,
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOut,
+                child: IgnorePointer(
+                  ignoring: !showControls,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      const DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Color(0x66000000),
+                              Colors.transparent,
+                              Color(0x88000000),
+                            ],
                           ),
-                        _MiniButton(
-                          tooltip: isPlaying ? '暂停' : '播放',
-                          icon: isPlaying
-                              ? Icons.pause_rounded
-                              : Icons.play_arrow_rounded,
-                          iconSize: 30,
-                          onPressed: isPlaying ? player.pause : player.play,
                         ),
-                        if (!player.isLive)
-                          _MiniButton(
-                            tooltip: '前进 10 秒',
-                            icon: Icons.forward_10_rounded,
-                            onPressed: () {
-                              final target =
-                                  player.currentPosition +
-                                  const Duration(seconds: 10);
-                              player.seekTo(
-                                target > player.currentDuration
-                                    ? player.currentDuration
-                                    : target,
-                                isSeek: false,
-                              );
-                            },
+                      ),
+                      Positioned(
+                        left: 2,
+                        top: 2,
+                        child: _MiniButton(
+                          tooltip: '返回视频',
+                          icon: Icons.open_in_full_rounded,
+                          onPressed: InAppMiniPlayerService.instance.restore,
+                          onInteraction: onControlsInteraction,
+                        ),
+                      ),
+                      Positioned(
+                        right: 2,
+                        top: 2,
+                        child: _MiniButton(
+                          tooltip: '关闭小窗',
+                          icon: Icons.close_rounded,
+                          onPressed: InAppMiniPlayerService.instance.dismiss,
+                          onInteraction: onControlsInteraction,
+                        ),
+                      ),
+                      Center(
+                        child: Obx(() {
+                          final isPlaying = player.playerStatus.value.isPlaying;
+                          return Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (!player.isLive)
+                                _MiniButton(
+                                  tooltip: '后退 10 秒',
+                                  icon: Icons.replay_10_rounded,
+                                  onPressed: () {
+                                    player.seekTo(
+                                      player.currentPosition -
+                                          const Duration(seconds: 10),
+                                      isSeek: false,
+                                    );
+                                  },
+                                  onInteraction: onControlsInteraction,
+                                ),
+                              _MiniButton(
+                                tooltip: isPlaying ? '暂停' : '播放',
+                                icon: isPlaying
+                                    ? Icons.pause_rounded
+                                    : Icons.play_arrow_rounded,
+                                iconSize: 30,
+                                onPressed: isPlaying
+                                    ? player.pause
+                                    : player.play,
+                                onInteraction: onControlsInteraction,
+                              ),
+                              if (!player.isLive)
+                                _MiniButton(
+                                  tooltip: '前进 10 秒',
+                                  icon: Icons.forward_10_rounded,
+                                  onPressed: () {
+                                    final target =
+                                        player.currentPosition +
+                                        const Duration(seconds: 10);
+                                    player.seekTo(
+                                      target > player.currentDuration
+                                          ? player.currentDuration
+                                          : target,
+                                      isSeek: false,
+                                    );
+                                  },
+                                  onInteraction: onControlsInteraction,
+                                ),
+                            ],
+                          );
+                        }),
+                      ),
+                      if (session.title case final title? when title.isNotEmpty)
+                        Positioned(
+                          left: 8,
+                          right: 8,
+                          bottom: 5,
+                          child: Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                            ),
                           ),
-                      ],
-                    );
-                  }),
-                ),
-                if (session.title case final title? when title.isNotEmpty)
-                  Positioned(
-                    left: 8,
-                    right: 8,
-                    bottom: 5,
-                    child: Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: Colors.white, fontSize: 11),
-                    ),
+                        ),
+                    ],
                   ),
-              ],
+                ),
+              ),
             ],
           ),
         ),
@@ -431,12 +486,14 @@ class _MiniButton extends StatelessWidget {
     required this.tooltip,
     required this.icon,
     required this.onPressed,
+    this.onInteraction,
     this.iconSize = 20,
   });
 
   final String tooltip;
   final IconData icon;
   final VoidCallback onPressed;
+  final VoidCallback? onInteraction;
   final double iconSize;
 
   @override
@@ -448,7 +505,10 @@ class _MiniButton extends StatelessWidget {
         backgroundColor: WidgetStatePropertyAll(Color(0x55000000)),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
-      onPressed: onPressed,
+      onPressed: () {
+        onInteraction?.call();
+        onPressed();
+      },
       icon: Icon(icon, color: Colors.white, size: iconSize),
     );
   }

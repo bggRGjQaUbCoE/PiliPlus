@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
+import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
@@ -47,6 +50,10 @@ class InAppMiniPlayerService extends ValueNotifier<InAppMiniPlayerSession?> {
   VoidCallback? _onRestorePageReady;
   bool _restoreAnimationCompleted = false;
   Rect? _restoreDestinationRect;
+  PlPlayerController? _completionObservedPlayer;
+
+  late final ValueChanged<PlayerStatus> _completionListener =
+      _onPlayerStatusChanged;
 
   Rect? get restoreDestinationRect => _restoreDestinationRect;
 
@@ -58,6 +65,10 @@ class InAppMiniPlayerService extends ValueNotifier<InAppMiniPlayerSession?> {
     String? title,
     Rect? sourceRect,
   }) {
+    if (_hasCompletedPlayback(player)) {
+      if (owns(player)) dismiss();
+      return false;
+    }
     final arguments = Map<String, dynamic>.from(routeArguments)
       ..remove(restoreArgument);
     if (title?.isNotEmpty == true) {
@@ -74,6 +85,7 @@ class InAppMiniPlayerService extends ValueNotifier<InAppMiniPlayerSession?> {
         phase: InAppMiniPlayerPhase.entering,
         sourceRect: sourceRect,
       );
+      _observeCompletion(player);
       return true;
     }
 
@@ -88,6 +100,7 @@ class InAppMiniPlayerService extends ValueNotifier<InAppMiniPlayerSession?> {
       phase: InAppMiniPlayerPhase.entering,
       sourceRect: sourceRect,
     );
+    _observeCompletion(player);
     return true;
   }
 
@@ -99,6 +112,7 @@ class InAppMiniPlayerService extends ValueNotifier<InAppMiniPlayerSession?> {
 
   void dismiss() {
     final session = value;
+    _stopObservingCompletion();
     if (session == null) return;
     _resetRestoreHandshake();
     value = null;
@@ -108,6 +122,7 @@ class InAppMiniPlayerService extends ValueNotifier<InAppMiniPlayerSession?> {
   void restore() {
     final session = value;
     if (session == null || session.phase != .active) return;
+    _stopObservingCompletion();
     final arguments = Map<String, dynamic>.from(session.routeArguments)
       ..['progress'] = session.player.currentPosition.inMilliseconds
       ..[restoreArgument] = true;
@@ -179,5 +194,40 @@ class InAppMiniPlayerService extends ValueNotifier<InAppMiniPlayerSession?> {
     _onRestorePageReady = null;
     _restoreAnimationCompleted = false;
     _restoreDestinationRect = null;
+  }
+
+  bool _hasCompletedPlayback(PlPlayerController player) {
+    return player.playerStatus.isCompleted ||
+        (player.currentDuration > Duration.zero && player.isCompleted);
+  }
+
+  void _observeCompletion(PlPlayerController player) {
+    if (identical(_completionObservedPlayer, player)) return;
+    _stopObservingCompletion();
+    _completionObservedPlayer = player;
+    player.addStatusLister(_completionListener);
+  }
+
+  void _stopObservingCompletion() {
+    final player = _completionObservedPlayer;
+    if (player == null) return;
+    player.removeStatusLister(_completionListener);
+    _completionObservedPlayer = null;
+  }
+
+  void _onPlayerStatusChanged(PlayerStatus status) {
+    if (!status.isCompleted) return;
+    final player = _completionObservedPlayer;
+    if (player == null) return;
+    scheduleMicrotask(() {
+      final session = value;
+      if (!identical(_completionObservedPlayer, player) ||
+          session?.player != player ||
+          session?.phase == .restoring ||
+          !_hasCompletedPlayback(player)) {
+        return;
+      }
+      dismiss();
+    });
   }
 }

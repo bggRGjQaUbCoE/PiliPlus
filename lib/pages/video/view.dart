@@ -83,6 +83,8 @@ class VideoDetailPageV extends StatefulWidget {
 
 class _VideoDetailPageVState extends State<VideoDetailPageV>
     with RouteAware, RouteAwareMixin, WidgetsBindingObserver {
+  static final Set<_VideoDetailPageVState> _mountedVideoPages = {};
+
   final heroTag = Get.arguments['heroTag'];
 
   late final VideoDetailController videoDetailController;
@@ -139,6 +141,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   @override
   void initState() {
     super.initState();
+    _mountedVideoPages.add(this);
 
     PlPlayerController.setPlayCallBack(playCallBack);
     videoDetailController = Get.put(VideoDetailController(), tag: heroTag);
@@ -393,6 +396,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   @override
   void dispose() {
+    _mountedVideoPages.remove(this);
     plPlayerController
       ?..removeStatusLister(playerListener)
       ..removePositionListener(positionListener);
@@ -436,6 +440,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   void _onPlayerPopInvokedWithResult(bool didPop, Object? result) {
     final player = plPlayerController;
     if (didPop &&
+        _mountedVideoPages.length == 1 &&
+        _mountedVideoPages.contains(this) &&
         Pref.inAppMiniPlayer &&
         player != null &&
         !player.isCloseAll &&

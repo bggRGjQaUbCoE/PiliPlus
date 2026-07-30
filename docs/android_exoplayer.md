@@ -249,3 +249,42 @@ verified on the current real Android device, including:
 These results mark the feature verified for the tested device and flows. Other
 Android versions, form factors, chipsets, and later code revisions still require
 normal regression coverage.
+
+### Post-delivery mini-player lifecycle corrections
+
+On 2026-07-29, the user reported three lifecycle regressions in the delivered
+mini-player behavior:
+
+- a completed video left a black mini-player overlay instead of closing it;
+- leaving a video page after playback had completed created a useless completed
+  mini player;
+- popping B, C, or later video-detail routes back to an already mounted video
+  page created a duplicate mini player, even though the underlying video page
+  was still visible.
+
+The correction keeps completion and route ownership backend-neutral:
+
+- the mini-player service rejects an already completed player before retaining
+  it and observes the retained player for a later completion event;
+- a completion event releases the retained reference in a microtask, after the
+  controller has finished dispatching its current listener set;
+- mounted video-detail routes are tracked, and a pop may create a mini player
+  only when the exiting route is the sole mounted video-detail route;
+- mini-player controls start hidden, appear when the mini player is tapped, and
+  fade after three seconds without interaction; button actions restart that
+  timer.
+
+Formatting and targeted Dart analysis pass for the affected files. An Android
+Release audit build also passes application ID, label, version, ABI, and signing
+verification. The audit APK SHA-256 is
+`98BFAF6395AD25E99DA15F1E01558579FE0BF6E227919A597BBF6DE14C71ACE9`.
+
+On 2026-07-30, the user confirmed that the corrected in-app mini-player flow no
+longer showed an issue on the current real device. This closes the reported
+black overlay after completion, completed-page exit, nested video-route
+unwinding, and control auto-hide regressions for the tested flow.
+
+This confirmation remains limited to the current device and the user's tested
+flow. It does not automatically extend coverage to other Android versions,
+form factors, chipsets, interactive-video/local-file restore parameters, or
+future code revisions.

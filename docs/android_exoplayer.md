@@ -524,11 +524,16 @@ The Release audit APK passed application ID, label, version, universal ABI, and
 signing-certificate verification:
 
 - APK:
-  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch5-embedded-subtitle-audit.apk`
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch5-embedded-subtitle-audit-v2.apk`
 - SHA-256:
-  `1433AB060CDCF8ADDE9308DD1F199B461407E20280ACB77676250E9E256A7AC6`
+  `7930D4A39F33AC74F4D958A06316C0D187948DAB43EC0A1B464F7EF25062ABB2`
 - certificate SHA-256:
   `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+This final audit APK was rebuilt from clean HEAD
+`7aec0b81463a6269dd593bdab86d6adc973209d9` with explicit build name, build
+number, build time, and commit-hash defines, so subsequent diagnostic reports
+identify the exact source state.
 
 Real-device MPV/ExoPlayer comparison is still required with local or network
 media containing multiple embedded text tracks: selecting each supported track,

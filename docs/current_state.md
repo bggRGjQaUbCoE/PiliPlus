@@ -1,6 +1,6 @@
 # pili++ 当前项目状态
 
-> 最后核对：2026-07-30 17:10 +08:00
+> 最后核对：2026-07-30 17:20 +08:00
 >
 > 本文件记录会随开发变化、但后续任务必须知道的事实。开始任务时先核对这里与实际
 > Git、源码和构建产物；结束任务前更新。长期规则见 `AGENTS.md`，ExoPlayer 详细兼容
@@ -111,11 +111,13 @@
   完整 `flutter test` 共 16 项全部通过；Android Debug 和 Release 构建均通过。
   `flutter analyze` 仍在仓库分析前被工作区 Flutter SDK 缺失的 iOS 集成测试资源中断。
 - 批次 5 Android Release 审计包位于
-  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch5-embedded-subtitle-audit.apk`，
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch5-embedded-subtitle-audit-v2.apk`，
   SHA-256 为
-  `1433AB060CDCF8ADDE9308DD1F199B461407E20280ACB77676250E9E256A7AC6`；
+  `7930D4A39F33AC74F4D958A06316C0D187948DAB43EC0A1B464F7EF25062ABB2`；
   `tool/verify_release.ps1 -AllowAlreadyDelivered` 已确认 applicationId、应用名、版本、
-  universal ABI 和签名证书均符合基线。该包不是新版本交付，不更新发布基线。
+  universal ABI 和签名证书均符合基线。最终 v2 包从干净 HEAD
+  `7aec0b81463a6269dd593bdab86d6adc973209d9` 构建并显式写入版本、构建时间和 commit
+  hash；该包不是新版本交付，不更新发布基线。
 - 批次 5 仍待真机对照：含多个内置文本轨的本地/网络媒体，逐轨选择与关闭，内置字幕
   和 B 站/外部字幕双向切换，以及播放/暂停、跳转、全屏、后台、应用内小窗和系统 PiP。
 - ExoPlayer 适配批次 4 实现已提交为

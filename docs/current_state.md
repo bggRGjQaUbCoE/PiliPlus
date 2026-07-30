@@ -1,6 +1,6 @@
 # pili++ 当前项目状态
 
-> 最后核对：2026-07-30 17:59 +08:00
+> 最后核对：2026-07-30 18:10 +08:00
 >
 > 本文件记录会随开发变化、但后续任务必须知道的事实。开始任务时先核对这里与实际
 > Git、源码和构建产物；结束任务前更新。长期规则见 `AGENTS.md`，ExoPlayer 详细兼容
@@ -18,7 +18,7 @@
 - 上游：`https://github.com/bggRGjQaUbCoE/PiliPlus.git`
 - 已获取并合入的 `upstream/main`：`5296a8f7f07a22f347ad53bc8c7651e6787bf3ec`
 - 当前分支已包含上游 `56ca0ca`、`10b723f`、`e4e7037`、`91e7899` 和 `5296a8f`；
-  本状态更新提交完成后相对上游为本地领先 27、落后 0。
+  本状态更新提交完成后相对上游为本地领先 28、落后 0。
 - 应用内小窗、音频焦点/媒体控制、系统 PiP 恢复、版本更新和兼容记录已保存到上述
   功能快照。交接时应以实际 `git status` 为准；存在未提交修改时不得直接 merge 或
   rebase。
@@ -115,6 +115,14 @@
 - 批次 6 相关文件已格式化；完整 `dart analyze` 无 error/warning，保留 37 条既有 info；
   完整 `flutter test` 共 18 项全部通过；Android Debug 和 Release 构建均通过。
   `flutter analyze` 仍在仓库分析前被工作区 Flutter SDK 缺失的 iOS 集成测试资源中断。
+- 批次 6 最终 Android Release 审计包位于
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch6-error-recovery-audit-v2.apk`，
+  SHA-256 为
+  `8479DAF896D0E1EBF3D1C704348556251E20684E42B195B418E01F9FC0ED1A59`；
+  `tool/verify_release.ps1 -AllowAlreadyDelivered` 已确认 applicationId、应用名、版本、
+  universal ABI 和签名证书均符合基线。最终 v2 包从干净 HEAD
+  `bdcedd590f7d412fff658826c7c4df33d6cfd549` 构建并显式写入版本、构建时间和 commit
+  hash；该包不是新版本交付，不更新发布基线。
 - 批次 6 仍待真机对照：播放中/暂停时断网和恢复、连接超时、HTTP 5xx 自动恢复、重试
   耗尽、401/403/404、解码失败，以及普通窗口、全屏、后台、应用内小窗和系统 PiP。
 

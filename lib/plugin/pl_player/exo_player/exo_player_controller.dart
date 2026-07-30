@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:PiliPlus/plugin/pl_player/exo_player/exo_subtitle_cue.dart';
 import 'package:flutter/services.dart';
 
 class ExoPlayerEvent {
@@ -17,6 +18,7 @@ class ExoPlayerEvent {
     required this.height,
     required this.speed,
     required this.subtitle,
+    required this.subtitleCues,
     this.error,
   });
 
@@ -33,6 +35,7 @@ class ExoPlayerEvent {
   final int height;
   final double speed;
   final String subtitle;
+  final List<ExoSubtitleCue> subtitleCues;
   final String? error;
 
   factory ExoPlayerEvent.fromMap(Map<Object?, Object?> map) {
@@ -51,6 +54,18 @@ class ExoPlayerEvent {
       height: intValue('height'),
       speed: (map['speed'] as num?)?.toDouble() ?? 1,
       subtitle: map['subtitle'] as String? ?? '',
+      subtitleCues: switch (map['subtitleCues']) {
+        final List cues =>
+          cues
+              .whereType<Map>()
+              .map(
+                (cue) => ExoSubtitleCue.fromMap(
+                  Map<Object?, Object?>.from(cue),
+                ),
+              )
+              .toList(growable: false),
+        _ => const [],
+      },
       error: map['message'] as String?,
     );
   }
@@ -95,6 +110,7 @@ class ExoPlayerController {
     height: 0,
     speed: 1,
     subtitle: '',
+    subtitleCues: [],
   );
 
   Stream<ExoPlayerEvent> get events => _controller.stream;
@@ -150,6 +166,9 @@ class ExoPlayerController {
             subtitle: event.containsKey('subtitle')
                 ? next.subtitle
                 : player.state.subtitle,
+            subtitleCues: event.containsKey('subtitleCues')
+                ? next.subtitleCues
+                : player.state.subtitleCues,
             error: next.error,
           );
           player._controller.add(player.state);
@@ -207,12 +226,14 @@ class ExoPlayerController {
     String? uri,
     String? language,
     String? label,
+    String? mimeType,
   }) => _methods.invokeMethod<void>('setSubtitle', {
     'id': id,
     'data': data,
     'uri': uri,
     'language': language,
     'label': label,
+    'mimeType': mimeType,
   });
 
   Future<void> _invoke(String method) =>

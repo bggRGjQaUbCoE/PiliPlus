@@ -227,7 +227,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     }
 
     if (widget.videoDetailController case final controller?) {
-      if (controller.vttSubtitlesIndex.value != 0) {
+      if (controller.subtitleIndex.value != 0) {
         if (visible) {
           const int minPadding = 70;
           if (plPlayerController.subtitlePaddingB < minPadding) {
@@ -662,7 +662,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       /// 字幕
       BottomControlType.subtitle => Obx(() {
         if (videoDetailController.subtitles.isNotEmpty) {
-          final val = videoDetailController.vttSubtitlesIndex.value;
+          final val = videoDetailController.subtitleIndex.value;
           return PopupMenuButton<int>(
             tooltip: '字幕',
             requestFocus: false,

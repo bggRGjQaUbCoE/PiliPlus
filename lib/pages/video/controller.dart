@@ -49,6 +49,7 @@ import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
+import 'package:PiliPlus/plugin/pl_player/models/subtitle_source.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/connectivity_utils.dart';
@@ -789,7 +790,7 @@ class VideoDetailController extends GetxController
       videoType: videoType,
       onInit: () {
         videoState.value = true;
-        setSubtitle(vttSubtitlesIndex.value);
+        setSubtitle(subtitleIndex.value);
       },
       width: firstVideo.width,
       height: firstVideo.height,
@@ -804,7 +805,7 @@ class VideoDetailController extends GetxController
         initSkip();
       }
 
-      if (vttSubtitlesIndex.value == -1) {
+      if (subtitleIndex.value == -1) {
         _queryPlayInfo();
       }
 
@@ -1091,8 +1092,8 @@ class VideoDetailController extends GetxController
   }
 
   RxList<Subtitle> subtitles = RxList<Subtitle>();
-  final Map<int, ({bool isData, String id})> vttSubtitles = {};
-  late final vttSubtitlesIndex = (-1).obs;
+  final Map<int, PlayerSubtitleSource> subtitleSources = {};
+  late final subtitleIndex = (-1).obs;
   late final showVP = true.obs;
   late final viewPointList = <ViewPointSegment>[].obs;
 
@@ -1104,11 +1105,11 @@ class VideoDetailController extends GetxController
       } else {
         await plPlayerController.videoPlayerController?.setSubtitleTrack(.no());
       }
-      vttSubtitlesIndex.value = index;
+      subtitleIndex.value = index;
       return;
     }
 
-    Future<void> setSub(({bool isData, String id}) subtitle) async {
+    Future<void> setSub(PlayerSubtitleSource subtitle) async {
       final sub = subtitles[index - 1];
 
       String subUri = subtitle.id;
@@ -1121,16 +1122,17 @@ class VideoDetailController extends GetxController
           uri: subtitle.isData ? null : subtitle.id,
           language: sub.lan,
           label: sub.lanDoc,
+          mimeType: subtitle.format.mimeType,
         );
       } else {
         await plPlayerController.videoPlayerController?.setSubtitleTrack(
           SubtitleTrack(subUri, sub.lanDoc, sub.lan, uri: true),
         );
       }
-      vttSubtitlesIndex.value = index;
+      subtitleIndex.value = index;
     }
 
-    ({bool isData, String id})? subtitle = vttSubtitles[index - 1];
+    final subtitle = subtitleSources[index - 1];
     if (subtitle != null) {
       await setSub(subtitle);
     } else {
@@ -1138,8 +1140,8 @@ class VideoDetailController extends GetxController
         subtitles[index - 1].subtitleUrl!,
       );
       if (!isClosed && result != null) {
-        final subtitle = (isData: true, id: result);
-        vttSubtitles[index - 1] = subtitle;
+        final subtitle = PlayerSubtitleSource.webVttData(result);
+        subtitleSources[index - 1] = subtitle;
         await setSub(subtitle);
       }
     }
@@ -1176,8 +1178,8 @@ class VideoDetailController extends GetxController
   late bool continuePlayingPart = Pref.continuePlayingPart;
 
   Future<void> _queryPlayInfo() async {
-    vttSubtitles.clear();
-    vttSubtitlesIndex.value = 0;
+    subtitleSources.clear();
+    subtitleIndex.value = 0;
     if (plPlayerController.showViewPoints) {
       viewPointList.clear();
     }
@@ -1329,7 +1331,7 @@ class VideoDetailController extends GetxController
       ?..removeListener(_animListener)
       ..dispose();
     subtitles.clear();
-    vttSubtitles.clear();
+    subtitleSources.clear();
     super.onClose();
   }
 
@@ -1348,8 +1350,8 @@ class VideoDetailController extends GetxController
 
     // subtitle
     subtitles.clear();
-    vttSubtitlesIndex.value = -1;
-    vttSubtitles.clear();
+    subtitleIndex.value = -1;
+    subtitleSources.clear();
 
     if (!isFileSource) {
       // language

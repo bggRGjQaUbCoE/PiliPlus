@@ -5,9 +5,20 @@
 package com.example.piliplus
 
 import android.content.Context
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import android.text.Layout
+import android.text.Spanned
+import android.text.style.AbsoluteSizeSpan
+import android.text.style.BackgroundColorSpan
+import android.text.style.ForegroundColorSpan
+import android.text.style.RelativeSizeSpan
+import android.text.style.StrikethroughSpan
+import android.text.style.StyleSpan
+import android.text.style.TypefaceSpan
+import android.text.style.UnderlineSpan
 import android.util.Base64
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -15,6 +26,7 @@ import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
+import androidx.media3.common.text.Cue
 import androidx.media3.common.text.CueGroup
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
@@ -135,6 +147,7 @@ private class ExoPlayerManager(
                         uri = call.argument<String>("uri"),
                         language = call.argument<String>("language"),
                         label = call.argument<String>("label"),
+                        mimeType = call.argument<String>("mimeType"),
                     )
                     result.success(null)
                 }
@@ -196,7 +209,7 @@ private class ExoPlayerSession(
     private var height = 0
     private var mediaRequest: MediaRequest? = null
     private var subtitleRequest: SubtitleRequest? = null
-    private var subtitleText = ""
+    private var subtitleCues: List<Map<String, Any?>> = emptyList()
     private var mediaGeneration = 0L
     val textureId: Long
         get() = surfaceProducer.id()
@@ -231,7 +244,7 @@ private class ExoPlayerSession(
         if (!preserveSubtitle) {
             subtitleRequest = null
         }
-        updateSubtitleText("")
+        updateSubtitleCues(emptyList())
         prepareMedia(positionMs, playWhenReady)
     }
 
@@ -240,15 +253,18 @@ private class ExoPlayerSession(
         uri: String?,
         language: String?,
         label: String?,
+        mimeType: String?,
     ) {
+        val resolvedMimeType = resolveSubtitleMimeType(mimeType, uri)
         subtitleRequest = when {
             !data.isNullOrEmpty() -> SubtitleRequest(
                 uri = Uri.parse(
-                    "data:${MimeTypes.TEXT_VTT};base64," +
+                    "data:$resolvedMimeType;base64," +
                         Base64.encodeToString(data.toByteArray(Charsets.UTF_8), Base64.NO_WRAP),
                 ),
                 language = language,
                 label = label,
+                mimeType = resolvedMimeType,
             )
             !uri.isNullOrEmpty() -> SubtitleRequest(
                 uri = if (uri.contains("://")) {
@@ -258,10 +274,11 @@ private class ExoPlayerSession(
                 },
                 language = language,
                 label = label,
+                mimeType = resolvedMimeType,
             )
             else -> null
         }
-        updateSubtitleText("")
+        updateSubtitleCues(emptyList())
         if (mediaRequest != null) {
             prepareMedia(player.currentPosition, player.playWhenReady)
         }
@@ -283,7 +300,7 @@ private class ExoPlayerSession(
                     setSubtitleConfigurations(
                         listOf(
                             MediaItem.SubtitleConfiguration.Builder(subtitle.uri)
-                                .setMimeType(MimeTypes.TEXT_VTT)
+                                .setMimeType(subtitle.mimeType)
                                 .setLanguage(subtitle.language)
                                 .setLabel(subtitle.label)
                                 .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
@@ -344,12 +361,7 @@ private class ExoPlayerSession(
     }
 
     override fun onCues(cueGroup: CueGroup) {
-        updateSubtitleText(
-            cueGroup.cues
-                .mapNotNull { it.text?.toString() }
-                .filter { it.isNotBlank() }
-                .joinToString("\n"),
-        )
+        updateSubtitleCues(cueGroup.cues.mapNotNull(::serializeCue))
     }
 
     override fun onPlayerError(error: PlaybackException) {
@@ -399,10 +411,15 @@ private class ExoPlayerSession(
             "textureId" to textureId,
         )
 
-    private fun updateSubtitleText(value: String) {
-        if (subtitleText == value) return
-        subtitleText = value
-        sendEvent(baseEvent("subtitle") + mapOf("subtitle" to value))
+    private fun updateSubtitleCues(value: List<Map<String, Any?>>) {
+        if (subtitleCues == value) return
+        subtitleCues = value
+        sendEvent(
+            baseEvent("subtitle") + mapOf(
+                "subtitle" to value.joinToString("\n") { it["text"].toString() },
+                "subtitleCues" to value,
+            ),
+        )
     }
 
     fun dispose() {
@@ -424,4 +441,100 @@ private data class SubtitleRequest(
     val uri: Uri,
     val language: String?,
     val label: String?,
+    val mimeType: String,
 )
+
+private fun resolveSubtitleMimeType(mimeType: String?, uri: String?): String {
+    val normalized = mimeType?.lowercase()
+    return when (normalized) {
+        MimeTypes.TEXT_VTT -> MimeTypes.TEXT_VTT
+        MimeTypes.APPLICATION_SUBRIP -> MimeTypes.APPLICATION_SUBRIP
+        MimeTypes.TEXT_SSA -> MimeTypes.TEXT_SSA
+        null, "" -> when {
+            uri?.substringBefore('?')?.substringBefore('#')?.lowercase()?.endsWith(".srt") == true ->
+                MimeTypes.APPLICATION_SUBRIP
+            uri?.substringBefore('?')?.substringBefore('#')?.lowercase()
+                ?.let { it.endsWith(".ass") || it.endsWith(".ssa") } == true -> MimeTypes.TEXT_SSA
+            else -> MimeTypes.TEXT_VTT
+        }
+        else -> error("Unsupported subtitle MIME type: $mimeType")
+    }
+}
+
+private fun serializeCue(cue: Cue): Map<String, Any?>? {
+    val text = cue.text ?: return null
+    if (text.isBlank()) return null
+    return mapOf(
+        "text" to text.toString(),
+        "segments" to serializeSegments(text),
+        "textAlignment" to cue.textAlignment.serializedName(),
+        "multiRowAlignment" to cue.multiRowAlignment.serializedName(),
+        "line" to cue.line.takeUnless { it == Cue.DIMEN_UNSET },
+        "lineType" to cue.lineType.takeUnless { it == Cue.TYPE_UNSET },
+        "lineAnchor" to cue.lineAnchor.takeUnless { it == Cue.TYPE_UNSET },
+        "position" to cue.position.takeUnless { it == Cue.DIMEN_UNSET },
+        "positionAnchor" to cue.positionAnchor.takeUnless { it == Cue.TYPE_UNSET },
+        "size" to cue.size.takeUnless { it == Cue.DIMEN_UNSET },
+        "windowColor" to cue.windowColor.takeIf { cue.windowColorSet }
+            ?.toLong()?.and(0xFFFFFFFFL),
+        "textSizeType" to cue.textSizeType.takeUnless { it == Cue.TYPE_UNSET },
+        "textSize" to cue.textSize.takeUnless { it == Cue.DIMEN_UNSET },
+        "verticalType" to cue.verticalType.takeUnless { it == Cue.TYPE_UNSET },
+        "shearDegrees" to cue.shearDegrees,
+        "zIndex" to cue.zIndex,
+    )
+}
+
+private fun Layout.Alignment?.serializedName(): String? = when (this) {
+    Layout.Alignment.ALIGN_NORMAL -> "normal"
+    Layout.Alignment.ALIGN_CENTER -> "center"
+    Layout.Alignment.ALIGN_OPPOSITE -> "opposite"
+    null -> null
+}
+
+private fun serializeSegments(text: CharSequence): List<Map<String, Any?>> {
+    if (text !is Spanned) {
+        return listOf(mapOf("text" to text.toString()))
+    }
+    val boundaries = sortedSetOf(0, text.length)
+    text.getSpans(0, text.length, Any::class.java).forEach { span ->
+        boundaries += text.getSpanStart(span)
+        boundaries += text.getSpanEnd(span)
+    }
+    return boundaries.zipWithNext().mapNotNull { (start, end) ->
+        if (start >= end) return@mapNotNull null
+        val spans = text.getSpans(start, end, Any::class.java)
+        val styleSpans = spans.filterIsInstance<StyleSpan>()
+        val styleValues = styleSpans.map { it.style }
+        val absoluteSize = spans.filterIsInstance<AbsoluteSizeSpan>().lastOrNull()
+        buildMap {
+            put("text", text.subSequence(start, end).toString())
+            put(
+                "bold",
+                styleValues.any { it == Typeface.BOLD || it == Typeface.BOLD_ITALIC },
+            )
+            put(
+                "italic",
+                styleValues.any { it == Typeface.ITALIC || it == Typeface.BOLD_ITALIC },
+            )
+            put("underline", spans.any { it is UnderlineSpan })
+            put("strikethrough", spans.any { it is StrikethroughSpan })
+            spans.filterIsInstance<ForegroundColorSpan>().lastOrNull()?.let {
+                put("foregroundColor", it.foregroundColor.toLong().and(0xFFFFFFFFL))
+            }
+            spans.filterIsInstance<BackgroundColorSpan>().lastOrNull()?.let {
+                put("backgroundColor", it.backgroundColor.toLong().and(0xFFFFFFFFL))
+            }
+            spans.filterIsInstance<TypefaceSpan>().lastOrNull()?.family?.let {
+                put("fontFamily", it)
+            }
+            absoluteSize?.let {
+                put("absoluteSize", it.size)
+                put("absoluteSizeIsDip", it.dip)
+            }
+            spans.filterIsInstance<RelativeSizeSpan>().lastOrNull()?.let {
+                put("relativeSize", it.sizeChange)
+            }
+        }
+    }
+}

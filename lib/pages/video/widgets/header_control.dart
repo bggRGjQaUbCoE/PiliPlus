@@ -38,6 +38,7 @@ import 'package:PiliPlus/pages/video/widgets/header_mixin.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
+import 'package:PiliPlus/plugin/pl_player/models/subtitle_source.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart'
     show shutdownTimerService;
 import 'package:PiliPlus/utils/accounts.dart';
@@ -661,14 +662,20 @@ class HeaderControlState extends State<HeaderControl>
                   try {
                     final result = await FilePicker.pickFile(
                       type: .custom,
-                      allowedExtensions: const ['json', 'vtt', 'srt', 'ass'],
+                      allowedExtensions: const [
+                        'json',
+                        'vtt',
+                        'srt',
+                        'ass',
+                        'ssa',
+                      ],
                     );
                     if (result != null) {
                       final file = result.xFile;
                       final path = file.path;
                       final name = file.name;
                       final length = videoDetailCtr.subtitles.length;
-                      if (name.endsWith('.json')) {
+                      if (name.toLowerCase().endsWith('.json')) {
                         final file = File(path);
                         final stream = file.openRead().transform(utf8.decoder);
                         final buffer = StringBuffer();
@@ -683,15 +690,19 @@ class HeaderControlState extends State<HeaderControl>
                           jsonDecode(sub)['body'],
                         );
                         if (!mounted) return;
-                        videoDetailCtr.vttSubtitles[length] = (
-                          isData: true,
-                          id: sub,
-                        );
+                        videoDetailCtr.subtitleSources[length] =
+                            PlayerSubtitleSource.webVttData(sub);
                       } else {
-                        videoDetailCtr.vttSubtitles[length] = (
-                          isData: false,
-                          id: path,
-                        );
+                        final format = PlayerSubtitleFormat.fromFileName(name);
+                        if (format == null) {
+                          throw const FormatException('无法识别字幕格式');
+                        }
+                        videoDetailCtr.subtitleSources[length] =
+                            PlayerSubtitleSource(
+                              isData: false,
+                              id: path,
+                              format: format,
+                            );
                       }
                       videoDetailCtr.subtitles.add(
                         Subtitle(
@@ -1149,7 +1160,7 @@ class HeaderControlState extends State<HeaderControl>
                   switch (format) {
                     case .vtt || .srt:
                       var subtitle = format == .vtt
-                          ? videoDetailCtr.vttSubtitles[i]?.id
+                          ? videoDetailCtr.subtitleSources[i]?.id
                           : null;
                       if (subtitle == null) {
                         final res = await VideoHttp.vttSubtitles(
@@ -1159,10 +1170,8 @@ class HeaderControlState extends State<HeaderControl>
                         if (res == null) return;
                         subtitle = res;
                         if (format == .vtt) {
-                          videoDetailCtr.vttSubtitles[i] = (
-                            isData: true,
-                            id: res,
-                          );
+                          videoDetailCtr.subtitleSources[i] =
+                              PlayerSubtitleSource.webVttData(res);
                         }
                       }
                       bytes = utf8.encode(subtitle);

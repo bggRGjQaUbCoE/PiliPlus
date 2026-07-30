@@ -7,8 +7,8 @@ package com.example.piliplus
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Matrix
-import android.media.MediaMetadataRetriever
 import android.graphics.Typeface
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
@@ -297,6 +297,7 @@ private class ExoPlayerSession(
     private var videoDecoder: String? = null
     private var audioDecoder: String? = null
     private var mediaGeneration = 0L
+    private val mainHandler = Handler(Looper.getMainLooper())
     private val captureExecutor = Executors.newSingleThreadExecutor()
     private val animatedWebpTasks = ConcurrentHashMap<Long, AnimatedWebpCapture>()
     private val disposed = AtomicBoolean(false)
@@ -544,11 +545,53 @@ private class ExoPlayerSession(
             onError("ExoPlayer session is already disposed")
             return
         }
+        val request = mediaRequest
+        val positionMs = player.currentPosition.coerceAtLeast(0L)
+        val durationMs = duration()
+        requestPixelCopy(
+            attempt = 0,
+            request = request,
+            positionMs = positionMs,
+            durationMs = durationMs,
+            flipX = flipX,
+            flipY = flipY,
+            onSuccess = onSuccess,
+            onError = onError,
+        )
+    }
+
+    private fun requestPixelCopy(
+        attempt: Int,
+        request: MediaRequest?,
+        positionMs: Long,
+        durationMs: Long,
+        flipX: Boolean,
+        flipY: Boolean,
+        onSuccess: (ByteArray) -> Unit,
+        onError: (String) -> Unit,
+    ) {
+        if (disposed.get()) {
+            onError("ExoPlayer session was disposed during frame capture")
+            return
+        }
         val source = surfaceProducer.surface
         val sourceWidth = surfaceProducer.width
         val sourceHeight = surfaceProducer.height
         if (!source.isValid || sourceWidth <= 0 || sourceHeight <= 0) {
-            onError("Video surface is not available")
+            if (request != null) {
+                captureFrameFromMediaSource(
+                    request = request,
+                    positionMs = positionMs,
+                    durationMs = durationMs,
+                    flipX = flipX,
+                    flipY = flipY,
+                    pixelCopyFailure = "Video surface is not available",
+                    onSuccess = onSuccess,
+                    onError = onError,
+                )
+            } else {
+                onError("Video surface is not available")
+            }
             return
         }
         val bitmap = Bitmap.createBitmap(
@@ -567,6 +610,39 @@ private class ExoPlayerSession(
                 }
                 if (copyResult != PixelCopy.SUCCESS) {
                     bitmap.recycle()
+                    if (copyResult == PixelCopy.ERROR_SOURCE_NO_DATA &&
+                        attempt < CAPTURE_PIXEL_COPY_RETRIES
+                    ) {
+                        mainHandler.postDelayed(
+                            {
+                                requestPixelCopy(
+                                    attempt = attempt + 1,
+                                    request = request,
+                                    positionMs = positionMs,
+                                    durationMs = durationMs,
+                                    flipX = flipX,
+                                    flipY = flipY,
+                                    onSuccess = onSuccess,
+                                    onError = onError,
+                                )
+                            },
+                            CAPTURE_PIXEL_COPY_RETRY_DELAY_MS,
+                        )
+                        return@request
+                    }
+                    if (copyResult == PixelCopy.ERROR_SOURCE_NO_DATA && request != null) {
+                        captureFrameFromMediaSource(
+                            request = request,
+                            positionMs = positionMs,
+                            durationMs = durationMs,
+                            flipX = flipX,
+                            flipY = flipY,
+                            pixelCopyFailure = "PixelCopy failed with code $copyResult",
+                            onSuccess = onSuccess,
+                            onError = onError,
+                        )
+                        return@request
+                    }
                     onError("PixelCopy failed with code $copyResult")
                     return@request
                 }
@@ -575,7 +651,7 @@ private class ExoPlayerSession(
                         runCatching {
                             transformCapturedFrame(bitmap, width, height, rotationDegrees, flipX, flipY)
                         }.onSuccess { bytes ->
-                            Handler(Looper.getMainLooper()).post {
+                            mainHandler.post {
                                 if (disposed.get()) {
                                     onError("ExoPlayer session was disposed during frame capture")
                                 } else {
@@ -583,7 +659,7 @@ private class ExoPlayerSession(
                                 }
                             }
                         }.onFailure { error ->
-                            Handler(Looper.getMainLooper()).post {
+                            mainHandler.post {
                                 onError(error.message ?: "Failed to encode captured frame")
                             }
                         }
@@ -593,8 +669,72 @@ private class ExoPlayerSession(
                     onError(error.message ?: "Frame capture worker is not available")
                 }
             },
-            Handler(Looper.getMainLooper()),
+            mainHandler,
         )
+    }
+
+    private fun captureFrameFromMediaSource(
+        request: MediaRequest,
+        positionMs: Long,
+        durationMs: Long,
+        flipX: Boolean,
+        flipY: Boolean,
+        pixelCopyFailure: String,
+        onSuccess: (ByteArray) -> Unit,
+        onError: (String) -> Unit,
+    ) {
+        val displayWidth = width
+        val displayHeight = height
+        runCatching {
+            captureExecutor.execute {
+                val outcome = runCatching {
+                    val retriever = MediaMetadataRetriever()
+                    try {
+                        retriever.setCaptureDataSource(request.videoUrl, request.headers)
+                        val sourceRotation = retriever
+                            .extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
+                            ?.toIntOrNull() ?: 0
+                        val capturePositionMs = if (durationMs > 0L) {
+                            positionMs.coerceAtMost(durationMs - 1L)
+                        } else {
+                            positionMs
+                        }
+                        val bitmap = retriever.getFrameAtTime(
+                            capturePositionMs * 1000L,
+                            MediaMetadataRetriever.OPTION_CLOSEST,
+                        ) ?: error("No video frame at ${capturePositionMs}ms")
+                        transformCapturedFrame(
+                            bitmap,
+                            displayWidth,
+                            displayHeight,
+                            sourceRotation,
+                            flipX,
+                            flipY,
+                        )
+                    } finally {
+                        retriever.release()
+                    }
+                }
+                mainHandler.post {
+                    outcome.onSuccess { bytes ->
+                        if (disposed.get()) {
+                            onError("ExoPlayer session was disposed during frame capture")
+                        } else {
+                            onSuccess(bytes)
+                        }
+                    }.onFailure { error ->
+                        onError(
+                            "$pixelCopyFailure; media-source capture failed: " +
+                                sanitizeDiagnosticMessage(
+                                    error.message ?: error.javaClass.simpleName,
+                                ),
+                        )
+                    }
+                }
+            }
+        }.onFailure { error ->
+            onError(error.message ?: "Frame capture worker is not available")
+        }
     }
 
     fun startAnimatedWebp(
@@ -864,7 +1004,20 @@ private class AnimatedWebpCapture(
 
 private const val ANIMATED_WEBP_FPS = 12L
 private const val MAX_ANIMATED_WEBP_FRAMES = 600
+private const val CAPTURE_PIXEL_COPY_RETRIES = 2
+private const val CAPTURE_PIXEL_COPY_RETRY_DELAY_MS = 80L
 private val animatedWebpPublishLock = Any()
+
+private fun MediaMetadataRetriever.setCaptureDataSource(
+    url: String,
+    headers: Map<String, String>,
+) {
+    if (url.contains("://")) {
+        setDataSource(url, headers)
+    } else {
+        setDataSource(url)
+    }
+}
 
 private fun rotateBitmap(source: Bitmap, rotationDegrees: Int): Bitmap {
     if (rotationDegrees % 360 == 0) return source

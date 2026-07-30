@@ -485,3 +485,55 @@ and system PiP. The current implementation closes only the server-measured
 two-pass `loudnorm` path after that comparison; dynamic and arbitrary FFmpeg
 filters remain explicit compatibility gaps. The audit APK is not a new
 delivered version and does not update the release baseline.
+
+### Fifth post-mini-player compatibility hardening batch
+
+The fifth follow-up batch closes the dedicated embedded-text-track selection
+entry while preserving the existing Bilibili and external-subtitle workflow:
+
+- the backend-neutral track model distinguishes app-loaded subtitle sources
+  from subtitle tracks embedded in the current media. MPV uses its URI marker,
+  while Media3 assigns a stable ID to the app-provided subtitle configuration;
+- the video settings sheet shows an “embedded subtitle track” entry only when
+  real embedded text tracks are present. App-loaded Bilibili/file subtitles are
+  not duplicated in that list;
+- the shared selector supports disabling embedded subtitles and choosing one
+  supported embedded track for MPV and ExoPlayer. Unsupported tracks remain
+  visible but cannot be selected;
+- selecting an embedded track updates the existing subtitle control to its off
+  state. Selecting a Bilibili or external subtitle later clears the Media3 text
+  override and enables that app-loaded track; disabling through the existing
+  subtitle control disables the full text-track type, so an embedded subtitle
+  does not silently reappear;
+- these switches reuse the current player session and position. They do not
+  recreate the video/audio media source merely to change the selected text
+  track, except when the existing workflow first adds or removes an app-loaded
+  subtitle configuration.
+
+The implementation commit is
+`c3dc337f2c9ff6b8c77fb154bbb16e4235177935`. Formatting and full
+`dart analyze` pass; the analyzer reports no errors or warnings and the same 37
+existing info diagnostics. All 16 Flutter tests pass, including the new
+app-loaded subtitle-track classification test. Android Debug and Release builds
+pass. `flutter analyze` remains blocked before repository analysis by the same
+missing Flutter SDK iOS integration-test resource:
+
+`dev/integration_tests/ios_app_with_extensions/ios/watch Extension/Assets.xcassets/Complication.complicationset/Graphic Circular.imageset`
+
+The Release audit APK passed application ID, label, version, universal ABI, and
+signing-certificate verification:
+
+- APK:
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch5-embedded-subtitle-audit.apk`
+- SHA-256:
+  `1433AB060CDCF8ADDE9308DD1F199B461407E20280ACB77676250E9E256A7AC6`
+- certificate SHA-256:
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+Real-device MPV/ExoPlayer comparison is still required with local or network
+media containing multiple embedded text tracks: selecting each supported track,
+disabling it, switching between embedded and Bilibili/external subtitles in
+both directions, play/pause, seek, full screen, background playback, app
+mini-player, and system PiP. Media3 bitmap cues and equivalent Flutter vertical
+writing remain explicit subtitle gaps. The audit APK is not a new delivered
+version and does not update the release baseline.

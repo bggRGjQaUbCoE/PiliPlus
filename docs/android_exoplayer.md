@@ -334,3 +334,54 @@ Real-device comparison is still required for MPV and ExoPlayer player-volume
 changes, MPV screenshot regression, explicit ExoPlayer screenshot feedback, and
 both super-resolution entry points. The audit APK is not a new delivered
 version and does not update the release baseline.
+
+### Second post-mini-player compatibility hardening batch
+
+The second follow-up compatibility batch fixes the external-subtitle format and
+cue bridge instead of treating every subtitle as plain WebVTT:
+
+- subtitle sources now retain whether they are inline data or a file together
+  with their actual WebVTT, SubRip, or SubStation Alpha format;
+- the external picker accepts `.vtt`, `.srt`, `.ass`, and `.ssa`
+  case-insensitively while Bilibili JSON subtitles continue to be converted to
+  inline WebVTT;
+- the Flutter method-channel request carries the format MIME type, and the
+  Android bridge uses `text/vtt`, `application/x-subrip`, or `text/x-ssa` for
+  both data URIs and Media3 subtitle configurations;
+- Media3 active cues are sent back as structured cue records rather than one
+  flattened string. The bridge retains text alignment, multi-row alignment,
+  line and position anchors, cue size, window color, text size, shear, z-order,
+  and Android text spans for bold, italic, underline, strikethrough, foreground
+  and background colors, font family, and absolute or relative text size;
+- the Flutter Texture overlay renders the structured cue list while preserving
+  the existing user subtitle style, stroke, padding, drag behavior, and
+  backend-neutral control layer.
+
+The MPV track-selection path remains active through the same video-page
+controller; this batch does not hide or replace the MPV subtitle entry.
+
+The implementation commit is
+`2cd76abe776a45d7d89dc8b9736418fcf8fea21e`. Formatting, full `dart analyze`,
+and the complete Flutter test suite pass. The analyzer reports no errors or
+warnings and the same 37 existing info diagnostics; all seven tests pass.
+`flutter analyze` remains blocked before repository analysis by the workspace
+Flutter SDK's missing iOS integration-test resource.
+
+An Android Release audit APK was built from the implementation commit and
+passed application ID, label, version, universal ABI, and signing-certificate
+verification:
+
+- APK:
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch2-subtitle-audit-v2.apk`
+- SHA-256:
+  `DB1DAAD7FEA752B8A0B1DD62CD76EA9A91C5D964258BC7A4C38E1CDDCB9E20A9`
+- certificate SHA-256:
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+Real-device MPV/ExoPlayer comparison is still required for built-in WebVTT,
+external VTT/SRT/ASS/SSA, switching and disabling tracks, styled and positioned
+cues, full-screen/rotation, and subtitle dragging. Media3 bitmap cues are not
+bridged, and vertical-writing metadata is transported but does not yet have an
+equivalent Flutter vertical layout. Those edge cases remain explicit gaps. The
+audit APK is not a new delivered version and does not update the release
+baseline.

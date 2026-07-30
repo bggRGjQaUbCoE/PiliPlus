@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:PiliPlus/plugin/pl_player/exo_player/exo_subtitle_cue.dart';
+import 'package:PiliPlus/plugin/pl_player/models/exo_player_failure.dart';
 import 'package:PiliPlus/plugin/pl_player/models/player_media_track.dart';
 import 'package:flutter/services.dart';
 
@@ -14,6 +15,7 @@ class ExoPlayerEvent {
     required this.playing,
     required this.playWhenReady,
     required this.buffering,
+    required this.ready,
     required this.completed,
     required this.width,
     required this.height,
@@ -25,7 +27,7 @@ class ExoPlayerEvent {
     this.videoDecoder,
     this.audioDecoder,
     this.mediaDescription,
-    this.error,
+    this.failure,
   });
 
   final int generation;
@@ -36,6 +38,7 @@ class ExoPlayerEvent {
   final bool playing;
   final bool playWhenReady;
   final bool buffering;
+  final bool ready;
   final bool completed;
   final int width;
   final int height;
@@ -47,10 +50,19 @@ class ExoPlayerEvent {
   final String? videoDecoder;
   final String? audioDecoder;
   final String? mediaDescription;
-  final String? error;
+  final ExoPlayerPlaybackFailure? failure;
 
   factory ExoPlayerEvent.fromMap(Map<Object?, Object?> map) {
     int intValue(String key) => (map[key] as num?)?.toInt() ?? 0;
+    final failure = switch (map['error']) {
+      final Map error => ExoPlayerPlaybackFailure.fromMap(
+        Map<Object?, Object?>.from(error),
+      ),
+      _ => switch (map['message']) {
+        final String message => ExoPlayerPlaybackFailure.legacy(message),
+        _ => null,
+      },
+    };
     return ExoPlayerEvent(
       generation: intValue('generation'),
       type: map['type'] as String? ?? 'state',
@@ -60,6 +72,7 @@ class ExoPlayerEvent {
       playing: map['playing'] as bool? ?? false,
       playWhenReady: map['playWhenReady'] as bool? ?? false,
       buffering: map['buffering'] as bool? ?? false,
+      ready: map['ready'] as bool? ?? false,
       completed: map['completed'] as bool? ?? false,
       width: intValue('width'),
       height: intValue('height'),
@@ -93,7 +106,7 @@ class ExoPlayerEvent {
       videoDecoder: map['videoDecoder'] as String?,
       audioDecoder: map['audioDecoder'] as String?,
       mediaDescription: map['mediaDescription'] as String?,
-      error: map['message'] as String?,
+      failure: failure,
     );
   }
 }
@@ -132,6 +145,7 @@ class ExoPlayerController {
     playing: false,
     playWhenReady: false,
     buffering: false,
+    ready: false,
     completed: false,
     width: 0,
     height: 0,
@@ -184,6 +198,7 @@ class ExoPlayerController {
             buffering: event.containsKey('buffering')
                 ? next.buffering
                 : player.state.buffering,
+            ready: event.containsKey('ready') ? next.ready : player.state.ready,
             completed: event.containsKey('completed')
                 ? next.completed
                 : player.state.completed,
@@ -213,7 +228,7 @@ class ExoPlayerController {
             mediaDescription: event.containsKey('mediaDescription')
                 ? next.mediaDescription
                 : player.state.mediaDescription,
-            error: next.error,
+            failure: next.failure,
           );
           player._controller.add(player.state);
         });
@@ -252,6 +267,18 @@ class ExoPlayerController {
   Future<void> pause() {
     _playWhenReady = false;
     return _invoke('pause');
+  }
+
+  Future<void> retry({
+    required Duration position,
+    required bool playWhenReady,
+  }) {
+    _playWhenReady = playWhenReady;
+    return _methods.invokeMethod<void>('retry', {
+      'id': id,
+      'positionMs': position.inMilliseconds,
+      'playWhenReady': playWhenReady,
+    });
   }
 
   Future<void> seek(Duration position) => _methods.invokeMethod<void>(

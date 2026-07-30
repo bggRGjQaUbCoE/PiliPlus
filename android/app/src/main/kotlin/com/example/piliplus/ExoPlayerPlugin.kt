@@ -32,8 +32,10 @@ import androidx.media3.common.text.Cue
 import androidx.media3.common.text.CueGroup
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.datasource.HttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.DefaultRenderersFactory
+import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.audio.AudioSink
 import androidx.media3.exoplayer.audio.DefaultAudioSink
@@ -132,6 +134,13 @@ private class ExoPlayerManager(
                 }
                 "pause" -> {
                     requiredSession(call).player.pause()
+                    result.success(null)
+                }
+                "retry" -> {
+                    requiredSession(call).retry(
+                        positionMs = call.argument<Number>("positionMs")?.toLong() ?: 0L,
+                        playWhenReady = call.argument<Boolean>("playWhenReady") ?: false,
+                    )
                     result.success(null)
                 }
                 "seekTo" -> {
@@ -445,10 +454,25 @@ private class ExoPlayerSession(
     override fun onPlayerError(error: PlaybackException) {
         sendEvent(
             baseEvent("error") + mapOf(
-                "message" to (error.message ?: error.errorCodeName),
-                "errorCode" to error.errorCode,
+                "error" to serializePlaybackError(
+                    error = error,
+                    positionMs = player.currentPosition.coerceAtLeast(0L),
+                    playWhenReady = player.playWhenReady,
+                    videoDecoder = videoDecoder,
+                    audioDecoder = audioDecoder,
+                    mediaDescription = mediaRequest?.diagnosticDescription,
+                ),
             ),
         )
+    }
+
+    fun retry(positionMs: Long, playWhenReady: Boolean) {
+        player.apply {
+            this.playWhenReady = playWhenReady
+            seekTo(positionMs.coerceAtLeast(0L))
+            prepare()
+        }
+        emitState()
     }
 
     override fun onVideoDecoderInitialized(
@@ -485,6 +509,7 @@ private class ExoPlayerSession(
                 "playing" to player.isPlaying,
                 "playWhenReady" to player.playWhenReady,
                 "buffering" to (player.playbackState == Player.STATE_BUFFERING),
+                "ready" to (player.playbackState == Player.STATE_READY),
                 "completed" to (player.playbackState == Player.STATE_ENDED),
                 "positionMs" to player.currentPosition.coerceAtLeast(0L),
                 "bufferedMs" to player.bufferedPosition.coerceAtLeast(0L),
@@ -549,6 +574,16 @@ private data class MediaRequest(
                 append(audioUrl)
             }
         }
+
+    val diagnosticDescription: String
+        get() = buildString {
+            append("video: ")
+            append(sanitizeUri(videoUrl))
+            if (!audioUrl.isNullOrBlank() && audioUrl != videoUrl) {
+                append("\naudio: ")
+                append(sanitizeUri(audioUrl))
+            }
+        }
 }
 
 private class NormalizingRenderersFactory(
@@ -572,6 +607,132 @@ private data class SubtitleRequest(
     val label: String?,
     val mimeType: String,
 )
+
+private fun serializePlaybackError(
+    error: PlaybackException,
+    positionMs: Long,
+    playWhenReady: Boolean,
+    videoDecoder: String?,
+    audioDecoder: String?,
+    mediaDescription: String?,
+): Map<String, Any?> {
+    val causes = error.causeChain()
+    val httpError = causes.filterIsInstance<HttpDataSource.InvalidResponseCodeException>()
+        .firstOrNull()
+    val dataSourceError = causes.filterIsInstance<HttpDataSource.HttpDataSourceException>()
+        .firstOrNull()
+    val exoError = error as? ExoPlaybackException
+    val category = errorCategory(error.errorCode)
+    return mapOf(
+        "message" to sanitizeDiagnosticMessage(
+            causes.lastOrNull()?.message ?: error.message ?: error.errorCodeName,
+        ),
+        "errorCode" to error.errorCode,
+        "errorCodeName" to error.errorCodeName,
+        "category" to category,
+        "phase" to when {
+            exoError?.type == ExoPlaybackException.TYPE_RENDERER -> "renderer"
+            exoError?.type == ExoPlaybackException.TYPE_SOURCE -> "source"
+            exoError?.type == ExoPlaybackException.TYPE_REMOTE -> "remote"
+            else -> "playback"
+        },
+        "recoverable" to isRecoverablePlaybackError(
+            errorCode = error.errorCode,
+            httpStatus = httpError?.responseCode,
+        ),
+        "httpStatus" to httpError?.responseCode,
+        "uri" to sanitizeUri(httpError?.dataSpec?.uri ?: dataSourceError?.dataSpec?.uri),
+        "rendererName" to exoError?.rendererName,
+        "mediaDescription" to mediaDescription,
+        "causeChain" to causes.map { cause ->
+            val name = cause::class.java.simpleName.ifEmpty { cause::class.java.name }
+            cause.message?.let { "$name: ${sanitizeDiagnosticMessage(it)}" } ?: name
+        },
+        "positionMs" to positionMs,
+        "playWhenReady" to playWhenReady,
+        "videoDecoder" to videoDecoder,
+        "audioDecoder" to audioDecoder,
+    )
+}
+
+private fun Throwable.causeChain(): List<Throwable> {
+    val result = mutableListOf<Throwable>()
+    val seen = mutableSetOf<Throwable>()
+    var current: Throwable? = this
+    while (current != null && seen.add(current)) {
+        result += current
+        current = current.cause
+    }
+    return result
+}
+
+private fun errorCategory(errorCode: Int): String = when (errorCode) {
+    PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED,
+    PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT,
+    -> "network"
+
+    PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS,
+    PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND,
+    PlaybackException.ERROR_CODE_IO_NO_PERMISSION,
+    PlaybackException.ERROR_CODE_IO_UNSPECIFIED,
+    PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED,
+    PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED,
+    PlaybackException.ERROR_CODE_PARSING_MANIFEST_MALFORMED,
+    PlaybackException.ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED,
+    -> "source"
+
+    PlaybackException.ERROR_CODE_DECODER_INIT_FAILED,
+    PlaybackException.ERROR_CODE_DECODER_QUERY_FAILED,
+    PlaybackException.ERROR_CODE_DECODING_FAILED,
+    PlaybackException.ERROR_CODE_DECODING_FORMAT_EXCEEDS_CAPABILITIES,
+    PlaybackException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED,
+    -> "decoder"
+
+    PlaybackException.ERROR_CODE_DRM_CONTENT_ERROR,
+    PlaybackException.ERROR_CODE_DRM_DEVICE_REVOKED,
+    PlaybackException.ERROR_CODE_DRM_DISALLOWED_OPERATION,
+    PlaybackException.ERROR_CODE_DRM_LICENSE_ACQUISITION_FAILED,
+    PlaybackException.ERROR_CODE_DRM_LICENSE_EXPIRED,
+    PlaybackException.ERROR_CODE_DRM_PROVISIONING_FAILED,
+    PlaybackException.ERROR_CODE_DRM_SCHEME_UNSUPPORTED,
+    PlaybackException.ERROR_CODE_DRM_SYSTEM_ERROR,
+    PlaybackException.ERROR_CODE_DRM_UNSPECIFIED,
+    -> "drm"
+
+    PlaybackException.ERROR_CODE_REMOTE_ERROR -> "remote"
+    else -> "unexpected"
+}
+
+private fun isRecoverablePlaybackError(errorCode: Int, httpStatus: Int?): Boolean = when (errorCode) {
+    PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED,
+    PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT,
+    PlaybackException.ERROR_CODE_IO_UNSPECIFIED,
+    -> true
+
+    PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS ->
+        httpStatus == 408 || httpStatus == 429 || (httpStatus != null && httpStatus >= 500)
+
+    else -> false
+}
+
+private fun sanitizeUri(value: String?): String? = value?.let {
+    runCatching { sanitizeUri(Uri.parse(it)) }.getOrDefault(it.substringBefore('?').substringBefore('#'))
+}
+
+private fun sanitizeUri(uri: Uri?): String? {
+    if (uri == null) return null
+    if (uri.scheme == "data") return "data:${uri.schemeSpecificPart.substringBefore(';')}"
+    return uri.buildUpon().clearQuery().fragment(null).build().toString()
+}
+
+private val diagnosticUrlPattern = Regex("""(?i)\\bhttps?://\\S+""")
+
+private fun sanitizeDiagnosticMessage(value: String): String =
+    diagnosticUrlPattern.replace(value) { match ->
+        val trailing = match.value.takeLastWhile { it in ".,;:)]}" }
+        val uri = match.value.dropLast(trailing.length)
+        "${sanitizeUri(uri)}$trailing"
+    }
 
 private fun resolveSubtitleMimeType(mimeType: String?, uri: String?): String {
     val normalized = mimeType?.lowercase()

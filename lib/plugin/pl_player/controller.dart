@@ -27,6 +27,7 @@ import 'package:PiliPlus/plugin/pl_player/models/double_tap_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/duration.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
+import 'package:PiliPlus/plugin/pl_player/models/exo_player_failure.dart';
 import 'package:PiliPlus/plugin/pl_player/models/player_feature_result.dart';
 import 'package:PiliPlus/plugin/pl_player/models/player_media_track.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
@@ -403,6 +404,9 @@ class PlPlayerController with BlockConfigMixin {
 
   Timer? _timer;
   StreamSubscription? _subForSeek;
+  Timer? _exoRetryTimer;
+  int _exoRetryAttempt = 0;
+  String? _lastFinalExoFailure;
 
   Box setting = GStorage.setting;
 
@@ -953,6 +957,7 @@ class PlPlayerController with BlockConfigMixin {
     bool autoFullScreenFlag = false,
   }) async {
     try {
+      _cancelExoRetry(resetAttempts: true);
       _processing = true;
       final previousCid = this.cid;
       final hasExistingExoPlayer = _exoPlayerController != null;
@@ -1270,6 +1275,7 @@ class PlPlayerController with BlockConfigMixin {
 
   Future<void>? refreshPlayer() {
     if (useExoPlayer && _exoPlayerController != null) {
+      _cancelExoRetry(resetAttempts: true);
       return _openExoPlayer(
         dataSource,
         currentPosition,
@@ -1329,16 +1335,14 @@ class PlPlayerController with BlockConfigMixin {
     bool? lastBuffering;
     bool lastCompleted = false;
     _exoSubscription = player.events.listen((event) {
-      if (event.error case final error?) {
-        _syncAutoEnterPip(false);
-        WakelockPlus.disable();
-        audioSessionHandler?.setActive(false);
-        isBuffering.value = false;
-        playerStatus.value = .paused;
-        videoPlayerServiceHandler?.onStatusChange(.paused, false, isLive);
-        dataStatus.value = .error;
-        Utils.reportError('ExoPlayer: $error');
+      if (event.failure case final failure?) {
+        _handleExoFailure(player, failure);
         return;
+      }
+
+      if (event.ready) {
+        _cancelExoRetry(resetAttempts: true);
+        dataStatus.value = .loaded;
       }
 
       final posInSeconds = event.position.inSeconds;
@@ -1357,6 +1361,12 @@ class PlPlayerController with BlockConfigMixin {
         updateDuration(event.duration);
       }
       buffered.value = event.buffered.inSeconds;
+
+      // Media3 emits a non-playing state immediately after an error. Keep the
+      // existing UI playback intent while the same session is being retried.
+      if (_exoRetryAttempt > 0) {
+        return;
+      }
 
       if (lastBuffering != event.buffering) {
         lastBuffering = event.buffering;
@@ -1399,6 +1409,120 @@ class PlPlayerController with BlockConfigMixin {
         }
       }
     });
+  }
+
+  void _handleExoFailure(
+    ExoPlayerController player,
+    ExoPlayerPlaybackFailure failure,
+  ) {
+    final retryLimit = Pref.retryCount;
+    final canRetry = shouldRetryExoPlaybackFailure(
+      failure,
+      attempt: _exoRetryAttempt,
+      limit: retryLimit,
+      localSource: dataSource is FileSource,
+      sessionActive: _playerCount > 0,
+    );
+    if (canRetry) {
+      _exoRetryAttempt += 1;
+      final attempt = _exoRetryAttempt;
+      final delay = exoPlaybackRetryDelay(
+        baseDelayMs: Pref.retryDelay,
+        attempt: attempt,
+      );
+      _exoRetryTimer?.cancel();
+      dataStatus.value = .loading;
+      isBuffering.value = true;
+      videoPlayerServiceHandler?.onStatusChange(
+        playerStatus.value,
+        true,
+        isLive,
+      );
+      SmartDialog.showToast(
+        '播放连接失败，正在重试（$attempt/$retryLimit）',
+        displayTime: const Duration(milliseconds: 900),
+      );
+      if (kDebugMode) {
+        debugPrint(
+          failure.diagnostics(
+            retryAttempt: attempt,
+            retryLimit: retryLimit,
+          ),
+        );
+      }
+      final retryPosition = failure.position > Duration.zero
+          ? failure.position
+          : currentPosition;
+      _exoRetryTimer = Timer(delay, () async {
+        _exoRetryTimer = null;
+        if (_playerCount == 0 || !identical(player, _exoPlayerController)) {
+          return;
+        }
+        final retryPlayWhenReady = player.playWhenReady;
+        try {
+          await player.retry(
+            position: retryPosition,
+            playWhenReady: retryPlayWhenReady,
+          );
+        } catch (error, stackTrace) {
+          _finishExoFailure(
+            ExoPlayerPlaybackFailure(
+              message: error.toString(),
+              errorCode: failure.errorCode,
+              errorCodeName: failure.errorCodeName,
+              category: failure.category,
+              phase: 'retry',
+              recoverable: false,
+              position: retryPosition,
+              playWhenReady: retryPlayWhenReady,
+              httpStatus: failure.httpStatus,
+              uri: failure.uri,
+              rendererName: failure.rendererName,
+              videoDecoder: failure.videoDecoder,
+              audioDecoder: failure.audioDecoder,
+              mediaDescription: failure.mediaDescription,
+              causeChain: [
+                ...failure.causeChain,
+                'Flutter retry invocation: $error',
+                stackTrace.toString(),
+              ],
+            ),
+          );
+        }
+      });
+      return;
+    }
+    _finishExoFailure(failure);
+  }
+
+  void _finishExoFailure(ExoPlayerPlaybackFailure failure) {
+    _exoRetryTimer?.cancel();
+    _exoRetryTimer = null;
+    _syncAutoEnterPip(false);
+    WakelockPlus.disable();
+    audioSessionHandler?.setActive(false);
+    isBuffering.value = false;
+    playerStatus.value = .paused;
+    videoPlayerServiceHandler?.onStatusChange(.paused, false, isLive);
+    dataStatus.value = .error;
+    final diagnostics = failure.diagnostics(
+      retryAttempt: _exoRetryAttempt,
+      retryLimit: Pref.retryCount,
+    );
+    if (_lastFinalExoFailure != diagnostics) {
+      _lastFinalExoFailure = diagnostics;
+      SmartDialog.showToast(failure.userMessage);
+      Utils.reportError(diagnostics, failure.diagnosticStackTrace);
+    }
+  }
+
+  void _cancelExoRetry({required bool resetAttempts}) {
+    _exoRetryTimer?.cancel();
+    _exoRetryTimer = null;
+    if (resetAttempts) {
+      _exoRetryAttempt = 0;
+      _lastFinalExoFailure = null;
+    }
   }
 
   /// 播放事件监听
@@ -2101,6 +2225,7 @@ class PlPlayerController with BlockConfigMixin {
     // 每次减1，最后销毁
     resetScreenRotation();
     cancelLongPressTimer();
+    _cancelExoRetry(resetAttempts: true);
     _cancelSubForSeek();
     if (!_isCloseAll && _playerCount > 1) {
       _playerCount -= 1;

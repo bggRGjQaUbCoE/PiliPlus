@@ -601,3 +601,64 @@ version, universal ABI, and signing-certificate verification:
 
 The audit APK is not a new delivered version and does not update the release
 baseline.
+
+### Seventh post-mini-player compatibility hardening batch
+
+The seventh follow-up batch adds ExoPlayer-native still-frame and animated-WebP
+capture without falling back to MPV:
+
+- normal player screenshots and comment-editor video screenshots continue to
+  use the shared `captureFrame` contract. Android copies the current Media3
+  texture `Surface` with `PixelCopy`, corrects video rotation, pixel aspect
+  ratio, and Flutter horizontal/vertical flips, then returns PNG bytes to the
+  existing `ui.Image` save flows;
+- capture reads only the video surface, so Flutter controls, danmaku, subtitles,
+  and overlays are not included in the saved frame;
+- the existing animated-screenshot range, quality-preset, progress, cancel,
+  save, and playback-state UI is shared by both backends. MPV keeps the existing
+  `MpvConvertWebp`; ExoPlayer uses a separate `MediaMetadataRetriever` worker on
+  the selected video URL and does not seek, reload, or recreate the active
+  ExoPlayer session;
+- Android encodes individual WebP frames and writes a RIFF animation with
+  `VP8X`, `ANIM`, and full-canvas `ANMF` chunks. Sampling runs at up to 12 fps
+  and is distributed across the selected interval with a 600-frame cap;
+- every conversion writes to a task-specific temporary file and publishes it
+  only after the RIFF length is finalized. Cancellation completes the method
+  call, interrupts pending work, removes incomplete output, and cannot delete a
+  later retry's file. Cancelling the range dialog or conversion restores the
+  pre-dialog play state.
+
+The implementation commit is
+`51909790a75063e630d24afc2541d5baf83eb532`. Formatting and targeted analysis
+pass. Full `dart analyze` has no errors or warnings and retains the same 37
+existing info diagnostics. All 20 Flutter tests pass, including screenshot
+transform arguments and animated-WebP start/progress/cancel channel coverage.
+The Android JVM muxer test passes and verifies the RIFF size, animation flag,
+canvas dimensions, animation and frame chunks, frame durations, and odd-byte
+padding. Android Debug compilation and Release build pass.
+
+With the writable project Flutter toolchain, full `flutter analyze` now reaches
+and completes repository analysis; it returns nonzero only for the same 37
+existing info diagnostics, rather than the previously recorded missing iOS SDK
+resource.
+
+The Release audit APK was built from clean implementation commit
+`51909790a75063e630d24afc2541d5baf83eb532` with explicit version, build number,
+build time, and commit-hash defines. It passed application ID, label, version,
+universal ABI, and signing-certificate verification:
+
+- APK:
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch7-capture-audit.apk`
+- SHA-256:
+  `226B54B942B799B45AD114725B74F5A9A4CC469B0A03CDB6D8643153E7460A77`
+- certificate SHA-256:
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+No Android device was connected for this batch. Real-device MPV/ExoPlayer
+comparison is still required for still and comment screenshots while playing
+and paused, landscape/portrait and non-square-pixel media, horizontal/vertical
+flips, full screen, and the app mini-player. Animated WebP also requires device
+coverage for short and long ranges, presets, progress, cancellation, saving,
+failure cleanup, repeat conversion, and proof that the active session position,
+buffer, and play/pause state remain unchanged. The audit APK is not a new
+delivered version and does not update the release baseline.

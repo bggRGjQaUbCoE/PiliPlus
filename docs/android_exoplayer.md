@@ -385,3 +385,53 @@ bridged, and vertical-writing metadata is transported but does not yet have an
 equivalent Flutter vertical layout. Those edge cases remain explicit gaps. The
 audit APK is not a new delivered version and does not update the release
 baseline.
+
+### Third post-mini-player compatibility hardening batch
+
+The third follow-up compatibility batch moves native audio/video tracks and
+player information behind the backend-neutral controller:
+
+- Media3 serializes available video, audio, and text tracks with stable
+  per-source group/track coordinates, selected/supported state, language,
+  codec/MIME, bitrate, resolution/frame rate, channel count/sample rate,
+  rotation, pixel ratio, and color information;
+- the method channel supports automatic selection, disabling a track type, and
+  selecting one supported track through `TrackSelectionOverride`;
+- MPV tracks are mapped into the same Flutter model and use the same selection
+  methods, so the video page no longer needs a backend-specific track menu;
+- the settings sheet exposes shared video-track and audio-track selectors for
+  both backends;
+- ExoPlayer's player-information entry is no longer hidden. The shared dialog
+  reports backend, resolution, media source, selected tracks, speed, effective
+  player volume, format details, and the Media3 audio/video decoder names;
+- “listen to video” now disables or restores the video track through the common
+  selection API. ExoPlayer no longer recreates the media source, seeks, or
+  drops its buffered state for this toggle. Later source reloads keep the full
+  video/audio source pair so restoring video remains possible.
+
+The implementation commit is
+`c02aea597c6c41184261a8e32aac401b145e39b6`. Formatting, full `dart analyze`,
+and the complete Flutter test suite pass. The analyzer reports no errors or
+warnings and the same 37 existing info diagnostics; all nine tests pass.
+`flutter analyze` remains blocked before repository analysis by the workspace
+Flutter SDK's missing iOS integration-test resource. Android Debug and Release
+builds both pass.
+
+The Release audit APK passed application ID, label, version, universal ABI, and
+signing-certificate verification:
+
+- APK:
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch3-tracks-audit.apk`
+- SHA-256:
+  `60EF362B8B689C2EC3FE63A6BF3EFB498FE129A3C7A7126A2869DC668229894E`
+- certificate SHA-256:
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+Real-device MPV/ExoPlayer comparison is still required for DASH video/audio
+tracks, local files with multiple tracks, automatic/disabled/specific
+selection, listen-to-video toggling during play and pause, source reload after
+audio-only mode, and all player-information fields. Embedded text tracks are
+enumerated by the common/native API and shown in player information, but their
+dedicated user selection entry is not part of this audio/video-track batch.
+The audit APK is not a new delivered version and does not update the release
+baseline.

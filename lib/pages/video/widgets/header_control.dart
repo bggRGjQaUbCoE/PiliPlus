@@ -431,44 +431,41 @@ class HeaderControlState extends State<HeaderControl>
                   title: const Text('重载视频', style: titleStyle),
                 ),
               ],
-              if (!plPlayerController.useExoPlayer)
-                PopupListTile<SuperResolutionType>(
-                  dense: true,
-                  leading: const Icon(
-                    Icons.stay_current_landscape_outlined,
-                    size: 20,
-                  ),
-                  title: const Text('超分辨率'),
-                  value: () {
-                    final value = plPlayerController.superResolutionType.value;
-                    return (value, value.label);
-                  },
-                  itemBuilder: (_) =>
-                      enumItemBuilder(SuperResolutionType.values),
-                  onSelected: (value, setState) {
-                    plPlayerController.setShader(value);
-                    setState();
-                  },
-                  descFontSize: 12,
-                  descPosType: .subtitle,
+              PopupListTile<SuperResolutionType>(
+                dense: true,
+                leading: const Icon(
+                  Icons.stay_current_landscape_outlined,
+                  size: 20,
                 ),
+                title: const Text('超分辨率'),
+                value: () {
+                  final value = plPlayerController.superResolutionType.value;
+                  return (value, value.label);
+                },
+                itemBuilder: (_) => enumItemBuilder(SuperResolutionType.values),
+                onSelected: (value, setState) {
+                  plPlayerController.setSuperResolution(value);
+                  setState();
+                },
+                descFontSize: 12,
+                descPosType: .subtitle,
+              ),
               if (PlatformUtils.isMobile)
-                if (plPlayerController.videoPlayerController case final player?)
-                  Builder(
-                    builder: (context) => ListTile(
-                      dense: true,
-                      leading: const Icon(Icons.volume_up, size: 20),
-                      title: const Text('播放器音量'),
-                      subtitle: Text(
-                        '当前: ${Pref.playerVolume.toStringAsFixed(0)}%',
-                      ),
-                      onTap: () => showPlayerVolumeDialog(
-                        context,
-                        () => (context as Element).markNeedsBuild(),
-                        onChanged: player.setVolume,
-                      ),
+                Builder(
+                  builder: (context) => ListTile(
+                    dense: true,
+                    leading: const Icon(Icons.volume_up, size: 20),
+                    title: const Text('播放器音量'),
+                    subtitle: Text(
+                      '当前: ${Pref.playerVolume.toStringAsFixed(0)}%',
+                    ),
+                    onTap: () => showPlayerVolumeDialog(
+                      context,
+                      () => (context as Element).markNeedsBuild(),
+                      onChanged: plPlayerController.applyPlayerVolumePreference,
                     ),
                   ),
+                ),
               if (!isFileSource)
                 ListTile(
                   dense: true,

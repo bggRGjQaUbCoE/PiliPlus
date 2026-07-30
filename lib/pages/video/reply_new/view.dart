@@ -21,6 +21,7 @@ import 'package:PiliPlus/pages/dynamics_mention/controller.dart';
 import 'package:PiliPlus/pages/emote/controller.dart';
 import 'package:PiliPlus/pages/emote/view.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
+import 'package:PiliPlus/plugin/pl_player/models/player_feature_result.dart';
 import 'package:PiliPlus/pages/video/reply_search_item/view.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
@@ -349,23 +350,32 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
                     final plPlayerController = Get.find<VideoDetailController>(
                       tag: heroTag,
                     );
-                    final res = await plPlayerController
-                        .plPlayerController
-                        .videoPlayerController
-                        ?.screenshot();
-                    if (res != null) {
-                      final png = await res.toByteData(format: .png);
-                      if (png != null) {
-                        final path =
-                            '$tmpDirPath/${Utils.generateRandomString(8)}.png';
-                        await File(path).writeAsBytes(png.buffer.asUint8List());
-                        imageList.add(FilePicModel(path: path));
-                      }
-                      res.dispose();
-                    } else {
-                      debugPrint('null screenshot');
+                    final result = await plPlayerController.plPlayerController
+                        .captureFrame();
+                    switch (result) {
+                      case PlayerFeatureSuccess(:final value):
+                        try {
+                          final png = await value.toByteData(format: .png);
+                          if (png == null) {
+                            SmartDialog.showToast('截图失败');
+                            return;
+                          }
+                          final path =
+                              '$tmpDirPath/${Utils.generateRandomString(8)}.png';
+                          await File(
+                            path,
+                          ).writeAsBytes(png.buffer.asUint8List());
+                          imageList.add(FilePicModel(path: path));
+                        } finally {
+                          value.dispose();
+                        }
+                      case PlayerFeatureUnavailable(:final message):
+                        SmartDialog.showToast(message);
+                      case PlayerFeatureFailure(:final message):
+                        SmartDialog.showToast(message);
                     }
                   } catch (e) {
+                    SmartDialog.showToast('截图失败');
                     debugPrint(e.toString());
                   }
                 },

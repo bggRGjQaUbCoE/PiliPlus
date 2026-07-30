@@ -288,3 +288,49 @@ This confirmation remains limited to the current device and the user's tested
 flow. It does not automatically extend coverage to other Android versions,
 form factors, chipsets, interactive-video/local-file restore parameters, or
 future code revisions.
+
+### First post-mini-player compatibility hardening batch
+
+The first follow-up compatibility batch removes three player-page dependencies
+on the MPV object without claiming that Media3 screenshot or super-resolution
+support is complete:
+
+- the mobile player-volume menu is mounted for both backends and applies the
+  stored player-output volume through `PlPlayerController`, preserving mute and
+  audio-focus ducking behavior;
+- frame capture now returns a backend-neutral typed result that distinguishes a
+  captured image, a capability that is not yet implemented, and an execution
+  failure;
+- the normal screenshot action and the comment editor's video-screenshot action
+  both use that common result, so ExoPlayer no longer silently returns no image
+  in the comment flow;
+- both super-resolution entry points now call a backend-neutral controller
+  method; ExoPlayer keeps the effective mode disabled, reports the unfinished
+  Media3 effect when another mode is selected, and cannot enter the MPV shader
+  null-object path;
+- the settings-sheet super-resolution entry is no longer hidden in ExoPlayer
+  mode.
+
+The actual Media3 frame capture, animated-image capture, and GPU
+super-resolution effect remain migration gaps and are not marked compatible by
+this batch.
+
+Formatting and full `dart analyze` pass with no errors or warnings; the analyzer
+reports the same 37 existing info diagnostics. Three new player-feature result
+contract tests pass. `flutter analyze` remains blocked before repository
+analysis by the workspace Flutter SDK's missing iOS integration-test resource.
+
+An Android Release audit APK was built and passed application ID, label,
+version, universal ABI, and signing-certificate verification:
+
+- APK:
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch1-audit.apk`
+- SHA-256:
+  `35F2FA1E9F3889860FDD354F0E53BDE7A307BF39085414DF2410C50735003802`
+- certificate SHA-256:
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+Real-device comparison is still required for MPV and ExoPlayer player-volume
+changes, MPV screenshot regression, explicit ExoPlayer screenshot feedback, and
+both super-resolution entry points. The audit APK is not a new delivered
+version and does not update the release baseline.

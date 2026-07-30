@@ -27,6 +27,7 @@ import 'package:PiliPlus/plugin/pl_player/models/double_tap_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/duration.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
+import 'package:PiliPlus/plugin/pl_player/models/player_feature_result.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
@@ -794,8 +795,26 @@ class PlPlayerController with BlockConfigMixin {
 
   late final isAnim = _pgcType == 1 || _pgcType == 4;
   late final Rx<SuperResolutionType> superResolutionType =
-      (isAnim ? Pref.superResolutionType : SuperResolutionType.disable).obs;
-  Future<void> setShader([SuperResolutionType? type, NativePlayer? pp]) async {
+      (isAnim && !useExoPlayer
+              ? Pref.superResolutionType
+              : SuperResolutionType.disable)
+          .obs;
+
+  Future<void> setSuperResolution(SuperResolutionType type) async {
+    if (useExoPlayer) {
+      superResolutionType.value = SuperResolutionType.disable;
+      if (type != SuperResolutionType.disable) {
+        SmartDialog.showToast('ExoPlayer 超分辨率适配尚未完成');
+      }
+      return;
+    }
+    await _setMpvShader(type);
+  }
+
+  Future<void> _setMpvShader([
+    SuperResolutionType? type,
+    NativePlayer? targetPlayer,
+  ]) async {
     if (type == null) {
       type = superResolutionType.value;
     } else {
@@ -804,12 +823,16 @@ class PlPlayerController with BlockConfigMixin {
         setting.put(SettingBoxKey.superResolutionType, type.index);
       }
     }
-    pp ??= _videoPlayerController!;
+    final player = targetPlayer ?? _videoPlayerController;
+    if (player == null) {
+      SmartDialog.showToast('播放器尚未就绪');
+      return;
+    }
     switch (type) {
       case SuperResolutionType.disable:
-        return pp.command(const ['change-list', 'glsl-shaders', 'clr', '']);
+        return player.command(const ['change-list', 'glsl-shaders', 'clr', '']);
       case SuperResolutionType.efficiency:
-        return pp.command([
+        return player.command([
           'change-list',
           'glsl-shaders',
           'set',
@@ -819,7 +842,7 @@ class PlPlayerController with BlockConfigMixin {
           ),
         ]);
       case SuperResolutionType.quality:
-        return pp.command([
+        return player.command([
           'change-list',
           'glsl-shaders',
           'set',
@@ -914,7 +937,7 @@ class PlPlayerController with BlockConfigMixin {
       }
       _videoPlayerController = player;
       if (isAnim && superResolutionType.value != .disable) {
-        await setShader();
+        await _setMpvShader();
       }
     }
 
@@ -1480,6 +1503,9 @@ class PlPlayerController with BlockConfigMixin {
     }
   }
 
+  Future<void> applyPlayerVolumePreference(double _) =>
+      _applyPlayerOutputVolume();
+
   Future<void> setVolume(double volume, {bool showIndicator = true}) async {
     if (this.volume.value != volume) {
       this.volume.value = volume;
@@ -1972,58 +1998,87 @@ class PlPlayerController with BlockConfigMixin {
     videoShot = await VideoHttp.videoshot(bvid: bvid, cid: cid!);
   }
 
-  Future<void> takeScreenshot() async {
+  Future<PlayerFeatureResult<ui.Image>> captureFrame() async {
     if (useExoPlayer) {
-      SmartDialog.showToast('ExoPlayer 实验模式暂不支持截图');
-      return;
+      return const PlayerFeatureUnavailable('ExoPlayer 截图适配尚未完成');
     }
+    final player = videoPlayerController;
+    if (player == null) {
+      return const PlayerFeatureUnavailable('播放器尚未就绪');
+    }
+    try {
+      final image = await player.screenshot();
+      if (image == null) {
+        return const PlayerFeatureFailure('截图失败');
+      }
+      return PlayerFeatureSuccess(image);
+    } catch (error, stackTrace) {
+      return PlayerFeatureFailure(
+        '截图失败',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  Future<void> takeScreenshot() async {
     SmartDialog.showToast('截图中');
     final time = DurationUtils.formatDuration(
       positionInMilliseconds / 1000,
     ).replaceAll(':', '-');
-    final image = await videoPlayerController?.screenshot();
-    if (image != null) {
-      SmartDialog.showToast('点击弹窗保存截图');
-      showDialog(
-        context: Get.context!,
-        builder: (context) => GestureDetector(
-          onTap: () async {
-            final bytes = await image.toByteData(format: .png);
-            if (bytes != null) {
-              ImageUtils.saveByteImg(
-                bytes: bytes.buffer.asUint8List(),
-                fileName: 'screenshot_${cid}_$time',
-              );
-            }
-            Get.back();
-          },
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: min(MediaQuery.widthOf(context) / 3, 350),
-                ),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      width: 5,
-                      color: ColorScheme.of(context).surface,
-                    ),
+    final result = await captureFrame();
+    switch (result) {
+      case PlayerFeatureSuccess(:final value):
+        SmartDialog.showToast('点击弹窗保存截图');
+        showDialog(
+          context: Get.context!,
+          builder: (context) => GestureDetector(
+            onTap: () async {
+              final bytes = await value.toByteData(format: .png);
+              if (bytes != null) {
+                ImageUtils.saveByteImg(
+                  bytes: bytes.buffer.asUint8List(),
+                  fileName: 'screenshot_${cid}_$time',
+                );
+              }
+              Get.back();
+            },
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: min(MediaQuery.widthOf(context) / 3, 350),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: RawImage(image: image),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        width: 5,
+                        color: ColorScheme.of(context).surface,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: RawImage(image: value),
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
-      ).whenComplete(image.dispose);
-    } else {
-      SmartDialog.showToast('截图失败');
+        ).whenComplete(value.dispose);
+      case PlayerFeatureUnavailable(:final message):
+        SmartDialog.showToast(message);
+      case PlayerFeatureFailure(
+        :final message,
+        :final error,
+        :final stackTrace,
+      ):
+        if (error != null) {
+          Utils.reportError('$message: $error\n$stackTrace');
+        }
+        SmartDialog.showToast(message);
     }
   }
 

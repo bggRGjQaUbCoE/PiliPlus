@@ -483,7 +483,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                     height: 35,
                     padding: const EdgeInsets.only(left: 30),
                     value: type,
-                    onTap: () => plPlayerController.setShader(type),
+                    onTap: () => plPlayerController.setSuperResolution(type),
                     child: Text(
                       type.label,
                       style: const TextStyle(color: Colors.white, fontSize: 13),

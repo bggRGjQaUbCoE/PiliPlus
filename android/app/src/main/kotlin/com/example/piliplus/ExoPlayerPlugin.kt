@@ -21,16 +21,19 @@ import android.text.style.TypefaceSpan
 import android.text.style.UnderlineSpan
 import android.util.Base64
 import androidx.media3.common.C
+import androidx.media3.common.Format
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.common.VideoSize
 import androidx.media3.common.text.Cue
 import androidx.media3.common.text.CueGroup
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.MergingMediaSource
@@ -151,6 +154,15 @@ private class ExoPlayerManager(
                     )
                     result.success(null)
                 }
+                "setTrackSelection" -> {
+                    requiredSession(call).setTrackSelection(
+                        type = call.requiredString("type"),
+                        mode = call.requiredString("mode"),
+                        groupIndex = call.argument<Number>("groupIndex")?.toInt(),
+                        trackIndex = call.argument<Number>("trackIndex")?.toInt(),
+                    )
+                    result.success(null)
+                }
                 "dispose" -> {
                     val id = call.requiredLong("id")
                     sessions.remove(id)?.dispose()
@@ -199,9 +211,10 @@ private class ExoPlayerSession(
     private val id: Long,
     private val surfaceProducer: TextureRegistry.SurfaceProducer,
     private val sendEvent: (Map<String, Any?>) -> Unit,
-) : Player.Listener {
+) : Player.Listener, AnalyticsListener {
     val player: ExoPlayer = ExoPlayer.Builder(context).build().also {
         it.addListener(this)
+        it.addAnalyticsListener(this)
         it.playWhenReady = false
     }
 
@@ -210,6 +223,8 @@ private class ExoPlayerSession(
     private var mediaRequest: MediaRequest? = null
     private var subtitleRequest: SubtitleRequest? = null
     private var subtitleCues: List<Map<String, Any?>> = emptyList()
+    private var videoDecoder: String? = null
+    private var audioDecoder: String? = null
     private var mediaGeneration = 0L
     val textureId: Long
         get() = surfaceProducer.id()
@@ -241,6 +256,8 @@ private class ExoPlayerSession(
     ) {
         mediaGeneration = generation
         mediaRequest = MediaRequest(videoUrl, audioUrl, headers)
+        videoDecoder = null
+        audioDecoder = null
         if (!preserveSubtitle) {
             subtitleRequest = null
         }
@@ -282,6 +299,49 @@ private class ExoPlayerSession(
         if (mediaRequest != null) {
             prepareMedia(player.currentPosition, player.playWhenReady)
         }
+    }
+
+    fun setTrackSelection(
+        type: String,
+        mode: String,
+        groupIndex: Int?,
+        trackIndex: Int?,
+    ) {
+        val trackType = when (type) {
+            "video" -> C.TRACK_TYPE_VIDEO
+            "audio" -> C.TRACK_TYPE_AUDIO
+            "subtitle" -> C.TRACK_TYPE_TEXT
+            else -> error("Unsupported track type: $type")
+        }
+        val builder = player.trackSelectionParameters.buildUpon()
+            .clearOverridesOfType(trackType)
+        when (mode) {
+            "auto" -> builder.setTrackTypeDisabled(trackType, false)
+            "disabled" -> builder.setTrackTypeDisabled(trackType, true)
+            "track" -> {
+                val actualGroupIndex = groupIndex ?: error("Missing groupIndex")
+                val group = player.currentTracks.groups.getOrNull(actualGroupIndex)
+                    ?: error("Track group $actualGroupIndex does not exist")
+                val actualTrackIndex = trackIndex ?: error("Missing trackIndex")
+                require(group.type == trackType) {
+                    "Track group $actualGroupIndex has type ${group.type}, expected $trackType"
+                }
+                require(actualTrackIndex in 0 until group.length) {
+                    "Track index $actualTrackIndex does not exist in group $actualGroupIndex"
+                }
+                require(group.isTrackSupported(actualTrackIndex)) {
+                    "Track $actualGroupIndex:$actualTrackIndex is not supported"
+                }
+                builder
+                    .setTrackTypeDisabled(trackType, false)
+                    .setOverrideForType(
+                        TrackSelectionOverride(group.mediaTrackGroup, actualTrackIndex),
+                    )
+            }
+            else -> error("Unsupported track selection mode: $mode")
+        }
+        player.trackSelectionParameters = builder.build()
+        emitState()
     }
 
     private fun prepareMedia(positionMs: Long, playWhenReady: Boolean) {
@@ -373,6 +433,24 @@ private class ExoPlayerSession(
         )
     }
 
+    override fun onVideoDecoderInitialized(
+        eventTime: AnalyticsListener.EventTime,
+        decoderName: String,
+        initializationDurationMs: Long,
+    ) {
+        videoDecoder = decoderName
+        emitState()
+    }
+
+    override fun onAudioDecoderInitialized(
+        eventTime: AnalyticsListener.EventTime,
+        decoderName: String,
+        initializationDurationMs: Long,
+    ) {
+        audioDecoder = decoderName
+        emitState()
+    }
+
     fun emitProgress() {
         sendEvent(
             baseEvent("progress") + mapOf(
@@ -396,6 +474,11 @@ private class ExoPlayerSession(
                 "width" to width,
                 "height" to height,
                 "speed" to player.playbackParameters.speed.toDouble(),
+                "volume" to player.volume.toDouble(),
+                "tracks" to serializeTracks(player),
+                "videoDecoder" to videoDecoder,
+                "audioDecoder" to audioDecoder,
+                "mediaDescription" to mediaRequest?.description,
             ),
         )
     }
@@ -426,6 +509,7 @@ private class ExoPlayerSession(
         surfaceProducer.setCallback(null)
         player.clearVideoSurface()
         player.removeListener(this)
+        player.removeAnalyticsListener(this)
         player.release()
         surfaceProducer.release()
     }
@@ -435,7 +519,17 @@ private data class MediaRequest(
     val videoUrl: String,
     val audioUrl: String?,
     val headers: Map<String, String>,
-)
+) {
+    val description: String
+        get() = buildString {
+            append("video: ")
+            append(videoUrl)
+            if (!audioUrl.isNullOrBlank() && audioUrl != videoUrl) {
+                append("\naudio: ")
+                append(audioUrl)
+            }
+        }
+}
 
 private data class SubtitleRequest(
     val uri: Uri,
@@ -459,6 +553,66 @@ private fun resolveSubtitleMimeType(mimeType: String?, uri: String?): String {
         }
         else -> error("Unsupported subtitle MIME type: $mimeType")
     }
+}
+
+private fun serializeTracks(player: Player): List<Map<String, Any?>> =
+    player.currentTracks.groups.flatMapIndexed { groupIndex, group ->
+        val type = when (group.type) {
+            C.TRACK_TYPE_VIDEO -> "video"
+            C.TRACK_TYPE_AUDIO -> "audio"
+            C.TRACK_TYPE_TEXT -> "subtitle"
+            else -> null
+        } ?: return@flatMapIndexed emptyList()
+        List(group.length) { trackIndex ->
+            serializeFormat(
+                format = group.getTrackFormat(trackIndex),
+                type = type,
+                groupIndex = groupIndex,
+                trackIndex = trackIndex,
+                selected = group.isTrackSelected(trackIndex),
+                supported = group.isTrackSupported(trackIndex),
+                fallbackId = "${group.mediaTrackGroup.id}:$trackIndex",
+            )
+        }
+    }
+
+private fun serializeFormat(
+    format: Format,
+    type: String,
+    groupIndex: Int,
+    trackIndex: Int,
+    selected: Boolean,
+    supported: Boolean,
+    fallbackId: String,
+): Map<String, Any?> = mapOf(
+    "type" to type,
+    "id" to (format.id ?: fallbackId),
+    "groupIndex" to groupIndex,
+    "trackIndex" to trackIndex,
+    "selected" to selected,
+    "supported" to supported,
+    "title" to format.label,
+    "language" to format.language,
+    "codec" to format.codecs,
+    "mimeType" to format.sampleMimeType,
+    "containerMimeType" to format.containerMimeType,
+    "bitrate" to format.bitrate.unsetToNull(),
+    "width" to format.width.unsetToNull(),
+    "height" to format.height.unsetToNull(),
+    "frameRate" to format.frameRate.unsetToNull(),
+    "rotationDegrees" to format.rotationDegrees.unsetToNull(),
+    "pixelWidthHeightRatio" to format.pixelWidthHeightRatio.takeUnless {
+        it == Format.NO_VALUE.toFloat()
+    },
+    "channelCount" to format.channelCount.unsetToNull(),
+    "sampleRate" to format.sampleRate.unsetToNull(),
+    "colorInfo" to format.colorInfo?.toString(),
+)
+
+private fun Int.unsetToNull(): Int? = takeUnless { it == Format.NO_VALUE }
+
+private fun Float.unsetToNull(): Float? = takeUnless {
+    it == Format.NO_VALUE.toFloat()
 }
 
 private fun serializeCue(cue: Cue): Map<String, Any?>? {

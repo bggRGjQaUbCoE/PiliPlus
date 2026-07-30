@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:PiliPlus/plugin/pl_player/exo_player/exo_subtitle_cue.dart';
+import 'package:PiliPlus/plugin/pl_player/models/player_media_track.dart';
 import 'package:flutter/services.dart';
 
 class ExoPlayerEvent {
@@ -19,6 +20,11 @@ class ExoPlayerEvent {
     required this.speed,
     required this.subtitle,
     required this.subtitleCues,
+    required this.tracks,
+    required this.volume,
+    this.videoDecoder,
+    this.audioDecoder,
+    this.mediaDescription,
     this.error,
   });
 
@@ -36,6 +42,11 @@ class ExoPlayerEvent {
   final double speed;
   final String subtitle;
   final List<ExoSubtitleCue> subtitleCues;
+  final List<PlayerMediaTrack> tracks;
+  final double volume;
+  final String? videoDecoder;
+  final String? audioDecoder;
+  final String? mediaDescription;
   final String? error;
 
   factory ExoPlayerEvent.fromMap(Map<Object?, Object?> map) {
@@ -66,6 +77,22 @@ class ExoPlayerEvent {
               .toList(growable: false),
         _ => const [],
       },
+      tracks: switch (map['tracks']) {
+        final List tracks =>
+          tracks
+              .whereType<Map>()
+              .map(
+                (track) => PlayerMediaTrack.fromMap(
+                  Map<Object?, Object?>.from(track),
+                ),
+              )
+              .toList(growable: false),
+        _ => const [],
+      },
+      volume: (map['volume'] as num?)?.toDouble() ?? 1,
+      videoDecoder: map['videoDecoder'] as String?,
+      audioDecoder: map['audioDecoder'] as String?,
+      mediaDescription: map['mediaDescription'] as String?,
       error: map['message'] as String?,
     );
   }
@@ -111,6 +138,8 @@ class ExoPlayerController {
     speed: 1,
     subtitle: '',
     subtitleCues: [],
+    tracks: [],
+    volume: 1,
   );
 
   Stream<ExoPlayerEvent> get events => _controller.stream;
@@ -169,6 +198,21 @@ class ExoPlayerController {
             subtitleCues: event.containsKey('subtitleCues')
                 ? next.subtitleCues
                 : player.state.subtitleCues,
+            tracks: event.containsKey('tracks')
+                ? next.tracks
+                : player.state.tracks,
+            volume: event.containsKey('volume')
+                ? next.volume
+                : player.state.volume,
+            videoDecoder: event.containsKey('videoDecoder')
+                ? next.videoDecoder
+                : player.state.videoDecoder,
+            audioDecoder: event.containsKey('audioDecoder')
+                ? next.audioDecoder
+                : player.state.audioDecoder,
+            mediaDescription: event.containsKey('mediaDescription')
+                ? next.mediaDescription
+                : player.state.mediaDescription,
             error: next.error,
           );
           player._controller.add(player.state);
@@ -234,6 +278,18 @@ class ExoPlayerController {
     'language': language,
     'label': label,
     'mimeType': mimeType,
+  });
+
+  Future<void> setTrackSelection({
+    required PlayerMediaTrackType type,
+    required PlayerTrackSelectionMode mode,
+    PlayerMediaTrack? track,
+  }) => _methods.invokeMethod<void>('setTrackSelection', {
+    'id': id,
+    'type': type.name,
+    'mode': mode.name,
+    'groupIndex': track?.groupIndex,
+    'trackIndex': track?.trackIndex,
   });
 
   Future<void> _invoke(String method) =>

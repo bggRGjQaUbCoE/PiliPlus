@@ -28,6 +28,7 @@ import 'package:PiliPlus/plugin/pl_player/models/duration.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/player_feature_result.dart';
+import 'package:PiliPlus/plugin/pl_player/models/player_media_track.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
@@ -41,6 +42,7 @@ import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/box_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
+import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -80,6 +82,208 @@ class PlPlayerController with BlockConfigMixin {
   bool get playerReady =>
       useExoPlayer ? _exoPlayerController != null : _videoController != null;
   ExoPlayerController? get exoPlayerController => _exoPlayerController;
+
+  List<PlayerMediaTrack> tracksFor(PlayerMediaTrackType type) {
+    if (useExoPlayer) {
+      return _exoPlayerController?.state.tracks
+              .where((track) => track.type == type)
+              .toList(growable: false) ??
+          const [];
+    }
+    final state = _videoPlayerController?.state;
+    if (state == null) return const [];
+    return switch (type) {
+      PlayerMediaTrackType.video =>
+        state.tracks.video
+            .where((track) => track.id != 'auto' && track.id != 'no')
+            .toList()
+            .asMap()
+            .entries
+            .map(
+              (entry) => PlayerMediaTrack(
+                type: type,
+                id: entry.value.id,
+                groupIndex: -1,
+                trackIndex: entry.key,
+                selected:
+                    entry.value.selected ||
+                    entry.value.id == state.track.video.id,
+                supported: true,
+                title: entry.value.title,
+                language: entry.value.language,
+                codec: entry.value.codec,
+                bitrate: entry.value.bitrate,
+                width: entry.value.w,
+                height: entry.value.h,
+                frameRate: entry.value.fps,
+                rotationDegrees: entry.value.rotate,
+                pixelWidthHeightRatio: entry.value.par,
+              ),
+            )
+            .toList(growable: false),
+      PlayerMediaTrackType.audio =>
+        state.tracks.audio
+            .where((track) => track.id != 'auto' && track.id != 'no')
+            .toList()
+            .asMap()
+            .entries
+            .map(
+              (entry) => PlayerMediaTrack(
+                type: type,
+                id: entry.value.id,
+                groupIndex: -1,
+                trackIndex: entry.key,
+                selected:
+                    entry.value.selected ||
+                    entry.value.id == state.track.audio.id,
+                supported: true,
+                title: entry.value.title,
+                language: entry.value.language,
+                codec: entry.value.codec,
+                bitrate: entry.value.bitrate,
+                channelCount: entry.value.channelscount,
+                sampleRate: entry.value.samplerate,
+              ),
+            )
+            .toList(growable: false),
+      PlayerMediaTrackType.subtitle =>
+        state.tracks.subtitle
+            .where((track) => track.id != 'auto' && track.id != 'no')
+            .toList()
+            .asMap()
+            .entries
+            .map(
+              (entry) => PlayerMediaTrack(
+                type: type,
+                id: entry.value.id,
+                groupIndex: -1,
+                trackIndex: entry.key,
+                selected:
+                    entry.value.selected ||
+                    entry.value.id == state.track.subtitle.id,
+                supported: true,
+                title: entry.value.title,
+                language: entry.value.language,
+                codec: entry.value.codec,
+              ),
+            )
+            .toList(growable: false),
+    };
+  }
+
+  PlayerMediaTrack? selectedTrack(PlayerMediaTrackType type) {
+    for (final track in tracksFor(type)) {
+      if (track.selected) return track;
+    }
+    return null;
+  }
+
+  Future<void> setTrackSelection(
+    PlayerMediaTrackType type,
+    PlayerTrackSelectionMode mode, {
+    PlayerMediaTrack? track,
+  }) async {
+    if (mode == PlayerTrackSelectionMode.track && track == null) {
+      throw ArgumentError.notNull('track');
+    }
+    if (useExoPlayer) {
+      final player = _exoPlayerController;
+      if (player == null) return;
+      await player.setTrackSelection(
+        type: type,
+        mode: mode,
+        track: track,
+      );
+    } else {
+      final player = _videoPlayerController;
+      if (player == null) return;
+      switch (type) {
+        case PlayerMediaTrackType.video:
+          await player.setVideoTrack(
+            switch (mode) {
+              PlayerTrackSelectionMode.auto => VideoTrack.auto(),
+              PlayerTrackSelectionMode.disabled => VideoTrack.no(),
+              PlayerTrackSelectionMode.track => VideoTrack(
+                track!.id,
+                track.title,
+                track.language,
+              ),
+            },
+          );
+        case PlayerMediaTrackType.audio:
+          await player.setAudioTrack(
+            switch (mode) {
+              PlayerTrackSelectionMode.auto => AudioTrack.auto(),
+              PlayerTrackSelectionMode.disabled => AudioTrack.no(),
+              PlayerTrackSelectionMode.track => AudioTrack(
+                track!.id,
+                track.title,
+                track.language,
+              ),
+            },
+          );
+        case PlayerMediaTrackType.subtitle:
+          await player.setSubtitleTrack(
+            switch (mode) {
+              PlayerTrackSelectionMode.auto => SubtitleTrack.auto(),
+              PlayerTrackSelectionMode.disabled => SubtitleTrack.no(),
+              PlayerTrackSelectionMode.track => SubtitleTrack(
+                track!.id,
+                track.title,
+                track.language,
+              ),
+            },
+          );
+      }
+    }
+    if (type == PlayerMediaTrackType.video) {
+      onlyPlayAudio.value = mode == PlayerTrackSelectionMode.disabled;
+    }
+  }
+
+  List<PlayerInfoEntry> get playerInfoEntries {
+    String value(Object? value) => value?.toString() ?? 'N/A';
+    if (useExoPlayer) {
+      final state = _exoPlayerController?.state;
+      if (state == null) return const [];
+      final video = selectedTrack(PlayerMediaTrackType.video);
+      final audio = selectedTrack(PlayerMediaTrackType.audio);
+      final subtitle = selectedTrack(PlayerMediaTrackType.subtitle);
+      return [
+        const PlayerInfoEntry('Backend', 'Media3 ExoPlayer'),
+        PlayerInfoEntry('Resolution', '${state.width}x${state.height}'),
+        PlayerInfoEntry('VideoParams', video?.details ?? 'N/A'),
+        PlayerInfoEntry('AudioParams', audio?.details ?? 'N/A'),
+        PlayerInfoEntry('Media', state.mediaDescription ?? 'N/A'),
+        PlayerInfoEntry('AudioTrack', audio?.details ?? 'disabled'),
+        PlayerInfoEntry('VideoTrack', video?.details ?? 'disabled'),
+        PlayerInfoEntry('SubtitleTrack', subtitle?.details ?? 'disabled'),
+        PlayerInfoEntry('rate', value(state.speed)),
+        PlayerInfoEntry('Volume', value(state.volume)),
+        PlayerInfoEntry(
+          'Decoder',
+          'video: ${state.videoDecoder ?? 'N/A'}\n'
+              'audio: ${state.audioDecoder ?? 'N/A'}',
+        ),
+      ];
+    }
+    final player = _videoPlayerController;
+    if (player == null) return const [];
+    final state = player.state;
+    return [
+      const PlayerInfoEntry('Backend', 'MPV'),
+      PlayerInfoEntry('Resolution', '${state.width}x${state.height}'),
+      PlayerInfoEntry('VideoParams', value(state.videoParams)),
+      PlayerInfoEntry('AudioParams', value(state.audioParams)),
+      PlayerInfoEntry('Media', value(state.playlist)),
+      PlayerInfoEntry('AudioTrack', value(state.track.audio)),
+      PlayerInfoEntry('VideoTrack', value(state.track.video)),
+      PlayerInfoEntry('SubtitleTrack', value(state.track.subtitle)),
+      PlayerInfoEntry('rate', value(state.rate)),
+      PlayerInfoEntry('Volume', player.getProperty('volume').subLength(3)),
+      PlayerInfoEntry('hwdec', player.getProperty('hwdec-current')),
+    ];
+  }
 
   static PlPlayerController? _instance;
 
@@ -1021,10 +1225,8 @@ class PlPlayerController with BlockConfigMixin {
   }) {
     final audio = dataSource.audioSource;
     return _exoPlayerController!.open(
-      videoUrl: onlyPlayAudio.value && audio?.isNotEmpty == true
-          ? audio!
-          : dataSource.videoSource,
-      audioUrl: onlyPlayAudio.value ? null : audio,
+      videoUrl: dataSource.videoSource,
+      audioUrl: audio,
       headers: const {
         'User-Agent': BrowserUa.pc,
         'Referer': HttpString.baseUrl,
@@ -1947,20 +2149,14 @@ class PlPlayerController with BlockConfigMixin {
     }
   }
 
-  void setOnlyPlayAudio() {
-    final shouldResume = playWhenReady;
-    onlyPlayAudio.toggle();
-    if (useExoPlayer) {
-      _openExoPlayer(
-        dataSource,
-        currentPosition,
-        playWhenReady: shouldResume,
-      );
-    } else {
-      videoPlayerController?.setVideoTrack(
-        onlyPlayAudio.value ? .no() : .auto(),
-      );
-    }
+  Future<void> setOnlyPlayAudio() async {
+    final disableVideo = !onlyPlayAudio.value;
+    await setTrackSelection(
+      PlayerMediaTrackType.video,
+      disableVideo
+          ? PlayerTrackSelectionMode.disabled
+          : PlayerTrackSelectionMode.auto,
+    );
   }
 
   late final Map<String, ui.Image?> previewCache = {};

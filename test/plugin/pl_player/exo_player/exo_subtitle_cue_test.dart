@@ -7,6 +7,21 @@ void main() {
   test('parses structured Media3 cue data from the event channel', () {
     final event = ExoPlayerEvent.fromMap({
       'subtitle': 'Hello',
+      'volume': .75,
+      'videoDecoder': 'c2.qti.avc.decoder',
+      'tracks': [
+        {
+          'type': 'audio',
+          'id': 'audio-aac',
+          'groupIndex': 1,
+          'trackIndex': 0,
+          'selected': true,
+          'supported': true,
+          'codec': 'mp4a.40.2',
+          'channelCount': 2,
+          'sampleRate': 48000,
+        },
+      ],
       'subtitleCues': [
         {
           'text': 'Hello',
@@ -38,6 +53,9 @@ void main() {
     });
 
     expect(event.subtitleCues, hasLength(1));
+    expect(event.tracks.single.id, 'audio-aac');
+    expect(event.volume, .75);
+    expect(event.videoDecoder, 'c2.qti.avc.decoder');
     final cue = event.subtitleCues.single;
     expect(cue.text, 'Hello');
     expect(cue.textAlignment, ExoSubtitleAlignment.center);

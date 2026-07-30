@@ -37,6 +37,7 @@ import 'package:PiliPlus/pages/video/introduction/ugc/widgets/menu_row.dart';
 import 'package:PiliPlus/pages/video/widgets/header_mixin.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
+import 'package:PiliPlus/plugin/pl_player/models/player_media_track.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/subtitle_source.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart'
@@ -534,25 +535,7 @@ class HeaderControlState extends State<HeaderControl>
                             plPlayerController.onlyPlayAudio.value;
                         return ActionRowLineItem(
                           iconData: Icons.headphones,
-                          onTap: () {
-                            if (plPlayerController.useExoPlayer) {
-                              plPlayerController.setOnlyPlayAudio();
-                              return;
-                            }
-                            plPlayerController.onlyPlayAudio.value =
-                                !onlyPlayAudio;
-                            final player =
-                                plPlayerController.videoPlayerController!;
-                            if (onlyPlayAudio &&
-                                player.state.tracks.video.length <= 2) {
-                              videoDetailCtr.playerInit();
-                            } else {
-                              player.setProperty(
-                                'file-local-options/vid',
-                                onlyPlayAudio ? 'auto' : 'no',
-                              );
-                            }
-                          },
+                          onTap: plPlayerController.setOnlyPlayAudio,
                           text: " 听视频 ",
                           selectStatus: onlyPlayAudio,
                         );
@@ -730,12 +713,61 @@ class HeaderControlState extends State<HeaderControl>
                   leading: const Icon(Icons.download_outlined, size: 20),
                   title: const Text('保存字幕', style: titleStyle),
                 ),
-              if (plPlayerController.videoPlayerController case final player?)
+              if (plPlayerController
+                  .tracksFor(PlayerMediaTrackType.video)
+                  .isNotEmpty)
+                ListTile(
+                  dense: true,
+                  title: const Text('视频轨道', style: titleStyle),
+                  subtitle: Text(
+                    plPlayerController
+                            .selectedTrack(PlayerMediaTrackType.video)
+                            ?.displayName ??
+                        '已关闭',
+                    style: subTitleStyle,
+                  ),
+                  leading: const Icon(Icons.video_settings_outlined, size: 20),
+                  onTap: () {
+                    Get.back();
+                    showTrackSelection(
+                      context,
+                      controller: plPlayerController,
+                      type: PlayerMediaTrackType.video,
+                    );
+                  },
+                ),
+              if (plPlayerController
+                  .tracksFor(PlayerMediaTrackType.audio)
+                  .isNotEmpty)
+                ListTile(
+                  dense: true,
+                  title: const Text('音频轨道', style: titleStyle),
+                  subtitle: Text(
+                    plPlayerController
+                            .selectedTrack(PlayerMediaTrackType.audio)
+                            ?.displayName ??
+                        '已关闭',
+                    style: subTitleStyle,
+                  ),
+                  leading: const Icon(Icons.multitrack_audio, size: 20),
+                  onTap: () {
+                    Get.back();
+                    showTrackSelection(
+                      context,
+                      controller: plPlayerController,
+                      type: PlayerMediaTrackType.audio,
+                    );
+                  },
+                ),
+              if (plPlayerController.playerReady)
                 ListTile(
                   dense: true,
                   title: const Text('播放信息', style: titleStyle),
                   leading: const Icon(Icons.info_outline, size: 20),
-                  onTap: () => showPlayerInfo(context, player: player),
+                  onTap: () => showPlayerInfo(
+                    context,
+                    controller: plPlayerController,
+                  ),
                 ),
               ListTile(
                 dense: true,
@@ -759,14 +791,14 @@ class HeaderControlState extends State<HeaderControl>
 
   static void showPlayerInfo(
     BuildContext context, {
-    required NativePlayer player,
+    PlPlayerController? controller,
+    NativePlayer? player,
   }) {
-    final hwdec = player.getProperty('hwdec-current');
-    final volume = player.getProperty('volume').subLength(3);
+    assert(controller != null || player != null);
+    final entries = controller?.playerInfoEntries ?? _nativePlayerInfo(player!);
     showDialog(
       context: context,
       builder: (context) {
-        final state = player.state;
         final colorScheme = ColorScheme.of(context);
         return AlertDialog(
           title: const Text('播放信息'),
@@ -777,68 +809,18 @@ class HeaderControlState extends State<HeaderControl>
               contentPadding: const .symmetric(horizontal: 24),
               child: SingleChildScrollView(
                 child: Column(
-                  children: [
-                    ListTile(
-                      dense: true,
-                      title: const Text("Resolution"),
-                      subtitle: Text('${state.width}x${state.height}'),
-                      onTap: () => Utils.copyText(
-                        'Resolution\n${state.width}x${state.height}',
-                      ),
-                    ),
-                    ListTile(
-                      dense: true,
-                      title: const Text("VideoParams"),
-                      subtitle: Text(state.videoParams.toString()),
-                      onTap: () =>
-                          Utils.copyText('VideoParams\n${state.videoParams}'),
-                    ),
-                    ListTile(
-                      dense: true,
-                      title: const Text("AudioParams"),
-                      subtitle: Text(state.audioParams.toString()),
-                      onTap: () =>
-                          Utils.copyText('AudioParams\n${state.audioParams}'),
-                    ),
-                    ListTile(
-                      dense: true,
-                      title: const Text("Media"),
-                      subtitle: Text(state.playlist.toString()),
-                      onTap: () => Utils.copyText('Media\n${state.playlist}'),
-                    ),
-                    ListTile(
-                      dense: true,
-                      title: const Text("AudioTrack"),
-                      subtitle: Text(state.track.audio.toString()),
-                      onTap: () =>
-                          Utils.copyText('AudioTrack\n${state.track.audio}'),
-                    ),
-                    ListTile(
-                      dense: true,
-                      title: const Text("VideoTrack"),
-                      subtitle: Text(state.track.video.toString()),
-                      onTap: () =>
-                          Utils.copyText('VideoTrack\n${state.track.audio}'),
-                    ),
-                    ListTile(
-                      dense: true,
-                      title: const Text("rate"),
-                      subtitle: Text(state.rate.toString()),
-                      onTap: () => Utils.copyText('rate\n${state.rate}'),
-                    ),
-                    ListTile(
-                      dense: true,
-                      title: const Text("Volume"),
-                      subtitle: Text(volume.toString()),
-                      onTap: () => Utils.copyText('Volume\n$volume'),
-                    ),
-                    ListTile(
-                      dense: true,
-                      title: const Text('hwdec'),
-                      subtitle: Text(hwdec),
-                      onTap: () => Utils.copyText('hwdec\n$hwdec'),
-                    ),
-                  ],
+                  children: entries
+                      .map(
+                        (entry) => ListTile(
+                          dense: true,
+                          title: Text(entry.label),
+                          subtitle: Text(entry.value),
+                          onTap: () => Utils.copyText(
+                            '${entry.label}\n${entry.value}',
+                          ),
+                        ),
+                      )
+                      .toList(growable: false),
                 ),
               ),
             ),
@@ -852,6 +834,112 @@ class HeaderControlState extends State<HeaderControl>
         );
       },
     );
+  }
+
+  static List<PlayerInfoEntry> _nativePlayerInfo(NativePlayer player) {
+    final state = player.state;
+    return [
+      const PlayerInfoEntry('Backend', 'MPV'),
+      PlayerInfoEntry('Resolution', '${state.width}x${state.height}'),
+      PlayerInfoEntry('VideoParams', state.videoParams.toString()),
+      PlayerInfoEntry('AudioParams', state.audioParams.toString()),
+      PlayerInfoEntry('Media', state.playlist.toString()),
+      PlayerInfoEntry('AudioTrack', state.track.audio.toString()),
+      PlayerInfoEntry('VideoTrack', state.track.video.toString()),
+      PlayerInfoEntry('SubtitleTrack', state.track.subtitle.toString()),
+      PlayerInfoEntry('rate', state.rate.toString()),
+      PlayerInfoEntry('Volume', player.getProperty('volume').subLength(3)),
+      PlayerInfoEntry('hwdec', player.getProperty('hwdec-current')),
+    ];
+  }
+
+  static Future<void> showTrackSelection(
+    BuildContext context, {
+    required PlPlayerController controller,
+    required PlayerMediaTrackType type,
+  }) async {
+    final tracks = controller.tracksFor(type);
+    final selected = controller.selectedTrack(type);
+    final title = switch (type) {
+      PlayerMediaTrackType.video => '视频轨道',
+      PlayerMediaTrackType.audio => '音频轨道',
+      PlayerMediaTrackType.subtitle => '字幕轨道',
+    };
+    String trackValue(PlayerMediaTrack track) =>
+        'track:${track.groupIndex}:${track.trackIndex}:${track.id}';
+    final groupValue = selected == null ? 'disabled' : trackValue(selected);
+
+    final value = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        contentPadding: const EdgeInsets.only(top: 12, bottom: 8),
+        content: SingleChildScrollView(
+          child: RadioGroup<String>(
+            groupValue: groupValue,
+            onChanged: (value) => Navigator.pop(context, value),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const RadioListTile<String>(
+                  value: 'auto',
+                  title: Text('自动选择'),
+                  dense: true,
+                ),
+                const RadioListTile<String>(
+                  value: 'disabled',
+                  title: Text('关闭'),
+                  dense: true,
+                ),
+                ...tracks.map(
+                  (track) => RadioListTile<String>(
+                    value: trackValue(track),
+                    title: Text(track.displayName),
+                    subtitle: Text(
+                      track.supported
+                          ? track.details
+                          : '设备不支持 · ${track.details}',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    enabled: track.supported,
+                    dense: true,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: Get.back, child: const Text('取消')),
+        ],
+      ),
+    );
+    if (value == null) return;
+    try {
+      if (value == 'auto') {
+        await controller.setTrackSelection(
+          type,
+          PlayerTrackSelectionMode.auto,
+        );
+      } else if (value == 'disabled') {
+        await controller.setTrackSelection(
+          type,
+          PlayerTrackSelectionMode.disabled,
+        );
+      } else {
+        final track = tracks.firstWhere(
+          (track) => trackValue(track) == value,
+        );
+        await controller.setTrackSelection(
+          type,
+          PlayerTrackSelectionMode.track,
+          track: track,
+        );
+      }
+    } catch (error) {
+      SmartDialog.showToast('切换$title失败: $error');
+    }
   }
 
   /// 选择画质

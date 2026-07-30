@@ -1,6 +1,6 @@
 # pili++ 当前项目状态
 
-> 最后核对：2026-07-28 19:10 +08:00
+> 最后核对：2026-07-30 11:29 +08:00
 >
 > 本文件记录会随开发变化、但后续任务必须知道的事实。开始任务时先核对这里与实际
 > Git、源码和构建产物；结束任务前更新。长期规则见 `AGENTS.md`，ExoPlayer 详细兼容
@@ -9,16 +9,16 @@
 ## 仓库基线
 
 - 当前分支：`main`
-- 最新发布源提交：`859d39c4ff3c77c37e1cc1d7131192df8f8b4241`
+- 最新 GitHub 发布源提交：`859d39c4ff3c77c37e1cc1d7131192df8f8b4241`
   (`chore: prepare 2.1.2 release`)
-- 最新功能快照：`e433cf18720fc15ccbba872a6de73df4715e5c8c`
-  (`feat: add in-app mini player lifecycle`)
+- 最新功能快照：`5ac01dd98a29584c1f5e27567fff9d42b25e7337`
+  (`fix: stabilize in-app mini player lifecycle`)
 - 最新上游合并提交：`0e4e8db250e986c4f8e32652fac2652651ec4168`
   (`Merge remote-tracking branch 'upstream/main' into codex/android-exoplayer`)
 - 上游：`https://github.com/bggRGjQaUbCoE/PiliPlus.git`
 - 已获取并合入的 `upstream/main`：`5296a8f7f07a22f347ad53bc8c7651e6787bf3ec`
 - 当前分支已包含上游 `56ca0ca`、`10b723f`、`e4e7037`、`91e7899` 和 `5296a8f`；
-  本状态更新提交完成后相对上游为本地领先 7、落后 0。
+  本状态更新提交完成后相对上游为本地领先 13、落后 0。
 - 应用内小窗、音频焦点/媒体控制、系统 PiP 恢复、版本更新和兼容记录已保存到上述
   功能快照。交接时应以实际 `git status` 为准；存在未提交修改时不得直接 merge 或
   rebase。
@@ -37,14 +37,14 @@
 
 ## 最近一次交付
 
-- 版本：`2.1.2`
-- versionCode：`2026072807`
+- 版本：`2.1.3`
+- versionCode：`2026072808`
 - ABI：universal (`arm64-v8a`、`armeabi-v7a`、`x86_64`)
-- 文件名：`pili++-2.1.2-2026072807-universal-release.apk`
+- 文件名：`pili++-2.1.3-2026072808-universal-release.apk`
 - APK SHA-256：
-  `03002D0E8F466357A8F4D24FE41FB9951ED76978A05D3CAF8946D57346282D53`
-- 2026-07-28 19:10 已发布到 GitHub Release `2.1.2`，标签固定在上述发布源提交；
-  通用 APK 已通过 `tool/verify_release.ps1` 的应用身份、版本、ABI 和签名校验。
+  `7989CFCE97FA9EF9AF934436683C2743DDE4F518C2C4CCAEAEB4EB5BD52EA1DE`
+- 2026-07-28 20:27 已在本地交付通用 APK，尚未发布 GitHub Release；通用 APK 已通过
+  `tool/verify_release.ps1` 的应用身份、版本、ABI 和签名校验。
 
 ## 已确认的产品决定
 
@@ -60,8 +60,8 @@
 
 ## 已验证状态
 
-根据 `docs/android_exoplayer.md` 中记录的 2026-07-26 和 2026-07-28 真机反馈，以下
-场景已经过当前测试设备验证：
+根据 `docs/android_exoplayer.md` 中记录的 2026-07-26、2026-07-28 和 2026-07-30
+真机反馈，以下场景已经过当前测试设备验证：
 
 - 点击显示/隐藏控制层、双击播放/暂停、横向跳转、纵向亮度/音量和长按倍速；
 - 清晰度、CDN、网络错误重载和分P切换的播放状态保持；
@@ -70,7 +70,10 @@
 - ExoPlayer 自动进入系统 PiP；
 - 应用内小窗的播放、暂停、拖动、关闭、恢复、动画与视频比例适配；
 - 应用内小窗进入系统 PiP，以及 PiP 全屏恢复详情页的完整往返；
-- 音频焦点、媒体通知、媒体按键和有线耳机/蓝牙控制。
+- 音频焦点、媒体通知、媒体按键和有线耳机/蓝牙控制；
+- 小窗控件默认隐藏、点击淡入、3 秒自动淡出和操作后重置计时；完成播放后自动释放
+  小窗、已完成视频页返回时不创建小窗，以及 A→B→C 叠加视频页逐层返回时不重复
+  创建小窗。上述生命周期修复已提交为 `5ac01dd98a29584c1f5e27567fff9d42b25e7337`。
 
 这些记录只代表当时设备和操作范围，不自动覆盖折叠屏、不同 Android 版本、不同芯片
 或后续代码修改后的回归结果。
@@ -92,6 +95,13 @@
 
 ## 当前待验证修改
 
+- 小窗生命周期修复的三个相关 Dart 文件已通过 `dart format` 和定向
+  `dart analyze`；Android Release 构建及
+  `tool/verify_release.ps1 -AllowAlreadyDelivered` 审计已通过。审计包位于
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-mini-lifecycle-audit.apk`，
+  SHA-256 为
+  `98BFAF6395AD25E99DA15F1E01558579FE0BF6E227919A597BBF6DE14C71ACE9`。
+  完整 `flutter analyze` 仍被 Flutter SDK 缺失 iOS 测试资源中断；
 - 互动视频和本地文件等尚未覆盖类型的小窗恢复参数；
 - 不同 Android 版本、芯片、折叠屏以及尚未覆盖的息屏/亮屏和进程生命周期边界；
 - 本次上游同步涉及的视频卡片、UGC 分P列表、动态/评论文本选择和滚动。
@@ -107,6 +117,8 @@
 
 ## 下一步
 
-1. 真机回归本次上游同步涉及的视频卡片、UGC 分P列表、动态/评论文本选择和滚动。
-2. 继续跟踪上游；下次同步仍先 fetch、检查重叠文件，再执行合并和完整验证。
-3. 继续处理最高优先级的 ExoPlayer 未闭环项，不得通过隐藏入口或回退 mpv 宣称完成。
+1. 修复 Flutter SDK 缺失的 iOS 测试资源后重跑完整静态分析。
+2. 真机回归本次上游同步涉及的视频卡片、UGC 分P列表、动态/评论文本选择和滚动。
+3. 按适配计划继续处理最高优先级的 ExoPlayer 未闭环项，不得通过隐藏入口或回退
+   mpv 宣称完成。
+4. 继续跟踪上游；下次同步仍先 fetch、检查重叠文件，再执行合并和完整验证。

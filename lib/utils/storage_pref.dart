@@ -989,6 +989,25 @@ abstract final class Pref {
 
   static String? get downloadPath => _setting.get(SettingBoxKey.downloadPath);
 
+  static set downloadPath(String? value) {
+    if (value == null || value.isEmpty) {
+      _setting.delete(SettingBoxKey.downloadPath);
+    } else {
+      _setting.put(SettingBoxKey.downloadPath, value);
+    }
+  }
+
+  static List<String>? get extraScanPaths =>
+      _setting.get(SettingBoxKey.extraScanPaths)?.cast<String>();
+
+  static set extraScanPaths(List<String>? value) {
+    if (value == null || value.isEmpty) {
+      _setting.delete(SettingBoxKey.extraScanPaths);
+    } else {
+      _setting.put(SettingBoxKey.extraScanPaths, value);
+    }
+  }
+
   static String? get liveCdnUrl => _setting.get(SettingBoxKey.liveCdnUrl);
 
   static bool get showBatteryLevel => _setting.get(

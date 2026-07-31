@@ -1018,3 +1018,54 @@ combined upright text in normal view, full screen, rotation, the app
 mini-player, and system PiP. These cases must also be compared with MPV using
 equivalent media. This group is implemented but not yet accepted as fully
 compatible, and the audit APK does not update the release baseline.
+
+### Eighth-batch buffering and decoder-settings group
+
+The seventh eighth-batch group connects existing user-visible playback
+preferences to Media3 session construction instead of silently ignoring them:
+
+- `enableHA` selects the MediaCodec policy when the native session is created.
+  Enabled sessions use the platform decoder order with fallback; disabled
+  sessions restrict video to software-only codecs while leaving audio decoder
+  selection unchanged;
+- the existing buffer-size preference becomes an explicit Media3 target-buffer
+  byte budget. The approximately doubled value preserves the MPV preference's
+  separate forward and backward byte budgets as one Media3 total budget;
+- VOD applies the speed-adjusted buffer-duration preference to Media3's minimum
+  and maximum streaming buffer and backward retention. Live keeps Media3's
+  default low-latency time thresholds and applies only the byte budget;
+- the Media3 player-information entries expose the effective decoder policy,
+  target MiB, and VOD duration, or `live-default` for live time thresholds, so
+  device testing can verify that a newly opened session consumed the settings;
+- settings text now distinguishes shared behavior from MPV-only autosync,
+  video-sync, and concrete hwdec mode lists. Numeric buffer inputs reject zero,
+  negative, and non-finite values.
+
+The implementation commit is
+`cecd7d3c0fbd2c8470b19cbae208848d67f4744e`. Targeted Dart analysis reports no
+issues. Full `dart analyze` has no errors or warnings and retains the same 37
+existing info diagnostics; full `flutter analyze` completes repository
+analysis and returns nonzero only for those diagnostics. All 29 Flutter tests
+pass. Android Kotlin Debug compilation and the Android Release build pass.
+
+The Release audit APK embeds build time `2026-07-31 19:25:43 +08:00` and the
+clean implementation commit in all three ABI `libapp.so` files. It passed
+application ID, label, version, universal ABI, and signing-certificate
+verification:
+
+- APK:
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-buffer-decoder-audit.apk`
+- SHA-256:
+  `41EBB35F0FAC766786698DB244065C800AF5D4AE6BD77D438D41A976E3F1A6E5`
+- certificate SHA-256:
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+Real-device acceptance remains required for default, small, and large buffer
+values across VOD startup, seeking, continuous playback, disconnect recovery,
+and memory use; live latency and stability with the default time policy;
+hardware-on and software-only decoding with the displayed configuration and
+actual decoder names; AVC, HEVC, AV1, split DASH audio/video, local files,
+quality and part switches, full screen, background, the app mini-player, and
+system PiP. MPV buffer, autosync, video-sync, and hwdec behavior must be
+regressed as well. This group is implemented but not yet accepted as fully
+compatible, and the audit APK does not update the release baseline.

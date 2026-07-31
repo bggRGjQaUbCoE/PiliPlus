@@ -865,3 +865,44 @@ information and player-volume controls; and desktop audio-to-video volume
 synchronization. Live playback still uses MPV. This group prepares the UI and
 controller boundary for future Media3 live support and does not claim that
 support or update the release baseline.
+
+The fourth cleanup group removes player-diagnostics and standalone-audio
+backend objects from page widgets:
+
+- the player-information dialog is now a shared widget that accepts only
+  structured `PlayerInfoEntry` values. Video and live pages supply entries from
+  `PlPlayerController`, so the video header no longer imports `NativePlayer` or
+  owns an MPV-specific overload;
+- the standalone audio controller owns its MPV readiness, diagnostics, output
+  volume, pause, and seek operations. The audio page no longer reads or calls
+  the native player and no longer imports the video header merely to show the
+  same dialog;
+- error-report custom metadata now labels the available player runtimes instead
+  of presenting only an `MPV Api Version`. It records Android VOD Media3 and the
+  MPV API version still used by compatibility paths.
+
+The fourth-group implementation commit is
+`334297bbcdcc058245aa99a201297b2ae08900e4`. All affected files are formatted
+and targeted analysis reports no issues. Full `dart analyze` has no errors or
+warnings and retains the same 37 existing info diagnostics. Full
+`flutter analyze` completes repository analysis and returns nonzero only for
+those same info diagnostics. All 21 Flutter tests pass. Android Release
+`assembleRelease` succeeds in approximately 276 seconds.
+
+The Release audit APK embeds build time `2026-07-31 16:49:59 +08:00` and the
+clean implementation commit. It passed application ID, label, version,
+universal ABI, and signing-certificate verification:
+
+- APK:
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-player-diagnostics-boundary-audit.apk`
+- SHA-256:
+  `3CB35E8D84E734DCC03BAFA32C97D85BBFCF62DF7E3414EB3246CA387DA8E5E2`
+- certificate SHA-256:
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+Real-device regression is still required for player-information fields,
+copying, and player-volume controls in Media3 VOD, MPV VOD, MPV live, and
+standalone audio; standalone-audio seek and pause-before-navigation behavior;
+and the renamed `Player Runtimes` field in newly generated error reports. Live
+and standalone audio remain MPV-backed. This audit APK does not update the
+release baseline.

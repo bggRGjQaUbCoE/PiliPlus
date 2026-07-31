@@ -697,3 +697,35 @@ The Samsung Android 16 screenshot scenario and the remaining batch-seven
 matrix still require real-device retesting with the replacement APK. The APK
 is an audit build, not a new delivered version, and does not update the release
 baseline.
+
+The replacement APK reached the Dart image-decoding stage on the same Samsung
+device, proving that the native `ERROR_SOURCE_NO_DATA` recovery returned PNG
+bytes. It then failed inside `PlPlayerController.captureFrame` with a collected
+native peer. The Flutter SDK contract states that
+`instantiateImageCodecFromBuffer` disposes its `ImmutableBuffer` after codec
+creation; the app also disposed that buffer in `finally`, causing a second
+native release.
+
+Commit `4085cc8ec0d838318fbc64c40b3e8361a9ae149d` moves captured-frame
+decoding into a shared helper that uses `instantiateImageCodec(Uint8List)` and
+disposes only the codec. Existing screenshot consumers remain responsible for
+disposing the returned `ui.Image` after preview/save or comment attachment
+encoding. A real Flutter-engine regression test decodes a PNG, disposes the
+codec, and verifies that the returned image can still be encoded.
+
+Targeted analysis passes. Full `dart analyze` has no errors or warnings and the
+same 37 existing info diagnostics. All 21 Flutter tests pass, including the new
+native-resource lifetime test, and Android Release build passes. The second
+replacement audit APK was built from clean implementation commit
+`4085cc8ec0d838318fbc64c40b3e8361a9ae149d` and passed application ID,
+label, version, universal ABI, and signing-certificate verification:
+
+- APK:
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch7-capture-lifetime-fix-audit.apk`
+- SHA-256:
+  `FC78284B7B2DCA6B1038C2E547C103A8A53767919E69DFA23EF4E3F2508D221E`
+- certificate SHA-256:
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+Still capture remains pending same-device verification through preview and
+save. This audit APK does not update the release baseline.

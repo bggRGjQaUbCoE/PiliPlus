@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/plugin/pl_player/exo_player/exo_player_controller.dart';
-import 'package:PiliPlus/plugin/pl_player/widgets/mpv_convert_webp.dart';
+import 'package:PiliPlus/plugin/pl_player/models/animated_webp_converter.dart';
+import 'package:PiliPlus/plugin/pl_player/models/webp_preset.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:get/get_rx/get_rx.dart';
 

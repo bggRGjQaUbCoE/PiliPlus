@@ -5,6 +5,8 @@ import 'dart:ffi';
 
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';
+import 'package:PiliPlus/plugin/pl_player/models/animated_webp_converter.dart';
+import 'package:PiliPlus/plugin/pl_player/models/webp_preset.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -14,12 +16,6 @@ import 'package:media_kit/ffi/src/utf8.dart';
 import 'package:media_kit/generated/libmpv/bindings.dart' as generated;
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit/src/player/native/core/initializer.dart';
-
-abstract interface class AnimatedWebpConverter {
-  Future<bool> convert();
-
-  void dispose();
-}
 
 class MpvConvertWebp implements AnimatedWebpConverter {
   final _mpv = NativePlayer.mpv;
@@ -149,21 +145,4 @@ class MpvConvertWebp implements AnimatedWebpConverter {
 
     calloc.free(name);
   }
-}
-
-enum WebpPreset {
-  none('none', '无', '不使用预设'),
-  def('default', '默认', '默认预设'),
-  picture('picture', '图片', '数码照片，如人像、室内拍摄'),
-  photo('photo', '照片', '户外摄影，自然光环境'),
-  drawing('drawing', '绘图', '手绘或线稿，高对比度细节'),
-  icon('icon', '图标', '小型彩色图像'),
-  text('text', '文本', '文字类'),
-  ;
-
-  final String flag;
-  final String name;
-  final String desc;
-
-  const WebpPreset(this.flag, this.name, this.desc);
 }

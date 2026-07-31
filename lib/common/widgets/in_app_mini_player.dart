@@ -4,12 +4,11 @@ import 'dart:math' as math;
 
 import 'package:PiliPlus/pages/danmaku/view.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/plugin/pl_player/exo_player/exo_player_view.dart';
+import 'package:PiliPlus/plugin/pl_player/widgets/player_surface.dart';
 import 'package:PiliPlus/services/in_app_mini_player_service.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:media_kit_video/media_kit_video.dart';
 
 class InAppMiniPlayerHost extends StatefulWidget {
   const InAppMiniPlayerHost({required this.child, super.key});
@@ -456,28 +455,7 @@ class _MiniPlayerVideo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      final fit = player.videoFit.value;
-      if (player.useExoPlayer) {
-        return ExoPlayerView(
-          controller: player.exoPlayerController!,
-          fit: fit,
-          flipX: player.flipX.value,
-          flipY: player.flipY.value,
-        );
-      }
-      return Transform.flip(
-        flipX: player.flipX.value,
-        flipY: player.flipY.value,
-        child: FittedBox(
-          fit: fit.boxFit,
-          child: SimpleVideo(
-            controller: player.videoController!,
-            aspectRatio: fit.aspectRatio,
-          ),
-        ),
-      );
-    });
+    return PlPlayerSurface(controller: player);
   }
 }
 

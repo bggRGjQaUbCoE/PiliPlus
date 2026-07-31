@@ -36,9 +36,6 @@ import 'package:PiliPlus/pages/video/post_panel/popup_menu_text.dart';
 import 'package:PiliPlus/pages/video/post_panel/view.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/plugin/pl_player/exo_player/exo_convert_webp.dart';
-import 'package:PiliPlus/plugin/pl_player/exo_player/exo_subtitle_view.dart';
-import 'package:PiliPlus/plugin/pl_player/exo_player/exo_player_view.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_control_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/double_tap_type.dart';
@@ -47,12 +44,15 @@ import 'package:PiliPlus/plugin/pl_player/models/gesture_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/player_media_track.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
+import 'package:PiliPlus/plugin/pl_player/models/webp_preset.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/app_bar_ani.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/backward_seek.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/bottom_control.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/common_btn.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/forward_seek.dart';
-import 'package:PiliPlus/plugin/pl_player/widgets/mpv_convert_webp.dart';
+import 'package:PiliPlus/plugin/pl_player/widgets/player_animated_webp_converter.dart';
+import 'package:PiliPlus/plugin/pl_player/widgets/player_subtitle_layer.dart';
+import 'package:PiliPlus/plugin/pl_player/widgets/player_surface.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/play_pause_btn.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
@@ -83,7 +83,6 @@ import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:media_kit_video/media_kit_video.dart';
 import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -134,7 +133,6 @@ class PLVideoPlayer extends StatefulWidget {
 class _PLVideoPlayerState extends State<PLVideoPlayer>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   late AnimationController _animationController;
-  VideoController? videoController;
   late final CommonIntroController introController = widget.introController!;
   late final VideoDetailController videoDetailController =
       widget.videoDetailController!;
@@ -267,8 +265,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       vsync: this,
       duration: const Duration(milliseconds: 100),
     );
-    videoController = plPlayerController.videoController;
-
     if (PlatformUtils.isMobile) {
       Future.microtask(() {
         try {
@@ -1299,23 +1295,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           Positioned.fill(
             child: IgnorePointer(
               ignoring: !plPlayerController.enableDragSubtitle,
-              child: Obx(() {
-                final configuration = plPlayerController.subtitleConfig.value;
-                if (plPlayerController.useExoPlayer) {
-                  return ExoSubtitleView(
-                    controller: plPlayerController.exoPlayerController!,
-                    configuration: configuration,
-                    enableDragSubtitle: plPlayerController.enableDragSubtitle,
-                    onUpdatePadding: plPlayerController.onUpdatePadding,
-                  );
-                }
-                return SubtitleView(
-                  controller: videoController!,
-                  configuration: configuration,
-                  enableDragSubtitle: plPlayerController.enableDragSubtitle,
-                  onUpdatePadding: plPlayerController.onUpdatePadding,
-                );
-              }),
+              child: PlPlayerSubtitleLayer(
+                controller: plPlayerController,
+              ),
             ),
           ),
 
@@ -1963,36 +1945,13 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           childKey: _videoKey,
           child: RepaintBoundary(
             key: _videoKey,
-            child: Obx(() {
-              final videoFit = plPlayerController.videoFit.value;
-              if (plPlayerController.useExoPlayer) {
-                final flipX = plPlayerController.flipX.value;
-                final flipY = plPlayerController.flipY.value;
-                return SizedBox(
-                  width: maxWidth,
-                  height: maxHeight,
-                  child: ExoPlayerView(
-                    controller: plPlayerController.exoPlayerController!,
-                    fit: videoFit,
-                    flipX: flipX,
-                    flipY: flipY,
-                  ),
-                );
-              }
-              return Transform.flip(
-                flipX: plPlayerController.flipX.value,
-                flipY: plPlayerController.flipY.value,
-                child: FittedBox(
-                  fit: videoFit.boxFit,
-                  alignment: widget.alignment,
-                  child: SimpleVideo(
-                    controller: plPlayerController.videoController!,
-                    fill: widget.fill,
-                    aspectRatio: videoFit.aspectRatio,
-                  ),
-                ),
-              );
-            }),
+            child: PlPlayerSurface(
+              controller: plPlayerController,
+              width: maxWidth,
+              height: maxHeight,
+              fill: widget.fill,
+              alignment: widget.alignment,
+            ),
           ),
         ),
       ),
@@ -2106,24 +2065,15 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         '${ctr.cid}-${segment.first.toStringAsFixed(3)}_${segment.second.toStringAsFixed(3)}.webp';
     final file = '$tmpDirPath/$name';
 
-    final AnimatedWebpConverter converter = ctr.useExoPlayer
-        ? ExoConvertWebp(
-            ctr.exoPlayerController!,
-            url!,
-            file,
-            segment.first,
-            segment.second,
-            progress: progress,
-            preset: preset,
-          )
-        : MpvConvertWebp(
-            url!,
-            file,
-            segment.first,
-            segment.second,
-            progress: progress,
-            preset: preset,
-          );
+    final converter = createAnimatedWebpConverter(
+      controller: ctr,
+      url: url!,
+      outFile: file,
+      start: segment.first,
+      end: segment.second,
+      progress: progress,
+      preset: preset,
+    );
     final future = converter.convert().whenComplete(
       () => SmartDialog.dismiss(status: SmartStatus.loading),
     );

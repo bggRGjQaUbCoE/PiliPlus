@@ -24,6 +24,7 @@ import android.text.style.StyleSpan
 import android.text.style.TypefaceSpan
 import android.text.style.UnderlineSpan
 import android.util.Base64
+import android.util.Log
 import android.view.PixelCopy
 import androidx.media3.common.C
 import androidx.media3.common.Format
@@ -35,6 +36,7 @@ import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.common.VideoSize
 import androidx.media3.common.text.Cue
 import androidx.media3.common.text.CueGroup
+import androidx.media3.common.text.HorizontalTextInVerticalContextSpan
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.HttpDataSource
@@ -55,9 +57,13 @@ import io.flutter.view.TextureRegistry
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.RandomAccessFile
+import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -301,6 +307,15 @@ private class ExoPlayerSession(
     private var mediaGeneration = 0L
     private val mainHandler = Handler(Looper.getMainLooper())
     private val captureExecutor = Executors.newSingleThreadExecutor()
+    private val subtitleCueSequence = AtomicLong()
+    private val subtitleEncoder = ThreadPoolExecutor(
+        1,
+        1,
+        0L,
+        TimeUnit.MILLISECONDS,
+        ArrayBlockingQueue(1),
+        ThreadPoolExecutor.DiscardOldestPolicy(),
+    )
     private val animatedWebpTasks = ConcurrentHashMap<Long, AnimatedWebpCapture>()
     private val disposed = AtomicBoolean(false)
     val textureId: Long
@@ -347,6 +362,7 @@ private class ExoPlayerSession(
         if (!preserveSubtitle) {
             subtitleRequest = null
         }
+        subtitleCueSequence.incrementAndGet()
         updateSubtitleCues(emptyList())
         prepareMedia(positionMs, playWhenReady)
     }
@@ -385,6 +401,7 @@ private class ExoPlayerSession(
             .clearOverridesOfType(C.TRACK_TYPE_TEXT)
             .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, subtitleRequest == null)
             .build()
+        subtitleCueSequence.incrementAndGet()
         updateSubtitleCues(emptyList())
         if (mediaRequest != null) {
             prepareMedia(player.currentPosition, player.playWhenReady)
@@ -520,7 +537,27 @@ private class ExoPlayerSession(
     }
 
     override fun onCues(cueGroup: CueGroup) {
-        updateSubtitleCues(cueGroup.cues.mapNotNull(::serializeCue))
+        val cues = cueGroup.cues.toList()
+        val sequence = subtitleCueSequence.incrementAndGet()
+        val generation = mediaGeneration
+        if (cues.none { it.bitmap != null }) {
+            updateSubtitleCues(serializeSubtitleCues(cues, generation))
+            return
+        }
+        subtitleEncoder.execute {
+            if (disposed.get() || sequence != subtitleCueSequence.get()) {
+                return@execute
+            }
+            val serializedCues = serializeSubtitleCues(cues, generation)
+            mainHandler.post {
+                if (!disposed.get() &&
+                    sequence == subtitleCueSequence.get() &&
+                    generation == mediaGeneration
+                ) {
+                    updateSubtitleCues(serializedCues)
+                }
+            }
+        }
     }
 
     override fun onPlayerError(error: PlaybackException) {
@@ -858,7 +895,7 @@ private class ExoPlayerSession(
         )
 
     private fun updateSubtitleCues(value: List<Map<String, Any?>>) {
-        if (subtitleCues == value) return
+        if (subtitleCues.contentEquals(value)) return
         subtitleCues = value
         sendEvent(
             baseEvent("subtitle") + mapOf(
@@ -868,8 +905,25 @@ private class ExoPlayerSession(
         )
     }
 
+    private fun serializeSubtitleCues(
+        cues: List<Cue>,
+        generation: Long,
+    ): List<Map<String, Any?>> = cues.mapNotNull { cue ->
+        runCatching { serializeCue(cue) }
+            .onFailure { error ->
+                Log.w(
+                    EXO_PLAYER_TAG,
+                    "Failed to serialize subtitle cue for session=$id generation=$generation",
+                    error,
+                )
+            }
+            .getOrNull()
+    }
+
     fun dispose() {
         if (!disposed.compareAndSet(false, true)) return
+        subtitleCueSequence.incrementAndGet()
+        subtitleEncoder.shutdownNow()
         animatedWebpTasks.values.forEach(AnimatedWebpCapture::cancel)
         animatedWebpTasks.clear()
         surfaceProducer.setCallback(null)
@@ -1410,13 +1464,20 @@ private fun Float.unsetToNull(): Float? = takeUnless {
 }
 
 private const val APP_SUBTITLE_TRACK_ID = "piliplus-app-subtitle"
+private const val EXO_PLAYER_TAG = "PiliPlusExoPlayer"
 
 private fun serializeCue(cue: Cue): Map<String, Any?>? {
-    val text = cue.text ?: return null
-    if (text.isBlank()) return null
+    val text = cue.text
+    val bitmap = cue.bitmap
+    if ((text == null || text.isBlank()) && bitmap == null) return null
+    val encodedBitmap = bitmap?.let(::encodeSubtitleBitmap)
     return mapOf(
-        "text" to text.toString(),
-        "segments" to serializeSegments(text),
+        "text" to text?.toString().orEmpty(),
+        "segments" to text?.let(::serializeSegments).orEmpty(),
+        "bitmap" to encodedBitmap,
+        "bitmapPixelWidth" to bitmap?.width,
+        "bitmapPixelHeight" to bitmap?.height,
+        "bitmapHeight" to cue.bitmapHeight.takeUnless { it == Cue.DIMEN_UNSET },
         "textAlignment" to cue.textAlignment.serializedName(),
         "multiRowAlignment" to cue.multiRowAlignment.serializedName(),
         "line" to cue.line.takeUnless { it == Cue.DIMEN_UNSET },
@@ -1433,6 +1494,32 @@ private fun serializeCue(cue: Cue): Map<String, Any?>? {
         "shearDegrees" to cue.shearDegrees,
         "zIndex" to cue.zIndex,
     )
+}
+
+private fun encodeSubtitleBitmap(bitmap: Bitmap): ByteArray =
+    ByteArrayOutputStream().use { output ->
+        check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)) {
+            "Android failed to encode subtitle bitmap as PNG"
+        }
+        output.toByteArray()
+    }
+
+private fun List<Map<String, Any?>>.contentEquals(
+    other: List<Map<String, Any?>>,
+): Boolean = size == other.size && indices.all { index ->
+    this[index].contentEquals(other[index])
+}
+
+private fun Map<String, Any?>.contentEquals(
+    other: Map<String, Any?>,
+): Boolean = size == other.size && all { (key, value) ->
+    if (!other.containsKey(key)) return@all false
+    val otherValue = other[key]
+    if (value is ByteArray && otherValue is ByteArray) {
+        value.contentEquals(otherValue)
+    } else {
+        value == otherValue
+    }
 }
 
 private fun Layout.Alignment?.serializedName(): String? = when (this) {
@@ -1469,6 +1556,10 @@ private fun serializeSegments(text: CharSequence): List<Map<String, Any?>> {
             )
             put("underline", spans.any { it is UnderlineSpan })
             put("strikethrough", spans.any { it is StrikethroughSpan })
+            put(
+                "combineUpright",
+                spans.any { it is HorizontalTextInVerticalContextSpan },
+            )
             spans.filterIsInstance<ForegroundColorSpan>().lastOrNull()?.let {
                 put("foregroundColor", it.foregroundColor.toLong().and(0xFFFFFFFFL))
             }

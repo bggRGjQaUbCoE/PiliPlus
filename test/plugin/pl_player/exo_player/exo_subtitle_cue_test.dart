@@ -1,9 +1,13 @@
+import 'dart:convert';
+
 import 'package:PiliPlus/plugin/pl_player/exo_player/exo_player_controller.dart';
 import 'package:PiliPlus/plugin/pl_player/exo_player/exo_subtitle_cue.dart';
+import 'package:PiliPlus/plugin/pl_player/exo_player/exo_subtitle_view.dart';
 import 'package:PiliPlus/plugin/pl_player/models/exo_player_failure.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -44,6 +48,7 @@ void main() {
             {
               'text': 'Hel',
               'bold': true,
+              'combineUpright': true,
               'foregroundColor': 0xFFFF0000,
             },
             {
@@ -73,7 +78,192 @@ void main() {
     expect(cue.zIndex, 3);
     expect(cue.segments, hasLength(2));
     expect(cue.segments.first.bold, isTrue);
+    expect(cue.segments.first.combineUpright, isTrue);
     expect(cue.segments.last.italic, isTrue);
+  });
+
+  testWidgets('renders bitmap cues against the full video viewport', (
+    tester,
+  ) async {
+    final player = await _createTestPlayer(45);
+    final bitmap = base64Decode(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=',
+    );
+    player.state = ExoPlayerEvent.fromMap({
+      'subtitleCues': [
+        {
+          'bitmap': bitmap,
+          'bitmapPixelWidth': 4,
+          'bitmapPixelHeight': 2,
+          'bitmapHeight': .2,
+          'position': .5,
+          'positionAnchor': 1,
+          'line': .75,
+          'lineType': 0,
+          'lineAnchor': 2,
+          'size': .25,
+        },
+      ],
+    });
+
+    await _pumpSubtitleView(
+      tester,
+      player,
+      configuration: const SubtitleViewConfiguration(
+        padding: EdgeInsets.fromLTRB(24, 0, 24, 40),
+      ),
+    );
+
+    final image = find.byType(Image);
+    expect(image, findsOneWidget);
+    expect(tester.getSize(image), const Size(80, 36));
+    expect(tester.getTopLeft(image), const Offset(120, 99));
+    expect(player.state.subtitleCues.first.bitmap, bitmap);
+    expect(player.state.subtitleCues.first.bitmapHeight, .2);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('positions vertical-rl and vertical-lr fractional cues', (
+    tester,
+  ) async {
+    final player = await _createTestPlayer(46);
+    player.state = ExoPlayerEvent.fromMap({
+      'subtitleCues': [
+        {
+          'text': '天',
+          'segments': const [],
+          'verticalType': 1,
+          'position': 0,
+          'positionAnchor': 0,
+          'line': .25,
+          'lineType': 0,
+          'lineAnchor': 0,
+          'size': .5,
+        },
+        {
+          'text': '地',
+          'segments': const [],
+          'verticalType': 2,
+          'position': 0,
+          'positionAnchor': 0,
+          'line': .25,
+          'lineType': 0,
+          'lineAnchor': 0,
+          'size': .5,
+        },
+      ],
+    });
+
+    await _pumpSubtitleView(tester, player);
+
+    final rtlRow = find.byWidgetPredicate(
+      (widget) => widget is Row && widget.textDirection == TextDirection.rtl,
+    );
+    final ltrRow = find.byWidgetPredicate(
+      (widget) => widget is Row && widget.textDirection == TextDirection.ltr,
+    );
+    expect(rtlRow, findsOneWidget);
+    expect(ltrRow, findsOneWidget);
+    expect(
+      tester.getTopLeft(rtlRow).dx,
+      closeTo(240 - tester.getSize(rtlRow).width, .01),
+    );
+    expect(tester.getTopLeft(ltrRow).dx, closeTo(80, .01));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('uses one column as the vertical line-number step', (
+    tester,
+  ) async {
+    final player = await _createTestPlayer(47);
+    player.state = ExoPlayerEvent.fromMap({
+      'subtitleCues': [
+        {
+          'text': '天地\n玄黄',
+          'segments': const [],
+          'verticalType': 1,
+          'position': 0,
+          'positionAnchor': 0,
+          'line': 1,
+          'lineType': 1,
+          'lineAnchor': 0,
+          'size': 1,
+        },
+      ],
+    });
+
+    await _pumpSubtitleView(tester, player);
+
+    final row = find.byWidgetPredicate(
+      (widget) => widget is Row && widget.textDirection == TextDirection.rtl,
+    );
+    expect(row, findsOneWidget);
+    expect(
+      tester.getTopLeft(row).dx,
+      closeTo(320 - 24 - tester.getSize(row).width, .01),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('wraps long vertical cues and keeps combined text upright', (
+    tester,
+  ) async {
+    final player = await _createTestPlayer(48);
+    player.state = ExoPlayerEvent.fromMap({
+      'subtitleCues': [
+        {
+          'text': '20ABC天地玄黄宇宙',
+          'segments': [
+            {'text': '20', 'combineUpright': true},
+            {'text': 'ABC天地玄黄宇宙'},
+          ],
+          'verticalType': 1,
+          'position': 0,
+          'positionAnchor': 0,
+          'line': 0,
+          'lineType': 1,
+          'lineAnchor': 0,
+          'size': .25,
+        },
+      ],
+    });
+
+    await _pumpSubtitleView(tester, player);
+
+    expect(find.byType(RotatedBox), findsNWidgets(3));
+    final text = find.byType(RichText);
+    final horizontalPositions = <int>{
+      for (var index = 0; index < text.evaluate().length; index++)
+        tester.getTopLeft(text.at(index)).dx.round(),
+    };
+    expect(horizontalPositions.length, greaterThan(1));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('ignores malformed bitmap cue bytes without throwing', (
+    tester,
+  ) async {
+    final player = await _createTestPlayer(49);
+    player.state = ExoPlayerEvent.fromMap({
+      'subtitleCues': [
+        {
+          'bitmap': Uint8List.fromList([1, 2, 3]),
+          'bitmapPixelWidth': 1,
+          'bitmapPixelHeight': 1,
+          'position': .5,
+          'positionAnchor': 1,
+          'line': .5,
+          'lineType': 0,
+          'lineAnchor': 1,
+          'size': .2,
+        },
+      ],
+    });
+
+    await _pumpSubtitleView(tester, player);
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
   });
 
   test('parses structured playback diagnostics', () {
@@ -315,4 +505,50 @@ void main() {
     expect(style.color, const Color(0xFF00FF00));
     expect(style.decoration, TextDecoration.underline);
   });
+}
+
+Future<ExoPlayerController> _createTestPlayer(int id) async {
+  const channel = MethodChannel('com.example.piliplus/exo_player');
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(channel, (call) async {
+        if (call.method == 'create') return id;
+        return null;
+      });
+  addTearDown(
+    () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, null),
+  );
+  final player = await ExoPlayerController.create();
+  addTearDown(player.dispose);
+  return player;
+}
+
+Future<void> _pumpSubtitleView(
+  WidgetTester tester,
+  ExoPlayerController player, {
+  SubtitleViewConfiguration configuration = const SubtitleViewConfiguration(
+    style: TextStyle(fontSize: 20, color: Colors.white),
+    padding: EdgeInsets.zero,
+  ),
+}) async {
+  await tester.pumpWidget(
+    MediaQuery(
+      data: const MediaQueryData(devicePixelRatio: 1),
+      child: Directionality(
+        textDirection: TextDirection.ltr,
+        child: Align(
+          alignment: Alignment.topLeft,
+          child: SizedBox(
+            width: 320,
+            height: 180,
+            child: ExoSubtitleView(
+              controller: player,
+              configuration: configuration,
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+  await tester.pump();
 }

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 enum ExoSubtitleAlignment {
@@ -26,6 +28,7 @@ class ExoSubtitleSegment {
     this.italic = false,
     this.underline = false,
     this.strikethrough = false,
+    this.combineUpright = false,
     this.foregroundColor,
     this.backgroundColor,
     this.fontFamily,
@@ -41,6 +44,7 @@ class ExoSubtitleSegment {
       italic: map['italic'] as bool? ?? false,
       underline: map['underline'] as bool? ?? false,
       strikethrough: map['strikethrough'] as bool? ?? false,
+      combineUpright: map['combineUpright'] as bool? ?? false,
       foregroundColor: (map['foregroundColor'] as num?)?.toInt(),
       backgroundColor: (map['backgroundColor'] as num?)?.toInt(),
       fontFamily: map['fontFamily'] as String?,
@@ -55,6 +59,7 @@ class ExoSubtitleSegment {
   final bool italic;
   final bool underline;
   final bool strikethrough;
+  final bool combineUpright;
   final int? foregroundColor;
   final int? backgroundColor;
   final String? fontFamily;
@@ -92,6 +97,10 @@ class ExoSubtitleCue {
   const ExoSubtitleCue({
     required this.text,
     required this.segments,
+    this.bitmap,
+    this.bitmapPixelWidth,
+    this.bitmapPixelHeight,
+    this.bitmapHeight,
     this.textAlignment,
     this.multiRowAlignment,
     this.line,
@@ -110,6 +119,7 @@ class ExoSubtitleCue {
 
   factory ExoSubtitleCue.fromMap(Map<Object?, Object?> map) {
     final rawSegments = map['segments'];
+    final rawBitmap = map['bitmap'];
     return ExoSubtitleCue(
       text: map['text'] as String? ?? '',
       segments: rawSegments is List
@@ -122,6 +132,14 @@ class ExoSubtitleCue {
                 )
                 .toList(growable: false)
           : const [],
+      bitmap: switch (rawBitmap) {
+        final Uint8List bytes => bytes,
+        final List<int> bytes => Uint8List.fromList(bytes),
+        _ => null,
+      },
+      bitmapPixelWidth: (map['bitmapPixelWidth'] as num?)?.toInt(),
+      bitmapPixelHeight: (map['bitmapPixelHeight'] as num?)?.toInt(),
+      bitmapHeight: (map['bitmapHeight'] as num?)?.toDouble(),
       textAlignment: ExoSubtitleAlignment.fromName(
         map['textAlignment'] as String?,
       ),
@@ -145,6 +163,10 @@ class ExoSubtitleCue {
 
   final String text;
   final List<ExoSubtitleSegment> segments;
+  final Uint8List? bitmap;
+  final int? bitmapPixelWidth;
+  final int? bitmapPixelHeight;
+  final double? bitmapHeight;
   final ExoSubtitleAlignment? textAlignment;
   final ExoSubtitleAlignment? multiRowAlignment;
   final double? line;

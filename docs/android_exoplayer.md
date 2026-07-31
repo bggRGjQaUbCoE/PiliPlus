@@ -901,8 +901,67 @@ universal ABI, and signing-certificate verification:
   `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
 
 Real-device regression is still required for player-information fields,
-copying, and player-volume controls in Media3 VOD, MPV VOD, MPV live, and
+copying, and player-volume controls in Media3 VOD, MPV VOD, live playback, and
 standalone audio; standalone-audio seek and pause-before-navigation behavior;
-and the renamed `Player Runtimes` field in newly generated error reports. Live
-and standalone audio remain MPV-backed. This audit APK does not update the
-release baseline.
+and the renamed `Player Runtimes` field in newly generated error reports. At
+this fourth-group commit, live and standalone audio were MPV-backed. The next
+group changes Android live playback to Media3; standalone audio remains MPV.
+This audit APK does not update the release baseline.
+
+### Eighth-batch Media3 live playback group
+
+The fifth eighth-batch group removes the Android live-playback exclusion and
+connects live semantics through the existing backend-neutral controller:
+
+- Android uses Media3 for live playback whenever the Media3 setting is enabled;
+  there is no silent MPV fallback;
+- the live flag now travels from `PlPlayerController`, through the Flutter
+  method channel, into the native media request. Live media items use a Media3
+  `LiveConfiguration` and the source's default live position;
+- initial open, manual refresh, quality/route/CDN/audio-only source changes, and
+  retry do not seek to a stale absolute position from a previous live window.
+  Retry keeps the play/pause intent and returns to the current default live
+  position;
+- native and Flutter state handling do not publish a live `STATE_ENDED` as VOD
+  completion. The existing live UI continues to suppress seeking, progress,
+  replay, and long-press speed semantics;
+- changing quality, route, or audio-only mode while paused now keeps the live
+  session paused. Initial room entry still follows the existing autoplay
+  behavior;
+- the Android setting and diagnostic runtime text now describe Media3 Android
+  video rather than VOD-only Media3.
+
+The existing MPV live-buffer preference is expressed in byte-cache options,
+whereas Media3 load control is time based. This group deliberately uses Media3's
+default live buffering instead of inventing a lossy conversion. Buffer tuning
+remains subject to real-device latency and stability measurements.
+
+The implementation commit is
+`585bcfd5dd71ad520fb1a22e80d8ff6d0ad86a46`. Targeted Dart analysis passes,
+the Media3 controller test suite covers the explicit live method-channel
+request, full `dart analyze` has no errors or warnings and the same 37 existing
+info diagnostics, full `flutter analyze` completes repository analysis and
+returns nonzero only for those diagnostics, and all 22 Flutter tests pass.
+Android Kotlin Debug compilation and Android Release build also pass.
+
+The final Release audit APK embeds build time
+`2026-07-31 17:27:51 +08:00` and the clean implementation commit. It passed
+application ID, label, version, universal ABI, and signing-certificate
+verification:
+
+- APK:
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-media3-live-audit-v2.apk`
+- SHA-256:
+  `C5BAB51DE83177F240B68FAD4C719B22963EED412CB792845B2210B632C6E465`
+- certificate SHA-256:
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+The earlier audit without the paused source-switch preservation fix is not the
+test target. Real-device MPV/Media3 comparison is still required for landscape,
+portrait, and square live video; AVC/HEVC and every protocol/format combination
+actually returned by the service; play/pause; quality, route, codec, and CDN
+changes; paused switching; audio-only mode; manual refresh; disconnect/recovery
+and retry exhaustion; audio focus, background playback, media notification,
+the app mini-player, system PiP, foreground/background transitions, and room
+close/reopen. Until that matrix passes, live is implemented but not accepted as
+fully compatible. The audit APK does not update the release baseline.

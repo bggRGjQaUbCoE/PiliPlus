@@ -729,3 +729,47 @@ label, version, universal ABI, and signing-certificate verification:
 
 Still capture remains pending same-device verification through preview and
 save. This audit APK does not update the release baseline.
+
+### Eighth post-mini-player compatibility hardening batch
+
+The eighth follow-up batch starts the final backend-boundary cleanup without
+removing real compatibility gaps or the MPV backend that live playback still
+requires:
+
+- video-detail subtitle selection no longer reaches either the Media3 or MPV
+  controller directly. A shared `PlPlayerController.setApplicationSubtitle`
+  operation now owns disabling, inline-data loading, file loading, language,
+  label, and MIME dispatch for both backends;
+- the video-detail SponsorBlock integration no longer exposes the MPV player
+  object merely to satisfy the mixin contract. It continues to use the shared
+  player-ready, playing-state, and position-listener APIs, while audio playback
+  retains the mixin's existing MPV-backed default implementation;
+- the Android setting is no longer labelled experimental or described as a
+  switch back to MPV. It accurately names Android Media3 for on-demand video
+  and states that live playback is still handled by the compatibility player.
+
+The implementation commit is
+`e93a97c20a35590052296d3ee20d16207675129b`. All affected Dart files are
+formatted. Full `dart analyze` reports no errors or warnings and retains the
+same 37 existing info diagnostics. Full `flutter analyze` completes repository
+analysis and returns nonzero only for those same 37 info diagnostics. All 21
+Flutter tests pass, and the Android Release build succeeds.
+
+The Release audit APK was built from the clean implementation commit with
+explicit version, build number, build time, and commit-hash defines. It passed
+application ID, label, version, universal ABI, and signing-certificate
+verification:
+
+- APK:
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-backend-cleanup-audit.apk`
+- SHA-256:
+  `2E9BCE8CB93E2BDA9B3A465862B2AC9B130E2A4F6DE67DA8B13E576CF9397F57`
+- certificate SHA-256:
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+Real-device regression is still required for disabling, loading, and switching
+Bilibili and external subtitles in both MPV and Media3 modes, including
+SponsorBlock position updates during play, pause, and seek. This batch does not
+claim complete MPV removal: live playback, Media3 super-resolution, bitmap and
+vertical subtitles, unsupported audio filters, and remaining lifecycle edges
+are still explicit gaps. The audit APK does not update the release baseline.

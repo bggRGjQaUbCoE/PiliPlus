@@ -1,6 +1,6 @@
 # pili++ 当前项目状态
 
-> 最后核对：2026-07-31 10:18 +08:00
+> 最后核对：2026-07-31 11:10 +08:00
 >
 > 本文件记录会随开发变化、但后续任务必须知道的事实。开始任务时先核对这里与实际
 > Git、源码和构建产物；结束任务前更新。长期规则见 `AGENTS.md`，ExoPlayer 详细兼容
@@ -11,14 +11,14 @@
 - 当前分支：`main`
 - 最新 GitHub 发布源提交：`859d39c4ff3c77c37e1cc1d7131192df8f8b4241`
   (`chore: prepare 2.1.2 release`)
-- 最新功能快照：`4085cc8ec0d838318fbc64c40b3e8361a9ae149d`
-  (`fix: preserve decoded screenshot image lifetime`)
+- 最新功能快照：`e93a97c20a35590052296d3ee20d16207675129b`
+  (`refactor: isolate player backend subtitle access`)
 - 最新上游合并提交：`0e4e8db250e986c4f8e32652fac2652651ec4168`
   (`Merge remote-tracking branch 'upstream/main' into codex/android-exoplayer`)
 - 上游：`https://github.com/bggRGjQaUbCoE/PiliPlus.git`
 - 已获取并合入的 `upstream/main`：`5296a8f7f07a22f347ad53bc8c7651e6787bf3ec`
 - 当前分支已包含上游 `56ca0ca`、`10b723f`、`e4e7037`、`91e7899` 和 `5296a8f`；
-  本状态更新提交完成后相对上游为本地领先 34、落后 0。
+  本状态更新提交完成后相对上游为本地领先 36、落后 0。
 - 应用内小窗、音频焦点/媒体控制、系统 PiP 恢复、版本更新和兼容记录已保存到上述
   功能快照。交接时应以实际 `git status` 为准；存在未提交修改时不得直接 merge 或
   rebase。
@@ -99,6 +99,29 @@
 - 上游 UI 和文本选择变化仍需真机回归；审计 APK 不是新版本交付，不更新发布基线。
 
 ## 当前待验证修改
+
+- ExoPlayer 适配批次 8 首组实现已提交为
+  `e93a97c20a35590052296d3ee20d16207675129b`：视频详情页的 B 站/外部字幕加载与关闭
+  已收口到 `PlPlayerController.setApplicationSubtitle`，页面不再直接分支调用
+  ExoPlayer 或 mpv 控制器；内联字幕、文件字幕、语言、标签和 MIME 的差异由公共控制器
+  内部适配。视频页 SponsorBlock 也不再为满足混入接口而暴露 mpv 播放器对象，继续使用
+  公共的 ready、playing 和 position listener；音频页保留原有默认实现。
+- Android 设置文案已去除“实验性”和“关闭后完全恢复 mpv”，改为准确说明点播使用
+  Android Media3、直播暂由兼容播放器处理；未隐藏直播仍未适配这一事实。
+- 批次 8 相关文件已格式化；完整 `dart analyze` 无 error/warning，保留 37 条既有 info；
+  完整 `flutter analyze` 完成仓库分析，仅因相同 37 条既有 info 返回非零；完整
+  `flutter test` 共 21 项全部通过；Android Release 构建通过。
+- 批次 8 Android Release 审计包位于
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-backend-cleanup-audit.apk`，
+  SHA-256 为
+  `2E9BCE8CB93E2BDA9B3A465862B2AC9B130E2A4F6DE67DA8B13E576CF9397F57`；
+  `tool/verify_release.ps1 -AllowAlreadyDelivered` 已确认 applicationId、应用名、版本、
+  universal ABI 和签名证书均符合基线。该包从干净实现提交 `e93a97c20a35590052296d3ee20d16207675129b`
+  构建并写入准确 commit hash；它是审计包，不更新发布基线。
+- 批次 8 首组仍待真机对照：mpv/Media3 下关闭字幕、B 站字幕、外部 VTT/SRT/ASS/SSA
+  的加载与互切，以及播放、暂停、跳转时 SponsorBlock 位置监听。直播、Media3 超分、
+  bitmap cue、竖排字幕、未适配音频滤镜和剩余生命周期边界仍是明确缺口，不能宣称已
+  完整移除 mpv。
 
 - ExoPlayer 适配批次 7 实现已提交为
   `51909790a75063e630d24afc2541d5baf83eb532`：普通截图和评论区视频截图通过既有公共
@@ -299,7 +322,8 @@
 
 ## ExoPlayer 已知未闭环项
 
-- 直播仍使用 mpv。
+- 直播仍使用 mpv；批次 8 只清理了点播字幕和 SponsorBlock 的业务层后端泄漏，尚未
+  达到可删除 mpv 后端的条件。
 - 字幕 VTT/SRT/ASS/SSA 格式和结构化文本 cue 已接通，用户当前真机流程未见问题；
   bitmap cue 与 Flutter 竖排文字布局尚未闭环。
 - 截图和动态 WebP 已有 ExoPlayer 原生实现并通过自动化构建/容器测试；Samsung Android
@@ -319,26 +343,29 @@
 
 ## 下一步
 
-1. 使用批次 7 截图生命周期修复审计 APK，先在报告问题的 Samsung Android 16 设备测试
+1. 使用批次 8 审计 APK 在 mpv 与 Media3 下对照关闭字幕、B 站字幕和外部
+   VTT/SRT/ASS/SSA 的加载与互切，并覆盖播放、暂停、跳转时 SponsorBlock 位置更新；
+   通过后继续清理剩余点播业务/UI 对具体后端的直接访问。
+2. 使用批次 7 截图生命周期修复审计 APK，先在报告问题的 Samsung Android 16 设备测试
    播放状态普通截图，确认能显示预览、点击后成功保存且不再出现 native peer 错误；再测
    暂停状态，并在 mpv 与 ExoPlayer 下对照普通截图、评论区截图和动态 WebP，
    覆盖横竖屏、像素宽高比、水平/垂直翻转、播放/暂停、全屏、小窗、不同区间/预设、
    进度、取消、保存、失败清理和当前播放会话不受转换影响；通过后补充真机验证记录。
-2. 使用批次 6 审计 APK 对照可恢复与永久错误，覆盖断网恢复、超时、HTTP 5xx、
+3. 使用批次 6 审计 APK 对照可恢复与永久错误，覆盖断网恢复、超时、HTTP 5xx、
    重试耗尽、401/403/404、解码失败、播放/暂停意图，以及全屏、后台、应用内小窗和
    系统 PiP；通过后补充真机验证记录。
-3. 使用批次 5 审计 APK 对照含多个内置文本轨的本地/网络媒体，覆盖逐轨选择、关闭、
+4. 使用批次 5 审计 APK 对照含多个内置文本轨的本地/网络媒体，覆盖逐轨选择、关闭、
    内置字幕与 B 站/外部字幕双向切换，以及播放/暂停、跳转、全屏、后台、应用内小窗
    和系统 PiP；通过后补充真机验证记录。
-4. 使用批次 4 最终审计 APK 对照服务器测量 loudnorm 的音量和听感，并覆盖切换、
+5. 使用批次 4 最终审计 APK 对照服务器测量 loudnorm 的音量和听感，并覆盖切换、
    后台、应用内小窗和系统 PiP；通过后补充真机验证记录。
-5. 使用批次 3 审计 APK 在 mpv 与 ExoPlayer 下逐项对照 DASH 独立音视频、本地
+6. 使用批次 3 审计 APK 在 mpv 与 ExoPlayer 下逐项对照 DASH 独立音视频、本地
    多轨、自动/关闭/指定轨道、“听视频”无重载切换及播放信息字段；通过后补充真机
    验证记录。
-6. 下一批优先处理直播、本地视频或剩余生命周期边界中的最高优先级闭环；超分、
+7. 下一批优先处理直播、本地视频或剩余生命周期边界中的最高优先级闭环；超分、
    动态/自定义音频滤镜仍保留为独立兼容任务。
-7. 批次 2 的 bitmap cue、竖排字幕，以及 Media3 超分效果仍是明确功能缺口，不因当前
+8. 批次 2 的 bitmap cue、竖排字幕，以及 Media3 超分效果仍是明确功能缺口，不因当前
    真机流程无异常而关闭。
-8. 清理仓库既有 37 条 info 后，使完整 `flutter analyze` 以零退出码通过。
-9. 真机回归本次上游同步涉及的视频卡片、UGC 分P列表、动态/评论文本选择和滚动。
-10. 继续跟踪上游；下次同步仍先 fetch、检查重叠文件，再执行合并和完整验证。
+9. 清理仓库既有 37 条 info 后，使完整 `flutter analyze` 以零退出码通过。
+10. 真机回归本次上游同步涉及的视频卡片、UGC 分P列表、动态/评论文本选择和滚动。
+11. 继续跟踪上游；下次同步仍先 fetch、检查重叠文件，再执行合并和完整验证。

@@ -16,10 +16,10 @@ import 'package:PiliPlus/services/shutdown_timer_service.dart'
 import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
-import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -239,7 +239,7 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
               color: Colors.white,
             ),
           ),
-          if (plPlayerController.videoPlayerController case final player?)
+          if (plPlayerController.playerReady)
             SizedBox.square(
               dimension: 30,
               child: PopupMenuButton(
@@ -269,7 +269,7 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
                     ),
                     onTap: () => HeaderControlState.showPlayerInfo(
                       context,
-                      player: player,
+                      controller: plPlayerController,
                     ),
                   ),
                   if (PlatformUtils.isMobile)
@@ -280,7 +280,7 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
                         children: [
                           const Icon(Icons.volume_up, size: 17),
                           Text(
-                            '播放器音量: ${player.getProperty('volume').subLength(3)}%',
+                            '播放器音量: ${Pref.playerVolume.toStringAsFixed(0)}%',
                             style: const TextStyle(fontSize: 14),
                           ),
                         ],
@@ -288,7 +288,8 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
                       onTap: () => showPlayerVolumeDialog(
                         context,
                         () {},
-                        onChanged: player.setVolume,
+                        onChanged:
+                            plPlayerController.applyPlayerVolumePreference,
                       ),
                     ),
                 ],

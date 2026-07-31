@@ -786,6 +786,10 @@ class PlPlayerController with BlockConfigMixin {
     return _instance?.setVolume(volumeNew, showIndicator: showIndicator);
   }
 
+  static Future<void>? syncDesktopVolumeIfExists(double volume) {
+    return _instance?.syncDesktopVolume(volume);
+  }
+
   static Future<void>? setAudioFocusGainIfExists(double gain) {
     return _instance?._setAudioFocusGain(gain);
   }
@@ -1016,6 +1020,7 @@ class PlPlayerController with BlockConfigMixin {
       _seasonId = seasonId;
       _pgcType = pgcType;
       _normalizationVolume = volume;
+      _lastVideoSize = null;
 
       if (showSeekPreview) {
         _clearPreview();
@@ -1362,6 +1367,18 @@ class PlPlayerController with BlockConfigMixin {
   List<StreamSubscription>? _subscriptions;
   final Set<ValueChanged<Duration>> _positionListeners = {};
   final Set<ValueChanged<PlayerStatus>> _statusListeners = {};
+  final Set<ValueChanged<Size>> _videoSizeListeners = {};
+  Size? _lastVideoSize;
+
+  void _notifyVideoSize(int width, int height) {
+    if (width <= 0 || height <= 0) return;
+    final size = Size(width.toDouble(), height.toDouble());
+    if (_lastVideoSize == size) return;
+    _lastVideoSize = size;
+    for (final listener in _videoSizeListeners) {
+      listener(size);
+    }
+  }
 
   void _startExoListeners(ExoPlayerController player) {
     if (_exoSubscription != null) return;
@@ -1395,6 +1412,7 @@ class PlPlayerController with BlockConfigMixin {
         updateDuration(event.duration);
       }
       buffered.value = event.buffered.inSeconds;
+      _notifyVideoSize(event.width, event.height);
 
       // Media3 emits a non-playing state immediately after an error. Keep the
       // existing UI playback intent while the same session is being retried.
@@ -1626,6 +1644,7 @@ class PlPlayerController with BlockConfigMixin {
       stream.buffer.listen((Duration buffer) {
         buffered.value = buffer.inSeconds;
       }),
+      stream.size.listen((size) => _notifyVideoSize(size.$1, size.$2)),
       stream.buffering.listen((bool buffering) {
         isBuffering.value = buffering;
         videoPlayerServiceHandler?.onStatusChange(
@@ -1897,6 +1916,11 @@ class PlPlayerController with BlockConfigMixin {
   Future<void> applyPlayerVolumePreference(double _) =>
       _applyPlayerOutputVolume();
 
+  Future<void> syncDesktopVolume(double volume) async {
+    this.volume.value = volume;
+    await _applyPlayerOutputVolume();
+  }
+
   Future<void> setVolume(double volume, {bool showIndicator = true}) async {
     if (this.volume.value != volume) {
       this.volume.value = volume;
@@ -2167,6 +2191,18 @@ class PlPlayerController with BlockConfigMixin {
   void removeStatusLister(ValueChanged<PlayerStatus> listener) =>
       _statusListeners.remove(listener);
 
+  void addVideoSizeListener(ValueChanged<Size> listener) {
+    if (_playerCount == 0) return;
+    _videoSizeListeners.add(listener);
+    final size = _lastVideoSize;
+    if (size != null) {
+      listener(size);
+    }
+  }
+
+  void removeVideoSizeListener(ValueChanged<Size> listener) =>
+      _videoSizeListeners.remove(listener);
+
   // 记录播放记录
   Future<void>? makeHeartBeat(
     int progress, {
@@ -2306,6 +2342,8 @@ class PlPlayerController with BlockConfigMixin {
     _removeListeners();
     _positionListeners.clear();
     _statusListeners.clear();
+    _videoSizeListeners.clear();
+    _lastVideoSize = null;
     if (playerStatus.isPlaying) {
       WakelockPlus.disable();
     }

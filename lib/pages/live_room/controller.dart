@@ -1,4 +1,4 @@
-import 'dart:async' show Timer, StreamSubscription;
+import 'dart:async' show Timer;
 import 'dart:convert' show jsonDecode;
 import 'dart:math' as math;
 
@@ -149,10 +149,8 @@ class LiveRoomController extends GetxController {
     return const SizedBox.shrink();
   });
 
-  StreamSubscription? _sizeSub;
-
-  void _onSizeChanged((int, int) value) {
-    final isVertical = value.$2 > value.$1;
+  void _onSizeChanged(Size value) {
+    final isVertical = value.height > value.width;
     isPortrait.value = isVertical;
     plPlayerController.isVertical = isVertical;
   }
@@ -160,14 +158,11 @@ class LiveRoomController extends GetxController {
   void _startSizeSub() {
     if (isPortrait.value) return;
     _stopSizeSub();
-    _sizeSub = plPlayerController.videoPlayerController?.stream.size.listen(
-      _onSizeChanged,
-    );
+    plPlayerController.addVideoSizeListener(_onSizeChanged);
   }
 
   void _stopSizeSub() {
-    _sizeSub?.cancel();
-    _sizeSub = null;
+    plPlayerController.removeVideoSizeListener(_onSizeChanged);
   }
 
   @override

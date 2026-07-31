@@ -34,6 +34,7 @@ import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
+import 'package:PiliPlus/plugin/pl_player/utils/captured_frame.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
@@ -2361,17 +2362,7 @@ class PlPlayerController with BlockConfigMixin {
           flipX: flipX.value,
           flipY: flipY.value,
         );
-        final buffer = await ui.ImmutableBuffer.fromUint8List(bytes);
-        try {
-          final codec = await ui.instantiateImageCodecFromBuffer(buffer);
-          try {
-            return PlayerFeatureSuccess((await codec.getNextFrame()).image);
-          } finally {
-            codec.dispose();
-          }
-        } finally {
-          buffer.dispose();
-        }
+        return PlayerFeatureSuccess(await decodeCapturedFrame(bytes));
       } catch (error, stackTrace) {
         return PlayerFeatureFailure(
           '截图失败',

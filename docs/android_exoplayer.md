@@ -821,3 +821,47 @@ WebP start/progress/cancel/save. Live remains MPV-backed and must also be
 checked for rendering regression; this refactor does not claim Media3 live
 support or complete MPV removal. The audit APK does not update the release
 baseline.
+
+The third cleanup group removes the remaining direct MPV-object access from
+live-page UI and business code without changing the live backend:
+
+- `PlPlayerController` now exposes a shared video-size listener. Media3 events
+  and the MPV size stream publish the same Flutter `Size` value, repeated sizes
+  are suppressed, and a new media source clears the cached size so its first
+  real dimensions are delivered;
+- the live controller registers that shared listener instead of subscribing to
+  `videoPlayerController.stream.size`, preserving the existing portrait test
+  and `isVertical` update;
+- the live header uses shared player readiness, player-info entries, and player
+  output-volume application. It no longer reads MPV properties or calls the
+  MPV player directly;
+- the standalone audio page synchronizes desktop volume into an existing video
+  controller through a shared operation that updates common state and always
+  reapplies output volume to the selected backend.
+
+The third-group implementation commit is
+`7fcdd6d18b3f43588337d55c2d90ac8f56e3e0de`. All affected files are formatted
+and targeted analysis reports no issues. Full `dart analyze` has no errors or
+warnings and the same 37 existing info diagnostics. Full `flutter analyze`
+completes repository analysis and returns nonzero only for those same info
+diagnostics. All 21 Flutter tests pass. The Release build command reached the
+tool's 120-second wait limit, but its Flutter/Gradle processes then exited
+normally and wrote the new APK at `2026-07-31 16:29:54 +08:00`.
+
+The Release audit APK embeds build time `2026-07-31 16:26:56 +08:00` and the
+clean implementation commit. It passed application ID, label, version,
+universal ABI, and signing-certificate verification:
+
+- APK:
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-live-boundary-audit.apk`
+- SHA-256:
+  `7D3C4B21ABDFBBEDEE19087FCB38D4029CC72154877BADCFC186A80C023516DA`
+- certificate SHA-256:
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+Real-device verification is still required for live landscape, portrait, and
+square video orientation; size updates after quality or route changes; player
+information and player-volume controls; and desktop audio-to-video volume
+synchronization. Live playback still uses MPV. This group prepares the UI and
+controller boundary for future Media3 live support and does not claim that
+support or update the release baseline.

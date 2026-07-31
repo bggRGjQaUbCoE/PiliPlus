@@ -40,6 +40,7 @@ import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/player_media_track.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/subtitle_source.dart';
+import 'package:PiliPlus/plugin/pl_player/widgets/player_info_dialog.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart'
     show shutdownTimerService;
 import 'package:PiliPlus/utils/accounts.dart';
@@ -72,7 +73,6 @@ import 'package:get/get.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:media_kit/media_kit.dart' show NativePlayer;
 
 mixin TimeBatteryMixin<T extends StatefulWidget> on State<T> {
   PlPlayerController get plPlayerController;
@@ -790,9 +790,9 @@ class HeaderControlState extends State<HeaderControl>
                   dense: true,
                   title: const Text('播放信息', style: titleStyle),
                   leading: const Icon(Icons.info_outline, size: 20),
-                  onTap: () => showPlayerInfo(
+                  onTap: () => showPlayerInfoDialog(
                     context,
-                    controller: plPlayerController,
+                    plPlayerController.playerInfoEntries,
                   ),
                 ),
               ListTile(
@@ -813,70 +813,6 @@ class HeaderControlState extends State<HeaderControl>
         ),
       );
     });
-  }
-
-  static void showPlayerInfo(
-    BuildContext context, {
-    PlPlayerController? controller,
-    NativePlayer? player,
-  }) {
-    assert(controller != null || player != null);
-    final entries = controller?.playerInfoEntries ?? _nativePlayerInfo(player!);
-    showDialog(
-      context: context,
-      builder: (context) {
-        final colorScheme = ColorScheme.of(context);
-        return AlertDialog(
-          title: const Text('播放信息'),
-          contentPadding: const EdgeInsets.only(top: 16),
-          content: Material(
-            type: MaterialType.transparency,
-            child: ListTileTheme(
-              contentPadding: const .symmetric(horizontal: 24),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: entries
-                      .map(
-                        (entry) => ListTile(
-                          dense: true,
-                          title: Text(entry.label),
-                          subtitle: Text(entry.value),
-                          onTap: () => Utils.copyText(
-                            '${entry.label}\n${entry.value}',
-                          ),
-                        ),
-                      )
-                      .toList(growable: false),
-                ),
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: Get.back,
-              child: Text('确定', style: TextStyle(color: colorScheme.outline)),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  static List<PlayerInfoEntry> _nativePlayerInfo(NativePlayer player) {
-    final state = player.state;
-    return [
-      const PlayerInfoEntry('Backend', 'MPV'),
-      PlayerInfoEntry('Resolution', '${state.width}x${state.height}'),
-      PlayerInfoEntry('VideoParams', state.videoParams.toString()),
-      PlayerInfoEntry('AudioParams', state.audioParams.toString()),
-      PlayerInfoEntry('Media', state.playlist.toString()),
-      PlayerInfoEntry('AudioTrack', state.track.audio.toString()),
-      PlayerInfoEntry('VideoTrack', state.track.video.toString()),
-      PlayerInfoEntry('SubtitleTrack', state.track.subtitle.toString()),
-      PlayerInfoEntry('rate', state.rate.toString()),
-      PlayerInfoEntry('Volume', player.getProperty('volume').subLength(3)),
-      PlayerInfoEntry('hwdec', player.getProperty('hwdec-current')),
-    ];
   }
 
   static Future<PlayerTrackSelectionMode?> showTrackSelection(

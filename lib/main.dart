@@ -195,7 +195,8 @@ void main() async {
         format: DateFormatUtils.longFormatDs,
       ),
       'Commit Hash': BuildConfig.commitHash,
-      'MPV Api Version':
+      'Player Runtimes':
+          'Media3 ExoPlayer (Android VOD); MPV API '
           '${NativePlayer.apiVersion >> 16}.${NativePlayer.apiVersion & 0xFFFF}',
     };
     final fileHandler = await JsonFileHandler.init();

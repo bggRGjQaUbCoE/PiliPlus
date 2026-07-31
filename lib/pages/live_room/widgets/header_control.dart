@@ -11,6 +11,7 @@ import 'package:PiliPlus/pages/setting/models/play_settings.dart'
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/common_btn.dart';
+import 'package:PiliPlus/plugin/pl_player/widgets/player_info_dialog.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart'
     show shutdownTimerService;
 import 'package:PiliPlus/utils/android/bindings.g.dart';
@@ -267,9 +268,9 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
                         Text('播放信息', style: TextStyle(fontSize: 14)),
                       ],
                     ),
-                    onTap: () => HeaderControlState.showPlayerInfo(
+                    onTap: () => showPlayerInfoDialog(
                       context,
-                      controller: plPlayerController,
+                      plPlayerController.playerInfoEntries,
                     ),
                   ),
                   if (PlatformUtils.isMobile)

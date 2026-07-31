@@ -20,9 +20,8 @@ import 'package:PiliPlus/pages/audio/volume_button.dart';
 import 'package:PiliPlus/pages/setting/models/play_settings.dart'
     show showPlayerVolumeDialog;
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/action_item.dart';
-import 'package:PiliPlus/pages/video/widgets/header_control.dart'
-    show HeaderControlState;
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
+import 'package:PiliPlus/plugin/pl_player/widgets/player_info_dialog.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
@@ -631,14 +630,17 @@ class _AudioPageState extends State<AudioPage> {
                   PageUtils.reportVideo(_controller.oid.toInt());
                 },
               ),
-              if (_controller.player case final player?) ...[
+              if (_controller.playerReady) ...[
                 ListTile(
                   dense: true,
                   leading: const Icon(Icons.info_outline, size: 20),
                   title: const Text('播放信息', style: TextStyle(fontSize: 14)),
                   onTap: () {
                     Get.back();
-                    HeaderControlState.showPlayerInfo(context, player: player);
+                    showPlayerInfoDialog(
+                      context,
+                      _controller.playerInfoEntries,
+                    );
                   },
                 ),
                 if (PlatformUtils.isMobile)
@@ -646,7 +648,7 @@ class _AudioPageState extends State<AudioPage> {
                     dense: true,
                     leading: const Icon(Icons.volume_up, size: 20),
                     title: Text(
-                      '播放器音量: ${player.getProperty('volume').subLength(3)}%',
+                      '播放器音量: ${_controller.playerOutputVolumePercent}%',
                       style: const TextStyle(fontSize: 14),
                     ),
                     onTap: () {
@@ -654,7 +656,7 @@ class _AudioPageState extends State<AudioPage> {
                       showPlayerVolumeDialog(
                         context,
                         () {},
-                        onChanged: player.setVolume,
+                        onChanged: _controller.applyPlayerVolumePreference,
                       );
                     },
                   ),
@@ -742,7 +744,7 @@ class _AudioPageState extends State<AudioPage> {
             ActionItem(
               icon: const Icon(FontAwesomeIcons.circlePlay),
               onTap: () {
-                _controller.player?.pause();
+                _controller.onPause();
                 PageUtils.toVideoPage(
                   cid: audioItem.associatedItem.subId.first.toInt(),
                   aid: audioItem.associatedItem.oid.toInt(),
@@ -770,7 +772,7 @@ class _AudioPageState extends State<AudioPage> {
   void _onSeek(int milliseconds) {
     _controller
       ..isDragging = false
-      ..player?.seek(Duration(milliseconds: milliseconds));
+      ..onSeek(Duration(milliseconds: milliseconds));
   }
 
   Widget _buildProgressBar(ColorScheme colorScheme) {
@@ -840,7 +842,7 @@ class _AudioPageState extends State<AudioPage> {
           children: [
             Obx(() {
               final position = _controller.position.value;
-              if (_controller.player != null) {
+              if (_controller.playerReady) {
                 return Text(
                   DurationUtils.formatDuration(position),
                 );
@@ -849,7 +851,7 @@ class _AudioPageState extends State<AudioPage> {
             }),
             Obx(() {
               final duration = _controller.duration.value;
-              if (_controller.player != null) {
+              if (_controller.playerReady) {
                 return Text(
                   DurationUtils.formatDuration(duration),
                 );
@@ -948,7 +950,7 @@ class _AudioPageState extends State<AudioPage> {
                       GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTap: () {
-                          _controller.player?.pause();
+                          _controller.onPause();
                           Get.toNamed('/member?mid=${audioItem.owner.mid}');
                         },
                         child: Row(

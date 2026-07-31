@@ -26,6 +26,7 @@ import 'package:PiliPlus/pages/sponsor_block/block_mixin.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/triple_mixin.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
+import 'package:PiliPlus/plugin/pl_player/models/player_media_track.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/services/service_locator.dart';
@@ -34,6 +35,7 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
+import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -71,6 +73,35 @@ class AudioController extends GetxController
   bool _hasInit = false;
   @override
   Player? player;
+  bool get playerReady => player != null;
+
+  List<PlayerInfoEntry> get playerInfoEntries {
+    final player = this.player;
+    if (player == null) return const [];
+    final state = player.state;
+    return [
+      const PlayerInfoEntry('Backend', 'MPV'),
+      PlayerInfoEntry('Resolution', '${state.width}x${state.height}'),
+      PlayerInfoEntry('VideoParams', state.videoParams.toString()),
+      PlayerInfoEntry('AudioParams', state.audioParams.toString()),
+      PlayerInfoEntry('Media', state.playlist.toString()),
+      PlayerInfoEntry('AudioTrack', state.track.audio.toString()),
+      PlayerInfoEntry('VideoTrack', state.track.video.toString()),
+      PlayerInfoEntry('SubtitleTrack', state.track.subtitle.toString()),
+      PlayerInfoEntry('rate', state.rate.toString()),
+      PlayerInfoEntry('Volume', player.getProperty('volume').subLength(3)),
+      PlayerInfoEntry('hwdec', player.getProperty('hwdec-current')),
+    ];
+  }
+
+  String get playerOutputVolumePercent =>
+      player?.getProperty('volume').subLength(3) ??
+      Pref.playerVolume.toStringAsFixed(0);
+
+  Future<void> applyPlayerVolumePreference(double volume) async {
+    await player?.setVolume(volume);
+  }
+
   late int cacheAudioQa;
 
   late bool isDragging = false;

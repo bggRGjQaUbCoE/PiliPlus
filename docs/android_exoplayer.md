@@ -761,9 +761,9 @@ application ID, label, version, universal ABI, and signing-certificate
 verification:
 
 - APK:
-  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-backend-cleanup-audit.apk`
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-backend-cleanup-audit-v2.apk`
 - SHA-256:
-  `2E9BCE8CB93E2BDA9B3A465862B2AC9B130E2A4F6DE67DA8B13E576CF9397F57`
+  `33BA77BEFBC7748AF534747DD6162E4D7EE40913AC339C8D80D53CAF4A218717`
 - certificate SHA-256:
   `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
 
@@ -772,4 +772,6 @@ Bilibili and external subtitles in both MPV and Media3 modes, including
 SponsorBlock position updates during play, pause, and seek. This batch does not
 claim complete MPV removal: live playback, Media3 super-resolution, bitmap and
 vertical subtitles, unsupported audio filters, and remaining lifecycle edges
-are still explicit gaps. The audit APK does not update the release baseline.
+are still explicit gaps. The v2 audit APK uses the corrected local build time
+`2026-07-31 11:14:02 +08:00`; the earlier audit file remains on disk but is not
+the test target. The audit APK does not update the release baseline.

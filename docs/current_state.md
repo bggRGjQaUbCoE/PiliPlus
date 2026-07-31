@@ -112,12 +112,14 @@
   完整 `flutter analyze` 完成仓库分析，仅因相同 37 条既有 info 返回非零；完整
   `flutter test` 共 21 项全部通过；Android Release 构建通过。
 - 批次 8 Android Release 审计包位于
-  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-backend-cleanup-audit.apk`，
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-backend-cleanup-audit-v2.apk`，
   SHA-256 为
-  `2E9BCE8CB93E2BDA9B3A465862B2AC9B130E2A4F6DE67DA8B13E576CF9397F57`；
+  `33BA77BEFBC7748AF534747DD6162E4D7EE40913AC339C8D80D53CAF4A218717`；
   `tool/verify_release.ps1 -AllowAlreadyDelivered` 已确认 applicationId、应用名、版本、
   universal ABI 和签名证书均符合基线。该包从干净实现提交 `e93a97c20a35590052296d3ee20d16207675129b`
-  构建并写入准确 commit hash；它是审计包，不更新发布基线。
+  构建并写入准确 commit hash，构建时间为 `2026-07-31 11:14:02 +08:00`；首个审计文件
+  的构建时间参数偏快 8 小时，已由 v2 替代且不作为测试目标。它是审计包，不更新发布
+  基线。
 - 批次 8 首组仍待真机对照：mpv/Media3 下关闭字幕、B 站字幕、外部 VTT/SRT/ASS/SSA
   的加载与互切，以及播放、暂停、跳转时 SponsorBlock 位置监听。直播、Media3 超分、
   bitmap cue、竖排字幕、未适配音频滤镜和剩余生命周期边界仍是明确缺口，不能宣称已

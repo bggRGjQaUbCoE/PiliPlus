@@ -305,6 +305,10 @@ class PlPlayerController with BlockConfigMixin {
         PlayerInfoEntry('AudioTrack', audio?.details ?? 'disabled'),
         PlayerInfoEntry('VideoTrack', video?.details ?? 'disabled'),
         PlayerInfoEntry('SubtitleTrack', subtitle?.details ?? 'disabled'),
+        PlayerInfoEntry(
+          'PlaybackConfig',
+          state.playbackConfiguration ?? 'N/A',
+        ),
         PlayerInfoEntry('rate', value(state.speed)),
         PlayerInfoEntry('Volume', value(state.volume)),
         PlayerInfoEntry(
@@ -1195,6 +1199,23 @@ class PlPlayerController with BlockConfigMixin {
   Map<String, String>? _liveBuffer;
   Map<String, String> get liveBuffer => _liveBuffer ??= Pref.initLiveBuffer();
 
+  int get _exoTargetBufferBytes {
+    final bytes = Pref.bufferSize * 0x200000;
+    if (!bytes.isFinite || bytes <= 0) {
+      return isLive ? 8 * 1024 * 1024 : 4 * 1024 * 1024;
+    }
+    return bytes.round().clamp(64 * 1024, 0x7fffffff);
+  }
+
+  int get _exoBufferDurationMs {
+    final milliseconds =
+        Pref.bufferSec * _playbackSpeed.value * Duration.millisecondsPerSecond;
+    if (!milliseconds.isFinite || milliseconds <= 0) {
+      return 16000;
+    }
+    return milliseconds.round().clamp(500, 0x7fffffff);
+  }
+
   // 配置播放器
   Future<void> _createVideoController(
     DataSource dataSource,
@@ -1279,7 +1300,12 @@ class PlPlayerController with BlockConfigMixin {
     required bool playWhenReady,
     required bool preserveSubtitle,
   }) async {
-    final player = _exoPlayerController ??= await ExoPlayerController.create();
+    final player = _exoPlayerController ??= await ExoPlayerController.create(
+      enableHardwareDecoding: Pref.enableHA,
+      targetBufferBytes: _exoTargetBufferBytes,
+      bufferDurationMs: _exoBufferDurationMs,
+      isLive: isLive,
+    );
     _startExoListeners(player);
     await _openExoPlayer(
       dataSource,

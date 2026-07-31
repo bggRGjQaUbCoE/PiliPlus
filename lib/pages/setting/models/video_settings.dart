@@ -150,32 +150,33 @@ List<SettingsModel> get videoSettings => [
     title: '缓冲大小',
     leading: const Icon(Icons.storage_outlined),
     getSubtitle: () =>
-        '当前：${Pref.bufferSize}MB。同时为前向和后向缓冲区大小。对于直播流，无后向缓冲大小，全部转给前向（此选项即mpv的--demuxer-max-bytes，--demuxer-max-back-bytes）',
+        '当前：${Pref.bufferSize}MB。Media3 使用约双倍大小作为前向与后向保留的总上限；mpv 分别用于前向和后向缓冲。',
     onTap: _showBufferSizeDialog,
   ),
   NormalModel(
     title: '缓冲时长',
     leading: const Icon(Icons.av_timer),
     getSubtitle: () =>
-        '当前：${Pref.bufferSec}s。实际缓冲为二者最小值。对于直播流，该选项无效（此选项即mpv的--cache-secs）',
+        '当前：${Pref.bufferSec}s。Media3 点播和 mpv 均与缓冲大小共同限制实际缓冲；直播使用播放器的低延迟时长策略。',
     onTap: _showBufferSecDialog,
   ),
   NormalModel(
-    title: '自动同步',
+    title: 'mpv 自动同步',
     leading: const Icon(Icons.sync_rounded),
-    getSubtitle: () => '当前：${Pref.autosync}（此项即mpv的--autosync）',
+    getSubtitle: () => '当前：${Pref.autosync}。仅用于 mpv；Media3 使用 Android 音视频时钟同步。',
     onTap: _showAutoSyncDialog,
   ),
   NormalModel(
-    title: '视频同步',
+    title: 'mpv 视频同步',
     leading: const Icon(Icons.view_timeline_outlined),
-    getSubtitle: () => '当前：${Pref.videoSync}（此项即mpv的--video-sync）',
+    getSubtitle: () => '当前：${Pref.videoSync}。仅用于 mpv；Media3 使用 Android 平台同步策略。',
     onTap: _showVideoSyncDialog,
   ),
   NormalModel(
-    title: '硬解模式',
+    title: 'mpv 硬解模式',
     leading: const Icon(Icons.memory_outlined),
-    getSubtitle: () => '当前：${Pref.hardwareDecoding}（此项即mpv的--hwdec）',
+    getSubtitle: () =>
+        '当前：${Pref.hardwareDecoding}。仅用于 mpv；Media3 由“开启硬解”控制硬件或软件 MediaCodec。',
     onTap: _showHwDecDialog,
   ),
 ];
@@ -504,6 +505,9 @@ void _showDecimalDialog(
           onPressed: () async {
             try {
               final val = double.parse(value);
+              if (!val.isFinite || val <= 0) {
+                throw const FormatException('请输入大于 0 的数值');
+              }
               Get.back();
               await GStorage.setting.put(key, val);
               setState();

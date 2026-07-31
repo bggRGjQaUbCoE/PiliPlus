@@ -27,6 +27,7 @@ class ExoPlayerEvent {
     this.videoDecoder,
     this.audioDecoder,
     this.mediaDescription,
+    this.playbackConfiguration,
     this.failure,
   });
 
@@ -50,6 +51,7 @@ class ExoPlayerEvent {
   final String? videoDecoder;
   final String? audioDecoder;
   final String? mediaDescription;
+  final String? playbackConfiguration;
   final ExoPlayerPlaybackFailure? failure;
 
   factory ExoPlayerEvent.fromMap(Map<Object?, Object?> map) {
@@ -106,6 +108,7 @@ class ExoPlayerEvent {
       videoDecoder: map['videoDecoder'] as String?,
       audioDecoder: map['audioDecoder'] as String?,
       mediaDescription: map['mediaDescription'] as String?,
+      playbackConfiguration: map['playbackConfiguration'] as String?,
       failure: failure,
     );
   }
@@ -159,9 +162,20 @@ class ExoPlayerController {
   Stream<ExoPlayerEvent> get events => _controller.stream;
   bool get playWhenReady => _playWhenReady;
 
-  static Future<ExoPlayerController> create() async {
+  static Future<ExoPlayerController> create({
+    bool enableHardwareDecoding = true,
+    int targetBufferBytes = 4 * 1024 * 1024,
+    int bufferDurationMs = 16000,
+    bool isLive = false,
+  }) async {
     final id = _nextId++;
-    final textureId = await _methods.invokeMethod<int>('create', {'id': id});
+    final textureId = await _methods.invokeMethod<int>('create', {
+      'id': id,
+      'enableHardwareDecoding': enableHardwareDecoding,
+      'targetBufferBytes': targetBufferBytes,
+      'bufferDurationMs': bufferDurationMs,
+      'isLive': isLive,
+    });
     if (textureId == null) {
       throw StateError('ExoPlayer did not create a Flutter texture');
     }
@@ -228,6 +242,9 @@ class ExoPlayerController {
             mediaDescription: event.containsKey('mediaDescription')
                 ? next.mediaDescription
                 : player.state.mediaDescription,
+            playbackConfiguration: event.containsKey('playbackConfiguration')
+                ? next.playbackConfiguration
+                : player.state.playbackConfiguration,
             failure: next.failure,
           );
           player._controller.add(player.state);

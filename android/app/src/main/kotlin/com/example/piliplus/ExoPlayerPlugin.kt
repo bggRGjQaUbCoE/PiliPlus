@@ -40,12 +40,14 @@ import androidx.media3.common.text.HorizontalTextInVerticalContextSpan
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.HttpDataSource
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.audio.AudioSink
 import androidx.media3.exoplayer.audio.DefaultAudioSink
+import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.MergingMediaSource
@@ -121,7 +123,26 @@ private class ExoPlayerManager(
             when (call.method) {
                 "create" -> {
                     val id = call.requiredLong("id")
-                    result.success(session(id).textureId)
+                    result.success(
+                        session(
+                            id,
+                            Media3PlaybackConfiguration(
+                                enableHardwareDecoding =
+                                    call.argument<Boolean>("enableHardwareDecoding") ?: true,
+                                targetBufferBytes =
+                                    call.argument<Number>("targetBufferBytes")?.toLong()
+                                        ?.coerceIn(MIN_TARGET_BUFFER_BYTES, Int.MAX_VALUE.toLong())
+                                        ?.toInt()
+                                        ?: DEFAULT_TARGET_BUFFER_BYTES,
+                                bufferDurationMs =
+                                    call.argument<Number>("bufferDurationMs")?.toLong()
+                                        ?.coerceIn(MIN_BUFFER_DURATION_MS, Int.MAX_VALUE.toLong())
+                                        ?.toInt()
+                                        ?: DEFAULT_BUFFER_DURATION_MS,
+                                isLive = call.argument<Boolean>("isLive") ?: false,
+                            ),
+                        ).textureId,
+                    )
                 }
                 "open" -> {
                     val player = session(call.requiredLong("id"))
@@ -249,11 +270,15 @@ private class ExoPlayerManager(
         }
     }
 
-    fun session(id: Long): ExoPlayerSession {
+    fun session(
+        id: Long,
+        configuration: Media3PlaybackConfiguration = Media3PlaybackConfiguration(),
+    ): ExoPlayerSession {
         val value = sessions.getOrPut(id) {
             ExoPlayerSession(
                 context,
                 id,
+                configuration,
                 textureRegistry.createSurfaceProducer(
                     TextureRegistry.SurfaceLifecycle.resetInBackground,
                 ),
@@ -283,14 +308,19 @@ private class ExoPlayerManager(
 private class ExoPlayerSession(
     private val context: Context,
     private val id: Long,
+    private val configuration: Media3PlaybackConfiguration,
     private val surfaceProducer: TextureRegistry.SurfaceProducer,
     private val sendEvent: (Map<String, Any?>) -> Unit,
 ) : Player.Listener, AnalyticsListener {
     private val audioNormalizationProcessor = AudioNormalizationProcessor()
     val player: ExoPlayer = ExoPlayer.Builder(
         context,
-        NormalizingRenderersFactory(context, audioNormalizationProcessor),
-    ).build().also {
+        NormalizingRenderersFactory(
+            context,
+            audioNormalizationProcessor,
+            configuration.enableHardwareDecoding,
+        ),
+    ).setLoadControl(configuration.createLoadControl()).build().also {
         it.addListener(this)
         it.addAnalyticsListener(this)
         it.playWhenReady = false
@@ -878,6 +908,7 @@ private class ExoPlayerSession(
                 "videoDecoder" to videoDecoder,
                 "audioDecoder" to audioDecoder,
                 "mediaDescription" to mediaRequest?.description,
+                "playbackConfiguration" to configuration.description,
                 "audioNormalization" to mediaRequest?.audioNormalization?.filter,
             ),
         )
@@ -1240,7 +1271,15 @@ private data class MediaRequest(
 private class NormalizingRenderersFactory(
     context: Context,
     private val audioNormalizationProcessor: AudioNormalizationProcessor,
+    enableHardwareDecoding: Boolean,
 ) : DefaultRenderersFactory(context) {
+    init {
+        setEnableDecoderFallback(true)
+        if (!enableHardwareDecoding) {
+            setMediaCodecSelector(SOFTWARE_VIDEO_CODEC_SELECTOR)
+        }
+    }
+
     override fun buildAudioSink(
         context: Context,
         enableFloatOutput: Boolean,
@@ -1251,6 +1290,57 @@ private class NormalizingRenderersFactory(
         .setEnableAudioOutputPlaybackParameters(enableAudioOutputPlaybackParameters)
         .build()
 }
+
+private data class Media3PlaybackConfiguration(
+    val enableHardwareDecoding: Boolean = true,
+    val targetBufferBytes: Int = DEFAULT_TARGET_BUFFER_BYTES,
+    val bufferDurationMs: Int = DEFAULT_BUFFER_DURATION_MS,
+    val isLive: Boolean = false,
+) {
+    val description: String
+        get() = buildString {
+            append("decoder=")
+            append(if (enableHardwareDecoding) "hardware" else "software")
+            append(", targetBuffer=")
+            append(String.format(java.util.Locale.US, "%.2f", targetBufferBytes / 1048576.0))
+            append(" MiB, bufferDuration=")
+            if (isLive) {
+                append("live-default")
+            } else {
+                append(bufferDurationMs)
+                append(" ms")
+            }
+        }
+
+    fun createLoadControl(): DefaultLoadControl {
+        val builder = DefaultLoadControl.Builder()
+            .setTargetBufferBytes(targetBufferBytes)
+            .setPrioritizeTimeOverSizeThresholds(false)
+        if (!isLive) {
+            builder
+                .setBufferDurationsMsForStreaming(
+                    bufferDurationMs,
+                    bufferDurationMs,
+                    minOf(DEFAULT_BUFFER_FOR_PLAYBACK_MS, bufferDurationMs),
+                    minOf(DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS, bufferDurationMs),
+                )
+                .setBackBuffer(bufferDurationMs, false)
+        }
+        return builder.build()
+    }
+}
+
+private val SOFTWARE_VIDEO_CODEC_SELECTOR = MediaCodecSelector { mimeType, secure, tunneling ->
+    val decoders = MediaCodecSelector.DEFAULT.getDecoderInfos(mimeType, secure, tunneling)
+    if (MimeTypes.isVideo(mimeType)) decoders.filter { it.softwareOnly } else decoders
+}
+
+private const val MIN_TARGET_BUFFER_BYTES = 64L * 1024L
+private const val DEFAULT_TARGET_BUFFER_BYTES = 4 * 1024 * 1024
+private const val MIN_BUFFER_DURATION_MS = 500L
+private const val DEFAULT_BUFFER_DURATION_MS = 16000
+private const val DEFAULT_BUFFER_FOR_PLAYBACK_MS = 2500
+private const val DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS = 5000
 
 private data class SubtitleRequest(
     val uri: Uri,

@@ -377,6 +377,18 @@ void main() {
     );
   });
 
+  test('parses the native Media3 playback configuration', () {
+    final event = ExoPlayerEvent.fromMap({
+      'playbackConfiguration':
+          'decoder=software, targetBuffer=8.00 MiB, bufferDuration=16000 ms',
+    });
+
+    expect(
+      event.playbackConfiguration,
+      'decoder=software, targetBuffer=8.00 MiB, bufferDuration=16000 ms',
+    );
+  });
+
   test('captures an ExoPlayer frame with the requested transforms', () async {
     const channel = MethodChannel('com.example.piliplus/exo_player');
     final calls = <MethodCall>[];
@@ -437,6 +449,38 @@ void main() {
       expect(arguments['playWhenReady'], isTrue);
     },
   );
+
+  test('creates Media3 with buffering and decoder preferences', () async {
+    const channel = MethodChannel('com.example.piliplus/exo_player');
+    final calls = <MethodCall>[];
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (call) async {
+          calls.add(call);
+          if (call.method == 'create') return 45;
+          return null;
+        });
+    addTearDown(
+      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, null),
+    );
+
+    final player = await ExoPlayerController.create(
+      enableHardwareDecoding: false,
+      targetBufferBytes: 6 * 1024 * 1024,
+      bufferDurationMs: 24000,
+      isLive: true,
+    );
+    addTearDown(player.dispose);
+
+    expect(calls.first.method, 'create');
+    expect(calls.first.arguments, {
+      'id': player.id,
+      'enableHardwareDecoding': false,
+      'targetBufferBytes': 6 * 1024 * 1024,
+      'bufferDurationMs': 24000,
+      'isLive': true,
+    });
+  });
 
   test('starts, polls, and cancels animated WebP capture', () async {
     const channel = MethodChannel('com.example.piliplus/exo_player');

@@ -32,6 +32,7 @@ import 'package:PiliPlus/plugin/pl_player/models/player_feature_result.dart';
 import 'package:PiliPlus/plugin/pl_player/models/player_media_track.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
+import 'package:PiliPlus/plugin/pl_player/models/subtitle_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/captured_frame.dart';
@@ -253,6 +254,38 @@ class PlPlayerController with BlockConfigMixin {
     if (type == PlayerMediaTrackType.video) {
       onlyPlayAudio.value = mode == PlayerTrackSelectionMode.disabled;
     }
+  }
+
+  Future<void> setApplicationSubtitle({
+    PlayerSubtitleSource? source,
+    String? language,
+    String? label,
+  }) async {
+    if (useExoPlayer) {
+      await _exoPlayerController?.setSubtitle(
+        data: source?.isData == true ? source!.id : null,
+        uri: source?.isData == false ? source!.id : null,
+        language: language,
+        label: label,
+        mimeType: source?.format.mimeType,
+      );
+      return;
+    }
+
+    final player = _videoPlayerController;
+    if (player == null) return;
+    if (source == null) {
+      await player.setSubtitleTrack(SubtitleTrack.no());
+      return;
+    }
+    await player.setSubtitleTrack(
+      SubtitleTrack(
+        source.isData ? 'memory://${source.id}' : source.id,
+        label,
+        language,
+        uri: true,
+      ),
+    );
   }
 
   List<PlayerInfoEntry> get playerInfoEntries {

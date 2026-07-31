@@ -74,7 +74,6 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:get/get.dart';
 import 'package:hive_ce/hive.dart';
-import 'package:media_kit/media_kit.dart' hide Subtitle;
 
 class VideoDetailController extends GetxController
     with GetTickerProviderStateMixin, BlockMixin {
@@ -527,8 +526,6 @@ class VideoDetailController extends GetxController
   int? get timeLength => data.timeLength;
   @override
   BlockConfigMixin get blockConfig => plPlayerController;
-  @override
-  Player? get player => plPlayerController.videoPlayerController;
   @override
   bool get blockPlayerReady => plPlayerController.playerReady;
   @override
@@ -1100,35 +1097,18 @@ class VideoDetailController extends GetxController
   // 设定字幕轨道
   Future<void> setSubtitle(int index) async {
     if (index <= 0) {
-      if (plPlayerController.useExoPlayer) {
-        await plPlayerController.exoPlayerController?.setSubtitle();
-      } else {
-        await plPlayerController.videoPlayerController?.setSubtitleTrack(.no());
-      }
+      await plPlayerController.setApplicationSubtitle();
       subtitleIndex.value = index;
       return;
     }
 
     Future<void> setSub(PlayerSubtitleSource subtitle) async {
       final sub = subtitles[index - 1];
-
-      String subUri = subtitle.id;
-      if (subtitle.isData) {
-        subUri = 'memory://$subUri';
-      }
-      if (plPlayerController.useExoPlayer) {
-        await plPlayerController.exoPlayerController?.setSubtitle(
-          data: subtitle.isData ? subtitle.id : null,
-          uri: subtitle.isData ? null : subtitle.id,
-          language: sub.lan,
-          label: sub.lanDoc,
-          mimeType: subtitle.format.mimeType,
-        );
-      } else {
-        await plPlayerController.videoPlayerController?.setSubtitleTrack(
-          SubtitleTrack(subUri, sub.lanDoc, sub.lan, uri: true),
-        );
-      }
+      await plPlayerController.setApplicationSubtitle(
+        source: subtitle,
+        language: sub.lan,
+        label: sub.lanDoc,
+      );
       subtitleIndex.value = index;
     }
 

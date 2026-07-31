@@ -53,7 +53,7 @@ mixin BlockMixin on GetxController {
   late final List<Object> listData = [];
 
   RxString? get videoLabel => null;
-  Player? get player;
+  Player? get player => null;
   bool get blockPlayerReady => player != null;
   bool get blockPlayerPlaying => player?.state.playing ?? false;
 

@@ -25,8 +25,8 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 List<SettingsModel> get videoSettings => [
   if (Platform.isAndroid)
     const SwitchModel(
-      title: '使用 ExoPlayer（实验性）',
-      subtitle: '普通点播使用 Android Media3；直播仍使用 mpv。关闭后完全恢复 mpv。切换后请重新打开视频。',
+      title: '使用 Android Media3 播放点播视频',
+      subtitle: '直播暂由兼容播放器处理。切换后请重新打开视频。',
       leading: Icon(Icons.play_circle_outline),
       setKey: SettingBoxKey.useExoPlayer,
       defaultVal: true,

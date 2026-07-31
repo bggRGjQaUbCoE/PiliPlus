@@ -215,6 +215,39 @@ void main() {
     });
   });
 
+  test(
+    'opens Media3 live playback with explicit live-edge semantics',
+    () async {
+      const channel = MethodChannel('com.example.piliplus/exo_player');
+      final calls = <MethodCall>[];
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (call) async {
+            calls.add(call);
+            if (call.method == 'create') return 44;
+            return null;
+          });
+      addTearDown(
+        () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, null),
+      );
+
+      final player = await ExoPlayerController.create();
+      addTearDown(player.dispose);
+      await player.open(
+        videoUrl: 'https://example.com/live/index.m3u8',
+        headers: const {'Referer': 'https://live.bilibili.com'},
+        isLive: true,
+        playWhenReady: true,
+      );
+
+      expect(calls.last.method, 'open');
+      final arguments = calls.last.arguments as Map;
+      expect(arguments['isLive'], isTrue);
+      expect(arguments['positionMs'], 0);
+      expect(arguments['playWhenReady'], isTrue);
+    },
+  );
+
   test('starts, polls, and cancels animated WebP capture', () async {
     const channel = MethodChannel('com.example.piliplus/exo_player');
     final calls = <MethodCall>[];

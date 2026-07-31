@@ -276,6 +276,7 @@ class LiveRoomController extends GetxController {
     int formatIndex = 0,
     int codecIndex = 0,
     int liveUrlIndex = 0,
+    bool? autoplay,
   }) {
     this.streamIndex = streamIndex;
     this.formatIndex = formatIndex;
@@ -299,7 +300,9 @@ class LiveRoomController extends GetxController {
     currentQnDesc.value =
         LiveQuality.fromCode(currentQn)?.desc ?? currentQn.toString();
     videoUrl = VideoUtils.getLiveCdnUrl(item, index: liveUrlIndex);
-    return playerInit()?.whenComplete(_startSizeSub);
+    return playerInit(
+      autoplay: autoplay ?? !isLoaded.value || plPlayerController.playWhenReady,
+    )?.whenComplete(_startSizeSub);
   }
 
   Future<void> queryLiveInfoH5() async {

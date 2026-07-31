@@ -81,7 +81,7 @@ class PlPlayerController with BlockConfigMixin {
   ExoPlayerController? _exoPlayerController;
   StreamSubscription<ExoPlayerEvent>? _exoSubscription;
 
-  bool get useExoPlayer => Platform.isAndroid && Pref.useExoPlayer && !isLive;
+  bool get useExoPlayer => Platform.isAndroid && Pref.useExoPlayer;
   bool get playerReady =>
       useExoPlayer ? _exoPlayerController != null : _videoController != null;
   ExoPlayerController? get exoPlayerController => _exoPlayerController;
@@ -1303,7 +1303,8 @@ class PlPlayerController with BlockConfigMixin {
         'User-Agent': BrowserUa.pc,
         'Referer': HttpString.baseUrl,
       },
-      position: position,
+      isLive: isLive,
+      position: isLive ? Duration.zero : position,
       playWhenReady: playWhenReady,
       preserveSubtitle: preserveSubtitle,
       audioNormalization: audio?.isNotEmpty != true
@@ -1317,7 +1318,7 @@ class PlPlayerController with BlockConfigMixin {
       _cancelExoRetry(resetAttempts: true);
       return _openExoPlayer(
         dataSource,
-        currentPosition,
+        isLive ? Duration.zero : currentPosition,
         playWhenReady: playWhenReady,
       );
     }
@@ -1430,7 +1431,7 @@ class PlPlayerController with BlockConfigMixin {
         );
       }
 
-      if (event.completed && !lastCompleted) {
+      if (!isLive && event.completed && !lastCompleted) {
         lastCompleted = true;
         _syncAutoEnterPip(false);
         WakelockPlus.disable();
@@ -1502,7 +1503,9 @@ class PlPlayerController with BlockConfigMixin {
           ),
         );
       }
-      final retryPosition = failure.position > Duration.zero
+      final retryPosition = isLive
+          ? Duration.zero
+          : failure.position > Duration.zero
           ? failure.position
           : currentPosition;
       _exoRetryTimer = Timer(delay, () async {

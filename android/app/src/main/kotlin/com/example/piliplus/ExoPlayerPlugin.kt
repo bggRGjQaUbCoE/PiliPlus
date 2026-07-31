@@ -122,6 +122,7 @@ private class ExoPlayerManager(
                     val videoUrl = call.requiredString("videoUrl")
                     val audioUrl = call.argument<String>("audioUrl")
                     val headers = call.argument<Map<String, String>>("headers").orEmpty()
+                    val isLive = call.argument<Boolean>("isLive") ?: false
                     val positionMs = call.argument<Number>("positionMs")?.toLong() ?: 0L
                     val generation = call.requiredLong("generation")
                     val playWhenReady = call.argument<Boolean>("playWhenReady") ?: false
@@ -133,6 +134,7 @@ private class ExoPlayerManager(
                         videoUrl,
                         audioUrl,
                         headers,
+                        isLive,
                         positionMs,
                         playWhenReady,
                         preserveSubtitle,
@@ -324,6 +326,7 @@ private class ExoPlayerSession(
         videoUrl: String,
         audioUrl: String?,
         headers: Map<String, String>,
+        isLive: Boolean,
         positionMs: Long,
         playWhenReady: Boolean,
         preserveSubtitle: Boolean,
@@ -332,7 +335,13 @@ private class ExoPlayerSession(
     ) {
         audioNormalizationProcessor.setConfiguration(audioNormalization)
         mediaGeneration = generation
-        mediaRequest = MediaRequest(videoUrl, audioUrl, headers, audioNormalization)
+        mediaRequest = MediaRequest(
+            videoUrl,
+            audioUrl,
+            headers,
+            isLive,
+            audioNormalization,
+        )
         videoDecoder = null
         audioDecoder = null
         if (!preserveSubtitle) {
@@ -437,6 +446,9 @@ private class ExoPlayerSession(
         fun source(url: String, subtitle: SubtitleRequest? = null): MediaSource {
             val uri = if (url.contains("://")) Uri.parse(url) else Uri.fromFile(java.io.File(url))
             val item = MediaItem.Builder().setUri(uri).apply {
+                if (request.isLive) {
+                    setLiveConfiguration(MediaItem.LiveConfiguration.Builder().build())
+                }
                 if (subtitle != null) {
                     setSubtitleConfigurations(
                         listOf(
@@ -470,7 +482,11 @@ private class ExoPlayerSession(
 
         player.apply {
             this.playWhenReady = playWhenReady
-            setMediaSource(mediaSource, positionMs.coerceAtLeast(0L))
+            if (request.isLive) {
+                setMediaSource(mediaSource)
+            } else {
+                setMediaSource(mediaSource, positionMs.coerceAtLeast(0L))
+            }
             prepare()
         }
         emitState()
@@ -525,7 +541,11 @@ private class ExoPlayerSession(
     fun retry(positionMs: Long, playWhenReady: Boolean) {
         player.apply {
             this.playWhenReady = playWhenReady
-            seekTo(positionMs.coerceAtLeast(0L))
+            if (mediaRequest?.isLive == true) {
+                seekToDefaultPosition()
+            } else {
+                seekTo(positionMs.coerceAtLeast(0L))
+            }
             prepare()
         }
         emitState()
@@ -807,7 +827,9 @@ private class ExoPlayerSession(
                 "playWhenReady" to player.playWhenReady,
                 "buffering" to (player.playbackState == Player.STATE_BUFFERING),
                 "ready" to (player.playbackState == Player.STATE_READY),
-                "completed" to (player.playbackState == Player.STATE_ENDED),
+                "completed" to (
+                    mediaRequest?.isLive != true && player.playbackState == Player.STATE_ENDED
+                ),
                 "positionMs" to player.currentPosition.coerceAtLeast(0L),
                 "bufferedMs" to player.bufferedPosition.coerceAtLeast(0L),
                 "durationMs" to duration(),
@@ -1137,6 +1159,7 @@ private data class MediaRequest(
     val videoUrl: String,
     val audioUrl: String?,
     val headers: Map<String, String>,
+    val isLive: Boolean,
     val audioNormalization: AudioNormalizationConfiguration?,
 ) {
     val description: String

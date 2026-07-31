@@ -1,6 +1,6 @@
 # pili++ 当前项目状态
 
-> 最后核对：2026-07-30 19:24 +08:00
+> 最后核对：2026-07-31 09:49 +08:00
 >
 > 本文件记录会随开发变化、但后续任务必须知道的事实。开始任务时先核对这里与实际
 > Git、源码和构建产物；结束任务前更新。长期规则见 `AGENTS.md`，ExoPlayer 详细兼容
@@ -11,14 +11,14 @@
 - 当前分支：`main`
 - 最新 GitHub 发布源提交：`859d39c4ff3c77c37e1cc1d7131192df8f8b4241`
   (`chore: prepare 2.1.2 release`)
-- 最新功能快照：`51909790a75063e630d24afc2541d5baf83eb532`
-  (`feat: add ExoPlayer screenshot capture`)
+- 最新功能快照：`99f4a11450e6bf059e12495322f7ffc6461f7358`
+  (`fix: recover ExoPlayer frame capture`)
 - 最新上游合并提交：`0e4e8db250e986c4f8e32652fac2652651ec4168`
   (`Merge remote-tracking branch 'upstream/main' into codex/android-exoplayer`)
 - 上游：`https://github.com/bggRGjQaUbCoE/PiliPlus.git`
 - 已获取并合入的 `upstream/main`：`5296a8f7f07a22f347ad53bc8c7651e6787bf3ec`
 - 当前分支已包含上游 `56ca0ca`、`10b723f`、`e4e7037`、`91e7899` 和 `5296a8f`；
-  本状态更新提交完成后相对上游为本地领先 30、落后 0。
+  本状态更新提交完成后相对上游为本地领先 32、落后 0。
 - 应用内小窗、音频焦点/媒体控制、系统 PiP 恢复、版本更新和兼容记录已保存到上述
   功能快照。交接时应以实际 `git status` 为准；存在未提交修改时不得直接 merge 或
   rebase。
@@ -125,6 +125,24 @@
   universal ABI 和签名证书均符合基线。该包从干净实现提交
   `51909790a75063e630d24afc2541d5baf83eb532` 构建并显式写入版本、构建时间和 commit
   hash；它不是新版本交付，不更新发布基线。
+- 2026-07-30 用户在 Samsung SM-S9180、Android 16 / SDK 36 上使用上述审计包触发普通
+  截图失败：`PixelCopy failed with code 3`。代码 3 为 `ERROR_SOURCE_NO_DATA`，表示截图
+  时 Flutter Texture 对应的 Surface 没有可复制的排队帧；该问题发生在实现提交
+  `51909790a75063e630d24afc2541d5baf83eb532`，不是 Flutter 保存图片流程错误。
+- 修复提交 `99f4a11450e6bf059e12495322f7ffc6461f7358` 保留 `PixelCopy` 快路径，对
+  `ERROR_SOURCE_NO_DATA` 短延迟重试两次；仍无帧时使用独立 `MediaMetadataRetriever`
+  按截图请求瞬间记录的视频 URL、请求头和播放位置取帧。兜底读取媒体源旋转元数据，
+  继续校正像素宽高比和 Flutter 水平/垂直翻转，不 seek、暂停、重载或重建当前
+  ExoPlayer 会话，也不回退 mpv；两条路径都失败时会同时保留 PixelCopy 与媒体源诊断。
+- 修复后 Kotlin Debug 编译通过；完整 `dart analyze` 无 error/warning，保留 37 条既有
+  info；完整 `flutter test` 共 20 项全部通过；Android JVM 单元测试和 Release 构建通过。
+  新审计包位于
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch7-capture-fix-audit.apk`，
+  SHA-256 为
+  `E5158B5EEF45D2C0481709C860E2240F9B800C69D054A53821E92EB303CEB24E`；
+  `tool/verify_release.ps1 -AllowAlreadyDelivered` 已确认 applicationId、应用名、版本、
+  universal ABI 和证书均符合基线。该包从干净实现提交 `99f4a11450e6bf059e12495322f7ffc6461f7358`
+  构建并写入准确 commit hash；它是替换审计包，不更新发布基线。
 - 当前 ADB 设备列表为空。批次 7 仍待真机对照：播放与暂停时的普通截图、评论区截图、
   横竖屏视频、像素宽高比、水平/垂直翻转、全屏和应用内小窗；动态 WebP 需覆盖短/长
   区间、不同画质预设、进度、取消、保存、失败清理、重复转换，以及转换期间当前播放
@@ -267,8 +285,10 @@
 - 直播仍使用 mpv。
 - 字幕 VTT/SRT/ASS/SSA 格式和结构化文本 cue 已接通，用户当前真机流程未见问题；
   bitmap cue 与 Flutter 竖排文字布局尚未闭环。
-- 截图和动态 WebP 已有 ExoPlayer 原生实现并通过自动化构建/容器测试，但当前无连接
-  真机，画面方向、像素比例、翻转、不同媒体源、取消和播放状态保持仍待逐项对照。
+- 截图和动态 WebP 已有 ExoPlayer 原生实现并通过自动化构建/容器测试；Samsung Android
+  16 上首个截图审计包曾触发 `PixelCopy ERROR_SOURCE_NO_DATA`，重试与媒体源独立取帧
+  修复已进入替换审计包，仍待同机复测及画面方向、像素比例、翻转、不同媒体源、取消和
+  播放状态保持的逐项对照。
 - 超分辨率入口已不再隐藏或进入 mpv 空对象路径，但 Media3 等价效果尚未实现。
 - 原生音视频轨道枚举/选择、播放器信息和内置文本轨独立选择入口已接入 Media3，
   批次 3 与批次 5 的对应流程仍待真机对照。
@@ -281,7 +301,9 @@
 
 ## 下一步
 
-1. 使用批次 7 审计 APK 在 mpv 与 ExoPlayer 下对照普通截图、评论区截图和动态 WebP，
+1. 使用批次 7 截图修复审计 APK，先在报告问题的 Samsung Android 16 设备复测播放与
+   暂停状态下的普通截图，确认不再出现 `PixelCopy ERROR_SOURCE_NO_DATA`；随后在 mpv 与
+   ExoPlayer 下对照普通截图、评论区截图和动态 WebP，
    覆盖横竖屏、像素宽高比、水平/垂直翻转、播放/暂停、全屏、小窗、不同区间/预设、
    进度、取消、保存、失败清理和当前播放会话不受转换影响；通过后补充真机验证记录。
 2. 使用批次 6 审计 APK 对照可恢复与永久错误，覆盖断网恢复、超时、HTTP 5xx、

@@ -662,3 +662,38 @@ coverage for short and long ranges, presets, progress, cancellation, saving,
 failure cleanup, repeat conversion, and proof that the active session position,
 buffer, and play/pause state remain unchanged. The audit APK is not a new
 delivered version and does not update the release baseline.
+
+On 2026-07-30, the first audit APK reproduced a still-frame failure on a
+Samsung SM-S9180 running Android 16 / SDK 36. `PixelCopy` returned code 3,
+`ERROR_SOURCE_NO_DATA`, because the Flutter texture-backed surface did not have
+a copyable queued frame when capture was requested. This was a real-device
+failure of commit `51909790a75063e630d24afc2541d5baf83eb532`, not a Flutter
+save-flow error.
+
+Follow-up commit `99f4a11450e6bf059e12495322f7ffc6461f7358` keeps `PixelCopy`
+as the fast path, retries `ERROR_SOURCE_NO_DATA` twice after short delays, and
+then extracts the frame from the current video URL at the captured playback
+position with an independent `MediaMetadataRetriever` worker. The fallback
+uses the same request headers and source rotation metadata, preserves pixel
+aspect ratio and Flutter flips, and does not seek, pause, reload, or recreate
+the active ExoPlayer session. It is not an MPV fallback. If both paths fail,
+the error retains both the PixelCopy result and media-source diagnostic.
+
+The follow-up passes Kotlin Debug compilation, full `dart analyze` with no
+errors or warnings and the same 37 existing info diagnostics, all 20 Flutter
+tests, the Android JVM unit tests, and Android Release build. The replacement
+audit APK was built from clean implementation commit
+`99f4a11450e6bf059e12495322f7ffc6461f7358` and passed application ID, label,
+version, universal ABI, and signing-certificate verification:
+
+- APK:
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch7-capture-fix-audit.apk`
+- SHA-256:
+  `E5158B5EEF45D2C0481709C860E2240F9B800C69D054A53821E92EB303CEB24E`
+- certificate SHA-256:
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+The Samsung Android 16 screenshot scenario and the remaining batch-seven
+matrix still require real-device retesting with the replacement APK. The APK
+is an audit build, not a new delivered version, and does not update the release
+baseline.

@@ -775,3 +775,49 @@ vertical subtitles, unsupported audio filters, and remaining lifecycle edges
 are still explicit gaps. The v2 audit APK uses the corrected local build time
 `2026-07-31 11:14:02 +08:00`; the earlier audit file remains on disk but is not
 the test target. The audit APK does not update the release baseline.
+
+The second cleanup group moves the remaining point-on-demand rendering choices
+out of the player UI and mini-player UI:
+
+- `PlPlayerSurface` is now the shared video-surface boundary. The main player
+  and in-app mini player pass only `PlPlayerController` plus layout parameters;
+  Media3 Texture rendering and MPV `SimpleVideo` rendering, fit mode, aspect
+  override, alignment, fill, and horizontal/vertical flip stay inside the
+  adapter widget;
+- `PlPlayerSubtitleLayer` similarly owns the Media3 cue renderer versus the MPV
+  subtitle renderer. The main player retains the same subtitle configuration,
+  drag enablement, padding updates, and Flutter overlay ordering without
+  reading either backend controller;
+- animated WebP converter selection is isolated behind a shared factory and
+  interface. `WebpPreset` is now a backend-neutral model, and the Media3
+  converter no longer imports the MPV converter solely to reuse its contract;
+- adapter widgets return an empty surface while their selected backend is not
+  ready, avoiding forced nullable-controller access during asynchronous player
+  release without adding a fallback to the other backend.
+
+The second-group implementation commit is
+`76a88888d460dffc89062536a6392edf5a325909`. All affected files are formatted.
+Targeted analysis reports no issues. Full `dart analyze` has no errors or
+warnings and retains the same 37 existing info diagnostics; full
+`flutter analyze` completes repository analysis and returns nonzero only for
+those same info diagnostics. All 21 Flutter tests pass, and the Android Release
+build succeeds.
+
+The Release audit APK was built from the clean implementation commit with
+build time `2026-07-31 15:05:41 +08:00` and passed application ID, label,
+version, universal ABI, and signing-certificate verification:
+
+- APK:
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-rendering-boundary-audit.apk`
+- SHA-256:
+  `F01609EBA9F6F96FB111A21B22A74E922B77CDC3FA8F3B77B58196C32126F6C2`
+- certificate SHA-256:
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+Real-device regression is required for MPV and Media3 video rendering in the
+normal player, full screen, rotation, every fit/aspect mode, both flips,
+subtitle display and dragging, in-app mini-player shrink/restore, and animated
+WebP start/progress/cancel/save. Live remains MPV-backed and must also be
+checked for rendering regression; this refactor does not claim Media3 live
+support or complete MPV removal. The audit APK does not update the release
+baseline.

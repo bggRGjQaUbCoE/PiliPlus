@@ -965,3 +965,56 @@ and retry exhaustion; audio focus, background playback, media notification,
 the app mini-player, system PiP, foreground/background transitions, and room
 close/reopen. Until that matrix passes, live is implemented but not accepted as
 fully compatible. The audit APK does not update the release baseline.
+
+### Eighth-batch subtitle edge group
+
+The sixth eighth-batch group closes the implementation gaps for Media3 bitmap
+and vertical subtitle cues without moving subtitle rendering out of the Flutter
+overlay:
+
+- image-only Media3 cues are retained. Android encodes PGS/DVB and other cue
+  bitmaps as transparent PNG on a bounded single-thread worker, drops stale
+  results by cue sequence and media generation, reports encoding failures, and
+  compares byte-array contents when suppressing duplicate events;
+- bitmap pixel dimensions, viewport-relative width and height, position, line,
+  and anchors travel through the existing event channel. Flutter sizes and
+  positions the image against the complete video viewport, independently of
+  the user padding and drag settings intended for text subtitles;
+- vertical-rl and vertical-lr cues use Media3's writing-axis interpretation for
+  fractional and numbered lines. Long text flows into further columns, explicit
+  newlines preserve empty columns, alignment is applied along the writing axis,
+  and mixed text/bitmap cues retain stable z-index order;
+- vertical text requests OpenType `vert`/`vrt2` glyphs, rotates sideways Latin
+  runs, and carries Media3's `HorizontalTextInVerticalContextSpan` as
+  `text-combine-upright`. Vertical shear uses the block-axis `skewY` transform;
+- malformed bitmap bytes resolve to an empty image widget instead of surfacing
+  a Flutter rendering exception.
+
+The implementation commit is
+`985d51a7fd270713af40af324e3aea9a2a1448f4`. Targeted Dart analysis reports no
+issues. Full `dart analyze` has no errors or warnings and retains the same 37
+existing info diagnostics; full `flutter analyze` completes repository
+analysis and returns nonzero only for those diagnostics. All 27 Flutter tests
+pass, including bitmap size/anchor, vertical RL/LR position, numbered-line
+spacing, long-cue column flow, combined upright text, and malformed image
+coverage. Android Kotlin Debug compilation and the Android Release build pass.
+
+The Release audit APK embeds the clean implementation commit and passed
+application ID, label, version, universal ABI, and signing-certificate
+verification:
+
+- APK:
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-subtitle-edge-audit.apk`
+- SHA-256:
+  `F84562BDC487741BB514ADB221648966EF836028ED4548E40921EDCDDC9BAFEE`
+- certificate SHA-256:
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+Real-device acceptance remains required with local and network media carrying
+PGS or DVB image subtitles, including transparency, size, anchor, cue changes,
+switching, disabling, and seeking. WebVTT vertical-rl and vertical-lr require
+comparison for multiple columns, Latin/digits, punctuation, styled spans, and
+combined upright text in normal view, full screen, rotation, the app
+mini-player, and system PiP. These cases must also be compared with MPV using
+equivalent media. This group is implemented but not yet accepted as fully
+compatible, and the audit APK does not update the release baseline.

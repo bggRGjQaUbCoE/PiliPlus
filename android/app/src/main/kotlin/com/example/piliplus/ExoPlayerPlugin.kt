@@ -27,6 +27,7 @@ import android.util.Base64
 import android.util.Log
 import android.view.PixelCopy
 import androidx.media3.common.C
+import androidx.media3.common.Effect
 import androidx.media3.common.Format
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
@@ -51,6 +52,7 @@ import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.MergingMediaSource
+import androidx.media3.effect.LanczosResample
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
@@ -202,6 +204,12 @@ private class ExoPlayerManager(
                         (call.argument<Number>("volume")?.toFloat() ?: 1f).coerceIn(0f, 1f)
                     result.success(null)
                 }
+                "setSuperResolution" -> {
+                    requiredSession(call).setSuperResolution(
+                        Media3SuperResolutionMode.fromName(call.requiredString("mode")),
+                    )
+                    result.success(null)
+                }
                 "captureFrame" -> {
                     requiredSession(call).captureFrame(
                         flipX = call.argument<Boolean>("flipX") ?: false,
@@ -334,6 +342,11 @@ private class ExoPlayerSession(
     private var subtitleCues: List<Map<String, Any?>> = emptyList()
     private var videoDecoder: String? = null
     private var audioDecoder: String? = null
+    private var superResolutionMode = Media3SuperResolutionMode.DISABLE
+    private var sourceVideoWidth = 0
+    private var sourceVideoHeight = 0
+    private var appliedSuperResolutionTarget: Media3SuperResolutionTarget? = null
+    private var superResolutionDescription = "disabled"
     private var mediaGeneration = 0L
     private val mainHandler = Handler(Looper.getMainLooper())
     private val captureExecutor = Executors.newSingleThreadExecutor()
@@ -389,12 +402,76 @@ private class ExoPlayerSession(
         )
         videoDecoder = null
         audioDecoder = null
+        resetSuperResolutionForNewMedia()
         if (!preserveSubtitle) {
             subtitleRequest = null
         }
         subtitleCueSequence.incrementAndGet()
         updateSubtitleCues(emptyList())
         prepareMedia(positionMs, playWhenReady)
+    }
+
+    fun setSuperResolution(mode: Media3SuperResolutionMode) {
+        if (superResolutionMode == mode) {
+            applySuperResolutionEffect()
+            emitState()
+            return
+        }
+        superResolutionMode = mode
+        applySuperResolutionEffect()
+        emitState()
+    }
+
+    private fun resetSuperResolutionForNewMedia() {
+        sourceVideoWidth = 0
+        sourceVideoHeight = 0
+        appliedSuperResolutionTarget = null
+        player.setVideoEffects(emptyList())
+        superResolutionDescription = when (superResolutionMode) {
+            Media3SuperResolutionMode.DISABLE -> "disabled"
+            else -> "${superResolutionMode.name.lowercase()} lanczos (waiting for video size)"
+        }
+    }
+
+    private fun applySuperResolutionEffect() {
+        if (superResolutionMode == Media3SuperResolutionMode.DISABLE) {
+            if (appliedSuperResolutionTarget != null) {
+                player.setVideoEffects(emptyList())
+            }
+            appliedSuperResolutionTarget = null
+            superResolutionDescription = "disabled"
+            return
+        }
+        if (sourceVideoWidth <= 0 || sourceVideoHeight <= 0) {
+            superResolutionDescription =
+                "${superResolutionMode.name.lowercase()} lanczos (waiting for video size)"
+            return
+        }
+        val target = resolveMedia3SuperResolutionTarget(
+            superResolutionMode,
+            sourceVideoWidth,
+            sourceVideoHeight,
+        )
+        if (target == null) {
+            if (appliedSuperResolutionTarget != null) {
+                player.setVideoEffects(emptyList())
+            }
+            appliedSuperResolutionTarget = null
+            superResolutionDescription =
+                "${superResolutionMode.name.lowercase()} lanczos " +
+                "(${sourceVideoWidth}x$sourceVideoHeight, no upscale needed)"
+            return
+        }
+        if (target != appliedSuperResolutionTarget) {
+            val effects: List<Effect> = listOf(
+                LanczosResample.scaleToFit(target.width, target.height),
+            )
+            player.setVideoEffects(effects)
+            appliedSuperResolutionTarget = target
+        }
+        superResolutionDescription =
+            "${superResolutionMode.name.lowercase()} lanczos " +
+            "${sourceVideoWidth}x$sourceVideoHeight -> ${target.width}x${target.height}"
     }
 
     fun setSubtitle(
@@ -544,6 +621,18 @@ private class ExoPlayerSession(
     }
 
     override fun onVideoSizeChanged(videoSize: VideoSize) {
+        val sourceFormat = player.videoFormat
+        val nextSourceWidth = sourceFormat?.width?.takeIf { it > 0 }
+            ?: sourceVideoWidth.takeIf { it > 0 }
+            ?: videoSize.width
+        val nextSourceHeight = sourceFormat?.height?.takeIf { it > 0 }
+            ?: sourceVideoHeight.takeIf { it > 0 }
+            ?: videoSize.height
+        if (sourceVideoWidth != nextSourceWidth || sourceVideoHeight != nextSourceHeight) {
+            sourceVideoWidth = nextSourceWidth
+            sourceVideoHeight = nextSourceHeight
+            applySuperResolutionEffect()
+        }
         val textureWidth = videoSize.width.coerceAtLeast(1)
         val textureHeight = videoSize.height.coerceAtLeast(1)
         rotationDegrees = videoSize.unappliedRotationDegrees
@@ -910,6 +999,7 @@ private class ExoPlayerSession(
                 "mediaDescription" to mediaRequest?.description,
                 "playbackConfiguration" to configuration.description,
                 "audioNormalization" to mediaRequest?.audioNormalization?.filter,
+                "superResolution" to superResolutionDescription,
             ),
         )
     }

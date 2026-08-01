@@ -28,6 +28,7 @@ class ExoPlayerEvent {
     this.audioDecoder,
     this.mediaDescription,
     this.playbackConfiguration,
+    this.superResolution,
     this.failure,
   });
 
@@ -52,6 +53,7 @@ class ExoPlayerEvent {
   final String? audioDecoder;
   final String? mediaDescription;
   final String? playbackConfiguration;
+  final String? superResolution;
   final ExoPlayerPlaybackFailure? failure;
 
   factory ExoPlayerEvent.fromMap(Map<Object?, Object?> map) {
@@ -109,6 +111,7 @@ class ExoPlayerEvent {
       audioDecoder: map['audioDecoder'] as String?,
       mediaDescription: map['mediaDescription'] as String?,
       playbackConfiguration: map['playbackConfiguration'] as String?,
+      superResolution: map['superResolution'] as String?,
       failure: failure,
     );
   }
@@ -245,6 +248,9 @@ class ExoPlayerController {
             playbackConfiguration: event.containsKey('playbackConfiguration')
                 ? next.playbackConfiguration
                 : player.state.playbackConfiguration,
+            superResolution: event.containsKey('superResolution')
+                ? next.superResolution
+                : player.state.superResolution,
             failure: next.failure,
           );
           player._controller.add(player.state);
@@ -312,6 +318,12 @@ class ExoPlayerController {
 
   Future<void> setVolume(double volume) =>
       _methods.invokeMethod<void>('setVolume', {'id': id, 'volume': volume});
+
+  Future<void> setSuperResolution(String mode) =>
+      _methods.invokeMethod<void>('setSuperResolution', {
+        'id': id,
+        'mode': mode,
+      });
 
   Future<Uint8List> captureFrame({
     required bool flipX,

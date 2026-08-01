@@ -298,7 +298,7 @@ List<SettingsModel> get extraSettings => [
     title: '超分辨率',
     leading: const Icon(Icons.stay_current_landscape_outlined),
     getSubtitle: () =>
-        '当前:「${Pref.superResolutionType.label}」\n默认设置对番剧生效, 其他视频默认关闭\n超分辨率需要启用硬件解码, 若启用硬件解码后仍然不生效, 尝试切换硬件解码器为 auto-copy',
+        '当前:「${Pref.superResolutionType.label}」\n默认设置对番剧生效，其他视频默认关闭\nMedia3 使用实时 GPU Lanczos 重采样；mpv 使用 Anime4K 着色器并需要硬件解码。',
     onTap: _showSuperResolutionDialog,
   ),
   const SwitchModel(

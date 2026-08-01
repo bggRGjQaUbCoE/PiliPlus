@@ -309,6 +309,10 @@ class PlPlayerController with BlockConfigMixin {
           'PlaybackConfig',
           state.playbackConfiguration ?? 'N/A',
         ),
+        PlayerInfoEntry(
+          'SuperResolution',
+          state.superResolution ?? 'disabled',
+        ),
         PlayerInfoEntry('rate', value(state.speed)),
         PlayerInfoEntry('Volume', value(state.volume)),
         PlayerInfoEntry(
@@ -1094,16 +1098,19 @@ class PlPlayerController with BlockConfigMixin {
 
   late final isAnim = _pgcType == 1 || _pgcType == 4;
   late final Rx<SuperResolutionType> superResolutionType =
-      (isAnim && !useExoPlayer
-              ? Pref.superResolutionType
-              : SuperResolutionType.disable)
-          .obs;
+      (isAnim ? Pref.superResolutionType : SuperResolutionType.disable).obs;
 
   Future<void> setSuperResolution(SuperResolutionType type) async {
     if (useExoPlayer) {
-      superResolutionType.value = SuperResolutionType.disable;
-      if (type != SuperResolutionType.disable) {
-        SmartDialog.showToast('ExoPlayer 超分辨率适配尚未完成');
+      final player = _exoPlayerController;
+      if (player == null) {
+        SmartDialog.showToast('播放器尚未就绪');
+        return;
+      }
+      await player.setSuperResolution(type.name);
+      superResolutionType.value = type;
+      if (isAnim && !tempPlayerConf) {
+        setting.put(SettingBoxKey.superResolutionType, type.index);
       }
       return;
     }
@@ -1300,12 +1307,19 @@ class PlPlayerController with BlockConfigMixin {
     required bool playWhenReady,
     required bool preserveSubtitle,
   }) async {
-    final player = _exoPlayerController ??= await ExoPlayerController.create(
-      enableHardwareDecoding: Pref.enableHA,
-      targetBufferBytes: _exoTargetBufferBytes,
-      bufferDurationMs: _exoBufferDurationMs,
-      isLive: isLive,
-    );
+    final existingPlayer = _exoPlayerController;
+    final player =
+        existingPlayer ??
+        await ExoPlayerController.create(
+          enableHardwareDecoding: Pref.enableHA,
+          targetBufferBytes: _exoTargetBufferBytes,
+          bufferDurationMs: _exoBufferDurationMs,
+          isLive: isLive,
+        );
+    _exoPlayerController = player;
+    if (existingPlayer == null) {
+      await player.setSuperResolution(superResolutionType.value.name);
+    }
     _startExoListeners(player);
     await _openExoPlayer(
       dataSource,

@@ -389,6 +389,40 @@ void main() {
     );
   });
 
+  test('parses the active Media3 super-resolution effect', () {
+    final event = ExoPlayerEvent.fromMap({
+      'superResolution': 'quality lanczos 1280x720 -> 2560x1440',
+    });
+
+    expect(
+      event.superResolution,
+      'quality lanczos 1280x720 -> 2560x1440',
+    );
+  });
+
+  test('switches Media3 super resolution without reopening media', () async {
+    const channel = MethodChannel('com.example.piliplus/exo_player');
+    final calls = <MethodCall>[];
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (call) async {
+          calls.add(call);
+          if (call.method == 'create') return 46;
+          return null;
+        });
+    addTearDown(
+      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, null),
+    );
+
+    final player = await ExoPlayerController.create();
+    addTearDown(player.dispose);
+    await player.setSuperResolution('quality');
+
+    expect(calls.last.method, 'setSuperResolution');
+    expect(calls.last.arguments, {'id': player.id, 'mode': 'quality'});
+    expect(calls.where((call) => call.method == 'open'), isEmpty);
+  });
+
   test('captures an ExoPlayer frame with the requested transforms', () async {
     const channel = MethodChannel('com.example.piliplus/exo_player');
     final calls = <MethodCall>[];

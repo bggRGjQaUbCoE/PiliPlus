@@ -83,6 +83,7 @@ dependencies:
     git:
       url: https://github.com/bggRGjQaUbCoE/extended_nested_scroll_view.git
       ref: dev
+  ffi: ^2.1.4
   file_picker: ^12.0.0-beta.7
   fixnum: ^1.1.1
   fl_chart: ^1.0.0

@@ -587,6 +587,9 @@ abstract final class Pref {
     defaultValue: LiveQuality.superHD.code,
   );
 
+  static String get appFontFamily =>
+      _setting.get(SettingBoxKey.appFontFamily, defaultValue: '');
+
   static int get appFontWeight =>
       _setting.get(SettingBoxKey.appFontWeight, defaultValue: -1);
 

@@ -1,6 +1,6 @@
 # pili++ 当前项目状态
 
-> 最后核对：2026-07-31 19:33 +08:00
+> 最后核对：2026-08-01 15:00 +08:00
 >
 > 本文件记录会随开发变化、但后续任务必须知道的事实。开始任务时先核对这里与实际
 > Git、源码和构建产物；结束任务前更新。长期规则见 `AGENTS.md`，ExoPlayer 详细兼容
@@ -11,14 +11,14 @@
 - 当前分支：`main`
 - 最新 GitHub 发布源提交：`859d39c4ff3c77c37e1cc1d7131192df8f8b4241`
   (`chore: prepare 2.1.2 release`)
-- 最新功能快照：`cecd7d3c0fbd2c8470b19cbae208848d67f4744e`
-  (`feat: apply Media3 buffering and decoder settings`)
+- 最新功能快照：`720d161ef1812f3ce8481f57b280889753c364ef`
+  (`feat: add Media3 super resolution`)
 - 最新上游合并提交：`0e4e8db250e986c4f8e32652fac2652651ec4168`
   (`Merge remote-tracking branch 'upstream/main' into codex/android-exoplayer`)
 - 上游：`https://github.com/bggRGjQaUbCoE/PiliPlus.git`
 - 已获取并合入的 `upstream/main`：`5296a8f7f07a22f347ad53bc8c7651e6787bf3ec`
 - 当前分支已包含上游 `56ca0ca`、`10b723f`、`e4e7037`、`91e7899` 和 `5296a8f`；
-  本状态更新提交完成后相对上游为本地领先 50、落后 0。
+  本状态更新提交完成后相对上游为本地领先 52、落后 0。
 - 应用内小窗、音频焦点/媒体控制、系统 PiP 恢复、版本更新和兼容记录已保存到上述
   功能快照。交接时应以实际 `git status` 为准；存在未提交修改时不得直接 merge 或
   rebase。
@@ -99,6 +99,36 @@
 - 上游 UI 和文本选择变化仍需真机回归；审计 APK 不是新版本交付，不更新发布基线。
 
 ## 当前待验证修改
+
+- ExoPlayer 适配批次 8 第八组实现已提交为
+  `720d161ef1812f3ce8481f57b280889753c364ef`：ExoPlayer 的番剧超分辨率入口不再复位
+  为禁用或提示“适配尚未完成”。Android 新增同版本 `media3-effect`，在现有 Media3
+  会话和 Flutter `Texture` 上实时应用 GPU Lanczos 重采样；“效率”最高约 1.5 倍并以
+  1080p 为上限，“画质”最高 2 倍并以 4K 为上限，横屏、竖屏和方形视频均保持比例，
+  已达到上限的源不会被反向降采样。
+- 禁用/效率/画质可在播放中切换，不重新 `open` 媒体、不创建新会话、不跳转进度；
+  换媒体时先清理旧目标尺寸，再按新源尺寸应用当前模式。截图继续读取同一处理后
+  Texture。`SuperResolution` 播放信息会显示 disabled、等待尺寸、无需放大，或
+  `source -> target` 的实际 Lanczos 尺寸；设置页区分 Media3 Lanczos 与 mpv Anime4K。
+- 第八组相关 Dart 文件已格式化，定向分析无问题；完整 `dart analyze` 无 error/warning，
+  当前工具链显示 38 条既有 info（其中包名提示重复显示）；完整 `flutter analyze` 完成
+  仓库分析，仅因 37 条既有 info 返回非零；完整 `flutter test --concurrency=1` 共 31 项
+  全部通过。Android Kotlin Debug 编译、4 项新增尺寸策略单元测试及 Release 构建通过。
+- 第八组最终 Android Release 审计包位于
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-media3-super-resolution-audit-v2.apk`，
+  构建时间为 `2026-08-01 14:52:12 +08:00`，大小 67,767,758 字节，SHA-256 为
+  `4D07B92A47B12400FA7C365D7A81309EC85AEFEBCDE05091524BC7B146E2CF8C`；三个 ABI 的
+  `libapp.so` 均嵌入准确实现提交。`tool/verify_release.ps1 -AllowAlreadyDelivered` 已确认
+  applicationId、应用名、版本、universal ABI 和签名证书
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C` 均符合基线。
+  首个未注入 commit/buildTime 的 `...media3-super-resolution-audit.apk` 已由 v2 替代，
+  不作为测试目标；两者都是审计包，不更新正式发布基线。
+- 第八组仍待真机验证：禁用/效率/画质的即时切换、默认值恢复和播放状态/位置保持；
+  480p/720p/1080p/4K、横屏/竖屏/方形、AVC/HEVC/AV1、SDR/HDR、DASH 独立音视频、
+  本地文件、清晰度/分P切换；普通窗口、全屏、旋转、后台、应用内小窗、系统 PiP、
+  截图；画质差异、帧率、GPU/内存、温度和耗电，并与 mpv 禁用/效率/画质逐项对照。
+  本次 ADB server 探测未在时限内返回，未完成真机验证，因此只能标记为“实现完成、
+  待真机验证”。
 
 - ExoPlayer 适配批次 8 第七组实现已提交为
   `cecd7d3c0fbd2c8470b19cbae208848d67f4744e`：Android Media3 会话创建时读取现有
@@ -283,9 +313,9 @@
   的构建时间参数偏快 8 小时，已由 v2 替代且不作为测试目标。它是审计包，不更新发布
   基线。
 - 批次 8 首组仍待真机对照：mpv/Media3 下关闭字幕、B 站字幕、外部 VTT/SRT/ASS/SSA
-  的加载与互切，以及播放、暂停、跳转时 SponsorBlock 位置监听。直播、Media3 超分、
-  未适配音频滤镜和剩余生命周期边界仍是明确缺口；bitmap cue 和竖排字幕已在后续第六组
-  实现但待真机验收。当前仍不能宣称已完整移除 mpv。
+  的加载与互切，以及播放、暂停、跳转时 SponsorBlock 位置监听。首组提交当时的直播、
+  bitmap cue/竖排字幕和 Media3 超分缺口已分别在后续第五、第六和第八组实现但待真机
+  验收；未适配音频滤镜和剩余生命周期边界仍是明确缺口。当前仍不能宣称已完整移除 mpv。
 
 - ExoPlayer 适配批次 7 实现已提交为
   `51909790a75063e630d24afc2541d5baf83eb532`：普通截图和评论区视频截图通过既有公共
@@ -452,16 +482,15 @@
   `DB1DAAD7FEA752B8A0B1DD62CD76EA9A91C5D964258BC7A4C38E1CDDCB9E20A9`；
   `tool/verify_release.ps1 -AllowAlreadyDelivered` 已确认 applicationId、应用名、版本、
   universal ABI 和签名证书均符合基线。该包不是新版本交付，不更新发布基线。
-- 用户已反馈批次 2 当前真机流程未见问题。Media3 bitmap cue 尚未桥接；
-  vertical-writing 元数据虽已回传，但 Flutter 竖排布局尚未等价实现，不能标记为
-  完整字幕兼容。
+- 用户已反馈批次 2 当前真机流程未见问题。批次 2 提交时尚未桥接的 Media3 bitmap cue
+  和 Flutter 竖排布局已在批次 8 第六组实现，但仍待实际媒体真机验收。
 - ExoPlayer 适配批次 1 实现已提交为
   `ad34b69315e54a1ebfb7890262a29d7d2734604c`：播放器音量入口改走公共控制器并同时
   支持 mpv 与 ExoPlayer；普通截图和评论区视频截图改用可区分成功、未适配和失败的
   公共结果；
   超分辨率两个入口改走公共控制器，ExoPlayer 下保持关闭并给出明确迁移提示，不再
-  隐藏设置入口或进入 mpv 空对象路径。Media3 原生截图和超分效果仍是后续缺口，
-  本批不标记为已适配。
+  隐藏设置入口或进入 mpv 空对象路径。批次 1 提交时 Media3 原生截图和超分效果仍是
+  后续缺口；二者现已分别实现但仍待真机验收。
 - 本批相关文件通过格式检查；完整 `dart analyze` 无 error/warning，保留 37 条既有
   info；新增的 3 个公共功能结果契约测试全部通过。`flutter analyze` 仍在仓库分析前
   被工作区 Flutter SDK 缺失的 iOS 集成测试资源中断。
@@ -496,7 +525,8 @@
   修复已确认能进入 Dart PNG 解码；随后发现并修复 `ImmutableBuffer` 二次释放，第二个
   替换审计包仍待同机完成预览/保存，以及画面方向、像素比例、翻转、不同媒体源、取消和
   播放状态保持的逐项对照。
-- 超分辨率入口已不再隐藏或进入 mpv 空对象路径，但 Media3 等价效果尚未实现。
+- Media3 超分辨率实时效果已实现并通过自动化构建/测试，仍待不同分辨率、编码、HDR、
+  画面方向、GPU 性能和播放器生命周期场景的真机对照；验收前不标记为完全兼容。
 - 原生音视频轨道枚举/选择、播放器信息和内置文本轨独立选择入口已接入 Media3，
   批次 3 与批次 5 的对应流程仍待真机对照。
 - 服务器提供测量参数的两遍 `loudnorm` 已接入 Media3 PCM 增益与真峰值限制器，仍待
@@ -510,6 +540,11 @@
 - 进程重建和更多边缘生命周期仍需继续闭环。
 
 ## 下一步
+
+- 最高优先先使用批次 8 超分辨率 v2 审计 APK 对照禁用/效率/画质，覆盖
+  480p/720p/1080p/4K、横屏/竖屏/方形、AVC/HEVC/AV1、SDR/HDR、DASH、本地文件、
+  清晰度/分P切换、截图、全屏、旋转、后台、小窗和 PiP；核对 `SuperResolution` 的
+  源/目标尺寸，并记录画质、帧率、GPU/内存、温度和耗电，与 mpv Anime4K 两档逐项对照。
 
 1. 使用批次 8 缓冲/解码审计 APK 对照默认值与小/大缓冲值，覆盖点播首开、拖动、
    连续播放、断网恢复、内存占用和直播延迟/稳定性；开关硬解后重新打开媒体，核对
@@ -549,9 +584,8 @@
    vertical-rl/vertical-lr 的本地/网络媒体，覆盖透明度、尺寸、锚点、切换、关闭、
    多列、标点、样式、跳转、普通窗口、全屏、旋转、应用内小窗和系统 PiP，并与 mpv
    模式逐项对照；通过后补充真机验证记录。
-13. 直播真机结果稳定后，下一组优先处理本地视频或剩余生命周期边界；超分、
-   动态/自定义音频滤镜仍保留为独立兼容任务。
-14. Media3 超分效果仍是明确功能缺口，不因当前真机流程无异常而关闭。
-15. 清理仓库既有 37 条 info 后，使完整 `flutter analyze` 以零退出码通过。
+13. 直播真机结果稳定后，下一组优先处理本地视频或剩余生命周期边界；动态/自定义
+   音频滤镜仍保留为独立兼容任务。
+14. 清理仓库既有 37 条 info 后，使完整 `flutter analyze` 以零退出码通过。
 16. 真机回归本次上游同步涉及的视频卡片、UGC 分P列表、动态/评论文本选择和滚动。
 17. 继续跟踪上游；下次同步仍先 fetch、检查重叠文件，再执行合并和完整验证。

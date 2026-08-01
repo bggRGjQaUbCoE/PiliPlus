@@ -1069,3 +1069,62 @@ quality and part switches, full screen, background, the app mini-player, and
 system PiP. MPV buffer, autosync, video-sync, and hwdec behavior must be
 regressed as well. This group is implemented but not yet accepted as fully
 compatible, and the audit APK does not update the release baseline.
+
+### Eighth-batch Media3 super-resolution group
+
+The eighth eighth-batch group replaces the remaining ExoPlayer
+"not implemented" super-resolution path with a real-time Media3 GPU effect:
+
+- the Android app now includes the matching `media3-effect` 1.10.1 module and
+  applies `LanczosResample` to the existing ExoPlayer session and Flutter
+  texture. Efficiency scales by at most 1.5 times to a 1080p bound; quality
+  scales by at most two times to a 4K bound. The target calculation is
+  orientation-neutral, preserves aspect ratio, and never downscales a source
+  that is already at or above the selected bound;
+- disabled, efficiency, and quality modes switch through the existing public
+  player controller and MethodChannel without reopening the media, creating a
+  new session, seeking, or changing play/pause intent. A source change clears
+  the old output target before resolving the new source size. Existing frame
+  capture continues to read the processed texture;
+- the PGC default preference now applies to both MPV and Media3. Playback
+  information exposes `SuperResolution` as disabled, waiting for source size,
+  no-upscale-needed, or the exact Lanczos source and target dimensions;
+- settings text accurately distinguishes Media3 Lanczos from the MPV Anime4K
+  shader path instead of describing MPV decoder requirements as universal.
+
+The implementation commit is
+`720d161ef1812f3ce8481f57b280889753c364ef`. Relevant Dart files are formatted
+and targeted Dart analysis reports no issues. Full `dart analyze` has no errors
+or warnings; this tool invocation reports 38 existing info diagnostics because
+the package-name diagnostic is emitted twice. Full `flutter analyze` completes
+repository analysis and returns nonzero only for the established 37 info
+diagnostics. All 31 Flutter tests pass, including the new event parsing and
+no-reopen MethodChannel coverage. Android Kotlin Debug compilation and unit
+tests pass, including four target-size tests for disable, landscape, portrait,
+the 4K cap, and no-downscale behavior. The Android Release build also passes.
+
+The final Release audit APK embeds build time `2026-08-01 14:52:12 +08:00` and
+the exact implementation commit in all three ABI `libapp.so` files. It passed
+application ID, label, version, universal ABI, and signing-certificate
+verification:
+
+- APK:
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-media3-super-resolution-audit-v2.apk`
+- size: `67,767,758` bytes
+- SHA-256:
+  `4D07B92A47B12400FA7C365D7A81309EC85AEFEBCDE05091524BC7B146E2CF8C`
+- certificate SHA-256:
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+The first audit APK without injected commit and build-time metadata is replaced
+by v2 and is not a test target. Real-device acceptance remains required for
+disabled/efficiency/quality in-playback switching, preference restore,
+play/pause and position retention; 480p, 720p, 1080p, and 4K landscape,
+portrait, and square sources; AVC, HEVC, AV1, SDR/HDR, split DASH audio/video,
+local files, quality
+and part switching; normal view, full screen, rotation, background playback,
+the app mini-player, system PiP, and screenshots. Visual result, frame rate,
+GPU and memory load, temperature, and battery use must be compared with both
+MPV Anime4K modes. The ADB server probe did not return within the available
+window, so this group is implemented but not yet accepted as fully compatible.
+The audit APK does not update the release baseline.

@@ -31,8 +31,7 @@ jobs:
         run: lib/scripts/build.ps1
 
       - name: Apply Patch
-        shell: pwsh
-        run: lib/scripts/patch.ps1 iOS
+        run: dart run lib/scripts/patch.dart ios
 
       - name: Build iOS
         run: |

@@ -77,10 +77,11 @@ jobs:
                   channel: stable
                   flutter-version-file: pubspec.yaml
                   cache: true
+                  cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:-${{ hashFiles('lib/scripts/*') }}"
 
             - name: Apply Patch
-              shell: pwsh
-              run: lib/scripts/patch.ps1 android
+              if: steps.flutter-action.outputs.CACHE-HIT != 'true'
+              run: dart run lib/scripts/patch.dart android
 
             - name: Write key
               if: github.event_name == 'workflow_dispatch'

@@ -1,0 +1,17 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "pre-build: apply patches",
+            "type": "shell",
+            "command": "dart",
+            "args": [
+                "run",
+                "${workspaceFolder}${pathSeparator}lib${pathSeparator}scripts${pathSeparator}patch.dart",
+                "${command:flutter.getSelectedDeviceId}"
+            ],
+            "group": "build",
+            "problemMatcher": []
+        }
+    ]
+}

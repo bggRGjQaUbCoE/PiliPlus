@@ -1264,3 +1264,59 @@ video remains visible, the old P0 can be narrowed toward decoder selection and
 a decoder-only isolation build can follow. If black video returns, this buffer
 group must be rolled back before decoder work. Until that result, buffering is
 implemented but pending device acceptance, and the eighth batch remains open.
+
+### Eighth-batch standalone-audio Media3 group
+
+Commit `e1db70736210e0a30070c15ffd36d44a90ff8f8d` removes the remaining direct
+MPV dependency from the standalone audio page when Android Media3 is selected:
+
+- standalone audio URLs open on the existing Media3 bridge, including the
+  required User-Agent, optional Referer, initial position, user buffer values,
+  playback speed, and clamped Android player-volume preference;
+- play, pause, seek, play/pause toggle, previous/next item, UGC part changes,
+  repeat modes, completion, and player diagnostics use backend-neutral audio
+  controller state. Media3 completion is edge-triggered so repeated merged
+  native state events cannot advance the playlist more than once. Events after
+  controller disposal are ignored;
+- initial autoplay obtains audio focus before opening the source. Continuous
+  playlist and repeat transitions retain the session, while manual pause,
+  terminal completion, failure, and disposal release it;
+- the audio-session service can route interruption pause/resume, ducking gain,
+  becoming-noisy events, and wired/Bluetooth route loss to standalone audio as
+  well as video. The media-notification service accepts an explicit standalone
+  owner, so metadata, status, position, play/pause, and seek no longer require a
+  simultaneous `PlPlayerController` instance;
+- stacked standalone audio routes retain owner-specific callbacks. Disposing an
+  older route does not clear controls registered by the current route;
+- non-Android platforms and Android with Media3 disabled retain the existing MPV
+  implementation and amplified desktop-volume semantics.
+
+All changed Dart files are formatted and targeted analysis reports no issues.
+Full `dart analyze` has no errors or warnings and retains the established 37
+info diagnostics. Full `flutter analyze` completes repository analysis and
+returns nonzero only for the same diagnostics. All 34 Flutter tests pass,
+including new Media3 completion deduplication, post-disposal event rejection,
+and audio-only MethodChannel open/control coverage. The complete Android Release
+build passes.
+
+The Release audit APK embeds build time `2026-08-02 20:14:34 +08:00` and the
+exact implementation commit. It passed application ID, label, version,
+universal ABI, and signing-certificate verification:
+
+- APK:
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-standalone-audio-audit.apk`
+- size: `67,783,611` bytes
+- SHA-256:
+  `DFEB317FAC607A2F91D539CB315B4215F674B421A2D8A700782CB55117DAA589`
+- certificate SHA-256:
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+Real-device acceptance remains required in both Media3 and MPV modes for direct
+audio URLs, audio playlists, UGC parts, initial position, play/pause, seeking,
+speed, volume, previous/next, and every repeat mode; background and screen-off
+playback; notification, lock-screen, and headset controls; interruption
+pause/resume and ducking; wired-headset unplug and Bluetooth disconnect; source
+errors, rapid item changes, disposal, and route re-entry. This group is
+implemented but not yet accepted as fully compatible. The audit APK does not
+update the formal release baseline, and the unresolved safe-buffer/decoder and
+other eighth-batch gaps keep the eighth batch open.

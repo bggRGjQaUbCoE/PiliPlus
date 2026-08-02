@@ -1,6 +1,6 @@
 # pili++ 当前项目状态
 
-> 最后核对：2026-08-02 17:06 +08:00
+> 最后核对：2026-08-02 20:28 +08:00
 >
 > 本文件记录会随开发变化、但后续任务必须知道的事实。开始任务时先核对这里与实际
 > Git、源码和构建产物；结束任务前更新。长期规则见 `AGENTS.md`，ExoPlayer 详细兼容
@@ -11,14 +11,14 @@
 - 当前分支：`main`
 - 最新 GitHub 发布源提交：`859d39c4ff3c77c37e1cc1d7131192df8f8b4241`
   (`chore: prepare 2.1.2 release`)
-- 最新功能快照：`c04a79fff718b4ce9024883d1bf898af43ddd7cc`
-  (`fix: restore safe Media3 VOD buffering`)
+- 最新功能快照：`e1db70736210e0a30070c15ffd36d44a90ff8f8d`
+  (`feat: migrate standalone Android audio to Media3`)
 - 最新上游合并提交：`0e4e8db250e986c4f8e32652fac2652651ec4168`
   (`Merge remote-tracking branch 'upstream/main' into codex/android-exoplayer`)
 - 上游：`https://github.com/bggRGjQaUbCoE/PiliPlus.git`
 - 已获取并合入的 `upstream/main`：`5296a8f7f07a22f347ad53bc8c7651e6787bf3ec`
 - 当前分支已包含上游 `56ca0ca`、`10b723f`、`e4e7037`、`91e7899` 和 `5296a8f`；
-  本状态更新提交完成后相对上游为本地领先 59、落后 0。
+  本状态更新提交完成后相对上游为本地领先 61、落后 0。
 - 应用内小窗、音频焦点/媒体控制、系统 PiP 恢复、版本更新和兼容记录已保存到上述
   功能快照。交接时应以实际 `git status` 为准；存在未提交修改时不得直接 merge 或
   rebase。
@@ -103,6 +103,35 @@
 - 上游 UI 和文本选择变化仍需真机回归；审计 APK 不是新版本交付，不更新发布基线。
 
 ## 当前待验证修改
+
+- ExoPlayer 适配批次 8 独立音频组已提交为
+  `e1db70736210e0a30070c15ffd36d44a90ff8f8d`：Android 且启用 ExoPlayer 时，独立音频页
+  不再创建 `media_kit Player`，而是通过现有 Media3 会话打开音频 URL；Android 关闭
+  ExoPlayer 以及非 Android 平台仍保持原 mpv 路径。播放/暂停、跳转、倍速、播放器音量、
+  起播位置、上下首/分段和循环模式均映射到公共音频页控制器，完成事件按 Media3 状态边沿
+  只处理一次，释放后的旧事件不会触发连播。
+- 独立音频已登记到后端中立的媒体通知和音频会话回调：首次自动播放先取得音频焦点；
+  手动暂停、终止、失败和真正播完会释放焦点，连续播放保持同一会话；系统暂停/恢复、
+  ducking、有线耳机拔出和蓝牙路由断开会控制当前独立音频播放器。媒体通知的播放、暂停、
+  跳转和位置更新不再要求同时存在视频 `PlPlayerController`；多音频页按所有者恢复回调，
+  旧页面销毁不会清掉新页面控制。
+- 本组相关 Dart 文件已格式化，定向分析无问题；完整 `dart analyze` 无 error/warning，
+  保留 37 条既有 info；完整 `flutter analyze` 完成仓库分析，仅因相同 37 条既有 info
+  返回非零；完整 `flutter test --concurrency=1` 共 34 项全部通过，其中新增音频完成去重、
+  释放后旧事件和 Media3 音频打开/控制参数测试；Android Release 构建通过。
+- 独立音频审计包位于
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-standalone-audio-audit.apk`，
+  嵌入提交 `e1db70736210e0a30070c15ffd36d44a90ff8f8d`，构建时间
+  `2026-08-02 20:14:34 +08:00`，大小 67,783,611 字节，SHA-256 为
+  `DFEB317FAC607A2F91D539CB315B4215F674B421A2D8A700782CB55117DAA589`。
+  `tool/verify_release.ps1 -AllowAlreadyDelivered` 已确认 applicationId、应用名、版本、
+  universal ABI 和签名证书
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C` 均符合基线；
+  该包不更新正式发布基线。
+- 本组待真机对照：Android Media3 与 mpv 下的直接音频 URL、音频列表、UGC 分段、
+  起播位置、播放/暂停、拖动、倍速、音量、上下首和全部循环模式；后台/息屏、通知、
+  锁屏/耳机媒体键、来电或其他应用打断、ducking、有线耳机拔出、蓝牙断开；错误提示、
+  关闭/重进和快速切歌。完成该矩阵前只能标记为“实现完成、待真机验证”。
 
 - ExoPlayer 适配批次 8 在黑屏热修复后的第一项隔离恢复已提交为
   `c04a79fff718b4ce9024883d1bf898af43ddd7cc`：只恢复 Media3 点播缓冲设置，解码器仍固定
@@ -609,6 +638,9 @@
 - Media3 自定义缓冲大小和点播缓冲时长已按“时间安全阈值优先”重新实现并生成隔离包，
   仍待 Samsung Android 16 真机确认不再黑屏；硬解总开关继续停用，使用系统默认解码器
   顺序。mpv 自动同步、视频同步和具体硬解模式没有 Media3 一一对应能力。
+- Android 独立音频页已切换到 Media3 并生成审计包，仍待播放列表、循环、通知、音频焦点、
+  耳机/蓝牙和后台/息屏的 Media3/mpv 真机对照；非 Android 与关闭 ExoPlayer 的 mpv 路径
+  保留用于兼容和回归。
 - 进程重建和更多边缘生命周期仍需继续闭环。
 
 ## 下一步
@@ -617,6 +649,9 @@
   普通点播首帧、连续播放、拖动和重开，并核对 `PlaybackConfig` 与 `VideoOutput`。若不
   黑屏，再扩展 UGC、PGC、DASH、清晰度/分P、全屏、后台、小窗和 PiP，并进入只恢复
   解码器的下一隔离组；若重新黑屏，立即回退到全黑热修复 v2 并停止恢复解码器。
+- 使用本次独立音频审计包完成直接音频、列表/分段、起播位置、拖动、倍速、音量、循环、
+  后台/息屏、通知/锁屏/耳机媒体键、音频打断/ducking、耳机拔出、蓝牙断开、快速切歌和
+  关闭重进测试，并在相同入口切回 mpv 对照。
 
 1. Media3 超分基础行为已按用户决定验收；后续在 480p/720p/1080p/4K、不同编码、HDR、
    截图、全屏、小窗和 PiP 回归时顺带记录尺寸与性能，不再要求通过肉眼明显差异或复制

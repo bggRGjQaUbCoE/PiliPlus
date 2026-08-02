@@ -382,12 +382,12 @@ void main() {
   test('parses the native Media3 playback configuration', () {
     final event = ExoPlayerEvent.fromMap({
       'playbackConfiguration':
-          'decoder=software, targetBuffer=8.00 MiB, bufferDuration=16000 ms',
+          'decoder=platform-default (requested=software), buffer=custom-safe, targetBuffer=8.00 MiB, minBuffer=5000 ms, maxBuffer=16000 ms, timePriority=true',
     });
 
     expect(
       event.playbackConfiguration,
-      'decoder=software, targetBuffer=8.00 MiB, bufferDuration=16000 ms',
+      'decoder=platform-default (requested=software), buffer=custom-safe, targetBuffer=8.00 MiB, minBuffer=5000 ms, maxBuffer=16000 ms, timePriority=true',
     );
   });
 

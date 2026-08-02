@@ -150,14 +150,14 @@ List<SettingsModel> get videoSettings => [
     title: '缓冲大小',
     leading: const Icon(Icons.storage_outlined),
     getSubtitle: () =>
-        '当前：${Pref.bufferSize}MB。当前仅用于 mpv；Media3 为恢复视频输出使用默认缓冲策略。',
+        '当前：${Pref.bufferSize}MB。mpv 使用前向/后向字节缓冲；Media3 点播将约双倍值作为安全时间阈值后的停止目标。',
     onTap: _showBufferSizeDialog,
   ),
   NormalModel(
     title: '缓冲时长',
     leading: const Icon(Icons.av_timer),
     getSubtitle: () =>
-        '当前：${Pref.bufferSec}s。当前仅用于 mpv；Media3 为恢复视频输出使用默认缓冲策略。',
+        '当前：${Pref.bufferSec}s。Media3 点播先满足安全时间阈值，再由字节目标或该时长停止；直播保持默认策略。',
     onTap: _showBufferSecDialog,
   ),
   NormalModel(

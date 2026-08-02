@@ -41,6 +41,7 @@ import androidx.media3.common.text.HorizontalTextInVerticalContextSpan
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.HttpDataSource
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlaybackException
@@ -325,7 +326,7 @@ private class ExoPlayerSession(
             context,
             audioNormalizationProcessor,
         ),
-    ).build().also {
+    ).setLoadControl(configuration.createLoadControl()).build().also {
         it.addListener(this)
         it.addAnalyticsListener(this)
         it.playWhenReady = false
@@ -1389,14 +1390,45 @@ private data class Media3PlaybackConfiguration(
 ) {
     val description: String
         get() = buildString {
-            append("compatibility defaults (requested decoder=")
+            append("decoder=platform-default (requested=")
             append(if (enableHardwareDecoding) "hardware" else "software")
-            append(", targetBuffer=")
-            append(String.format(java.util.Locale.US, "%.2f", targetBufferBytes / 1048576.0))
-            append(" MiB, bufferDuration=")
-            append(if (isLive) "live-default" else "$bufferDurationMs ms")
             append(')')
+            if (isLive) {
+                append(", buffer=media3-live-default")
+                return@buildString
+            }
+            val policy = resolveMedia3BufferPolicy(
+                targetBufferBytes,
+                bufferDurationMs,
+                isLive = false,
+            ) ?: return@buildString
+            append(", buffer=custom-safe")
+            append(", targetBuffer=")
+            append(
+                String.format(java.util.Locale.US, "%.2f", policy.targetBufferBytes / 1048576.0),
+            )
+            append(" MiB, minBuffer=")
+            append(policy.minBufferMs)
+            append(" ms, maxBuffer=")
+            append(policy.maxBufferMs)
+            append(" ms, timePriority=true")
         }
+
+    fun createLoadControl(): DefaultLoadControl {
+        val policy = resolveMedia3BufferPolicy(targetBufferBytes, bufferDurationMs, isLive)
+            ?: return DefaultLoadControl()
+        return DefaultLoadControl.Builder()
+            .setBufferDurationsMsForStreaming(
+                policy.minBufferMs,
+                policy.maxBufferMs,
+                policy.bufferForPlaybackMs,
+                policy.bufferForPlaybackAfterRebufferMs,
+            )
+            .setTargetBufferBytes(policy.targetBufferBytes)
+            .setPrioritizeTimeOverSizeThresholdsForStreaming(true)
+            .setBackBuffer(policy.backBufferDurationMs, false)
+            .build()
+    }
 }
 
 private const val MIN_TARGET_BUFFER_BYTES = 64L * 1024L

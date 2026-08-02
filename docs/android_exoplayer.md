@@ -1142,6 +1142,16 @@ audit APK is no longer a device-test target because it still contains the
 regressed `cecd7d3` player construction. The black-video hotfix v2 below includes
 the same super-resolution implementation and is the replacement test target.
 
+On 2026-08-02 the user exercised disabled, efficiency, and quality switching on
+the hotfix build and explicitly accepted the current Media3 behavior as an
+effective feature. Seamless switching is intentional and does not need to copy
+the pause/reload seen when the upstream MPV/Anime4K shader pipeline changes.
+The user also accepted that the present Lanczos resampling may have little
+obvious visual difference. This closes basic super-resolution effect acceptance;
+broader resolution, codec, HDR, screenshot, full-screen, mini-player, PiP, and
+performance coverage can be combined with their corresponding regression tests.
+It does not waive the rolled-back buffering/decoder-settings gap.
+
 ### Eighth-batch black-video compatibility hotfix
 
 Real-device feedback on 2026-08-02 identified a P0 regression in the

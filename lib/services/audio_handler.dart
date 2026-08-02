@@ -34,13 +34,50 @@ Future<VideoPlayerServiceHandler> initAudioService() {
   );
 }
 
+typedef _StandalonePlayerControls = ({
+  Future<void>? Function() onPlay,
+  Future<void>? Function() onPause,
+  Future<void>? Function(Duration position) onSeek,
+});
+
 class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   static final List<MediaItem> _item = [];
+  final Map<String, _StandalonePlayerControls> _standalonePlayers = {};
   bool enableBackgroundPlay = Pref.enableBackgroundPlay;
 
   Future<void>? Function()? onPlay;
   Future<void>? Function()? onPause;
   Future<void>? Function(Duration position)? onSeek;
+
+  bool get _hasPlaybackOwner =>
+      _standalonePlayers.isNotEmpty || PlPlayerController.instanceExists();
+
+  void registerStandalonePlayer(
+    String ownerId, {
+    required Future<void>? Function() onPlay,
+    required Future<void>? Function() onPause,
+    required Future<void>? Function(Duration position) onSeek,
+  }) {
+    _standalonePlayers.remove(ownerId);
+    _standalonePlayers[ownerId] = (
+      onPlay: onPlay,
+      onPause: onPause,
+      onSeek: onSeek,
+    );
+    _applyStandalonePlayerControls();
+  }
+
+  void unregisterStandalonePlayer(String ownerId) {
+    _standalonePlayers.remove(ownerId);
+    _applyStandalonePlayerControls();
+  }
+
+  void _applyStandalonePlayerControls() {
+    final controls = _standalonePlayers.values.lastOrNull;
+    onPlay = controls?.onPlay;
+    onPause = controls?.onPause;
+    onSeek = controls?.onSeek;
+  }
 
   @override
   Future<void> play() {
@@ -90,9 +127,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     bool isBuffering,
     bool isLive,
   ) {
-    if (!enableBackgroundPlay ||
-        _item.isEmpty ||
-        !PlPlayerController.instanceExists()) {
+    if (!enableBackgroundPlay || _item.isEmpty || !_hasPlaybackOwner) {
       return;
     }
 
@@ -173,7 +208,10 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     //   debugPrint('当前调用栈为：');
     //   debugPrint(StackTrace.current);
     // }
-    if (!PlPlayerController.instanceExists()) return;
+    if (!PlPlayerController.instanceExists() &&
+        !_standalonePlayers.containsKey(herotag)) {
+      return;
+    }
     if (data == null) return;
 
     Uri getUri(String? cover) => Uri.parse(ImageUtils.safeThumbnailUrl(cover));
@@ -252,7 +290,6 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
         return;
     }
     // if (kDebugMode) debugPrint("exist: ${PlPlayerController.instanceExists()}");
-    if (!PlPlayerController.instanceExists()) return;
     _item.add(mediaItem);
     setMediaItem(mediaItem);
   }
@@ -302,9 +339,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   }
 
   void onPositionChange(Duration position) {
-    if (!enableBackgroundPlay ||
-        _item.isEmpty ||
-        !PlPlayerController.instanceExists()) {
+    if (!enableBackgroundPlay || _item.isEmpty || !_hasPlaybackOwner) {
       return;
     }
 

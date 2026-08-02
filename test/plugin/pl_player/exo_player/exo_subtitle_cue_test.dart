@@ -486,6 +486,75 @@ void main() {
     },
   );
 
+  test(
+    'controls standalone Media3 audio with headers and start position',
+    () async {
+      const channel = MethodChannel('com.example.piliplus/exo_player');
+      final calls = <MethodCall>[];
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (call) async {
+            calls.add(call);
+            if (call.method == 'create') return 47;
+            return null;
+          });
+      addTearDown(
+        () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, null),
+      );
+
+      final player = await ExoPlayerController.create(
+        enableHardwareDecoding: true,
+        targetBufferBytes: 8 * 1024 * 1024,
+        bufferDurationMs: 12000,
+      );
+      addTearDown(player.dispose);
+      await player.open(
+        videoUrl: 'https://example.com/audio.m4a',
+        headers: const {
+          'User-Agent': 'pili++ test',
+          'Referer': 'https://www.bilibili.com',
+        },
+        position: const Duration(seconds: 7),
+        playWhenReady: true,
+      );
+      await player.pause();
+      await player.play();
+      await player.seek(const Duration(seconds: 9));
+      await player.setPlaybackSpeed(1.5);
+      await player.setVolume(0.8);
+
+      final open = calls.firstWhere((call) => call.method == 'open');
+      expect(open.arguments, {
+        'id': player.id,
+        'generation': 1,
+        'videoUrl': 'https://example.com/audio.m4a',
+        'audioUrl': null,
+        'headers': const {
+          'User-Agent': 'pili++ test',
+          'Referer': 'https://www.bilibili.com',
+        },
+        'isLive': false,
+        'positionMs': 7000,
+        'playWhenReady': true,
+        'preserveSubtitle': false,
+        'audioNormalization': null,
+      });
+      expect(
+        calls.map((call) => call.method),
+        containsAllInOrder([
+          'create',
+          'open',
+          'pause',
+          'play',
+          'seekTo',
+          'setPlaybackSpeed',
+          'setVolume',
+        ]),
+      );
+      expect(calls.last.arguments, {'id': player.id, 'volume': 0.8});
+    },
+  );
+
   test('creates Media3 with buffering and decoder preferences', () async {
     const channel = MethodChannel('com.example.piliplus/exo_player');
     final calls = <MethodCall>[];

@@ -33,7 +33,7 @@ List<SettingsModel> get videoSettings => [
     ),
   const SwitchModel(
     title: '开启硬解',
-    subtitle: '以较低功耗播放视频，若异常卡死请关闭',
+    subtitle: '用于 mpv；Media3 当前固定使用系统默认解码策略',
     leading: Icon(Icons.flash_on_outlined),
     setKey: SettingBoxKey.enableHA,
     defaultVal: true,
@@ -150,14 +150,14 @@ List<SettingsModel> get videoSettings => [
     title: '缓冲大小',
     leading: const Icon(Icons.storage_outlined),
     getSubtitle: () =>
-        '当前：${Pref.bufferSize}MB。Media3 使用约双倍大小作为前向与后向保留的总上限；mpv 分别用于前向和后向缓冲。',
+        '当前：${Pref.bufferSize}MB。当前仅用于 mpv；Media3 为恢复视频输出使用默认缓冲策略。',
     onTap: _showBufferSizeDialog,
   ),
   NormalModel(
     title: '缓冲时长',
     leading: const Icon(Icons.av_timer),
     getSubtitle: () =>
-        '当前：${Pref.bufferSec}s。Media3 点播和 mpv 均与缓冲大小共同限制实际缓冲；直播使用播放器的低延迟时长策略。',
+        '当前：${Pref.bufferSec}s。当前仅用于 mpv；Media3 为恢复视频输出使用默认缓冲策略。',
     onTap: _showBufferSecDialog,
   ),
   NormalModel(
@@ -176,7 +176,7 @@ List<SettingsModel> get videoSettings => [
     title: 'mpv 硬解模式',
     leading: const Icon(Icons.memory_outlined),
     getSubtitle: () =>
-        '当前：${Pref.hardwareDecoding}。仅用于 mpv；Media3 由“开启硬解”控制硬件或软件 MediaCodec。',
+        '当前：${Pref.hardwareDecoding}。仅用于 mpv；Media3 当前固定使用系统默认解码策略。',
     onTap: _showHwDecDialog,
   ),
 ];

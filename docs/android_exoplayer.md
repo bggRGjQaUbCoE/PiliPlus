@@ -1070,6 +1070,14 @@ system PiP. MPV buffer, autosync, video-sync, and hwdec behavior must be
 regressed as well. This group is implemented but not yet accepted as fully
 compatible, and the audit APK does not update the release baseline.
 
+This status was superseded by real-device feedback on 2026-08-02. On a Samsung
+SM-S9180 running Android 16, the `cecd7d3` audit build showed black video for all
+tested content while controls remained visible and playback position advanced.
+The custom decoder and load-control behavior is therefore no longer considered
+implemented pending acceptance; it has been disabled by the compatibility
+hotfix documented below and must be reintroduced one setting at a time after
+video output is restored.
+
 ### Eighth-batch Media3 super-resolution group
 
 The eighth eighth-batch group replaces the remaining ExoPlayer
@@ -1128,3 +1136,58 @@ GPU and memory load, temperature, and battery use must be compared with both
 MPV Anime4K modes. The ADB server probe did not return within the available
 window, so this group is implemented but not yet accepted as fully compatible.
 The audit APK does not update the release baseline.
+
+### Eighth-batch black-video compatibility hotfix
+
+Real-device feedback on 2026-08-02 identified a P0 regression in the
+`cecd7d3` buffering/decoder audit build on Samsung SM-S9180 with Android 16:
+controls and position updates continued, but every tested video remained black.
+A separate report from the same build contained an HTTP 403 from one bilivideo
+CDN URL; that source failure is tracked independently and does not explain a
+session whose playback position advances.
+
+The only native playback-construction changes between the preceding known
+playable build and `cecd7d3` were the custom MediaCodec selection/fallback and
+`DefaultLoadControl`. Commit
+`552e0bc21c7b56c5074e218fde930052a059c6aa` conservatively restores both to
+Media3 defaults. This is a regression-boundary rollback, not yet a confirmed
+root-cause statement; device evidence is still required to identify which
+subcomponent caused the Samsung failure. Flutter continues passing the stored
+preferences, but native playback intentionally does not apply them during this
+compatibility period. Commit
+`e0a3bffb16416ad489286c6ce8006622e2ffdcde` updates settings text and playback
+configuration diagnostics to state that effective behavior clearly.
+
+The hotfix also avoids calling `setVideoEffects(emptyList())` while opening a
+new source unless a super-resolution effect was actually active on the old
+source. This keeps the disabled default path out of Media3's effects pipeline.
+Native `onRenderedFirstFrame` is propagated to Flutter and exposed in player
+information as `VideoOutput / firstFrameRendered`, allowing a remaining black
+screen to be separated into no decoded/rendered first frame versus a later
+Surface/Flutter Texture presentation failure.
+
+Relevant Dart files are formatted and targeted analysis reports no issues.
+Full `flutter analyze` completes and returns nonzero only for the established 37
+info diagnostics, with no new error or warning. All 31 Flutter tests pass.
+Android Release Kotlin compilation and the complete Android Release build pass.
+The final v2 audit APK passed application ID, label, version, universal ABI, and
+signing-certificate verification:
+
+- APK:
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-black-video-hotfix-audit-v2.apk`
+- embedded commit: `e0a3bffb16416ad489286c6ce8006622e2ffdcde`
+- build time: `2026-08-02 15:31:34 +08:00`
+- size: `67,766,802` bytes
+- SHA-256:
+  `BA6C5D09BDA28BC9C31B5F36D17EAAEEC8BB7211E6FC2BBE1F517DE9DF6B12B1`
+- certificate SHA-256:
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+The first hotfix audit APK without the corrected settings explanation is
+superseded by v2 and is not a test target. The v2 build still requires testing
+on the reporting Samsung device, first with super resolution disabled on
+ordinary UGC, PGC, and split DASH media, then quality/part changes, full screen,
+background, app mini-player, and system PiP. If video remains black, capture the
+`VideoOutput` and Decoder player-information fields with the new error report.
+Until this test passes, the eighth batch is not complete and the audit APK does
+not update the formal release baseline.

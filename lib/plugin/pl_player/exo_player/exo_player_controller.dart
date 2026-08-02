@@ -24,6 +24,7 @@ class ExoPlayerEvent {
     required this.subtitleCues,
     required this.tracks,
     required this.volume,
+    required this.firstVideoFrameRendered,
     this.videoDecoder,
     this.audioDecoder,
     this.mediaDescription,
@@ -49,6 +50,7 @@ class ExoPlayerEvent {
   final List<ExoSubtitleCue> subtitleCues;
   final List<PlayerMediaTrack> tracks;
   final double volume;
+  final bool firstVideoFrameRendered;
   final String? videoDecoder;
   final String? audioDecoder;
   final String? mediaDescription;
@@ -107,6 +109,7 @@ class ExoPlayerEvent {
         _ => const [],
       },
       volume: (map['volume'] as num?)?.toDouble() ?? 1,
+      firstVideoFrameRendered: map['firstVideoFrameRendered'] as bool? ?? false,
       videoDecoder: map['videoDecoder'] as String?,
       audioDecoder: map['audioDecoder'] as String?,
       mediaDescription: map['mediaDescription'] as String?,
@@ -160,6 +163,7 @@ class ExoPlayerController {
     subtitleCues: [],
     tracks: [],
     volume: 1,
+    firstVideoFrameRendered: false,
   );
 
   Stream<ExoPlayerEvent> get events => _controller.stream;
@@ -236,6 +240,12 @@ class ExoPlayerController {
             volume: event.containsKey('volume')
                 ? next.volume
                 : player.state.volume,
+            firstVideoFrameRendered:
+                event.containsKey(
+                  'firstVideoFrameRendered',
+                )
+                ? next.firstVideoFrameRendered
+                : player.state.firstVideoFrameRendered,
             videoDecoder: event.containsKey('videoDecoder')
                 ? next.videoDecoder
                 : player.state.videoDecoder,

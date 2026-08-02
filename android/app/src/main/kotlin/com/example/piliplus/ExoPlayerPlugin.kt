@@ -41,14 +41,12 @@ import androidx.media3.common.text.HorizontalTextInVerticalContextSpan
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.HttpDataSource
-import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.audio.AudioSink
 import androidx.media3.exoplayer.audio.DefaultAudioSink
-import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.MergingMediaSource
@@ -326,9 +324,8 @@ private class ExoPlayerSession(
         NormalizingRenderersFactory(
             context,
             audioNormalizationProcessor,
-            configuration.enableHardwareDecoding,
         ),
-    ).setLoadControl(configuration.createLoadControl()).build().also {
+    ).build().also {
         it.addListener(this)
         it.addAnalyticsListener(this)
         it.playWhenReady = false
@@ -342,6 +339,7 @@ private class ExoPlayerSession(
     private var subtitleCues: List<Map<String, Any?>> = emptyList()
     private var videoDecoder: String? = null
     private var audioDecoder: String? = null
+    private var firstVideoFrameRendered = false
     private var superResolutionMode = Media3SuperResolutionMode.DISABLE
     private var sourceVideoWidth = 0
     private var sourceVideoHeight = 0
@@ -402,6 +400,7 @@ private class ExoPlayerSession(
         )
         videoDecoder = null
         audioDecoder = null
+        firstVideoFrameRendered = false
         resetSuperResolutionForNewMedia()
         if (!preserveSubtitle) {
             subtitleRequest = null
@@ -423,10 +422,13 @@ private class ExoPlayerSession(
     }
 
     private fun resetSuperResolutionForNewMedia() {
+        val hadActiveEffect = appliedSuperResolutionTarget != null
         sourceVideoWidth = 0
         sourceVideoHeight = 0
         appliedSuperResolutionTarget = null
-        player.setVideoEffects(emptyList())
+        if (hadActiveEffect) {
+            player.setVideoEffects(emptyList())
+        }
         superResolutionDescription = when (superResolutionMode) {
             Media3SuperResolutionMode.DISABLE -> "disabled"
             else -> "${superResolutionMode.name.lowercase()} lanczos (waiting for video size)"
@@ -704,6 +706,11 @@ private class ExoPlayerSession(
             }
             prepare()
         }
+        emitState()
+    }
+
+    override fun onRenderedFirstFrame() {
+        firstVideoFrameRendered = true
         emitState()
     }
 
@@ -996,6 +1003,7 @@ private class ExoPlayerSession(
                 "tracks" to serializeTracks(player),
                 "videoDecoder" to videoDecoder,
                 "audioDecoder" to audioDecoder,
+                "firstVideoFrameRendered" to firstVideoFrameRendered,
                 "mediaDescription" to mediaRequest?.description,
                 "playbackConfiguration" to configuration.description,
                 "audioNormalization" to mediaRequest?.audioNormalization?.filter,
@@ -1361,15 +1369,7 @@ private data class MediaRequest(
 private class NormalizingRenderersFactory(
     context: Context,
     private val audioNormalizationProcessor: AudioNormalizationProcessor,
-    enableHardwareDecoding: Boolean,
 ) : DefaultRenderersFactory(context) {
-    init {
-        setEnableDecoderFallback(true)
-        if (!enableHardwareDecoding) {
-            setMediaCodecSelector(SOFTWARE_VIDEO_CODEC_SELECTOR)
-        }
-    }
-
     override fun buildAudioSink(
         context: Context,
         enableFloatOutput: Boolean,
@@ -1389,48 +1389,20 @@ private data class Media3PlaybackConfiguration(
 ) {
     val description: String
         get() = buildString {
-            append("decoder=")
+            append("compatibility defaults (requested decoder=")
             append(if (enableHardwareDecoding) "hardware" else "software")
             append(", targetBuffer=")
             append(String.format(java.util.Locale.US, "%.2f", targetBufferBytes / 1048576.0))
             append(" MiB, bufferDuration=")
-            if (isLive) {
-                append("live-default")
-            } else {
-                append(bufferDurationMs)
-                append(" ms")
-            }
+            append(if (isLive) "live-default" else "$bufferDurationMs ms")
+            append(')')
         }
-
-    fun createLoadControl(): DefaultLoadControl {
-        val builder = DefaultLoadControl.Builder()
-            .setTargetBufferBytes(targetBufferBytes)
-            .setPrioritizeTimeOverSizeThresholds(false)
-        if (!isLive) {
-            builder
-                .setBufferDurationsMsForStreaming(
-                    bufferDurationMs,
-                    bufferDurationMs,
-                    minOf(DEFAULT_BUFFER_FOR_PLAYBACK_MS, bufferDurationMs),
-                    minOf(DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS, bufferDurationMs),
-                )
-                .setBackBuffer(bufferDurationMs, false)
-        }
-        return builder.build()
-    }
-}
-
-private val SOFTWARE_VIDEO_CODEC_SELECTOR = MediaCodecSelector { mimeType, secure, tunneling ->
-    val decoders = MediaCodecSelector.DEFAULT.getDecoderInfos(mimeType, secure, tunneling)
-    if (MimeTypes.isVideo(mimeType)) decoders.filter { it.softwareOnly } else decoders
 }
 
 private const val MIN_TARGET_BUFFER_BYTES = 64L * 1024L
 private const val DEFAULT_TARGET_BUFFER_BYTES = 4 * 1024 * 1024
 private const val MIN_BUFFER_DURATION_MS = 500L
 private const val DEFAULT_BUFFER_DURATION_MS = 16000
-private const val DEFAULT_BUFFER_FOR_PLAYBACK_MS = 2500
-private const val DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS = 5000
 
 private data class SubtitleRequest(
     val uri: Uri,

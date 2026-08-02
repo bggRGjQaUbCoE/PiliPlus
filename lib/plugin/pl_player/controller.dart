@@ -310,6 +310,10 @@ class PlPlayerController with BlockConfigMixin {
           state.playbackConfiguration ?? 'N/A',
         ),
         PlayerInfoEntry(
+          'VideoOutput',
+          'firstFrameRendered: ${state.firstVideoFrameRendered}',
+        ),
+        PlayerInfoEntry(
           'SuperResolution',
           state.superResolution ?? 'disabled',
         ),

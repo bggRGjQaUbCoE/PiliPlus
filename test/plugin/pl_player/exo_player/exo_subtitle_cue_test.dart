@@ -17,6 +17,7 @@ void main() {
       'subtitle': 'Hello',
       'ready': true,
       'volume': .75,
+      'firstVideoFrameRendered': true,
       'videoDecoder': 'c2.qti.avc.decoder',
       'tracks': [
         {
@@ -66,6 +67,7 @@ void main() {
     expect(event.tracks.single.id, 'audio-aac');
     expect(event.volume, .75);
     expect(event.videoDecoder, 'c2.qti.avc.decoder');
+    expect(event.firstVideoFrameRendered, isTrue);
     expect(event.ready, isTrue);
     final cue = event.subtitleCues.single;
     expect(cue.text, 'Hello');

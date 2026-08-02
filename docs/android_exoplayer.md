@@ -1137,6 +1137,11 @@ MPV Anime4K modes. The ADB server probe did not return within the available
 window, so this group is implemented but not yet accepted as fully compatible.
 The audit APK does not update the release baseline.
 
+After the later Samsung black-video feedback, this standalone super-resolution
+audit APK is no longer a device-test target because it still contains the
+regressed `cecd7d3` player construction. The black-video hotfix v2 below includes
+the same super-resolution implementation and is the replacement test target.
+
 ### Eighth-batch black-video compatibility hotfix
 
 Real-device feedback on 2026-08-02 identified a P0 regression in the
@@ -1184,10 +1189,17 @@ signing-certificate verification:
   `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
 
 The first hotfix audit APK without the corrected settings explanation is
-superseded by v2 and is not a test target. The v2 build still requires testing
-on the reporting Samsung device, first with super resolution disabled on
-ordinary UGC, PGC, and split DASH media, then quality/part changes, full screen,
-background, app mini-player, and system PiP. If video remains black, capture the
-`VideoOutput` and Decoder player-information fields with the new error report.
-Until this test passes, the eighth batch is not complete and the audit APK does
-not update the formal release baseline.
+superseded by v2 and is not a test target. On 2026-08-02 the user installed v2
+on the reporting Samsung Android 16 device and confirmed that video output had
+recovered. This closes the reported P0 black-video regression for the tested
+playback, and confirms that the restored Media3-default compatibility path can
+render video. It does not identify whether custom MediaCodec selection or
+`DefaultLoadControl` was the specific cause, and the exact content/scenario
+matrix was not reported.
+
+Extended real-device regression remains required for ordinary UGC, PGC, split
+DASH media, quality and part changes, full screen, background, app mini-player,
+and system PiP. The custom buffering and decoder settings remain rolled back
+and must be reintroduced one at a time with device comparison. Consequently the
+eighth batch is not yet complete, and the audit APK does not update the formal
+release baseline.

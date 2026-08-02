@@ -1213,3 +1213,54 @@ and system PiP. The custom buffering and decoder settings remain rolled back
 and must be reintroduced one at a time with device comparison. Consequently the
 eighth batch is not yet complete, and the audit APK does not update the formal
 release baseline.
+
+### Eighth-batch safe-buffering isolation group
+
+Commit `c04a79fff718b4ce9024883d1bf898af43ddd7cc` reintroduces only Media3 VOD
+buffer preferences on top of the Samsung-compatible hotfix. Decoder selection
+remains the proven platform-default path, and live sessions retain an entirely
+default Media3 `LoadControl`. This keeps the two prior regression variables
+separate.
+
+Inspection of Media3 1.10.1's actual `DefaultLoadControl` bytecode confirmed
+that the old configuration used the approximately 8 MiB default preference as
+a size-first stopping threshold. It could stop loading before the configured
+time minimum. The replacement streaming-VOD policy uses a safe time-first
+minimum of up to five seconds. After that floor, the requested byte target or
+maximum duration can stop loading, and the configured duration is retained as
+the back buffer. Very small inputs are clamped to valid boundaries. Local media
+keeps Media3's local time thresholds; live keeps all Media3 defaults.
+
+Player information exposes the isolation unambiguously:
+
+- decoder: `platform-default`, plus the requested but intentionally deferred
+  hardware/software setting;
+- VOD buffer: `custom-safe`, effective target MiB, minimum and maximum time,
+  and `timePriority=true`;
+- live buffer: `media3-live-default`.
+
+Relevant Dart files are formatted and targeted analysis reports no issues.
+Full `flutter analyze` returns nonzero only for the established 37 info
+diagnostics and has no new error or warning. All 31 Flutter tests pass. Android
+`testDebugUnitTest` passes, including three new policy tests for defaults, tiny
+inputs, and live defaults. The complete Android Release build passes. The audit
+APK passed application ID, label, version, universal ABI, and signing-certificate
+verification:
+
+- APK:
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-safe-buffer-isolation-audit.apk`
+- embedded commit: `c04a79fff718b4ce9024883d1bf898af43ddd7cc`
+- build time: `2026-08-02 16:59:28 +08:00`
+- size: `67,767,957` bytes
+- SHA-256:
+  `98DC2B678746CA6C273EA625C0C87A4E06441B16FCE1CE0C83C67ABDDE49C836`
+- certificate SHA-256:
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+Real-device acceptance starts on the reporting Samsung Android 16 device with
+ordinary VOD first frame, continuous playback, seeking, and reopen. Player
+information must show `buffer=custom-safe` and `firstFrameRendered: true`. If
+video remains visible, the old P0 can be narrowed toward decoder selection and
+a decoder-only isolation build can follow. If black video returns, this buffer
+group must be rolled back before decoder work. Until that result, buffering is
+implemented but pending device acceptance, and the eighth batch remains open.

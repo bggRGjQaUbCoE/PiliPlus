@@ -1,6 +1,6 @@
 # pili++ 当前项目状态
 
-> 最后核对：2026-08-02 16:47 +08:00
+> 最后核对：2026-08-02 17:06 +08:00
 >
 > 本文件记录会随开发变化、但后续任务必须知道的事实。开始任务时先核对这里与实际
 > Git、源码和构建产物；结束任务前更新。长期规则见 `AGENTS.md`，ExoPlayer 详细兼容
@@ -11,15 +11,14 @@
 - 当前分支：`main`
 - 最新 GitHub 发布源提交：`859d39c4ff3c77c37e1cc1d7131192df8f8b4241`
   (`chore: prepare 2.1.2 release`)
-- 最新功能快照：`e0a3bffb16416ad489286c6ce8006622e2ffdcde`
-  (`fix: describe Media3 compatibility defaults`；核心黑屏热修复为其父提交
-  `552e0bc21c7b56c5074e218fde930052a059c6aa`)
+- 最新功能快照：`c04a79fff718b4ce9024883d1bf898af43ddd7cc`
+  (`fix: restore safe Media3 VOD buffering`)
 - 最新上游合并提交：`0e4e8db250e986c4f8e32652fac2652651ec4168`
   (`Merge remote-tracking branch 'upstream/main' into codex/android-exoplayer`)
 - 上游：`https://github.com/bggRGjQaUbCoE/PiliPlus.git`
 - 已获取并合入的 `upstream/main`：`5296a8f7f07a22f347ad53bc8c7651e6787bf3ec`
 - 当前分支已包含上游 `56ca0ca`、`10b723f`、`e4e7037`、`91e7899` 和 `5296a8f`；
-  本状态更新提交完成后相对上游为本地领先 57、落后 0。
+  本状态更新提交完成后相对上游为本地领先 59、落后 0。
 - 应用内小窗、音频焦点/媒体控制、系统 PiP 恢复、版本更新和兼容记录已保存到上述
   功能快照。交接时应以实际 `git status` 为准；存在未提交修改时不得直接 merge 或
   rebase。
@@ -104,6 +103,33 @@
 - 上游 UI 和文本选择变化仍需真机回归；审计 APK 不是新版本交付，不更新发布基线。
 
 ## 当前待验证修改
+
+- ExoPlayer 适配批次 8 在黑屏热修复后的第一项隔离恢复已提交为
+  `c04a79fff718b4ce9024883d1bf898af43ddd7cc`：只恢复 Media3 点播缓冲设置，解码器仍固定
+  使用已验证可播放的系统默认选择顺序，直播继续完整使用 Media3 默认 LoadControl。
+  旧实现以默认约 8 MiB 为优先停止条件，可能在达到安全时间缓冲前停载；新实现对网络
+  点播先保证最多 5 秒的安全最小时间，再由用户字节目标或最大缓冲时长停止，并保留同等
+  时长的后向缓冲。极小值会被钳制到合法边界，本地媒体保留 Media3 本地时间阈值。
+- `PlaybackConfig` 会显示 `decoder=platform-default (requested=...)`，明确硬解开关仍未
+  应用；点播显示 `buffer=custom-safe`、目标 MiB、min/max 毫秒及 `timePriority=true`，
+  直播显示 `buffer=media3-live-default`。设置页同步说明点播和直播的实际范围。
+- 本组 Dart 文件已格式化并通过定向分析；完整 `flutter analyze` 仅因 37 条既有 info
+  返回非零，没有新增 error/warning；完整 `flutter test` 共 31 项全部通过；Android
+  `testDebugUnitTest` 通过，包含 3 项新增的默认值、极小值和直播默认策略测试；完整
+  Android Release 构建通过。
+- 安全缓冲隔离审计包位于
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-safe-buffer-isolation-audit.apk`，
+  嵌入提交 `c04a79fff718b4ce9024883d1bf898af43ddd7cc`，构建时间
+  `2026-08-02 16:59:28 +08:00`，大小 67,767,957 字节，SHA-256 为
+  `98DC2B678746CA6C273EA625C0C87A4E06441B16FCE1CE0C83C67ABDDE49C836`。
+  `tool/verify_release.ps1 -AllowAlreadyDelivered` 已确认 applicationId、应用名、版本、
+  universal ABI 和签名证书
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C` 均符合基线；
+  该包不更新正式发布基线。
+- 本组待报告问题的 Samsung Android 16 真机优先验证普通点播不黑屏、能持续播放和拖动，
+  并核对 `PlaybackConfig` 为 `buffer=custom-safe`、`VideoOutput` 为
+  `firstFrameRendered: true`。通过后可把旧 P0 收敛到解码器配置，再制作只恢复解码器的
+  下一隔离包；未验证前不能把缓冲设置重新标记为完成。
 
 - 2026-08-02 用户在 Samsung SM-S9180、Android 16 上确认第八批第七组审计包
   (`cecd7d3`) 出现 P0 回归：所有视频均为黑屏，但播放器控制层可见、时间和进度继续
@@ -580,25 +606,25 @@
   FFmpeg 滤镜尚无 Media3 等价实现。
 - 网络/源错误自动恢复与诊断已进入待真机验证；解码错误目前提供明确终态诊断和提示，
   不自动重试，仍需真机覆盖具体硬件解码失败与切画质恢复流程。
-- Media3 自定义缓冲大小、点播缓冲时长和硬解总开关因 Samsung Android 16 全黑回归
-  已暂时停用，当前使用 Media3 默认策略；这些设置须在恢复播放并确认具体根因后逐项
-  重新实现。mpv 自动同步、视频同步和具体硬解模式没有 Media3 一一对应能力。
+- Media3 自定义缓冲大小和点播缓冲时长已按“时间安全阈值优先”重新实现并生成隔离包，
+  仍待 Samsung Android 16 真机确认不再黑屏；硬解总开关继续停用，使用系统默认解码器
+  顺序。mpv 自动同步、视频同步和具体硬解模式没有 Media3 一一对应能力。
 - 进程重建和更多边缘生命周期仍需继续闭环。
 
 ## 下一步
 
-- 报告问题的 Samsung SM-S9180 Android 16 覆盖安装全黑热修复 v2 后已恢复画面。下一步
-  先扩展回归普通 UGC、PGC、DASH 独立音视频、清晰度/分P、全屏、后台、应用内小窗和
-  系统 PiP；同时以一次只恢复一项的方式区分自定义 MediaCodec 与 LoadControl 回归源，
-  在新的真机包通过前不恢复旧缓冲/解码审计包的完成状态。
+- 最高优先在报告问题的 Samsung SM-S9180 Android 16 上覆盖安装安全缓冲隔离包，先测
+  普通点播首帧、连续播放、拖动和重开，并核对 `PlaybackConfig` 与 `VideoOutput`。若不
+  黑屏，再扩展 UGC、PGC、DASH、清晰度/分P、全屏、后台、小窗和 PiP，并进入只恢复
+  解码器的下一隔离组；若重新黑屏，立即回退到全黑热修复 v2 并停止恢复解码器。
 
 1. Media3 超分基础行为已按用户决定验收；后续在 480p/720p/1080p/4K、不同编码、HDR、
    截图、全屏、小窗和 PiP 回归时顺带记录尺寸与性能，不再要求通过肉眼明显差异或复制
    mpv/Anime4K 的暂停加载来证明基础功能有效。
 
-2. 不再使用旧缓冲/解码审计 APK。先确认全黑具体来自自定义解码器还是 LoadControl，
-   然后在可播放基线上一次只恢复一项并生成新包，覆盖默认/小/大缓冲、硬解开关、AVC、
-   HEVC、AV1、DASH、本地文件、直播、清晰度/分P、全屏、后台、小窗和 PiP。
+2. 使用安全缓冲隔离 APK 验证默认/小/大缓冲和上述播放场景；通过后制作只恢复解码器的
+   新包，覆盖硬解开关、AVC、HEVC、AV1、DASH、本地文件、直播、清晰度/分P、全屏、
+   后台、小窗和 PiP。旧缓冲/解码组合审计 APK 不再使用。
 3. 使用批次 8 Media3 直播 v2 审计 APK 完成横屏/竖屏/方形直播、AVC/HEVC、服务端
    可选协议/格式、清晰度/线路/CDN、播放/暂停及暂停切换保持、仅音频、刷新、断网重试、
    后台/通知、应用内小窗、系统 PiP 和前后台生命周期验证；与 mpv 模式逐项对照。

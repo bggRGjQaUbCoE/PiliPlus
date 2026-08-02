@@ -9,7 +9,7 @@ import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scroll_behavior.dart'
     show NoOverscrollIndicator;
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:PiliPlus/http/live.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/user.dart';
@@ -571,6 +571,7 @@ class _MemberPageState extends State<MemberPage> {
   ];
 
   Widget get _buildBody => tabBarView(
+    hitTestBehavior: .translucent,
     controller: _userController.tabController,
     children: _userController.tab2!.map((item) {
       return switch (item.param!) {

@@ -235,7 +235,6 @@ class _ViewerState extends State<Viewer> with SingleTickerProviderStateMixin {
   void _handleDoubleTap() {
     if (!mounted) return;
     if (_animationController.isAnimating) return;
-    _stopFling();
     _scaleFrom = _scale;
     _positionFrom = _position;
 
@@ -267,8 +266,6 @@ class _ViewerState extends State<Viewer> with SingleTickerProviderStateMixin {
   }
 
   void _onScaleStart(ScaleStartDetails details) {
-    _stopFling();
-
     if (_animationController.isAnimating) {
       _animationController.stop();
     }
@@ -483,6 +480,7 @@ class _ViewerState extends State<Viewer> with SingleTickerProviderStateMixin {
   }
 
   void _onPointerDown(PointerDownEvent event) {
+    _stopFling();
     _scalePos = event.position;
     _doubleTapGestureRecognizer
       ..onDoubleTapDown = _onDoubleTapDown

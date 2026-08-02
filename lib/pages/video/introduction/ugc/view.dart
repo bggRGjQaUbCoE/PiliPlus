@@ -142,7 +142,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                     ..._infos(videoDetail)
                   else
                     Obx(
-                      () => AnimatedHeight(
+                      () => AnimatedHeightWidgetExt(
                         expand: introController.expand.value,
                         duration: const Duration(milliseconds: 300),
                         child: TranslucentColumn(

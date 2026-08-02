@@ -564,30 +564,32 @@ class ReplyItemGrpc extends StatelessWidget {
     List<ReplyInfo> replies,
   ) {
     final extraRow = replies.length < replyItem.count.toInt();
-    late final length = replies.length + (extraRow ? 1 : 0);
+    final length = replies.length + (extraRow ? 1 : 0);
     return Padding(
-      padding: const EdgeInsets.only(left: 42, right: 4),
+      padding: const .only(left: 42, right: 4),
       child: Material(
+        animationDuration: .zero,
         color: colorScheme.onInverseSurface,
-        borderRadius: const BorderRadius.all(Radius.circular(6)),
-        clipBehavior: Clip.hardEdge,
-        animationDuration: Duration.zero,
+        borderRadius: const .all(.circular(6)),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: .stretch,
           children: [
             if (replies.isNotEmpty)
-              ...List.generate(replies.length, (index) {
-                final childReply = replies[index];
-                EdgeInsets padding;
+              ...replies.mapIndexed((index, childReply) {
+                final EdgeInsets padding;
+                BorderRadius? borderRadius;
                 if (length == 1) {
-                  padding = const EdgeInsets.fromLTRB(8, 5, 8, 5);
+                  padding = const .fromLTRB(8, 5, 8, 5);
+                  borderRadius = const .all(.circular(6));
                 } else {
                   if (index == 0) {
-                    padding = const EdgeInsets.fromLTRB(8, 8, 8, 4);
+                    padding = const .fromLTRB(8, 8, 8, 4);
+                    borderRadius = const .vertical(top: .circular(6));
                   } else if (index == length - 1) {
-                    padding = const EdgeInsets.fromLTRB(8, 4, 8, 8);
+                    padding = const .fromLTRB(8, 4, 8, 8);
+                    borderRadius = const .vertical(bottom: .circular(6));
                   } else {
-                    padding = const EdgeInsets.fromLTRB(8, 4, 8, 4);
+                    padding = const .fromLTRB(8, 4, 8, 4);
                   }
                 }
                 void showMore() => showModalBottomSheet(
@@ -607,6 +609,7 @@ class ReplyItemGrpc extends StatelessWidget {
                   },
                 );
                 return InkWell(
+                  borderRadius: borderRadius,
                   onTap: () =>
                       replyReply?.call(replyItem, childReply.id.toInt()),
                   onLongPress: showMore,
@@ -670,10 +673,13 @@ class ReplyItemGrpc extends StatelessWidget {
             if (extraRow)
               InkWell(
                 onTap: () => replyReply?.call(replyItem, null),
+                borderRadius: length == 1
+                    ? const .all(.circular(6))
+                    : const .vertical(bottom: .circular(6)),
                 child: Padding(
                   padding: length == 1
-                      ? const EdgeInsets.fromLTRB(8, 6, 8, 6)
-                      : const EdgeInsets.fromLTRB(8, 5, 8, 8),
+                      ? const .fromLTRB(8, 6, 8, 6)
+                      : const .fromLTRB(8, 5, 8, 8),
                   child: Text.rich(
                     TextSpan(
                       style: const TextStyle(fontSize: 12),

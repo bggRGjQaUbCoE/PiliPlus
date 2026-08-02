@@ -32,7 +32,7 @@ const double _kActionsTopPadding = 140.0;
 const double _kActionsLeftPadding = 160.0;
 const double _kActionsRightPadding = 15.0;
 
-enum HeaderType { header, avatar, actions }
+enum HeaderType { avatar, actions, header }
 
 class HeaderLayoutWidget
     extends SlottedMultiChildRenderObjectWidget<HeaderType, RenderBox> {
@@ -52,9 +52,9 @@ class HeaderLayoutWidget
 
   @override
   Widget childForSlot(HeaderType slot) => switch (slot) {
-    .header => header,
     .avatar => avatar,
     .actions => actions,
+    .header => header,
   };
 
   @override
@@ -65,6 +65,10 @@ class HeaderLayoutWidget
 
 class RenderHeaderWidget extends RenderBox
     with SlottedContainerRenderObjectMixin<HeaderType, RenderBox> {
+  RenderBox get header => childForSlot(.header)!;
+  RenderBox get avatar => childForSlot(.avatar)!;
+  RenderBox get actions => childForSlot(.actions)!;
+
   Offset _getOffset(RenderBox child) {
     return (child.parentData as BoxParentData).offset;
   }
@@ -79,16 +83,16 @@ class RenderHeaderWidget extends RenderBox
     final maxWidth = constraints.maxWidth;
 
     _setOffset(
-      childForSlot(HeaderType.header)!..layout(constraints),
+      header..layout(constraints),
       Offset.zero,
     );
 
     _setOffset(
-      childForSlot(HeaderType.avatar)!..layout(constraints),
+      avatar..layout(constraints),
       const Offset(_kAvatarLeftPadding, _kAvatarTopPadding),
     );
 
-    final actions = childForSlot(HeaderType.actions)!;
+    final actions = this.actions;
     final childSize =
         (actions..layout(
               BoxConstraints(
@@ -114,16 +118,18 @@ class RenderHeaderWidget extends RenderBox
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    for (var slot in HeaderType.values) {
-      final child = childForSlot(slot)!;
+    void doPaint(RenderBox child) {
       context.paintChild(child, _getOffset(child) + offset);
     }
+
+    doPaint(header);
+    doPaint(avatar);
+    doPaint(actions);
   }
 
   @override
   bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
-    for (var slot in HeaderType.values.reversed) {
-      final child = childForSlot(slot)!;
+    for (final child in children) {
       final bool isHit = result.addWithPaintOffset(
         offset: _getOffset(child),
         position: position,

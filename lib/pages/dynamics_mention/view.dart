@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:PiliPlus/common/widgets/flutter/draggable_scrollable_sheet.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_mention/group.dart';
@@ -38,7 +38,7 @@ class DynMentionPanel extends StatefulWidget {
       constraints: BoxConstraints(
         maxWidth: min(600, context.mediaQueryShortestSide),
       ),
-      builder: (context) => TopicDraggableScrollableSheet(
+      builder: (context) => DraggableScrollableSheet(
         expand: false,
         snap: true,
         minChildSize: 0,
@@ -166,59 +166,58 @@ class _DynMentionPanelState
           ),
         ),
         Expanded(
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              NotificationListener<ScrollNotification>(
-                onNotification: (notification) {
-                  if (notification is UserScrollNotification) {
-                    if (_controller.focusNode.hasFocus) {
-                      _controller.focusNode.unfocus();
-                    }
-                  } else if (notification is ScrollEndNotification) {
-                    widget.onCachePos?.call(notification.metrics.pixels);
+          child: SimpleScaffold(
+            body: NotificationListener<ScrollNotification>(
+              onNotification: (notification) {
+                if (notification is UserScrollNotification) {
+                  if (_controller.focusNode.hasFocus) {
+                    _controller.focusNode.unfocus();
                   }
-                  return false;
-                },
-                child: CustomScrollView(
-                  controller: widget.scrollController,
-                  slivers: [
-                    Obx(
-                      () => _buildBody(theme, _controller.loadingState.value),
-                    ),
-                    SliverToBoxAdapter(
-                      child: SizedBox(height: padding + viewInset + 100),
-                    ),
-                  ],
-                ),
+                } else if (notification is ScrollEndNotification) {
+                  widget.onCachePos?.call(notification.metrics.pixels);
+                }
+                return false;
+              },
+              child: CustomScrollView(
+                controller: widget.scrollController,
+                slivers: [
+                  Obx(
+                    () => _buildBody(theme, _controller.loadingState.value),
+                  ),
+                  SliverToBoxAdapter(
+                    child: SizedBox(height: padding + viewInset + 100),
+                  ),
+                ],
               ),
-              Obx(() {
-                return Positioned(
+            ),
+            fab: Obx(() {
+              return Padding(
+                padding: .only(
                   right: kFloatingActionButtonMargin,
                   bottom:
                       padding +
                       kFloatingActionButtonMargin +
                       (_controller.showBtn.value ? viewInset : 0),
-                  child: AnimatedSlide(
-                    offset: _controller.showBtn.value
-                        ? Offset.zero
-                        : const Offset(0, 3),
-                    duration: const Duration(milliseconds: 120),
-                    child: FloatingActionButton(
-                      onPressed: () {
-                        if (_controller.mentionList.isNullOrEmpty) {
-                          _controller.showBtn.value = false;
-                          return;
-                        }
-                        Get.back(result: _controller.mentionList);
+                ),
+                child: AnimatedSlide(
+                  offset: _controller.showBtn.value
+                      ? Offset.zero
+                      : const Offset(0, 3),
+                  duration: const Duration(milliseconds: 120),
+                  child: FloatingActionButton(
+                    onPressed: () {
+                      if (_controller.mentionList.isNullOrEmpty) {
                         _controller.showBtn.value = false;
-                      },
-                      child: const Icon(Icons.check),
-                    ),
+                        return;
+                      }
+                      Get.back(result: _controller.mentionList);
+                      _controller.showBtn.value = false;
+                    },
+                    child: const Icon(Icons.check),
                   ),
-                );
-              }),
-            ],
+                ),
+              );
+            }),
           ),
         ),
       ],

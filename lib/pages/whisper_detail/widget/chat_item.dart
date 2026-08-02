@@ -13,7 +13,6 @@ import 'package:PiliPlus/grpc/bilibili/im/interfaces/v1.pb.dart'
     show EmotionInfo;
 import 'package:PiliPlus/grpc/bilibili/im/type.pb.dart' show Msg, MsgType;
 import 'package:PiliPlus/http/search.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
@@ -412,7 +411,6 @@ class ChatItem extends StatelessWidget {
 
     return Center(
       child: Container(
-        clipBehavior: Clip.hardEdge,
         constraints: const BoxConstraints(maxWidth: 400.0),
         decoration: BoxDecoration(
           borderRadius: Style.mdRadius,
@@ -451,15 +449,15 @@ class ChatItem extends StatelessWidget {
                     clipBehavior: Clip.none,
                     children: [
                       NetworkImgLayer(
-                        type: ImageType.emote,
                         width: constrains.maxWidth,
                         height: constrains.maxWidth / Style.aspectRatio16x9,
                         src: content['cover'],
+                        borderRadius: const .vertical(top: Style.imgRadius),
                       ),
                       PBadge(
                         left: 6,
                         bottom: 6,
-                        type: PBadgeType.gray,
+                        type: .gray,
                         text: content['times'] == 0
                             ? '--:--'
                             : DurationUtils.formatDuration(content['times']),

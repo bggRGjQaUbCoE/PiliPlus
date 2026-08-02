@@ -9,6 +9,7 @@ import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/dialog/export_import.dart';
 import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/services/logger.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -89,9 +90,8 @@ class _AboutPageState extends State<AboutPage> {
     final subTitleStyle = TextStyle(fontSize: 13, color: outline);
     final showAppBar = widget.showAppBar;
     final padding = MediaQuery.viewPaddingOf(context);
-    return Scaffold(
+    return SimpleScaffold(
       appBar: showAppBar ? AppBar(title: const Text('关于')) : null,
-      resizeToAvoidBottomInset: false,
       body: ListView(
         padding: EdgeInsets.only(
           left: showAppBar ? padding.left : 0,

@@ -4,13 +4,12 @@ import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/fav_order_type.dart';
 import 'package:PiliPlus/models_new/fav/fav_detail/media.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
-import 'package:PiliPlus/pages/common/fab_mixin.dart'
-    show NoRightMarginFabLocation;
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/pages/fav_detail/controller.dart';
 import 'package:PiliPlus/pages/fav_detail/widget/fav_video_card.dart';
@@ -60,12 +59,11 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
               _favDetailController.handleSelect();
             }
           },
-          child: Scaffold(
-            resizeToAvoidBottomInset: false,
-            floatingActionButtonLocation: const NoRightMarginFabLocation(),
-            floatingActionButton: Padding(
-              padding: const EdgeInsets.only(
-                right: kFloatingActionButtonMargin,
+          child: SimpleScaffold(
+            fab: Padding(
+              padding: .only(
+                right: kFloatingActionButtonMargin + padding.right,
+                bottom: kFloatingActionButtonMargin + padding.bottom,
               ),
               child: Obx(
                 () => _favDetailController.folderInfo.value.mediaCount > 0

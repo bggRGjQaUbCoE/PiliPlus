@@ -1,4 +1,4 @@
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
@@ -165,6 +165,7 @@ class _DynamicsPageState extends CommonPageState<DynamicsPage>
     }
 
     return Scaffold(
+      primary: false,
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.transparent,
       appBar: AppBar(

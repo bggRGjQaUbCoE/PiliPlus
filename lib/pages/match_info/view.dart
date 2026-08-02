@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
@@ -8,8 +9,6 @@ import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/match/match_info/contest.dart';
 import 'package:PiliPlus/models_new/match/match_info/team.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_page.dart';
-import 'package:PiliPlus/pages/common/fab_mixin.dart'
-    show NoBottomPaddingFabLocation;
 import 'package:PiliPlus/pages/match_info/controller.dart';
 import 'package:PiliPlus/pages/video/reply_reply/view.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
@@ -40,29 +39,28 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
 
   @override
   Widget build(BuildContext context) {
-    final child = Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(title: const Text('比赛详情')),
-      body: ViewSafeArea(
-        child: refreshIndicator(
-          onRefresh: controller.onRefresh,
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              Obx(() => _buildInfo(controller.infoState.value)),
-              buildReplyHeader(),
-              Obx(() => replyList(controller.loadingState.value)),
-            ],
+    return fabAnimWrapper(
+      child: SimpleScaffold(
+        appBar: AppBar(title: const Text('比赛详情')),
+        body: ViewSafeArea(
+          child: refreshIndicator(
+            onRefresh: controller.onRefresh,
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                Obx(() => _buildInfo(controller.infoState.value)),
+                buildReplyHeader(),
+                Obx(() => replyList(controller.loadingState.value)),
+              ],
+            ),
           ),
+        ).constraintWidth(),
+        fab: SlideTransition(
+          position: fabAnimation,
+          child: fabButton,
         ),
-      ).constraintWidth(),
-      floatingActionButtonLocation: const NoBottomPaddingFabLocation(),
-      floatingActionButton: SlideTransition(
-        position: fabAnimation,
-        child: fabButton,
       ),
     );
-    return fabAnimWrapper(child: child);
   }
 
   Widget _buildInfo(LoadingState<MatchContest?> infoState) {
@@ -192,8 +190,7 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
       int oid = replyItem.oid.toInt();
       int rpid = replyItem.id.toInt();
       Get.to(
-        Scaffold(
-          resizeToAvoidBottomInset: false,
+        SimpleScaffold(
           appBar: AppBar(
             title: const Text('评论详情'),
             shape: Border(

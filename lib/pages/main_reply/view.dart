@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/skeleton/video_reply.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
@@ -57,8 +58,7 @@ class _MainReplyPageState extends State<MainReplyPage>
   @override
   Widget build(BuildContext context) {
     final colorScheme = ColorScheme.of(context);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return SimpleScaffold(
       appBar: AppBar(title: const Text('查看评论')),
       body: fabAnimWrapper(
         child: refreshIndicator(
@@ -80,11 +80,13 @@ class _MainReplyPageState extends State<MainReplyPage>
           ),
         ).constraintWidth(),
       ),
-      floatingActionButtonLocation: const NoBottomPaddingFabLocation(),
-      floatingActionButton: SlideTransition(
+      fab: SlideTransition(
         position: fabAnimation,
         child: Padding(
-          padding: .only(bottom: padding.bottom + kFloatingActionButtonMargin),
+          padding: .only(
+            right: kFloatingActionButtonMargin + padding.right,
+            bottom: kFloatingActionButtonMargin + padding.bottom,
+          ),
           child: FloatingActionButton(
             heroTag: null,
             onPressed: () {
@@ -211,8 +213,7 @@ class _MainReplyPageState extends State<MainReplyPage>
       int oid = replyItem.oid.toInt();
       int rpid = replyItem.id.toInt();
       Get.to(
-        Scaffold(
-          resizeToAvoidBottomInset: false,
+        SimpleScaffold(
           appBar: AppBar(
             title: const Text('评论详情'),
             shape: Border(

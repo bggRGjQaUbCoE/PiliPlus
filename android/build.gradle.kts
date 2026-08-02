@@ -19,20 +19,6 @@ subprojects {
 }
 
 subprojects {
-    beforeEvaluate {
-        if (project.name == "jni") {
-            val agpMajorVersion = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION
-                .substringBefore('.')
-                .toInt()
-            val builtInKotlinProperty =
-                project.providers.gradleProperty("android.builtInKotlin").orNull
-            val isBuiltInKotlinEnabled = agpMajorVersion >= 9 &&
-                    (builtInKotlinProperty == null || builtInKotlinProperty.toBoolean())
-            if (!isBuiltInKotlinEnabled) {
-                project.apply(plugin = "org.jetbrains.kotlin.android")
-            }
-        }
-    }
     afterEvaluate {
         if (project.extensions.findByName("android") != null) {
             val androidExtension =

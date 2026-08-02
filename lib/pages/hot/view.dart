@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/video_card/video_card_h.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -85,8 +86,7 @@ class _HotPageState extends State<HotPage>
                             homeController.tabController.animateTo(index);
                           } else {
                             Get.to(
-                              Scaffold(
-                                resizeToAvoidBottomInset: false,
+                              SimpleScaffold(
                                 appBar: AppBar(title: const Text('排行榜')),
                                 body: const ViewSafeArea(child: RankPage()),
                               ),

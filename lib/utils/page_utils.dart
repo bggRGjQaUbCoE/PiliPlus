@@ -413,25 +413,6 @@ abstract final class PageUtils {
     }
   }
 
-  static void onHorizontalPreviewState(
-    ScaffoldState state,
-    List<SourceModel> imgList,
-    int index,
-  ) {
-    state.showBottomSheet(
-      constraints: const BoxConstraints(),
-      (context) => GalleryViewer(
-        sources: imgList,
-        initIndex: index,
-        quality: GlobalData().imgQuality,
-      ),
-      enableDrag: false,
-      elevation: 0.0,
-      backgroundColor: Colors.transparent,
-      sheetAnimationStyle: AnimationStyle.noAnimation,
-    );
-  }
-
   static void inAppWebview(
     String url, {
     bool off = false,

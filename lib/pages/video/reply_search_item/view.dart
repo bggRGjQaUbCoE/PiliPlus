@@ -1,4 +1,5 @@
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/models/common/reply/reply_search_type.dart';
 import 'package:PiliPlus/pages/video/reply_search_item/child/view.dart';
@@ -35,8 +36,7 @@ class _ReplySearchPageState extends State<ReplySearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return SimpleScaffold(
       appBar: AppBar(
         actions: [
           IconButton(

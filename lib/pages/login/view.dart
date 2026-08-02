@@ -2,7 +2,7 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/dial_prefix.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/login/controller.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';

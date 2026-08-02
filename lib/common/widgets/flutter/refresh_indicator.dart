@@ -11,7 +11,7 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show BouncingScrollPhysicsExt;
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:extended_nested_scroll_view/src/refresh.dart';
+import 'package:extended_nested_scroll_view/refresh.dart';
 import 'package:flutter/foundation.dart' show clampDouble;
 import 'package:flutter/material.dart' hide RefreshIndicator;
 

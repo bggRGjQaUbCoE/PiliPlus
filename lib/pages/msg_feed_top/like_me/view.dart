@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/grpc/bilibili/app/im/v1.pbenum.dart'
     show IMSettingType;
 import 'package:PiliPlus/http/loading_state.dart';
@@ -32,8 +33,7 @@ class _LikeMePageState extends State<LikeMePage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return SimpleScaffold(
       appBar: AppBar(
         title: const Text('收到的赞'),
         actions: [

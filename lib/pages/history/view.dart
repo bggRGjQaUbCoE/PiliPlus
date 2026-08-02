@@ -1,11 +1,12 @@
 import 'package:PiliPlus/common/widgets/appbar/appbar.dart';
-import 'package:PiliPlus/common/widgets/flutter/page/tabs.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart'
+    show tabBarScrollPhysics;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/history/list.dart';
 import 'package:PiliPlus/pages/history/base_controller.dart';
@@ -13,7 +14,7 @@ import 'package:PiliPlus/pages/history/controller.dart';
 import 'package:PiliPlus/pages/history/widgets/item.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:flutter/material.dart' hide TabBarView;
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class HistoryPage extends StatefulWidget {
@@ -92,8 +93,7 @@ class _HistoryPageState extends State<HistoryPage>
               currCtr().handleSelect();
             }
           },
-          child: Scaffold(
-            resizeToAvoidBottomInset: false,
+          child: SimpleScaffold(
             appBar: MultiSelectAppBarWidget(
               visible: enableMultiSelect,
               ctr: currCtr(),
@@ -133,10 +133,10 @@ class _HistoryPageState extends State<HistoryPage>
                       ],
                     ),
                     Expanded(
-                      child: TabBarView<CustomHorizontalDragGestureRecognizer>(
+                      child: TabBarView(
                         physics: enableMultiSelect
                             ? const NeverScrollableScrollPhysics()
-                            : clampingScrollPhysics,
+                            : tabBarScrollPhysics,
                         controller: _historyController.tabController,
                         horizontalDragGestureRecognizer:
                             CustomHorizontalDragGestureRecognizer.new,

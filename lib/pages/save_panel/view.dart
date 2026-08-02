@@ -354,8 +354,7 @@ class _SavePanelState extends State<SavePanel> {
             padding: const .symmetric(horizontal: 12),
             child: RepaintBoundary(
               key: boundaryKey,
-              child: Container(
-                clipBehavior: .hardEdge,
+              child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
                   borderRadius: const .all(.circular(12)),
@@ -390,7 +389,6 @@ class _SavePanelState extends State<SavePanel> {
                           title?.isNotEmpty == true)
                         Container(
                           height: 81,
-                          clipBehavior: Clip.hardEdge,
                           margin: const .symmetric(horizontal: 12),
                           padding: const .all(8),
                           decoration: BoxDecoration(

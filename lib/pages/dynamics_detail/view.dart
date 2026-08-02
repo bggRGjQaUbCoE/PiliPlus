@@ -4,10 +4,14 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart';
+import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
+import 'package:PiliPlus/common/widgets/scaffold/mini_scaffold.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_behavior.dart'
     show NoOverscrollIndicator;
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart'
+    show ReloadScrollPhysics;
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_to_box_adapter.dart';
 import 'package:PiliPlus/common/widgets/tap_region_surface.dart';
@@ -58,7 +62,9 @@ class _DynamicDetailPageState
 
   void _startRefresh() {
     _isRefreshing.value = true;
-    _refreshController.repeat();
+    _refreshController
+      ..value = 0
+      ..repeat();
   }
 
   void _stopRefresh() {
@@ -106,7 +112,7 @@ class _DynamicDetailPageState
     );
   }
 
-  dynamic _scrollable;
+  ScrollableState? _scrollable;
 
   @override
   void dispose() {
@@ -117,27 +123,20 @@ class _DynamicDetailPageState
 
   @override
   Widget build(BuildContext context) {
-    final child = Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: _buildAppBar(),
-      body: Padding(
-        padding: EdgeInsets.only(left: padding.left, right: padding.right),
-        child: isPortrait
-            ? refreshIndicator(
-                onRefresh: controller.onRefresh,
-                child: _buildBody(),
-              )
-            : _buildBody(),
-      ),
-      floatingActionButtonLocation: floatingActionButtonLocation,
-      floatingActionButton: SlideTransition(
-        position: fabAnimation,
-        child: _buildBottom(),
-      ),
-    );
     return SelectionTapRegionSurface(
+      /// apply `lib/scripts/scrollable.patch`
       isScrolling: () => _scrollable?.shouldIgnorePointer ?? false,
-      child: child,
+      child: SimpleScaffold(
+        appBar: _buildAppBar(),
+        body: Padding(
+          padding: EdgeInsets.only(left: padding.left, right: padding.right),
+          child: _buildBody(),
+        ),
+        fab: SlideTransition(
+          position: fabAnimation,
+          child: _buildBottom(),
+        ),
+      ),
     );
   }
 
@@ -365,8 +364,12 @@ class _DynamicDetailPageState
         Obx(() => replyList(controller.loadingState.value)),
       ],
     );
-    final child = tabBarView(
+    final child = TabBarView(
       controller: tabController,
+      hitTestBehavior: .translucent,
+      physics: const NeverScrollableScrollPhysics(),
+      horizontalDragGestureRecognizer:
+          CustomHorizontalDragGestureRecognizer.new,
       children: [
         isPortrait
             ? reply
@@ -480,9 +483,7 @@ class _DynamicDetailPageState
           flex: flex1,
           child: Padding(
             padding: EdgeInsets.only(right: padding),
-            child: Scaffold(
-              backgroundColor: Colors.transparent,
-              resizeToAvoidBottomInset: false,
+            child: MiniScaffold(
               body: Column(
                 children: [
                   _buildTabBar(),

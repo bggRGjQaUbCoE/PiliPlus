@@ -1717,7 +1717,7 @@ class EditableText extends StatefulWidget {
     //   }
     //   return ui.BoxWidthStyle.tight;
     // }
-    return ui.BoxWidthStyle.max;
+    return ui.BoxWidthStyle.tight;
   }
 
   /// The default value for [stylusHandwritingEnabled].

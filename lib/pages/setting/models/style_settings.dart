@@ -6,6 +6,8 @@ import 'package:PiliPlus/common/widgets/custom_toast.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/scale_app.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart'
+    show kSpringDescription;
 import 'package:PiliPlus/common/widgets/stateful_builder.dart';
 import 'package:PiliPlus/models/common/bar_hide_type.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
@@ -619,7 +621,12 @@ void _showSpringDialog(BuildContext context, _) {
               final res = springDescription.map(double.parse).toList();
               Get.back();
               GStorage.setting.put(SettingBoxKey.springDescription, res);
-              SmartDialog.showToast('设置成功，重启生效');
+              kSpringDescription = SpringDescription(
+                mass: res[0],
+                stiffness: res[1],
+                damping: res[2],
+              );
+              SmartDialog.showToast('设置成功');
             } catch (e) {
               SmartDialog.showToast(e.toString());
             }

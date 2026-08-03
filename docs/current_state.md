@@ -1,6 +1,6 @@
 # pili++ 当前项目状态
 
-> 最后核对：2026-08-03 13:40 +08:00
+> 最后核对：2026-08-03 13:55 +08:00
 >
 > 本文件记录会随开发变化、但后续任务必须知道的事实。开始任务时先核对这里与实际
 > Git、源码和构建产物；结束任务前更新。长期规则见 `AGENTS.md`，ExoPlayer 详细兼容
@@ -11,14 +11,14 @@
 - 当前分支：`main`
 - 最新 GitHub 发布源提交：`859d39c4ff3c77c37e1cc1d7131192df8f8b4241`
   (`chore: prepare 2.1.2 release`)
-- 最新功能快照：`531f2a854427de4ffccc6af711c01369e6aa6d84`
-  (`feat: support volume chains in Media3 audio normalization`)
+- 最新功能快照：`0c647b51ae60defc39c6171e5ca9387e43e596d2`
+  (`feat: retry decoder failures with software video fallback`)
 - 最新上游合并提交：`0e4e8db250e986c4f8e32652fac2652651ec4168`
   (`Merge remote-tracking branch 'upstream/main' into codex/android-exoplayer`)
 - 上游：`https://github.com/bggRGjQaUbCoE/PiliPlus.git`
 - 已获取并合入的 `upstream/main`：`5296a8f7f07a22f347ad53bc8c7651e6787bf3ec`
 - 当前分支已包含上游 `56ca0ca`、`10b723f`、`e4e7037`、`91e7899` 和 `5296a8f`；
-  本状态更新提交完成后相对上游为本地领先 64、落后 0。
+  本状态更新提交完成后相对上游为本地领先 66、落后 0。
 - 应用内小窗、音频焦点/媒体控制、系统 PiP 恢复、版本更新和兼容记录已保存到上述
   功能快照。交接时应以实际 `git status` 为准；存在未提交修改时不得直接 merge 或
   rebase。
@@ -106,6 +106,30 @@
 - 上游 UI 和文本选择变化仍需真机回归；审计 APK 不是新版本交付，不更新发布基线。
 
 ## 当前待验证修改
+
+- ExoPlayer 适配批次 8 解码软解回退组已提交为
+  `0c647b51ae60defc39c6171e5ca9387e43e596d2`：解码器/renderer 失败（Media3 decoder
+  错误码）时，开启硬解的会话先自动重建为视频软件解码选择器并保留 position、
+  playWhenReady、字幕和超分模式，提示“硬件解码失败，正在切换软件解码重试”；仅尝试
+  一次，再次失败进入终态。网络/源错误重试逻辑不变；`PlaybackConfig` 在回退后显示
+  `decoder=software`，终态诊断追加 `softwareVideoFallback: attempted`。
+- 本组相关 Dart 文件已格式化并通过定向分析；完整 `dart analyze` 无 error/warning，保留
+  37 条既有 info；完整 `flutter analyze` 仅因相同 37 条 info 返回非零；完整 `flutter test`
+  共 48 项全部通过，新增解码失败触发一次软解回退、回退后不再重试、会话不活跃不重试、
+  本地文件解码失败仍回退和网络重试不受影响测试；`:app` Kotlin 编译与单元测试通过；
+  Android Release 构建通过。
+- 解码回退审计包位于
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-decoder-fallback-audit.apk`，
+  嵌入提交 `0c647b51ae60defc39c6171e5ca9387e43e596d2`，构建时间
+  `2026-08-03 13:48:47 +08:00`，大小 67,791,135 字节，SHA-256 为
+  `209A2095E3680757F6A7F7F741759DD215CEF8F2DDB4D4F4709DDB28D1AEC9B6`。
+  `tool/verify_release.ps1 -AllowAlreadyDelivered` 已确认 applicationId、应用名、版本、
+  universal ABI 和签名证书
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C` 均符合基线；
+  该包不更新正式发布基线。
+- 本组待真机对照：构造硬件解码失败场景（不支持的编码/HDR/异常媒体），确认自动切软解
+  后可继续播放、进度不丢、不黑屏，`PlaybackConfig` 变为 `decoder=software`；网络/源
+  错误重试、直播和独立音频不受影响。完成该矩阵前只能标记为“实现完成、待真机验证”。
 
 - ExoPlayer 适配批次 8 音频滤镜链组已提交为
   `531f2a854427de4ffccc6af711c01369e6aa6d84`：ExoPlayer 侧把 FFmpeg 滤镜链按 `,` 拆成
@@ -688,8 +712,8 @@
   `volume=` 与单个响度阶段的链已支持（`531f2a8`），均待真机与 mpv 听感对照。
   未知 FFmpeg 滤镜（如 `highpass`）、多个响度阶段及任意复杂链仍无 Media3 等价实现，
   Toast 会指明具体未适配滤镜名。
-- 网络/源错误自动恢复与诊断已进入待真机验证；解码错误目前提供明确终态诊断和提示，
-  不自动重试，仍需真机覆盖具体硬件解码失败与切画质恢复流程。
+- 网络/源错误自动恢复与诊断已进入待真机验证；解码错误已实现一次硬解→软解自动回退
+  重试（`0c647b5`），仍需真机覆盖具体硬件解码失败、回退后可播与终态诊断场景。
 - Media3 自定义缓冲大小和点播缓冲时长按“时间安全阈值优先”重新实现，Samsung Android 16
   真机已确认不再黑屏；硬解开关已在 `3389f5a` 恢复生效，仍待真机对照 AVC/HEVC/AV1/
   DASH/直播/本地文件。mpv 自动同步、视频同步和具体硬解模式没有 Media3 一一对应能力。

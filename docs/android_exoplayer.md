@@ -1427,3 +1427,48 @@ chains with unknown stages show the specific filter name. Unknown filters,
 multiple loudness stages, and arbitrarily complex FFmpeg chains remain an
 explicit unsupported gap, and the audit APK does not update the formal release
 baseline.
+
+### Eighth-batch decoder software-fallback retry group
+
+Commit `0c647b51ae60defc39c6171e5ca9387e43e596d2` adds one automatic
+hardware-to-software fallback retry for Media3 decoder/renderer failures:
+
+- when a failure carries a Media3 decoder error code and hardware decoding was
+  enabled, the session rebuilds its `ExoPlayer` with the software-only video
+  codec selector, preserving position, play/pause intent, app subtitle state,
+  and the super-resolution mode, then re-prepares the same media;
+- the fallback is attempted at most once per media open; a second decoder
+  failure becomes the existing terminal diagnostic path. Network/source retry
+  behavior is unchanged;
+- the user toast reports the fallback, `PlaybackConfig` switches to
+  `decoder=software`, and terminal diagnostics append
+  `softwareVideoFallback: attempted`;
+- local-file decoder failures also use the fallback, since software decoding
+  is valuable there too.
+
+All changed Dart files are formatted and targeted analysis reports no issues.
+Full `dart analyze` has no errors or warnings and retains the established 37
+info diagnostics. Full `flutter analyze` completes repository analysis and
+returns nonzero only for the same diagnostics. All 48 Flutter tests pass,
+including one-shot fallback, no-retry-after-fallback, inactive-session
+rejection, local-file fallback, and network-retry isolation. `:app` Kotlin
+compilation and unit tests pass, and the complete Android Release build passes.
+
+The Release audit APK embeds build time `2026-08-03 13:48:47 +08:00` and the
+exact implementation commit. It passed application ID, label, version,
+universal ABI, and signing-certificate verification:
+
+- APK:
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-decoder-fallback-audit.apk`
+- size: `67,791,135` bytes
+- SHA-256:
+  `209A2095E3680757F6A7F7F741759DD215CEF8F2DDB4D4F4709DDB28D1AEC9B6`
+- certificate SHA-256:
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+Real-device acceptance remains required by forcing an actual hardware-decoder
+failure (for example an unsupported codec/HDR combination or malformed media)
+and confirming the software fallback continues playback without progress loss
+or black video, with `PlaybackConfig` showing `decoder=software`; network/source
+retry, live playback, and standalone audio must remain unaffected. The audit
+APK does not update the formal release baseline.

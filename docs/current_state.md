@@ -1,6 +1,6 @@
 # pili++ 当前项目状态
 
-> 最后核对：2026-08-02 20:28 +08:00
+> 最后核对：2026-08-03 11:15 +08:00
 >
 > 本文件记录会随开发变化、但后续任务必须知道的事实。开始任务时先核对这里与实际
 > Git、源码和构建产物；结束任务前更新。长期规则见 `AGENTS.md`，ExoPlayer 详细兼容
@@ -11,14 +11,14 @@
 - 当前分支：`main`
 - 最新 GitHub 发布源提交：`859d39c4ff3c77c37e1cc1d7131192df8f8b4241`
   (`chore: prepare 2.1.2 release`)
-- 最新功能快照：`e1db70736210e0a30070c15ffd36d44a90ff8f8d`
-  (`feat: migrate standalone Android audio to Media3`)
+- 最新功能快照：`3389f5a78beb1d7dca8f2ee1ece6ae7a78df0d74`
+  (`feat: restore Media3 decoder selection and dynamic audio normalization`)
 - 最新上游合并提交：`0e4e8db250e986c4f8e32652fac2652651ec4168`
   (`Merge remote-tracking branch 'upstream/main' into codex/android-exoplayer`)
 - 上游：`https://github.com/bggRGjQaUbCoE/PiliPlus.git`
 - 已获取并合入的 `upstream/main`：`5296a8f7f07a22f347ad53bc8c7651e6787bf3ec`
 - 当前分支已包含上游 `56ca0ca`、`10b723f`、`e4e7037`、`91e7899` 和 `5296a8f`；
-  本状态更新提交完成后相对上游为本地领先 61、落后 0。
+  本状态更新提交完成后相对上游为本地领先 62、落后 0。
 - 应用内小窗、音频焦点/媒体控制、系统 PiP 恢复、版本更新和兼容记录已保存到上述
   功能快照。交接时应以实际 `git status` 为准；存在未提交修改时不得直接 merge 或
   rebase。
@@ -63,6 +63,9 @@
   缺陷，不要求复制上游 mpv/Anime4K 切换时的暂停加载；当前 Lanczos 效果即使肉眼差异
   不明显，也按“功能有效”处理。该决定关闭基础超分效果验收，不代表缓冲/硬解回退或
   其他第八批缺口一并完成。
+- 2026-08-03 用户确认在 Samsung SM-S9180、Android 16 上安全缓冲隔离包不再黑屏。该结果
+  把旧 P0 回归变量收敛到“解码器选择或加载控制”二选一，缓冲设置可标记为真机验收通过，
+  并放行“只恢复解码器”的下一隔离组。
 
 ## 已验证状态
 
@@ -104,6 +107,35 @@
 
 ## 当前待验证修改
 
+- ExoPlayer 适配批次 8 解码器隔离与动态音频组已提交为
+  `3389f5a78beb1d7dca8f2ee1ece6ae7a78df0d74`：在安全缓冲隔离之上恢复 Media3 解码器
+  选择。开启硬解时使用平台 MediaCodec 顺序并允许解码器回退；关闭时视频轨只选择软件
+  MediaCodec，音频轨不受影响。`PlaybackConfig` 改为显示 `decoder=hardware/software`、
+  `decoderFallback=true`，直播继续使用 Media3 默认低延迟 LoadControl。
+- 单遍 `loudnorm`（无服务器测量值）和 `dynaudnorm` 预设/自定义参数已有 Media3 等价实现：
+  原生 `AudioNormalizationProcessor` 新增分窗 RMS 自动增益（目标响度、最大增益、帧长、
+  平滑系数）并在其后接真峰值限制器；输出缓冲显式沿用输入字节序，避免小端复用缓冲
+  造成采样字节交换。链式及任意自定义 FFmpeg 滤镜仍无等价实现，保持明确未适配提示。
+- 媒体源路由统一走 `resolveMediaUri`：本地裸路径转 `file://`，`http(s)://` 与
+  `content://` 原样保留，本地视频/字幕路径和 SAF 内容 URI 不再混淆。
+- 本组 Dart 文件已格式化并通过定向分析；完整 `dart analyze` 无 error/warning，保留 37 条
+  既有 info；完整 `flutter analyze` 仅因相同 37 条 info 返回非零；完整 `flutter test`
+  共 36 项全部通过；`:app` Kotlin 单元测试 14 项全部通过，覆盖动态归一化增益/限幅、
+  禁用透传和 URI 路由；完整 Android Release 构建通过。
+- 解码器/动态音频审计包位于
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-decoder-dynamic-audio-audit.apk`，
+  嵌入提交 `3389f5a78beb1d7dca8f2ee1ece6ae7a78df0d74`，构建时间
+  `2026-08-03 10:49:16 +08:00`，大小 67,785,840 字节，SHA-256 为
+  `55922DE3801947267B327ADFB696DDA47537DDF4907419ABE738F677AB5883A7`。
+  `tool/verify_release.ps1 -AllowAlreadyDelivered` 已确认 applicationId、应用名、版本、
+  universal ABI 和签名证书
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C` 均符合基线；
+  该包不更新正式发布基线。
+- 本组待真机对照：硬解开/关下的 AVC、HEVC、AV1、DASH、直播、本地文件、清晰度/分P、
+  首帧、拖动、断网恢复、全屏、后台、小窗和 PiP，并核对 `PlaybackConfig` 的 decoder 字段；
+  动态音量均衡与 mpv `dynaudnorm`/单遍 `loudnorm` 的听感对照，以及切换、后台、小窗和
+  PiP 下的稳定性。完成该矩阵前只能标记为“实现完成、待真机验证”。
+
 - ExoPlayer 适配批次 8 独立音频组已提交为
   `e1db70736210e0a30070c15ffd36d44a90ff8f8d`：Android 且启用 ExoPlayer 时，独立音频页
   不再创建 `media_kit Player`，而是通过现有 Media3 会话打开音频 URL；Android 关闭
@@ -139,9 +171,8 @@
   旧实现以默认约 8 MiB 为优先停止条件，可能在达到安全时间缓冲前停载；新实现对网络
   点播先保证最多 5 秒的安全最小时间，再由用户字节目标或最大缓冲时长停止，并保留同等
   时长的后向缓冲。极小值会被钳制到合法边界，本地媒体保留 Media3 本地时间阈值。
-- `PlaybackConfig` 会显示 `decoder=platform-default (requested=...)`，明确硬解开关仍未
-  应用；点播显示 `buffer=custom-safe`、目标 MiB、min/max 毫秒及 `timePriority=true`，
-  直播显示 `buffer=media3-live-default`。设置页同步说明点播和直播的实际范围。
+- 当时 `PlaybackConfig` 显示 `decoder=platform-default (requested=...)`，明确硬解开关
+  尚未应用；该显示语义已由解码器隔离组（`3389f5a`）替换为 `decoder=hardware/software`。
 - 本组 Dart 文件已格式化并通过定向分析；完整 `flutter analyze` 仅因 37 条既有 info
   返回非零，没有新增 error/warning；完整 `flutter test` 共 31 项全部通过；Android
   `testDebugUnitTest` 通过，包含 3 项新增的默认值、极小值和直播默认策略测试；完整
@@ -155,10 +186,9 @@
   universal ABI 和签名证书
   `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C` 均符合基线；
   该包不更新正式发布基线。
-- 本组待报告问题的 Samsung Android 16 真机优先验证普通点播不黑屏、能持续播放和拖动，
-  并核对 `PlaybackConfig` 为 `buffer=custom-safe`、`VideoOutput` 为
-  `firstFrameRendered: true`。通过后可把旧 P0 收敛到解码器配置，再制作只恢复解码器的
-  下一隔离包；未验证前不能把缓冲设置重新标记为完成。
+- 2026-08-03 用户确认本组在 Samsung SM-S9180、Android 16 上不再黑屏，缓冲设置按用户
+  反馈标记为真机验收通过；旧 P0 收敛到解码器配置，下一隔离组（`3389f5a`）已实现并
+  生成审计包，仍待同机验证。
 
 - 2026-08-02 用户在 Samsung SM-S9180、Android 16 上确认第八批第七组审计包
   (`cecd7d3`) 出现 P0 回归：所有视频均为黑屏，但播放器控制层可见、时间和进度继续
@@ -630,14 +660,14 @@
   超分功能验收。
 - 原生音视频轨道枚举/选择、播放器信息和内置文本轨独立选择入口已接入 Media3，
   批次 3 与批次 5 的对应流程仍待真机对照。
-- 服务器提供测量参数的两遍 `loudnorm` 已接入 Media3 PCM 增益与真峰值限制器，仍待
-  真机与 mpv 对照；`dynaudnorm`、无测量值的单遍 loudnorm、链式及任意自定义
-  FFmpeg 滤镜尚无 Media3 等价实现。
+- 服务器提供测量参数的两遍 `loudnorm` 已接入 Media3 PCM 增益与真峰值限制器；单遍
+  `loudnorm` 与 `dynaudnorm` 已实现分窗 RMS 自动增益的 Media3 近似（`3389f5a`），
+  两者均待真机与 mpv 听感对照。链式及任意自定义 FFmpeg 滤镜仍无 Media3 等价实现。
 - 网络/源错误自动恢复与诊断已进入待真机验证；解码错误目前提供明确终态诊断和提示，
   不自动重试，仍需真机覆盖具体硬件解码失败与切画质恢复流程。
-- Media3 自定义缓冲大小和点播缓冲时长已按“时间安全阈值优先”重新实现并生成隔离包，
-  仍待 Samsung Android 16 真机确认不再黑屏；硬解总开关继续停用，使用系统默认解码器
-  顺序。mpv 自动同步、视频同步和具体硬解模式没有 Media3 一一对应能力。
+- Media3 自定义缓冲大小和点播缓冲时长按“时间安全阈值优先”重新实现，Samsung Android 16
+  真机已确认不再黑屏；硬解开关已在 `3389f5a` 恢复生效，仍待真机对照 AVC/HEVC/AV1/
+  DASH/直播/本地文件。mpv 自动同步、视频同步和具体硬解模式没有 Media3 一一对应能力。
 - Android 独立音频页已切换到 Media3 并生成审计包，仍待播放列表、循环、通知、音频焦点、
   耳机/蓝牙和后台/息屏的 Media3/mpv 真机对照；非 Android 与关闭 ExoPlayer 的 mpv 路径
   保留用于兼容和回归。
@@ -645,10 +675,10 @@
 
 ## 下一步
 
-- 最高优先在报告问题的 Samsung SM-S9180 Android 16 上覆盖安装安全缓冲隔离包，先测
-  普通点播首帧、连续播放、拖动和重开，并核对 `PlaybackConfig` 与 `VideoOutput`。若不
-  黑屏，再扩展 UGC、PGC、DASH、清晰度/分P、全屏、后台、小窗和 PiP，并进入只恢复
-  解码器的下一隔离组；若重新黑屏，立即回退到全黑热修复 v2 并停止恢复解码器。
+- 安全缓冲隔离包已由用户在 Samsung SM-S9180、Android 16 确认不再黑屏。下一优先级：
+  覆盖安装解码器/动态音频审计包，先在开启硬解下验证普通点播首帧、连续播放、拖动、
+  重开和 `PlaybackConfig` decoder 字段，再覆盖 AVC/HEVC/AV1、DASH、本地文件、直播、
+  清晰度/分P、全屏、后台、小窗和 PiP；若再次黑屏，立即回退到安全缓冲隔离包。
 - 使用本次独立音频审计包完成直接音频、列表/分段、起播位置、拖动、倍速、音量、循环、
   后台/息屏、通知/锁屏/耳机媒体键、音频打断/ducking、耳机拔出、蓝牙断开、快速切歌和
   关闭重进测试，并在相同入口切回 mpv 对照。
@@ -657,9 +687,9 @@
    截图、全屏、小窗和 PiP 回归时顺带记录尺寸与性能，不再要求通过肉眼明显差异或复制
    mpv/Anime4K 的暂停加载来证明基础功能有效。
 
-2. 使用安全缓冲隔离 APK 验证默认/小/大缓冲和上述播放场景；通过后制作只恢复解码器的
-   新包，覆盖硬解开关、AVC、HEVC、AV1、DASH、本地文件、直播、清晰度/分P、全屏、
-   后台、小窗和 PiP。旧缓冲/解码组合审计 APK 不再使用。
+2. 安全缓冲隔离 APK 已由用户确认不再黑屏；使用解码器/动态音频审计 APK 覆盖硬解开关、
+   AVC、HEVC、AV1、DASH、本地文件、直播、清晰度/分P、全屏、后台、小窗和 PiP，并对照
+   动态音量均衡听感。旧缓冲/解码组合审计 APK 不再使用。
 3. 使用批次 8 Media3 直播 v2 审计 APK 完成横屏/竖屏/方形直播、AVC/HEVC、服务端
    可选协议/格式、清晰度/线路/CDN、播放/暂停及暂停切换保持、仅音频、刷新、断网重试、
    后台/通知、应用内小窗、系统 PiP 和前后台生命周期验证；与 mpv 模式逐项对照。

@@ -1320,3 +1320,65 @@ errors, rapid item changes, disposal, and route re-entry. This group is
 implemented but not yet accepted as fully compatible. The audit APK does not
 update the formal release baseline, and the unresolved safe-buffer/decoder and
 other eighth-batch gaps keep the eighth batch open.
+### Eighth-batch decoder-isolation and dynamic-audio group
+
+On 2026-08-03 the user confirmed on the reporting Samsung SM-S9180 Android 16
+device that the safe-buffer isolation build (`c04a79f`) no longer shows black
+video, so the previous P0 is narrowed to decoder configuration and the planned
+decoder-only isolation step is unblocked.
+
+Commit `3389f5a78beb1d7dca8f2ee1ece6ae7a78df0d74` restores Media3 decoder
+selection on top of the safe buffering policy:
+
+- hardware decoding enabled uses the platform MediaCodec order with decoder
+  fallback enabled; disabled restricts video-track decoder selection to
+  software MediaCodecs while audio-track selection is untouched;
+- `PlaybackConfig` now reports `decoder=hardware` or `decoder=software` plus
+  `decoderFallback=true`, replacing the deferred `platform-default
+  (requested=...)` marker; live still keeps Media3 default low-latency
+  `LoadControl` and the VOD `custom-safe` buffer description is retained;
+- media source routing is centralized in `resolveMediaUri`: bare local paths
+  become `file://` URIs, while `http(s)://` and `content://` URIs pass
+  through unchanged. The same helper serves main media and app-loaded
+  subtitles.
+
+The same commit adds Media3 equivalents for the previously unsupported
+one-pass `loudnorm` (no server measurements) and `dynaudnorm` filters:
+
+- the native `AudioNormalizationProcessor` gains a windowed RMS automatic-gain
+  mode with target loudness, maximum gain, frame length, and per-window
+  smoothing, followed by the existing true-peak limiter;
+- output buffers explicitly inherit the input byte order so reused little-
+  endian pool buffers cannot swap PCM16 bytes;
+- measured two-pass `loudnorm` keeps the existing static gain/peak-limit path;
+  chained and arbitrary custom FFmpeg filters remain an explicit unsupported
+  gap with the existing user-facing notice.
+
+All changed Dart files are formatted and targeted analysis reports no issues.
+Full `dart analyze` has no errors or warnings and retains the established 37
+info diagnostics. Full `flutter analyze` completes repository analysis and
+returns nonzero only for the same diagnostics. All 36 Flutter tests pass. The
+`:app` Kotlin unit suite (14 tests) passes, including dynamic normalization
+gain/limiter behavior, disabled passthrough, and media-URI routing. The
+complete Android Release build passes.
+
+The Release audit APK embeds build time `2026-08-03 10:49:16 +08:00` and the
+exact implementation commit. It passed application ID, label, version,
+universal ABI, and signing-certificate verification:
+
+- APK:
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-decoder-dynamic-audio-audit.apk`
+- size: `67,785,840` bytes
+- SHA-256:
+  `55922DE3801947267B327ADFB696DDA47537DDF4907419ABE738F677AB5883A7`
+- certificate SHA-256:
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+Real-device acceptance remains required with hardware decoding on and off for
+AVC, HEVC, AV1, DASH, live, local files, quality/part changes, first frame,
+seeking, reconnect, full screen, background, app mini-player, and system PiP,
+plus `PlaybackConfig` decoder fields; dynamic volume equalization needs
+listening comparison against mpv `dynaudnorm`/one-pass `loudnorm`, including
+switching, background, app mini-player, and system PiP. Chained and arbitrary
+custom FFmpeg filters and remaining lifecycle edges keep the eighth batch open,
+and the audit APK does not update the formal release baseline.

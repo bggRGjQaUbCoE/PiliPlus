@@ -1382,3 +1382,48 @@ listening comparison against mpv `dynaudnorm`/one-pass `loudnorm`, including
 switching, background, app mini-player, and system PiP. Chained and arbitrary
 custom FFmpeg filters and remaining lifecycle edges keep the eighth batch open,
 and the audit APK does not update the formal release baseline.
+
+### Eighth-batch audio-filter-chain group
+
+Commit `531f2a854427de4ffccc6af711c01369e6aa6d84` extends the Media3 audio
+normalization mapping from single filters to supported filter chains:
+
+- the FFmpeg chain is split on `,` into stages; `volume=` (linear or `dB`
+  values) and exactly one `loudnorm=`/`dynaudnorm=` stage are supported;
+- volume stages are folded with volume-last semantics: static measured
+  loudnorm gain is multiplied by the volume multiplier, and dynamic targets
+  are shifted by the corresponding decibels. Multiple volume stages multiply;
+  `volume=0` maps to a silent static gain instead of an infinite target;
+- a chain containing an unknown stage (for example `highpass=f=100`) or more
+  than one loudness stage falls back with the exact offending stage name in
+  the user toast instead of a generic message;
+- the MPV path still receives the original full FFmpeg chain unchanged.
+
+All changed Dart files are formatted and targeted analysis reports no issues.
+Full `dart analyze` has no errors or warnings and retains the established 37
+info diagnostics. Full `flutter analyze` completes repository analysis and
+returns nonzero only for the same diagnostics. All 43 Flutter tests pass,
+including volume-only and decibel volume chains, volume folding into
+dynaudnorm/one-pass/measured loudnorm, exact unsupported-stage reporting,
+multi-loudness-stage rejection, and malformed volume rejection. The complete
+Android Release build passes.
+
+The Release audit APK embeds build time `2026-08-03 13:31:47 +08:00` and the
+exact implementation commit. It passed application ID, label, version,
+universal ABI, and signing-certificate verification:
+
+- APK:
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-audio-filter-chain-audit.apk`
+- size: `67,790,986` bytes
+- SHA-256:
+  `A00834A02C86F0632E95DDB94B34F2DEC01A37006F5A1D2888396BD9BDA0EDCA`
+- certificate SHA-256:
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+
+Real-device listening comparison against MPV remains required for chains such
+as `volume=0.8,loudnorm=...` and `dynaudnorm=...,volume=-3dB`, including
+switching, background, app mini-player, and system PiP, plus confirmation that
+chains with unknown stages show the specific filter name. Unknown filters,
+multiple loudness stages, and arbitrarily complex FFmpeg chains remain an
+explicit unsupported gap, and the audit APK does not update the formal release
+baseline.

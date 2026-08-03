@@ -1,6 +1,6 @@
 # pili++ 当前项目状态
 
-> 最后核对：2026-08-03 11:15 +08:00
+> 最后核对：2026-08-03 13:40 +08:00
 >
 > 本文件记录会随开发变化、但后续任务必须知道的事实。开始任务时先核对这里与实际
 > Git、源码和构建产物；结束任务前更新。长期规则见 `AGENTS.md`，ExoPlayer 详细兼容
@@ -11,14 +11,14 @@
 - 当前分支：`main`
 - 最新 GitHub 发布源提交：`859d39c4ff3c77c37e1cc1d7131192df8f8b4241`
   (`chore: prepare 2.1.2 release`)
-- 最新功能快照：`3389f5a78beb1d7dca8f2ee1ece6ae7a78df0d74`
-  (`feat: restore Media3 decoder selection and dynamic audio normalization`)
+- 最新功能快照：`531f2a854427de4ffccc6af711c01369e6aa6d84`
+  (`feat: support volume chains in Media3 audio normalization`)
 - 最新上游合并提交：`0e4e8db250e986c4f8e32652fac2652651ec4168`
   (`Merge remote-tracking branch 'upstream/main' into codex/android-exoplayer`)
 - 上游：`https://github.com/bggRGjQaUbCoE/PiliPlus.git`
 - 已获取并合入的 `upstream/main`：`5296a8f7f07a22f347ad53bc8c7651e6787bf3ec`
 - 当前分支已包含上游 `56ca0ca`、`10b723f`、`e4e7037`、`91e7899` 和 `5296a8f`；
-  本状态更新提交完成后相对上游为本地领先 62、落后 0。
+  本状态更新提交完成后相对上游为本地领先 64、落后 0。
 - 应用内小窗、音频焦点/媒体控制、系统 PiP 恢复、版本更新和兼容记录已保存到上述
   功能快照。交接时应以实际 `git status` 为准；存在未提交修改时不得直接 merge 或
   rebase。
@@ -106,6 +106,29 @@
 - 上游 UI 和文本选择变化仍需真机回归；审计 APK 不是新版本交付，不更新发布基线。
 
 ## 当前待验证修改
+
+- ExoPlayer 适配批次 8 音频滤镜链组已提交为
+  `531f2a854427de4ffccc6af711c01369e6aa6d84`：ExoPlayer 侧把 FFmpeg 滤镜链按 `,` 拆成
+  受支持原语阶段（`volume=` 线性/dB 值、单个 `loudnorm=`、单个 `dynaudnorm=`）。音量阶段
+  按“音量在后”语义折算进归一化目标（线性乘增益或折算目标响度），多个音量阶段相乘；
+  链中任一未知滤镜（如 `highpass`）或多个响度归一化阶段整体回退，Toast 明确报出具体
+  滤镜名。`volume=0` 直接映射为静音，避免目标响度取负无穷。mpv 路径保持原 FFmpeg 链。
+- 本组 Dart 文件已格式化并通过定向分析；完整 `dart analyze` 无 error/warning，保留 37 条
+  既有 info；完整 `flutter analyze` 仅因相同 37 条 info 返回非零；完整 `flutter test`
+  共 43 项全部通过，新增纯音量链、dB 音量、音量折叠进 dynaudnorm/单遍/两遍 loudnorm、
+  未知阶段精确报错、多响度阶段拒绝和畸形音量测试；Android Release 构建通过。
+- 音频滤镜链审计包位于
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-audio-filter-chain-audit.apk`，
+  嵌入提交 `531f2a854427de4ffccc6af711c01369e6aa6d84`，构建时间
+  `2026-08-03 13:31:47 +08:00`，大小 67,790,986 字节，SHA-256 为
+  `A00834A02C86F0632E95DDB94B34F2DEC01A37006F5A1D2888396BD9BDA0EDCA`。
+  `tool/verify_release.ps1 -AllowAlreadyDelivered` 已确认 applicationId、应用名、版本、
+  universal ABI 和签名证书
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C` 均符合基线；
+  该包不更新正式发布基线。
+- 本组待真机对照：`volume=0.8,loudnorm=...`、`dynaudnorm=...,volume=-3dB` 等链与 mpv
+  同参数听感对照，覆盖切换、后台、小窗和 PiP；含未知滤镜的链应显示具体滤镜名提示。
+  完成该矩阵前只能标记为“实现完成、待真机验证”。
 
 - ExoPlayer 适配批次 8 解码器隔离与动态音频组已提交为
   `3389f5a78beb1d7dca8f2ee1ece6ae7a78df0d74`：在安全缓冲隔离之上恢复 Media3 解码器
@@ -661,8 +684,10 @@
 - 原生音视频轨道枚举/选择、播放器信息和内置文本轨独立选择入口已接入 Media3，
   批次 3 与批次 5 的对应流程仍待真机对照。
 - 服务器提供测量参数的两遍 `loudnorm` 已接入 Media3 PCM 增益与真峰值限制器；单遍
-  `loudnorm` 与 `dynaudnorm` 已实现分窗 RMS 自动增益的 Media3 近似（`3389f5a`），
-  两者均待真机与 mpv 听感对照。链式及任意自定义 FFmpeg 滤镜仍无 Media3 等价实现。
+  `loudnorm` 与 `dynaudnorm` 已实现分窗 RMS 自动增益的 Media3 近似（`3389f5a`）。
+  `volume=` 与单个响度阶段的链已支持（`531f2a8`），均待真机与 mpv 听感对照。
+  未知 FFmpeg 滤镜（如 `highpass`）、多个响度阶段及任意复杂链仍无 Media3 等价实现，
+  Toast 会指明具体未适配滤镜名。
 - 网络/源错误自动恢复与诊断已进入待真机验证；解码错误目前提供明确终态诊断和提示，
   不自动重试，仍需真机覆盖具体硬件解码失败与切画质恢复流程。
 - Media3 自定义缓冲大小和点播缓冲时长按“时间安全阈值优先”重新实现，Samsung Android 16

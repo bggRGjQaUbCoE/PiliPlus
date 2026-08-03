@@ -968,6 +968,9 @@ class PlPlayerController with BlockConfigMixin {
       case ExoAudioNormalizationConfiguration():
         _lastUnsupportedExoAudioNormalization = null;
         return resolution.toMap();
+      case ExoAudioDynamicNormalizationConfiguration():
+        _lastUnsupportedExoAudioNormalization = null;
+        return resolution.toMap();
       case UnsupportedExoAudioNormalization(:final filter):
         if (_lastUnsupportedExoAudioNormalization != filter) {
           _lastUnsupportedExoAudioNormalization = filter;

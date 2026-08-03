@@ -48,6 +48,7 @@ import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.audio.AudioSink
 import androidx.media3.exoplayer.audio.DefaultAudioSink
+import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.MergingMediaSource
@@ -325,6 +326,7 @@ private class ExoPlayerSession(
         NormalizingRenderersFactory(
             context,
             audioNormalizationProcessor,
+            configuration.enableHardwareDecoding,
         ),
     ).setLoadControl(configuration.createLoadControl()).build().also {
         it.addListener(this)
@@ -496,11 +498,7 @@ private class ExoPlayerSession(
                 mimeType = resolvedMimeType,
             )
             !uri.isNullOrEmpty() -> SubtitleRequest(
-                uri = if (uri.contains("://")) {
-                    Uri.parse(uri)
-                } else {
-                    Uri.fromFile(java.io.File(uri))
-                },
+                uri = resolveMediaUri(uri),
                 language = language,
                 label = label,
                 mimeType = resolvedMimeType,
@@ -571,7 +569,7 @@ private class ExoPlayerSession(
         val mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory)
 
         fun source(url: String, subtitle: SubtitleRequest? = null): MediaSource {
-            val uri = if (url.contains("://")) Uri.parse(url) else Uri.fromFile(java.io.File(url))
+            val uri = resolveMediaUri(url)
             val item = MediaItem.Builder().setUri(uri).apply {
                 if (request.isLive) {
                     setLiveConfiguration(MediaItem.LiveConfiguration.Builder().build())
@@ -1370,7 +1368,15 @@ private data class MediaRequest(
 private class NormalizingRenderersFactory(
     context: Context,
     private val audioNormalizationProcessor: AudioNormalizationProcessor,
+    enableHardwareDecoding: Boolean,
 ) : DefaultRenderersFactory(context) {
+    init {
+        setEnableDecoderFallback(true)
+        if (!enableHardwareDecoding) {
+            setMediaCodecSelector(SOFTWARE_VIDEO_CODEC_SELECTOR)
+        }
+    }
+
     override fun buildAudioSink(
         context: Context,
         enableFloatOutput: Boolean,
@@ -1382,6 +1388,11 @@ private class NormalizingRenderersFactory(
         .build()
 }
 
+private val SOFTWARE_VIDEO_CODEC_SELECTOR = MediaCodecSelector { mimeType, secure, tunneling ->
+    val decoders = MediaCodecSelector.DEFAULT.getDecoderInfos(mimeType, secure, tunneling)
+    if (MimeTypes.isVideo(mimeType)) decoders.filter { it.softwareOnly } else decoders
+}
+
 private data class Media3PlaybackConfiguration(
     val enableHardwareDecoding: Boolean = true,
     val targetBufferBytes: Int = DEFAULT_TARGET_BUFFER_BYTES,
@@ -1390,9 +1401,9 @@ private data class Media3PlaybackConfiguration(
 ) {
     val description: String
         get() = buildString {
-            append("decoder=platform-default (requested=")
+            append("decoder=")
             append(if (enableHardwareDecoding) "hardware" else "software")
-            append(')')
+            append(", decoderFallback=true")
             if (isLive) {
                 append(", buffer=media3-live-default")
                 return@buildString

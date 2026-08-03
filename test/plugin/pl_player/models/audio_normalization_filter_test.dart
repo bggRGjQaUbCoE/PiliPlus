@@ -82,17 +82,57 @@ void main() {
     },
   );
 
-  test('ExoPlayer keeps dynamic and custom filters as explicit gaps', () {
-    expect(
-      resolveExoAudioNormalization(config: '1', fallbackConfig: disabled),
-      isA<UnsupportedExoAudioNormalization>(),
-    );
-    expect(
-      resolveExoAudioNormalization(
-        config: 'volume=0.8',
-        fallbackConfig: disabled,
-      ),
-      isA<UnsupportedExoAudioNormalization>(),
-    );
+  test('ExoPlayer maps the dynaudnorm preset to dynamic normalization', () {
+    final resolution =
+        resolveExoAudioNormalization(
+              config: '1',
+              fallbackConfig: disabled,
+            )
+            as ExoAudioDynamicNormalizationConfiguration;
+
+    expect(resolution.targetRmsDb, -16);
+    expect(resolution.peak, 1);
+    expect(resolution.maxGain, 5);
+    expect(resolution.frameMs, 250);
+    expect(resolution.smoothing, 0.9);
+    expect(resolution.toMap()['dynamic'], isTrue);
   });
+
+  test(
+    'ExoPlayer maps one-pass loudnorm without measurements to dynamic normalization',
+    () {
+      final resolution =
+          resolveExoAudioNormalization(
+                config: '2',
+                fallbackConfig: '2',
+              )
+              as ExoAudioDynamicNormalizationConfiguration;
+
+      expect(resolution.targetRmsDb, -16);
+      expect(resolution.peak, closeTo(0.8413951, 0.000001));
+      expect(resolution.maxGain, 10);
+      expect(resolution.frameMs, 3000);
+      expect(resolution.smoothing, 0.35);
+    },
+  );
+
+  test(
+    'ExoPlayer keeps custom and chained FFmpeg filters as explicit gaps',
+    () {
+      expect(
+        resolveExoAudioNormalization(
+          config: 'volume=0.8',
+          fallbackConfig: disabled,
+        ),
+        isA<UnsupportedExoAudioNormalization>(),
+      );
+      expect(
+        resolveExoAudioNormalization(
+          config: 'loudnorm=I=-16,dynaudnorm=g=5',
+          fallbackConfig: disabled,
+        ),
+        isA<UnsupportedExoAudioNormalization>(),
+      );
+    },
+  );
 }

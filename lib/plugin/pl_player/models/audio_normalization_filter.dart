@@ -4,6 +4,8 @@ import 'package:PiliPlus/models/common/audio_normalization.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
 
 final _loudnormRegExp = RegExp('loudnorm=([^,]+)');
+final _singleDynaudnormRegExp = RegExp('^dynaudnorm=(.+)\$');
+final _singleLoudnormRegExp = RegExp('^loudnorm=([^,]+)\$');
 
 String? resolveAudioNormalizationFilter({
   required String config,
@@ -56,6 +58,42 @@ final class ExoAudioNormalizationConfiguration
   Map<String, Object> toMap() => {'gain': gain, 'peak': peak, 'filter': filter};
 }
 
+/// Media3 approximation of FFmpeg one-pass loudnorm / dynaudnorm.
+///
+/// Applies windowed RMS-based automatic gain toward [targetRmsDb], bounded by
+/// [maxGain], smoothed by [smoothing] per window, then a true-peak limiter at
+/// [peak]. It intentionally does not replicate arbitrary chained FFmpeg
+/// filters, which remain `UnsupportedExoAudioNormalization`.
+final class ExoAudioDynamicNormalizationConfiguration
+    extends ExoAudioNormalizationResolution {
+  const ExoAudioDynamicNormalizationConfiguration({
+    required this.targetRmsDb,
+    required this.peak,
+    required this.maxGain,
+    required this.frameMs,
+    required this.smoothing,
+    required this.filter,
+  });
+
+  final double targetRmsDb;
+  final double peak;
+  final double maxGain;
+  final int frameMs;
+  final double smoothing;
+  final String filter;
+
+  Map<String, Object> toMap() => {
+    'gain': 1.0,
+    'peak': peak,
+    'filter': filter,
+    'dynamic': true,
+    'targetRmsDb': targetRmsDb,
+    'maxGain': maxGain,
+    'frameMs': frameMs,
+    'smoothing': smoothing,
+  };
+}
+
 final class UnsupportedExoAudioNormalization
     extends ExoAudioNormalizationResolution {
   const UnsupportedExoAudioNormalization(this.filter);
@@ -75,17 +113,39 @@ ExoAudioNormalizationResolution? resolveExoAudioNormalization({
   );
   if (filter == null) return null;
 
-  final match = RegExp(r'^loudnorm=([^,]+)$').firstMatch(filter);
+  final dynaudnorm = _singleDynaudnormRegExp.firstMatch(filter);
+  if (dynaudnorm != null) {
+    final options = _parseFilterOptions(dynaudnorm.group(1)!);
+    return ExoAudioDynamicNormalizationConfiguration(
+      targetRmsDb: -16,
+      peak: 1,
+      maxGain: (options['g'] ?? 5).toDouble().clamp(1, 100).toDouble(),
+      frameMs: (options['f'] ?? 250).toInt().clamp(20, 2000).toInt(),
+      smoothing: (options['r'] ?? 0.9).toDouble().clamp(0.01, 1).toDouble(),
+      filter: filter,
+    );
+  }
+
+  final match = _singleLoudnormRegExp.firstMatch(filter);
   if (match == null) return UnsupportedExoAudioNormalization(filter);
   final options = _parseFilterOptions(match.group(1)!);
   final measuredI = options['measured_i']?.toDouble();
   final measuredTp = options['measured_tp']?.toDouble();
   if (measuredI == null || measuredI >= 0 || measuredTp == null) {
-    return UnsupportedExoAudioNormalization(filter);
+    final targetI = (options['i'] ?? -24).toDouble().clamp(-70, -5).toDouble();
+    final targetTp = (options['tp'] ?? -2).toDouble().clamp(-9, 0).toDouble();
+    return ExoAudioDynamicNormalizationConfiguration(
+      targetRmsDb: targetI,
+      peak: pow(10, targetTp / 20).toDouble(),
+      maxGain: 10,
+      frameMs: 3000,
+      smoothing: 0.35,
+      filter: filter,
+    );
   }
 
-  final targetI = (options['i'] ?? -24).toDouble().clamp(-70, -5);
-  final targetTp = (options['tp'] ?? -2).toDouble().clamp(-9, 0);
+  final targetI = (options['i'] ?? -24).toDouble().clamp(-70, -5).toDouble();
+  final targetTp = (options['tp'] ?? -2).toDouble().clamp(-9, 0).toDouble();
   final offset = (options['offset'] ?? 0).toDouble();
   final gainDb = (targetI - measuredI + offset).clamp(-24, 24);
   return ExoAudioNormalizationConfiguration(

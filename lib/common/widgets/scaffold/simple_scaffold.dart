@@ -126,8 +126,8 @@ class _RenderScaffoldLayout extends RenderBox
       }
     }
 
-    doPaint(appBar);
     doPaint(body);
+    doPaint(appBar);
     doPaint(fab);
   }
 

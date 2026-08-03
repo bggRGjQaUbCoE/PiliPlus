@@ -145,7 +145,12 @@ bool shouldRetryExoPlaybackFailure(
   required int limit,
   required bool localSource,
   required bool sessionActive,
-}) => failure.recoverable && !localSource && sessionActive && attempt < limit;
+  bool softwareFallbackAttempted = false,
+}) =>
+    sessionActive &&
+    ((failure.recoverable && !localSource && attempt < limit) ||
+        (!softwareFallbackAttempted &&
+            failure.category == ExoPlayerFailureCategory.decoder));
 
 Duration exoPlaybackRetryDelay({
   required int baseDelayMs,

@@ -181,10 +181,14 @@ private class ExoPlayerManager(
                     result.success(null)
                 }
                 "retry" -> {
-                    requiredSession(call).retry(
-                        positionMs = call.argument<Number>("positionMs")?.toLong() ?: 0L,
-                        playWhenReady = call.argument<Boolean>("playWhenReady") ?: false,
-                    )
+                    val positionMs = call.argument<Number>("positionMs")?.toLong() ?: 0L
+                    val playWhenReady = call.argument<Boolean>("playWhenReady") ?: false
+                    val session = requiredSession(call)
+                    if (call.argument<Boolean>("forceSoftwareVideo") == true) {
+                        session.retryWithSoftwareVideo(positionMs, playWhenReady)
+                    } else {
+                        session.retry(positionMs, playWhenReady)
+                    }
                     result.success(null)
                 }
                 "seekTo" -> {
@@ -321,7 +325,8 @@ private class ExoPlayerSession(
     private val sendEvent: (Map<String, Any?>) -> Unit,
 ) : Player.Listener, AnalyticsListener {
     private val audioNormalizationProcessor = AudioNormalizationProcessor()
-    val player: ExoPlayer = ExoPlayer.Builder(
+    private var softwareVideoFallback = false
+    var player: ExoPlayer = ExoPlayer.Builder(
         context,
         NormalizingRenderersFactory(
             context,
@@ -708,6 +713,56 @@ private class ExoPlayerSession(
         emitState()
     }
 
+    fun retryWithSoftwareVideo(positionMs: Long, playWhenReady: Boolean) {
+        if (softwareVideoFallback || !configuration.enableHardwareDecoding) {
+            retry(positionMs, playWhenReady)
+            return
+        }
+        softwareVideoFallback = true
+        rebuildPlayerWithSoftwareVideo(positionMs, playWhenReady)
+    }
+
+    private fun rebuildPlayerWithSoftwareVideo(positionMs: Long, playWhenReady: Boolean) {
+        val position = if (mediaRequest?.isLive == true) {
+            0L
+        } else {
+            positionMs.coerceAtLeast(0L)
+        }
+        val previousPlayer = player
+        previousPlayer.removeListener(this)
+        previousPlayer.release()
+        player = ExoPlayer.Builder(
+            context,
+            NormalizingRenderersFactory(
+                context,
+                audioNormalizationProcessor,
+                enableHardwareDecoding = false,
+            ),
+        ).setLoadControl(configuration.createLoadControl()).build().also {
+            it.addListener(this)
+            it.addAnalyticsListener(this)
+            it.playWhenReady = false
+            it.setVideoSurface(surfaceProducer.surface)
+        }
+        player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
+            .clearOverridesOfType(C.TRACK_TYPE_TEXT)
+            .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, subtitleRequest == null)
+            .build()
+        videoDecoder = null
+        audioDecoder = null
+        firstVideoFrameRendered = false
+        sourceVideoWidth = 0
+        sourceVideoHeight = 0
+        appliedSuperResolutionTarget = null
+        superResolutionDescription = "disabled"
+        if (superResolutionMode != Media3SuperResolutionMode.DISABLE) {
+            applySuperResolutionEffect()
+        }
+        subtitleCueSequence.incrementAndGet()
+        updateSubtitleCues(emptyList())
+        prepareMedia(position, playWhenReady)
+    }
+
     override fun onRenderedFirstFrame() {
         firstVideoFrameRendered = true
         emitState()
@@ -1004,7 +1059,7 @@ private class ExoPlayerSession(
                 "audioDecoder" to audioDecoder,
                 "firstVideoFrameRendered" to firstVideoFrameRendered,
                 "mediaDescription" to mediaRequest?.description,
-                "playbackConfiguration" to configuration.description,
+                "playbackConfiguration" to configuration.description(softwareVideoFallback),
                 "audioNormalization" to mediaRequest?.audioNormalization?.filter,
                 "superResolution" to superResolutionDescription,
             ),
@@ -1399,11 +1454,12 @@ private data class Media3PlaybackConfiguration(
     val bufferDurationMs: Int = DEFAULT_BUFFER_DURATION_MS,
     val isLive: Boolean = false,
 ) {
-    val description: String
-        get() = buildString {
-            append("decoder=")
-            append(if (enableHardwareDecoding) "hardware" else "software")
-            append(", decoderFallback=true")
+    fun description(softwareVideoFallback: Boolean = false): String = buildString {
+        append("decoder=")
+        append(
+            if (enableHardwareDecoding && !softwareVideoFallback) "hardware" else "software",
+        )
+        append(", decoderFallback=true")
             if (isLive) {
                 append(", buffer=media3-live-default")
                 return@buildString

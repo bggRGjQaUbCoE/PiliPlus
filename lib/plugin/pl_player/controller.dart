@@ -453,6 +453,7 @@ class PlPlayerController with BlockConfigMixin {
   Timer? _exoRetryTimer;
   int _exoRetryAttempt = 0;
   String? _lastFinalExoFailure;
+  bool _exoSoftwareFallbackAttempted = false;
 
   Box setting = GStorage.setting;
 
@@ -1347,6 +1348,7 @@ class PlPlayerController with BlockConfigMixin {
     required bool playWhenReady,
     bool preserveSubtitle = true,
   }) {
+    _exoSoftwareFallbackAttempted = false;
     final audio = dataSource.audioSource;
     return _exoPlayerController!.open(
       videoUrl: dataSource.videoSource,
@@ -1527,9 +1529,16 @@ class PlPlayerController with BlockConfigMixin {
       limit: retryLimit,
       localSource: dataSource is FileSource,
       sessionActive: _playerCount > 0,
+      softwareFallbackAttempted: _exoSoftwareFallbackAttempted,
     );
     if (canRetry) {
       _exoRetryAttempt += 1;
+      final isSoftwareFallbackRetry =
+          !_exoSoftwareFallbackAttempted &&
+          failure.category == ExoPlayerFailureCategory.decoder;
+      if (isSoftwareFallbackRetry) {
+        _exoSoftwareFallbackAttempted = true;
+      }
       final attempt = _exoRetryAttempt;
       final delay = exoPlaybackRetryDelay(
         baseDelayMs: Pref.retryDelay,
@@ -1544,7 +1553,9 @@ class PlPlayerController with BlockConfigMixin {
         isLive,
       );
       SmartDialog.showToast(
-        '播放连接失败，正在重试（$attempt/$retryLimit）',
+        isSoftwareFallbackRetry
+            ? '硬件解码失败，正在切换软件解码重试'
+            : '播放连接失败，正在重试（$attempt/$retryLimit）',
         displayTime: const Duration(milliseconds: 900),
       );
       if (kDebugMode) {
@@ -1570,6 +1581,7 @@ class PlPlayerController with BlockConfigMixin {
           await player.retry(
             position: retryPosition,
             playWhenReady: retryPlayWhenReady,
+            forceSoftwareVideo: isSoftwareFallbackRetry,
           );
         } catch (error, stackTrace) {
           _finishExoFailure(
@@ -1612,10 +1624,14 @@ class PlPlayerController with BlockConfigMixin {
     playerStatus.value = .paused;
     videoPlayerServiceHandler?.onStatusChange(.paused, false, isLive);
     dataStatus.value = .error;
-    final diagnostics = failure.diagnostics(
-      retryAttempt: _exoRetryAttempt,
-      retryLimit: Pref.retryCount,
-    );
+    final diagnostics =
+        failure.diagnostics(
+          retryAttempt: _exoRetryAttempt,
+          retryLimit: Pref.retryCount,
+        ) +
+        (_exoSoftwareFallbackAttempted
+            ? '\\nsoftwareVideoFallback: attempted'
+            : '');
     if (_lastFinalExoFailure != diagnostics) {
       _lastFinalExoFailure = diagnostics;
       SmartDialog.showToast(failure.userMessage);
@@ -1629,6 +1645,7 @@ class PlPlayerController with BlockConfigMixin {
     if (resetAttempts) {
       _exoRetryAttempt = 0;
       _lastFinalExoFailure = null;
+      _exoSoftwareFallbackAttempted = false;
     }
   }
 

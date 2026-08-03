@@ -307,12 +307,14 @@ class ExoPlayerController {
   Future<void> retry({
     required Duration position,
     required bool playWhenReady,
+    bool forceSoftwareVideo = false,
   }) {
     _playWhenReady = playWhenReady;
     return _methods.invokeMethod<void>('retry', {
       'id': id,
       'positionMs': position.inMilliseconds,
       'playWhenReady': playWhenReady,
+      'forceSoftwareVideo': forceSoftwareVideo,
     });
   }
 

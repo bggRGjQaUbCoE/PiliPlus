@@ -971,10 +971,15 @@ class PlPlayerController with BlockConfigMixin {
       case ExoAudioDynamicNormalizationConfiguration():
         _lastUnsupportedExoAudioNormalization = null;
         return resolution.toMap();
-      case UnsupportedExoAudioNormalization(:final filter):
+      case UnsupportedExoAudioNormalization(
+        :final filter,
+        :final unsupportedStage,
+      ):
         if (_lastUnsupportedExoAudioNormalization != filter) {
           _lastUnsupportedExoAudioNormalization = filter;
-          SmartDialog.showToast('当前音量均衡参数尚未适配 ExoPlayer，已保持原始音频');
+          SmartDialog.showToast(
+            '音量均衡滤镜「${unsupportedStage ?? filter}」尚未适配 ExoPlayer，已保持原始音频',
+          );
         }
         return null;
       case null:

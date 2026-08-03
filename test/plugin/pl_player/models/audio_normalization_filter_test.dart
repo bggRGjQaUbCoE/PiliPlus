@@ -116,23 +116,104 @@ void main() {
     },
   );
 
-  test(
-    'ExoPlayer keeps custom and chained FFmpeg filters as explicit gaps',
-    () {
-      expect(
+  test('ExoPlayer supports a volume-only chain', () {
+    final resolution =
         resolveExoAudioNormalization(
-          config: 'volume=0.8',
-          fallbackConfig: disabled,
-        ),
-        isA<UnsupportedExoAudioNormalization>(),
-      );
-      expect(
+              config: 'volume=0.8',
+              fallbackConfig: disabled,
+            )
+            as ExoAudioNormalizationConfiguration;
+
+    expect(resolution.gain, closeTo(0.8, 0.000001));
+    expect(resolution.peak, 1);
+  });
+
+  test('ExoPlayer parses decibel volume stages', () {
+    final resolution =
         resolveExoAudioNormalization(
-          config: 'loudnorm=I=-16,dynaudnorm=g=5',
-          fallbackConfig: disabled,
-        ),
-        isA<UnsupportedExoAudioNormalization>(),
-      );
-    },
-  );
+              config: 'volume=-3dB',
+              fallbackConfig: disabled,
+            )
+            as ExoAudioNormalizationConfiguration;
+
+    expect(resolution.gain, closeTo(0.7079458, 0.000001));
+  });
+
+  test('ExoPlayer folds volume into the dynaudnorm target', () {
+    final resolution =
+        resolveExoAudioNormalization(
+              config: 'dynaudnorm=g=5:f=250:r=0.9:p=0.5,volume=0.5',
+              fallbackConfig: disabled,
+            )
+            as ExoAudioDynamicNormalizationConfiguration;
+
+    expect(resolution.targetRmsDb, closeTo(-22.0205999, 0.000001));
+    expect(resolution.maxGain, 5);
+    expect(resolution.frameMs, 250);
+  });
+
+  test('ExoPlayer folds volume into one-pass loudnorm', () {
+    final resolution =
+        resolveExoAudioNormalization(
+              config: 'loudnorm=I=-16:LRA=11:TP=-1.5,volume=0.8',
+              fallbackConfig: '2',
+            )
+            as ExoAudioDynamicNormalizationConfiguration;
+
+    expect(resolution.targetRmsDb, closeTo(-17.9382003, 0.000001));
+    expect(resolution.peak, closeTo(0.8413951, 0.000001));
+  });
+
+  test('ExoPlayer folds volume into measured loudnorm gain', () {
+    final resolution =
+        resolveExoAudioNormalization(
+              config: 'loudnorm=I=-16:LRA=11:TP=-1.5,volume=0.8',
+              fallbackConfig: disabled,
+              volume: Volume(
+                measuredI: -20,
+                measuredLra: 8,
+                measuredTp: -1,
+                measuredThreshold: -30,
+                targetOffset: 0,
+                targetI: -16,
+                targetTp: -1.5,
+              ),
+            )
+            as ExoAudioNormalizationConfiguration;
+
+    expect(resolution.gain, closeTo(1.2679146, 0.000001));
+    expect(resolution.peak, closeTo(0.8413951, 0.000001));
+  });
+
+  test('ExoPlayer reports the exact unsupported chain stage', () {
+    final resolution =
+        resolveExoAudioNormalization(
+              config: 'volume=0.8,highpass=f=100',
+              fallbackConfig: disabled,
+            )
+            as UnsupportedExoAudioNormalization;
+
+    expect(resolution.unsupportedStage, 'highpass=f=100');
+  });
+
+  test('ExoPlayer rejects chains with multiple loudness stages', () {
+    final resolution =
+        resolveExoAudioNormalization(
+              config: 'loudnorm=I=-16,dynaudnorm=g=5',
+              fallbackConfig: '2',
+            )
+            as UnsupportedExoAudioNormalization;
+
+    expect(resolution.unsupportedStage, 'dynaudnorm=g=5');
+  });
+
+  test('ExoPlayer rejects malformed volume stages', () {
+    expect(
+      resolveExoAudioNormalization(
+        config: 'volume=abc',
+        fallbackConfig: disabled,
+      ),
+      isA<UnsupportedExoAudioNormalization>(),
+    );
+  });
 }

@@ -1,9 +1,10 @@
-import 'dart:math' show pow;
+import 'dart:math' show log, pow;
 
 import 'package:PiliPlus/models/common/audio_normalization.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
 
 final _loudnormRegExp = RegExp('loudnorm=([^,]+)');
+final _volumeStageRegExp = RegExp('^volume=(.+)\$');
 final _singleDynaudnormRegExp = RegExp('^dynaudnorm=(.+)\$');
 final _singleLoudnormRegExp = RegExp('^loudnorm=([^,]+)\$');
 
@@ -39,6 +40,24 @@ Map<String, num> _parseFilterOptions(String options) => Map.fromEntries(
   }).nonNulls,
 );
 
+/// Parses an FFmpeg `volume` stage into a linear multiplier.
+///
+/// Accepts linear values (`volume=0.8`) and decibel values (`volume=-3dB`).
+/// Extra colon-separated options are ignored by this approximation.
+double? _parseVolumeMultiplier(String stage) {
+  final value = stage.substring('volume='.length).trim();
+  final first = value.split(':').first.trim();
+  final lower = first.toLowerCase();
+  if (lower.endsWith('db')) {
+    final decibels = double.tryParse(lower.substring(0, lower.length - 2));
+    return decibels == null ? null : pow(10, decibels / 20).toDouble();
+  }
+  final linear = double.tryParse(lower);
+  return linear == null || linear < 0 ? null : linear;
+}
+
+double _decibelsOf(double multiplier) => 20 * log(multiplier) / log(10);
+
 sealed class ExoAudioNormalizationResolution {
   const ExoAudioNormalizationResolution();
 }
@@ -62,8 +81,7 @@ final class ExoAudioNormalizationConfiguration
 ///
 /// Applies windowed RMS-based automatic gain toward [targetRmsDb], bounded by
 /// [maxGain], smoothed by [smoothing] per window, then a true-peak limiter at
-/// [peak]. It intentionally does not replicate arbitrary chained FFmpeg
-/// filters, which remain `UnsupportedExoAudioNormalization`.
+/// [peak].
 final class ExoAudioDynamicNormalizationConfiguration
     extends ExoAudioNormalizationResolution {
   const ExoAudioDynamicNormalizationConfiguration({
@@ -96,11 +114,22 @@ final class ExoAudioDynamicNormalizationConfiguration
 
 final class UnsupportedExoAudioNormalization
     extends ExoAudioNormalizationResolution {
-  const UnsupportedExoAudioNormalization(this.filter);
+  const UnsupportedExoAudioNormalization(this.filter, {this.unsupportedStage});
 
   final String filter;
+
+  /// The exact chain stage that cannot be mapped, when known.
+  final String? unsupportedStage;
 }
 
+/// Resolves a possibly chained FFmpeg audio-normalization filter for Media3.
+///
+/// Supported primitives are `volume=` plus at most one `loudnorm=` or
+/// `dynaudnorm=` stage. Volume stages are folded into the normalized output
+/// (volume-last semantics), which also approximates volume-before-loudness
+/// chains because loudness normalization re-normalizes the result. Unknown
+/// stages or more than one loudness stage remain unsupported and are reported
+/// with the offending stage name.
 ExoAudioNormalizationResolution? resolveExoAudioNormalization({
   required String config,
   required String fallbackConfig,
@@ -113,11 +142,65 @@ ExoAudioNormalizationResolution? resolveExoAudioNormalization({
   );
   if (filter == null) return null;
 
-  final dynaudnorm = _singleDynaudnormRegExp.firstMatch(filter);
+  final chain = filter
+      .split(',')
+      .map((stage) => stage.trim())
+      .where((stage) => stage.isNotEmpty)
+      .toList();
+
+  var volumeMultiplier = 1.0;
+  final loudnessStages = <String>[];
+  String? unsupportedStage;
+  for (final stage in chain) {
+    if (_volumeStageRegExp.hasMatch(stage)) {
+      final parsed = _parseVolumeMultiplier(stage);
+      if (parsed == null) {
+        unsupportedStage = stage;
+        break;
+      }
+      volumeMultiplier *= parsed;
+      continue;
+    }
+    if (_singleDynaudnormRegExp.hasMatch(stage) ||
+        _singleLoudnormRegExp.hasMatch(stage)) {
+      loudnessStages.add(stage);
+      continue;
+    }
+    unsupportedStage = stage;
+    break;
+  }
+  if (unsupportedStage != null) {
+    return UnsupportedExoAudioNormalization(
+      filter,
+      unsupportedStage: unsupportedStage,
+    );
+  }
+  if (loudnessStages.length > 1) {
+    return UnsupportedExoAudioNormalization(
+      filter,
+      unsupportedStage: loudnessStages[1],
+    );
+  }
+
+  if (volumeMultiplier <= 0) {
+    return ExoAudioNormalizationConfiguration(gain: 0, peak: 1, filter: filter);
+  }
+
+  final volumeDb = _decibelsOf(volumeMultiplier);
+  final stage = loudnessStages.isEmpty ? null : loudnessStages.first;
+  if (stage == null) {
+    return ExoAudioNormalizationConfiguration(
+      gain: volumeMultiplier,
+      peak: 1,
+      filter: filter,
+    );
+  }
+
+  final dynaudnorm = _singleDynaudnormRegExp.firstMatch(stage);
   if (dynaudnorm != null) {
     final options = _parseFilterOptions(dynaudnorm.group(1)!);
     return ExoAudioDynamicNormalizationConfiguration(
-      targetRmsDb: -16,
+      targetRmsDb: -16 + volumeDb,
       peak: 1,
       maxGain: (options['g'] ?? 5).toDouble().clamp(1, 100).toDouble(),
       frameMs: (options['f'] ?? 250).toInt().clamp(20, 2000).toInt(),
@@ -126,8 +209,7 @@ ExoAudioNormalizationResolution? resolveExoAudioNormalization({
     );
   }
 
-  final match = _singleLoudnormRegExp.firstMatch(filter);
-  if (match == null) return UnsupportedExoAudioNormalization(filter);
+  final match = _singleLoudnormRegExp.firstMatch(stage)!;
   final options = _parseFilterOptions(match.group(1)!);
   final measuredI = options['measured_i']?.toDouble();
   final measuredTp = options['measured_tp']?.toDouble();
@@ -135,7 +217,7 @@ ExoAudioNormalizationResolution? resolveExoAudioNormalization({
     final targetI = (options['i'] ?? -24).toDouble().clamp(-70, -5).toDouble();
     final targetTp = (options['tp'] ?? -2).toDouble().clamp(-9, 0).toDouble();
     return ExoAudioDynamicNormalizationConfiguration(
-      targetRmsDb: targetI,
+      targetRmsDb: targetI + volumeDb,
       peak: pow(10, targetTp / 20).toDouble(),
       maxGain: 10,
       frameMs: 3000,
@@ -149,7 +231,7 @@ ExoAudioNormalizationResolution? resolveExoAudioNormalization({
   final offset = (options['offset'] ?? 0).toDouble();
   final gainDb = (targetI - measuredI + offset).clamp(-24, 24);
   return ExoAudioNormalizationConfiguration(
-    gain: pow(10, gainDb / 20).toDouble(),
+    gain: pow(10, gainDb / 20).toDouble() * volumeMultiplier,
     peak: pow(10, targetTp / 20).toDouble(),
     filter: filter,
   );

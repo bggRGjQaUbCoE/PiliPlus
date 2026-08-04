@@ -487,14 +487,10 @@ class PlPlayerController with BlockConfigMixin {
   }
 
   void _onOrientationChanged(OrientationParams param) {
-    final previousOrientation = _orientation;
     _orientation = param.orientation;
     if (Platform.isIOS && !visible) return;
     final orientation = param.orientation;
     final isFullScreen = this.isFullScreen.value;
-    final rotatedFromPortrait =
-        previousOrientation == .portraitUp ||
-        previousOrientation == .portraitDown;
     if (checkIsAutoRotate &&
         param.isAutoRotate != true &&
         (!isFullScreen ||
@@ -506,9 +502,7 @@ class PlPlayerController with BlockConfigMixin {
     switch (orientation) {
       case .portraitUp:
         if (!_isVertical && controlsLock.value) return;
-        if (((!horizontalScreen && !_isVertical) ||
-                autoFullScreenOnLandscape) &&
-            isFullScreen) {
+        if (!horizontalScreen && !_isVertical && isFullScreen) {
           if (!isManualFS) {
             triggerFullScreen(status: false, orientation: orientation);
           }
@@ -518,23 +512,15 @@ class PlPlayerController with BlockConfigMixin {
       case .portraitDown:
         if (!horizontalScreen) return;
         if (!_isVertical && controlsLock.value) return;
-        if (autoFullScreenOnLandscape && isFullScreen && !isManualFS) {
-          triggerFullScreen(status: false, orientation: orientation);
-        } else {
-          portraitDownMode();
-        }
+        portraitDownMode();
       case .landscapeLeft:
-        if ((!horizontalScreen ||
-                (autoFullScreenOnLandscape && rotatedFromPortrait)) &&
-            !isFullScreen) {
+        if (!horizontalScreen && !isFullScreen) {
           triggerFullScreen(orientation: orientation, isManualFS: false);
         } else {
           landscapeLeftMode();
         }
       case .landscapeRight:
-        if ((!horizontalScreen ||
-                (autoFullScreenOnLandscape && rotatedFromPortrait)) &&
-            !isFullScreen) {
+        if (!horizontalScreen && !isFullScreen) {
           triggerFullScreen(orientation: orientation, isManualFS: false);
         } else {
           landscapeRightMode();

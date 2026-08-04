@@ -110,6 +110,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   bool get enableVerticalExpand =>
       videoDetailController.plPlayerController.enableVerticalExpand;
 
+  bool get autoFullScreenOnLandscape =>
+      videoDetailController.plPlayerController.autoFullScreenOnLandscape;
+
   bool get pipNoDanmaku =>
       videoDetailController.plPlayerController.pipNoDanmaku;
 
@@ -457,6 +460,24 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     final size = MediaQuery.sizeOf(context);
     maxWidth = size.width;
     maxHeight = size.height;
+    final nextIsPortrait = maxHeight >= maxWidth;
+    final previousIsPortrait = _lastPageIsPortrait;
+    _lastPageIsPortrait = nextIsPortrait;
+    if (autoFullScreenOnLandscape &&
+        previousIsPortrait != null &&
+        previousIsPortrait != nextIsPortrait) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || _lastPageIsPortrait != nextIsPortrait) return;
+        final controller = videoDetailController.plPlayerController;
+        if (previousIsPortrait && !controller.isFullScreen.value) {
+          controller.triggerFullScreen(isManualFS: false);
+        } else if (nextIsPortrait &&
+            controller.isFullScreen.value &&
+            !controller.isManualFS) {
+          controller.triggerFullScreen(status: false);
+        }
+      });
+    }
     isWindowMode = MaxScreenSize.isWindowMode(
       width: maxWidth * videoDetailController.uiScale,
       height: maxHeight * videoDetailController.uiScale,
@@ -467,7 +488,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     final minVideoHeight = shortestSide / Style.aspectRatio16x9;
     final maxVideoHeight = max(size.longestSide * 0.65, shortestSide);
     videoDetailController
-      ..isPortrait = isPortrait = maxHeight >= maxWidth
+      ..isPortrait = isPortrait = nextIsPortrait
       ..minVideoHeight = minVideoHeight
       ..maxVideoHeight = maxVideoHeight
       ..videoHeight = videoDetailController.isVertical.value
@@ -1246,6 +1267,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   late ThemeData theme;
   ColorScheme get colorScheme => theme.colorScheme;
   late bool isPortrait;
+  bool? _lastPageIsPortrait;
   late double maxWidth;
   late double maxHeight;
   bool isWindowMode = false;

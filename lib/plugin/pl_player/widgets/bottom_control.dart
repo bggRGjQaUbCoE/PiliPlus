@@ -81,6 +81,7 @@ class BottomControl extends StatelessWidget {
                         barHeight: 3.5,
                         thumbRadius: 7,
                         thumbGlowRadius: 25,
+                        relativeDrag: true,
                         onDragStart: onDragStart,
                         onDragUpdate: onDragUpdate,
                         onSeek: onSeek,

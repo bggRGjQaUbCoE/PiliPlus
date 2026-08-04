@@ -666,6 +666,37 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
       _$icon.pointer,
     ).check();
   }
+
+  static final _id_fontFamilies = _class.staticMethodId(
+    r'fontFamilies',
+    r'()[Ljava/lang/String;',
+  );
+
+  static final _fontFamilies =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallStaticObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `static public java.lang.String[] fontFamilies()`
+  /// The returned object must be released after use, by calling the [release] method.
+  static jni$_.JArray<jni$_.JString?>? fontFamilies() {
+    final _$$classRef = _class.reference;
+    return _fontFamilies(
+      _$$classRef.pointer,
+      _id_fontFamilies.pointer,
+    ).object<jni$_.JArray<jni$_.JString?>?>();
+  }
 }
 
 final class $AndroidHelper$Type$ extends jni$_.JType<AndroidHelper> {

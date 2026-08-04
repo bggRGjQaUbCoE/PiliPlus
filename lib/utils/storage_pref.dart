@@ -862,6 +862,12 @@ abstract final class Pref {
   static double get longPressSpeedDefault =>
       _video.get(VideoBoxKey.longPressSpeedDefault, defaultValue: 3.0);
 
+  static double get mpvKeyKSpeed =>
+      _video.get(VideoBoxKey.mpvKeyKSpeed, defaultValue: 2.0);
+
+  static double get mpvKeyLSpeed =>
+      _video.get(VideoBoxKey.mpvKeyLSpeed, defaultValue: 3.0);
+
   static bool get defaultShowComment =>
       _setting.get(SettingBoxKey.defaultShowComment, defaultValue: false);
 

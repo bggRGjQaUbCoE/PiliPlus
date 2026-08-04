@@ -251,6 +251,8 @@ abstract final class VideoBoxKey {
   static const String playRepeat = 'playRepeat',
       playSpeedDefault = 'playSpeedDefault',
       longPressSpeedDefault = 'longPressSpeedDefault',
+      mpvKeyKSpeed = 'mpvKeyKSpeed',
+      mpvKeyLSpeed = 'mpvKeyLSpeed',
       speedsList = 'speedsList',
       cacheVideoFit = 'cacheVideoFit';
 }

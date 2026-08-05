@@ -27,8 +27,7 @@ jobs:
           flutter-version-file: pubspec.yaml
 
       - name: Apply Patch
-        shell: pwsh
-        run: lib/scripts/patch.ps1 windows
+        run: dart run lib/scripts/patch.dart windows
 
       - name: Add fastforge and Inno Setup
         run: |

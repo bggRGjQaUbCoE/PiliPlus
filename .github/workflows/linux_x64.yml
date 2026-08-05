@@ -28,18 +28,20 @@ jobs:
 
       - name: Setup flutter
         uses: subosito/flutter-action@v2
+        id: flutter-action
         with:
           channel: stable
           flutter-version-file: pubspec.yaml
           cache: true
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:-${{ hashFiles('lib/scripts/*') }}"
 
       - name: Set and Extract version
         shell: pwsh
         run: lib/scripts/build.ps1
 
       - name: Apply Patch
-        shell: pwsh
-        run: lib/scripts/patch.ps1 Linux
+        if: steps.flutter-action.outputs.CACHE-HIT != 'true'
+        run: dart run lib/scripts/patch.dart linux
 
         #TODO: deb and rpm packages need to be build
       - name: Build Linux

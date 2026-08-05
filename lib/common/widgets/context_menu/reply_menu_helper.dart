@@ -27,8 +27,8 @@ void showReplyCopyDialog(
                   },
                 ),
               );
-              state.addLaunchMenuIfNeeded(buttonItems, index: 4);
             }
+            state.addLaunchMenuIfNeeded(buttonItems, index: 4);
             if (state.isUncollapsed) {
               buttonItems.add(
                 ContextMenuButtonItem(

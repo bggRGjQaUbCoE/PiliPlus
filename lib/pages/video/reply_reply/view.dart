@@ -518,7 +518,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
   }
 
   /// 无法显示父评论的占位行：头像 + 名字 + 分类文本。
-  /// 有有效 mid 时可点击进入主页（手型光标）；折叠/引导线由外层 _TreeRow 提供。
+  /// 折叠/引导线由外层 _TreeRow 提供。
   Widget _placeholderContent(ReplyInfo reply, ReplySuppressReason reason) {
     final colorScheme = ColorScheme.of(context);
     final text = switch (reason) {
@@ -526,24 +526,46 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
       ReplySuppressReason.blocked => '已屏蔽',
     };
     final mid = reply.mid;
-    final content = Padding(
+    final name = reply.member.name;
+
+    Widget memberTap(Widget child) {
+      if (mid == Int64.ZERO) return child;
+      return MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            feedBack();
+            Get.toNamed('/member?mid=${mid.toInt()}');
+          },
+          child: child,
+        ),
+      );
+    }
+
+    return Padding(
       padding: const EdgeInsets.fromLTRB(12, 14, 8, 5),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          PendantAvatar(reply.member.face, size: 34),
+          memberTap(PendantAvatar(reply.member.face, size: 34)),
           const SizedBox(width: 12),
           Flexible(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (reply.member.name.isNotEmpty)
-                  Text(
-                    reply.member.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 13, color: colorScheme.outline),
+                if (name.isNotEmpty)
+                  memberTap(
+                    Text(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: colorScheme.outline,
+                      ),
+                    ),
                   ),
                 Text(
                   text,
@@ -553,18 +575,6 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
             ),
           ),
         ],
-      ),
-    );
-    if (mid == Int64.ZERO) return content;
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          feedBack();
-          Get.toNamed('/member?mid=${mid.toInt()}');
-        },
-        child: content,
       ),
     );
   }
@@ -737,11 +747,24 @@ class _TreeRowState extends State<_TreeRow> {
               highlightLevels: levels,
               highlightOwn: own,
             ),
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: widget.indent.indentAt(row.depth + 1),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                // 折叠按钮画在固定 y，短内容行（占位等）需撑到按钮可容纳的高度
+                minHeight: row.hasChildren
+                    ? ReplyTreeGuidePainter.minFoldRowHeight
+                    : 0,
               ),
-              child: widget.replyWidget,
+              // 顶部对齐：minHeight 若传入内层 Row 会把头像垂直居中下移，
+              // 与固定 y=31 的引导线几何错位重叠，这里截断撑高、内容保持贴顶
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    left: widget.indent.indentAt(row.depth + 1),
+                  ),
+                  child: widget.replyWidget,
+                ),
+              ),
             ),
           );
         }),
@@ -1138,7 +1161,11 @@ class ReplyTreeGuidePainter extends CustomPainter {
   static const double avatarRadius = 17;
   static const double arcRadius = 12;
   static const double buttonRadius = 8;
-  static const double buttonY = avatarY + avatarRadius + 16; // 折叠按钮圆心 y
+  static const double buttonY = avatarY + avatarRadius + 16; // 折叠按钮圆心 y（常规行）
+
+  /// 带折叠按钮行的最小高度：补齐到正常评论行高（ReplyItemGrpc replyLevel=2 约 124px），
+  /// 使紧凑占位行与正常行保持一致的兄弟间距。头像/按钮几何与正常行统一。
+  static const double minFoldRowHeight = 100;
 
   final int depth;
   final ReplyTreeIndent indent;
@@ -1206,12 +1233,13 @@ class ReplyTreeGuidePainter extends CustomPainter {
     if (!hasOwnLine) return;
     final x = _lineX(depth + 1);
     final p = highlightOwn ? hover : normal;
-    const buttonTop = buttonY - buttonRadius;
+    const by = buttonY;
+    const double buttonTop = by - buttonRadius;
     if (collapsed) {
       canvas.drawLine(Offset(x, avatarY + avatarRadius), Offset(x, buttonTop), p);
       paintTreeCollapseButton(
         canvas,
-        Offset(x, buttonY),
+        Offset(x, by),
         plus: true,
         highlighted: highlightOwn,
         color: color,
@@ -1220,10 +1248,10 @@ class ReplyTreeGuidePainter extends CustomPainter {
     } else {
       canvas
         ..drawLine(Offset(x, avatarY + avatarRadius), Offset(x, buttonTop), p)
-        ..drawLine(Offset(x, buttonY + buttonRadius), Offset(x, size.height), p);
+        ..drawLine(Offset(x, by + buttonRadius), Offset(x, size.height), p);
       paintTreeCollapseButton(
         canvas,
-        Offset(x, buttonY),
+        Offset(x, by),
         plus: false,
         highlighted: highlightOwn,
         color: color,

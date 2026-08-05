@@ -174,10 +174,10 @@ packages:
     dependency: transitive
     description:
       name: build_daemon
-      sha256: "8c0535c3b2f625619f4dd1036ef1127f2e77bfedf89ed2eb2676ef076e0b6712"
+      sha256: "57c62a6d85c39d2a8c984e3b73b29bf2775a865e690309405aeade647fb2184c"
       url: "https://pub.dev"
     source: hosted
-    version: "4.1.3"
+    version: "4.1.4"
   build_runner:
     dependency: "direct dev"
     description:
@@ -207,7 +207,7 @@ packages:
     description:
       path: cached_network_image
       ref: develop
-      resolved-ref: "6ad91e9bf71254803e222b7d254751576f2f6d7b"
+      resolved-ref: "93bfc88496bda6984e565ac834985cb493ee1436"
       url: "https://github.com/My-Responsitories/flutter_cached_network_image_ce.git"
     source: git
     version: "4.6.4"
@@ -215,8 +215,8 @@ packages:
     dependency: transitive
     description:
       path: cached_network_image_platform_interface
-      ref: "6ad91e9bf71254803e222b7d254751576f2f6d7b"
-      resolved-ref: "6ad91e9bf71254803e222b7d254751576f2f6d7b"
+      ref: "93bfc88496bda6984e565ac834985cb493ee1436"
+      resolved-ref: "93bfc88496bda6984e565ac834985cb493ee1436"
       url: "https://github.com/My-Responsitories/flutter_cached_network_image_ce.git"
     source: git
     version: "5.2.0"
@@ -1822,10 +1822,10 @@ packages:
     dependency: transitive
     description:
       name: vector_graphics
-      sha256: "2306c03da2ba81724afeb589c351ebbc0aa7d86005925be8f8735856dbe5e42d"
+      sha256: "9d0e3b9cb16542ad660daee871e726a10d13a93b7b5391677c3160e8f5e83935"
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.2"
+    version: "1.2.3"
   vector_graphics_codec:
     dependency: transitive
     description:

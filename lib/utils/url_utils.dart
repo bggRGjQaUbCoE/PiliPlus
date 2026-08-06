@@ -32,8 +32,8 @@ abstract final class UrlUtils {
       }
     } catch (_) {}
     if (returnOri && redirectUrl == null) redirectUrl = url;
-    if (redirectUrl?.endsWith('/') == true) {
-      redirectUrl = redirectUrl!.substring(0, redirectUrl.length - 1);
+    if (redirectUrl != null && redirectUrl.endsWith('/')) {
+      redirectUrl = redirectUrl.substring(0, redirectUrl.length - 1);
     }
     return redirectUrl;
   }
@@ -46,8 +46,7 @@ abstract final class UrlUtils {
     final matchRes = IdUtils.matchAvorBv(input: pathSegment);
     if (matchRes.isNotEmpty) {
       final aid = matchRes.av;
-      String? bvid = matchRes.bv;
-      bvid ??= IdUtils.av2bv(aid!);
+      final bvid = matchRes.bv;
       final res = await SearchHttp.ab2cWithDimension(aid: aid, bvid: bvid);
       final cid = res?.cid;
       if (cid != null) {

@@ -184,10 +184,7 @@ abstract final class SearchHttp {
   }) async {
     final res = await Request().get(
       Api.ab2c,
-      queryParameters: {
-        'aid': ?aid,
-        'bvid': ?bvid,
-      },
+      queryParameters: {'aid': ?aid, 'bvid': ?bvid},
     );
     if (res.data['code'] == 0) {
       if (res.data['data'] case List list) {

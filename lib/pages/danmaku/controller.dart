@@ -78,6 +78,10 @@ class PlDanmakuController {
       }
 
       if (!element.isSelf) {
+        // 被过滤的弹幕(文本/正则/按用户屏蔽)既不显示也不参与合并计数
+        if (shouldFilter && filters.remove(element)) {
+          continue;
+        }
         if (_mergeDanmaku) {
           final window = element.progress ~/ mergeWindow;
           final uniques = windowed.putIfAbsent(window, HashMap.new);
@@ -89,10 +93,6 @@ class PlDanmakuController {
             entry.$2.add(element.midHash);
             continue;
           }
-        }
-
-        if (shouldFilter && filters.remove(element)) {
-          continue;
         }
       }
 

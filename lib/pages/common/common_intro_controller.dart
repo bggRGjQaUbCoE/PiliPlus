@@ -4,7 +4,8 @@ import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/http/video.dart';
-import 'package:PiliPlus/models/common/video/source_type.dart';
+import 'package:PiliPlus/models/common/video/source_type.dart'
+    show SourceType;
 import 'package:PiliPlus/models_new/fav/fav_folder/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/stat_detail.dart';
@@ -147,6 +148,32 @@ abstract class CommonIntroController extends GetxController
   Future<void> queryVideoTags() async {
     final result = await UserHttp.videoTags(bvid: bvid, cid: cid.value);
     videoTags.value = result.dataOrNull;
+  }
+
+  // 查询当前视频是否在稍后再看列表中
+  Future<void> queryLaterStatus() async {
+    if (!isLogin) {
+      return;
+    }
+    final aid = IdUtils.bv2av(bvid);
+    var page = 1;
+    while (true) {
+      final res = await UserHttp.seeYouLater(page: page, viewed: 0);
+      if (res case Success(:final response)) {
+        if (response.list?.any((item) => item.aid == aid) == true) {
+          hasLater.value = true;
+          return;
+        }
+        final count = response.count ?? 0;
+        if (page * 20 >= count || (response.list?.isEmpty ?? true)) {
+          break;
+        }
+        page++;
+      } else {
+        return; // 查询失败时保留原值，不误改状态
+      }
+    }
+    hasLater.value = false;
   }
 
   Future<void> viewLater() async {

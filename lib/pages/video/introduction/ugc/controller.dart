@@ -11,7 +11,6 @@ import 'package:PiliPlus/http/member.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/http/video.dart';
-import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models_new/member_card_info/data.dart';
 import 'package:PiliPlus/models_new/relation/data.dart';
 import 'package:PiliPlus/models_new/video/video_ai_conclusion/model_result.dart';
@@ -138,6 +137,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
     if (isLogin) {
       queryAllStatus();
       queryFollowStatus();
+      queryLaterStatus();
     }
   }
 
@@ -528,8 +528,8 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
           } catch (_) {}
         }
 
-        hasLater.value = videoDetailCtr.sourceType == SourceType.watchLater;
         this.bvid = bvid;
+        queryLaterStatus();
         queryVideoIntro();
       } else {
         if (episode is Part) {

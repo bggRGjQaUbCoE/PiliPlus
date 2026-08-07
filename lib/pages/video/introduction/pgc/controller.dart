@@ -8,7 +8,6 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/pgc.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/http/video.dart';
-import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
@@ -70,6 +69,7 @@ class PgcIntroController extends CommonIntroController {
         if (epId != null) {
           queryPgcLikeCoinFav();
         }
+        queryLaterStatus();
       }
       queryVideoTags();
     }
@@ -286,7 +286,7 @@ class PgcIntroController extends CommonIntroController {
         queryPgcLikeCoinFav();
       }
 
-      hasLater.value = videoDetailCtr.sourceType == SourceType.watchLater;
+      queryLaterStatus();
       this.cid.value = cid;
       queryOnlineTotal();
       queryVideoIntro(episode as EpisodeItem);

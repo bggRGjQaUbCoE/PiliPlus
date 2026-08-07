@@ -12,4 +12,19 @@ extension GetExt on GetInterface {
       ..darkTheme = dark
       ..update();
   }
+
+  Future<T?>? offOrToNamed<T>(
+    String page, {
+    dynamic arguments,
+    int? id,
+    bool preventDuplicates = true,
+    Map<String, String>? parameters,
+    bool off = false,
+  }) => (off ? offNamed : toNamed)(
+    page,
+    arguments: arguments,
+    id: id,
+    preventDuplicates: preventDuplicates,
+    parameters: parameters,
+  );
 }

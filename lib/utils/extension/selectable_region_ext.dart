@@ -1,3 +1,4 @@
+import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:get/get.dart';
@@ -19,14 +20,11 @@ extension SelectableRegionStateExt on SelectableRegionState {
           onPressed: () => onMenuPressed(
             isScheme
                 ? PageUtils.handleWebview
-                : (text) {
-                    final params = {'keyword': text};
-                    if (Get.routing.route is PageRoute) {
-                      Get.toNamed('/searchResult', parameters: params);
-                    } else {
-                      Get.offNamed('/searchResult', parameters: params);
-                    }
-                  },
+                : (text) => Get.offOrToNamed(
+                    '/searchResult',
+                    parameters: {'keyword': text},
+                    off: Get.routing.route is! PageRoute,
+                  ),
           ),
         ),
       );

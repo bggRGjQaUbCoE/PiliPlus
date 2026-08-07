@@ -21,16 +21,16 @@ import UIKit
       binaryMessenger: engineBridge.applicationRegistrar.messenger()
     )
     channel.setMethodCallHandler { [weak self] call, result in
-      guard call.method == "getPlayerControlsLeadingInset" else {
+      guard call.method == "getWindowControlsLeadingInset" else {
         result(FlutterMethodNotImplemented)
         return
       }
-      result(self?.playerControlsLeadingInset() ?? 0.0)
+      result(self?.windowControlsLeadingInset() ?? 0.0)
     }
     windowControlsChannel = channel
   }
 
-  private func playerControlsLeadingInset() -> Double {
+  private func windowControlsLeadingInset() -> Double {
     guard UIDevice.current.userInterfaceIdiom == .pad else {
       return 0
     }

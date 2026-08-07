@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/common/widgets/window_controls_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
@@ -218,7 +219,7 @@ class _MediaPageState extends CommonPageState<MinePage>
         ),
         const SizedBox(width: 16),
       ],
-    );
+    ).withWindowControlsSafeArea();
   }
 
   Widget _buildUserInfo(ThemeData theme, Color secondary) {

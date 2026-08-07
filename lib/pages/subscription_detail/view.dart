@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/window_controls_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/sub/sub/list.dart';
 import 'package:PiliPlus/models_new/sub/sub_detail/media.dart';
@@ -106,7 +107,8 @@ class _SubDetailPageState extends State<SubDetailPage> with GridMixin {
     if (info != null) return _buildAppBar(theme, padding, info);
     return Obx(() {
       return switch (_subDetailController.loadingState.value) {
-        Loading() || Error() => const SliverAppBar(),
+        Loading() ||
+        Error() => const SliverAppBar().withWindowControlsAppBarSafeArea(),
         Success() => _buildAppBar(
           theme,
           padding,
@@ -208,6 +210,6 @@ class _SubDetailPageState extends State<SubDetailPage> with GridMixin {
           ),
         ),
       ),
-    );
+    ).withWindowControlsAppBarSafeArea();
   }
 }

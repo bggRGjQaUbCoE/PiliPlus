@@ -9,6 +9,7 @@ import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/dialog/report.dart';
 import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/marquee.dart';
+import 'package:PiliPlus/common/widgets/window_controls_safe_area.dart';
 import 'package:PiliPlus/http/danmaku.dart';
 import 'package:PiliPlus/http/danmaku_block.dart';
 import 'package:PiliPlus/http/init.dart';
@@ -180,7 +181,6 @@ mixin TimeBatteryMixin<T extends StatefulWidget> on State<T> {
 class HeaderControl extends StatefulWidget {
   const HeaderControl({
     required this.isPortrait,
-    required this.controlsLeadingInset,
     required this.controller,
     required this.videoDetailCtr,
     required this.heroTag,
@@ -188,7 +188,6 @@ class HeaderControl extends StatefulWidget {
   });
 
   final bool isPortrait;
-  final double controlsLeadingInset;
   final PlPlayerController controller;
   final VideoDetailController videoDetailCtr;
   final String heroTag;
@@ -1779,7 +1778,7 @@ class HeaderControlState extends State<HeaderControl>
         const SizedBox(height: 12),
         Row(
           children: [
-            SizedBox(width: widget.controlsLeadingInset),
+            const WindowControlsLeadingInset(),
             SizedBox(
               width: btnWidth,
               height: btnHeight,

@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/slotted_layout_helper.dart';
+import 'package:PiliPlus/common/widgets/window_controls_safe_area.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show ChildLayoutHelper;
 
@@ -50,7 +51,8 @@ class ScaffoldLayout
   @override
   Widget? childForSlot(slot) => switch (slot) {
     .fab => fab,
-    .appBar => appBar,
+    .appBar =>
+      appBar == null ? null : WindowControlsAppBarSafeArea(child: appBar!),
     .body => body,
   };
 

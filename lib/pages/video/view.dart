@@ -60,6 +60,7 @@ import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:PiliPlus/utils/ios_window_utils.dart';
 import 'package:PiliPlus/utils/max_screen_size.dart';
 import 'package:PiliPlus/utils/mobile_observer.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
@@ -115,6 +116,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       videoDetailController.plPlayerController.pipNoDanmaku;
 
   bool isShowing = true;
+  double _playerControlsLeadingInset = 0;
+  bool _playerControlsInsetUpdateScheduled = false;
 
   bool get isFullScreen =>
       videoDetailController.plPlayerController.isFullScreen.value;
@@ -190,6 +193,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     final isResume = state == .resumed;
     final ctr = videoDetailController.plPlayerController..visible = isResume;
     if (isResume) {
+      _schedulePlayerControlsLeadingInsetUpdate();
       if (!ctr.showDanmaku) {
         introController.startTimer();
         ctr.showDanmaku = true;
@@ -198,6 +202,24 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       introController.cancelTimer();
       ctr.showDanmaku = false;
     }
+  }
+
+  @override
+  void didChangeMetrics() {
+    _schedulePlayerControlsLeadingInsetUpdate();
+  }
+
+  void _schedulePlayerControlsLeadingInsetUpdate() {
+    if (!Platform.isIOS || _playerControlsInsetUpdateScheduled) return;
+
+    _playerControlsInsetUpdateScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final inset = await IosWindowUtils.playerControlsLeadingInset;
+      _playerControlsInsetUpdateScheduled = false;
+      if (!mounted || inset == _playerControlsLeadingInset) return;
+
+      setState(() => _playerControlsLeadingInset = inset);
+    });
   }
 
   Future<void>? playCallBack() {
@@ -478,6 +500,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     theme = videoDetailController.plPlayerController.darkVideoPage
         ? ThemeUtils.darkTheme
         : Theme.of(context);
+    _schedulePlayerControlsLeadingInsetUpdate();
   }
 
   bool removeAppBar(bool isFullScreen) =>
@@ -645,6 +668,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                 child: Row(
                   mainAxisSize: .min,
                   children: [
+                    SizedBox(width: _playerControlsLeadingInset),
                     SizedBox(
                       width: 42,
                       height: 34,
@@ -1085,6 +1109,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
             height: kToolbarHeight,
             child: Row(
               children: [
+                SizedBox(width: _playerControlsLeadingInset),
                 SizedBox(
                   width: 42,
                   height: 34,
@@ -1221,6 +1246,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
               headerControl: HeaderControl(
                 key: videoDetailController.headerCtrKey,
                 isPortrait: isPortrait,
+                controlsLeadingInset: _playerControlsLeadingInset,
                 controller: videoDetailController.plPlayerController,
                 videoDetailCtr: videoDetailController,
                 heroTag: heroTag,

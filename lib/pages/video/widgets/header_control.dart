@@ -180,6 +180,7 @@ mixin TimeBatteryMixin<T extends StatefulWidget> on State<T> {
 class HeaderControl extends StatefulWidget {
   const HeaderControl({
     required this.isPortrait,
+    required this.controlsLeadingInset,
     required this.controller,
     required this.videoDetailCtr,
     required this.heroTag,
@@ -187,6 +188,7 @@ class HeaderControl extends StatefulWidget {
   });
 
   final bool isPortrait;
+  final double controlsLeadingInset;
   final PlPlayerController controller;
   final VideoDetailController videoDetailCtr;
   final String heroTag;
@@ -1777,6 +1779,7 @@ class HeaderControlState extends State<HeaderControl>
         const SizedBox(height: 12),
         Row(
           children: [
+            SizedBox(width: widget.controlsLeadingInset),
             SizedBox(
               width: btnWidth,
               height: btnHeight,

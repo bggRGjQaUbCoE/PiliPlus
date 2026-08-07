@@ -499,6 +499,8 @@ class PlPlayerController with BlockConfigMixin {
             orientation == .portraitDown)) {
       return;
     }
+    // 横屏适配且未全屏时保持系统自动旋转：若锁定到当前单一方向，
+    // 传感器事件延迟或丢失时，会导致旋转后界面居中留边（letterbox）。
     switch (orientation) {
       case .portraitUp:
         if (!_isVertical && controlsLock.value) return;
@@ -506,22 +508,32 @@ class PlPlayerController with BlockConfigMixin {
           if (!isManualFS) {
             triggerFullScreen(status: false, orientation: orientation);
           }
+        } else if (horizontalScreen && !isFullScreen) {
+          fullMode();
         } else {
           portraitUpMode();
         }
       case .portraitDown:
         if (!horizontalScreen) return;
         if (!_isVertical && controlsLock.value) return;
-        portraitDownMode();
+        if (isFullScreen) {
+          portraitDownMode();
+        } else {
+          fullMode();
+        }
       case .landscapeLeft:
         if (!horizontalScreen && !isFullScreen) {
           triggerFullScreen(orientation: orientation, isManualFS: false);
+        } else if (horizontalScreen && !isFullScreen) {
+          fullMode();
         } else {
           landscapeLeftMode();
         }
       case .landscapeRight:
         if (!horizontalScreen && !isFullScreen) {
           triggerFullScreen(orientation: orientation, isManualFS: false);
+        } else if (horizontalScreen && !isFullScreen) {
+          fullMode();
         } else {
           landscapeRightMode();
         }

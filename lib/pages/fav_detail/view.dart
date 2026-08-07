@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:PiliPlus/common/widgets/window_controls_safe_area.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/fav_order_type.dart';
@@ -169,7 +170,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
             ),
       actions: enableMultiSelect ? _selectActions(theme) : _actions(theme),
       flexibleSpace: _flexibleSpace(theme),
-    );
+    ).withWindowControlsAppBarSafeArea();
   }
 
   List<Widget> _actions(ThemeData theme) {

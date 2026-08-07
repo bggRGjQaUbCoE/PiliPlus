@@ -152,6 +152,11 @@ abstract class CommonIntroController extends GetxController
 
   // 查询当前视频是否在稍后再看列表中
   Future<void> queryLaterStatus() async {
+    if (!Pref.queryLaterStatus) {
+      // 高级设置关闭时使用原逻辑：根据页面来源(sourceType)推断
+      hasLater.value = videoDetailCtr.sourceType == SourceType.watchLater;
+      return;
+    }
     if (!isLogin) {
       return;
     }

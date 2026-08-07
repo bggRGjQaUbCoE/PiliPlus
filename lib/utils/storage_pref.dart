@@ -482,6 +482,9 @@ abstract final class Pref {
   static bool get showHotRcmd =>
       _setting.get(SettingBoxKey.showHotRcmd, defaultValue: false);
 
+  static bool get queryLaterStatus =>
+      _setting.get(SettingBoxKey.queryLaterStatus, defaultValue: false);
+
   static String get audioNormalization =>
       _setting.get(SettingBoxKey.audioNormalization, defaultValue: '0');
 

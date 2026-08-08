@@ -398,6 +398,12 @@ abstract final class Pref {
   static bool get showBangumiReply =>
       _setting.get(SettingBoxKey.showBangumiReply, defaultValue: true);
 
+  static bool get replyTreeEnabled =>
+      _setting.get(SettingBoxKey.replyTreeEnabled, defaultValue: true);
+
+  static int get replyTreeMaxDepth =>
+      _setting.get(SettingBoxKey.replyTreeMaxDepth, defaultValue: 3);
+
   static bool get alwaysExpandIntroPanel =>
       _setting.get(SettingBoxKey.alwaysExpandIntroPanel, defaultValue: false);
 

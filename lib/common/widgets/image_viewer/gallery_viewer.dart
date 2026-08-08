@@ -339,8 +339,6 @@ class _GalleryViewerState extends State<GalleryViewer>
                   ),
                   itemCount: widget.sources.length,
                   itemBuilder: _itemBuilder,
-                  horizontalDragGestureRecognizer: () =>
-                      _horizontalDragGestureRecognizer,
                 ),
               );
             },

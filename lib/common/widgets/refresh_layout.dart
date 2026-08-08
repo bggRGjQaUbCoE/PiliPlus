@@ -1,10 +1,8 @@
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart'
-    show displacement;
+    show displacement, kIndicatorSize;
 import 'package:PiliPlus/common/widgets/slotted_layout_helper.dart';
 import 'package:flutter/material.dart' hide RefreshIndicatorStatus;
 import 'package:flutter/rendering.dart' show BoxHitTestResult, ClipRectLayer;
-
-const _kIndicatorSize = 49.0;
 
 enum RefreshType { indicator, body }
 
@@ -112,7 +110,7 @@ class RenderRefreshLayout extends RenderBox
 
   void _layoutIndicator() {
     final indicator = this.indicator;
-    final scaleSize = _kIndicatorSize * scaleFactor;
+    final scaleSize = kIndicatorSize * scaleFactor;
     indicator.layout(
       BoxConstraints.tightFor(width: scaleSize, height: scaleSize),
     );
@@ -120,9 +118,9 @@ class RenderRefreshLayout extends RenderBox
       indicator,
       Offset(
         (constraints.maxWidth - scaleSize) / 2,
-        (_kIndicatorSize + displacement) * heightFactor -
-            _kIndicatorSize +
-            (_kIndicatorSize - scaleSize) / 2,
+        (kIndicatorSize + displacement) * heightFactor -
+            kIndicatorSize +
+            (kIndicatorSize - scaleSize) / 2,
       ),
     );
   }

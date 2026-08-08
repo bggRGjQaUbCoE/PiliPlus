@@ -34,6 +34,7 @@ class ProgressBar extends LeafRenderObjectWidget {
     this.onDragStart,
     this.onDragUpdate,
     this.onDragEnd,
+    this.relativeDrag = false,
     this.barHeight = 5.0,
     required this.baseBarColor,
     required this.progressBarColor,
@@ -116,6 +117,12 @@ class ProgressBar extends LeafRenderObjectWidget {
   /// This method is called directly before [onSeek].
   final VoidCallback? onDragEnd;
 
+  /// Whether dragging adjusts the current progress by the pointer's horizontal
+  /// displacement instead of jumping to the pointer position.
+  ///
+  /// A tap still seeks to the tapped position. The default is `false`.
+  final bool relativeDrag;
+
   /// The vertical thickness of the progress bar.
   final double barHeight;
 
@@ -183,6 +190,7 @@ class ProgressBar extends LeafRenderObjectWidget {
       onDragStart: onDragStart,
       onDragUpdate: onDragUpdate,
       onDragEnd: onDragEnd,
+      relativeDrag: relativeDrag,
       barHeight: barHeight,
       baseBarColor: baseBarColor,
       progressBarColor: progressBarColor,
@@ -208,6 +216,7 @@ class ProgressBar extends LeafRenderObjectWidget {
       ..onDragStart = onDragStart
       ..onDragUpdate = onDragUpdate
       ..onDragEnd = onDragEnd
+      ..relativeDrag = relativeDrag
       ..barHeight = barHeight
       ..baseBarColor = baseBarColor
       ..progressBarColor = progressBarColor
@@ -252,6 +261,15 @@ class ProgressBar extends LeafRenderObjectWidget {
           'onDragEnd',
           onDragEnd,
           ifNull: 'unimplemented',
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'relativeDrag',
+          value: relativeDrag,
+          ifTrue: 'true',
+          ifFalse: 'false',
+          showName: true,
         ),
       )
       ..add(DoubleProperty('barHeight', barHeight))
@@ -332,6 +350,7 @@ class RenderProgressBar extends RenderBox implements MouseTrackerAnnotation {
     ThumbDragStartCallback? onDragStart,
     ThumbDragUpdateCallback? onDragUpdate,
     VoidCallback? onDragEnd,
+    bool relativeDrag = false,
     required this._barHeight,
     required this._baseBarColor,
     required this._progressBarColor,
@@ -344,6 +363,7 @@ class RenderProgressBar extends RenderBox implements MouseTrackerAnnotation {
   }) : _onDragStartUserCallback = onDragStart,
        _onDragUpdateUserCallback = onDragUpdate,
        _onDragEndUserCallback = onDragEnd,
+       _relativeDrag = relativeDrag,
        _thumbRadius = thumbRadius,
        _thumbGlowRadius = thumbGlowRadius,
        _paintThumbGlow = thumbGlowRadius > thumbRadius,
@@ -379,10 +399,20 @@ class RenderProgressBar extends RenderBox implements MouseTrackerAnnotation {
   // track of that so that while the user is dragging the thumb at the same
   // time as a [progress] update there won't be a conflict.
   bool _userIsDraggingThumb = false;
+  Offset _dragStartLocalPosition = Offset.zero;
+  Offset _dragStartGlobalPosition = Offset.zero;
+  double _dragStartThumbValue = 0;
+  double _maxDragDistance = 0;
 
   void _onDragStart(DragStartDetails details) {
     _userIsDraggingThumb = true;
-    _updateThumbPosition(details.localPosition);
+    _dragStartLocalPosition = details.localPosition;
+    _dragStartGlobalPosition = details.globalPosition;
+    _dragStartThumbValue = _thumbValue;
+    _maxDragDistance = 0;
+    if (!relativeDrag) {
+      _updateThumbPosition(details.localPosition);
+    }
     onDragStart?.call(
       ThumbDragDetails(
         seconds: _currentThumbDuration(),
@@ -393,7 +423,14 @@ class RenderProgressBar extends RenderBox implements MouseTrackerAnnotation {
   }
 
   void _onDragUpdate(DragUpdateDetails details) {
-    _updateThumbPosition(details.localPosition);
+    final dragDistance =
+        (details.localPosition.dx - _dragStartLocalPosition.dx).abs();
+    _maxDragDistance = max(_maxDragDistance, dragDistance);
+    if (relativeDrag) {
+      _updateThumbPositionRelative(details.localPosition);
+    } else {
+      _updateThumbPosition(details.localPosition);
+    }
     onDragUpdate?.call(
       ThumbDragDetails(
         seconds: _currentThumbDuration(),
@@ -404,6 +441,16 @@ class RenderProgressBar extends RenderBox implements MouseTrackerAnnotation {
   }
 
   void _onDragEnd(DragEndDetails details) {
+    if (relativeDrag && _maxDragDistance < kTouchSlop) {
+      _updateThumbPosition(_dragStartLocalPosition);
+      onDragUpdate?.call(
+        ThumbDragDetails(
+          seconds: _currentThumbDuration(),
+          globalPosition: _dragStartGlobalPosition,
+          localPosition: _dragStartLocalPosition,
+        ),
+      );
+    }
     onDragEnd?.call();
     onSeek?.call(_currentThumbDurationInMilliseconds());
     _finishDrag();
@@ -437,6 +484,17 @@ class RenderProgressBar extends RenderBox implements MouseTrackerAnnotation {
     final barWidth = barEnd - barStart;
     final position = (dx - barStart).clamp(0.0, barWidth);
     _thumbValue = position / barWidth;
+    _progress = _currentThumbDuration();
+    markNeedsPaint();
+  }
+
+  void _updateThumbPositionRelative(Offset localPosition) {
+    final barWidth = size.width - _barHeight;
+    if (barWidth <= 0) {
+      return;
+    }
+    final delta = localPosition.dx - _dragStartLocalPosition.dx;
+    _thumbValue = (_dragStartThumbValue + delta / barWidth).clamp(0.0, 1.0);
     _progress = _currentThumbDuration();
     markNeedsPaint();
   }
@@ -529,6 +587,16 @@ class RenderProgressBar extends RenderBox implements MouseTrackerAnnotation {
       return;
     }
     _onDragEndUserCallback = value;
+  }
+
+  /// Whether dragging is relative to the progress at pointer down.
+  bool get relativeDrag => _relativeDrag;
+  bool _relativeDrag;
+  set relativeDrag(bool value) {
+    if (_relativeDrag == value) {
+      return;
+    }
+    _relativeDrag = value;
   }
 
   /// The vertical thickness of the bar that the thumb moves along.

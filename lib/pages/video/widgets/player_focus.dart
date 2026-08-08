@@ -86,6 +86,41 @@ class PlayerFocus extends StatelessWidget {
     }
   }
 
+  /// 单次倍速步进（0.1x），使用整数十份位运算避免浮点精度累积误差
+  void _changeSpeed({required bool isIncrease}) {
+    final tenths = (plPlayerController.playbackSpeed * 10).round();
+    final newTenths = isIncrease
+        ? (tenths + 1).clamp(1, 60)
+        : (tenths - 1).clamp(1, 60);
+    final newSpeed = newTenths / 10.0;
+    plPlayerController
+      ..setPlaybackSpeed(newSpeed)
+      ..showKeyboardSpeedToast(newSpeed);
+  }
+
+  /// X/C 长按：按下步进一次，300ms 延迟后持续步进（每 100ms），松开取消
+  void _updateSpeed(KeyEvent event, {required bool isIncrease}) {
+    if (event is KeyDownEvent) {
+      if (hasPlayer) {
+        _changeSpeed(isIncrease: isIncrease);
+        // 300ms 防误触阈值，过后才开始连续步进
+        plPlayerController
+          ..longPressTimer?.cancel()
+          ..longPressTimer = Timer(
+            const Duration(milliseconds: 300),
+            () => plPlayerController
+              ..cancelLongPressTimer()
+              ..longPressTimer = Timer.periodic(
+                const Duration(milliseconds: 100),
+                (_) => _changeSpeed(isIncrease: isIncrease),
+              ),
+          );
+      }
+    } else if (event is KeyUpEvent) {
+      plPlayerController.cancelLongPressTimer();
+    }
+  }
+
   bool _handleKey(KeyEvent event) {
     final key = event.logicalKey;
 
@@ -116,6 +151,25 @@ class PlayerFocus extends StatelessWidget {
     final isArrowUp = key == LogicalKeyboardKey.arrowUp;
     if (isArrowUp || key == LogicalKeyboardKey.arrowDown) {
       _updateVolume(event, isIncrease: isArrowUp);
+      return true;
+    }
+
+    // Z：恢复 1.0x 倍速（同时取消 X/C 长按定时器，防止后续 tick 改回去）
+    if (key == LogicalKeyboardKey.keyZ) {
+      if (event is KeyDownEvent && !plPlayerController.isLive && hasPlayer) {
+        plPlayerController
+          ..cancelLongPressTimer()
+          ..setPlaybackSpeed(1.0)
+          ..showKeyboardSpeedToast(1.0);
+      }
+      return true;
+    }
+
+    // X/C 倍速加减（X 减速、C 加速），支持长按持续调节（每 100ms 步进 0.1x）
+    if (key == LogicalKeyboardKey.keyX || key == LogicalKeyboardKey.keyC) {
+      if (!plPlayerController.isLive && hasPlayer) {
+        _updateSpeed(event, isIncrease: key == LogicalKeyboardKey.keyC);
+      }
       return true;
     }
 

@@ -44,6 +44,7 @@ class VideoReplyReplyPanel extends CommonSlidePage {
     this.seedReplies,
     this.seedRootId,
     this.seedOffset,
+    this.removedReplies,
     required this.isVideoDetail,
     required this.replyType,
     this.isNested = false,
@@ -57,6 +58,9 @@ class VideoReplyReplyPanel extends CommonSlidePage {
   final List<ReplyInfo>? seedReplies;
   final int? seedRootId;
   final String? seedOffset;
+
+  /// 继承自父面板的被屏蔽评论数据（rpid → ReplyInfo），seed 模式保留占位
+  final Map<Int64, ReplyInfo>? removedReplies;
   final bool isVideoDetail;
   final int replyType;
   final bool isNested;
@@ -144,6 +148,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
         seedReplies: widget.seedReplies,
         seedRootId: widget.seedRootId,
         seedOffset: widget.seedOffset,
+        removedReplies: widget.removedReplies,
       ),
       tag: _tag,
     );
@@ -462,6 +467,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
                     seedReplies: seedList == null ? null : List.of(seedList),
                     seedRootId: widget.rpid,
                     seedOffset: _controller.paginationReply?.nextOffset,
+                    removedReplies: _controller.blockedReplies,
                     replyType: widget.replyType,
                     isVideoDetail: true,
                     isNested: widget.isNested,

@@ -243,12 +243,13 @@ List<ReplyInfo> extractSubtree(List<ReplyInfo> flat, Int64 rootId) {
 /// 无法显示父评论的原因分类
 enum ReplySuppressReason { deleted, blocked }
 
-/// 子回复前导 @ 提及的正则
-final _mentionRe = RegExp(r'^@([^@\s：:，,]+)');
+/// 回复消息中的 @提及正则（支持「回复 @xx : …」等非前缀位置）
+final _mentionRe = RegExp(r'@([^@\s：:，,]+)');
 
 /// 从回复的 @提及提取 (名字, 头像, mid)。
-/// 前导 `@名字` 查 `content.members`（含 face）；mid 优先取 `atNameToMid`；
-/// 皆无则回退 members 首项；空则返回 null。
+/// 消息文本里的 `@名字` 优先查 `content.members`（含 face）、`atNameToMid`；
+/// 改名/失效的提及未解析为成员时，回退只取文本中的名字（无头像无 mid）；
+/// 消息无 @ 时回退 members / atNameToMid 首项；皆空则返回 null。
 (String name, String? face, Int64 mid)? extractMention(ReplyInfo reply) {
   final content = reply.content;
   final match = _mentionRe.firstMatch(content.message);
@@ -258,6 +259,7 @@ final _mentionRe = RegExp(r'^@([^@\s：:，,]+)');
     final mid = content.atNameToMid[lead];
     if (member != null) return (member.name, member.face, mid ?? member.mid);
     if (mid != null) return (lead, null, mid);
+    return (lead, null, Int64.ZERO); // 提及未解析为成员：名字仅取自文本
   }
   if (content.members.isNotEmpty) {
     final m = content.members.values.first;
@@ -287,8 +289,9 @@ final _mentionRe = RegExp(r'^@([^@\s：:，,]+)');
   final flat = <ReplyInfo>[...replies];
   final idSet = <Int64>{}..addAll(flat.map((r) => r.id));
 
-  // 1) 保留「是某条真实回复祖先」的被屏蔽评论（沿 parent 链自底向上）
+  // 1) 保留「是某条真实回复祖先」或被删父级引用的被屏蔽评论
   final kept = <Int64, ReplyInfo>{};
+  // 1a) 沿真实回复的 parent 链自底向上保留被屏蔽祖先
   for (final r in replies) {
     var cur = r.parent;
     while (cur != rootId &&
@@ -297,6 +300,18 @@ final _mentionRe = RegExp(r'^@([^@\s：:，,]+)');
         !kept.containsKey(cur)) {
       kept[cur] = removed[cur]!;
       cur = removed[cur]!.parent;
+    }
+  }
+  // 1b) 保留「父级缺失」的被屏蔽评论：父既非真实回复、也非被屏蔽评论
+  //     （父被删/未加载 → 将被合成为 deleted 占位，屏蔽评论作为锚点，
+  //     避免「父删 + 子屏」时整条链丢失；父为被屏蔽叶评论则不保留）
+  final realIds = Set<Int64>.of(idSet);
+  for (final entry in removed.entries) {
+    final b = entry.value;
+    if (kept.containsKey(b.id)) continue;
+    final bp = b.parent;
+    if (bp != rootId && !realIds.contains(bp) && !removed.containsKey(bp)) {
+      kept[b.id] = b;
     }
   }
   flat.addAll(kept.values);
@@ -343,6 +358,20 @@ final _mentionRe = RegExp(r'^@([^@\s：:，,]+)');
     toAdd[p] = syn;
     suppressed[p] = ReplySuppressReason.deleted;
     idSet.add(p);
+  }
+
+  // 3) dialog 分组启发式：被删占位挂到已知对话祖先之下（深度取浅收紧）
+  for (final p in toAdd.keys) {
+    Int64? anchor;
+    for (final c in flat) {
+      if (c.parent != p) continue;
+      final d = c.dialog;
+      if (!d.isZero && d != p && idSet.contains(d)) {
+        anchor = d;
+        break;
+      }
+    }
+    if (anchor != null) toAdd[p]!.parent = anchor;
   }
   flat.addAll(toAdd.values);
 

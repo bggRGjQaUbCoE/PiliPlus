@@ -27,6 +27,7 @@ class VideoReplyReplyController extends ReplyController
     this.seedReplies,
     this.seedRootId,
     this.seedOffset,
+    this.removedReplies,
   });
   final int? dialog;
   int? id;
@@ -35,6 +36,9 @@ class VideoReplyReplyController extends ReplyController
   // rpid 请求楼中楼回复
   int rpid;
   int replyType;
+
+  /// 继承自父面板（seed 模式）的被屏蔽评论数据（rpid → ReplyInfo）
+  final Map<Int64, ReplyInfo>? removedReplies;
 
   // seed 模式：复用父面板已加载数据，不再请求深层评论
   final List<ReplyInfo>? seedReplies;
@@ -57,6 +61,9 @@ class VideoReplyReplyController extends ReplyController
             removed: _removedReplies,
             rootId: Int64(rpid),
           );
+
+  /// 已收集的被屏蔽评论（rpid → ReplyInfo），供子面板 seed 模式继承
+  Map<Int64, ReplyInfo> get blockedReplies => _removedReplies;
 
   bool hasRoot = false;
   final firstFloor = Rxn<ReplyInfo>();
@@ -94,6 +101,10 @@ class VideoReplyReplyController extends ReplyController
   @override
   void onInit() {
     super.onInit();
+    // seed 模式：父面板已过滤掉被屏蔽评论，这里继承其收集结果以重建占位
+    if (removedReplies case final removedReplies?) {
+      _removedReplies.addAll(removedReplies);
+    }
     mode = Mode.MAIN_LIST_TIME;
     if (isSeedMode) {
       // seed 模式：直接用父面板已加载数据，跳过 DetailList(root=深层评论)（该请求必然返回空）
@@ -132,7 +143,6 @@ class VideoReplyReplyController extends ReplyController
     if (data is DetailListReply) {
       if (isRefresh) {
         collapsedRpids.clear();
-        _removedReplies.clear();
       }
       // seed 模式的 count 由子树大小决定（见 _refreshSeedCount），不覆盖
       if (!isSeedMode) {
@@ -246,6 +256,8 @@ class VideoReplyReplyController extends ReplyController
   @override
   Future<void> onRefresh() {
     if (isSeedMode) return _continueSeedLoad();
+    // 刷新前清空上一轮收集的被屏蔽评论，请求返回后 detailList 重新收集
+    _removedReplies.clear();
     return super.onRefresh();
   }
 

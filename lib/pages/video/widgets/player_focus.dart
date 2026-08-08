@@ -5,12 +5,18 @@ import 'dart:math' as math;
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
+import 'package:PiliPlus/plugin/pl_player/models/mpv_speed_shortcut.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
-    show KeyDownEvent, KeyUpEvent, LogicalKeyboardKey, HardwareKeyboard;
+    show
+        HardwareKeyboard,
+        KeyDownEvent,
+        KeyRepeatEvent,
+        KeyUpEvent,
+        LogicalKeyboardKey;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
@@ -42,11 +48,26 @@ class PlayerFocus extends StatelessWidget {
         logicalKey == LogicalKeyboardKey.arrowDown;
   }
 
+  static bool _hasEditableFocus() {
+    final context = FocusManager.instance.primaryFocus?.context;
+    if (context == null) return false;
+    return context.widget is EditableText ||
+        context.findAncestorWidgetOfExactType<EditableText>() != null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Focus(
       autofocus: true,
+      onFocusChange: (hasFocus) {
+        if (!hasFocus) {
+          plPlayerController.releaseMpvSpeedShortcut();
+        }
+      },
       onKeyEvent: (node, event) {
+        if (_hasEditableFocus()) {
+          return KeyEventResult.ignored;
+        }
         final handled = _handleKey(event);
         if (handled || _shouldHandle(event.logicalKey)) {
           return KeyEventResult.handled;
@@ -88,6 +109,40 @@ class PlayerFocus extends StatelessWidget {
 
   bool _handleKey(KeyEvent event) {
     final key = event.logicalKey;
+    final hardwareKeyboard = HardwareKeyboard.instance;
+    final hasCommandModifier =
+        hardwareKeyboard.isControlPressed ||
+        hardwareKeyboard.isAltPressed ||
+        hardwareKeyboard.isMetaPressed;
+    final isShiftPressed = hardwareKeyboard.isShiftPressed;
+
+    final isKeyK = key == LogicalKeyboardKey.keyK;
+    final isKeyL = key == LogicalKeyboardKey.keyL;
+    if (!hasCommandModifier && !isShiftPressed && (isKeyK || isKeyL)) {
+      final slot = isKeyK ? MpvSpeedSlot.k : MpvSpeedSlot.l;
+      if (event is KeyDownEvent) {
+        plPlayerController.onMpvSpeedKeyDown(slot, event.timeStamp);
+      } else if (event is KeyRepeatEvent) {
+        plPlayerController.onMpvSpeedKeyDown(
+          slot,
+          event.timeStamp,
+          repeat: true,
+        );
+      } else if (event is KeyUpEvent) {
+        plPlayerController.onMpvSpeedKeyUp(slot, event.timeStamp);
+      }
+      return true;
+    }
+
+    final isMinus = key == LogicalKeyboardKey.minus;
+    if (!hasCommandModifier &&
+        !isShiftPressed &&
+        (isMinus || key == LogicalKeyboardKey.equal)) {
+      if (event is KeyDownEvent || event is KeyRepeatEvent) {
+        plPlayerController.adjustMpvSpeed(isMinus ? -1 : 1);
+      }
+      return true;
+    }
 
     final isKeyQ = key == LogicalKeyboardKey.keyQ;
     if (isKeyQ || key == LogicalKeyboardKey.keyR) {
@@ -223,7 +278,8 @@ class PlayerFocus extends StatelessWidget {
           return true;
 
         case LogicalKeyboardKey.keyL:
-          if (isFullScreen || plPlayerController.isDesktopPip) {
+          if (HardwareKeyboard.instance.isShiftPressed &&
+              (isFullScreen || plPlayerController.isDesktopPip)) {
             plPlayerController.onLockControl(
               !plPlayerController.controlsLock.value,
             );

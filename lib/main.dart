@@ -22,10 +22,12 @@ import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/json_file_handler.dart';
 import 'package:PiliPlus/utils/max_screen_size.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
+import 'package:PiliPlus/utils/permission_handler.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/storage_path_resolver.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -72,9 +74,29 @@ Future<void> _initDownPath() async {
     }
   } else if (Platform.isAndroid) {
     final externalStorageDirPath = (await getExternalStorageDirectory())?.path;
-    downloadPath = externalStorageDirPath != null
+    final fallback = externalStorageDirPath != null
         ? path.join(externalStorageDirPath, PathUtils.downloadDir)
         : defDownloadPath;
+    final customDownPath = Pref.downloadPath;
+    final granted = await Permission.manageExternalStorage.isGranted;
+    bool accessible = false;
+    if (customDownPath != null && customDownPath.isNotEmpty && granted) {
+      try {
+        final dir = Directory(customDownPath);
+        if (!dir.existsSync()) {
+          await dir.create(recursive: true);
+        }
+        accessible = true;
+      } catch (_) {
+        accessible = false;
+      }
+    }
+    downloadPath = StoragePathResolver.resolve(
+      customPath: customDownPath,
+      permissionGranted: granted,
+      customPathAccessible: accessible,
+      fallbackPath: fallback,
+    );
   } else {
     downloadPath = defDownloadPath;
   }

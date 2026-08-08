@@ -42,6 +42,10 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/migration_decision.dart';
+import 'package:PiliPlus/utils/storage_location.dart';
+import 'package:PiliPlus/utils/storage_path_resolver.dart';
+import 'package:PiliPlus/utils/storage_volume.dart';
 import 'package:PiliPlus/utils/update.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:file_picker/file_picker.dart';
@@ -71,6 +75,14 @@ List<SettingsModel> get extraSettings => [
       getSubtitle: () => downloadPath,
       leading: const Icon(Icons.storage),
       onTap: _showDownPathDialog,
+    ),
+  ],
+  if (Platform.isAndroid) ...[
+    NormalModel(
+      title: '缓存位置',
+      getSubtitle: () => _androidCacheLocationSubtitle(),
+      leading: const Icon(Icons.sd_storage),
+      onTap: _showAndroidStoragePicker,
     ),
   ],
   SplitModel(
@@ -747,6 +759,284 @@ void _showDownPathDialog(BuildContext context, VoidCallback setState) {
       ],
     ),
   );
+}
+
+String _androidCacheLocationSubtitle() {
+  final p = Pref.downloadPath;
+  if (p == null || p.isEmpty) return '未选择（使用 app 私有目录，卸载会删）';
+  return p;
+}
+
+void _showAndroidStoragePicker(BuildContext context, VoidCallback setState) async {
+  try {
+    final granted = await StorageLocation.isManageExternalStorageGranted;
+    if (!granted) {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (c) => AlertDialog(
+          title: const Text('需要「所有文件访问」权限'),
+          content: const Text('为把缓存视频存到公共目录（卸载不删、可选 SD 卡），需要授权一次「所有文件访问」。仅用于缓存视频，不会读取其他文件。'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('取消')),
+            TextButton(onPressed: () => Navigator.pop(c, true), child: const Text('去授权')),
+          ],
+        ),
+      );
+      if (ok != true) return;
+      final res = await StorageLocation.requestManageExternalStorage();
+      if (!res) {
+        SmartDialog.showToast('未授权，无法选择位置');
+        return;
+      }
+    }
+
+    final volumes = await StorageLocation.listVolumes();
+    if (volumes.isEmpty) {
+      SmartDialog.showToast('未找到可用存储');
+      return;
+    }
+
+    final chosen = await showDialog<StorageVolume>(
+      context: context,
+      builder: (c) => SimpleDialog(
+        title: const Text('选择缓存位置'),
+        children: volumes.map((v) {
+          return SimpleDialogOption(
+            onPressed: () => Navigator.pop(c, v),
+            child: ListTile(
+              leading: Icon(v.isRemovable ? Icons.sd_card : Icons.phone_android),
+              title: Text(v.name),
+              subtitle: Text('可用 ${v.availableLabel}'),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+    if (chosen == null) return;
+
+    final newPath = StoragePathResolver.joinDownloadPath(chosen.path);
+    final oldPath = downloadPath;
+    final hasExisting = Get.find<DownloadService>().downloadList.isNotEmpty;
+
+    final migrate = hasExisting && oldPath != newPath
+        ? await showDialog<bool>(
+            context: context,
+            builder: (c) => AlertDialog(
+              title: const Text('移动已缓存视频？'),
+              content: Text('将 ${Get.find<DownloadService>().downloadList.length} 个已缓存视频从\n$oldPath\n移到\n$newPath？'),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('不搬')),
+                TextButton(onPressed: () => Navigator.pop(c, true), child: const Text('搬过去')),
+              ],
+            ),
+          )
+        : false;
+
+    final decision = MigrationDecision.decide(
+      oldPath: oldPath,
+      newPath: newPath,
+      hasExistingDownloads: hasExisting,
+      userWantsMigrate: migrate ?? false,
+    );
+
+    switch (decision.action) {
+      case MigrationAction.migrate:
+        final ok = await _migrateWithProgress(oldPath, newPath, context);
+        if (!ok) {
+          // 取消或失败：保持原位置，不切换、不重扫
+          SmartDialog.showToast('已取消迁移，保持原位置');
+          return;
+        }
+        Pref.downloadPath = newPath;
+        downloadPath = newPath;
+        final extra = Pref.extraScanPaths ?? [];
+        extra.remove(oldPath);
+        Pref.extraScanPaths = extra.isEmpty ? null : extra;
+        break;
+      case MigrationAction.keepAsExtraScan:
+        Pref.downloadPath = newPath;
+        downloadPath = newPath;
+        final extra = Pref.extraScanPaths ?? [];
+        if (!extra.contains(oldPath)) extra.add(oldPath);
+        Pref.extraScanPaths = extra;
+        break;
+      case MigrationAction.none:
+        Pref.downloadPath = newPath;
+        downloadPath = newPath;
+        break;
+    }
+
+    final downloadService = Get.find<DownloadService>();
+    downloadService.initDownloadList();
+    await downloadService.waitForInitialization;
+    setState();
+  } catch (e) {
+    SmartDialog.showToast('操作失败: $e');
+  }
+}
+
+/// 两阶段迁移（带进度 + 取消）：先全部拷贝，全部成功后才删源。
+/// 取消或失败时源文件完整保留、清理目标半拷贝。
+/// 返回 true=完成；false=取消或失败。
+Future<bool> _migrateWithProgress(
+  String oldPath,
+  String newPath,
+  BuildContext context,
+) async {
+  final oldDir = Directory(oldPath);
+  if (!oldDir.existsSync()) return true;
+  await Directory(newPath).create(recursive: true);
+
+  final folders = <Directory>[];
+  int totalBytes = 0;
+  await for (final e in oldDir.list()) {
+    if (e is Directory) {
+      folders.add(e);
+      totalBytes += await _dirSize(e);
+    }
+  }
+  if (folders.isEmpty) return true;
+
+  final copied = ValueNotifier<int>(0);
+  bool canceled = false;
+
+  // 模态进度对话框：阻塞 UI，迁移期间无法点别处/再开一次迁移
+  showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    useRootNavigator: true,
+    builder: (ctx) => PopScope(
+      canPop: false,
+      child: AlertDialog(
+        title: const Text('正在迁移缓存视频'),
+        content: ValueListenableBuilder<int>(
+          valueListenable: copied,
+          builder: (_, value, __) {
+            final ratio = totalBytes > 0
+                ? (value / totalBytes).clamp(0.0, 1.0)
+                : null;
+            final pct = totalBytes > 0
+                ? (value / totalBytes * 100).clamp(0, 100).toInt()
+                : 0;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                LinearProgressIndicator(value: ratio),
+                const SizedBox(height: 12),
+                Text('$pct%  ·  ${formatBytes(value)} / ${formatBytes(totalBytes)}'),
+                const SizedBox(height: 8),
+                const Text(
+                  '迁移完成自动关闭，请勿离开或切换位置',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ],
+            );
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => canceled = true,
+            child: const Text('取消'),
+          ),
+        ],
+      ),
+    ),
+  );
+
+  String basename(String p) =>
+      p.split('/').where((s) => s.isNotEmpty).last;
+
+  // Phase 1: 全部拷贝（带进度 + 取消检查）
+  bool ok = true;
+  try {
+    for (final folder in folders) {
+      if (canceled) {
+        ok = false;
+        break;
+      }
+      final dest = Directory('${newPath}/${basename(folder.path)}');
+      await _copyDirWithProgress(
+        folder,
+        dest,
+        (b) => copied.value += b,
+        () => canceled,
+      );
+    }
+  } catch (_) {
+    ok = false;
+  }
+
+  // Phase 2: 全部成功才删源；否则清理目标半拷贝（源完整保留）
+  if (ok) {
+    for (final folder in folders) {
+      try {
+        await folder.delete(recursive: true);
+      } catch (_) {}
+    }
+  } else {
+    for (final folder in folders) {
+      final dest = Directory('${newPath}/${basename(folder.path)}');
+      try {
+        if (dest.existsSync()) await dest.delete(recursive: true);
+      } catch (_) {}
+    }
+  }
+
+  if (context.mounted) Navigator.of(context, rootNavigator: true).pop();
+  copied.dispose();
+  return ok;
+}
+
+Future<void> _copyDirWithProgress(
+  Directory src,
+  Directory dest,
+  void Function(int) onBytes,
+  bool Function() isCanceled,
+) async {
+  await dest.create(recursive: true);
+  await for (final e in src.list()) {
+    if (isCanceled()) return;
+    final name = e.uri.pathSegments.where((s) => s.isNotEmpty).last;
+    final target = '${dest.path}/$name';
+    if (e is Directory) {
+      await _copyDirWithProgress(e, Directory(target), onBytes, isCanceled);
+    } else if (e is File) {
+      await _copyFileWithProgress(e, target, onBytes, isCanceled);
+    }
+  }
+}
+
+Future<void> _copyFileWithProgress(
+  File src,
+  String destPath,
+  void Function(int) onBytes,
+  bool Function() isCanceled,
+) async {
+  final output = File(destPath).openWrite();
+  try {
+    await for (final chunk in src.openRead()) {
+      if (isCanceled()) break;
+      output.add(chunk);
+      onBytes(chunk.length);
+    }
+    await output.flush();
+  } finally {
+    await output.close();
+  }
+}
+
+Future<int> _dirSize(Directory dir) async {
+  int size = 0;
+  try {
+    await for (final e in dir.list()) {
+      if (e is File) {
+        size += await e.length();
+      } else if (e is Directory) {
+        size += await _dirSize(e);
+      }
+    }
+  } catch (_) {}
+  return size;
 }
 
 void _showDynDialog(BuildContext context) {

@@ -30,6 +30,8 @@ class PlDanmakuController {
   late final Set<int> _requestedSeg = HashSet();
 
   static const int segmentLength = 60 * 6 * 1000;
+  // 合并弹幕的时间窗口：相同内容仅在窗口内合并，避免跨时间段误合并
+  static const int mergeWindow = 15 * 1000;
 
   void dispose() {
     _dmSegMap.clear();
@@ -65,7 +67,8 @@ class PlDanmakuController {
 
   void handleDanmaku(List<DanmakuElem> elems) {
     if (elems.isEmpty) return;
-    final uniques = HashMap<String, DanmakuElem>();
+    // 按时间窗口分组：窗口 → 文本 → (首条弹幕, 该组出现过的不同用户集合)
+    final windowed = HashMap<int, HashMap<String, (DanmakuElem, Set<String>)>>();
 
     final filters = _plPlayerController.filters;
     final shouldFilter = filters.count != 0;
@@ -75,23 +78,35 @@ class PlDanmakuController {
       }
 
       if (!element.isSelf) {
-        if (_mergeDanmaku) {
-          final elem = uniques[element.content];
-          if (elem == null) {
-            uniques[element.content] = element..count = 1;
-          } else {
-            elem.count++;
-            continue;
-          }
-        }
-
+        // 被过滤的弹幕(文本/正则/按用户屏蔽)既不显示也不参与合并计数
         if (shouldFilter && filters.remove(element)) {
           continue;
+        }
+        if (_mergeDanmaku) {
+          final window = element.progress ~/ mergeWindow;
+          final uniques = windowed.putIfAbsent(window, HashMap.new);
+          final entry = uniques[element.content];
+          if (entry == null) {
+            uniques[element.content] = (element, {element.midHash});
+          } else {
+            // 仅收集不同的用户(midHash)，条数不累加，最终计数=不同用户数
+            entry.$2.add(element.midHash);
+            continue;
+          }
         }
       }
 
       final int pos = element.progress ~/ 100; //每0.1秒存储一次
       (_dmSegMap[pos] ??= []).add(element);
+    }
+
+    // 合并结束后：count 设为该窗口内发送该文本的不同用户数
+    if (_mergeDanmaku) {
+      for (final uniques in windowed.values) {
+        for (final (element, users) in uniques.values) {
+          element.count = users.length;
+        }
+      }
     }
   }
 

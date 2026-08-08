@@ -14,8 +14,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 enum _ShutdownType with EnumWithLabel {
   pause('暂停视频'),
-  exit('退出APP'),
-  ;
+  exit('退出APP');
 
   @override
   final String label;
@@ -31,6 +30,9 @@ class ShutdownTimerService {
   ValueGetter<bool>? isPlaying;
 
   Timer? _shutdownTimer;
+  Timer? _countdownTimer;
+  DateTime? _deadline;
+  final ValueNotifier<String?> countdownText = ValueNotifier(null);
   bool get isActive => _shutdownTimer?.isActive ?? false;
   int _durationInMinutes = 0;
   _ShutdownType _shutdownType = .pause;
@@ -44,12 +46,42 @@ class ShutdownTimerService {
       _shutdownTimer!.cancel();
       _shutdownTimer = null;
     }
+    _countdownTimer?.cancel();
+    _countdownTimer = null;
+    _deadline = null;
   }
 
   void reset([int durationInMinutes = 0]) {
     _stopTimer();
     _isWaiting = false;
     _durationInMinutes = durationInMinutes;
+    countdownText.value = null;
+  }
+
+  void _updateCountdownText() {
+    if (_isWaiting) {
+      countdownText.value = '当前播放结束后关闭';
+      return;
+    }
+    final deadline = _deadline;
+    if (deadline == null) {
+      countdownText.value = null;
+      return;
+    }
+    final remaining = deadline.difference(DateTime.now());
+    if (remaining <= Duration.zero) {
+      countdownText.value = '00:00';
+      return;
+    }
+    countdownText.value = _formatRemaining(remaining);
+  }
+
+  void _startCountdownTicker() {
+    _countdownTimer?.cancel();
+    _updateCountdownText();
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      _updateCountdownText();
+    });
   }
 
   void _startShutdownTimer(int durationInMinutes) {
@@ -59,6 +91,8 @@ class ShutdownTimerService {
       return;
     }
     SmartDialog.showToast('设置 ${_format(durationInMinutes)} 后定时关闭');
+    _deadline = DateTime.now().add(Duration(minutes: durationInMinutes));
+    _startCountdownTicker();
     _shutdownTimer = Timer(
       Duration(minutes: durationInMinutes),
       _handleShutdown,
@@ -74,10 +108,12 @@ class ShutdownTimerService {
         if (isPlaying) {
           if (_waitUntilCompleted) {
             _isWaiting = true;
+            _updateCountdownText();
           } else {
             _durationInMinutes = 0;
             (onPause ?? player?.pause)?.call();
             SmartDialog.showToast('定时时间已到，已暂停');
+            reset();
           }
         }
       case _ShutdownType.exit:
@@ -88,6 +124,7 @@ class ShutdownTimerService {
               false;
           if (isPlaying) {
             _isWaiting = true;
+            _updateCountdownText();
             return;
           }
         }
@@ -98,8 +135,7 @@ class ShutdownTimerService {
   void handleWaiting() {
     switch (_shutdownType) {
       case _ShutdownType.pause:
-        _isWaiting = false;
-        _durationInMinutes = 0;
+        reset();
         SmartDialog.showToast('定时时间已到，已暂停');
       case _ShutdownType.exit:
         _syncProgressAndExit();
@@ -134,6 +170,17 @@ class ShutdownTimerService {
     } else {
       return '$minute分钟';
     }
+  }
+
+  static String _formatRemaining(Duration duration) {
+    final totalSeconds = duration.inSeconds;
+    final hour = totalSeconds ~/ 3600;
+    final minute = (totalSeconds % 3600) ~/ 60;
+    final second = totalSeconds % 60;
+    if (hour > 0) {
+      return '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}:${second.toString().padLeft(2, '0')}';
+    }
+    return '${minute.toString().padLeft(2, '0')}:${second.toString().padLeft(2, '0')}';
   }
 
   void showScheduleExitDialog(

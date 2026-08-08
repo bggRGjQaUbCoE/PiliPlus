@@ -9,7 +9,6 @@ import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/dialog/report.dart';
 import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/marquee.dart';
-import 'package:PiliPlus/common/widgets/window_controls_safe_area.dart';
 import 'package:PiliPlus/http/danmaku.dart';
 import 'package:PiliPlus/http/danmaku_block.dart';
 import 'package:PiliPlus/http/init.dart';
@@ -1778,7 +1777,6 @@ class HeaderControlState extends State<HeaderControl>
         const SizedBox(height: 12),
         Row(
           children: [
-            const WindowControlsLeadingInset(),
             SizedBox(
               width: btnWidth,
               height: btnHeight,

@@ -7,7 +7,6 @@ import 'package:PiliPlus/common/widgets/custom_toast.dart';
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/common/widgets/scale_app.dart';
 import 'package:PiliPlus/common/widgets/scroll_behavior.dart';
-import 'package:PiliPlus/common/widgets/window_controls_safe_area.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
@@ -320,7 +319,6 @@ class MyApp extends StatelessWidget {
         child: child!,
       );
     }
-    child = WindowControlsInsetProvider(uiScale: uiScale, child: child);
     if (PlatformUtils.isDesktop) {
       return BackDetector(
         onBack: _onBack,

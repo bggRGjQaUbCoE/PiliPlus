@@ -8,7 +8,6 @@ import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
-import 'package:PiliPlus/common/widgets/window_controls_safe_area.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
@@ -177,7 +176,7 @@ class _DynTopicPageState extends State<DynTopicPage>
     LoadingState<TopDetails?> topState,
   ) {
     return switch (topState) {
-      Loading() => const SliverAppBar().withWindowControlsAppBarSafeArea(),
+      Loading() => const SliverAppBar(),
       Success(:final response) when response != null => DynamicSliverAppBar.medium(
         onPerformLayout: (value) => _controller.appbarOffset =
             value.height - kToolbarHeight - padding.top,
@@ -234,7 +233,7 @@ class _DynTopicPageState extends State<DynTopicPage>
                     ],
                   ),
                 ),
-              ).withWindowControlsSafeArea(),
+              ),
               Text(
                 response.topicItem!.name,
                 style: const TextStyle(
@@ -352,7 +351,7 @@ class _DynTopicPageState extends State<DynTopicPage>
       _ => SliverAppBar(
         pinned: true,
         title: Text(_controller.topicName),
-      ).withWindowControlsAppBarSafeArea(),
+      ),
     };
   }
 

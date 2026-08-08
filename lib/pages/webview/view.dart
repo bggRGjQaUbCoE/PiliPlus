@@ -2,7 +2,6 @@ import 'dart:io' show Platform;
 
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/selection_text.dart';
-import 'package:PiliPlus/common/widgets/window_controls_safe_area.dart';
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/models/common/webview_menu_type.dart';
@@ -169,7 +168,7 @@ class _WebviewPageState extends State<WebviewPage> {
                   ],
                 ),
               ],
-            ).withWindowControlsAppBarSafeArea(),
+            ),
       body: SafeArea(
         child: InAppWebView(
           webViewEnvironment: webViewEnvironment,

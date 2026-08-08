@@ -10,7 +10,6 @@ import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scroll_behavior.dart'
     show NoOverscrollIndicator;
 import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
-import 'package:PiliPlus/common/widgets/window_controls_safe_area.dart';
 import 'package:PiliPlus/http/live.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/user.dart';
@@ -136,7 +135,7 @@ class _MemberPageState extends State<MemberPage> {
                     behavior: HitTestBehavior.opaque,
                     child: Text(_userController.username ?? ''),
                   ),
-                ).withWindowControlsAppBarSafeArea(),
+                ),
               ];
             },
             body: _userController.tab2?.isNotEmpty == true

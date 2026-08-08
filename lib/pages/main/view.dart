@@ -8,7 +8,6 @@ import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/main_layout.dart';
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
-import 'package:PiliPlus/common/widgets/window_controls_safe_area.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/pages/home/view.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
@@ -369,7 +368,7 @@ class _MainAppState extends PopScopeState<MainApp>
     return bottomNav;
   }
 
-  Widget _sideBar({required bool overlayWindowControls}) {
+  Widget _sideBar() {
     if (_mainController.navigationBars.length > 1) {
       if (context.isTablet && _mainController.optTabletNav) {
         return Padding(
@@ -413,9 +412,7 @@ class _MainAppState extends PopScopeState<MainApp>
         () => NavigationRail(
           groupAlignment: 0.5,
           labelType: .selected,
-          leading: overlayWindowControls
-              ? _windowControlsHeaderPlaceholder()
-              : userAndSearchVertical(),
+          leading: userAndSearchVertical(),
           backgroundColor: Colors.transparent,
           onDestinationSelected: _mainController.setIndex,
           selectedIndex: _mainController.selectedIndex.value,
@@ -434,9 +431,7 @@ class _MainAppState extends PopScopeState<MainApp>
     return Container(
       width: 80,
       margin: .only(top: 12 + _padding.top, left: _padding.left),
-      child: overlayWindowControls
-          ? _windowControlsHeaderPlaceholder()
-          : userAndSearchVertical(),
+      child: userAndSearchVertical(),
     );
   }
 
@@ -460,7 +455,6 @@ class _MainAppState extends PopScopeState<MainApp>
 
     Widget? sideBar;
     Widget? bottomNav;
-    Widget? windowControlsHeader;
     final EdgeInsets padding;
     if (_mainController.useBottomNav) {
       bottomNav = _bottomNav;
@@ -477,15 +471,6 @@ class _MainAppState extends PopScopeState<MainApp>
         right: _padding.right,
       );
     } else {
-      final windowControlsInset = WindowControlsInsetProvider.leadingOf(
-        context,
-      );
-      final usesTabletDrawer =
-          _mainController.navigationBars.length > 1 &&
-          context.isTablet &&
-          _mainController.optTabletNav;
-      final overlayWindowControls =
-          windowControlsInset > 0 && !usesTabletDrawer;
       sideBar = DecoratedBox(
         decoration: BoxDecoration(
           border: Border(
@@ -494,36 +479,17 @@ class _MainAppState extends PopScopeState<MainApp>
             ),
           ),
         ),
-        child: _sideBar(overlayWindowControls: overlayWindowControls),
+        child: _sideBar(),
       );
-      if (overlayWindowControls) {
-        final hasNavigationRail = _mainController.navigationBars.length > 1;
-        windowControlsHeader = Positioned(
-          left: windowControlsInset > _padding.left
-              ? windowControlsInset
-              : _padding.left,
-          top: hasNavigationRail ? _padding.top + 8 : _padding.top + 12,
-          child: userAndSearchVertical(windowSafe: false),
-        );
-      }
       padding = .only(top: _padding.top, right: _padding.right);
     }
 
-    child = MainLayout(
-      sideBar: sideBar,
-      bottomNav: bottomNav,
-      body: Padding(padding: padding, child: child),
-    );
-    if (windowControlsHeader != null) {
-      child = Stack(
-        children: [
-          Positioned.fill(child: child),
-          windowControlsHeader,
-        ],
-      );
-    }
     child = Material(
-      child: child,
+      child: MainLayout(
+        sideBar: sideBar,
+        bottomNav: bottomNav,
+        body: Padding(padding: padding, child: child),
+      ),
     );
 
     if (PlatformUtils.isMobile) {
@@ -562,15 +528,8 @@ class _MainAppState extends PopScopeState<MainApp>
         : icon;
   }
 
-  Widget _windowControlsHeaderPlaceholder() => IgnorePointer(
-    child: Opacity(
-      opacity: 0,
-      child: userAndSearchVertical(windowSafe: false),
-    ),
-  );
-
-  Widget userAndSearchVertical({bool windowSafe = true}) {
-    final child = Column(
+  Widget userAndSearchVertical() {
+    return Column(
       children: [
         userAvatar(colorScheme: _colorScheme, mainController: _mainController),
         const SizedBox(height: 8),
@@ -585,6 +544,5 @@ class _MainAppState extends PopScopeState<MainApp>
         ),
       ],
     );
-    return windowSafe ? WindowControlsSafeArea(child: child) : child;
   }
 }

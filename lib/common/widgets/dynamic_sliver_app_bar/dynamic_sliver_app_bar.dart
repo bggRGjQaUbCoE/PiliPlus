@@ -22,7 +22,6 @@ import 'package:PiliPlus/common/widgets/dynamic_sliver_app_bar/rendering/sliver_
 import 'package:PiliPlus/common/widgets/dynamic_sliver_app_bar/sliver_persistent_header.dart';
 import 'package:PiliPlus/common/widgets/only_layout_widget.dart'
     show LayoutCallback;
-import 'package:PiliPlus/common/widgets/window_controls_safe_area.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart'
     hide SliverPersistentHeader, SliverPersistentHeaderDelegate;
@@ -343,7 +342,7 @@ class DynamicSliverAppBar extends StatelessWidget {
         clipBehavior: clipBehavior,
         actionsPadding: actionsPadding,
       ),
-    ).withWindowControlsAppBarSafeArea();
+    );
   }
 }
 

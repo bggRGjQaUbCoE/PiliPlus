@@ -6,7 +6,6 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/sliver/trending_header.dart';
-import 'package:PiliPlus/common/widgets/window_controls_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/search/search_trending/list.dart';
 import 'package:PiliPlus/pages/search_trending/controller.dart';
@@ -117,7 +116,7 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
                           ),
                         )
                       : null,
-                ).withWindowControlsAppBarSafeArea();
+                );
               },
             ),
           ),

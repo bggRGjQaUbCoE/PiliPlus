@@ -97,6 +97,21 @@ List<SettingsModel> get styleSettings => [
       onTap: _showFontWeightDialog,
     ),
   ),
+  if (Platform.isWindows)
+    NormalModel(
+      title: '应用字体',
+      leading: const Icon(Icons.text_format),
+      getSubtitle: () {
+        final fontFamily = Pref.appFontFamily;
+        return fontFamily.isEmpty ? '系统默认' : fontFamily;
+      },
+      onTap: (context, setState) async {
+        final result = await Get.toNamed('/fontFamilySetting');
+        if (result != null) {
+          setState();
+        }
+      },
+    ),
   NormalModel(
     title: '界面缩放',
     getSubtitle: () => '当前缩放比例：${Pref.uiScale.toStringAsFixed(2)}',

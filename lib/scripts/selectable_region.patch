@@ -119,7 +119,7 @@ index 09fba7fc4fb..57ee469358e 100644
    void computeSemanticsInformation(
      List<InlineSpanSemanticsInformation> collector, {
 diff --git a/packages/flutter/lib/src/rendering/paragraph.dart b/packages/flutter/lib/src/rendering/paragraph.dart
-index 97a41dafb8d..15e7ce055e9 100644
+index 97a41dafb8d..1dc2f36538d 100644
 --- a/packages/flutter/lib/src/rendering/paragraph.dart
 +++ b/packages/flutter/lib/src/rendering/paragraph.dart
 @@ -7,6 +7,7 @@
@@ -341,18 +341,34 @@ index 97a41dafb8d..15e7ce055e9 100644
      _setSelectionPosition(position, isEnd: isEnd);
      if (position.offset == range.end) {
        return SelectionResult.next;
-@@ -3568,7 +3626,10 @@ class _SelectableFragment
+@@ -3568,8 +3626,25 @@ class _SelectableFragment
        final selectionPaint = Paint()
          ..style = PaintingStyle.fill
          ..color = paragraph.selectionColor!;
 -      for (final TextBox textBox in paragraph.getBoxesForSelection(selection)) {
-+      for (final TextBox textBox in paragraph.getBoxesForSelection(
+-        context.canvas.drawRect(textBox.toRect().shift(offset), selectionPaint);
++
++      final List<ui.TextBox> boxes = paragraph.getBoxesForSelection(
 +        selection,
 +        boxHeightStyle: ui.BoxHeightStyle.max,
-+      )) {
-         context.canvas.drawRect(textBox.toRect().shift(offset), selectionPaint);
++        boxWidthStyle: ui.BoxWidthStyle.tight,
++      );
++      ui.TextBox? mergedBox;
++      for (final textBox in boxes) {
++        if (mergedBox == null) {
++          mergedBox = textBox;
++        } else if (mergedBox.top != textBox.top) {
++          context.canvas.drawRect(Rect.fromLTRB(mergedBox.left, mergedBox.top, paragraph.size.width, mergedBox.bottom).shift(offset), selectionPaint);
++          mergedBox = textBox;
++        } else {
++          mergedBox = TextBox.fromLTRBD(mergedBox.left, mergedBox.top, textBox.right, mergedBox.bottom, mergedBox.direction);
++        }
++      }
++      if (mergedBox != null) {
++        context.canvas.drawRect(mergedBox.toRect().shift(offset), selectionPaint);
        }
      }
+     if (_startHandleLayerLink != null && value.startSelectionPoint != null) {
 diff --git a/packages/flutter/lib/src/rendering/selection.dart b/packages/flutter/lib/src/rendering/selection.dart
 index a813e141dc4..d045236d031 100644
 --- a/packages/flutter/lib/src/rendering/selection.dart

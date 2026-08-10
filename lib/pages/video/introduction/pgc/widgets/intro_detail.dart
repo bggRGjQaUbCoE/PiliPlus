@@ -1,6 +1,6 @@
-import 'package:PiliPlus/common/widgets/flutter/page/tabs.dart';
 import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart'
+    show tabBarScrollPhysics;
 import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
@@ -11,7 +11,7 @@ import 'package:PiliPlus/pages/pgc_review/view.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:flutter/material.dart' hide TabBarView;
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class PgcIntroPanel extends CommonSlidePage {
@@ -94,9 +94,9 @@ class _IntroDetailState extends State<PgcIntroPanel>
 
   @override
   Widget buildList(ThemeData theme) {
-    return TabBarView<TabBarDragGestureRecognizer>(
+    return TabBarView(
       controller: _tabController,
-      physics: clampingScrollPhysics,
+      physics: tabBarScrollPhysics,
       horizontalDragGestureRecognizer: () =>
           TabBarDragGestureRecognizer(isDxAllowed: isDxAllowed),
       children: [

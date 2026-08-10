@@ -1,7 +1,7 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/custom_height_widget.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:PiliPlus/pages/common/common_page.dart';
 import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
@@ -22,6 +22,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends CommonPageState<HomePage>
     with AutomaticKeepAliveClientMixin {
+  late ColorScheme _colorScheme;
   final _homeController = Get.putOrFind(HomeController.new);
   final _mainController = Get.find<MainController>();
 
@@ -32,9 +33,14 @@ class _HomePageState extends CommonPageState<HomePage>
   bool get wantKeepAlive => true;
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _colorScheme = ColorScheme.of(context);
+  }
+
+  @override
   Widget build(BuildContext context) {
     super.build(context);
-    final theme = Theme.of(context);
     Widget tabBar;
     if (_homeController.tabs.length > 1) {
       tabBar = Padding(
@@ -62,7 +68,7 @@ class _HomePageState extends CommonPageState<HomePage>
       if (_homeController.hideTopBar &&
           _mainController.barHideType == .instant) {
         tabBar = Material(
-          color: theme.colorScheme.surface,
+          color: _colorScheme.surface,
           child: tabBar,
         );
       }
@@ -73,7 +79,7 @@ class _HomePageState extends CommonPageState<HomePage>
       children: [
         if (!_mainController.useSideBar &&
             MediaQuery.sizeOf(context).isPortrait)
-          customAppBar(theme),
+          customAppBar(),
         tabBar,
         Expanded(
           child: onBuild(
@@ -87,15 +93,15 @@ class _HomePageState extends CommonPageState<HomePage>
     );
   }
 
-  Widget customAppBar(ThemeData theme) {
+  Widget customAppBar() {
     const padding = EdgeInsets.fromLTRB(14, 6, 14, 0);
     final child = Row(
       children: [
-        searchBar(theme),
+        searchBar(),
         const SizedBox(width: 4),
         msgBadge(_mainController),
         const SizedBox(width: 8),
-        userAvatar(theme: theme, mainController: _mainController),
+        userAvatar(colorScheme: _colorScheme, mainController: _mainController),
       ],
     );
     if (_homeController.hideTopBar) {
@@ -138,17 +144,17 @@ class _HomePageState extends CommonPageState<HomePage>
     );
   }
 
-  Widget searchBar(ThemeData theme) {
+  Widget searchBar() {
     const borderRadius = BorderRadius.all(Radius.circular(25));
     return Expanded(
       child: SizedBox(
         height: 44,
         child: Material(
           borderRadius: borderRadius,
-          color: theme.colorScheme.onSecondaryContainer.withValues(alpha: 0.05),
+          color: _colorScheme.onSecondaryContainer.withValues(alpha: 0.05),
           child: InkWell(
             borderRadius: borderRadius,
-            splashColor: theme.colorScheme.primaryContainer.withValues(
+            splashColor: _colorScheme.primaryContainer.withValues(
               alpha: 0.3,
             ),
             onTap: () => Get.toNamed(
@@ -162,7 +168,7 @@ class _HomePageState extends CommonPageState<HomePage>
                 const SizedBox(width: 14),
                 Icon(
                   Icons.search_outlined,
-                  color: theme.colorScheme.onSecondaryContainer,
+                  color: _colorScheme.onSecondaryContainer,
                   semanticLabel: '搜索',
                 ),
                 const SizedBox(width: 10),
@@ -172,7 +178,7 @@ class _HomePageState extends CommonPageState<HomePage>
                       _homeController.defaultSearch.value,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: theme.colorScheme.outline),
+                      style: TextStyle(color: _colorScheme.outline),
                     ),
                   ),
                 ),
@@ -187,7 +193,7 @@ class _HomePageState extends CommonPageState<HomePage>
 }
 
 Widget userAvatar({
-  required ThemeData theme,
+  required ColorScheme colorScheme,
   required MainController mainController,
 }) {
   return Semantics(
@@ -209,7 +215,7 @@ Widget userAvatar({
                   type: .transparency,
                   child: InkWell(
                     onTap: mainController.toMinePage,
-                    splashColor: theme.colorScheme.primaryContainer.withValues(
+                    splashColor: colorScheme.primaryContainer.withValues(
                       alpha: 0.3,
                     ),
                     customBorder: const CircleBorder(),
@@ -226,12 +232,12 @@ Widget userAvatar({
                             padding: const .all(2),
                             decoration: BoxDecoration(
                               shape: .circle,
-                              color: theme.colorScheme.secondaryContainer,
+                              color: colorScheme.secondaryContainer,
                             ),
                             child: Icon(
                               size: 14,
                               MdiIcons.incognito,
-                              color: theme.colorScheme.onSecondaryContainer,
+                              color: colorScheme.onSecondaryContainer,
                             ),
                           ),
                         )
@@ -248,13 +254,13 @@ Widget userAvatar({
             tooltip: '点击登录',
             style: IconButton.styleFrom(
               padding: .zero,
-              backgroundColor: theme.colorScheme.onInverseSurface,
+              backgroundColor: colorScheme.onInverseSurface,
             ),
             onPressed: mainController.toMinePage,
             icon: Icon(
               Icons.person_rounded,
               size: 22,
-              color: theme.colorScheme.primary,
+              color: colorScheme.primary,
             ),
           ),
         );

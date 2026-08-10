@@ -64,7 +64,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
     count.value = data.subjectControl.count.toInt();
     if (isRefresh) {
       subjectControl = data.subjectControl;
-      upMid ??= data.subjectControl.upMid;
+      upMid = data.subjectControl.upMid;
       if (hasUpTop = data.hasUpTop()) {
         data.replies.insert(0, data.upTop);
       }

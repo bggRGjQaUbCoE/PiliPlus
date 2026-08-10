@@ -43,13 +43,13 @@ class _BottomControlState extends State<BottomControl> with HeaderMixin {
   @override
   Widget build(BuildContext context) {
     final isFullScreen = plPlayerController.isFullScreen.value;
-    return AppBar(
-      backgroundColor: Colors.transparent,
-      foregroundColor: Colors.white,
-      primary: false,
-      automaticallyImplyLeading: false,
-      titleSpacing: 14,
-      title: Row(
+    return Padding(
+      padding: const .only(
+        left: 14,
+        right: 14,
+        bottom: (kToolbarHeight - 30) / 2,
+      ),
+      child: Row(
         children: [
           PlayOrPauseButton(plPlayerController: plPlayerController),
           ComBtn(

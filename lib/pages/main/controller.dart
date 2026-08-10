@@ -101,7 +101,7 @@ class MainController extends GetxController
 
     hasDyn = navigationBars.contains(NavigationBarType.dynamics);
     if (dynamicBadgeMode != DynamicBadgeMode.hidden) {
-      if (hasDyn) {
+      if (hasDyn && navigationBars[selectedIndex.value] != .dynamics) {
         if (checkDynamic) {
           _lastCheckDynamicAt = DateTime.now().millisecondsSinceEpoch;
         }

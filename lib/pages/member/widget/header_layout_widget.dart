@@ -17,8 +17,8 @@
 
 import 'dart:math' as math;
 
+import 'package:PiliPlus/common/widgets/slotted_layout_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show BoxHitTestResult, BoxParentData;
 
 const double kHeaderHeight = 135.0;
 
@@ -32,7 +32,7 @@ const double _kActionsTopPadding = 140.0;
 const double _kActionsLeftPadding = 160.0;
 const double _kActionsRightPadding = 15.0;
 
-enum HeaderType { header, avatar, actions }
+enum HeaderType { avatar, actions, header }
 
 class HeaderLayoutWidget
     extends SlottedMultiChildRenderObjectWidget<HeaderType, RenderBox> {
@@ -52,9 +52,9 @@ class HeaderLayoutWidget
 
   @override
   Widget childForSlot(HeaderType slot) => switch (slot) {
-    .header => header,
     .avatar => avatar,
     .actions => actions,
+    .header => header,
   };
 
   @override
@@ -64,31 +64,32 @@ class HeaderLayoutWidget
 }
 
 class RenderHeaderWidget extends RenderBox
-    with SlottedContainerRenderObjectMixin<HeaderType, RenderBox> {
-  Offset _getOffset(RenderBox child) {
-    return (child.parentData as BoxParentData).offset;
-  }
+    with
+        SlottedContainerRenderObjectMixin<HeaderType, RenderBox>,
+        SlottedLayoutMixin {
+  RenderBox get header => childForSlot(.header)!;
+  RenderBox get avatar => childForSlot(.avatar)!;
+  RenderBox get actions => childForSlot(.actions)!;
 
-  void _setOffset(RenderBox child, Offset offset) {
-    (child.parentData as BoxParentData).offset = offset;
-  }
+  @override
+  Iterable<HeaderType> get slots => HeaderType.values;
 
   @override
   void performLayout() {
     double height = kHeaderHeight;
     final maxWidth = constraints.maxWidth;
 
-    _setOffset(
-      childForSlot(HeaderType.header)!..layout(constraints),
+    setOffset(
+      header..layout(constraints),
       Offset.zero,
     );
 
-    _setOffset(
-      childForSlot(HeaderType.avatar)!..layout(constraints),
+    setOffset(
+      avatar..layout(constraints),
       const Offset(_kAvatarLeftPadding, _kAvatarTopPadding),
     );
 
-    final actions = childForSlot(HeaderType.actions)!;
+    final actions = this.actions;
     final childSize =
         (actions..layout(
               BoxConstraints(
@@ -101,7 +102,7 @@ class RenderHeaderWidget extends RenderBox
             ))
             .size;
     height += (math.max(_kAvatarEffectiveHeight, childSize.height)) + 5.0;
-    _setOffset(
+    setOffset(
       actions,
       Offset(
         maxWidth - childSize.width - _kActionsRightPadding,
@@ -114,27 +115,12 @@ class RenderHeaderWidget extends RenderBox
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    for (var slot in HeaderType.values) {
-      final child = childForSlot(slot)!;
-      context.paintChild(child, _getOffset(child) + offset);
+    void doPaint(RenderBox child) {
+      context.paintChild(child, getOffset(child) + offset);
     }
-  }
 
-  @override
-  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
-    for (var slot in HeaderType.values.reversed) {
-      final child = childForSlot(slot)!;
-      final bool isHit = result.addWithPaintOffset(
-        offset: _getOffset(child),
-        position: position,
-        hitTest: (BoxHitTestResult result, Offset transformed) {
-          return child.hitTest(result, position: transformed);
-        },
-      );
-      if (isHit) {
-        return true;
-      }
-    }
-    return false;
+    doPaint(header);
+    doPaint(avatar);
+    doPaint(actions);
   }
 }

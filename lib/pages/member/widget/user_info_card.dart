@@ -3,7 +3,8 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/avatars.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart'
+    show tabBarScrollPhysics;
 import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
@@ -635,7 +636,7 @@ class UserInfoCard extends StatelessWidget {
             child: PageView.builder(
               controller: controller,
               itemCount: imgUrls.length,
-              physics: clampingScrollPhysics,
+              physics: tabBarScrollPhysics,
               itemBuilder: (context, index) {
                 final img = imgUrls[index];
                 return fromHero(

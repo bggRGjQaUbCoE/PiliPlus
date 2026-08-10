@@ -1,0 +1,94 @@
+diff --git a/packages/flutter/lib/src/widgets/draggable_scrollable_sheet.dart b/packages/flutter/lib/src/widgets/draggable_scrollable_sheet.dart
+index 0022f5000d2..c593779bf3e 100644
+--- a/packages/flutter/lib/src/widgets/draggable_scrollable_sheet.dart
++++ b/packages/flutter/lib/src/widgets/draggable_scrollable_sheet.dart
+@@ -311,6 +311,7 @@ class DraggableScrollableSheet extends StatefulWidget {
+     this.snapAnimationDuration,
+     this.controller,
+     this.shouldCloseOnMinExtent = true,
++    this.initialScrollOffset = 0.0,
+     required this.builder,
+   }) : assert(minChildSize >= 0.0),
+        assert(maxChildSize <= 1.0),
+@@ -318,6 +319,8 @@ class DraggableScrollableSheet extends StatefulWidget {
+        assert(initialChildSize <= maxChildSize),
+        assert(snapAnimationDuration == null || snapAnimationDuration > Duration.zero);
+ 
++  final double initialScrollOffset;
++
+   /// The initial fractional value of the parent container's height to use when
+   /// displaying the widget.
+   ///
+@@ -644,9 +647,15 @@ class _DraggableSheetExtent {
+   }
+ }
+ 
++typedef DraggableScrollableSheetState = _DraggableScrollableSheetState;
++
+ class _DraggableScrollableSheetState extends State<DraggableScrollableSheet> {
+   late _DraggableScrollableSheetScrollController _scrollController;
++  set scrollController(_DraggableScrollableSheetScrollController controller) {
++    _scrollController = controller;
++  }
+   late _DraggableSheetExtent _extent;
++  _DraggableSheetExtent get extent => _extent;
+ 
+   @override
+   void initState() {
+@@ -660,10 +669,17 @@ class _DraggableScrollableSheetState extends State<DraggableScrollableSheet> {
+       initialSize: widget.initialChildSize,
+       shouldCloseOnMinExtent: widget.shouldCloseOnMinExtent,
+     );
+-    _scrollController = _DraggableScrollableSheetScrollController(extent: _extent);
++    initScrollController();
+     widget.controller?._attach(_scrollController);
+   }
+ 
++  void initScrollController() {
++    _scrollController = _DraggableScrollableSheetScrollController(
++      extent: _extent,
++      initialScrollOffset: widget.initialScrollOffset,
++    );
++  }
++
+   List<double> _impliedSnapSizes() {
+     for (var index = 0; index < (widget.snapSizes?.length ?? 0); index += 1) {
+       final double snapSize = widget.snapSizes![index];
+@@ -799,8 +815,11 @@ class _DraggableScrollableSheetState extends State<DraggableScrollableSheet> {
+ ///  * [PrimaryScrollController], which can be used to establish a
+ ///    [_DraggableScrollableSheetScrollController] as the primary controller for
+ ///    descendants.
++
++typedef DraggableScrollableSheetScrollController = _DraggableScrollableSheetScrollController;
++
+ class _DraggableScrollableSheetScrollController extends ScrollController {
+-  _DraggableScrollableSheetScrollController({required this.extent});
++  _DraggableScrollableSheetScrollController({required this.extent, super.initialScrollOffset});
+ 
+   _DraggableSheetExtent extent;
+   VoidCallback? onPositionDetached;
+@@ -816,6 +835,7 @@ class _DraggableScrollableSheetScrollController extends ScrollController {
+       context: context,
+       oldPosition: oldPosition,
+       getExtent: () => extent,
++      initialPixels: initialScrollOffset,
+     );
+   }
+ 
+@@ -861,12 +881,16 @@ class _DraggableScrollableSheetScrollController extends ScrollController {
+ /// See also:
+ ///
+ ///  * [_DraggableScrollableSheetScrollController], which uses this as its [ScrollPosition].
++
++typedef DraggableScrollableSheetScrollPosition = _DraggableScrollableSheetScrollPosition;
++
+ class _DraggableScrollableSheetScrollPosition extends ScrollPositionWithSingleContext {
+   _DraggableScrollableSheetScrollPosition({
+     required super.physics,
+     required super.context,
+     super.oldPosition,
+     required this.getExtent,
++    super.initialPixels,
+   });
+ 
+   VoidCallback? _dragCancelCallback;

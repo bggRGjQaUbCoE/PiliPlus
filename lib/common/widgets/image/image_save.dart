@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
+const _iconSize = 20.0;
+
 void imageSaveDialog({
   required String? title,
   required String? cover,
@@ -17,106 +19,163 @@ void imageSaveDialog({
 }) {
   final double imgWidth = MediaQuery.sizeOf(Get.context!).shortestSide - 16;
   SmartDialog.show(
-    animationType: SmartAnimationType.centerScale_otherSlide,
+    animationType: .centerScale_otherSlide,
     builder: (context) {
-      const iconSize = 20.0;
-      final theme = Theme.of(context);
-      return Container(
-        width: imgWidth,
-        margin: const .symmetric(horizontal: Style.safeSpace),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: Style.mdRadius,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
+      final colorScheme = ColorScheme.of(context);
+      final height = imgWidth / Style.aspectRatio16x9;
+      return Padding(
+        padding: const .symmetric(horizontal: Style.safeSpace),
+        child: DecoratedBox(
+          decoration: _ImageDecoration(
+            imageHeight: height,
+            color: colorScheme.surface,
+            borderRadius: const .all(Style.imgRadius),
+          ),
+          child: SizedBox(
+            width: imgWidth,
+            child: Column(
+              mainAxisSize: .min,
               children: [
-                GestureDetector(
-                  onTap: SmartDialog.dismiss,
+                IgnorePointer(
                   child: NetworkImgLayer(
                     src: cover,
                     quality: 100,
                     width: imgWidth,
-                    height: imgWidth / Style.aspectRatio16x9,
+                    height: height,
                     borderRadius: const .vertical(top: Style.imgRadius),
                   ),
                 ),
-                Positioned(
-                  right: 8,
-                  top: 8,
-                  width: 30,
-                  height: 30,
-                  child: IconButton(
-                    tooltip: '关闭',
-                    style: IconButton.styleFrom(
-                      padding: .zero,
-                      backgroundColor: Colors.black.withValues(alpha: 0.3),
-                    ),
-                    onPressed: SmartDialog.dismiss,
-                    icon: const Icon(
-                      Icons.close,
-                      size: 18,
-                      color: Colors.white,
-                    ),
+                Padding(
+                  padding: const .fromLTRB(12, 10, 8, 10),
+                  child: Row(
+                    children: [
+                      if (title != null)
+                        Expanded(
+                          child: SelectionText(
+                            title,
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        )
+                      else
+                        const Spacer(),
+                      if (aid != null || bvid != null)
+                        iconButton(
+                          iconSize: _iconSize,
+                          tooltip: '稍后再看',
+                          onPressed: () => {
+                            SmartDialog.dismiss(),
+                            UserHttp.toViewLater(aid: aid, bvid: bvid),
+                          },
+                          icon: const Icon(Icons.watch_later_outlined),
+                        ),
+                      if (cover != null && cover.isNotEmpty) ...[
+                        if (PlatformUtils.isMobile)
+                          iconButton(
+                            iconSize: _iconSize,
+                            tooltip: '分享',
+                            onPressed: () {
+                              SmartDialog.dismiss();
+                              ImageUtils.onShareImg(cover);
+                            },
+                            icon: const Icon(Icons.share),
+                          ),
+                        iconButton(
+                          iconSize: _iconSize,
+                          tooltip: '保存封面图',
+                          onPressed: () async {
+                            bool saveStatus = await ImageUtils.downloadImg([
+                              cover,
+                            ]);
+                            if (saveStatus) {
+                              SmartDialog.dismiss();
+                            }
+                          },
+                          icon: const Icon(Icons.download),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ],
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
-              child: Row(
-                children: [
-                  if (title != null)
-                    Expanded(
-                      child: SelectionText(
-                        title,
-                        style: theme.textTheme.titleSmall,
-                      ),
-                    )
-                  else
-                    const Spacer(),
-                  if (aid != null || bvid != null)
-                    iconButton(
-                      iconSize: iconSize,
-                      tooltip: '稍后再看',
-                      onPressed: () => {
-                        SmartDialog.dismiss(),
-                        UserHttp.toViewLater(aid: aid, bvid: bvid),
-                      },
-                      icon: const Icon(Icons.watch_later_outlined),
-                    ),
-                  if (cover != null && cover.isNotEmpty) ...[
-                    if (PlatformUtils.isMobile)
-                      iconButton(
-                        iconSize: iconSize,
-                        tooltip: '分享',
-                        onPressed: () {
-                          SmartDialog.dismiss();
-                          ImageUtils.onShareImg(cover);
-                        },
-                        icon: const Icon(Icons.share),
-                      ),
-                    iconButton(
-                      iconSize: iconSize,
-                      tooltip: '保存封面图',
-                      onPressed: () async {
-                        bool saveStatus = await ImageUtils.downloadImg([cover]);
-                        if (saveStatus) {
-                          SmartDialog.dismiss();
-                        }
-                      },
-                      icon: const Icon(Icons.download),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       );
     },
   );
+}
+
+class _ImageDecoration extends Decoration {
+  const _ImageDecoration({
+    required this.color,
+    required this.imageHeight,
+    required this.borderRadius,
+  });
+
+  final Color color;
+  final double imageHeight;
+  final BorderRadius borderRadius;
+
+  @override
+  Path getClipPath(Rect rect, TextDirection textDirection) {
+    return Path()..addRRect(borderRadius.resolve(textDirection).toRRect(rect));
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other.runtimeType != runtimeType) {
+      return false;
+    }
+    return other is _ImageDecoration &&
+        other.color == color &&
+        other.borderRadius == borderRadius;
+  }
+
+  @override
+  int get hashCode => Object.hash(color, borderRadius);
+
+  @override
+  bool hitTest(Size size, Offset position, {TextDirection? textDirection}) {
+    return position.dy >= imageHeight;
+  }
+
+  @override
+  BoxPainter createBoxPainter([VoidCallback? onChanged]) {
+    assert(onChanged != null);
+    return _ImageDecorationPainter(this, onChanged);
+  }
+}
+
+class _ImageDecorationPainter extends BoxPainter {
+  _ImageDecorationPainter(this._decoration, super.onChanged);
+
+  final _ImageDecoration _decoration;
+
+  Paint? _cachedBackgroundPaint;
+  Paint _getBackgroundPaint(Rect rect) {
+    if (_cachedBackgroundPaint == null) {
+      final paint = Paint()..color = _decoration.color;
+      _cachedBackgroundPaint = paint;
+    }
+
+    return _cachedBackgroundPaint!;
+  }
+
+  @override
+  void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
+    assert(configuration.size != null);
+    final Rect rect = offset & configuration.size!;
+    canvas.drawRRect(
+      _decoration.borderRadius.toRRect(rect),
+      _getBackgroundPaint(rect),
+    );
+  }
+
+  @override
+  String toString() {
+    return '_ImagePainter for $_decoration';
+  }
 }

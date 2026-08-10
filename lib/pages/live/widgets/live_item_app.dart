@@ -33,11 +33,11 @@ class LiveCardVApp extends StatelessWidget {
     return Stack(
       children: [
         Card(
-          clipBehavior: Clip.hardEdge,
           child: InkWell(
             onTap: () => PageUtils.toLiveRoom(item.roomid),
             onLongPress: onLongPress,
             onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
+            borderRadius: const .all(.circular(12)),
             child: Column(
               crossAxisAlignment: .start,
               children: [
@@ -51,7 +51,7 @@ class LiveCardVApp extends StatelessWidget {
                           src: showFirstFrame ? item.systemCover : item.cover,
                           width: boxConstraints.maxWidth,
                           height: boxConstraints.maxHeight,
-                          type: .emote,
+                          borderRadius: const .vertical(top: .circular(12)),
                         ),
                         Positioned(
                           left: 0,

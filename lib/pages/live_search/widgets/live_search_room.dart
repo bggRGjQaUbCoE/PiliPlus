@@ -22,11 +22,11 @@ class LiveCardVSearch extends StatelessWidget {
       cover: item.cover,
     );
     return Card(
-      clipBehavior: Clip.hardEdge,
       child: InkWell(
         onTap: () => PageUtils.toLiveRoom(item.roomid),
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
+        borderRadius: const .all(.circular(12)),
         child: Column(
           crossAxisAlignment: .start,
           children: [
@@ -43,7 +43,7 @@ class LiveCardVSearch extends StatelessWidget {
                         src: item.cover!,
                         width: maxWidth,
                         height: maxHeight,
-                        type: .emote,
+                        borderRadius: const .vertical(top: .circular(12)),
                       ),
                       Positioned(
                         left: 0,

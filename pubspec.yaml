@@ -83,10 +83,7 @@ dependencies:
     git:
       url: https://github.com/bggRGjQaUbCoE/extended_nested_scroll_view.git
       ref: dev
-  file_picker:
-    git:
-      url: https://github.com/bggRGjQaUbCoE/flutter_file_picker.git
-      ref: dev
+  file_picker: ^12.0.0-beta.7
   fixnum: ^1.1.1
   fl_chart: ^1.0.0
   flex_seed_scheme: ^4.0.1
@@ -138,7 +135,7 @@ dependencies:
   package_info_plus: ^10.1.0
   path: ^1.9.1
   path_provider: ^2.1.5
-  permission_handler_android: ^13.0.1
+  permission_handler_android: ^14.0.0
   permission_handler_apple: ^9.4.7
   permission_handler_platform_interface: ^4.3.0
   pretty_qr_code: ^3.3.0

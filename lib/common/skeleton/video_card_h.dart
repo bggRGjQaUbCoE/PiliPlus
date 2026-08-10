@@ -7,15 +7,12 @@ class VideoCardHSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.onInverseSurface;
+    final color = ColorScheme.of(context).onInverseSurface;
     return Skeleton(
       child: Padding(
-        padding: const .symmetric(
-          horizontal: Style.safeSpace,
-          vertical: 5,
-        ),
+        padding: const .symmetric(horizontal: Style.safeSpace, vertical: 5),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: .start,
           children: [
             AspectRatio(
               aspectRatio: Style.aspectRatio,
@@ -30,13 +27,13 @@ class VideoCardHSkeleton extends StatelessWidget {
               child: Padding(
                 padding: const .fromLTRB(10, 4, 6, 4),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: .start,
                   children: [
                     Container(
                       color: color,
                       width: 200,
-                      height: 11,
-                      margin: const EdgeInsets.only(bottom: 5),
+                      height: 13,
+                      margin: const .only(bottom: 5),
                     ),
                     Container(
                       color: color,
@@ -48,15 +45,15 @@ class VideoCardHSkeleton extends StatelessWidget {
                       color: color,
                       width: 100,
                       height: 13,
-                      margin: const EdgeInsets.only(bottom: 5),
+                      margin: const .only(bottom: 5),
                     ),
                     Row(
+                      spacing: 8,
                       children: [
                         Container(
                           color: color,
                           width: 40,
                           height: 13,
-                          margin: const EdgeInsets.only(right: 8),
                         ),
                         Container(
                           color: color,

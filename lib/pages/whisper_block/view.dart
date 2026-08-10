@@ -1,6 +1,8 @@
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:PiliPlus/common/widgets/view_insets_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/app/im/v1.pb.dart'
     show KeywordBlockingItem;
 import 'package:PiliPlus/http/loading_state.dart';
@@ -26,8 +28,7 @@ class _WhisperBlockPageState extends State<WhisperBlockPage> {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return SimpleScaffold(
       appBar: AppBar(title: const Text('消息屏蔽词')),
       body: Obx(() => _buildBody(theme, _controller.loadingState.value)),
     );
@@ -159,71 +160,69 @@ class _WhisperBlockPageState extends State<WhisperBlockPage> {
         return Padding(
           padding:
               const EdgeInsets.symmetric(horizontal: 14, vertical: 12) +
-              EdgeInsets.only(
-                bottom:
-                    MediaQuery.paddingOf(context).bottom +
-                    MediaQuery.viewInsetsOf(context).bottom,
-              ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    '添加消息屏蔽词',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+              EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
+          child: ViewInsetsSafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '添加消息屏蔽词',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  GestureDetector(
-                    onTap: Get.back,
-                    behavior: HitTestBehavior.opaque,
-                    child: Icon(
-                      Icons.clear,
-                      color: theme.colorScheme.onSurfaceVariant,
+                    GestureDetector(
+                      onTap: Get.back,
+                      behavior: HitTestBehavior.opaque,
+                      child: Icon(
+                        Icons.clear,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                autofocus: true,
-                maxLength: _controller.charLimit,
-                decoration: InputDecoration(
-                  isDense: true,
-                  hintText: '请输入',
-                  visualDensity: .standard,
-                  hintStyle: const TextStyle(fontSize: 14),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  border: const OutlineInputBorder(
-                    borderSide: BorderSide.none,
-                    borderRadius: BorderRadius.all(Radius.circular(25)),
-                  ),
-                  filled: true,
-                  fillColor: theme.colorScheme.onInverseSurface,
+                  ],
                 ),
-                onChanged: (value) => keyword = value,
-                inputFormatters: [LengthLimitingTextInputFormatter(20)],
-              ),
-              const SizedBox(height: 12),
-              FilledButton.tonal(
-                onPressed: () {
-                  if (keyword.isNotEmpty) {
-                    _controller.onAdd(keyword);
-                  }
-                },
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [Icon(Icons.add, size: 22), Text('添加消息屏蔽词')],
+                const SizedBox(height: 12),
+                TextFormField(
+                  autofocus: true,
+                  maxLength: _controller.charLimit,
+                  decoration: InputDecoration(
+                    isDense: true,
+                    hintText: '请输入',
+                    visualDensity: .standard,
+                    hintStyle: const TextStyle(fontSize: 14),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    border: const OutlineInputBorder(
+                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.all(Radius.circular(25)),
+                    ),
+                    filled: true,
+                    fillColor: theme.colorScheme.onInverseSurface,
+                  ),
+                  onChanged: (value) => keyword = value,
+                  inputFormatters: [LengthLimitingTextInputFormatter(20)],
                 ),
-              ),
-            ],
+                const SizedBox(height: 12),
+                FilledButton.tonal(
+                  onPressed: () {
+                    if (keyword.isNotEmpty) {
+                      _controller.onAdd(keyword);
+                    }
+                  },
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [Icon(Icons.add, size: 22), Text('添加消息屏蔽词')],
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

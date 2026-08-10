@@ -295,7 +295,7 @@ class RenderEditable extends RenderBox
     Offset cursorOffset = Offset.zero,
     double devicePixelRatio = 1.0,
     ui.BoxHeightStyle selectionHeightStyle = ui.BoxHeightStyle.max,
-    ui.BoxWidthStyle selectionWidthStyle = ui.BoxWidthStyle.max,
+    ui.BoxWidthStyle selectionWidthStyle = ui.BoxWidthStyle.tight,
     bool? enableInteractiveSelection,
     this.floatingCursorAddedMargin = const EdgeInsets.fromLTRB(4, 4, 4, 5),
     TextRange? promptRectRange,
@@ -3154,17 +3154,44 @@ class _TextHighlightPainter extends RenderEditablePainter {
 
     highlightPaint.color = color;
     final TextPainter textPainter = renderEditable._textPainter;
-    final Set<TextBox> boxes = textPainter
-        .getBoxesForSelection(
-          TextSelection(baseOffset: range.start, extentOffset: range.end),
-          boxHeightStyle: selectionHeightStyle,
-          boxWidthStyle: selectionWidthStyle,
-        )
-        .toSet();
 
-    for (final box in boxes) {
+    final List<ui.TextBox> boxes = textPainter.getBoxesForSelection(
+      TextSelection(baseOffset: range.start, extentOffset: range.end),
+      boxHeightStyle: ui.BoxHeightStyle.max,
+      boxWidthStyle: ui.BoxWidthStyle.tight,
+    );
+    ui.TextBox? mergedBox;
+    for (final textBox in boxes) {
+      if (mergedBox == null) {
+        mergedBox = textBox;
+      } else if (mergedBox.top != textBox.top) {
+        canvas.drawRect(
+          Rect.fromLTRB(
+                mergedBox.left,
+                mergedBox.top,
+                size.width,
+                mergedBox.bottom,
+              )
+              .shift(renderEditable._paintOffset)
+              .intersect(
+                Rect.fromLTRB(0, 0, textPainter.width, textPainter.height),
+              ),
+          highlightPaint,
+        );
+        mergedBox = textBox;
+      } else {
+        mergedBox = TextBox.fromLTRBD(
+          mergedBox.left,
+          mergedBox.top,
+          textBox.right,
+          mergedBox.bottom,
+          mergedBox.direction,
+        );
+      }
+    }
+    if (mergedBox != null) {
       canvas.drawRect(
-        box
+        mergedBox
             .toRect()
             .shift(renderEditable._paintOffset)
             .intersect(

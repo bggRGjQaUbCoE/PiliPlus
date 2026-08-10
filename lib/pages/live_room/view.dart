@@ -7,15 +7,15 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/extra_hittest_stack.dart';
-import 'package:PiliPlus/common/widgets/flutter/page/page_view.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart';
 import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart'
+    show tabBarScrollPhysics;
 import 'package:PiliPlus/models/common/live/live_contribution_rank_type.dart';
 import 'package:PiliPlus/models_new/live/live_room_info_h5/data.dart';
 import 'package:PiliPlus/models_new/live/live_superchat/item.dart';
@@ -53,7 +53,7 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:canvas_danmaku/danmaku_screen.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:flutter/material.dart' hide PageView;
+import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
@@ -414,10 +414,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                 );
               },
             ),
-          Scaffold(
-            primary: !plPlayerController.removeSafeArea,
-            resizeToAvoidBottomInset: false,
-            backgroundColor: Colors.transparent,
+          ScaffoldLayout(
             appBar: isWindowMode && isFullScreen && !isPortrait
                 ? null
                 : _buildAppBar(isFullScreen),
@@ -572,7 +569,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                       NetworkImgLayer(
                         width: 34,
                         height: 34,
-                        type: ImageType.avatar,
+                        type: .avatar,
                         src: roomInfoH5.anchorInfo!.baseInfo!.face,
                       ),
                       Flexible(
@@ -766,10 +763,10 @@ class _LiveRoomPageState extends State<LiveRoomPage>
     return Padding(
       padding: .only(bottom: 12, top: isPortrait ? 12 : 0),
       child: _liveRoomController.showSuperChat
-          ? PageView<CustomHorizontalDragGestureRecognizer>(
+          ? PageView(
               key: pageKey,
               controller: _liveRoomController.pageController,
-              physics: clampingScrollPhysics,
+              physics: tabBarScrollPhysics,
               onPageChanged: _liveRoomController.pageIndex.call,
               horizontalDragGestureRecognizer:
                   CustomHorizontalDragGestureRecognizer.new,

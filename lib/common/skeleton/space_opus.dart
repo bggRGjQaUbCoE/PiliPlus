@@ -7,43 +7,37 @@ class SpaceOpusSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final surface = Theme.of(context).colorScheme.onInverseSurface;
+    final surface = ColorScheme.of(context).onInverseSurface;
     return Skeleton(
       child: Card(
-        clipBehavior: Clip.hardEdge,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(6)),
-        ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  height:
-                      (0.68 + 0.82 * Utils.random.nextDouble()) *
-                      constraints.maxWidth,
+        shape: const RoundedRectangleBorder(borderRadius: .all(.circular(6))),
+        child: Column(
+          crossAxisAlignment: .start,
+          children: [
+            AspectRatio(
+              aspectRatio: 1 / (0.68 + 0.82 * Utils.random.nextDouble()),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
                   color: surface,
+                  borderRadius: const .vertical(top: .circular(6)),
                 ),
-                Container(
-                  height: 10,
-                  color: surface,
-                  margin: const EdgeInsets.all(10),
-                  width: constraints.maxWidth * 0.7,
-                ),
-                Container(
-                  height: 10,
-                  color: surface,
-                  margin: const EdgeInsets.only(
-                    left: 10,
-                    right: 10,
-                    bottom: 10,
-                  ),
-                  width: constraints.maxWidth,
-                ),
-              ],
-            );
-          },
+              ),
+            ),
+            FractionallySizedBox(
+              widthFactor: 0.7,
+              alignment: .topLeft,
+              child: Container(
+                height: 10,
+                color: surface,
+                margin: const .all(10),
+              ),
+            ),
+            Container(
+              height: 10,
+              color: surface,
+              margin: const .only(left: 10, right: 10, bottom: 10),
+            ),
+          ],
         ),
       ),
     );

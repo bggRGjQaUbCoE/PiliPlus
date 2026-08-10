@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/skeleton/msg_feed_top.dart';
 import 'package:PiliPlus/common/widgets/button/more_btn.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/follow_order_type.dart';
 import 'package:PiliPlus/models_new/follow/list.dart';
@@ -109,36 +110,30 @@ class _FollowChildPageState extends State<FollowChildPage>
     );
     if (widget.onSelect != null ||
         (widget.controller?.isOwner == true && widget.tagid == null)) {
-      return Stack(
-        clipBehavior: Clip.none,
-        children: [
-          fabAnimWrapper(child: child),
-          Positioned(
-            right: kFloatingActionButtonMargin + padding.right,
-            bottom: 0,
-            child: SlideTransition(
-              position: fabAnimation,
-              child: Padding(
-                padding: .only(
-                  bottom: kFloatingActionButtonMargin + padding.bottom,
-                ),
-                child: FloatingActionButton.extended(
-                  onPressed: () => _followController
-                    ..setOrderType(
-                      _followController.orderType.value == FollowOrderType.def
-                          ? FollowOrderType.attention
-                          : FollowOrderType.def,
-                    )
-                    ..onReload(),
-                  icon: const Icon(Icons.format_list_bulleted, size: 20),
-                  label: Obx(
-                    () => Text(_followController.orderType.value.title),
-                  ),
-                ),
+      return ScaffoldLayout(
+        body: fabAnimWrapper(child: child),
+        fab: SlideTransition(
+          position: fabAnimation,
+          child: Padding(
+            padding: .only(
+              right: kFloatingActionButtonMargin + padding.right,
+              bottom: kFloatingActionButtonMargin + padding.bottom,
+            ),
+            child: FloatingActionButton.extended(
+              onPressed: () => _followController
+                ..setOrderType(
+                  _followController.orderType.value == FollowOrderType.def
+                      ? FollowOrderType.attention
+                      : FollowOrderType.def,
+                )
+                ..onReload(),
+              icon: const Icon(Icons.format_list_bulleted, size: 20),
+              label: Obx(
+                () => Text(_followController.orderType.value.title),
               ),
             ),
           ),
-        ],
+        ),
       );
     }
     return child;

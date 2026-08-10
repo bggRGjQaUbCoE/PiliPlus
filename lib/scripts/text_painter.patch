@@ -1,0 +1,12 @@
+diff --git a/packages/flutter/lib/src/painting/text_painter.dart b/packages/flutter/lib/src/painting/text_painter.dart
+index 037d8fc2cf9..42a28620196 100644
+--- a/packages/flutter/lib/src/painting/text_painter.dart
++++ b/packages/flutter/lib/src/painting/text_painter.dart
+@@ -743,6 +743,7 @@ class TextPainter {
+   bool _debugNeedsRelayout = true;
+   // The result of the most recent `layout` call.
+   _TextPainterLayoutCacheWithOffset? _layoutCache;
++  _TextPainterLayoutCacheWithOffset? get layoutCache => _layoutCache;
+ 
+   // Whether _layoutCache contains outdated paint information and needs to be
+   // updated before painting.

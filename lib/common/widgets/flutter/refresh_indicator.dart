@@ -6,14 +6,17 @@
 
 import 'dart:async' show Completer;
 
+import 'package:PiliPlus/common/widgets/refresh_layout.dart';
 import 'package:PiliPlus/common/widgets/scroll_behavior.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show BouncingScrollPhysicsExt;
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:extended_nested_scroll_view/src/refresh.dart';
+import 'package:extended_nested_scroll_view/refresh.dart';
 import 'package:flutter/foundation.dart' show clampDouble;
 import 'package:flutter/material.dart' hide RefreshIndicator;
+
+const kIndicatorSize = 49.0;
 
 /// The distance from the child's top or bottom [edgeOffset] where
 /// the refresh indicator will settle. During the drag that exposes the refresh
@@ -22,12 +25,19 @@ import 'package:flutter/material.dart' hide RefreshIndicator;
 /// In most cases, [displacement] distance starts counting from the parent's
 /// edges. However, if [edgeOffset] is larger than zero then the [displacement]
 /// value is calculated from that offset instead of the parent's edge.
-double displacement = Pref.refreshDisplacement;
+double _displacement = Pref.refreshDisplacement;
+double get displacement => _displacement;
+set displacement(double value) {
+  if (_displacement == value) return;
+  _displacement = value;
+  _refreshDragExtent = (value + kIndicatorSize) * _kDragSizeFactorLimit;
+}
 
 // The over-scroll distance that moves the indicator to its maximum
 // displacement, as a percentage of the scrollable's container extent.
-double kDragContainerExtentPercentage = Pref.refreshDragPercentage;
-
+double _refreshDragExtent =
+    (_displacement + kIndicatorSize) * _kDragSizeFactorLimit;
+double get refreshDragExtent => _refreshDragExtent;
 // How much the scroll's drag gesture can overshoot the RefreshIndicator's
 // displacement; max displacement = _kDragSizeFactorLimit * displacement.
 const double _kDragSizeFactorLimit = 1.5;
@@ -135,7 +145,6 @@ class RefreshIndicator extends StatefulWidget {
   /// The [semanticsValue] may be used to specify progress on the widget.
   const RefreshIndicator({
     super.key,
-    this.edgeOffset = 0.0,
     required this.onRefresh,
     this.color,
     this.backgroundColor,
@@ -168,7 +177,7 @@ class RefreshIndicator extends StatefulWidget {
   ///
   ///  * [displacement], can be used to change the distance from the edge that
   ///    the indicator settles.
-  final double edgeOffset;
+  // final double edgeOffset;
 
   /// A function that's called when the user has dragged the refresh indicator
   /// far enough to demonstrate that they want the app to refresh. The returned
@@ -324,7 +333,7 @@ class RefreshIndicatorState extends State<RefreshIndicator>
     if (notification is ScrollUpdateNotification) {
       if (_status == RefreshIndicatorStatus.drag) {
         _dragOffset = _dragOffset! - notification.scrollDelta!;
-        _checkDragOffset(notification.metrics.viewportDimension);
+        _checkDragOffset();
 
         if (notification.dragDetails == null &&
             _valueColor.value!.a == _effectiveValueColor.a) {
@@ -337,7 +346,7 @@ class RefreshIndicatorState extends State<RefreshIndicator>
     } else if (notification is OverscrollNotification) {
       if (_status == RefreshIndicatorStatus.drag) {
         _dragOffset = _dragOffset! - notification.overscroll;
-        _checkDragOffset(notification.metrics.viewportDimension);
+        _checkDragOffset();
       }
     } else if (notification is ScrollEndNotification) {
       switch (_status) {
@@ -381,12 +390,9 @@ class RefreshIndicatorState extends State<RefreshIndicator>
     return true;
   }
 
-  void _checkDragOffset(double containerExtent) {
-    assert(
-      _status == RefreshIndicatorStatus.drag,
-    );
-    double newValue =
-        _dragOffset! / (containerExtent * kDragContainerExtentPercentage);
+  void _checkDragOffset() {
+    assert(_status == RefreshIndicatorStatus.drag);
+    double newValue = _dragOffset! / _refreshDragExtent;
     _positionController.value = clampDouble(
       newValue,
       0.0,
@@ -510,41 +516,22 @@ class RefreshIndicatorState extends State<RefreshIndicator>
         _status == RefreshIndicatorStatus.refresh ||
         _status == RefreshIndicatorStatus.done;
 
-    child = Stack(
-      clipBehavior: Clip.none,
-      children: <Widget>[
-        child,
-        if (_status != null)
-          Positioned(
-            top: widget.edgeOffset,
-            left: 0.0,
-            right: 0.0,
-            child: SizeTransition(
-              alignment: .bottomStart,
-              sizeFactor: _positionFactor, // This is what brings it down.
-              child: Padding(
-                padding: EdgeInsets.only(top: displacement),
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  child: ScaleTransition(
-                    scale: _scaleFactor,
-                    child: AnimatedBuilder(
-                      animation: _positionController,
-                      builder: (context, child) => RefreshProgressIndicator(
-                        value: showIndeterminateIndicator ? null : _value.value,
-                        valueColor: _valueColor,
-                        backgroundColor: widget.backgroundColor,
-                        strokeWidth: widget.strokeWidth,
-                        elevation: widget.elevation,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
+    child = RefreshLayout(
+      body: child,
+      scale: _scaleFactor,
+      position: _positionFactor,
+      indicator: AnimatedBuilder(
+        animation: _positionController,
+        builder: (context, child) => RefreshProgressIndicator(
+          value: showIndeterminateIndicator ? null : _value.value,
+          valueColor: _valueColor,
+          backgroundColor: widget.backgroundColor,
+          strokeWidth: widget.strokeWidth,
+          elevation: widget.elevation,
+        ),
+      ),
     );
+
     if (PlatformUtils.isDarwin) {
       if (widget.isClampingScrollPhysics) {
         return ScrollConfiguration(
@@ -570,10 +557,10 @@ class RefreshIndicatorState extends State<RefreshIndicator>
     );
   }
 
-  bool _onDrag(double offset, double viewportDimension) {
+  bool _onDrag(double offset) {
     if (_positionController.value > 0.0 && _status == .drag) {
       _dragOffset = _dragOffset! + offset;
-      _checkDragOffset(viewportDimension);
+      _checkDragOffset();
       return true;
     }
     return false;

@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/models/common/pgc_review_type.dart';
 import 'package:PiliPlus/pages/pgc_review/child/controller.dart';
 import 'package:PiliPlus/pages/pgc_review/child/view.dart';
@@ -45,117 +46,114 @@ class _PgcReviewPageState extends State<PgcReviewPage>
   Widget build(BuildContext context) {
     super.build(context);
     final theme = Theme.of(context);
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TabBar(
+    return SimpleScaffold(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TabBar(
+            controller: _tabController,
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
+            dividerHeight: 0,
+            indicatorWeight: 0,
+            overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+            splashFactory: NoSplash.splashFactory,
+            padding: const EdgeInsets.only(left: 6),
+            indicatorPadding: const EdgeInsets.symmetric(
+              horizontal: 3,
+              vertical: 8,
+            ),
+            indicator: BoxDecoration(
+              color: theme.colorScheme.secondaryContainer,
+              borderRadius: const BorderRadius.all(Radius.circular(20)),
+            ),
+            indicatorSize: TabBarIndicatorSize.tab,
+            labelColor: theme.colorScheme.onSecondaryContainer,
+            unselectedLabelColor: theme.colorScheme.outline,
+            labelStyle:
+                TabBarTheme.of(
+                  context,
+                ).labelStyle?.copyWith(fontSize: 13) ??
+                const TextStyle(fontSize: 13),
+            dividerColor: Colors.transparent,
+            tabs: PgcReviewType.values.map((e) => Tab(text: e.label)).toList(),
+            onTap: (index) {
+              try {
+                if (!_tabController.indexIsChanging) {
+                  final item = PgcReviewType.values[index];
+                  Get.find<PgcReviewController>(
+                    tag: '${widget.mediaId}${item.name}',
+                  ).scrollController.animToTop();
+                }
+              } catch (_) {}
+            },
+          ),
+          Expanded(
+            child: TabBarView(
               controller: _tabController,
-              isScrollable: true,
-              tabAlignment: TabAlignment.start,
-              dividerHeight: 0,
-              indicatorWeight: 0,
-              overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-              splashFactory: NoSplash.splashFactory,
-              padding: const EdgeInsets.only(left: 6),
-              indicatorPadding: const EdgeInsets.symmetric(
-                horizontal: 3,
-                vertical: 8,
-              ),
-              indicator: BoxDecoration(
-                color: theme.colorScheme.secondaryContainer,
-                borderRadius: const BorderRadius.all(Radius.circular(20)),
-              ),
-              indicatorSize: TabBarIndicatorSize.tab,
-              labelColor: theme.colorScheme.onSecondaryContainer,
-              unselectedLabelColor: theme.colorScheme.outline,
-              labelStyle:
-                  TabBarTheme.of(
-                    context,
-                  ).labelStyle?.copyWith(fontSize: 13) ??
-                  const TextStyle(fontSize: 13),
-              dividerColor: Colors.transparent,
-              tabs: PgcReviewType.values
-                  .map((e) => Tab(text: e.label))
+              physics: const NeverScrollableScrollPhysics(),
+              children: PgcReviewType.values
+                  .map(
+                    (e) => PgcReviewChildPage(
+                      type: e,
+                      name: widget.name,
+                      mediaId: widget.mediaId,
+                    ),
+                  )
                   .toList(),
-              onTap: (index) {
-                try {
-                  if (!_tabController.indexIsChanging) {
-                    final item = PgcReviewType.values[index];
-                    Get.find<PgcReviewController>(
-                      tag: '${widget.mediaId}${item.name}',
-                    ).scrollController.animToTop();
-                  }
-                } catch (_) {}
-              },
             ),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                physics: const NeverScrollableScrollPhysics(),
-                children: PgcReviewType.values
-                    .map(
-                      (e) => PgcReviewChildPage(
-                        type: e,
-                        name: widget.name,
-                        mediaId: widget.mediaId,
-                      ),
-                    )
-                    .toList(),
-              ),
-            ),
-          ],
-        ),
-        Positioned(
+          ),
+        ],
+      ),
+      fab: Padding(
+        padding: .only(
           right: kFloatingActionButtonMargin,
           bottom:
               MediaQuery.viewPaddingOf(context).bottom +
               kFloatingActionButtonMargin,
-          child: FloatingActionButton(
-            onPressed: () => showDialog(
-              context: context,
-              builder: (context) => SimpleDialog(
-                clipBehavior: Clip.hardEdge,
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                children: [
-                  DialogOption(
-                    child: const Text('写短评', style: TextStyle(fontSize: 14)),
-                    onPressed: () {
-                      Get.back();
-                      showModalBottomSheet(
-                        context: context,
-                        useSafeArea: true,
-                        isScrollControlled: true,
-                        builder: (context) {
-                          return PgcReviewPostPanel(
-                            name: widget.name,
-                            mediaId: widget.mediaId,
-                          );
-                        },
-                      );
-                    },
-                  ),
-                  DialogOption(
-                    child: const Text('写长评', style: TextStyle(fontSize: 14)),
-                    onPressed: () => Get
-                      ..back()
-                      ..toNamed(
-                        '/webview',
-                        parameters: {
-                          'url':
-                              'https://member.bilibili.com/article-text/mobile?theme=${theme.isDark ? 1 : 0}&media_id=${widget.mediaId}',
-                        },
-                      ),
-                  ),
-                ],
-              ),
-            ),
-            child: const Icon(Icons.edit),
-          ),
         ),
-      ],
+        child: FloatingActionButton(
+          onPressed: () => showDialog(
+            context: context,
+            builder: (context) => SimpleDialog(
+              clipBehavior: Clip.hardEdge,
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+              children: [
+                DialogOption(
+                  child: const Text('写短评', style: TextStyle(fontSize: 14)),
+                  onPressed: () {
+                    Get.back();
+                    showModalBottomSheet(
+                      context: context,
+                      useSafeArea: true,
+                      isScrollControlled: true,
+                      builder: (context) {
+                        return PgcReviewPostPanel(
+                          name: widget.name,
+                          mediaId: widget.mediaId,
+                        );
+                      },
+                    );
+                  },
+                ),
+                DialogOption(
+                  child: const Text('写长评', style: TextStyle(fontSize: 14)),
+                  onPressed: () => Get
+                    ..back()
+                    ..toNamed(
+                      '/webview',
+                      parameters: {
+                        'url':
+                            'https://member.bilibili.com/article-text/mobile?theme=${theme.isDark ? 1 : 0}&media_id=${widget.mediaId}',
+                      },
+                    ),
+                ),
+              ],
+            ),
+          ),
+          child: const Icon(Icons.edit),
+        ),
+      ),
     );
   }
 

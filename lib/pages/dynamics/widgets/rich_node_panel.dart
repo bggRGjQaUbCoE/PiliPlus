@@ -251,6 +251,7 @@ TextSpan? richNode(
                             bvid: i.rid,
                             cid: cid,
                             dimension: res!.dimension,
+                            title: res.title,
                           );
                         }
                       } catch (err) {

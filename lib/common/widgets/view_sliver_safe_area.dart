@@ -10,9 +10,9 @@ class ViewSliverSafeArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    EdgeInsets padding = MediaQuery.viewPaddingOf(context);
+    final padding = MediaQuery.viewPaddingOf(context);
     return SliverPadding(
-      padding: EdgeInsets.only(
+      padding: .only(
         left: padding.left,
         right: padding.right,
         bottom: padding.bottom + 100,

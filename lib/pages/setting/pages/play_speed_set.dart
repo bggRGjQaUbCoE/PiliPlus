@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/pages/setting/widgets/switch_item.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
@@ -181,8 +182,7 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return SimpleScaffold(
       appBar: AppBar(
         title: const Text('倍速设置'),
         actions: [
@@ -199,6 +199,9 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
       ),
       body: ViewSafeArea(
         child: ListView(
+          padding: .only(
+            bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
+          ),
           children: [
             Padding(
               padding: const EdgeInsets.only(

@@ -144,6 +144,11 @@ abstract final class ThemeUtils {
           },
         ),
       ),
+      expansionTileTheme: const ExpansionTileThemeData(
+        shape: Border(),
+        collapsedShape: Border(),
+      ),
+      listTileTheme: const ListTileThemeData(controlAffinity: .leading),
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.android: ZoomPageTransitionsBuilder(),
@@ -162,6 +167,7 @@ abstract final class ThemeUtils {
     final colorScheme = themeData.colorScheme;
     final color = colorScheme.surfaceContainerHighest.darken(0.7);
     return themeData.copyWith(
+      canvasColor: Colors.black,
       scaffoldBackgroundColor: Colors.black,
       appBarTheme: themeData.appBarTheme.copyWith(
         backgroundColor: Colors.black,

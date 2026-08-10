@@ -1,0 +1,22 @@
+diff --git a/packages/flutter/lib/src/widgets/sliver.dart b/packages/flutter/lib/src/widgets/sliver.dart
+index 88577aca9b5..40506736b10 100644
+--- a/packages/flutter/lib/src/widgets/sliver.dart
++++ b/packages/flutter/lib/src/widgets/sliver.dart
+@@ -1667,6 +1667,8 @@ class SliverConstrainedCrossAxis extends StatelessWidget {
+   }
+ }
+ 
++typedef SliverZeroFlexParentDataWidget = _SliverZeroFlexParentDataWidget;
++
+ class _SliverZeroFlexParentDataWidget extends ParentDataWidget<SliverPhysicalParentData> {
+   const _SliverZeroFlexParentDataWidget({required Widget sliver}) : super(child: sliver);
+ 
+@@ -1689,6 +1691,8 @@ class _SliverZeroFlexParentDataWidget extends ParentDataWidget<SliverPhysicalPar
+   Type get debugTypicalAncestorWidgetClass => SliverCrossAxisGroup;
+ }
+ 
++typedef SliverConstrainedCrossAxis_ = _SliverConstrainedCrossAxis;
++
+ class _SliverConstrainedCrossAxis extends SingleChildRenderObjectWidget {
+   const _SliverConstrainedCrossAxis({required this.maxExtent, required Widget sliver})
+     : assert(maxExtent >= 0.0),

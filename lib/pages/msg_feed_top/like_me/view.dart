@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/grpc/bilibili/app/im/v1.pbenum.dart'
     show IMSettingType;
 import 'package:PiliPlus/http/loading_state.dart';
@@ -32,8 +33,7 @@ class _LikeMePageState extends State<LikeMePage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return SimpleScaffold(
       appBar: AppBar(
         title: const Text('收到的赞'),
         actions: [
@@ -72,66 +72,69 @@ class _LikeMePageState extends State<LikeMePage> {
   }
 
   Widget _buildBody(ThemeData theme, LoadingState loadingState) {
-    late final divider = Divider(
-      indent: 72,
-      endIndent: 20,
-      height: 6,
-      color: Colors.grey.withValues(alpha: 0.1),
-    );
-    return switch (loadingState) {
-      Loading() => SliverList.builder(
-        itemCount: 12,
-        itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
-      ),
-      Success(:final response) => Builder(
-        builder: (context) {
-          Pair<List<MsgLikeItem>, List<MsgLikeItem>> pair = response;
-          List<MsgLikeItem> latest = pair.first;
-          List<MsgLikeItem> total = pair.second;
-          if (latest.isNotEmpty || total.isNotEmpty) {
-            return SliverMainAxisGroup(
-              slivers: [
-                if (latest.isNotEmpty) ...[
-                  _buildHeader(theme, '最新'),
-                  SliverList.separated(
-                    itemBuilder: (context, index) {
-                      if (total.isEmpty && index == latest.length - 1) {
-                        _likeMeController.onLoadMore();
-                      }
-                      return _buildItem(theme, latest[index], (id) {
-                        _likeMeController.onRemove(id, index, true);
-                      });
-                    },
-                    itemCount: latest.length,
-                    separatorBuilder: (context, index) => divider,
-                  ),
+    switch (loadingState) {
+      case Loading():
+        return SliverList.builder(
+          itemCount: 12,
+          itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
+        );
+      case Success(:final response):
+        final divider = Divider(
+          indent: 72,
+          endIndent: 20,
+          height: 6,
+          color: Colors.grey.withValues(alpha: 0.1),
+        );
+        return Builder(
+          builder: (context) {
+            Pair<List<MsgLikeItem>, List<MsgLikeItem>> pair = response;
+            List<MsgLikeItem> latest = pair.first;
+            List<MsgLikeItem> total = pair.second;
+            if (latest.isNotEmpty || total.isNotEmpty) {
+              return SliverMainAxisGroup(
+                slivers: [
+                  if (latest.isNotEmpty) ...[
+                    _buildHeader(theme, '最新'),
+                    SliverList.separated(
+                      itemBuilder: (context, index) {
+                        if (total.isEmpty && index == latest.length - 1) {
+                          _likeMeController.onLoadMore();
+                        }
+                        return _buildItem(theme, latest[index], (id) {
+                          _likeMeController.onRemove(id, index, true);
+                        });
+                      },
+                      itemCount: latest.length,
+                      separatorBuilder: (context, index) => divider,
+                    ),
+                  ],
+                  if (total.isNotEmpty) ...[
+                    _buildHeader(theme, '累计'),
+                    SliverList.separated(
+                      itemBuilder: (context, index) {
+                        if (index == total.length - 1) {
+                          _likeMeController.onLoadMore();
+                        }
+                        return _buildItem(theme, total[index], (id) {
+                          _likeMeController.onRemove(id, index, false);
+                        });
+                      },
+                      itemCount: total.length,
+                      separatorBuilder: (context, index) => divider,
+                    ),
+                  ],
                 ],
-                if (total.isNotEmpty) ...[
-                  _buildHeader(theme, '累计'),
-                  SliverList.separated(
-                    itemBuilder: (context, index) {
-                      if (index == total.length - 1) {
-                        _likeMeController.onLoadMore();
-                      }
-                      return _buildItem(theme, total[index], (id) {
-                        _likeMeController.onRemove(id, index, false);
-                      });
-                    },
-                    itemCount: total.length,
-                    separatorBuilder: (context, index) => divider,
-                  ),
-                ],
-              ],
-            );
-          }
-          return HttpError(onReload: _likeMeController.onReload);
-        },
-      ),
-      Error(:final errMsg) => HttpError(
-        errMsg: errMsg,
-        onReload: _likeMeController.onReload,
-      ),
-    };
+              );
+            }
+            return HttpError(onReload: _likeMeController.onReload);
+          },
+        );
+      case Error(:final errMsg):
+        return HttpError(
+          errMsg: errMsg,
+          onReload: _likeMeController.onReload,
+        );
+    }
   }
 
   Widget _buildHeader(ThemeData theme, String title) {

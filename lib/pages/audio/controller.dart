@@ -47,6 +47,7 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
+import 'package:easy_debounce/easy_throttle.dart';
 import 'package:fixnum/fixnum.dart' show Int64;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -373,6 +374,16 @@ class AudioController extends GetxController
     _start = null;
   }
 
+  Future<void>? refreshPlayer() {
+    if (player case final player? when player.current.isNotEmpty) {
+      return player.open(
+        player.current.last.copyWith(start: player.state.position),
+        play: true,
+      );
+    }
+    return null;
+  }
+
   Future<void> _initPlayerIfNeeded() async {
     if (_hasInit) return;
     _hasInit = true;
@@ -426,15 +437,8 @@ class AudioController extends GetxController
         }
       }),
       stream.completed.listen((completed) {
-        final player = this.player!;
-        if (!completed ||
-            !player.state.completed ||
-            player.state.duration == Duration.zero ||
-            player.state.duration - player.state.position >
-                const Duration(seconds: 1)) {
-          return;
-        }
-        _videoDetailController?.playedTime = player.state.duration;
+        if (!completed) return;
+        _videoDetailController?.playedTime = player!.state.duration;
         videoPlayerServiceHandler?.onStatusChange(
           PlayerStatus.completed,
           false,
@@ -465,6 +469,30 @@ class AudioController extends GetxController
             case PlayRepeat.autoPlayRelated:
               break;
           }
+        }
+      }),
+      stream.error.listen((event) {
+        if (event.startsWith('Failed to open https://') ||
+            event.startsWith('Can not open external file https://') ||
+            event.startsWith('tcp: ffurl_read returned ')) {
+          EasyThrottle.throttle(
+            'audioControllerStream.error.listen',
+            const Duration(milliseconds: 10000),
+            () {
+              Future.delayed(const Duration(milliseconds: 3000), () {
+                final player = this.player;
+                if (!isClosed &&
+                    player?.state.buffering == true &&
+                    player?.state.buffer == Duration.zero) {
+                  SmartDialog.showToast(
+                    '音频链接打开失败，重试中',
+                    displayTime: const Duration(milliseconds: 500),
+                  );
+                  refreshPlayer();
+                }
+              });
+            },
+          );
         }
       }),
     ];
@@ -733,6 +761,14 @@ class AudioController extends GetxController
           _queryPlayList(isLoadNext: true);
         }
         playIndex(next);
+        return true;
+      }
+      if (_next != null) {
+        _queryPlayList(isLoadNext: true).then((_) {
+          if (!isClosed && next < playlist!.length) {
+            playIndex(next);
+          }
+        });
         return true;
       }
     }

@@ -520,6 +520,7 @@ class RefreshIndicatorState extends State<RefreshIndicator>
       body: child,
       scale: _scaleFactor,
       position: _positionFactor,
+      displacement: displacement,
       indicator: AnimatedBuilder(
         animation: _positionController,
         builder: (context, child) => RefreshProgressIndicator(

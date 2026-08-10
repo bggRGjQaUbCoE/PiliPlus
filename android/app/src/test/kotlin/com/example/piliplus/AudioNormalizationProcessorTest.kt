@@ -8,6 +8,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class AudioNormalizationProcessorTest {
@@ -82,5 +83,90 @@ class AudioNormalizationProcessorTest {
         val output = processor.getOutput()
         assertEquals(1234, output.short.toInt())
         assertEquals(-5678, output.short.toInt())
+    }
+
+    @Test
+    fun highpassSuppressesConstantSignal() {
+        val processor = newProcessor(
+            AudioNormalizationConfiguration(gain = 1.0, highpassHz = 200.0),
+        )
+        val input = ByteBuffer.allocate(8000 * 2).order(ByteOrder.BIG_ENDIAN)
+        repeat(8000) { input.putShort((0.5 * 32767).toInt().toShort()) }
+        input.flip()
+        processor.queueInput(input)
+
+        val samples = mutableListOf<Int>()
+        var output = processor.getOutput()
+        while (output != null && output.hasRemaining()) {
+            while (output.hasRemaining()) {
+                samples += output.short.toInt()
+            }
+            output = processor.getOutput()
+        }
+        val settledPeak = samples.drop(7000).maxOf { abs(it) }
+        assertTrue("highpass should remove DC after settling", settledPeak < 4000)
+    }
+
+    @Test
+    fun lowpassSuppressesHighFrequencyAlternation() {
+        val processor = newProcessor(
+            AudioNormalizationConfiguration(gain = 1.0, lowpassHz = 200.0),
+        )
+        val input = ByteBuffer.allocate(8000 * 2).order(ByteOrder.BIG_ENDIAN)
+        repeat(8000) { index ->
+            input.putShort(if (index % 2 == 0) 16000.toShort() else (-16000).toShort())
+        }
+        input.flip()
+        processor.queueInput(input)
+
+        val samples = mutableListOf<Int>()
+        var output = processor.getOutput()
+        while (output != null && output.hasRemaining()) {
+            while (output.hasRemaining()) samples += output.short.toInt()
+            output = processor.getOutput()
+        }
+        val settledPeak = samples.drop(7000).maxOf { abs(it) }
+        assertTrue("lowpass should attenuate high frequency signal", settledPeak < 2500)
+    }
+
+    @Test
+    fun equalizerBoostsToneWithoutClipping() {
+        val processor = newProcessor(
+            AudioNormalizationConfiguration(
+                gain = 1.0,
+                peak = 1.0,
+                equalizerFrequencyHz = 1000.0,
+                equalizerGainDb = 6.0,
+                equalizerQ = 1.0,
+            ),
+        )
+        val input = ByteBuffer.allocate(8000 * 2).order(ByteOrder.BIG_ENDIAN)
+        repeat(8000) { index ->
+            val sample = (0.1 * 32767.0 * kotlin.math.sin(2.0 * Math.PI * 1000.0 * index / 8000.0)).toInt()
+            input.putShort(sample.toShort())
+        }
+        input.flip()
+        processor.queueInput(input)
+
+        val samples = mutableListOf<Int>()
+        var output = processor.getOutput()
+        while (output != null && output.hasRemaining()) {
+            while (output.hasRemaining()) samples += output.short.toInt()
+            output = processor.getOutput()
+        }
+        val inputPeak = (0.1 * 32767.0).toInt()
+        val settledPeak = samples.drop(7000).maxOf { abs(it) }
+        assertTrue("equalizer should boost the configured tone", settledPeak > inputPeak * 1.5)
+        assertTrue("equalizer output must not clip", settledPeak <= Short.MAX_VALUE.toInt())
+    }
+
+    @Test
+    fun equalizerConfigurationRequiresCompleteParameters() {
+        assertThrows(IllegalArgumentException::class.java) {
+            AudioNormalizationConfiguration(
+                equalizerFrequencyHz = 1000.0,
+                equalizerGainDb = 3.0,
+            )
+        }
     }
 }

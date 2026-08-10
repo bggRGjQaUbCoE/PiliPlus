@@ -454,11 +454,16 @@ background, or PiP state flows:
 - opening, refreshing, changing part/quality, or reusing the player session
   updates immutable normalization parameters without recreating the ExoPlayer
   instance. A media event also exposes the applied filter for diagnostics;
-- `dynaudnorm`, a one-pass `loudnorm` without server measurements, chained
-  filters, and arbitrary custom FFmpeg filters are not represented as
-  compatible. ExoPlayer keeps the original audio and shows one explicit notice
-  per unsupported parameter instead of silently no-oping or falling back to
-  MPV.
+- `dynaudnorm`, a one-pass `loudnorm` without server measurements, and one
+  `highpass=f=<Hz>`, `lowpass=f=<Hz>`, or peaking
+  `equalizer=f=<Hz>:t=q:w=<Q>:g=<dB>` stage are represented by Media3 PCM
+  approximations. The filter stages are applied per channel before gain/normalization and peak
+  limiting; filter ordering is intentionally normalized and still requires a
+  real-device listening comparison against MPV. Repeated high-pass stages,
+  chained stages outside this supported set, and arbitrary custom FFmpeg
+  filters remain explicit unsupported cases. ExoPlayer keeps the original
+  audio and shows one notice per unsupported parameter instead of silently
+  no-oping or falling back to MPV.
 
 The implementation commit is
 `54babbf8f08577771fb600f0f6e63d039c5b6ead`. Formatting and full
@@ -1394,7 +1399,7 @@ normalization mapping from single filters to supported filter chains:
   loudnorm gain is multiplied by the volume multiplier, and dynamic targets
   are shifted by the corresponding decibels. Multiple volume stages multiply;
   `volume=0` maps to a silent static gain instead of an infinite target;
-- a chain containing an unknown stage (for example `highpass=f=100`) or more
+- a chain containing an unknown stage (for example `compressor=threshold=0.5:ratio=2`) or more
   than one loudness stage falls back with the exact offending stage name in
   the user toast instead of a generic message;
 - the MPV path still receives the original full FFmpeg chain unchanged.
@@ -1472,3 +1477,173 @@ and confirming the software fallback continues playback without progress loss
 or black video, with `PlaybackConfig` showing `decoder=software`; network/source
 retry, live playback, and standalone audio must remain unaffected. The audit
 APK does not update the formal release baseline.
+
+### Android video-page downward gestures
+
+The first 2026-08-09 audit build was rejected by real-device feedback: the
+video pull did not enter the mini player, portrait-full-screen entry had no
+animation, and any downward pull in a long detail page could trigger full
+screen even when the page was not at the top. That APK is superseded and is no
+longer a test target.
+
+The v3 audit was also rejected by real-device feedback: video pulls still did
+not enter the mini player, and pointer-down position was not a reliable proxy
+for the nested detail view's actual top boundary. The v4 implementation keeps
+both gestures backend-neutral but replaces both event chains:
+
+- a deliberate downward swipe is observed directly by the windowed video
+  widget, without inferring video bounds from the detail-page root. At 48
+  logical pixels it first establishes ownership in the existing in-app
+  mini-player service and then pops the detail route. The service reuses the
+  same player, Flutter Texture, playback position, and source-rectangle
+  animation; neither MPV nor Media3 reopens or seeks the source;
+- pulls outside the video are no longer inferred from page-level pointer
+  displacement. Distance accumulates only from a user-driven, negative Android
+  `OverscrollNotification` while the outer detail scroll position is actually
+  at its minimum. Normal scrolling toward the top, ballistic scrolling, and
+  pulls in the middle or bottom cannot enter the full-screen path. At 72
+  logical pixels the video header completes its finger-following expansion and
+  animates to portrait full screen over approximately 260 ms. Explicit portrait
+  entry does not rewrite the stored default-full-screen preference;
+- per the user's final decision, the entire comment tab is excluded, including
+  its tab/header and list. Comment scrolling and pull-to-refresh retain their
+  original behavior;
+- video raw-pointer observation does not join Flutter's gesture arena.
+  Directional bias rejects short, upward, or predominantly horizontal movement,
+  and a disabled mini-player setting preserves existing player gestures.
+
+Targeted Dart analysis reports no issues, the complete Flutter suite passes
+59/59, and Android Release builds successfully. The v4 audit APK
+`build/app/outputs/flutter-apk/pili++-2.1.4-2026080901-universal-release-youtube-pull-gesture-audit-v4.apk`
+passes application identity, version, universal ABI, and signing-certificate
+verification; its SHA-256 is
+`3D4E93956676F6E185C3B29937CEBD06855CD2605F5FAAF32AA7BDAEF2F2526C`.
+It was built from the complete current worktree and therefore also contains the
+pre-existing uncommitted audio-filter changes; it is not a gesture-only
+isolation build.
+
+Real-device acceptance remains required in both MPV and Media3 modes for
+playing and paused video, enabled/disabled mini-player preference, portrait
+full-screen entry and animation from the top of intro/related content, no
+trigger from the middle or bottom, complete comment-tab scroll and refresh,
+horizontal seek, vertical brightness/volume, mini-player restore and repeated
+entry, and normal/full-screen orientation transitions. Until that comparison
+is complete, v4 is implemented but pending device acceptance. All v1-v3 audit
+packages are superseded and must not be used.
+
+On 2026-08-10, the user confirmed that the v4 mini-player pull and detail-top
+overscroll entry now work, then requested the reverse portrait-full-screen
+gesture. V5 adds a backend-neutral upward pull directly on the portrait
+full-screen video surface:
+
+- the header follows the finger from full height toward its normal detail-page
+  height;
+- at 72 logical pixels, the remaining transition completes with the existing
+  approximately 260 ms easing curve and exits full screen while explicitly
+  retaining portrait orientation;
+- releasing before the threshold animates back to full height over 160 ms;
+- player-lock, multi-pointer, downward, short, and predominantly horizontal
+  gestures do not trigger the exit.
+
+Targeted Dart analysis reports no issues and the complete Flutter suite passes
+61/61. Android Release and release-identity verification pass for
+`build/app/outputs/flutter-apk/pili++-2.1.5-2026081001-universal-release-portrait-fullscreen-swipe-up-v5.apk`.
+Its APK SHA-256 is
+`7BF081F42736EDF1B8E4B814D8F5638C40CCE7D43065B268BE8C3E38484C61FA`,
+and its signing-certificate SHA-256 remains
+`775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`.
+Real-device acceptance remains required for finger tracking, threshold exit,
+short-pull snap-back, locked controls, and MPV/Media3 parity.
+
+### 2026-08-10 upstream sync to 36dec60
+
+`upstream/main@36dec609315cd34f8895cf15607f1cc582a66f01` was merged into
+local `main` as `ae6b7aaceefb5d4218693c15825f751c3b7a1f4d`. The merge keeps the
+`com.shudo.plusplus` application identity, Media3 dependencies, ExoPlayer
+track/player-information controls, subtitles, SponsorBlock, PiP, mini-player
+session handoff, and the three video-page pull gestures. It adopts the upstream
+SDK 37 configuration and the new `SimpleScaffold`, `MiniScaffold`, status-bar,
+intro, refresh, and hit-test layout.
+
+The pre-merge worktree changes were restored after the merge. Full Dart
+analysis reports zero errors and warnings with 35 info diagnostics; the full
+Flutter suite passes 61/61; Android `:app:testDebugUnitTest` and the Release APK
+build pass. The validation APK is
+`build/app/outputs/flutter-apk/pili++-2.1.5-2026081001-universal-release-upstream-36dec60-validation.apk`
+with SHA-256
+`B2A8DC5D266B42571E22EF0A2628DEEB7CC690DDAF6763D4667CF543EDADB1CE`.
+Release verification confirms `com.shudo.plusplus`, label `pili++`, version
+`2.1.5+2026081001`, universal ABI, and certificate SHA-256
+`775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`.
+This artifact is a sync validation build and does not replace the delivered v5
+or update the formal release baseline.
+
+Real-device regression remains pending in both MPV and Media3 modes for VOD,
+controls, all three pull gestures, mini-player restore, system PiP, live and
+standalone audio, foreground/background transitions, and lifecycle recovery.
+Automated verification alone is not evidence that the MPV compatibility
+baseline remains fully intact.
+
+### 2026-08-10 refresh-layout semantics hotfix
+
+The Samsung SM-S9180 Android 16 validation build reported repeated
+`RenderSemanticsAnnotations was not laid out` and null geometry failures during
+Flutter semantics flushing, followed by a secondary first-frame
+`Future already completed` error. The stack contains no Media3 native frame.
+
+The upstream `RefreshLayout` skipped layout for its slotted indicator while
+both animations were zero, although the semantics tree still visited that
+child and requested its `semanticBounds`. The render object now always gives
+the hidden indicator a valid zero-size layout and schedules animation changes
+through `markNeedsLayout` instead of laying out a child outside the layout
+phase. Refresh displacement is passed explicitly by `RefreshIndicator` rather
+than read from global Hive state inside the render object.
+
+A semantics-enabled widget regression covers the hidden zero-size state and
+the visible 49-pixel state. The focused test and the complete Flutter suite
+pass, with 62 total tests. Real-device verification remains required on the
+reporting Samsung Android 16 device for initial video-page layout, detail and
+comment refresh, portrait-full-screen pull, mini-player restore, route re-entry,
+and TalkBack enabled/disabled. The hotfix delivery version is
+`2.1.6+2026081002`.
+
+The universal Release APK is
+`build/app/outputs/flutter-apk/pili++-2.1.6-2026081002-universal-release-refresh-semantics-hotfix.apk`
+with SHA-256
+`4685A4A3BCA1D55EF299A529703A1684DB4DDE2946D34DC6DE988C8BBA45E4AF`.
+Release verification confirms application ID `com.shudo.plusplus`, label
+`pili++`, version `2.1.6+2026081002`, all required universal ABIs, and the
+existing certificate SHA-256
+`775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`.
+
+### 2026-08-10 YouTube-style pull animation compositing
+
+The supplied Samsung Android 16 recordings were sampled at 60 fps by tracking
+the detail-panel boundary. The first pili++ pull contained only 10 distinct
+positions over about 0.7 seconds and paused at one position for up to 267 ms;
+the comparable YouTube pull contained 31 distinct positions and no pause longer
+than about 50 ms. The corresponding implementation rebuilt and relaid out the
+entire `ExtendedNestedScrollView` on every animation tick, and committed the
+full-screen transition before the pointer was released.
+
+The video header and detail body now keep stable sliver layout extents. Two
+isolated `AnimatedBuilder` layers move the existing repaint-bounded player and
+detail surface with composited transforms; animation ticks no longer call
+page-level `setState` or change the nested-scroll header height. Pointer travel
+maps linearly to the available visual travel, and both detail pull-to-fullscreen
+and portrait-fullscreen swipe-up commit only on release. The existing 48-pixel
+video pull-to-mini-player action, comment-tab exclusion, true-top check, lock
+handling, and horizontal/vertical player gestures remain in place.
+
+Focused gesture and composition tests pass 11/11, the complete Flutter suite
+passes 66/66, and full Dart analysis reports zero errors and warnings with 35
+existing info diagnostics. Android Release and release-identity verification
+pass for version `2.1.7+2026081003` at
+`build/app/outputs/flutter-apk/pili++-2.1.7-2026081003-universal-release-youtube-pull-animation-v6.apk`.
+Its APK SHA-256 is
+`39970ED9E752F79B9040CBEEF08DF1B68C524DDB40B24F57AAC13BA783A0E90F`;
+the signing-certificate SHA-256 remains
+`775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`.
+MPV/Media3 parity and 120 Hz frame pacing still require real-device replay of
+short snap-back, threshold entry, swipe-up exit, portrait video, player
+gestures, refresh, mini-player entry, and mini-player restoration.

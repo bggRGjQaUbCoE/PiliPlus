@@ -128,6 +128,91 @@ void main() {
     expect(resolution.peak, 1);
   });
 
+  test('ExoPlayer maps a highpass stage with frequency', () {
+    final resolution =
+        resolveExoAudioNormalization(
+              config: 'highpass=f=120,volume=0.8',
+              fallbackConfig: disabled,
+            )
+            as ExoAudioNormalizationConfiguration;
+
+    expect(resolution.highpassHz, 120);
+    expect(resolution.gain, closeTo(0.8, 0.000001));
+  });
+
+  test('ExoPlayer maps a lowpass stage with frequency', () {
+    final resolution =
+        resolveExoAudioNormalization(
+              config: 'lowpass=f=1200,volume=0.8',
+              fallbackConfig: disabled,
+            )
+            as ExoAudioNormalizationConfiguration;
+
+    expect(resolution.lowpassHz, 1200);
+    expect(resolution.gain, closeTo(0.8, 0.000001));
+  });
+
+  test('ExoPlayer maps a peaking equalizer stage', () {
+    final resolution =
+        resolveExoAudioNormalization(
+              config: 'equalizer=f=1000:t=q:w=1.2:g=4,volume=0.8',
+              fallbackConfig: disabled,
+            )
+            as ExoAudioNormalizationConfiguration;
+
+    expect(resolution.equalizerFrequencyHz, 1000);
+    expect(resolution.equalizerGainDb, 4);
+    expect(resolution.equalizerQ, 1.2);
+    expect(resolution.gain, closeTo(0.8, 0.000001));
+  });
+
+  test('ExoPlayer rejects malformed or repeated highpass stages', () {
+    expect(
+      resolveExoAudioNormalization(
+        config: 'highpass=f=abc',
+        fallbackConfig: disabled,
+      ),
+      isA<UnsupportedExoAudioNormalization>(),
+    );
+    expect(
+      resolveExoAudioNormalization(
+        config: 'highpass=f=100,highpass=f=200',
+        fallbackConfig: disabled,
+      ),
+      isA<UnsupportedExoAudioNormalization>(),
+    );
+  });
+
+  test('ExoPlayer rejects malformed or repeated lowpass stages', () {
+    expect(
+      resolveExoAudioNormalization(
+        config: 'lowpass=f=abc',
+        fallbackConfig: disabled,
+      ),
+      isA<UnsupportedExoAudioNormalization>(),
+    );
+    expect(
+      resolveExoAudioNormalization(
+        config: 'lowpass=f=100,lowpass=f=200',
+        fallbackConfig: disabled,
+      ),
+      isA<UnsupportedExoAudioNormalization>(),
+    );
+  });
+
+  test('ExoPlayer rejects malformed, unsupported, or repeated equalizers', () {
+    for (final config in [
+      'equalizer=f=abc:t=q:w=1:g=2',
+      'equalizer=f=1000:t=h:w=1:g=2',
+      'equalizer=f=1000:t=q:w=1:g=2,equalizer=f=2000:t=q:w=1:g=2',
+    ]) {
+      expect(
+        resolveExoAudioNormalization(config: config, fallbackConfig: disabled),
+        isA<UnsupportedExoAudioNormalization>(),
+      );
+    }
+  });
+
   test('ExoPlayer parses decibel volume stages', () {
     final resolution =
         resolveExoAudioNormalization(
@@ -188,12 +273,12 @@ void main() {
   test('ExoPlayer reports the exact unsupported chain stage', () {
     final resolution =
         resolveExoAudioNormalization(
-              config: 'volume=0.8,highpass=f=100',
+              config: 'volume=0.8,compressor=threshold=0.5:ratio=2',
               fallbackConfig: disabled,
             )
             as UnsupportedExoAudioNormalization;
 
-    expect(resolution.unsupportedStage, 'highpass=f=100');
+    expect(resolution.unsupportedStage, 'compressor=threshold=0.5:ratio=2');
   });
 
   test('ExoPlayer rejects chains with multiple loudness stages', () {

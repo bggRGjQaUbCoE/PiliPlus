@@ -2176,6 +2176,12 @@ class PlPlayerController with BlockConfigMixin {
     required bool isVertical,
     DeviceOrientation? orientation,
   }) {
+    if (orientation == .portraitUp) {
+      return portraitUpMode();
+    }
+    if (orientation == .portraitDown) {
+      return portraitDownMode();
+    }
     if (orientation == null && (mode == .none || mode == .gravity)) {
       return null;
     }
@@ -2236,7 +2242,15 @@ class PlPlayerController with BlockConfigMixin {
           if (orientation == null && mode == .none) {
             return;
           }
-          await resetScreenRotation();
+          if (orientation == null) {
+            await resetScreenRotation();
+          } else {
+            await changeOrientation(
+              isVertical:
+                  orientation == .portraitUp || orientation == .portraitDown,
+              orientation: orientation,
+            );
+          }
         } else {
           await exitDesktopFullScreen();
         }

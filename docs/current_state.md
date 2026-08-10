@@ -1,6 +1,6 @@
 # pili++ 当前项目状态
 
-> 最后核对：2026-08-03 13:55 +08:00
+> 最后核对：2026-08-10 13:09 +08:00
 >
 > 本文件记录会随开发变化、但后续任务必须知道的事实。开始任务时先核对这里与实际
 > Git、源码和构建产物；结束任务前更新。长期规则见 `AGENTS.md`，ExoPlayer 详细兼容
@@ -13,12 +13,12 @@
   (`chore: prepare 2.1.2 release`)
 - 最新功能快照：`0c647b51ae60defc39c6171e5ca9387e43e596d2`
   (`feat: retry decoder failures with software video fallback`)
-- 最新上游合并提交：`0e4e8db250e986c4f8e32652fac2652651ec4168`
-  (`Merge remote-tracking branch 'upstream/main' into codex/android-exoplayer`)
+- 最新上游合并提交：`ae6b7aaceefb5d4218693c15825f751c3b7a1f4d`
+  (`Merge upstream/main into main`)
 - 上游：`https://github.com/bggRGjQaUbCoE/PiliPlus.git`
-- 已获取并合入的 `upstream/main`：`5296a8f7f07a22f347ad53bc8c7651e6787bf3ec`
-- 当前分支已包含上游 `56ca0ca`、`10b723f`、`e4e7037`、`91e7899` 和 `5296a8f`；
-  本状态更新提交完成后相对上游为本地领先 66、落后 0。
+- 已获取并合入的 `upstream/main`：`36dec609315cd34f8895cf15607f1cc582a66f01`
+- 当前分支相对 `upstream/main` 为本地领先 68、落后 0；merge-base 即
+  `36dec609315cd34f8895cf15607f1cc582a66f01`。
 - 应用内小窗、音频焦点/媒体控制、系统 PiP 恢复、版本更新和兼容记录已保存到上述
   功能快照。交接时应以实际 `git status` 为准；存在未提交修改时不得直接 merge 或
   rebase。
@@ -37,14 +37,16 @@
 
 ## 最近一次交付
 
-- 版本：`2.1.3`
-- versionCode：`2026072808`
+- 版本：`2.1.7`
+- versionCode：`2026081003`
 - ABI：universal (`arm64-v8a`、`armeabi-v7a`、`x86_64`)
-- 文件名：`pili++-2.1.3-2026072808-universal-release.apk`
+- 文件名：`pili++-2.1.7-2026081003-universal-release-youtube-pull-animation-v6.apk`
 - APK SHA-256：
-  `7989CFCE97FA9EF9AF934436683C2743DDE4F518C2C4CCAEAEB4EB5BD52EA1DE`
-- 2026-07-28 20:27 已在本地交付通用 APK，尚未发布 GitHub Release；通用 APK 已通过
-  `tool/verify_release.ps1` 的应用身份、版本、ABI 和签名校验。
+  `39970ED9E752F79B9040CBEEF08DF1B68C524DDB40B24F57AAC13BA783A0E90F`
+- 2026-08-10 13:09 已生成并交付 YouTube 风格下拉动画优化通用 APK，尚未发布 GitHub
+  Release；该 APK 已通过 `tool/verify_release.ps1` 的应用身份、版本、ABI 和签名校验。
+  新动画流畅度、Samsung Android 16 语义树热修复及 mpv/ExoPlayer 手势一致性仍待用户
+  真机验收。
 
 ## 已确认的产品决定
 
@@ -92,20 +94,54 @@
 
 ## 最近一次上游同步验证
 
-- 2026-07-28 已将 `upstream/main@5296a8f` 合入当前分支，无文本冲突。
-- `pubspec.yaml` 同时保留 `2.1.0+2026072806` 和上游 `jnigen ^0.17.0`。
-- JNI 绑定同时保留上游回调参数释放和应用内小窗所需 PiP 模式变化回调；新版
-  `jnigen` 完整生成后文件无差异。
-- 上游涉及的 17 个 Dart 文件通过格式检查，0 个文件需要修改。
-- `dart analyze` 无 error/warning，有 37 条既有 info。
-- `flutter analyze` 被工作区 Flutter SDK 缺失的 iOS 测试资源目录中断，不是仓库
-  分析错误；Android Release 构建随后通过。
-- 合并审计 APK 的 applicationId、应用名、versionName、versionCode、ABI 和签名
-  校验通过，SHA-256 为
-  `79FD550A9BCC82A9370AADE46C02EB09D6EFE8F5E68F5BD29AE1D099EE7991CB`。
-- 上游 UI 和文本选择变化仍需真机回归；审计 APK 不是新版本交付，不更新发布基线。
+- 2026-08-10 从本地 `2f512df47b308938164595ac3ba0f514fe53a5ac` 同步
+  `upstream/main@36dec609315cd34f8895cf15607f1cc582a66f01`。同步前本地领先 67、
+  落后 35；原有未提交音频滤镜、播放页手势、版本和文档修改先完整保存，合并后已恢复为
+  未暂存状态。
+- 三处文本冲突已人工审计：Android 保留 `com.shudo.plusplus` 和本地 Media3 依赖，接受
+  上游 compile/target SDK 37；视频页采用上游 `SimpleScaffold`、`MiniScaffold`、状态栏、
+  介绍区和刷新布局，同时保留 `_pageRootKey`、应用内小窗复用以及三组下拉/上滑手势；
+  播放器头部保留本地 ExoPlayer 轨道/信息、SponsorBlock、字幕和 PiP 能力。
+- 合并态全量 Flutter 测试通过 48/48；恢复本地修改后全量 `dart analyze` 为 0 error、
+  0 warning、35 条 info，全量 Flutter 测试通过 61/61，Android
+  `:app:testDebugUnitTest` 和 Android Release 构建通过。
+- 当前官方 SDK 工具将 API 37 安装为 `platforms/android-37.0`，而 AGP 9.0.1 按上游整数
+  `compileSdk = 37` 查找 `platforms/android-37`；专用 Android SDK 已建立指向同一平台的
+  兼容目录联接。Gradle 仍提示 AGP 9.0.1 仅测试至 compile SDK 36.1、部分插件尚未迁移
+  built-in Kotlin，这些是后续工具链升级风险，不是本次测试失败。
+- 验证 APK 位于
+  `build/app/outputs/flutter-apk/pili++-2.1.5-2026081001-universal-release-upstream-36dec60-validation.apk`，
+  applicationId、应用名、版本、universal ABI 和签名证书均通过
+  `tool/verify_release.ps1 -AllowAlreadyDelivered`；APK SHA-256 为
+  `B2A8DC5D266B42571E22EF0A2628DEEB7CC690DDAF6763D4667CF543EDADB1CE`。该包仅用于同步验证，
+  不替代已交付 v5，也不更新发布基线。
+- mpv/ExoPlayer 点播、控制层、三组手势、应用内小窗恢复、系统 PiP、直播、独立音频、
+  前后台和生命周期仍需在 Android 真机逐项回归；完成前不能把自动化通过表述为无回归。
 
 ## 当前待验证修改
+
+- ExoPlayer 音频滤镜链已新增 `highpass=f=<Hz>` 的 Media3 PCM 等价近似：Dart 侧解析
+  单个高通阶段并把频率传入 Android，原生侧按声道使用一阶离散高通滤波器，再叠加既有
+  音量/响度归一化和真峰值限制；畸形参数、重复高通或其他未知阶段仍显示明确未适配提示，
+  mpv 继续使用原始 FFmpeg 链。代码和定向测试已补齐；Dart 定向测试及 Android 单测已通过，
+  尚未生成新的 Release 审计 APK；仍需与 mpv 做真机听感、切换、后台、小窗和 PiP 对照后
+  才能标记为“实现完成、待真机验证”。
+
+- 2026-08-08 已恢复并确认固定构建工具链：Flutter/Dart 来自
+  `D:\CodexToolchains\PiliPlus\flutter-sdk\flutter`，JDK 17 来自
+  `D:\CodexToolchains\PiliPlus\jdk\jdk-17.0.19+10`，Android SDK 来自
+  `D:\CodexToolchains\PiliPlus\android-sdk`。此前裸命令提示缺少 `dart`/`flutter`/`java`
+  是当前终端未继承这些路径和 `JAVA_HOME`，不是工具链或仓库被删除。
+- 本次高通滤镜修改的 Dart 定向测试已通过 17/17；`:app` 的
+  `AudioNormalizationProcessorTest` 已通过 4/4。Gradle 输出仍有既有插件弃用和 SDK XML
+  版本警告，但没有测试失败。全量 `flutter test --no-pub --concurrency=1` 已通过 50/50，
+  新增高通实现相关文件定向 `dart analyze` 无问题。当前 Release 审计包已生成并通过
+  `tool/verify_release.ps1 -AllowAlreadyDelivered`：
+  `build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch8-highpass-audit.apk`，
+  versionCode `2026072808`，大小约 64.7 MiB，APK SHA-256 为
+  `2796DDA63A4AA2CA626FBC6FE1A7C71758ED6F97E9DD060122F2918C12E1847B`，证书 SHA-256 为
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`；该包不更新正式
+  发布基线，仍待真机听感和播放场景验证。
 
 - ExoPlayer 适配批次 8 解码软解回退组已提交为
   `0c647b51ae60defc39c6171e5ca9387e43e596d2`：解码器/renderer 失败（Media3 decoder
@@ -709,9 +745,9 @@
   批次 3 与批次 5 的对应流程仍待真机对照。
 - 服务器提供测量参数的两遍 `loudnorm` 已接入 Media3 PCM 增益与真峰值限制器；单遍
   `loudnorm` 与 `dynaudnorm` 已实现分窗 RMS 自动增益的 Media3 近似（`3389f5a`）。
-  `volume=` 与单个响度阶段的链已支持（`531f2a8`），均待真机与 mpv 听感对照。
-  未知 FFmpeg 滤镜（如 `highpass`）、多个响度阶段及任意复杂链仍无 Media3 等价实现，
-  Toast 会指明具体未适配滤镜名。
+  `volume=`、单个 `highpass`、单个 `lowpass`、单个 peaking `equalizer` 与单个响度阶段的链
+  已支持，均待真机与 mpv 听感对照。其他 equalizer 类型、多个同类滤镜、多个响度阶段及
+  任意复杂链仍无 Media3 等价实现，Toast 会指明具体未适配滤镜名。
 - 网络/源错误自动恢复与诊断已进入待真机验证；解码错误已实现一次硬解→软解自动回退
   重试（`0c647b5`），仍需真机覆盖具体硬件解码失败、回退后可播与终态诊断场景。
 - Media3 自定义缓冲大小和点播缓冲时长按“时间安全阈值优先”重新实现，Samsung Android 16
@@ -778,3 +814,139 @@
 15. 清理仓库既有 37 条 info 后，使完整 `flutter analyze` 以零退出码通过。
 16. 真机回归本次上游同步涉及的视频卡片、UGC 分P列表、动态/评论文本选择和滚动。
 17. 继续跟踪上游；下次同步仍先 fetch、检查重叠文件，再执行合并和完整验证。
+### 2026-08-08 lowpass audio-filter mapping
+
+The ExoPlayer audio normalization bridge now supports one `lowpass=f=<Hz>` stage
+alongside the existing `highpass`, volume, `loudnorm`, and `dynaudnorm` mappings.
+Malformed or repeated low-pass stages remain explicit unsupported cases. Dart
+resolution tests pass 19/19 and `:app:testDebugUnitTest --tests
+com.example.piliplus.AudioNormalizationProcessorTest` passes. Android Release
+build and `tool/verify_release.ps1 -AllowAlreadyDelivered` pass.
+
+Audit APK:
+`build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch9-lowpass-audit.apk`
+SHA-256: `39A0797D8A888D46A06AC9A8ED8D1D26D46820951F5A39A2555240FDC0634614`.
+The APK uses certificate SHA-256
+`775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`.
+Real-device listening comparison against MPV remains pending; this audit APK
+does not update the formal release baseline.
+
+### 2026-08-08 equalizer audio-filter mapping
+
+ExoPlayer now maps one peaking FFmpeg equalizer stage with
+`f=<Hz>:t=q:w=<Q>:g=<dB>` to a per-channel Media3 PCM RBJ biquad. Dart and
+Android tests cover valid parameters, malformed/repeated stages, unsupported
+equalizer types, gain limiting, and tone boost. Other equalizer types and
+arbitrary filter chains remain unsupported; real-device listening comparison
+against MPV is still required.
+
+Final verification for this source state: the complete Flutter test suite
+passes 54/54, the targeted Android `AudioNormalizationProcessorTest` passes,
+targeted Dart analysis reports no issues, and Android Release builds
+successfully. The final audit APK is
+`build/app/outputs/flutter-apk/pili++-2.1.3-2026072808-universal-release-exo-batch11-equalizer-audit.apk`
+with SHA-256
+`08C8BAA5AB8674BA12F52801148C85497D0C3E85AFBFE772235137EE5E029C23`.
+`tool/verify_release.ps1 -AllowAlreadyDelivered` confirms application ID,
+label, version, universal ABI, and certificate SHA-256
+`775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`.
+The earlier batch10 APK predates the complete-parameter validation and is not
+the final audit artifact. The formal release baseline remains unchanged.
+
+### 2026-08-09 播放页下拉手势
+
+- 当前分支仍为 `main`，本批开始时 HEAD 为
+  `2f512df47b308938164595ac3ba0f514fe53a5ac`；工作区原有音频滤镜、Android 单测和
+  两份状态文档的未提交修改均保留，本批没有重置或覆盖这些修改。
+- 第一版审计包经用户真机反馈确认存在三项缺陷：视频下拉未进入小窗；竖屏全屏没有动画；
+  详情内容未在顶部时下拉也会触发竖屏全屏，破坏长详情页的正常滚动。第一版 APK 已废弃，
+  不再作为测试目标。
+- 用户第二次真机反馈确认 v3 仍未解决两个问题：视频区域下拉仍不进入小窗，详情页仍会在
+  非顶部误触竖屏全屏。v3 及更早审计包全部废弃。
+- v4 将原始指针监听直接挂到实际视频组件，不再通过详情页根层坐标推断命中区域。窗口态视频
+  下拉达到 48 logical pixels 后，先通过既有服务保留播放器并建立小窗会话，再退出详情页；
+  继续复用同一播放器、Flutter Texture、进度和缩小动画。
+- 非视频区域不再使用页面级指针位移。只有 Android 垂直滚动系统实际发出向下顶部越界
+  `OverscrollNotification`，且详情外层滚动位置此时确实位于最小值时，才累计下拉距离；
+  回顶之前的正常滚动、惯性滚动、中部/底部下拉均不触发。累计达到 72 logical pixels 后，
+  播放器高度跟手展开并用约 260 ms 补间完成竖屏全屏，不修改“默认全屏方向”。
+- 按用户最终决定，评论标签整体禁用竖屏全屏下拉，包括标签栏与评论列表；评论滚动和
+  下拉刷新保持原行为。短距离、向上和偏横向动作也不会触发上述两条手势。
+- 新增真实顶部越界判定测试后，完整 `flutter test` 通过 59/59；本批 Dart 文件定向
+  `dart analyze` 无问题，`git diff --check` 通过，Android Release 构建通过。
+- v4 审计 APK：
+  `build/app/outputs/flutter-apk/pili++-2.1.4-2026080901-universal-release-youtube-pull-gesture-audit-v4.apk`；
+  applicationId `com.shudo.plusplus`、应用名 `pili++`、versionName `2.1.4`、versionCode
+  `2026080901`、universal ABI 和证书 SHA-256
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C` 均通过
+  `tool/verify_release.ps1`；APK SHA-256 为
+  `3D4E93956676F6E185C3B29937CEBD06855CD2605F5FAAF32AA7BDAEF2F2526C`。它由当前完整工作区
+  构建，也包含本批开始前已存在的未提交音频滤镜修改，不是只含下拉手势的隔离包。
+- 待 Android 真机分别在 mpv 与 ExoPlayer 下验证：播放/暂停状态的视频下拉进入小窗、
+  小窗开关关闭时保持播放器原手势、详情顶部跟手动画及竖屏全屏、详情中部/底部不误触发、
+  评论标签全部区域正常滚动/刷新、横向进度与纵向亮度/音量手势无回归，以及小窗恢复后的
+  再次下拉。
+- 2026-08-10 用户确认 v4 的视频下拉小窗和详情顶部过度滚动进入竖屏全屏已经可用，并要求
+  补齐反向动作。v5 在未锁定的竖屏全屏视频区域识别向上滑动：播放器高度随手指从全屏向
+  普通详情页收缩，达到 72 logical pixels 后按剩余进度补完 260 ms 完整曲线并显式保持竖屏
+  退出全屏；未达到阈值则用 160 ms 回弹到全屏。多指、向下、短距离和偏横向动作不触发。
+- 新增向上方向判定测试后，完整 `flutter test` 通过 61/61，定向 `dart analyze` 无问题，
+  `git diff --check` 与 Android Release 构建通过。v5 APK 为
+  `build/app/outputs/flutter-apk/pili++-2.1.5-2026081001-universal-release-portrait-fullscreen-swipe-up-v5.apk`，
+  applicationId `com.shudo.plusplus`、应用名 `pili++`、versionName `2.1.5`、versionCode
+  `2026081001`、universal ABI 和证书 SHA-256
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C` 均通过
+  `tool/verify_release.ps1`；APK SHA-256 为
+  `7BF081F42736EDF1B8E4B814D8F5638C40CCE7D43065B268BE8C3E38484C61FA`。仍待真机确认上滑
+  跟手、达阈值退出、短滑回弹、锁定状态不触发，以及 mpv/ExoPlayer 一致性。
+
+### 2026-08-10 上游刷新布局语义树修复
+
+- Samsung SM-S9180、Android 16 在上游同步后的 `2.1.5+2026081001` 报告
+  `RenderSemanticsAnnotations was not laid out`、
+  `_RenderObjectSemantics._updateSemanticsNodeGeometry` 空值异常和随后出现的
+  `Future already completed`。堆栈位于 Flutter semantics/首帧阶段，没有 Media3 原生帧。
+- 根因是上游新增 `RefreshLayout` 在 scale/position 为 0 时跳过刷新指示器布局，但
+  semantics 仍会遍历该 slotted child 并读取 `semanticBounds`。修复后隐藏指示器也获得
+  `0x0` 合法布局，动画监听通过 `markNeedsLayout` 进入正常布局阶段，不再在帧外直接调用
+  child layout；刷新位移由 `RefreshIndicator` 显式传入，消除 RenderObject 的隐式 Hive 依赖。
+- 新增启用 semantics 的组件回归测试，覆盖隐藏状态语义刷新和展开到 `49x49` 两条路径；
+  定向测试和全量 Flutter 测试均通过，后者为 62/62。定向 Dart 分析无问题。
+- 修复交付版本提升为 `2.1.6+2026081002`。仍需在报告问题的 Samsung Android 16 真机
+  覆盖视频详情页初次打开、详情滚动、顶部下拉进入竖屏全屏、评论下拉刷新、小窗恢复、
+  返回/重进及 TalkBack 开关场景，确认不再产生上述 semantics/首帧异常。
+- Release APK 位于
+  `build/app/outputs/flutter-apk/pili++-2.1.6-2026081002-universal-release-refresh-semantics-hotfix.apk`；
+  `tool/verify_release.ps1` 已确认 applicationId `com.shudo.plusplus`、应用名 `pili++`、
+  universal ABI、版本和证书指纹，APK SHA-256 为
+  `4685A4A3BCA1D55EF299A529703A1684DB4DDE2946D34DC6DE988C8BBA45E4AF`。
+
+### 2026-08-10 YouTube 下拉动画流畅度优化
+
+- 对用户提供的两段 Samsung Android 16 录屏按 60 fps 采样详情面板边界。pili++ 第一段
+  下拉约 0.7 秒只有 10 个有效位置，最长连续约 267 ms 停在同一位置；YouTube 对照段有
+  31 个有效位置，最长停顿约 50 ms。源码对应问题是 `_pagePullAnimation` 每帧
+  `setState`，同时改变 `ExtendedNestedScrollView` 的 header/pinned 高度，导致播放器、
+  详情标签和内容树反复 rebuild/layout；达到 72 logical pixels 时还会在手指未释放前直接
+  补完整段动画，造成位置突跳。
+- 新实现保持嵌套滚动页和 header 的正常布局尺寸不变。播放器与详情面板分别由独立
+  `AnimatedBuilder` 驱动，播放器外层仅扩展黑色合成区域并移动已有 `RepaintBoundary`，
+  详情页缓存为独立重绘边界后只做 `Transform.translate`；动画 tick 不再调用页面级
+  `setState`，也不再逐帧修改 sliver extent。
+- 下拉/上滑进度按可用行程与实际指针距离一比一映射。详情顶部下拉只在
+  `ScrollEndNotification` 松手时按 72 logical pixels 阈值决定进入竖屏全屏或回弹；竖屏
+  全屏上滑退出同样在抬手时判定。视频区域下拉进入应用内小窗仍保留原 48 logical pixels
+  触发语义，评论标签禁用详情下拉、详情非顶部不误触及播放器锁定规则均保持不变。
+- 新增合成层 widget 测试，确认视频扩展期间父布局尺寸不变、播放器和详情面板位移与同一
+  进度一致；定向测试 11/11、完整 Flutter 测试 66/66 通过。完整 `dart analyze` 为
+  0 error、0 warning、35 条既有 info，Android Release 构建和发布校验通过。
+- 交付 APK：
+  `build/app/outputs/flutter-apk/pili++-2.1.7-2026081003-universal-release-youtube-pull-animation-v6.apk`；
+  versionName `2.1.7`、versionCode `2026081003`、applicationId `com.shudo.plusplus`、
+  应用名 `pili++`、universal ABI 和证书 SHA-256
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C` 均通过
+  `tool/verify_release.ps1`；APK SHA-256 为
+  `39970ED9E752F79B9040CBEEF08DF1B68C524DDB40B24F57AAC13BA783A0E90F`。
+- 待同一 Samsung 真机在 mpv 与 ExoPlayer 下复录并逐帧验收：短拉回弹、超过阈值进入
+  竖屏全屏、全屏上滑退出、长短视频、竖屏视频、播放/暂停、横向进度/纵向音量亮度、评论
+  刷新、应用内小窗及小窗恢复。自动化通过不能替代 120 Hz 真机帧时间验证。

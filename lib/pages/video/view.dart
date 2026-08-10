@@ -46,7 +46,9 @@ import 'package:PiliPlus/pages/video/view_point/view.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
 import 'package:PiliPlus/pages/video/widgets/intro_layout.dart';
 import 'package:PiliPlus/pages/video/widgets/player_focus.dart';
+import 'package:PiliPlus/pages/video/widgets/page_pull_transition.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
+import 'package:PiliPlus/plugin/pl_player/models/downward_pull_gesture.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
@@ -73,6 +75,7 @@ import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, clampDouble;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show DeviceOrientation;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -86,7 +89,11 @@ class VideoDetailPageV extends StatefulWidget {
 }
 
 class _VideoDetailPageVState extends State<VideoDetailPageV>
-    with RouteAware, RouteAwareMixin, WidgetsBindingObserver {
+    with
+        RouteAware,
+        RouteAwareMixin,
+        WidgetsBindingObserver,
+        SingleTickerProviderStateMixin {
   static final Set<_VideoDetailPageVState> _mountedVideoPages = {};
 
   final heroTag = Get.arguments['heroTag'];
@@ -97,6 +104,15 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   bool _restoringFromMiniPlayer = false;
   final _pageRootKey = GlobalKey();
   int _restoreRectAttempts = 0;
+  final Map<int, ({Offset start, bool exitsPortraitFullscreen})>
+  _videoPullStarts = {};
+  double _detailPullDistance = 0;
+  bool _isPullingOutOfPortraitFullscreen = false;
+  bool _pullActionInProgress = false;
+  late final AnimationController _pagePullAnimation = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 300),
+  );
 
   // intro ctr
   late final CommonIntroController introController =
@@ -229,6 +245,295 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       }
     }
     return renderObject.localToGlobal(Offset.zero) & renderObject.size;
+  }
+
+  bool get _isDetailAtTop {
+    final controller = videoDetailController.scrollCtr;
+    return controller.hasClients &&
+        controller.position.pixels <= controller.position.minScrollExtent + 0.5;
+  }
+
+  bool get _isCommentTabSelected =>
+      videoDetailController.showReply &&
+      videoDetailController.tabCtr.length > 1 &&
+      videoDetailController.tabCtr.index == 1;
+
+  double get _pagePullTravelDistance =>
+      max(1, maxHeight - padding.top - videoDetailController.videoHeight);
+
+  bool get _canPullVideoIntoMiniPlayer {
+    final player =
+        plPlayerController ?? videoDetailController.plPlayerController;
+    return Platform.isAndroid &&
+        Pref.inAppMiniPlayer &&
+        !isFullScreen &&
+        isShowing &&
+        !_restoringFromMiniPlayer &&
+        !_pullActionInProgress &&
+        _mountedVideoPages.length == 1 &&
+        _mountedVideoPages.contains(this) &&
+        !player.isCloseAll &&
+        player.playerReady;
+  }
+
+  bool get _canPullOutOfPortraitFullscreen =>
+      Platform.isAndroid &&
+      isPortrait &&
+      isFullScreen &&
+      isShowing &&
+      !videoDetailController.plPlayerController.controlsLock.value &&
+      !_pullActionInProgress;
+
+  bool _showInAppMiniPlayer() {
+    final player =
+        plPlayerController ?? videoDetailController.plPlayerController;
+    if (!Platform.isAndroid ||
+        !Pref.inAppMiniPlayer ||
+        !isShowing ||
+        _restoringFromMiniPlayer ||
+        _mountedVideoPages.length != 1 ||
+        !_mountedVideoPages.contains(this) ||
+        player.isCloseAll ||
+        !player.playerReady) {
+      return false;
+    }
+    final routeArguments =
+        Map<String, dynamic>.from(
+          videoDetailController.args,
+        )..addAll({
+          'aid': videoDetailController.aid,
+          'bvid': videoDetailController.bvid,
+          'cid': videoDetailController.cid.value,
+          'epId': videoDetailController.epId,
+          'seasonId': videoDetailController.seasonId,
+          'pgcType': videoDetailController.pgcType,
+          'cover': videoDetailController.cover.value,
+          'videoType': videoDetailController.videoType,
+          'isVertical': videoDetailController.isVertical.value,
+          if (videoDetailController.isFileSource)
+            'entry': videoDetailController.entry,
+        });
+    final detailTitle = introController.videoDetail.value.title;
+    final title = detailTitle?.isNotEmpty == true
+        ? detailTitle
+        : routeArguments['title'] as String?;
+    return InAppMiniPlayerService.instance.show(
+      player: player,
+      routeArguments: routeArguments,
+      title: title,
+      sourceRect: _videoPlayerRect(),
+    );
+  }
+
+  void _pullVideoIntoMiniPlayer() {
+    if (!_canPullVideoIntoMiniPlayer) return;
+    _pullActionInProgress = true;
+    if (!_showInAppMiniPlayer()) {
+      _pullActionInProgress = false;
+      return;
+    }
+    Navigator.of(context).pop();
+  }
+
+  void _onVideoPointerDown(PointerDownEvent event) {
+    if (_videoPullStarts.isNotEmpty) return;
+    if (_canPullOutOfPortraitFullscreen) {
+      _videoPullStarts[event.pointer] = (
+        start: event.position,
+        exitsPortraitFullscreen: true,
+      );
+    } else if (_canPullVideoIntoMiniPlayer) {
+      _videoPullStarts[event.pointer] = (
+        start: event.position,
+        exitsPortraitFullscreen: false,
+      );
+    }
+  }
+
+  void _onVideoPointerMove(PointerMoveEvent event) {
+    final gesture = _videoPullStarts[event.pointer];
+    if (gesture == null) return;
+    final delta = event.position - gesture.start;
+    if (gesture.exitsPortraitFullscreen) {
+      if (delta.dy < 0 && -delta.dy > delta.dx.abs() * kPagePullVerticalBias) {
+        if (!_isPullingOutOfPortraitFullscreen) {
+          setState(() => _isPullingOutOfPortraitFullscreen = true);
+        }
+        _pagePullAnimation.value =
+            1 -
+            pagePullProgressForDistance(
+              -delta.dy,
+              travelDistance: _pagePullTravelDistance,
+            );
+      }
+      return;
+    }
+    if (isDownwardPull(
+      delta,
+      threshold: kVideoMiniPlayerPullThreshold,
+      verticalBias: kPagePullVerticalBias,
+    )) {
+      _videoPullStarts.remove(event.pointer);
+      _pullVideoIntoMiniPlayer();
+    }
+  }
+
+  void _onVideoPointerEnd(PointerEvent event) {
+    final gesture = _videoPullStarts.remove(event.pointer);
+    if (gesture == null) return;
+    final delta = event.position - gesture.start;
+    if (gesture.exitsPortraitFullscreen) {
+      if (!_isPullingOutOfPortraitFullscreen) return;
+      if (event is PointerUpEvent &&
+          isUpwardPull(
+            delta,
+            threshold: kPortraitFullscreenExitPullThreshold,
+            verticalBias: kPagePullVerticalBias,
+          )) {
+        _animateOutOfPortraitFullscreen();
+      } else {
+        _resetPortraitFullscreenExitPull();
+      }
+      return;
+    }
+  }
+
+  bool _onDetailScrollNotification(ScrollNotification notification) {
+    if (!Platform.isAndroid ||
+        !isPortrait ||
+        isFullScreen ||
+        _pullActionInProgress ||
+        _isCommentTabSelected ||
+        notification.metrics.axis != Axis.vertical) {
+      if (notification is ScrollEndNotification) {
+        _resetDetailPull();
+      }
+      return false;
+    }
+
+    if (notification is ScrollStartNotification) {
+      _detailPullDistance = 0;
+      if (!_pullActionInProgress) _resetPagePullAnimation();
+      return false;
+    }
+
+    if (notification is OverscrollNotification &&
+        shouldAccumulateDetailOverscroll(
+          isAtTop: _isDetailAtTop,
+          isCommentTab: _isCommentTabSelected,
+          isUserDrag: notification.dragDetails != null,
+          overscroll: notification.overscroll,
+        )) {
+      _detailPullDistance += -notification.overscroll;
+      _pagePullAnimation.value = pagePullProgressForDistance(
+        _detailPullDistance,
+        travelDistance: _pagePullTravelDistance,
+      );
+      return false;
+    }
+
+    if (notification is ScrollEndNotification) {
+      _finishDetailPull();
+    }
+    return false;
+  }
+
+  void _finishDetailPull() {
+    final shouldExpand = _detailPullDistance >= kDetailFullscreenPullThreshold;
+    _detailPullDistance = 0;
+    if (shouldExpand) {
+      _animateIntoPortraitFullscreen();
+    } else if (!_pullActionInProgress) {
+      _resetPagePullAnimation();
+    }
+  }
+
+  void _resetDetailPull() {
+    _detailPullDistance = 0;
+    if (!_pullActionInProgress) _resetPagePullAnimation();
+  }
+
+  void _resetPagePullAnimation() {
+    if (_pagePullAnimation.value == 0 || _pagePullAnimation.isAnimating) return;
+    _pagePullAnimation.animateBack(
+      0,
+      duration: const Duration(milliseconds: 160),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  Future<void> _animateIntoPortraitFullscreen() async {
+    if (_pullActionInProgress || isFullScreen) return;
+    _pullActionInProgress = true;
+    try {
+      await _pagePullAnimation.animateTo(
+        1,
+        duration: Duration(
+          milliseconds: (300 * (1 - _pagePullAnimation.value)).round(),
+        ),
+        curve: Curves.easeOutCubic,
+      );
+      if (!mounted) return;
+      await videoDetailController.plPlayerController.triggerFullScreen(
+        orientation: DeviceOrientation.portraitUp,
+      );
+    } finally {
+      if (mounted) {
+        _pagePullAnimation.value = 0;
+        _pullActionInProgress = false;
+      }
+    }
+  }
+
+  void _resetPortraitFullscreenExitPull() {
+    if (_pullActionInProgress || !_isPullingOutOfPortraitFullscreen) return;
+    _pullActionInProgress = true;
+    _pagePullAnimation
+        .animateTo(
+          1,
+          duration: const Duration(milliseconds: 160),
+          curve: Curves.easeOutCubic,
+        )
+        .whenComplete(() {
+          if (mounted) {
+            setState(() {
+              _isPullingOutOfPortraitFullscreen = false;
+              _pagePullAnimation.value = 0;
+              _pullActionInProgress = false;
+            });
+          }
+        });
+  }
+
+  Future<void> _animateOutOfPortraitFullscreen() async {
+    if (_pullActionInProgress ||
+        !_isPullingOutOfPortraitFullscreen ||
+        !isFullScreen) {
+      return;
+    }
+    _pullActionInProgress = true;
+    try {
+      await _pagePullAnimation.animateTo(
+        0,
+        duration: Duration(
+          milliseconds: (300 * _pagePullAnimation.value).round(),
+        ),
+        curve: Curves.easeOutCubic,
+      );
+      if (!mounted) return;
+      await videoDetailController.plPlayerController.triggerFullScreen(
+        status: false,
+        orientation: DeviceOrientation.portraitUp,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isPullingOutOfPortraitFullscreen = false;
+          _pagePullAnimation.value = 0;
+          _pullActionInProgress = false;
+        });
+      }
+    }
   }
 
   void _scheduleMiniPlayerRestore() {
@@ -437,6 +742,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       }
     }
     removeObserverMobile(this);
+    _pagePullAnimation.dispose();
 
     super.dispose();
   }
@@ -444,40 +750,10 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   void _onPlayerPopInvokedWithResult(bool didPop, Object? result) {
     final player = plPlayerController;
     if (didPop &&
-        _mountedVideoPages.length == 1 &&
-        _mountedVideoPages.contains(this) &&
-        Pref.inAppMiniPlayer &&
         player != null &&
-        !player.isCloseAll &&
-        player.playerReady) {
-      final routeArguments =
-          Map<String, dynamic>.from(
-            videoDetailController.args,
-          )..addAll({
-            'aid': videoDetailController.aid,
-            'bvid': videoDetailController.bvid,
-            'cid': videoDetailController.cid.value,
-            'epId': videoDetailController.epId,
-            'seasonId': videoDetailController.seasonId,
-            'pgcType': videoDetailController.pgcType,
-            'cover': videoDetailController.cover.value,
-            'videoType': videoDetailController.videoType,
-            'isVertical': videoDetailController.isVertical.value,
-            if (videoDetailController.isFileSource)
-              'entry': videoDetailController.entry,
-          });
-      final detailTitle = introController.videoDetail.value.title;
-      final title = detailTitle?.isNotEmpty == true
-          ? detailTitle
-          : routeArguments['title'] as String?;
-      if (InAppMiniPlayerService.instance.show(
-        player: player,
-        routeArguments: routeArguments,
-        title: title,
-        sourceRect: _videoPlayerRect(),
-      )) {
-        return;
-      }
+        (InAppMiniPlayerService.instance.owns(player) ||
+            _showInAppMiniPlayer())) {
+      return;
     }
     videoDetailController.plPlayerController.onPopInvokedWithResult(
       didPop,
@@ -611,6 +887,15 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     return Obx(
       () {
         final isFullScreen = this.isFullScreen;
+        final fullHeight =
+            maxHeight - (isWindowMode && !isPortrait ? 0 : padding.top);
+        final normalHeight =
+            (isFullScreen && !_isPullingOutOfPortraitFullscreen) || !isPortrait
+            ? fullHeight
+            : videoDetailController.isExpanding ||
+                  videoDetailController.isCollapsing
+            ? videoDetailController.animHeight
+            : videoDetailController.videoHeight;
         return SimpleScaffold(
           appBar: removeAppBar(isFullScreen)
               ? null
@@ -643,83 +928,101 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                     );
                   },
                 ),
-          body: ExtendedNestedScrollView(
-            onlyOneScrollInBody: true,
-            physics: platformClampingPhysics,
-            key: videoDetailController.scrollKey,
-            controller: videoDetailController.scrollCtr,
-            scrollBehavior: const NoOverscrollIndicator(),
-            pinnedHeaderSliverHeightBuilder: () {
-              double pinnedHeight = this.isFullScreen || !isPortrait
-                  ? maxHeight - (isWindowMode && !isPortrait ? 0 : padding.top)
-                  : videoDetailController.isExpanding ||
-                        videoDetailController.isCollapsing
-                  ? videoDetailController.animHeight
-                  : videoDetailController.isCollapsing ||
-                        (plPlayerController?.playerStatus.isPlaying ?? false)
-                  ? videoDetailController.minVideoHeight
-                  : kToolbarHeight;
-              if (videoDetailController.isExpanding &&
-                  videoDetailController.animationController.value == 1) {
-                videoDetailController.isExpanding = false;
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  videoDetailController.scrollRatio.value = 0;
-                  videoDetailController.refreshPage();
-                });
-              } else if (videoDetailController.isCollapsing &&
-                  videoDetailController.animationController.value == 1) {
-                videoDetailController.isCollapsing = false;
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  videoDetailController.refreshPage();
-                });
-              }
-              return pinnedHeight;
-            },
-            headerSliverBuilder: (context, innerBoxIsScrolled) {
-              final height = isFullScreen || !isPortrait
-                  ? maxHeight - (isWindowMode && !isPortrait ? 0 : padding.top)
-                  : videoDetailController.isExpanding ||
-                        videoDetailController.isCollapsing
-                  ? videoDetailController.animHeight
-                  : videoDetailController.videoHeight;
-              return [
-                VideoHeader(
-                  minExtent: kToolbarHeight,
-                  maxExtent: height,
-                  minVideoHeight: videoDetailController.minVideoHeight,
-                  onScrollRatioChanged: videoDetailController.scrollRatio.call,
-                  child: Stack(
-                    clipBehavior: .none,
-                    children: [
-                      SizedBox(
-                        width: maxWidth,
-                        height: height,
-                        child: videoPlayer(width: maxWidth, height: height),
+          body: NotificationListener<ScrollNotification>(
+            onNotification: _onDetailScrollNotification,
+            child: ExtendedNestedScrollView(
+              onlyOneScrollInBody: true,
+              physics: platformClampingPhysics,
+              key: videoDetailController.scrollKey,
+              controller: videoDetailController.scrollCtr,
+              scrollBehavior: const NoOverscrollIndicator(),
+              pinnedHeaderSliverHeightBuilder: () {
+                double pinnedHeight =
+                    (this.isFullScreen && !_isPullingOutOfPortraitFullscreen) ||
+                        !isPortrait
+                    ? fullHeight
+                    : videoDetailController.isExpanding ||
+                          videoDetailController.isCollapsing
+                    ? videoDetailController.animHeight
+                    : videoDetailController.isCollapsing ||
+                          (plPlayerController?.playerStatus.isPlaying ?? false)
+                    ? videoDetailController.minVideoHeight
+                    : kToolbarHeight;
+                if (videoDetailController.isExpanding &&
+                    videoDetailController.animationController.value == 1) {
+                  videoDetailController.isExpanding = false;
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    videoDetailController.scrollRatio.value = 0;
+                    videoDetailController.refreshPage();
+                  });
+                } else if (videoDetailController.isCollapsing &&
+                    videoDetailController.animationController.value == 1) {
+                  videoDetailController.isCollapsing = false;
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    videoDetailController.refreshPage();
+                  });
+                }
+                return pinnedHeight;
+              },
+              headerSliverBuilder: (context, innerBoxIsScrolled) {
+                return [
+                  VideoHeader(
+                    minExtent: kToolbarHeight,
+                    maxExtent: normalHeight,
+                    minVideoHeight: videoDetailController.minVideoHeight,
+                    onScrollRatioChanged:
+                        videoDetailController.scrollRatio.call,
+                    child: PagePullVideoExpansion(
+                      animation: _pagePullAnimation,
+                      normalHeight: normalHeight,
+                      expandedHeight: fullHeight,
+                      child: RepaintBoundary(
+                        child: SizedBox(
+                          width: maxWidth,
+                          height: normalHeight,
+                          child: Stack(
+                            clipBehavior: .none,
+                            children: [
+                              Positioned.fill(
+                                child: videoPlayer(
+                                  width: maxWidth,
+                                  height: normalHeight,
+                                ),
+                              ),
+                              _buildHeaderOverlay(),
+                            ],
+                          ),
+                        ),
                       ),
-                      _buildHeaderOverlay(),
-                    ],
+                    ),
                   ),
-                ),
-              ];
-            },
-            body: MiniScaffold(
-              key: videoDetailController.childKey,
-              body: Column(
-                children: [
-                  buildTabBar(onTap: videoDetailController.animToTop),
-                  Expanded(
-                    child: tabBarView(
-                      hitTestBehavior: .translucent,
-                      controller: videoDetailController.tabCtr,
+                ];
+              },
+              body: PagePullBodyTranslation(
+                animation: _pagePullAnimation,
+                travelDistance: max(0, fullHeight - normalHeight),
+                child: RepaintBoundary(
+                  child: MiniScaffold(
+                    key: videoDetailController.childKey,
+                    body: Column(
                       children: [
-                        videoIntro(isHorizontal: false, needCtr: false),
-                        if (videoDetailController.showReply)
-                          videoReplyPanel(isNested: true),
-                        if (_shouldShowSeasonPanel) seasonPanel,
+                        buildTabBar(onTap: videoDetailController.animToTop),
+                        Expanded(
+                          child: tabBarView(
+                            hitTestBehavior: .translucent,
+                            controller: videoDetailController.tabCtr,
+                            children: [
+                              videoIntro(isHorizontal: false, needCtr: false),
+                              if (videoDetailController.showReply)
+                                videoReplyPanel(isNested: true),
+                              if (_shouldShowSeasonPanel) seasonPanel,
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -1540,152 +1843,159 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   Widget videoPlayer({required double width, required double height}) {
     final isFullScreen = this.isFullScreen;
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        const Positioned.fill(child: ColoredBox(color: Colors.black)),
+    return Listener(
+      behavior: HitTestBehavior.opaque,
+      onPointerDown: _onVideoPointerDown,
+      onPointerMove: _onVideoPointerMove,
+      onPointerUp: _onVideoPointerEnd,
+      onPointerCancel: _onVideoPointerEnd,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          const Positioned.fill(child: ColoredBox(color: Colors.black)),
 
-        plPlayer(width: width, height: height),
+          plPlayer(width: width, height: height),
 
-        Obx(() {
-          if (!videoDetailController.autoPlay) {
-            return Positioned.fill(
-              bottom: -1,
-              child: GestureDetector(
-                onTap: handlePlay,
-                behavior: .opaque,
-                child: Obx(
-                  () => NetworkImgLayer(
-                    type: .emote,
-                    quality: 60,
-                    src: videoDetailController.cover.value,
-                    width: width,
-                    height: height,
-                    cacheWidth: true,
-                    getPlaceHolder: () =>
-                        Center(child: Image.asset(Assets.loading)),
-                  ),
-                ),
-              ),
-            );
-          }
-          return const SizedBox.shrink();
-        }),
-        manualPlayerWidget(height),
-
-        if (videoDetailController.plPlayerController.enableBlock ||
-            videoDetailController.continuePlayingPart)
-          Positioned(
-            left: 16,
-            bottom: isFullScreen ? max(75, maxHeight * 0.25) : 75,
-            width: MediaQuery.textScalerOf(context).scale(120),
-            child: AnimatedList(
-              padding: EdgeInsets.zero,
-              key: videoDetailController.listKey,
-              reverse: true,
-              shrinkWrap: true,
-              initialItemCount: videoDetailController.listData.length,
-              itemBuilder: (context, index, animation) {
-                return videoDetailController.buildItem(
-                  videoDetailController.listData[index],
-                  animation,
-                );
-              },
-            ),
-          ),
-
-        // for debug
-        // Positioned(
-        //   right: 16,
-        //   bottom: 75,
-        //   child: FilledButton.tonal(
-        //     onPressed: () {
-        //       videoDetailController.onAddItem(
-        //         SegmentModel(
-        //           UUID: '',
-        //           segmentType:
-        //               SegmentType.values[Utils.random.nextInt(
-        //                 SegmentType.values.length,
-        //               )],
-        //           segment: Pair(first: 0, second: 0),
-        //           skipType: SkipType.alwaysSkip,
-        //         ),
-        //       );
-        //     },
-        //     child: const Text('skip'),
-        //   ),
-        // ),
-        // Positioned(
-        //   right: 16,
-        //   bottom: 120,
-        //   child: FilledButton.tonal(
-        //     onPressed: () {
-        //       videoDetailController.onAddItem(2);
-        //     },
-        //     child: const Text('index'),
-        //   ),
-        // ),
-        Obx(() {
-          if (videoDetailController.showSteinEdgeInfo.value) {
-            try {
-              return Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    left: 16,
-                    right: 16,
-                    bottom: plPlayerController?.showControls.value == true
-                        ? 75
-                        : 16,
-                  ),
-                  child: Wrap(
-                    spacing: 25,
-                    runSpacing: 10,
-                    children: videoDetailController
-                        .steinEdgeInfo!
-                        .edges!
-                        .questions!
-                        .first
-                        .choices!
-                        .map((item) {
-                          return FilledButton.tonal(
-                            style: FilledButton.styleFrom(
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: .all(.circular(6)),
-                              ),
-                              backgroundColor: theme
-                                  .colorScheme
-                                  .secondaryContainer
-                                  .withValues(alpha: 0.8),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 15,
-                                vertical: 10,
-                              ),
-                              visualDensity: VisualDensity.compact,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            onPressed: () {
-                              ugcIntroController.onChangeEpisode(
-                                item,
-                                isStein: true,
-                              );
-                              videoDetailController.getSteinEdgeInfo(item.id);
-                            },
-                            child: Text(item.option!),
-                          );
-                        })
-                        .toList(),
+          Obx(() {
+            if (!videoDetailController.autoPlay) {
+              return Positioned.fill(
+                bottom: -1,
+                child: GestureDetector(
+                  onTap: handlePlay,
+                  behavior: .opaque,
+                  child: Obx(
+                    () => NetworkImgLayer(
+                      type: .emote,
+                      quality: 60,
+                      src: videoDetailController.cover.value,
+                      width: width,
+                      height: height,
+                      cacheWidth: true,
+                      getPlaceHolder: () =>
+                          Center(child: Image.asset(Assets.loading)),
+                    ),
                   ),
                 ),
               );
-            } catch (e) {
-              if (kDebugMode) debugPrint('build stein edges: $e');
-              return const SizedBox.shrink();
             }
-          }
-          return const SizedBox.shrink();
-        }),
-      ],
+            return const SizedBox.shrink();
+          }),
+          manualPlayerWidget(height),
+
+          if (videoDetailController.plPlayerController.enableBlock ||
+              videoDetailController.continuePlayingPart)
+            Positioned(
+              left: 16,
+              bottom: isFullScreen ? max(75, maxHeight * 0.25) : 75,
+              width: MediaQuery.textScalerOf(context).scale(120),
+              child: AnimatedList(
+                padding: EdgeInsets.zero,
+                key: videoDetailController.listKey,
+                reverse: true,
+                shrinkWrap: true,
+                initialItemCount: videoDetailController.listData.length,
+                itemBuilder: (context, index, animation) {
+                  return videoDetailController.buildItem(
+                    videoDetailController.listData[index],
+                    animation,
+                  );
+                },
+              ),
+            ),
+
+          // for debug
+          // Positioned(
+          //   right: 16,
+          //   bottom: 75,
+          //   child: FilledButton.tonal(
+          //     onPressed: () {
+          //       videoDetailController.onAddItem(
+          //         SegmentModel(
+          //           UUID: '',
+          //           segmentType:
+          //               SegmentType.values[Utils.random.nextInt(
+          //                 SegmentType.values.length,
+          //               )],
+          //           segment: Pair(first: 0, second: 0),
+          //           skipType: SkipType.alwaysSkip,
+          //         ),
+          //       );
+          //     },
+          //     child: const Text('skip'),
+          //   ),
+          // ),
+          // Positioned(
+          //   right: 16,
+          //   bottom: 120,
+          //   child: FilledButton.tonal(
+          //     onPressed: () {
+          //       videoDetailController.onAddItem(2);
+          //     },
+          //     child: const Text('index'),
+          //   ),
+          // ),
+          Obx(() {
+            if (videoDetailController.showSteinEdgeInfo.value) {
+              try {
+                return Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: 16,
+                      right: 16,
+                      bottom: plPlayerController?.showControls.value == true
+                          ? 75
+                          : 16,
+                    ),
+                    child: Wrap(
+                      spacing: 25,
+                      runSpacing: 10,
+                      children: videoDetailController
+                          .steinEdgeInfo!
+                          .edges!
+                          .questions!
+                          .first
+                          .choices!
+                          .map((item) {
+                            return FilledButton.tonal(
+                              style: FilledButton.styleFrom(
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: .all(.circular(6)),
+                                ),
+                                backgroundColor: theme
+                                    .colorScheme
+                                    .secondaryContainer
+                                    .withValues(alpha: 0.8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 15,
+                                  vertical: 10,
+                                ),
+                                visualDensity: VisualDensity.compact,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              onPressed: () {
+                                ugcIntroController.onChangeEpisode(
+                                  item,
+                                  isStein: true,
+                                );
+                                videoDetailController.getSteinEdgeInfo(item.id);
+                              },
+                              child: Text(item.option!),
+                            );
+                          })
+                          .toList(),
+                    ),
+                  ),
+                );
+              } catch (e) {
+                if (kDebugMode) debugPrint('build stein edges: $e');
+                return const SizedBox.shrink();
+              }
+            }
+            return const SizedBox.shrink();
+          }),
+        ],
+      ),
     );
   }
 

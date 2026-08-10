@@ -8,6 +8,9 @@ import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 
 internal class AudioNormalizationProcessor : BaseAudioProcessor() {
     @Volatile
@@ -17,6 +20,15 @@ internal class AudioNormalizationProcessor : BaseAudioProcessor() {
     private var dynamicGain = 1.0
     private var rmsSum = 0.0
     private var rmsFrames = 0
+    private var previousInput = DoubleArray(0)
+    private var previousOutput = DoubleArray(0)
+    private var previousLowpassOutput = DoubleArray(0)
+    private var equalizerInput1 = DoubleArray(0)
+    private var equalizerInput2 = DoubleArray(0)
+    private var equalizerOutput1 = DoubleArray(0)
+    private var equalizerOutput2 = DoubleArray(0)
+    private var highpassAlpha = 1.0
+    private var lowpassAlpha = 0.0
 
     fun setConfiguration(configuration: AudioNormalizationConfiguration?) {
         this.configuration = configuration
@@ -47,6 +59,50 @@ internal class AudioNormalizationProcessor : BaseAudioProcessor() {
         }
         val channels = inputAudioFormat.channelCount
         val sampleRate = inputAudioFormat.sampleRate
+        if (previousInput.size != channels) {
+            previousInput = DoubleArray(channels)
+            previousOutput = DoubleArray(channels)
+            previousLowpassOutput = DoubleArray(channels)
+            equalizerInput1 = DoubleArray(channels)
+            equalizerInput2 = DoubleArray(channels)
+            equalizerOutput1 = DoubleArray(channels)
+            equalizerOutput2 = DoubleArray(channels)
+        }
+        val highpassHz = activeConfiguration.highpassHz
+        highpassAlpha = if (highpassHz != null) {
+            val cutoff = highpassHz.coerceIn(1.0, sampleRate / 2.0 - 1.0)
+            val rc = 1.0 / (2.0 * PI * cutoff)
+            rc / (rc + 1.0 / sampleRate)
+        } else {
+            1.0
+        }
+        val lowpassHz = activeConfiguration.lowpassHz
+        lowpassAlpha = if (lowpassHz != null) {
+            val cutoff = lowpassHz.coerceIn(1.0, sampleRate / 2.0 - 1.0)
+            val rc = 1.0 / (2.0 * PI * cutoff)
+            (1.0 / sampleRate) / (rc + 1.0 / sampleRate)
+        } else {
+            0.0
+        }
+        val equalizerFrequencyHz = activeConfiguration.equalizerFrequencyHz
+        val equalizerGainDb = activeConfiguration.equalizerGainDb
+        val equalizerQ = activeConfiguration.equalizerQ
+        val equalizerCoefficients = if (equalizerFrequencyHz != null &&
+            equalizerGainDb != null && equalizerQ != null
+        ) {
+            val frequency = equalizerFrequencyHz.coerceIn(1.0, sampleRate / 2.0 - 1.0)
+            val omega = 2.0 * PI * frequency / sampleRate
+            val alpha = sin(omega) / (2.0 * equalizerQ)
+            val amplitude = 10.0.pow(equalizerGainDb / 40.0)
+            val b0 = (1.0 + alpha * amplitude) / (1.0 + alpha / amplitude)
+            val b1 = (-2.0 * cos(omega)) / (1.0 + alpha / amplitude)
+            val b2 = (1.0 - alpha * amplitude) / (1.0 + alpha / amplitude)
+            val a1 = (-2.0 * cos(omega)) / (1.0 + alpha / amplitude)
+            val a2 = (1.0 - alpha / amplitude) / (1.0 + alpha / amplitude)
+            doubleArrayOf(b0, b1, b2, a1, a2)
+        } else {
+            null
+        }
         val frame = DoubleArray(channels)
         val windowFrames = if (activeConfiguration.dynamic) {
             maxOf(1, activeConfiguration.frameMs * sampleRate / 1000)
@@ -58,10 +114,41 @@ internal class AudioNormalizationProcessor : BaseAudioProcessor() {
             var framePeak = 0.0
             var frameSumSquares = 0.0
             repeat(channels) { channel ->
-                frame[channel] = when (inputAudioFormat.encoding) {
+                val input = when (inputAudioFormat.encoding) {
                     C.ENCODING_PCM_16BIT -> inputBuffer.short / 32768.0
                     C.ENCODING_PCM_FLOAT -> inputBuffer.float.toDouble()
                     else -> error("Unexpected PCM encoding: ${inputAudioFormat.encoding}")
+                }
+                frame[channel] = if (highpassHz != null) {
+                    val output = highpassAlpha * (previousOutput[channel] + input - previousInput[channel])
+                    previousInput[channel] = input
+                    previousOutput[channel] = output
+                    output
+                } else {
+                    input
+                }
+                if (lowpassHz != null) {
+                    val output = previousLowpassOutput[channel] +
+                        lowpassAlpha * (frame[channel] - previousLowpassOutput[channel])
+                    previousLowpassOutput[channel] = output
+                    frame[channel] = output
+                }
+                if (equalizerCoefficients != null) {
+                    val b0 = equalizerCoefficients[0]
+                    val b1 = equalizerCoefficients[1]
+                    val b2 = equalizerCoefficients[2]
+                    val a1 = equalizerCoefficients[3]
+                    val a2 = equalizerCoefficients[4]
+                    val output = b0 * frame[channel] +
+                        b1 * equalizerInput1[channel] +
+                        b2 * equalizerInput2[channel] -
+                        a1 * equalizerOutput1[channel] -
+                        a2 * equalizerOutput2[channel]
+                    equalizerInput2[channel] = equalizerInput1[channel]
+                    equalizerInput1[channel] = frame[channel]
+                    equalizerOutput2[channel] = equalizerOutput1[channel]
+                    equalizerOutput1[channel] = output
+                    frame[channel] = output
                 }
                 framePeak = maxOf(framePeak, abs(frame[channel]))
                 frameSumSquares += frame[channel] * frame[channel]
@@ -123,6 +210,15 @@ internal class AudioNormalizationProcessor : BaseAudioProcessor() {
         dynamicGain = configuration?.gain ?: 1.0
         rmsSum = 0.0
         rmsFrames = 0
+        previousInput = DoubleArray(0)
+        previousOutput = DoubleArray(0)
+        previousLowpassOutput = DoubleArray(0)
+        equalizerInput1 = DoubleArray(0)
+        equalizerInput2 = DoubleArray(0)
+        equalizerOutput1 = DoubleArray(0)
+        equalizerOutput2 = DoubleArray(0)
+        highpassAlpha = 1.0
+        lowpassAlpha = 0.0
     }
 
     companion object {
@@ -140,6 +236,11 @@ internal data class AudioNormalizationConfiguration(
     val maxGain: Double = 10.0,
     val frameMs: Int = 1000,
     val smoothing: Double = 0.5,
+    val highpassHz: Double? = null,
+    val lowpassHz: Double? = null,
+    val equalizerFrequencyHz: Double? = null,
+    val equalizerGainDb: Double? = null,
+    val equalizerQ: Double? = null,
 ) {
     init {
         require(gain.isFinite() && gain >= 0.0) { "Invalid normalization gain: $gain" }
@@ -149,6 +250,26 @@ internal data class AudioNormalizationConfiguration(
         require(frameMs > 0) { "Invalid normalization frame: $frameMs" }
         require(smoothing.isFinite() && smoothing in 0.0..1.0) {
             "Invalid normalization smoothing: $smoothing"
+        }
+        require(highpassHz == null || highpassHz.isFinite() && highpassHz > 0.0) {
+            "Invalid highpass frequency: $highpassHz"
+        }
+        require(lowpassHz == null || lowpassHz.isFinite() && lowpassHz > 0.0) {
+            "Invalid lowpass frequency: $lowpassHz"
+        }
+        require(equalizerFrequencyHz == null || equalizerFrequencyHz.isFinite() && equalizerFrequencyHz > 0.0) {
+            "Invalid equalizer frequency: $equalizerFrequencyHz"
+        }
+        require(equalizerGainDb == null || equalizerGainDb.isFinite()) {
+            "Invalid equalizer gain: $equalizerGainDb"
+        }
+        require(equalizerQ == null || equalizerQ.isFinite() && equalizerQ > 0.0) {
+            "Invalid equalizer Q: $equalizerQ"
+        }
+        require(
+            listOf(equalizerFrequencyHz, equalizerGainDb, equalizerQ).count { it != null } in listOf(0, 3),
+        ) {
+            "Equalizer frequency, gain, and Q must be configured together"
         }
     }
 
@@ -164,6 +285,11 @@ internal data class AudioNormalizationConfiguration(
                 maxGain = (map["maxGain"] as? Number)?.toDouble() ?: 10.0,
                 frameMs = (map["frameMs"] as? Number)?.toInt() ?: 1000,
                 smoothing = (map["smoothing"] as? Number)?.toDouble() ?: 0.5,
+                highpassHz = (map["highpassHz"] as? Number)?.toDouble(),
+                lowpassHz = (map["lowpassHz"] as? Number)?.toDouble(),
+                equalizerFrequencyHz = (map["equalizerFrequencyHz"] as? Number)?.toDouble(),
+                equalizerGainDb = (map["equalizerGainDb"] as? Number)?.toDouble(),
+                equalizerQ = (map["equalizerQ"] as? Number)?.toDouble(),
             )
         }
     }

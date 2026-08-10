@@ -1,5 +1,5 @@
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart'
-    show displacement, kIndicatorSize;
+    show kIndicatorSize;
 import 'package:PiliPlus/common/widgets/slotted_layout_helper.dart';
 import 'package:flutter/material.dart' hide RefreshIndicatorStatus;
 import 'package:flutter/rendering.dart' show BoxHitTestResult, ClipRectLayer;
@@ -12,12 +12,14 @@ class RefreshLayout
     super.key,
     required this.scale,
     required this.position,
+    required this.displacement,
     required this.indicator,
     required this.body,
   });
 
   final Animation<double> scale;
   final Animation<double> position;
+  final double displacement;
   final Widget indicator;
   final Widget body;
 
@@ -37,7 +39,16 @@ class RefreshLayout
     return RenderRefreshLayout(
       scale: scale,
       position: position,
+      displacement: displacement,
     );
+  }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    RenderRefreshLayout renderObject,
+  ) {
+    renderObject.updateDisplacement(displacement);
   }
 }
 
@@ -46,7 +57,9 @@ class RenderRefreshLayout extends RenderBox
   RenderRefreshLayout({
     required this.scale,
     required this.position,
-  }) {
+    required this.displacement,
+  }) : _heightFactor = position.value,
+       _scaleFactor = scale.value {
     scale.addListener(_scaleListener);
     position.addListener(_positionListener);
   }
@@ -55,26 +68,33 @@ class RenderRefreshLayout extends RenderBox
 
   final Animation<double> position;
 
-  double _heightFactor = 0;
+  double displacement;
+  void updateDisplacement(double value) {
+    if (displacement == value) {
+      return;
+    }
+    displacement = value;
+    markNeedsLayout();
+  }
+
+  double _heightFactor;
   double get heightFactor => _heightFactor;
   set heightFactor(double value) {
     if (_heightFactor == value) {
       return;
     }
     _heightFactor = value;
-    _layoutIndicator();
-    markNeedsPaint();
+    markNeedsLayout();
   }
 
-  double _scaleFactor = 0;
+  double _scaleFactor;
   double get scaleFactor => _scaleFactor;
   set scaleFactor(double value) {
     if (_scaleFactor == value) {
       return;
     }
     _scaleFactor = value;
-    _layoutIndicator();
-    markNeedsPaint();
+    markNeedsLayout();
   }
 
   void _scaleListener() {
@@ -103,9 +123,9 @@ class RenderRefreshLayout extends RenderBox
     final body = this.body..layout(constraints);
     setOffset(body, .zero);
 
-    if (heightFactor > 0 && scaleFactor > 0) {
-      _layoutIndicator();
-    }
+    // Semantics may visit every slotted child even while the indicator is
+    // hidden. A zero-sized layout keeps its semantic bounds valid.
+    _layoutIndicator();
   }
 
   void _layoutIndicator() {

@@ -3,10 +3,10 @@ import 'package:material_ui/material_ui.dart';
 class PublishRoute<T> extends PopupRoute<T> {
   PublishRoute({
     required this.pageBuilder,
-    this._barrierDismissible = true,
-    this._barrierLabel,
-    this._barrierColor = const Color(0x80000000),
-    this._transitionDuration = const Duration(milliseconds: 500),
+    this.barrierDismissible = true,
+    this.barrierLabel,
+    this.barrierColor = const Color(0x80000000),
+    this.transitionDuration = const Duration(milliseconds: 500),
     this._transitionBuilder,
     super.settings,
   });
@@ -14,20 +14,16 @@ class PublishRoute<T> extends PopupRoute<T> {
   final RoutePageBuilder pageBuilder;
 
   @override
-  bool get barrierDismissible => _barrierDismissible;
-  final bool _barrierDismissible;
+  final bool barrierDismissible;
 
   @override
-  String? get barrierLabel => _barrierLabel;
-  final String? _barrierLabel;
+  final String? barrierLabel;
 
   @override
-  Color get barrierColor => _barrierColor;
-  final Color _barrierColor;
+  final Color barrierColor;
 
   @override
-  Duration get transitionDuration => _transitionDuration;
-  final Duration _transitionDuration;
+  final Duration transitionDuration;
 
   final RouteTransitionsBuilder? _transitionBuilder;
 

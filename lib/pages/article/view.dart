@@ -31,6 +31,7 @@ import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:characters/characters.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -332,7 +333,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
         if (text.isNotEmpty) {
           buffer.write(text);
           if (buffer.length >= 100) {
-            return '${buffer.toString().substring(0, 100)}…';
+            return '${buffer.toString().characters.take(100).toString()}…';
           }
         }
       }

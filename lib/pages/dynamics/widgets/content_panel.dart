@@ -1,5 +1,6 @@
 // 内容
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart';
@@ -118,17 +119,47 @@ Widget content(
                             0.0,
                             maxWidth * 4,
                           );
+                          final isTruncated = ratio > 4;
                           return ClipRRect(
                             borderRadius: BorderRadius.all(Style.imgRadius),
                             child: SizedBox(
                               width: maxWidth,
                               height: height,
-                              child: NetworkImgLayer(
-                                src: pic.url ?? '',
-                                width: maxWidth,
-                                height: height,
-                                fit: BoxFit.cover,
-                                alignment: Alignment.topCenter,
+                              child: Stack(
+                                children: [
+                                  NetworkImgLayer(
+                                    src: pic.url ?? '',
+                                    width: maxWidth,
+                                    height: height,
+                                    fit: BoxFit.cover,
+                                    alignment: Alignment.topCenter,
+                                  ),
+                                  if (isTruncated) ...[
+                                    Positioned(
+                                      left: 0,
+                                      right: 0,
+                                      bottom: 0,
+                                      height: 60,
+                                      child: DecoratedBox(
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                            colors: [
+                                              Colors.transparent,
+                                              theme.colorScheme.surface,
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const PBadge(
+                                      text: '长图',
+                                      right: 8,
+                                      bottom: 8,
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
                           );

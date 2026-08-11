@@ -1,4 +1,5 @@
 // 内容
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart';
@@ -22,6 +23,7 @@ Widget content(
   required DynamicItemModel item,
   required bool isSave,
   required bool isDetail,
+  bool isLongImageMode = false,
 }) {
   TextSpan? richNodes = richNode(
     context,
@@ -100,19 +102,54 @@ Widget content(
                   primary: theme.colorScheme.primary,
                 ),
         if (pics != null && pics.isNotEmpty)
-          ImageGridView(
-            fullScreen: true,
-            picArr: pics
-                .map(
-                  (item) => ImageModel(
-                    width: item.width,
-                    height: item.height,
-                    url: item.url ?? '',
-                    liveUrl: item.liveUrl,
+          isLongImageMode
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final maxWidth = constraints.maxWidth;
+                      return Column(
+                        spacing: 5,
+                        children: pics.map((pic) {
+                          final w = (pic.width ?? 1).toDouble();
+                          final h = (pic.height ?? 1).toDouble();
+                          final ratio = h / w;
+                          final height = (maxWidth * ratio).clamp(
+                            0.0,
+                            maxWidth * 4,
+                          );
+                          return ClipRRect(
+                            borderRadius: BorderRadius.all(Style.imgRadius),
+                            child: SizedBox(
+                              width: maxWidth,
+                              height: height,
+                              child: NetworkImgLayer(
+                                src: pic.url ?? '',
+                                width: maxWidth,
+                                height: height,
+                                fit: BoxFit.cover,
+                                alignment: Alignment.topCenter,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    },
                   ),
                 )
-                .toList(),
-          ),
+              : ImageGridView(
+                  fullScreen: true,
+                  picArr: pics
+                      .map(
+                        (item) => ImageModel(
+                          width: item.width,
+                          height: item.height,
+                          url: item.url ?? '',
+                          liveUrl: item.liveUrl,
+                        ),
+                      )
+                      .toList(),
+                ),
       ],
     ),
   );

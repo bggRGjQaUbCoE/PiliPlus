@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
@@ -11,7 +12,8 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show tabBarScrollPhysics;
 import 'package:PiliPlus/common/widgets/sliver/sliver_to_box_adapter.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
-import 'package:PiliPlus/models/dynamics/article_content_model.dart' show Pic;
+import 'package:PiliPlus/models/dynamics/article_content_model.dart'
+    show ArticleContentModel, Pic;
 import 'package:PiliPlus/models/dynamics/result.dart' show DynamicStat;
 import 'package:PiliPlus/pages/article/controller.dart';
 import 'package:PiliPlus/pages/article/widgets/article_ops.dart';
@@ -19,6 +21,7 @@ import 'package:PiliPlus/pages/article/widgets/html_render.dart';
 import 'package:PiliPlus/pages/article/widgets/opus_content.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_page.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
+import 'package:PiliPlus/pages/save_panel/view.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
@@ -286,36 +289,22 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
               ],
             ),
           ),
+          PopupMenuItem(
+            onTap: _saveArticleAsImage,
+            child: const Row(
+              spacing: 10,
+              mainAxisSize: .min,
+              children: [
+                Icon(Icons.save_alt, size: 19),
+                Text('保存为图片'),
+              ],
+            ),
+          ),
           if (controller.commentType == 12 &&
               controller.stats.value != null &&
               controller.opusData?.modules.moduleBlocked == null)
             PopupMenuItem(
-              onTap: () async {
-                final summary = controller.summary;
-                try {
-                  if (summary.cover == null) {
-                    if (!await controller.getArticleInfo(true)) {
-                      return;
-                    }
-                  }
-                  if (mounted) {
-                    PageUtils.pmShare(
-                      this.context,
-                      content: {
-                        "id": controller.commentId,
-                        "title": "- 哔哩哔哩专栏",
-                        "headline": summary.title!, // throw
-                        "source": 6,
-                        "thumb": summary.cover!,
-                        "author": summary.author!.name,
-                        "author_id": summary.author!.mid.toString(),
-                      },
-                    );
-                  }
-                } catch (e) {
-                  SmartDialog.showToast(e.toString());
-                }
-              },
+              onTap: _pmShareArticle,
               child: const Row(
                 spacing: 10,
                 mainAxisSize: .min,
@@ -330,6 +319,159 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
       const SizedBox(width: 6),
     ],
   );
+
+  String _extractArticleContent(List<ArticleContentModel>? opus) {
+    if (opus == null) return '';
+    final buffer = StringBuffer();
+    for (final para in opus) {
+      if (para.paraType != 1) continue;
+      final nodes = para.text?.nodes;
+      if (nodes == null) continue;
+      for (final node in nodes) {
+        final text = node.word?.words ?? node.rich?.text ?? '';
+        if (text.isNotEmpty) {
+          buffer.write(text);
+          if (buffer.length >= 100) {
+            return '${buffer.toString().substring(0, 100)}…';
+          }
+        }
+      }
+    }
+    return buffer.toString();
+  }
+
+  void _saveArticleAsImage() {
+    final content = _extractArticleContent(controller.opus);
+    String? cover = controller.summary.cover;
+    if (cover == null && controller.opus != null) {
+      for (final para in controller.opus!) {
+        if (para.paraType == 2 && para.pic != null) {
+          cover = para.pic!.pics?.firstOrNull?.url;
+          break;
+        }
+      }
+    }
+    SavePanel.toSavePanel(
+      item: ArticleShareData(
+        cover: cover,
+        title: controller.summary.title ?? '',
+        content: content,
+        uname: controller.summary.author?.name,
+        uri: controller.url,
+      ),
+    );
+  }
+
+  Future<void> _pmShareArticle() async {
+    final summary = controller.summary;
+    try {
+      if (summary.cover == null) {
+        if (!await controller.getArticleInfo(true)) {
+          return;
+        }
+      }
+      if (mounted) {
+        PageUtils.pmShare(
+          this.context,
+          content: {
+            "id": controller.commentId,
+            "title": "- 哔哩哔哩专栏",
+            "headline": summary.title!,
+            "source": 6,
+            "thumb": summary.cover!,
+            "author": summary.author!.name,
+            "author_id": summary.author!.mid.toString(),
+          },
+        );
+      }
+    } catch (e) {
+      SmartDialog.showToast(e.toString());
+    }
+  }
+
+  void _showArticleShareSheet() {
+    showModalBottomSheet(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      constraints: BoxConstraints(
+        maxWidth: min(640, maxWidth),
+      ),
+      builder: (context1) {
+        final theme = Theme.of(context);
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.viewPaddingOf(context1).bottom,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              InkWell(
+                onTap: Get.back,
+                borderRadius: Style.bottomSheetRadius,
+                child: SizedBox(
+                  height: 35,
+                  child: Center(
+                    child: Container(
+                      width: 32,
+                      height: 3,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.outline,
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(1.5),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              ListTile(
+                onTap: () {
+                  Get.back();
+                  _saveArticleAsImage();
+                },
+                minLeadingWidth: 0,
+                leading: const Icon(Icons.save_alt, size: 19),
+                title: Text('保存为图片', style: theme.textTheme.titleSmall),
+              ),
+              ListTile(
+                onTap: () {
+                  Get.back();
+                  ShareUtils.shareText(controller.url);
+                },
+                minLeadingWidth: 0,
+                leading: const Icon(Icons.share_outlined, size: 19),
+                title: Text('分享链接', style: theme.textTheme.titleSmall),
+              ),
+              if (controller.commentType == 12 &&
+                  controller.stats.value != null &&
+                  controller.opusData?.modules.moduleBlocked == null)
+                ListTile(
+                  onTap: () {
+                    Get.back();
+                    _pmShareArticle();
+                  },
+                  minLeadingWidth: 0,
+                  leading: const Icon(Icons.forward_to_inbox, size: 19),
+                  title: Text('分享至消息', style: theme.textTheme.titleSmall),
+                ),
+              const Divider(thickness: 0.1, height: 1),
+              ListTile(
+                onTap: Get.back,
+                minLeadingWidth: 0,
+                dense: true,
+                title: Text(
+                  '取消',
+                  style: TextStyle(color: theme.colorScheme.outline),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   Widget _buildBottom() {
     if (!controller.showDynActionBar) {
@@ -453,7 +595,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                       text: '分享',
                       icon: CustomIcons.share_node,
                       stat: null,
-                      onPressed: () => ShareUtils.shareText(controller.url),
+                      onPressed: _showArticleShareSheet,
                     ),
                   ),
                   Expanded(

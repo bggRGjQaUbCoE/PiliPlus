@@ -5,6 +5,7 @@ import 'package:PiliPlus/grpc/dyn.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/msg.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
+import 'package:PiliPlus/models/common/home_tab_type.dart';
 import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/pages/dynamics/controller.dart';
@@ -330,6 +331,16 @@ class MainController extends GetxController
     if (hasHome) {
       homeController.showTopBar?.value = true;
     }
+  }
+
+  bool refreshRecommendations() {
+    if (navigationBars[selectedIndex.value] == NavigationBarType.home &&
+        homeController.tabs[homeController.tabController.index] ==
+            HomeTabType.rcmd) {
+      homeController.onRefresh();
+      return true;
+    }
+    return false;
   }
 
   @override

@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/custom_height_widget.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
+import 'package:PiliPlus/models/common/home_tab_type.dart';
+import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/pages/common/common_page.dart';
 import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
@@ -10,6 +14,7 @@ import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show HardwareKeyboard, KeyDownEvent;
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
@@ -75,7 +80,7 @@ class _HomePageState extends CommonPageState<HomePage>
     } else {
       tabBar = const SizedBox(height: 6);
     }
-    return Column(
+    Widget child = Column(
       children: [
         if (!_mainController.useSideBar &&
             MediaQuery.sizeOf(context).isPortrait)
@@ -91,6 +96,30 @@ class _HomePageState extends CommonPageState<HomePage>
         ),
       ],
     );
+
+    if (Platform.isMacOS) {
+      child = Focus(
+        autofocus: true,
+        onKeyEvent: (_, event) {
+          if (event is KeyDownEvent &&
+              event.logicalKey == .keyR &&
+              HardwareKeyboard.instance.isMetaPressed &&
+              _mainController.navigationBars[_mainController
+                      .selectedIndex
+                      .value] ==
+                  NavigationBarType.home &&
+              _homeController.tabs[_homeController.tabController.index] ==
+                  HomeTabType.rcmd) {
+            _homeController.onRefresh();
+            return .handled;
+          }
+          return .ignored;
+        },
+        child: child,
+      );
+    }
+
+    return child;
   }
 
   Widget customAppBar() {

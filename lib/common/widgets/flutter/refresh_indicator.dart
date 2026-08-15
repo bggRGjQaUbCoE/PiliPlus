@@ -14,7 +14,7 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:extended_nested_scroll_view/refresh.dart';
 import 'package:flutter/foundation.dart' show clampDouble;
-import 'package:flutter/material.dart' hide RefreshIndicator;
+import 'package:material_ui/material_ui.dart' hide RefreshIndicator;
 
 const kIndicatorSize = 49.0;
 

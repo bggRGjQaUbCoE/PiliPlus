@@ -16,7 +16,7 @@ import 'package:PiliPlus/common/widgets/flutter/text_field/editable_text.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/spell_check.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/system_context_menu.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/text_selection.dart';
-import 'package:flutter/cupertino.dart'
+import 'package:cupertino_ui/cupertino_ui.dart'
     hide
         EditableText,
         EditableTextState,

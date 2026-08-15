@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 mixin BaseFabMixin<T extends StatefulWidget> on State<T>, TickerProvider {
   late bool _isFabVisible = true;

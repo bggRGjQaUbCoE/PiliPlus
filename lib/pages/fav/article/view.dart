@@ -6,7 +6,7 @@ import 'package:PiliPlus/models_new/fav/fav_article/item.dart';
 import 'package:PiliPlus/pages/fav/article/controller.dart';
 import 'package:PiliPlus/pages/fav/article/widget/item.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
 
 class FavArticlePage extends StatefulWidget {

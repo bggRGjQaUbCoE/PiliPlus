@@ -4,7 +4,7 @@ import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/pages/live_search/child/view.dart';
 import 'package:PiliPlus/pages/live_search/controller.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
 
 class LiveSearchPage extends StatefulWidget {

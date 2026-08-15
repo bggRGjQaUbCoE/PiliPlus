@@ -367,6 +367,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.2"
+  cupertino_ui:
+    dependency: "direct main"
+    description:
+      name: cupertino_ui
+      sha256: "7ed8ce4159d342eec4c65f4ea6eec57adaf9365404378541f38efc1da20a5b3d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   dart_style:
     dependency: transitive
     description:
@@ -612,10 +620,11 @@ packages:
   flex_seed_scheme:
     dependency: "direct main"
     description:
-      name: flex_seed_scheme
-      sha256: a3183753bbcfc3af106224bff3ab3e1844b73f58062136b7499919f49f3667e7
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: dev
+      resolved-ref: ed3c2a298eb20309533095ca50a5fb64f0ba2dcf
+      url: "https://github.com/bggRGjQaUbCoE/flex_seed_scheme.git"
+    source: git
     version: "4.0.1"
   flutter:
     dependency: "direct main"
@@ -798,8 +807,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "version_4.7.2"
-      resolved-ref: "388fcb22ef24ac0a693949148d29fa6b4922159f"
+      ref: dev
+      resolved-ref: "12c9d4d1517186390e92f86063369f4a26d01fdb"
       url: "https://github.com/bggRGjQaUbCoE/getx.git"
     source: git
     version: "4.7.2"
@@ -1145,6 +1154,14 @@ packages:
     description:
       name: material_new_shapes
       sha256: e4bc375205e187e8fb232573387112dd8c0dd45b03af8aa2b3c79eb4b9e3e0dc
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
+  material_ui:
+    dependency: "direct main"
+    description:
+      name: material_ui
+      sha256: d9b4f6c69b80bc83d0a14357c86e4c14c8076e807ae73cf2960c8560f623995f
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"

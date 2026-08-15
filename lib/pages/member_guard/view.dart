@@ -10,7 +10,7 @@ import 'package:PiliPlus/models_new/member_guard/guard_top_list.dart';
 import 'package:PiliPlus/pages/member_guard/controller.dart';
 import 'package:PiliPlus/utils/extension/widget_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:flutter/material.dart' hide ListTile;
+import 'package:material_ui/material_ui.dart' hide ListTile;
 import 'package:get/get.dart';
 
 class MemberGuard extends StatefulWidget {

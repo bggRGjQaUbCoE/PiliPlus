@@ -1,5 +1,5 @@
 import 'package:PiliPlus/common/skeleton/skeleton.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class MsgFeedSysMsgSkeleton extends StatelessWidget {
   const MsgFeedSysMsgSkeleton({super.key});

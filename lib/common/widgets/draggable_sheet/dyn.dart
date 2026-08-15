@@ -1,5 +1,5 @@
 import 'package:flutter/gestures.dart' show Drag;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class DynDraggableScrollableSheet extends DraggableScrollableSheet {
   const DynDraggableScrollableSheet({

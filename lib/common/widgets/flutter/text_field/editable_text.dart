@@ -28,7 +28,7 @@ import 'package:PiliPlus/common/widgets/flutter/text_field/text_selection.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart'
+import 'package:material_ui/material_ui.dart'
     hide
         EditableText,
         EditableTextState,

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:material_color_utilities/dynamiccolor/dynamic_color.dart';
 import 'package:material_color_utilities/dynamiccolor/dynamic_scheme.dart';
 import 'package:material_color_utilities/dynamiccolor/variant.dart';

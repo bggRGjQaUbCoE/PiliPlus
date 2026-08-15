@@ -5,7 +5,7 @@ import 'package:PiliPlus/models_new/bubble/data.dart';
 import 'package:PiliPlus/models_new/bubble/dyn_list.dart';
 import 'package:PiliPlus/models_new/bubble/sort_info.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
-import 'package:flutter/material.dart' show TabController;
+import 'package:material_ui/material_ui.dart' show TabController;
 import 'package:get/get.dart';
 
 class BubbleController extends CommonListController<BubbleData, DynList>

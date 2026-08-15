@@ -70,6 +70,10 @@ jobs:
                   flutter-version-file: pubspec.yaml
                   cache: true
 
+            - name: Apply Flutter patches
+              shell: pwsh
+              run: lib/scripts/patch.ps1
+
             - name: Install dependencies
               run: flutter pub get
 

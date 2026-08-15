@@ -1,6 +1,11 @@
 name: Build
 
 on:
+    push:
+        branches:
+            - main
+        paths-ignore:
+            - "**.md"
     pull_request:
         types:
             - opened
@@ -48,11 +53,42 @@ on:
                 type: string
 
 jobs:
+    quality:
+        name: Flutter quality
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+
+            - name: Setup Flutter
+              uses: subosito/flutter-action@v2
+              with:
+                  channel: stable
+                  flutter-version-file: pubspec.yaml
+                  cache: true
+
+            - name: Install dependencies
+              run: flutter pub get
+
+            - name: Check formatting
+              run: dart format --output=none --set-exit-if-changed lib test
+
+            - name: Analyze
+              run: dart analyze
+
+            - name: Test
+              run: flutter test --no-pub --concurrency=1
+
     android:
-        if: ${{ (github.event_name == 'pull_request' && github.repository == 'loneshu7/PiliPlusPlus') || github.event.inputs.build_android == 'true' }}
+        if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.build_android == 'true' }}
+        needs: quality
         name: Release Android
         runs-on: ubuntu-latest
-        permissions: write-all
+        permissions:
+            contents: write
 
         steps:
             - name: 代码迁出
@@ -83,29 +119,36 @@ jobs:
               run: lib/scripts/patch.ps1 android
 
             - name: Write key
-              if: github.event_name == 'workflow_dispatch'
+              if: github.event_name != 'pull_request'
+              env:
+                  KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+                  KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+                  KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
               run: |
-                  if [ ! -z "${{ secrets.SIGN_KEYSTORE_BASE64 }}" ]; then
-                    echo "${{ secrets.SIGN_KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.jks
-                    echo storeFile='key.jks' >> android/key.properties
-                    echo storePassword='${{ secrets.KEYSTORE_PASSWORD }}' >> android/key.properties
-                    echo keyAlias='${{ secrets.KEY_ALIAS }}' >> android/key.properties
-                    echo keyPassword='${{ secrets.KEY_PASSWORD }}' >> android/key.properties
-                  fi
+                  test -n "${{ secrets.SIGN_KEYSTORE_BASE64 }}"
+                  test -n "$KEYSTORE_PASSWORD"
+                  test -n "$KEY_ALIAS"
+                  test -n "$KEY_PASSWORD"
+                  echo "${{ secrets.SIGN_KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.jks
+                  printf 'storeFile=key.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' \
+                    "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > android/key.properties
 
-            - name: Set and Extract version
-              if: ${{ github.event_name == 'workflow_dispatch' }}
+            - name: Write build metadata
               shell: pwsh
-              run: lib/scripts/build.ps1 android
+              run: tool/write_ci_build_metadata.ps1
 
             - name: Flutter Build Release Apk
-              if: ${{ github.event_name == 'workflow_dispatch' }}
+              if: ${{ github.event_name != 'pull_request' }}
               run: flutter build apk --release --split-per-abi --dart-define-from-file=pili_release.json --pub
 
             - name: Flutter Build Dev Apk
               if: ${{ github.event_name == 'pull_request' }}
               run: |
                   flutter build apk --release --split-per-abi --android-project-arg dev=1 --pub
+
+            - name: Remove signing material
+              if: ${{ always() && github.event_name != 'pull_request' }}
+              run: rm -f android/key.properties android/app/key.jks
 
             - name: Rename
               run: |

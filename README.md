@@ -145,6 +145,10 @@ GitHub Actions 发布需配置以下仓库 Secrets：
 - `KEY_ALIAS`
 - `KEY_PASSWORD`
 
+`Build` workflow 会在 PR 上执行格式检查、静态分析、测试和开发 APK 构建；推送到
+`main` 时会使用上述 Secrets 生成同证书签名的 Android 构建产物。自动构建只上传
+Actions artifact，不创建 GitHub Release；正式发布仍需手动触发 workflow 并显式填写 tag。
+
 ## 验证要求
 
 每批 Android 播放器修改至少完成：

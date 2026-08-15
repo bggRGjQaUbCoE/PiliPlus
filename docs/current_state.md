@@ -986,3 +986,14 @@ the final audit artifact. The formal release baseline remains unchanged.
 - 仍待 Android 真机矩阵：AVC/HEVC/AV1、独立 DASH 音频、直播、本地文件、软硬解切换、
   解码失败的一次性软解回退、换源/清晰度/分P、拖动、后台、应用内小窗、系统 PiP、旋转，
   并覆盖至少两类不同芯片/MediaCodec 实现。完成前状态为“Android 映射已实现、待真机验收”。
+
+### 2026-08-15 GitHub Actions Android CI
+
+- `Build` workflow 现在在 PR 和 `main` 推送时运行 Flutter 格式、静态分析和测试；PR 继续
+  生成开发 APK，`main` 推送或手动运行则从 GitHub Secrets 注入当前发布证书并生成签名
+  Android artifact。Secrets 为 `SIGN_KEYSTORE_BASE64`、`KEYSTORE_PASSWORD`、`KEY_ALIAS`、
+  `KEY_PASSWORD`，已按当前本地证书更新；证书和密码不写入 Git。
+- CI 构建元数据改由 `tool/write_ci_build_metadata.ps1` 从现有 `pubspec.yaml` 读取版本，
+  不再用 Git commit 数量重写 Android `versionCode`，避免自动构建生成低于既有交付包的
+  版本。自动构建只上传 Actions artifact；创建 GitHub Release 仍需要手动触发并明确提供
+  tag，正式交付仍应执行项目 release 校验和真机验收。

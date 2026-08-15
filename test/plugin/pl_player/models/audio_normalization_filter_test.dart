@@ -163,7 +163,44 @@ void main() {
     expect(resolution.equalizerFrequencyHz, 1000);
     expect(resolution.equalizerGainDb, 4);
     expect(resolution.equalizerQ, 1.2);
+    expect(resolution.equalizerBands, hasLength(1));
+    expect(resolution.equalizerBands.single.type, 'q');
     expect(resolution.gain, closeTo(0.8, 0.000001));
+  });
+
+  test('ExoPlayer maps shelf stages', () {
+    for (final type in ['highshelf', 'lowshelf']) {
+      final resolution =
+          resolveExoAudioNormalization(
+                config: '$type=f=1000:w=1:g=4',
+                fallbackConfig: disabled,
+              )
+              as ExoAudioNormalizationConfiguration;
+
+      expect(resolution.equalizerBands.single.type, type);
+      expect(
+        (resolution.toMap()['equalizerBands'] as List<Object?>).single,
+        containsPair('type', type),
+      );
+    }
+  });
+
+  test('ExoPlayer maps multiple peaking equalizer stages in chain order', () {
+    final resolution =
+        resolveExoAudioNormalization(
+              config:
+                  'equalizer=f=1000:t=q:w=1.2:g=4,equalizer=f=2000:t=q:w=0.7:g=-3',
+              fallbackConfig: disabled,
+            )
+            as ExoAudioNormalizationConfiguration;
+
+    expect(resolution.equalizerBands, hasLength(2));
+    expect(resolution.equalizerBands.first.frequencyHz, 1000);
+    expect(resolution.equalizerBands.last.gainDb, -3);
+    expect(
+      (resolution.toMap()['equalizerBands'] as List<Object?>).length,
+      2,
+    );
   });
 
   test('ExoPlayer rejects malformed or repeated highpass stages', () {
@@ -200,11 +237,11 @@ void main() {
     );
   });
 
-  test('ExoPlayer rejects malformed, unsupported, or repeated equalizers', () {
+  test('ExoPlayer rejects malformed or unsupported equalizers', () {
     for (final config in [
       'equalizer=f=abc:t=q:w=1:g=2',
       'equalizer=f=1000:t=h:w=1:g=2',
-      'equalizer=f=1000:t=q:w=1:g=2,equalizer=f=2000:t=q:w=1:g=2',
+      'equalizer=f=1000:t=x:w=1:g=2',
     ]) {
       expect(
         resolveExoAudioNormalization(config: config, fallbackConfig: disabled),

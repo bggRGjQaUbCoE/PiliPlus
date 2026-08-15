@@ -171,6 +171,7 @@ class ExoPlayerController {
 
   static Future<ExoPlayerController> create({
     bool enableHardwareDecoding = true,
+    String? decoderMode,
     int targetBufferBytes = 4 * 1024 * 1024,
     int bufferDurationMs = 16000,
     bool isLive = false,
@@ -179,6 +180,7 @@ class ExoPlayerController {
     final textureId = await _methods.invokeMethod<int>('create', {
       'id': id,
       'enableHardwareDecoding': enableHardwareDecoding,
+      'decoderMode': ?decoderMode,
       'targetBufferBytes': targetBufferBytes,
       'bufferDurationMs': bufferDurationMs,
       'isLive': isLive,
@@ -272,6 +274,8 @@ class ExoPlayerController {
     required String videoUrl,
     String? audioUrl,
     required Map<String, String> headers,
+    int? expectedWidth,
+    int? expectedHeight,
     bool isLive = false,
     Duration position = Duration.zero,
     bool playWhenReady = false,
@@ -286,6 +290,8 @@ class ExoPlayerController {
       'videoUrl': videoUrl,
       'audioUrl': audioUrl,
       'headers': headers,
+      'expectedWidth': expectedWidth,
+      'expectedHeight': expectedHeight,
       'isLive': isLive,
       'positionMs': position.inMilliseconds,
       'playWhenReady': playWhenReady,

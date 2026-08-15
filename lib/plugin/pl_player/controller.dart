@@ -1325,6 +1325,7 @@ class PlPlayerController with BlockConfigMixin {
         existingPlayer ??
         await ExoPlayerController.create(
           enableHardwareDecoding: Pref.enableHA,
+          decoderMode: Pref.hardwareDecoding,
           targetBufferBytes: _exoTargetBufferBytes,
           bufferDurationMs: _exoBufferDurationMs,
           isLive: isLive,
@@ -1357,6 +1358,8 @@ class PlPlayerController with BlockConfigMixin {
         'User-Agent': BrowserUa.pc,
         'Referer': HttpString.baseUrl,
       },
+      expectedWidth: width,
+      expectedHeight: height,
       isLive: isLive,
       position: isLive ? Duration.zero : position,
       playWhenReady: playWhenReady,

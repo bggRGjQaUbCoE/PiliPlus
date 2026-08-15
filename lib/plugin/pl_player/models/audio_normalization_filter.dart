@@ -7,9 +7,18 @@ final _loudnormRegExp = RegExp('loudnorm=([^,]+)');
 final _volumeStageRegExp = RegExp('^volume=(.+)\$');
 final _highpassStageRegExp = RegExp('^highpass=(.+)\$');
 final _lowpassStageRegExp = RegExp('^lowpass=(.+)\$');
+final _highshelfStageRegExp = RegExp('^highshelf=(.+)\$');
+final _lowshelfStageRegExp = RegExp('^lowshelf=(.+)\$');
 final _equalizerStageRegExp = RegExp('^equalizer=(.+)\$');
 final _singleDynaudnormRegExp = RegExp('^dynaudnorm=(.+)\$');
 final _singleLoudnormRegExp = RegExp('^loudnorm=([^,]+)\$');
+
+typedef ExoEqualizerBand = ({
+  double frequencyHz,
+  double gainDb,
+  double q,
+  String type,
+});
 
 String? resolveAudioNormalizationFilter({
   required String config,
@@ -76,11 +85,45 @@ double? _parseLowpassHz(String stage) {
   return value != null && value.isFinite && value > 0 ? value : null;
 }
 
-({double frequencyHz, double gainDb, double q})? _parseEqualizer(String stage) {
+({double frequencyHz, double gainDb, double q, String type})? _parseShelf(
+  String stage,
+  String type,
+) {
+  final options = _parseFilterOptions(
+    stage.substring(type.length + 1),
+  );
+  final frequency =
+      options['f']?.toDouble() ?? options['frequency']?.toDouble();
+  final gain = options['g']?.toDouble() ?? options['gain']?.toDouble();
+  final width = options['w']?.toDouble() ?? options['width']?.toDouble() ?? 1;
+  if (frequency == null ||
+      gain == null ||
+      !frequency.isFinite ||
+      frequency <= 0 ||
+      !gain.isFinite ||
+      !width.isFinite ||
+      width <= 0) {
+    return null;
+  }
+  return (frequencyHz: frequency, gainDb: gain, q: width, type: type);
+}
+
+({double frequencyHz, double gainDb, double q, String type})? _parseEqualizer(
+  String stage,
+) {
   final options = _parseFilterOptions(stage.substring('equalizer='.length));
   final frequency = options['f']?.toDouble();
   final gain = options['g']?.toDouble();
   final q = options['w']?.toDouble() ?? options['q']?.toDouble();
+  final type =
+      RegExp(
+            r'(?:^|:)t=([^:]+)',
+            caseSensitive: false,
+          )
+          .firstMatch(stage.substring('equalizer='.length))
+          ?.group(1)
+          ?.toLowerCase() ??
+      'q';
   if (frequency == null ||
       gain == null ||
       q == null ||
@@ -88,15 +131,11 @@ double? _parseLowpassHz(String stage) {
       frequency <= 0 ||
       !gain.isFinite ||
       !q.isFinite ||
-      q <= 0) {
+      q <= 0 ||
+      type != 'q') {
     return null;
   }
-  final type = RegExp(
-    r'(?:^|:)t=([^:]+)',
-    caseSensitive: false,
-  ).firstMatch(stage.substring('equalizer='.length))?.group(1)?.toLowerCase();
-  if (type != null && type != 'q') return null;
-  return (frequencyHz: frequency, gainDb: gain, q: q);
+  return (frequencyHz: frequency, gainDb: gain, q: q, type: type);
 }
 
 sealed class ExoAudioNormalizationResolution {
@@ -114,6 +153,7 @@ final class ExoAudioNormalizationConfiguration
     this.equalizerFrequencyHz,
     this.equalizerGainDb,
     this.equalizerQ,
+    this.equalizerBands = const [],
   });
 
   final double gain;
@@ -124,6 +164,7 @@ final class ExoAudioNormalizationConfiguration
   final double? equalizerFrequencyHz;
   final double? equalizerGainDb;
   final double? equalizerQ;
+  final List<ExoEqualizerBand> equalizerBands;
 
   Map<String, Object> toMap() => {
     'gain': gain,
@@ -138,6 +179,17 @@ final class ExoAudioNormalizationConfiguration
         ? null
         : <String, Object>{'equalizerGainDb': equalizerGainDb!},
     ...?equalizerQ == null ? null : <String, Object>{'equalizerQ': equalizerQ!},
+    if (equalizerBands.isNotEmpty)
+      'equalizerBands': equalizerBands
+          .map(
+            (band) => <String, Object>{
+              'frequencyHz': band.frequencyHz,
+              'gainDb': band.gainDb,
+              'q': band.q,
+              'type': band.type,
+            },
+          )
+          .toList(),
   };
 }
 
@@ -160,6 +212,7 @@ final class ExoAudioDynamicNormalizationConfiguration
     this.equalizerFrequencyHz,
     this.equalizerGainDb,
     this.equalizerQ,
+    this.equalizerBands = const [],
   });
 
   final double targetRmsDb;
@@ -173,6 +226,7 @@ final class ExoAudioDynamicNormalizationConfiguration
   final double? equalizerFrequencyHz;
   final double? equalizerGainDb;
   final double? equalizerQ;
+  final List<ExoEqualizerBand> equalizerBands;
 
   Map<String, Object> toMap() => {
     'gain': 1.0,
@@ -192,6 +246,17 @@ final class ExoAudioDynamicNormalizationConfiguration
         ? null
         : <String, Object>{'equalizerGainDb': equalizerGainDb!},
     ...?equalizerQ == null ? null : <String, Object>{'equalizerQ': equalizerQ!},
+    if (equalizerBands.isNotEmpty)
+      'equalizerBands': equalizerBands
+          .map(
+            (band) => <String, Object>{
+              'frequencyHz': band.frequencyHz,
+              'gainDb': band.gainDb,
+              'q': band.q,
+              'type': band.type,
+            },
+          )
+          .toList(),
   };
 }
 
@@ -208,11 +273,13 @@ final class UnsupportedExoAudioNormalization
 /// Resolves a possibly chained FFmpeg audio-normalization filter for Media3.
 ///
 /// Supported primitives are `volume=` plus at most one `loudnorm=` or
-/// `dynaudnorm=` stage. Volume stages are folded into the normalized output
-/// (volume-last semantics), which also approximates volume-before-loudness
-/// chains because loudness normalization re-normalizes the result. Unknown
-/// stages or more than one loudness stage remain unsupported and are reported
-/// with the offending stage name.
+/// `dynaudnorm=` stage, peaking `equalizer=t=q` stages, and RBJ
+/// `highshelf=`/`lowshelf=` stages.
+/// Volume stages are folded into the normalized output (volume-last
+/// semantics), which also approximates volume-before-loudness chains because
+/// loudness normalization re-normalizes the result. Unknown stages or more
+/// than one loudness stage remain unsupported and are reported with the
+/// offending stage name.
 ExoAudioNormalizationResolution? resolveExoAudioNormalization({
   required String config,
   required String fallbackConfig,
@@ -238,6 +305,7 @@ ExoAudioNormalizationResolution? resolveExoAudioNormalization({
   double? equalizerFrequencyHz;
   double? equalizerGainDb;
   double? equalizerQ;
+  final equalizerBands = <ExoEqualizerBand>[];
   String? unsupportedStage;
   for (final stage in chain) {
     if (_volumeStageRegExp.hasMatch(stage)) {
@@ -267,15 +335,36 @@ ExoAudioNormalizationResolution? resolveExoAudioNormalization({
       lowpassHz = parsed;
       continue;
     }
-    if (_equalizerStageRegExp.hasMatch(stage)) {
-      final parsed = _parseEqualizer(stage);
-      if (parsed == null || equalizerFrequencyHz != null) {
+    if (_highshelfStageRegExp.hasMatch(stage)) {
+      final parsed = _parseShelf(stage, 'highshelf');
+      if (parsed == null) {
         unsupportedStage = stage;
         break;
       }
-      equalizerFrequencyHz = parsed.frequencyHz;
-      equalizerGainDb = parsed.gainDb;
-      equalizerQ = parsed.q;
+      equalizerBands.add(parsed);
+      continue;
+    }
+    if (_lowshelfStageRegExp.hasMatch(stage)) {
+      final parsed = _parseShelf(stage, 'lowshelf');
+      if (parsed == null) {
+        unsupportedStage = stage;
+        break;
+      }
+      equalizerBands.add(parsed);
+      continue;
+    }
+    if (_equalizerStageRegExp.hasMatch(stage)) {
+      final parsed = _parseEqualizer(stage);
+      if (parsed == null) {
+        unsupportedStage = stage;
+        break;
+      }
+      equalizerBands.add(parsed);
+      if (equalizerBands.length == 1) {
+        equalizerFrequencyHz = parsed.frequencyHz;
+        equalizerGainDb = parsed.gainDb;
+        equalizerQ = parsed.q;
+      }
       continue;
     }
     if (_singleDynaudnormRegExp.hasMatch(stage) ||
@@ -309,6 +398,7 @@ ExoAudioNormalizationResolution? resolveExoAudioNormalization({
       equalizerFrequencyHz: equalizerFrequencyHz,
       equalizerGainDb: equalizerGainDb,
       equalizerQ: equalizerQ,
+      equalizerBands: equalizerBands,
     );
   }
 
@@ -324,6 +414,7 @@ ExoAudioNormalizationResolution? resolveExoAudioNormalization({
       equalizerFrequencyHz: equalizerFrequencyHz,
       equalizerGainDb: equalizerGainDb,
       equalizerQ: equalizerQ,
+      equalizerBands: equalizerBands,
     );
   }
 
@@ -342,6 +433,7 @@ ExoAudioNormalizationResolution? resolveExoAudioNormalization({
       equalizerFrequencyHz: equalizerFrequencyHz,
       equalizerGainDb: equalizerGainDb,
       equalizerQ: equalizerQ,
+      equalizerBands: equalizerBands,
     );
   }
 
@@ -364,6 +456,7 @@ ExoAudioNormalizationResolution? resolveExoAudioNormalization({
       equalizerFrequencyHz: equalizerFrequencyHz,
       equalizerGainDb: equalizerGainDb,
       equalizerQ: equalizerQ,
+      equalizerBands: equalizerBands,
     );
   }
 
@@ -380,5 +473,6 @@ ExoAudioNormalizationResolution? resolveExoAudioNormalization({
     equalizerFrequencyHz: equalizerFrequencyHz,
     equalizerGainDb: equalizerGainDb,
     equalizerQ: equalizerQ,
+    equalizerBands: equalizerBands,
   );
 }

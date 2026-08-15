@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('video expansion keeps its parent layout stable', (tester) async {
+  testWidgets('video expansion resizes content while parent stays stable', (
+    tester,
+  ) async {
     final controller = AnimationController(vsync: const TestVSync());
     addTearDown(controller.dispose);
     const childKey = ValueKey('video');
@@ -19,7 +21,11 @@ void main() {
               animation: controller,
               normalHeight: 100,
               expandedHeight: 300,
-              child: const SizedBox(key: childKey, width: 200, height: 100),
+              builder: (context, height) => SizedBox(
+                key: childKey,
+                width: 200,
+                height: height,
+              ),
             ),
           ),
         ),
@@ -35,7 +41,14 @@ void main() {
 
     expect(tester.getSize(transition), const Size(200, 100));
     expect(tester.getSize(find.byType(ColoredBox)), const Size(200, 200));
-    expect(tester.getTopLeft(find.byKey(childKey)).dy, initialTop.dy + 50);
+    expect(tester.getTopLeft(find.byKey(childKey)).dy, initialTop.dy);
+    expect(tester.getSize(find.byKey(childKey)), const Size(200, 200));
+
+    controller.value = 1;
+    await tester.pump();
+
+    expect(tester.getSize(transition), const Size(200, 100));
+    expect(tester.getSize(find.byKey(childKey)), const Size(200, 300));
   });
 
   testWidgets('detail panel translation follows the same progress', (

@@ -23,10 +23,8 @@ internal class AudioNormalizationProcessor : BaseAudioProcessor() {
     private var previousInput = DoubleArray(0)
     private var previousOutput = DoubleArray(0)
     private var previousLowpassOutput = DoubleArray(0)
-    private var equalizerInput1 = DoubleArray(0)
-    private var equalizerInput2 = DoubleArray(0)
-    private var equalizerOutput1 = DoubleArray(0)
-    private var equalizerOutput2 = DoubleArray(0)
+    private var equalizerStages = emptyList<EqualizerStage>()
+    private var equalizerSampleRate = 0
     private var highpassAlpha = 1.0
     private var lowpassAlpha = 0.0
 
@@ -63,10 +61,7 @@ internal class AudioNormalizationProcessor : BaseAudioProcessor() {
             previousInput = DoubleArray(channels)
             previousOutput = DoubleArray(channels)
             previousLowpassOutput = DoubleArray(channels)
-            equalizerInput1 = DoubleArray(channels)
-            equalizerInput2 = DoubleArray(channels)
-            equalizerOutput1 = DoubleArray(channels)
-            equalizerOutput2 = DoubleArray(channels)
+            equalizerStages.forEach { it.reset(channels) }
         }
         val highpassHz = activeConfiguration.highpassHz
         highpassAlpha = if (highpassHz != null) {
@@ -84,24 +79,76 @@ internal class AudioNormalizationProcessor : BaseAudioProcessor() {
         } else {
             0.0
         }
-        val equalizerFrequencyHz = activeConfiguration.equalizerFrequencyHz
-        val equalizerGainDb = activeConfiguration.equalizerGainDb
-        val equalizerQ = activeConfiguration.equalizerQ
-        val equalizerCoefficients = if (equalizerFrequencyHz != null &&
-            equalizerGainDb != null && equalizerQ != null
+        val equalizerBands = activeConfiguration.equalizerBands.ifEmpty {
+            val frequency = activeConfiguration.equalizerFrequencyHz
+            val gain = activeConfiguration.equalizerGainDb
+            val q = activeConfiguration.equalizerQ
+            if (frequency != null && gain != null && q != null) {
+                listOf(EqualizerBand(frequency, gain, q))
+            } else {
+                emptyList()
+            }
+        }
+        if (equalizerSampleRate != sampleRate ||
+            equalizerStages.size != equalizerBands.size
         ) {
-            val frequency = equalizerFrequencyHz.coerceIn(1.0, sampleRate / 2.0 - 1.0)
-            val omega = 2.0 * PI * frequency / sampleRate
-            val alpha = sin(omega) / (2.0 * equalizerQ)
-            val amplitude = 10.0.pow(equalizerGainDb / 40.0)
-            val b0 = (1.0 + alpha * amplitude) / (1.0 + alpha / amplitude)
-            val b1 = (-2.0 * cos(omega)) / (1.0 + alpha / amplitude)
-            val b2 = (1.0 - alpha * amplitude) / (1.0 + alpha / amplitude)
-            val a1 = (-2.0 * cos(omega)) / (1.0 + alpha / amplitude)
-            val a2 = (1.0 - alpha / amplitude) / (1.0 + alpha / amplitude)
-            doubleArrayOf(b0, b1, b2, a1, a2)
-        } else {
-            null
+            equalizerStages = equalizerBands.map { band ->
+                val frequency = band.frequencyHz.coerceIn(1.0, sampleRate / 2.0 - 1.0)
+                val omega = 2.0 * PI * frequency / sampleRate
+                val alpha = sin(omega) / (2.0 * band.q)
+                val amplitude = 10.0.pow(band.gainDb / 40.0)
+                val cosine = cos(omega)
+                val coefficients = when (band.type) {
+                    "q" -> {
+                        val denominator = 1.0 + alpha / amplitude
+                        doubleArrayOf(
+                            (1.0 + alpha * amplitude) / denominator,
+                            (-2.0 * cosine) / denominator,
+                            (1.0 - alpha * amplitude) / denominator,
+                            (-2.0 * cosine) / denominator,
+                            (1.0 - alpha / amplitude) / denominator,
+                        )
+                    }
+                    "lowshelf" -> {
+                        val beta = 2.0 * sqrt(amplitude) * alpha
+                        val b0 = amplitude * ((amplitude + 1.0) -
+                            (amplitude - 1.0) * cosine + beta)
+                        val b1 = 2.0 * amplitude * ((amplitude - 1.0) -
+                            (amplitude + 1.0) * cosine)
+                        val b2 = amplitude * ((amplitude + 1.0) -
+                            (amplitude - 1.0) * cosine - beta)
+                        val a0 = (amplitude + 1.0) +
+                            (amplitude - 1.0) * cosine + beta
+                        val a1 = -2.0 * ((amplitude - 1.0) +
+                            (amplitude + 1.0) * cosine)
+                        val a2 = (amplitude + 1.0) +
+                            (amplitude - 1.0) * cosine - beta
+                        doubleArrayOf(b0 / a0, b1 / a0, b2 / a0, a1 / a0, a2 / a0)
+                    }
+                    "highshelf" -> {
+                        val beta = 2.0 * sqrt(amplitude) * alpha
+                        val b0 = amplitude * ((amplitude + 1.0) +
+                            (amplitude - 1.0) * cosine + beta)
+                        val b1 = -2.0 * amplitude * ((amplitude - 1.0) +
+                            (amplitude + 1.0) * cosine)
+                        val b2 = amplitude * ((amplitude + 1.0) +
+                            (amplitude - 1.0) * cosine - beta)
+                        val a0 = (amplitude + 1.0) -
+                            (amplitude - 1.0) * cosine + beta
+                        val a1 = 2.0 * ((amplitude - 1.0) -
+                            (amplitude + 1.0) * cosine)
+                        val a2 = (amplitude + 1.0) -
+                            (amplitude - 1.0) * cosine - beta
+                        doubleArrayOf(b0 / a0, b1 / a0, b2 / a0, a1 / a0, a2 / a0)
+                    }
+                    else -> error("Unsupported equalizer type: ${band.type}")
+                }
+                EqualizerStage(
+                    coefficients = coefficients,
+                    channelCount = channels,
+                )
+            }
+            equalizerSampleRate = sampleRate
         }
         val frame = DoubleArray(channels)
         val windowFrames = if (activeConfiguration.dynamic) {
@@ -133,22 +180,8 @@ internal class AudioNormalizationProcessor : BaseAudioProcessor() {
                     previousLowpassOutput[channel] = output
                     frame[channel] = output
                 }
-                if (equalizerCoefficients != null) {
-                    val b0 = equalizerCoefficients[0]
-                    val b1 = equalizerCoefficients[1]
-                    val b2 = equalizerCoefficients[2]
-                    val a1 = equalizerCoefficients[3]
-                    val a2 = equalizerCoefficients[4]
-                    val output = b0 * frame[channel] +
-                        b1 * equalizerInput1[channel] +
-                        b2 * equalizerInput2[channel] -
-                        a1 * equalizerOutput1[channel] -
-                        a2 * equalizerOutput2[channel]
-                    equalizerInput2[channel] = equalizerInput1[channel]
-                    equalizerInput1[channel] = frame[channel]
-                    equalizerOutput2[channel] = equalizerOutput1[channel]
-                    equalizerOutput1[channel] = output
-                    frame[channel] = output
+                equalizerStages.forEach { stage ->
+                    frame[channel] = stage.process(frame[channel], channel)
                 }
                 framePeak = maxOf(framePeak, abs(frame[channel]))
                 frameSumSquares += frame[channel] * frame[channel]
@@ -213,10 +246,8 @@ internal class AudioNormalizationProcessor : BaseAudioProcessor() {
         previousInput = DoubleArray(0)
         previousOutput = DoubleArray(0)
         previousLowpassOutput = DoubleArray(0)
-        equalizerInput1 = DoubleArray(0)
-        equalizerInput2 = DoubleArray(0)
-        equalizerOutput1 = DoubleArray(0)
-        equalizerOutput2 = DoubleArray(0)
+        equalizerStages = emptyList()
+        equalizerSampleRate = 0
         highpassAlpha = 1.0
         lowpassAlpha = 0.0
     }
@@ -224,6 +255,54 @@ internal class AudioNormalizationProcessor : BaseAudioProcessor() {
     companion object {
         private const val RELEASE_SECONDS = 0.08
         private const val MIN_DYNAMIC_GAIN = 0.01
+    }
+
+    private class EqualizerStage(
+        private val coefficients: DoubleArray,
+        channelCount: Int,
+    ) {
+        private var input1 = DoubleArray(channelCount)
+        private var input2 = DoubleArray(channelCount)
+        private var output1 = DoubleArray(channelCount)
+        private var output2 = DoubleArray(channelCount)
+
+        fun reset(channelCount: Int) {
+            input1 = DoubleArray(channelCount)
+            input2 = DoubleArray(channelCount)
+            output1 = DoubleArray(channelCount)
+            output2 = DoubleArray(channelCount)
+        }
+
+        fun process(input: Double, channel: Int): Double {
+            val output = coefficients[0] * input +
+                coefficients[1] * input1[channel] +
+                coefficients[2] * input2[channel] -
+                coefficients[3] * output1[channel] -
+                coefficients[4] * output2[channel]
+            input2[channel] = input1[channel]
+            input1[channel] = input
+            output2[channel] = output1[channel]
+            output1[channel] = output
+            return output
+        }
+    }
+}
+
+internal data class EqualizerBand(
+    val frequencyHz: Double,
+    val gainDb: Double,
+    val q: Double,
+    val type: String = "q",
+) {
+    init {
+        require(frequencyHz.isFinite() && frequencyHz > 0.0) {
+            "Invalid equalizer frequency: $frequencyHz"
+        }
+        require(gainDb.isFinite()) { "Invalid equalizer gain: $gainDb" }
+        require(q.isFinite() && q > 0.0) { "Invalid equalizer Q: $q" }
+        require(type in setOf("q", "highshelf", "lowshelf")) {
+            "Unsupported equalizer type: $type"
+        }
     }
 }
 
@@ -241,6 +320,7 @@ internal data class AudioNormalizationConfiguration(
     val equalizerFrequencyHz: Double? = null,
     val equalizerGainDb: Double? = null,
     val equalizerQ: Double? = null,
+    val equalizerBands: List<EqualizerBand> = emptyList(),
 ) {
     init {
         require(gain.isFinite() && gain >= 0.0) { "Invalid normalization gain: $gain" }
@@ -276,6 +356,22 @@ internal data class AudioNormalizationConfiguration(
     companion object {
         fun fromMap(map: Map<*, *>?): AudioNormalizationConfiguration? {
             if (map == null) return null
+            val legacyFrequency = (map["equalizerFrequencyHz"] as? Number)?.toDouble()
+            val legacyGain = (map["equalizerGainDb"] as? Number)?.toDouble()
+            val legacyQ = (map["equalizerQ"] as? Number)?.toDouble()
+            val mappedBands = (map["equalizerBands"] as? List<*>)?.map { item ->
+                val band = item as? Map<*, *>
+                    ?: throw IllegalArgumentException("Invalid equalizer band: $item")
+                EqualizerBand(
+                    frequencyHz = (band["frequencyHz"] as? Number)?.toDouble()
+                        ?: throw IllegalArgumentException("Missing equalizer frequency: $band"),
+                    gainDb = (band["gainDb"] as? Number)?.toDouble()
+                        ?: throw IllegalArgumentException("Missing equalizer gain: $band"),
+                    q = (band["q"] as? Number)?.toDouble()
+                        ?: throw IllegalArgumentException("Missing equalizer Q: $band"),
+                    type = (band["type"] as? String)?.lowercase() ?: "q",
+                )
+            }.orEmpty()
             return AudioNormalizationConfiguration(
                 gain = (map["gain"] as? Number)?.toDouble() ?: 1.0,
                 peak = (map["peak"] as? Number)?.toDouble() ?: 1.0,
@@ -287,9 +383,16 @@ internal data class AudioNormalizationConfiguration(
                 smoothing = (map["smoothing"] as? Number)?.toDouble() ?: 0.5,
                 highpassHz = (map["highpassHz"] as? Number)?.toDouble(),
                 lowpassHz = (map["lowpassHz"] as? Number)?.toDouble(),
-                equalizerFrequencyHz = (map["equalizerFrequencyHz"] as? Number)?.toDouble(),
-                equalizerGainDb = (map["equalizerGainDb"] as? Number)?.toDouble(),
-                equalizerQ = (map["equalizerQ"] as? Number)?.toDouble(),
+                equalizerFrequencyHz = legacyFrequency,
+                equalizerGainDb = legacyGain,
+                equalizerQ = legacyQ,
+                equalizerBands = mappedBands.ifEmpty {
+                    if (legacyFrequency != null && legacyGain != null && legacyQ != null) {
+                        listOf(EqualizerBand(legacyFrequency, legacyGain, legacyQ))
+                    } else {
+                        emptyList()
+                    }
+                },
             )
         }
     }

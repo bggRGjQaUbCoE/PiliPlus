@@ -173,10 +173,10 @@ List<SettingsModel> get videoSettings => [
     onTap: _showVideoSyncDialog,
   ),
   NormalModel(
-    title: 'mpv 硬解模式',
+    title: '硬解模式',
     leading: const Icon(Icons.memory_outlined),
     getSubtitle: () =>
-        '当前：${Pref.hardwareDecoding}。仅用于 mpv；Media3 当前固定使用系统默认解码策略。',
+        '当前：${Pref.hardwareDecoding}。mpv 使用原始模式；Android Media3 映射可识别的 MediaCodec/软件模式，其他平台模式按系统默认策略处理。',
     onTap: _showHwDecDialog,
   ),
 ];

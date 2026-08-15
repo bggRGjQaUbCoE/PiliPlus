@@ -161,6 +161,112 @@ class AudioNormalizationProcessorTest {
     }
 
     @Test
+    fun multipleEqualizerBandsAreAppliedInSequence() {
+        val processor = newProcessor(
+            AudioNormalizationConfiguration(
+                gain = 1.0,
+                peak = 1.0,
+                equalizerBands = listOf(
+                    EqualizerBand(1000.0, 6.0, 1.0),
+                    EqualizerBand(1000.0, 6.0, 1.0),
+                ),
+            ),
+        )
+        val input = ByteBuffer.allocate(8000 * 2).order(ByteOrder.BIG_ENDIAN)
+        repeat(8000) { index ->
+            val sample = (0.05 * 32767.0 * kotlin.math.sin(2.0 * Math.PI * 1000.0 * index / 8000.0)).toInt()
+            input.putShort(sample.toShort())
+        }
+        input.flip()
+        processor.queueInput(input)
+
+        val samples = mutableListOf<Int>()
+        var output = processor.getOutput()
+        while (output != null && output.hasRemaining()) {
+            while (output.hasRemaining()) samples += output.short.toInt()
+            output = processor.getOutput()
+        }
+        val inputPeak = (0.05 * 32767.0).toInt()
+        val settledPeak = samples.drop(7000).maxOf { abs(it) }
+        assertTrue("two equalizer bands should be applied", settledPeak > inputPeak * 2.0)
+        assertTrue("equalizer output must not clip", settledPeak <= Short.MAX_VALUE.toInt())
+    }
+
+    @Test
+    fun lowShelfBoostsLowFrequencyTone() {
+        val processor = newProcessor(
+            AudioNormalizationConfiguration(
+                gain = 1.0,
+                peak = 1.0,
+                equalizerBands = listOf(EqualizerBand(800.0, 6.0, 1.0, "lowshelf")),
+            ),
+        )
+        val input = ByteBuffer.allocate(8000 * 2).order(ByteOrder.BIG_ENDIAN)
+        repeat(8000) { index ->
+            val sample = (0.1 * 32767.0 * kotlin.math.sin(2.0 * Math.PI * 100.0 * index / 8000.0)).toInt()
+            input.putShort(sample.toShort())
+        }
+        input.flip()
+        processor.queueInput(input)
+
+        val samples = mutableListOf<Int>()
+        var output = processor.getOutput()
+        while (output != null && output.hasRemaining()) {
+            while (output.hasRemaining()) samples += output.short.toInt()
+            output = processor.getOutput()
+        }
+        val inputPeak = (0.1 * 32767.0).toInt()
+        val settledPeak = samples.drop(7000).maxOf { abs(it) }
+        assertTrue("low shelf should boost low frequencies", settledPeak > inputPeak * 1.4)
+        assertTrue("low shelf output must not clip", settledPeak <= Short.MAX_VALUE.toInt())
+    }
+
+    @Test
+    fun highShelfBoostsHighFrequencyTone() {
+        val processor = newProcessor(
+            AudioNormalizationConfiguration(
+                gain = 1.0,
+                peak = 1.0,
+                equalizerBands = listOf(EqualizerBand(1200.0, 6.0, 1.0, "highshelf")),
+            ),
+        )
+        val input = ByteBuffer.allocate(8000 * 2).order(ByteOrder.BIG_ENDIAN)
+        repeat(8000) { index ->
+            val sample = (0.1 * 32767.0 * kotlin.math.sin(2.0 * Math.PI * 3000.0 * index / 8000.0)).toInt()
+            input.putShort(sample.toShort())
+        }
+        input.flip()
+        processor.queueInput(input)
+
+        val samples = mutableListOf<Int>()
+        var output = processor.getOutput()
+        while (output != null && output.hasRemaining()) {
+            while (output.hasRemaining()) samples += output.short.toInt()
+            output = processor.getOutput()
+        }
+        val inputPeak = (0.1 * 32767.0).toInt()
+        val settledPeak = samples.drop(7000).maxOf { abs(it) }
+        assertTrue("high shelf should boost high frequencies", settledPeak > inputPeak * 1.4)
+        assertTrue("high shelf output must not clip", settledPeak <= Short.MAX_VALUE.toInt())
+    }
+
+    @Test
+    fun configurationReadsMultipleEqualizerBandsFromMethodChannelMap() {
+        val configuration = AudioNormalizationConfiguration.fromMap(
+            mapOf(
+                "equalizerBands" to listOf(
+                    mapOf("frequencyHz" to 500.0, "gainDb" to 3.0, "q" to 0.8),
+                    mapOf("frequencyHz" to 2000.0, "gainDb" to -2.0, "q" to 1.4),
+                ),
+            ),
+        )
+
+        assertEquals(2, configuration?.equalizerBands?.size)
+        assertEquals(500.0, configuration?.equalizerBands?.first()?.frequencyHz ?: 0.0, 0.0)
+        assertEquals(-2.0, configuration?.equalizerBands?.last()?.gainDb ?: 0.0, 0.0)
+    }
+
+    @Test
     fun equalizerConfigurationRequiresCompleteParameters() {
         assertThrows(IllegalArgumentException::class.java) {
             AudioNormalizationConfiguration(
@@ -168,5 +274,18 @@ class AudioNormalizationProcessorTest {
                 equalizerGainDb = 3.0,
             )
         }
+    }
+
+    @Test
+    fun configurationReadsEqualizerTypeFromMethodChannelMap() {
+        val configuration = AudioNormalizationConfiguration.fromMap(
+            mapOf(
+                "equalizerBands" to listOf(
+                    mapOf("frequencyHz" to 500.0, "gainDb" to 3.0, "q" to 0.8, "type" to "highshelf"),
+                ),
+            ),
+        )
+
+        assertEquals("highshelf", configuration?.equalizerBands?.single()?.type)
     }
 }

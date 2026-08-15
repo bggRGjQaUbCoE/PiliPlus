@@ -1647,3 +1647,171 @@ the signing-certificate SHA-256 remains
 MPV/Media3 parity and 120 Hz frame pacing still require real-device replay of
 short snap-back, threshold entry, swipe-up exit, portrait video, player
 gestures, refresh, mini-player entry, and mini-player restoration.
+
+### 2026-08-10 portrait-full-screen player resize continuity
+
+The V6 Samsung recording exposed a remaining two-stage transition. The black
+player region and detail surface moved with pull progress, but the actual
+player stayed at its normal detail-page height. Its height changed only after
+the full-screen state committed, which looked like a translation followed by a
+separate enlargement. The reverse path had the same discontinuity.
+
+`PagePullVideoExpansion` now interpolates the actual player height from the
+normal header height to the portrait-full-screen height with the shared pull
+animation. `videoPlayer`, its video surface, and its controls therefore relayout
+together during both finger tracking and the remaining release animation. The
+old fixed-height child translation by half the added black space is removed.
+The surrounding sliver extent remains stable and the detail body still uses an
+isolated composited translation, so this does not restore full-page layout on
+every animation tick.
+
+Focused gesture and transition tests pass 11/11, the complete Flutter suite
+passes 66/66, and full Dart analysis reports zero errors and warnings with 35
+existing info diagnostics. Android Release and release-identity verification
+pass for version `2.1.8+2026081004` at
+`build/app/outputs/flutter-apk/pili++-2.1.8-2026081004-universal-release-pull-resize-v7-final.apk`.
+Its APK SHA-256 is
+`6748CDFF54C5B3C0BE7C2B5369AEE99CEF4486D838E250EDD2C3F43C6E3E40DA`;
+the signing-certificate SHA-256 remains
+`775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`.
+Real-device acceptance remains required in MPV and Media3 for entry, exit,
+short-pull snap-back, landscape and portrait media, playing and paused states,
+and confirmation that position and size track together without an endpoint
+jump.
+
+### 2026-08-11 media replacement aspect-ratio refresh
+
+Automatic continuation reused the same Media3 session but retained the previous
+media's display width and height until `onVideoSizeChanged`. The `open` request
+did not carry the new video's dimensions, and the Flutter texture view ignored
+zero-size reset events. A 4:3 item could therefore leave the reused Texture and
+view constrained to 4:3 while the following 9:16 item started; a directly opened
+portrait item could also begin with the fallback or stale dimensions.
+
+The backend-neutral controller now sends the selected media's known width and
+height with every Media3 `open`. At the start of the new source generation, the
+native session clears the previous display state, resets rotation, and resizes
+the `SurfaceProducer` from that hint before preparing the source. The decoded
+Media3 `VideoSize` remains authoritative and replaces the hint when available.
+`ExoPlayerView` now tracks source generations as well as dimensions, so an
+unknown-size new source returns to the 16:9 placeholder instead of retaining the
+previous item's aspect ratio.
+
+A channel regression opens 1440x1080 and then 1080x1920 media through the same
+controller and verifies the second generation carries the portrait dimensions.
+Focused Exo tests pass 18/18, the complete Flutter suite passes 67/67, targeted
+Dart analysis reports no issues, and Android Debug Kotlin compilation plus the
+Release build pass. The signed universal audit APK is
+`build/app/outputs/flutter-apk/pili++-2.1.8-2026081004-universal-release-exo-aspect-ratio-audit.apk`
+with SHA-256
+`9E1BB226FDA7E5C4A972514D9C60AB2E3F4F7D21E22566E277D148FDC15527F5`;
+release identity and certificate verification pass with
+`-AllowAlreadyDelivered`. It is an audit artifact and does not replace the
+existing 2.1.8 delivery or release baseline.
+
+### 2026-08-15 user acceptance update
+
+The user confirmed real-device acceptance is complete for the following Media3
+compatibility groups, including comparison with the MPV path where applicable:
+
+- live playback; standalone audio; subtitle edge media (PGS/DVB bitmap cues and
+  vertical WebVTT layouts);
+- video-page pull-to-mini-player, portrait full-screen entry/exit, continuous
+  player resizing, and 4:3/9:16 source-replacement aspect-ratio refresh;
+- native audio/video track selection, player information, loudness normalization,
+  and all currently supported audio-filter mappings;
+- still capture and animated WebP, including their user-visible save and
+  playback-state behavior.
+
+These groups are no longer pending device acceptance. This does not claim
+support for arbitrary FFmpeg filter chains, multiple unsupported normalization
+stages, process recreation, or remaining platform and lifecycle edge cases.
+
+### 2026-08-15 multiple peaking equalizer mapping
+
+The Media3 audio-filter bridge now accepts multiple peaking FFmpeg equalizer
+stages in their original chain order. Each `equalizer=t=q` stage is sent as an
+`equalizerBands` entry and processed by its own RBJ biquad state, so repeated
+peaking bands are applied serially instead of being rejected as an unsupported
+duplicate. The legacy single-band fields remain accepted for older callers.
+
+Malformed parameters and unsupported equalizer types remain explicit
+unsupported cases. Multiple loudness stages and arbitrary custom FFmpeg chains
+are unchanged and still produce the existing precise unsupported-stage notice.
+
+Dart focused tests pass 22/22, Android `AudioNormalizationProcessorTest` passes
+8/8, and the Android Release build succeeds. Real-device listening comparison
+against MPV remains required for multiple-band chains, including switching,
+background playback, the in-app mini-player, and system PiP; no formal release
+baseline or delivery APK is changed by this implementation batch.
+
+### 2026-08-15 shelf filter mapping
+
+The Media3 audio-filter bridge now also accepts the separate FFmpeg shelf
+filters:
+
+- `highshelf=f=<Hz>:w=<width>:g=<dB>` maps to an RBJ high-shelf biquad;
+- `lowshelf=f=<Hz>:w=<width>:g=<dB>` maps to an RBJ low-shelf biquad;
+- `equalizer=t=q` remains the peaking mapping, and supported stages are
+  serialized in their original chain order through `equalizerBands`.
+
+The Android processor keeps independent per-channel state for each stage and
+uses the legacy single-band fields as a peaking (`q`) band for compatibility.
+Other `equalizer` width types and malformed parameters remain explicit
+unsupported stages; no MPV fallback is hidden or inferred.
+
+Dart focused tests pass 24/24, Android `AudioNormalizationProcessorTest` passes
+11/11, targeted Dart analysis reports no issues, and the Android Release build
+succeeds. The signed audit APK is
+`build/app/outputs/flutter-apk/pili++-2.1.8-2026081004-universal-release-exo-shelf-filter-audit-v2.apk`
+with SHA-256 `F4245A1398B63FFB5F067B1EB66C59F645D6D915108944C594365EA8B9D2AE5F`.
+`tool/verify_release.ps1 -AllowAlreadyDelivered` validates the application ID,
+label, version, universal ABI, and existing certificate; it is an audit artifact
+and does not update the release baseline. Real-device comparison against MPV
+remains required for shelf and multiple-band chains, including switching,
+background playback, the in-app mini-player, and system PiP.
+
+### 2026-08-15 concrete hardware-decoder mode mapping
+
+The ExoPlayer `create` channel now receives the selected hardware-decoder mode in
+addition to the existing enable/disable flag. Android resolves the value as
+follows:
+
+| Requested mode | Media3 Android behavior |
+| --- | --- |
+| `no` | software-only video MediaCodec selector |
+| `mediacodec`, `mediacodec-copy` | Android MediaCodec selector |
+| `auto`, `auto-safe`, `auto-copy` | Android platform MediaCodec strategy |
+| comma-separated list | first recognized Android candidate |
+| `vaapi`, `nvdec`, `d3d11va`, `videotoolbox`, `vulkan`, other non-Android modes | platform default, with an explicit unsupported diagnostic |
+
+The global hardware-decoding switch takes precedence over the requested mode.
+`mediacodec-copy` and `auto-copy` intentionally use the same Surface-backed
+MediaCodec path: ExoPlayer does not expose mpv's copy-mode output semantics, so
+the bridge does not claim a byte-for-byte equivalent. MPV still receives its
+original `hwdec` value and behavior.
+
+`PlaybackConfig` includes both the effective decoder class and resolved `hwdec`
+description, for example `decoder=software, hwdec=no (software)` or
+`hwdec=vaapi (unsupported on Android; platform-default)`. Unsupported requests
+therefore remain visible. The software selector applies to video only; audio
+decoder selection is unchanged.
+
+`Media3DecoderModeTest` covers software mode, Android-recognized modes,
+disabled-hardware precedence, unsupported modes, and candidate-list resolution.
+The Dart channel regression covers forwarding `decoderMode`; the focused Flutter
+test passes 19/19. Targeted Dart analysis and Android unit tests pass, and the
+Android Release build succeeds.
+
+Audit artifact:
+`build/app/outputs/flutter-apk/pili++-2.1.8-2026081004-universal-release-exo-hwdec-mode-audit.apk`
+(SHA-256 `5F4E78FEF5F69879E8B3F4DC04A7B69566C6459103F2DBD2DDAE67F2B0B36A49`).
+Release verification confirms application ID `com.shudo.plusplus`, version
+`2.1.8+2026081004`, universal ABI, and the existing signing certificate. The
+artifact does not update the formal release baseline.
+
+Real-device acceptance remains required for AVC/HEVC/AV1, DASH, live, local
+files, software/hardware switching, decoder-failure fallback, source and part
+switches, seeking, background, mini-player, PiP, rotation, and multiple codec
+vendors. Until that matrix is replayed, this item is implemented but pending
+device acceptance.

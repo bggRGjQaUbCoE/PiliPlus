@@ -1,6 +1,6 @@
 # pili++ 当前项目状态
 
-> 最后核对：2026-08-10 13:09 +08:00
+> 最后核对：2026-08-15 +08:00
 >
 > 本文件记录会随开发变化、但后续任务必须知道的事实。开始任务时先核对这里与实际
 > Git、源码和构建产物；结束任务前更新。长期规则见 `AGENTS.md`，ExoPlayer 详细兼容
@@ -9,6 +9,8 @@
 ## 仓库基线
 
 - 当前分支：`main`
+- 当前 HEAD：`2072a6665daec72ae56cddd61463a592189921a8`
+  (`feat: sync player fixes and release 2.1.7`)
 - 最新 GitHub 发布源提交：`859d39c4ff3c77c37e1cc1d7131192df8f8b4241`
   (`chore: prepare 2.1.2 release`)
 - 最新功能快照：`0c647b51ae60defc39c6171e5ca9387e43e596d2`
@@ -17,13 +19,15 @@
   (`Merge upstream/main into main`)
 - 上游：`https://github.com/bggRGjQaUbCoE/PiliPlus.git`
 - 已获取并合入的 `upstream/main`：`36dec609315cd34f8895cf15607f1cc582a66f01`
-- 当前分支相对 `upstream/main` 为本地领先 68、落后 0；merge-base 即
+- 当前分支相对 `upstream/main` 为本地领先 69、落后 0；merge-base 即
   `36dec609315cd34f8895cf15607f1cc582a66f01`。
 - 应用内小窗、音频焦点/媒体控制、系统 PiP 恢复、版本更新和兼容记录已保存到上述
   功能快照。交接时应以实际 `git status` 为准；存在未提交修改时不得直接 merge 或
   rebase。
 - `README.md` 已更新当前 ExoPlayer 迁移进度、应用内小窗行为、默认开关状态和
   上游同步说明；远程状态以实际 `git status` 和跟踪分支为准。
+- 当前工作区未提交修改同时包含 2026-08-10 的竖屏全屏连续缩放/2.1.8 交付记录，以及
+  2026-08-11 的 ExoPlayer 换源宽高比修复；后续不得把两组修改互相覆盖或当作已提交。
 
 ## 应用与发布身份
 
@@ -37,16 +41,15 @@
 
 ## 最近一次交付
 
-- 版本：`2.1.7`
-- versionCode：`2026081003`
+- 版本：`2.1.8`
+- versionCode：`2026081004`
 - ABI：universal (`arm64-v8a`、`armeabi-v7a`、`x86_64`)
-- 文件名：`pili++-2.1.7-2026081003-universal-release-youtube-pull-animation-v6.apk`
+- 文件名：`pili++-2.1.8-2026081004-universal-release-pull-resize-v7-final.apk`
 - APK SHA-256：
-  `39970ED9E752F79B9040CBEEF08DF1B68C524DDB40B24F57AAC13BA783A0E90F`
-- 2026-08-10 13:09 已生成并交付 YouTube 风格下拉动画优化通用 APK，尚未发布 GitHub
+  `6748CDFF54C5B3C0BE7C2B5369AEE99CEF4486D838E250EDD2C3F43C6E3E40DA`
+- 2026-08-10 14:36 已生成并交付播放页/竖屏全屏连续缩放动画通用 APK，尚未发布 GitHub
   Release；该 APK 已通过 `tool/verify_release.ps1` 的应用身份、版本、ABI 和签名校验。
-  新动画流畅度、Samsung Android 16 语义树热修复及 mpv/ExoPlayer 手势一致性仍待用户
-  真机验收。
+  2026-08-15 用户确认视频页下拉、竖屏全屏连续缩放和 mpv/ExoPlayer 手势一致性验收完成。
 
 ## 已确认的产品决定
 
@@ -71,8 +74,8 @@
 
 ## 已验证状态
 
-根据 `docs/android_exoplayer.md` 中记录的 2026-07-26、2026-07-28 和 2026-07-30
-真机反馈，以下场景已经过当前测试设备验证：
+根据 `docs/android_exoplayer.md` 中记录的 2026-07-26、2026-07-28、2026-07-30 和
+2026-08-15 用户真机验收反馈，以下场景已经过当前测试设备验证：
 
 - 点击显示/隐藏控制层、双击播放/暂停、横向跳转、纵向亮度/音量和长按倍速；
 - 清晰度、CDN、网络错误重载和分P切换的播放状态保持；
@@ -88,6 +91,13 @@
 - 2026-07-30 用户反馈 ExoPlayer 适配批次 1、批次 2 在其已执行的真机流程中“貌似
   都没问题”。该反馈记录为当前测试流程未观察到回归；批次 1 明确未实现的 Media3
   截图/超分效果，以及批次 2 的 bitmap cue/竖排布局仍不因此标记为完成。
+- Media3 直播闭环与 mpv 对照；独立音频的播放列表、循环、媒体控制、音频焦点、耳机/蓝牙
+  与后台/息屏场景；
+- 字幕边缘媒体：PGS/DVB bitmap cue 与 WebVTT `vertical-rl`/`vertical-lr`；
+- 视频页下拉小窗、详情顶部下拉进入竖屏全屏、全屏上滑退出、连续缩放及 4:3/9:16
+  同会话换源宽高比刷新；
+- Media3 音视频轨道选择、播放器信息、响度归一化，以及当前已支持的音频滤镜映射；
+- ExoPlayer 普通截图、评论区截图和动态 WebP 的预览、保存、取消及播放状态保持。
 
 这些记录只代表当时设备和操作范围，不自动覆盖折叠屏、不同 Android 版本、不同芯片
 或后续代码修改后的回归结果。
@@ -115,17 +125,37 @@
   `tool/verify_release.ps1 -AllowAlreadyDelivered`；APK SHA-256 为
   `B2A8DC5D266B42571E22EF0A2628DEEB7CC690DDAF6763D4667CF543EDADB1CE`。该包仅用于同步验证，
   不替代已交付 v5，也不更新发布基线。
-- mpv/ExoPlayer 点播、控制层、三组手势、应用内小窗恢复、系统 PiP、直播、独立音频、
-  前后台和生命周期仍需在 Android 真机逐项回归；完成前不能把自动化通过表述为无回归。
+- 2026-08-10 上游同步验证时，mpv/ExoPlayer 点播、控制层、三组手势、应用内小窗恢复、
+  系统 PiP、直播、独立音频、前后台和生命周期仍处于待回归状态；该历史记录已由
+  2026-08-15 用户真机验收结论更新，当前已确认的项目见上方清单。
 
-## 当前待验证修改
+## 当前修改与验证记录
 
 - ExoPlayer 音频滤镜链已新增 `highpass=f=<Hz>` 的 Media3 PCM 等价近似：Dart 侧解析
   单个高通阶段并把频率传入 Android，原生侧按声道使用一阶离散高通滤波器，再叠加既有
   音量/响度归一化和真峰值限制；畸形参数、重复高通或其他未知阶段仍显示明确未适配提示，
-  mpv 继续使用原始 FFmpeg 链。代码和定向测试已补齐；Dart 定向测试及 Android 单测已通过，
-  尚未生成新的 Release 审计 APK；仍需与 mpv 做真机听感、切换、后台、小窗和 PiP 对照后
-  才能标记为“实现完成、待真机验证”。
+  mpv 继续使用原始 FFmpeg 链。代码、定向测试和 Release 审计包均已完成；2026-08-15 用户
+  确认当前已支持滤镜的 Media3/mpv 真机听感与播放场景验收完成。
+
+- 2026-08-15 继续适配明确音频能力缺口：ExoPlayer 现在支持按 FFmpeg 链顺序串联多个
+  `equalizer=t=q` peaking 段。Dart 侧通过 `equalizerBands` 传递完整 band 列表，Android
+  侧为每个 band 保留独立 RBJ biquad 状态；旧的单段字段仍保持兼容。多段 equalizer 的
+  Dart 定向测试 22/22、Android `AudioNormalizationProcessorTest` 8/8 和 Release 构建
+  均通过。其他 equalizer 类型、多响度阶段和任意复杂滤镜链仍明确不适配，当前多段
+  equalizer 实现还需真机与 mpv 做听感、切换、后台、小窗和 PiP 对照。
+
+- 2026-08-15 继续补齐 FFmpeg 音频滤镜：ExoPlayer 现在支持 peaking `equalizer=t=q` 以及
+  独立的 `highshelf=`/`lowshelf=` 阶段，Dart 侧把类型随 `equalizerBands` 传入 Android，
+  原生侧按 RBJ shelf/peaking 系数串联处理；`equalizer` 的其他宽度类型仍明确拒绝，旧的
+  单段字段默认仍按 peaking 兼容。Dart 定向测试
+  24/24、Android `AudioNormalizationProcessorTest` 11/11、定向 Dart 分析和 Android Release
+  构建均通过。审计 APK 为
+  `build/app/outputs/flutter-apk/pili++-2.1.8-2026081004-universal-release-exo-shelf-filter-audit-v2.apk`，
+  SHA-256 `F4245A1398B63FFB5F067B1EB66C59F645D6D915108944C594365EA8B9D2AE5F`；
+  `tool/verify_release.ps1 -AllowAlreadyDelivered` 已确认 applicationId、应用名、版本、ABI
+  和既有签名证书，审计包不更新发布基线。其他 equalizer 类型、多响度阶段和任意复杂滤镜链
+  仍明确不适配，新增 shelf 与多段 equalizer 仍需真机与 mpv 做听感、切换、后台、小窗和 PiP
+  对照。
 
 - 2026-08-08 已恢复并确认固定构建工具链：Flutter/Dart 来自
   `D:\CodexToolchains\PiliPlus\flutter-sdk\flutter`，JDK 17 来自
@@ -727,93 +757,30 @@
 
 ## ExoPlayer 已知未闭环项
 
-- Android Media3 直播已实现但待完整真机矩阵验证；协议/格式/编码/CDN 组合、仅音频、
-  暂停切换保持、错误恢复、后台/通知、小窗/PiP 和生命周期未验收前，不能删除 mpv 后端。
-- 字幕 VTT/SRT/ASS/SSA 格式和结构化文本 cue 已接通，用户当前真机流程未见问题；
-  bitmap cue 与 Flutter 竖排文字布局已实现并通过自动化验证，仍待含 PGS/DVB 与
-  vertical-rl/vertical-lr 实际媒体的真机对照验收。
-- 截图和动态 WebP 已有 ExoPlayer 原生实现并通过自动化构建/容器测试；Samsung Android
-  16 上首个截图审计包曾触发 `PixelCopy ERROR_SOURCE_NO_DATA`，重试与媒体源独立取帧
-  修复已确认能进入 Dart PNG 解码；随后发现并修复 `ImmutableBuffer` 二次释放，第二个
-  替换审计包仍待同机完成预览/保存，以及画面方向、像素比例、翻转、不同媒体源、取消和
-  播放状态保持的逐项对照。
 - Media3 超分辨率实时效果已实现并通过自动化构建/测试；用户已在真机切换三档并接受
   当前无缝、肉眼差异不明显的 Lanczos 行为为“功能有效”。不同分辨率、编码、HDR、
   画面方向、GPU 性能和播放器生命周期仍可随相应场景扩展回归，但不再单独阻塞基础
   超分功能验收。
-- 原生音视频轨道枚举/选择、播放器信息和内置文本轨独立选择入口已接入 Media3，
-  批次 3 与批次 5 的对应流程仍待真机对照。
-- 服务器提供测量参数的两遍 `loudnorm` 已接入 Media3 PCM 增益与真峰值限制器；单遍
-  `loudnorm` 与 `dynaudnorm` 已实现分窗 RMS 自动增益的 Media3 近似（`3389f5a`）。
-  `volume=`、单个 `highpass`、单个 `lowpass`、单个 peaking `equalizer` 与单个响度阶段的链
-  已支持，均待真机与 mpv 听感对照。其他 equalizer 类型、多个同类滤镜、多个响度阶段及
-  任意复杂链仍无 Media3 等价实现，Toast 会指明具体未适配滤镜名。
+- 服务器提供测量参数的两遍 `loudnorm`、单遍 `loudnorm`、`dynaudnorm`、`volume=`、单个
+  `highpass`、单个 `lowpass`、peaking `equalizer` 以及独立 `highshelf`/`lowshelf` 已完成
+  实现；此前已验收的单段滤镜保持真机结论，多段与新增 shelf 类型仍待本轮真机对照。其他
+  equalizer 宽度类型、多响度阶段及任意复杂链仍无
+  类型、多个响度阶段及任意复杂链仍无 Media3 等价实现，Toast 会指明具体未适配滤镜名。
 - 网络/源错误自动恢复与诊断已进入待真机验证；解码错误已实现一次硬解→软解自动回退
   重试（`0c647b5`），仍需真机覆盖具体硬件解码失败、回退后可播与终态诊断场景。
 - Media3 自定义缓冲大小和点播缓冲时长按“时间安全阈值优先”重新实现，Samsung Android 16
   真机已确认不再黑屏；硬解开关已在 `3389f5a` 恢复生效，仍待真机对照 AVC/HEVC/AV1/
   DASH/直播/本地文件。mpv 自动同步、视频同步和具体硬解模式没有 Media3 一一对应能力。
-- Android 独立音频页已切换到 Media3 并生成审计包，仍待播放列表、循环、通知、音频焦点、
-  耳机/蓝牙和后台/息屏的 Media3/mpv 真机对照；非 Android 与关闭 ExoPlayer 的 mpv 路径
-  保留用于兼容和回归。
 - 进程重建和更多边缘生命周期仍需继续闭环。
 
 ## 下一步
 
-- 安全缓冲隔离包已由用户在 Samsung SM-S9180、Android 16 确认不再黑屏。下一优先级：
-  覆盖安装解码器/动态音频审计包，先在开启硬解下验证普通点播首帧、连续播放、拖动、
-  重开和 `PlaybackConfig` decoder 字段，再覆盖 AVC/HEVC/AV1、DASH、本地文件、直播、
-  清晰度/分P、全屏、后台、小窗和 PiP；若再次黑屏，立即回退到安全缓冲隔离包。
-- 使用本次独立音频审计包完成直接音频、列表/分段、起播位置、拖动、倍速、音量、循环、
-  后台/息屏、通知/锁屏/耳机媒体键、音频打断/ducking、耳机拔出、蓝牙断开、快速切歌和
-  关闭重进测试，并在相同入口切回 mpv 对照。
-
-1. Media3 超分基础行为已按用户决定验收；后续在 480p/720p/1080p/4K、不同编码、HDR、
-   截图、全屏、小窗和 PiP 回归时顺带记录尺寸与性能，不再要求通过肉眼明显差异或复制
-   mpv/Anime4K 的暂停加载来证明基础功能有效。
-
-2. 安全缓冲隔离 APK 已由用户确认不再黑屏；使用解码器/动态音频审计 APK 覆盖硬解开关、
-   AVC、HEVC、AV1、DASH、本地文件、直播、清晰度/分P、全屏、后台、小窗和 PiP，并对照
-   动态音量均衡听感。旧缓冲/解码组合审计 APK 不再使用。
-3. 使用批次 8 Media3 直播 v2 审计 APK 完成横屏/竖屏/方形直播、AVC/HEVC、服务端
-   可选协议/格式、清晰度/线路/CDN、播放/暂停及暂停切换保持、仅音频、刷新、断网重试、
-   后台/通知、应用内小窗、系统 PiP 和前后台生命周期验证；与 mpv 模式逐项对照。
-4. 使用批次 8 第四组审计 APK 在 Media3 点播、mpv 点播、Media3/mpv 直播和独立音频中验证
-   播放信息、字段复制和播放器音量；回归音频进度拖动与跳页前暂停，并确认新错误日志
-   显示 `Player Runtimes`。
-5. 使用批次 8 第三组审计 APK 验证直播横屏、竖屏和方形画面的尺寸/方向识别，切
-   清晰度与路线后的尺寸更新，播放信息和播放器音量，并在桌面验证音频页与视频播放
-   器的音量同步；直播仍需确认 mpv 行为无回归。
-6. 使用批次 8 渲染边界审计 APK 在 mpv 与 Media3 下对照普通窗口、全屏、旋转、全部
-   画面适配/比例、双向翻转、字幕显示与拖动、应用内小窗缩小/恢复，以及动态 WebP 的
-   开始、进度、取消和保存；直播画面改用本组 Media3 直播 v2 包与 mpv 模式对照。
-7. 使用批次 8 首组审计 APK 在 mpv 与 Media3 下对照关闭字幕、B 站字幕和外部
-   VTT/SRT/ASS/SSA 的加载与互切，并覆盖播放、暂停、跳转时 SponsorBlock 位置更新。
-8. 使用批次 7 截图生命周期修复审计 APK，先在报告问题的 Samsung Android 16 设备测试
-   播放状态普通截图，确认能显示预览、点击后成功保存且不再出现 native peer 错误；再测
-   暂停状态，并在 mpv 与 ExoPlayer 下对照普通截图、评论区截图和动态 WebP，
-   覆盖横竖屏、像素宽高比、水平/垂直翻转、播放/暂停、全屏、小窗、不同区间/预设、
-   进度、取消、保存、失败清理和当前播放会话不受转换影响；通过后补充真机验证记录。
-9. 使用批次 6 审计 APK 对照可恢复与永久错误，覆盖断网恢复、超时、HTTP 5xx、
-   重试耗尽、401/403/404、解码失败、播放/暂停意图，以及全屏、后台、应用内小窗和
-   系统 PiP；通过后补充真机验证记录。
-10. 使用批次 5 审计 APK 对照含多个内置文本轨的本地/网络媒体，覆盖逐轨选择、关闭、
-   内置字幕与 B 站/外部字幕双向切换，以及播放/暂停、跳转、全屏、后台、应用内小窗
-   和系统 PiP；通过后补充真机验证记录。
-11. 使用批次 4 最终审计 APK 对照服务器测量 loudnorm 的音量和听感，并覆盖切换、
-   后台、应用内小窗和系统 PiP；通过后补充真机验证记录。
-12. 使用批次 3 审计 APK 在 mpv 与 ExoPlayer 下逐项对照 DASH 独立音视频、本地
-   多轨、自动/关闭/指定轨道、“听视频”无重载切换及播放信息字段；通过后补充真机
-   验证记录。
-13. 使用批次 8 字幕边缘审计 APK 对照含 PGS/DVB 位图字幕和 WebVTT
-   vertical-rl/vertical-lr 的本地/网络媒体，覆盖透明度、尺寸、锚点、切换、关闭、
-   多列、标点、样式、跳转、普通窗口、全屏、旋转、应用内小窗和系统 PiP，并与 mpv
-   模式逐项对照；通过后补充真机验证记录。
-14. 直播真机结果稳定后，下一组优先处理本地视频或剩余生命周期边界；动态/自定义
-   音频滤镜仍保留为独立兼容任务。
-15. 清理仓库既有 37 条 info 后，使完整 `flutter analyze` 以零退出码通过。
-16. 真机回归本次上游同步涉及的视频卡片、UGC 分P列表、动态/评论文本选择和滚动。
-17. 继续跟踪上游；下次同步仍先 fetch、检查重叠文件，再执行合并和完整验证。
+- 优先补齐剩余 Media3 无等价实现的复杂 FFmpeg 音频滤镜（其他 equalizer 类型、多响度阶段
+  和任意复杂链）；不得隐藏入口或静默回退 mpv。
+- 完成网络/源错误恢复、真实硬解失败后的软件回退、硬解开关和缓冲设置的剩余真机矩阵。
+- 继续闭环进程重建、互动视频/本地文件小窗恢复，以及折叠屏、不同芯片和息屏/亮屏等
+  生命周期边界。
+- 清理仓库既有 `flutter analyze` info，并在下次上游同步前先 fetch、审查重叠文件后再合并。
 ### 2026-08-08 lowpass audio-filter mapping
 
 The ExoPlayer audio normalization bridge now supports one `lowpass=f=<Hz>` stage
@@ -950,3 +917,72 @@ the final audit artifact. The formal release baseline remains unchanged.
 - 待同一 Samsung 真机在 mpv 与 ExoPlayer 下复录并逐帧验收：短拉回弹、超过阈值进入
   竖屏全屏、全屏上滑退出、长短视频、竖屏视频、播放/暂停、横向进度/纵向音量亮度、评论
   刷新、应用内小窗及小窗恢复。自动化通过不能替代 120 Hz 真机帧时间验证。
+
+### 2026-08-10 竖屏全屏播放器连续缩放修复
+
+- 用户 V6 真机录屏显示：进入竖屏全屏时，黑色播放器区域和详情面板先完成位移，播放器
+  本体仍保持详情页高度；提交全屏状态后才切换到全屏高度，形成“先移动到中间、再放大”的
+  两段式视觉。上滑退出时同样先移动，提交退出后才缩回。
+- `PagePullVideoExpansion` 现在按同一个 `_pagePullAnimation` 进度插值播放器的真实高度，
+  `videoPlayer`、视频画面和控制层在拖动与补间阶段同步重新布局；移除了固定高度播放器的
+  `extraHeight / 2` 平移。外层 sliver extent 和详情面板合成层位移仍保持稳定，不恢复整页
+  每帧 layout 的旧实现。
+- 组件测试增加中间进度和全屏端点断言；定向测试 11/11、完整 Flutter 测试 66/66 通过，
+  完整 `dart analyze` 为 0 error、0 warning、35 条既有 info。Android universal Release
+  构建及发布身份校验通过。
+- 交付 APK：
+  `build/app/outputs/flutter-apk/pili++-2.1.8-2026081004-universal-release-pull-resize-v7-final.apk`；
+  APK SHA-256 为
+  `6748CDFF54C5B3C0BE7C2B5369AEE99CEF4486D838E250EDD2C3F43C6E3E40DA`，证书 SHA-256 为
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`。
+- 待同一 Samsung Android 16 真机分别在 mpv/ExoPlayer 下验证：详情顶部下拉进入、短拉
+  回弹、竖屏全屏上滑退出、短滑回弹、横屏/竖屏视频及播放/暂停状态；需要复录确认拖动期间
+  画面尺寸与位置同步变化，进入和退出端点没有第二次跳变。
+
+### 2026-08-11 ExoPlayer 换源宽高比刷新修复
+
+- 用户报告 ExoPlayer 自动连播复用播放器时，4:3 视频切到 9:16 视频仍沿用上一视频的
+  4:3 Texture/显示比例；直接打开 9:16 视频也可能先按错误比例显示。根因是 Media3
+  `open` 只依赖异步 `onVideoSizeChanged`，换源时没有清除原生会话和 Flutter 视图中的
+  上一媒体宽高，也没有利用业务层已经取得的新媒体宽高。
+- ExoPlayer `open` 现在携带当前视频元数据宽高。原生会话在新 generation 开始时立即重置
+  显示宽高、旋转和 `SurfaceProducer` 尺寸，再准备新媒体；Media3 解码器随后报告的实际
+  `VideoSize` 仍会覆盖提示值。Flutter `ExoPlayerView` 同时跟踪 generation，新媒体尺寸未知
+  时回到 16:9 占位，不再静默保留上一媒体比例。
+- 新增 1440x1080 -> 1080x1920 的同会话连续 `open` 回归测试。定向 Dart 分析无问题，
+  ExoPlayer 定向测试 18/18、完整 Flutter 测试 67/67、Android Debug Kotlin 编译和
+  Android Release 构建均通过。
+- Release 审计包为
+  `build/app/outputs/flutter-apk/pili++-2.1.8-2026081004-universal-release-exo-aspect-ratio-audit.apk`，
+  仅用于当前源码验证，不替代 2.1.8 正式交付、不更新发布基线。
+  `verify_release.ps1 -AllowAlreadyDelivered` 已确认 applicationId `com.shudo.plusplus`、应用名 `pili++`、
+  universal ABI 和既有证书；APK SHA-256 为
+  `9E1BB226FDA7E5C4A972514D9C60AB2E3F4F7D21E22566E277D148FDC15527F5`。
+- 待 Android 真机分别验证：直接打开 9:16 视频；4:3 自动连播到 9:16；9:16 自动连播到
+  4:3；横竖屏、全屏、应用内小窗和系统 PiP 中换源。真机通过前本项保持“实现完成、待验证”。
+
+### 2026-08-15 Android 具体硬解模式映射
+
+- ExoPlayer 创建会话时现在会把 `Pref.hardwareDecoding` 的具体值经 MethodChannel 传到
+  Android，不再只传硬解开关。`no` 选择仅软件视频 MediaCodec；`mediacodec`、
+  `mediacodec-copy`、`auto`、`auto-safe`、`auto-copy` 使用 Android MediaCodec 路径；
+  逗号分隔列表选择第一个 Android 可识别候选。关闭全局硬解开关时，软解优先级最高。
+- `vaapi`、`nvdec`、`d3d11va`、`videotoolbox`、`vulkan` 等非 Android/mpv 专属模式
+  不伪装成已支持：Media3 使用 Android 平台默认策略，并在 `PlaybackConfig` 中明确显示
+  原请求值和 `unsupported on Android`。`*-copy` 在 Media3 中只能映射到相同的
+  Surface/MediaCodec 路径，无法复制 mpv copy 模式的输出语义。
+- 设置页“mpv 硬解模式”已改为后端通用“硬解模式”，说明 mpv 保持原模式、Media3 执行
+  Android 映射。mpv 路径仍收到原始 `hwdec` 值，没有被本批改变。
+- 新增 `Media3DecoderModeTest`，覆盖软解、Android 可识别模式、全局开关优先、非 Android
+  模式诊断和候选列表解析；Dart MethodChannel 测试覆盖 `decoderMode` 传递。定向 Dart
+  分析无问题，相关 Flutter 测试通过 19/19，Android `:app:testDebugUnitTest` 与 Android
+  Release 构建通过。
+- 审计 APK：
+  `build/app/outputs/flutter-apk/pili++-2.1.8-2026081004-universal-release-exo-hwdec-mode-audit.apk`；
+  versionName `2.1.8`、versionCode `2026081004`、applicationId `com.shudo.plusplus`、
+  universal ABI 和既有证书均通过 `verify_release.ps1 -AllowAlreadyDelivered`。APK SHA-256：
+  `5F4E78FEF5F69879E8B3F4DC04A7B69566C6459103F2DBD2DDAE67F2B0B36A49`。该包只用于审计，
+  不更新正式发布基线。
+- 仍待 Android 真机矩阵：AVC/HEVC/AV1、独立 DASH 音频、直播、本地文件、软硬解切换、
+  解码失败的一次性软解回退、换源/清晰度/分P、拖动、后台、应用内小窗、系统 PiP、旋转，
+  并覆盖至少两类不同芯片/MediaCodec 实现。完成前状态为“Android 映射已实现、待真机验收”。

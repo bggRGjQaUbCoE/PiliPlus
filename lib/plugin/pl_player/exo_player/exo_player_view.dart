@@ -24,6 +24,7 @@ class ExoPlayerView extends StatefulWidget {
 
 class _ExoPlayerViewState extends State<ExoPlayerView> {
   StreamSubscription<ExoPlayerEvent>? _subscription;
+  int _generation = 0;
   int _width = 16;
   int _height = 9;
 
@@ -35,20 +36,23 @@ class _ExoPlayerViewState extends State<ExoPlayerView> {
 
   void _listenToPlayer() {
     final state = widget.controller.state;
+    _generation = state.generation;
     if (state.width > 0 && state.height > 0) {
       _width = state.width;
       _height = state.height;
     }
     _subscription = widget.controller.events.listen((event) {
-      if (!mounted ||
-          event.width <= 0 ||
-          event.height <= 0 ||
-          (event.width == _width && event.height == _height)) {
+      if (!mounted) {
         return;
       }
+      final mediaChanged = event.generation != _generation;
+      final width = event.width > 0 ? event.width : 16;
+      final height = event.height > 0 ? event.height : 9;
+      if (!mediaChanged && width == _width && height == _height) return;
       setState(() {
-        _width = event.width;
-        _height = event.height;
+        _generation = event.generation;
+        _width = width;
+        _height = height;
       });
     });
   }

@@ -5,25 +5,26 @@ class PagePullVideoExpansion extends StatelessWidget {
     required this.animation,
     required this.normalHeight,
     required this.expandedHeight,
-    required this.child,
+    required this.builder,
     super.key,
   });
 
   final Animation<double> animation;
   final double normalHeight;
   final double expandedHeight;
-  final Widget child;
+  final Widget Function(BuildContext context, double height) builder;
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: animation,
-      child: child,
-      builder: (context, child) {
+      builder: (context, _) {
         final progress = animation.value;
-        if (progress == 0 || expandedHeight <= normalHeight) return child!;
-        final extraHeight = (expandedHeight - normalHeight) * progress;
-        final height = normalHeight + extraHeight;
+        final height = expandedHeight <= normalHeight
+            ? normalHeight
+            : normalHeight + (expandedHeight - normalHeight) * progress;
+        final child = builder(context, height);
+        if (height == normalHeight) return child;
         return OverflowBox(
           alignment: Alignment.topCenter,
           minHeight: height,
@@ -32,13 +33,7 @@ class PagePullVideoExpansion extends StatelessWidget {
             height: height,
             child: ColoredBox(
               color: Colors.black,
-              child: Transform.translate(
-                offset: Offset(0, extraHeight / 2),
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  child: SizedBox(height: normalHeight, child: child),
-                ),
-              ),
+              child: child,
             ),
           ),
         );

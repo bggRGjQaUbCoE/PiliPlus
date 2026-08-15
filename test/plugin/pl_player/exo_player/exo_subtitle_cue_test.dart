@@ -533,6 +533,8 @@ void main() {
           'User-Agent': 'pili++ test',
           'Referer': 'https://www.bilibili.com',
         },
+        'expectedWidth': null,
+        'expectedHeight': null,
         'isLive': false,
         'positionMs': 7000,
         'playWhenReady': true,
@@ -555,6 +557,45 @@ void main() {
     },
   );
 
+  test('passes each media size to Media3 when reusing the player', () async {
+    const channel = MethodChannel('com.example.piliplus/exo_player');
+    final calls = <MethodCall>[];
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (call) async {
+          calls.add(call);
+          if (call.method == 'create') return 48;
+          return null;
+        });
+    addTearDown(
+      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, null),
+    );
+
+    final player = await ExoPlayerController.create();
+    addTearDown(player.dispose);
+    await player.open(
+      videoUrl: 'https://example.com/landscape.m4s',
+      headers: const {},
+      expectedWidth: 1440,
+      expectedHeight: 1080,
+    );
+    await player.open(
+      videoUrl: 'https://example.com/portrait.m4s',
+      headers: const {},
+      expectedWidth: 1080,
+      expectedHeight: 1920,
+      playWhenReady: true,
+    );
+
+    final opens = calls.where((call) => call.method == 'open').toList();
+    expect(opens, hasLength(2));
+    expect((opens.first.arguments as Map)['expectedWidth'], 1440);
+    expect((opens.first.arguments as Map)['expectedHeight'], 1080);
+    expect((opens.last.arguments as Map)['generation'], 2);
+    expect((opens.last.arguments as Map)['expectedWidth'], 1080);
+    expect((opens.last.arguments as Map)['expectedHeight'], 1920);
+  });
+
   test('creates Media3 with buffering and decoder preferences', () async {
     const channel = MethodChannel('com.example.piliplus/exo_player');
     final calls = <MethodCall>[];
@@ -571,6 +612,7 @@ void main() {
 
     final player = await ExoPlayerController.create(
       enableHardwareDecoding: false,
+      decoderMode: 'mediacodec',
       targetBufferBytes: 6 * 1024 * 1024,
       bufferDurationMs: 24000,
       isLive: true,
@@ -581,6 +623,7 @@ void main() {
     expect(calls.first.arguments, {
       'id': player.id,
       'enableHardwareDecoding': false,
+      'decoderMode': 'mediacodec',
       'targetBufferBytes': 6 * 1024 * 1024,
       'bufferDurationMs': 24000,
       'isLive': true,

@@ -976,24 +976,26 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                       animation: _pagePullAnimation,
                       normalHeight: normalHeight,
                       expandedHeight: fullHeight,
-                      child: RepaintBoundary(
-                        child: SizedBox(
-                          width: maxWidth,
-                          height: normalHeight,
-                          child: Stack(
-                            clipBehavior: .none,
-                            children: [
-                              Positioned.fill(
-                                child: videoPlayer(
-                                  width: maxWidth,
-                                  height: normalHeight,
+                      builder: (context, height) {
+                        return RepaintBoundary(
+                          child: SizedBox(
+                            width: maxWidth,
+                            height: height,
+                            child: Stack(
+                              clipBehavior: .none,
+                              children: [
+                                Positioned.fill(
+                                  child: videoPlayer(
+                                    width: maxWidth,
+                                    height: height,
+                                  ),
                                 ),
-                              ),
-                              _buildHeaderOverlay(),
-                            ],
+                                _buildHeaderOverlay(),
+                              ],
+                            ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
                   ),
                 ];

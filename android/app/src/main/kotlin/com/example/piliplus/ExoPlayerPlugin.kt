@@ -131,6 +131,7 @@ private class ExoPlayerManager(
                             Media3PlaybackConfiguration(
                                 enableHardwareDecoding =
                                     call.argument<Boolean>("enableHardwareDecoding") ?: true,
+                                decoderMode = call.argument<String>("decoderMode") ?: "auto-safe",
                                 targetBufferBytes =
                                     call.argument<Number>("targetBufferBytes")?.toLong()
                                         ?.coerceIn(MIN_TARGET_BUFFER_BYTES, Int.MAX_VALUE.toLong())
@@ -151,6 +152,8 @@ private class ExoPlayerManager(
                     val videoUrl = call.requiredString("videoUrl")
                     val audioUrl = call.argument<String>("audioUrl")
                     val headers = call.argument<Map<String, String>>("headers").orEmpty()
+                    val expectedWidth = call.argument<Number>("expectedWidth")?.toInt()
+                    val expectedHeight = call.argument<Number>("expectedHeight")?.toInt()
                     val isLive = call.argument<Boolean>("isLive") ?: false
                     val positionMs = call.argument<Number>("positionMs")?.toLong() ?: 0L
                     val generation = call.requiredLong("generation")
@@ -163,6 +166,8 @@ private class ExoPlayerManager(
                         videoUrl,
                         audioUrl,
                         headers,
+                        expectedWidth,
+                        expectedHeight,
                         isLive,
                         positionMs,
                         playWhenReady,
@@ -331,7 +336,7 @@ private class ExoPlayerSession(
         NormalizingRenderersFactory(
             context,
             audioNormalizationProcessor,
-            configuration.enableHardwareDecoding,
+            configuration.effectiveHardwareDecoding,
         ),
     ).setLoadControl(configuration.createLoadControl()).build().also {
         it.addListener(this)
@@ -390,6 +395,8 @@ private class ExoPlayerSession(
         videoUrl: String,
         audioUrl: String?,
         headers: Map<String, String>,
+        expectedWidth: Int?,
+        expectedHeight: Int?,
         isLive: Boolean,
         positionMs: Long,
         playWhenReady: Boolean,
@@ -410,12 +417,29 @@ private class ExoPlayerSession(
         audioDecoder = null
         firstVideoFrameRendered = false
         resetSuperResolutionForNewMedia()
+        resetVideoSizeForNewMedia(expectedWidth, expectedHeight)
         if (!preserveSubtitle) {
             subtitleRequest = null
         }
         subtitleCueSequence.incrementAndGet()
         updateSubtitleCues(emptyList())
         prepareMedia(positionMs, playWhenReady)
+    }
+
+    private fun resetVideoSizeForNewMedia(expectedWidth: Int?, expectedHeight: Int?) {
+        val nextWidth = expectedWidth?.takeIf { it > 0 } ?: 0
+        val nextHeight = expectedHeight?.takeIf { it > 0 } ?: 0
+        width = nextWidth
+        height = nextHeight
+        rotationDegrees = 0
+        if (nextWidth > 0 && nextHeight > 0) {
+            sourceVideoWidth = nextWidth
+            sourceVideoHeight = nextHeight
+            if (surfaceProducer.width != nextWidth || surfaceProducer.height != nextHeight) {
+                surfaceProducer.setSize(nextWidth, nextHeight)
+            }
+            applySuperResolutionEffect()
+        }
     }
 
     fun setSuperResolution(mode: Media3SuperResolutionMode) {
@@ -714,7 +738,7 @@ private class ExoPlayerSession(
     }
 
     fun retryWithSoftwareVideo(positionMs: Long, playWhenReady: Boolean) {
-        if (softwareVideoFallback || !configuration.enableHardwareDecoding) {
+        if (softwareVideoFallback || !configuration.effectiveHardwareDecoding) {
             retry(positionMs, playWhenReady)
             return
         }
@@ -1448,17 +1472,68 @@ private val SOFTWARE_VIDEO_CODEC_SELECTOR = MediaCodecSelector { mimeType, secur
     if (MimeTypes.isVideo(mimeType)) decoders.filter { it.softwareOnly } else decoders
 }
 
+internal data class Media3DecoderResolution(
+    val useHardwareDecoder: Boolean,
+    val description: String,
+)
+
+internal fun resolveMedia3DecoderMode(
+    requestedMode: String?,
+    enableHardwareDecoding: Boolean,
+): Media3DecoderResolution {
+    if (!enableHardwareDecoding) {
+        return Media3DecoderResolution(false, "no (software)")
+    }
+    val candidates = requestedMode.orEmpty()
+        .split(',')
+        .map(String::trim)
+        .filter(String::isNotEmpty)
+    if (candidates.isEmpty()) {
+        return Media3DecoderResolution(true, "platform-default")
+    }
+    val first = candidates.first()
+    if (first == "no") {
+        return Media3DecoderResolution(false, "no (software)")
+    }
+    val supportedHardwareModes = setOf(
+        "auto",
+        "auto-safe",
+        "auto-copy",
+        "mediacodec",
+        "mediacodec-copy",
+    )
+    val supported = candidates.firstOrNull { it in supportedHardwareModes }
+    return if (supported != null) {
+        Media3DecoderResolution(true, "$supported (MediaCodec)")
+    } else {
+        Media3DecoderResolution(
+            true,
+            "$first (unsupported on Android; platform-default)",
+        )
+    }
+}
+
 private data class Media3PlaybackConfiguration(
     val enableHardwareDecoding: Boolean = true,
+    val decoderMode: String = "auto-safe",
     val targetBufferBytes: Int = DEFAULT_TARGET_BUFFER_BYTES,
     val bufferDurationMs: Int = DEFAULT_BUFFER_DURATION_MS,
     val isLive: Boolean = false,
 ) {
+    val decoderResolution = resolveMedia3DecoderMode(
+        requestedMode = decoderMode,
+        enableHardwareDecoding = enableHardwareDecoding,
+    )
+    val effectiveHardwareDecoding: Boolean
+        get() = decoderResolution.useHardwareDecoder
+
     fun description(softwareVideoFallback: Boolean = false): String = buildString {
         append("decoder=")
         append(
-            if (enableHardwareDecoding && !softwareVideoFallback) "hardware" else "software",
+            if (effectiveHardwareDecoding && !softwareVideoFallback) "hardware" else "software",
         )
+        append(", hwdec=")
+        append(decoderResolution.description)
         append(", decoderFallback=true")
             if (isLive) {
                 append(", buffer=media3-live-default")

@@ -1,0 +1,41 @@
+diff --git a/lib/src/tabs.dart b/lib/src/tabs.dart
+index 8a0d078..0da4f14 100644
+--- a/lib/src/tabs.dart
++++ b/lib/src/tabs.dart
+@@ -9,7 +9,7 @@ import 'dart:math' as math;
+ import 'dart:ui' show SemanticsRole, lerpDouble;
+ 
+ import 'package:flutter/foundation.dart';
+-import 'package:flutter/gestures.dart' show DragStartBehavior;
++import 'package:flutter/gestures.dart' show DragStartBehavior, HorizontalDragGestureRecognizer;
+ import 'package:flutter/rendering.dart';
+ import 'package:flutter/widgets.dart';
+ 
+@@ -2274,8 +2274,17 @@ class TabBarView extends StatefulWidget {
+     this.dragStartBehavior = DragStartBehavior.start,
+     this.viewportFraction = 1.0,
+     this.clipBehavior = Clip.hardEdge,
++    this.scrollDirection = Axis.horizontal,
++    this.hitTestBehavior = HitTestBehavior.opaque,
++    this.horizontalDragGestureRecognizer = HorizontalDragGestureRecognizer.new,
+   });
+ 
++  final Axis scrollDirection;
++
++  final HitTestBehavior hitTestBehavior;
++
++  final ValueGetter<HorizontalDragGestureRecognizer> horizontalDragGestureRecognizer;
++
+   /// This widget's selection and animation state.
+   ///
+   /// If [TabController] is not provided, then the value of [DefaultTabController.of]
+@@ -2577,6 +2586,9 @@ class _TabBarViewState extends State<TabBarView> {
+         dragStartBehavior: widget.dragStartBehavior,
+         clipBehavior: widget.clipBehavior,
+         controller: _pageController,
++        scrollDirection: widget.scrollDirection,
++        hitTestBehavior: widget.hitTestBehavior,
++        horizontalDragGestureRecognizer: widget.horizontalDragGestureRecognizer,
+         physics: widget.physics == null
+             ? const PageScrollPhysics().applyTo(const ClampingScrollPhysics())
+             : const PageScrollPhysics().applyTo(widget.physics),

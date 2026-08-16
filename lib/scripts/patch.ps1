@@ -2,6 +2,9 @@ param(
     [string]$platform = ""
 )
 
+git config --global user.name "ci"
+git config --global user.email "example@example.com"
+
 # TODO: remove
 # https://github.com/flutter/flutter/issues/182281
 $NewOverScrollIndicator = "362b1de29974ffc1ed6faa826e1df870d7bec75f";
@@ -102,10 +105,14 @@ if ($platform.ToLower() -eq "ios") {
     git apply $BottomSheetIOSPiliPlusPatch
     if ($LASTEXITCODE -eq 0) {
         Write-Host "$BottomSheetIOSPiliPlusPatch applied"
+    } else {
+        throw "$LASTEXITCODE"
     }
     git apply $GeetestIOSPatch
     if ($LASTEXITCODE -eq 0) {
         Write-Host "$GeetestIOSPatch applied"
+    } else {
+        throw "$LASTEXITCODE"
     }
 }
 
@@ -126,6 +133,8 @@ switch ($platform.ToLower()) {
         $patches += $BottomSheetAndroidPatch
         $patches += $ScrollViewPatch
         $patches += $NavigatorPatch
+
+        git reset --hard HEAD
     }
     "ios" {
         $patches += $ScrollViewPatch
@@ -133,6 +142,7 @@ switch ($platform.ToLower()) {
         $patches += $NavigatorPatch
     }
     "linux" {
+        git reset --hard HEAD
     }
     "macos" {
     }
@@ -141,17 +151,14 @@ switch ($platform.ToLower()) {
     default {}
 }
 
-git config --global user.name "ci"
-git config --global user.email "example@example.com"
-
-git reset --hard HEAD
-
 foreach ($pick in $picks) {
     git stash
     git cherry-pick $pick --no-edit
     if ($LASTEXITCODE -eq 0) {
         git reset --soft HEAD~1
         Write-Host "$pick picked"
+    } else {
+        throw "$LASTEXITCODE"
     }
     git stash pop
 }
@@ -162,6 +169,8 @@ foreach ($revert in $reverts) {
     if ($LASTEXITCODE -eq 0) {
         git reset --soft HEAD~1
         Write-Host "$revert reverted"
+    } else {
+        throw "$LASTEXITCODE"
     }
     git stash pop
 }
@@ -170,5 +179,78 @@ foreach ($patch in $patches) {
     git apply "$env:GITHUB_WORKSPACE/$patch"
     if ($LASTEXITCODE -eq 0) {
         Write-Host "$patch applied"
+    } else {
+        throw "$LASTEXITCODE"
+    }
+}
+
+Set-Location $env:GITHUB_WORKSPACE
+
+$BottomSheetAndroidPatchMaterial = "lib/scripts/material/bottom_sheet_android.patch"
+
+$BottomSheetIOSFlutterMaterialPatchMaterial = "lib/scripts/material/bottom_sheet_ios_flutter_material.patch"
+
+$ModalBarrierPatchMaterial = "lib/scripts/material/modal_barrier_material.patch"
+
+$NavigationDrawerPatchMaterial = "lib/scripts/material/navigation_drawer.patch"
+
+$PopupMenuPatchMaterial = "lib/scripts/material/popup_menu.patch"
+
+$FABPatchMaterial = "lib/scripts/material/fab.patch"
+
+$TextFieldPatchMaterial = "lib/scripts/material/text_field.patch"
+
+$ScaffoldPatchMaterial = "lib/scripts/material/scaffold.patch"
+
+$RefreshIndicatorPatchMaterial = "lib/scripts/material/refresh_indicator.patch"
+
+$TabsPatchMaterial = "lib/scripts/material/tabs.patch"
+
+$patches_material = @($ModalBarrierPatchMaterial, $NavigationDrawerPatchMaterial, $PopupMenuPatchMaterial,
+                    $FABPatchMaterial, $TextFieldPatchMaterial, $ScaffoldPatchMaterial, $RefreshIndicatorPatchMaterial,
+                    $TabsPatchMaterial)
+
+$PubCacheDir = "~/.pub-cache"
+
+switch ($platform.ToLower()) {
+    "android" {
+        $patches_material += $BottomSheetAndroidPatchMaterial
+    }
+    "ios" {
+        $patches_material += $BottomSheetIOSFlutterMaterialPatchMaterial
+    }
+    "linux" {
+    }
+    "macos" {
+    }
+    "windows" {
+        $PubCacheDir = "$env:LOCALAPPDATA/Pub/Cache"
+    }
+    default {}
+}
+
+flutter pub get
+
+$MaterialUiDir = Get-ChildItem "$PubCacheDir/hosted/pub.dev" -Directory |
+    Where-Object { $_.Name -like "material_ui-*" } |
+    Select-Object -First 1
+
+if (-not $MaterialUiDir) {
+    throw "material_ui package not found in pub cache"
+}
+
+Get-ChildItem -Path "$env:GITHUB_WORKSPACE/lib/scripts/material" -Filter *.patch | ForEach-Object {
+    (Get-Content $_.FullName -Raw) -replace "`r`n", "`n" | 
+        Set-Content -NoNewline $_.FullName
+}
+
+cd $MaterialUiDir.FullName
+
+foreach ($patch in $patches_material) {
+    git apply "$env:GITHUB_WORKSPACE/$patch"
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "$patch applied"
+    } else {
+        throw "$LASTEXITCODE"
     }
 }

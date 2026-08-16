@@ -26,10 +26,6 @@ jobs:
           channel: stable
           flutter-version-file: pubspec.yaml
 
-      - name: Apply Patch
-        shell: pwsh
-        run: lib/scripts/patch.ps1 windows
-
       - name: Add fastforge and Inno Setup
         run: |
           dart pub global activate fastforge
@@ -44,9 +40,13 @@ jobs:
         shell: pwsh
         run: lib/scripts/build.ps1
 
+      - name: Apply Patch
+        shell: pwsh
+        run: lib/scripts/patch.ps1 windows
+
       - name: Build Windows
         run: |
-          fastforge package --platform windows --targets exe --flutter-build-args="dart-define-from-file=pili_release.json"
+          fastforge package --platform windows --targets exe --flutter-build-args="dart-define-from-file=pili_release.json,no-pub" --skip-clean
 
       - name: Prepare Upload
         run: |

@@ -1030,3 +1030,14 @@ the final audit artifact. The formal release baseline remains unchanged.
   `https://storage.googleapis.com/download.flutter.io/.../armeabi_v7a_debug-1.0.0-5f776256...pom`
   被远端中断而失败。该次没有生成可交付 APK；Android 构建与真机验证保持待完成，不能以此
   次失败宣称 Android Release 已验证。
+
+### 2026-08-17 Actions checksum fix
+
+- 手动 Actions Run `31987028340` 的 Android job 在 `Refresh media_kit native checksums` 失败：
+  上游 `media_kit` 使用 `url + md5` 条目，而旧脚本只匹配 `name + md5`，并且把“已是正确值”
+  错误当成未更新失败。
+- `tool/patch_media_kit_checksums.ps1` 现同时匹配两种条目格式，依据当前
+  `.dart_tool/package_config.json` 选择实际使用的 Git checkout，并允许已正确 checksum 幂等
+  通过；缺失、重复或未知值仍会严格失败。
+- 本地 Flutter 3.47.0 Pub 缓存验证通过，输出 `media_kit native checksums already current`；
+  修复待提交并推送，待 Actions 新运行确认 Android 构建继续通过。

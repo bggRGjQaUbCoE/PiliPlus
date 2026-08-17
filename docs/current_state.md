@@ -992,9 +992,9 @@ the final audit artifact. The formal release baseline remains unchanged.
 
 ### 2026-08-15 GitHub Actions Android CI
 
-- `Build` workflow 现在在 PR 和 `main` 推送时运行 Flutter 格式、静态分析和测试；PR 继续
-  生成开发 APK，`main` 推送或手动运行则从 GitHub Secrets 注入当前发布证书并生成签名
-  Android artifact。Secrets 为 `SIGN_KEYSTORE_BASE64`、`KEYSTORE_PASSWORD`、`KEY_ALIAS`、
+- `Build` workflow 现在在所有分支的非 Markdown 推送和 PR 上运行 Flutter 格式、静态分析和测试；
+  纯 Markdown 提交仍由 `paths-ignore` 跳过。PR 继续生成开发 APK，非 PR 推送或手动运行则从
+  GitHub Secrets 注入当前发布证书并生成签名 Android artifact。Secrets 为 `SIGN_KEYSTORE_BASE64`、
   `KEY_PASSWORD`，已按当前本地证书更新；证书和密码不写入 Git。
 - CI 构建元数据改由 `tool/write_ci_build_metadata.ps1` 从现有 `pubspec.yaml` 读取版本，
   不再用 Git commit 数量重写 Android `versionCode`，避免自动构建生成低于既有交付包的

@@ -9,26 +9,26 @@
 ## 仓库基线
 
 - 当前分支：`agent/exoplayer-concrete-hwdec`
-- 当前 HEAD：`4207fb2540448e660e7df1fc763ec4a29f076826`
-  (`ci: accept current media_kit checksum format`)
+- 当前 HEAD：`03ed055` (`Merge remote-tracking branch 'upstream/main' into agent/exoplayer-concrete-hwdec`)
 - 最新 GitHub 发布源提交：`859d39c4ff3c77c37e1cc1d7131192df8f8b4241`
   (`chore: prepare 2.1.2 release`)
 - 最新功能快照：`0c647b51ae60defc39c6171e5ca9387e43e596d2`
   (`feat: retry decoder failures with software video fallback`)
-- 最新上游合并提交：`4b827302d526eb35a9314590cba0d3b2e87ce4c6`
-  (`Merge upstream/main into agent/exoplayer-concrete-hwdec`)
+- 最新上游合并提交：`03ed055`
+  (`Merge remote-tracking branch 'upstream/main' into agent/exoplayer-concrete-hwdec`)
 - 上游：`https://github.com/bggRGjQaUbCoE/PiliPlus.git`
-- 已获取并合入的 `upstream/main`：`3a7d4614743cb7289293d6c47e13d96aec544f18`
-- 当前分支相对 `upstream/main` 为本地领先 76、落后 0；merge-base 即
-  `3a7d4614743cb7289293d6c47e13d96aec544f18`。
+- 已获取并合入的 `upstream/main`：`f8b9ef3e6eca50dafb187cfbcdd67cab78ee4d61`
+  (`upgrade deps`)
+- 当前分支相对 `upstream/main` 为本地领先 78、落后 0；merge-base 即
+  `f8b9ef3e6eca50dafb187cfbcdd67cab78ee4d61`。
 - 应用内小窗、音频焦点/媒体控制、系统 PiP 恢复、版本更新和兼容记录已保存到上述
   功能快照。交接时应以实际 `git status` 为准；存在未提交修改时不得直接 merge 或
   rebase。
 - `README.md` 已更新当前 ExoPlayer 迁移进度、应用内小窗行为、默认开关状态和
   上游同步说明；远程状态以实际 `git status` 和跟踪分支为准。
-- 本次上游同步前的本地 CI 修复已提交为 `d7f7d259c6aa15676aebd02e19e9bae2aeecf023`；
-  合并提交 `4b827302d526eb35a9314590cba0d3b2e87ce4c6` 已包含上游 15 个提交，当前工作区
-  以实际 `git status` 为准。
+- 本次上游同步前的本地 CI 修复已提交为 `4207fb2`，成功 Android CI 记录为 `1582a5b`；
+  合并提交 `03ed055` 已包含上游新增的 `810c26a`、`f73b9c9`、`f8b9ef3` 三个提交。
+  当前工作区以实际 `git status` 为准。
 
 ## 应用与发布身份
 
@@ -1012,6 +1012,36 @@ the final audit artifact. The formal release baseline remains unchanged.
 - 之前 Run `31882803739` 的失败根因为 `media_kit` fork 固定的旧 MD5 与
   `libmpv-android-video-build` `vnext` 于 2026-08-13 更新后的资源不一致；没有跳过校验，
   新增 `tool/patch_media_kit_checksums.ps1` 严格替换已核实的三个当前 MD5 后恢复完整性校验。
+
+### 2026-08-17 上游 Material UI/依赖同步
+
+- 在工作区干净、上游 `upstream/main@f8b9ef3` 已 fetch 后合并上游新增的三个提交：
+  `810c26a`（Material UI 迁移）、`f73b9c9`（Star History 修复）、`f8b9ef3`（依赖升级）。
+  合并提交为 `03ed055`，合并前本地领先 77、上游领先 3；合并后本地领先 78、落后 0。
+- 上游改动涉及 510 个文件；27 个文件与本地改造重叠，实际只有 5 个内容冲突。
+  `.github/workflows/build.yml` 保留本地 checksum、签名 Secrets、构建元数据和签名材料清理；
+  `lib/pages/video/view.dart` 保留本地视频 Listener、全屏和应用内小窗手势；
+  `lib/plugin/pl_player/widgets/play_pause_btn.dart` 保留统一 `PlayerStatus` 回调，未恢复
+  上游直接订阅 media_kit 的实现。Android Media3、应用内小窗、PiP、发布校验和状态文档文件
+  未被删除或覆盖。
+- 接受上游 `material_ui`、`cupertino_ui` 依赖以及 `flex_seed_scheme`/`getx` 的 `dev` 引用；
+  其余播放器和业务逻辑仅做 Material UI 导入迁移。Flutter 3.47.0 工具链和项目 Flutter/material_ui
+  patches 已应用。
+- 合并后验证：`dart format --output=none --set-exit-if-changed lib test` 通过；`dart analyze`
+  为 0 error、0 warning、35 条既有 info；`flutter test --no-pub --concurrency=1` 通过 69/69；
+  Android `:app:testDebugUnitTest` 通过；Flutter Release 分 ABI 构建通过。
+- 本地 Release 审计产物（未更新正式发布基线）：
+  `build/app/outputs/flutter-apk/app-arm64-v8a-release.apk` SHA-256
+  `037665AFBAB111B8F87F895FE0BF050D8A7E35D7DBD8C452B93F1A41A3942E8D`；
+  `build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk` SHA-256
+  `3759DB653EA61579F42C53E4949475D53D4C0AF1A3E352F0256F09FE71D6ACBB`；
+  `build/app/outputs/flutter-apk/app-x86_64-release.apk` SHA-256
+  `5E47CD1743E38B6B8104081DC1668B21F8416E85612F98167B1203989E0846BA`。
+  三份 APK 均通过 `tool/verify_release.ps1 -AllowAlreadyDelivered`，applicationId、应用名、
+  versionName/versionCode、ABI 和证书 `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`
+  一致。当前没有新增正式交付包，版本基线仍为 `2026081004`。
+- 本批未执行 Android 真机回归；mpv/ExoPlayer 播放控制、手势、应用内小窗和系统 PiP 仍需在
+  合并后的准确源码状态上按既有矩阵复核，不能仅凭自动化结果标记真机验收完成。
 
 ### 2026-08-17 上游同步
 

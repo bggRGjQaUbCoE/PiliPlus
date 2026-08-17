@@ -100,7 +100,7 @@ class _WhisperSecPageState extends State<WhisperSecPage> {
           final divider = Divider(
             indent: 72,
             endIndent: 20,
-            height: 1,
+            height: 0,
             color: Colors.grey.withValues(alpha: 0.1),
           );
           return SliverList.separated(

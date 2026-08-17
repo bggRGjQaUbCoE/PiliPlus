@@ -330,42 +330,68 @@ abstract final class RequestUtils {
             clearCookie: true,
           );
           final isSuccess = res.isSuccess;
-          final theme = ThemeUtils.theme;
-          final actions = [
-            if (!isSuccess)
-              TextButton(
-                onPressed: () {
-                  Get.back();
-                  Utils.copyText('https://www.bilibili.com/opus/$id');
-                  Get.toNamed(
-                    '/webview',
-                    parameters: {
-                      'url':
-                          'https://www.bilibili.com/h5/comment/appeal?${ThemeUtils.themeUrl(theme.isDark)}',
-                    },
-                  );
-                },
-                child: const Text('申诉'),
-              ),
-            if (!isManual)
-              TextButton(
-                onPressed: Get.back,
-                child: Text(
-                  '关闭',
-                  style: TextStyle(color: theme.colorScheme.outline),
-                ),
-              ),
-          ];
           showDialog(
             context: Get.context!,
             barrierDismissible: isManual,
-            builder: (context) => AlertDialog(
-              title: const Text('动态检查结果'),
-              content: SelectionText(
-                '${isSuccess ? '无账号状态下找到了你的动态，动态正常！' : '你的动态被shadow ban（仅自己可见）！'}${dynText != null ? ' \n\n动态内容: $dynText' : ''}',
-              ),
-              actions: actions.isEmpty ? null : actions,
-            ),
+            builder: (context) {
+              final colorScheme = ColorScheme.of(context);
+              final color = isSuccess ? colorScheme.primary : colorScheme.error;
+              final actions = [
+                if (!isSuccess)
+                  TextButton(
+                    onPressed: () {
+                      Get.back();
+                      Utils.copyText('https://www.bilibili.com/opus/$id');
+                      Get.toNamed(
+                        '/webview',
+                        parameters: {
+                          'url':
+                              'https://www.bilibili.com/h5/comment/appeal?${ThemeUtils.themeUrl(colorScheme.isDark)}',
+                        },
+                      );
+                    },
+                    child: const Text('申诉'),
+                  ),
+                if (!isManual)
+                  TextButton(
+                    onPressed: Get.back,
+                    child: Text(
+                      '关闭',
+                      style: TextStyle(color: colorScheme.outline),
+                    ),
+                  ),
+              ];
+              return AlertDialog(
+                title: Text.rich(
+                  TextSpan(
+                    children: [
+                      WidgetSpan(
+                        alignment: .middle,
+                        child: isSuccess
+                            ? Icon(
+                                size: 22,
+                                color: color,
+                                Icons.check_circle_outline_rounded,
+                              )
+                            : Icon(
+                                size: 22,
+                                color: color,
+                                Icons.highlight_off_outlined,
+                              ),
+                      ),
+                      TextSpan(
+                        text: ' 动态检查结果',
+                        style: TextStyle(color: color),
+                      ),
+                    ],
+                  ),
+                ),
+                content: SelectionText(
+                  '${isSuccess ? '无账号状态下找到了你的动态，动态正常！' : '你的动态被shadow ban（仅自己可见）！'}${dynText != null ? ' \n\n动态内容: $dynText' : ''}',
+                ),
+                actions: actions.isEmpty ? null : actions,
+              );
+            },
           );
         }
       } catch (e) {

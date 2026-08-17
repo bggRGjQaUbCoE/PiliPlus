@@ -19,6 +19,7 @@ import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/calc_window_position.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
+import 'package:PiliPlus/utils/extension/core_palettes_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/json_file_handler.dart';
 import 'package:PiliPlus/utils/max_screen_size.dart';
@@ -32,7 +33,7 @@ import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:catcher_2/catcher_2.dart';
 import 'package:collection/collection.dart';
-import 'package:dynamic_color/dynamic_color.dart';
+import 'package:dynamic_color/dynamic_color.dart' show DynamicColorPlugin;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -162,6 +163,8 @@ void main() async {
       ScreenBrightnessPlatform.instance.setAutoReset(false);
     }
   } else if (PlatformUtils.isDesktop) {
+    FocusManager.instance.addEarlyKeyEventHandler(_onKeyEvent);
+
     await windowManager.ensureInitialized();
 
     final windowOptions = WindowOptions(
@@ -212,30 +215,38 @@ void main() async {
   }
 }
 
+KeyEventResult _onKeyEvent(KeyEvent event) {
+  if (event.logicalKey == .escape && event is KeyDownEvent) {
+    _onBack();
+    return .handled;
+  }
+  return .ignored;
+}
+
+void _onBack() {
+  if (SmartDialog.checkExist()) {
+    SmartDialog.dismiss();
+    return;
+  }
+
+  final route = Get.routing.route;
+  if (route is GetPageRoute) {
+    if (route.popDisposition == .doNotPop) {
+      route.onPopInvokedWithResult(false, null);
+      return;
+    }
+  }
+
+  final navigator = Get.key.currentState!;
+  if (navigator.canPop()) {
+    navigator.pop();
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   static ColorScheme? _light, _dark;
-
-  static void _onBack() {
-    if (SmartDialog.checkExist()) {
-      SmartDialog.dismiss();
-      return;
-    }
-
-    final route = Get.routing.route;
-    if (route is GetPageRoute) {
-      if (route.popDisposition == .doNotPop) {
-        route.onPopInvokedWithResult(false, null);
-        return;
-      }
-    }
-
-    final navigator = Get.key.currentState;
-    if (navigator?.canPop() ?? false) {
-      navigator!.pop();
-    }
-  }
 
   static (ThemeData, ThemeData) getAllTheme() {
     final dynamicColor = _light != null && _dark != null && Pref.dynamicColor;
@@ -336,14 +347,17 @@ class MyApp extends StatelessWidget {
     if (_light != null || _dark != null) return true;
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
-      final corePalette = await DynamicColorPlugin.getCorePalette();
+      final colors = await DynamicColorPlugin.channel.invokeMethod(
+        DynamicColorPlugin.methodName,
+      );
 
-      if (corePalette != null) {
+      if (colors != null) {
+        final corePalettes = CorePalettesExt.fromList(colors.toList());
         if (kDebugMode) {
           debugPrint('dynamic_color: Core palette detected.');
         }
-        _light = corePalette.toColorScheme();
-        _dark = corePalette.toColorScheme(brightness: Brightness.dark);
+        _light = corePalettes.toColorScheme();
+        _dark = corePalettes.toColorScheme(brightness: Brightness.dark);
         return true;
       }
     } on PlatformException {

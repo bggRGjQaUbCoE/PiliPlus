@@ -89,6 +89,9 @@ class _SetDisplayModeState extends State<SetDisplayMode> {
               groupValue: preferred,
               child: ListView.builder(
                 itemCount: modes.length,
+                padding: .only(
+                  bottom: MediaQuery.viewPaddingOf(context).bottom,
+                ),
                 itemBuilder: (context, index) {
                   final DisplayMode mode = modes[index];
                   return RadioListTile<DisplayMode>(

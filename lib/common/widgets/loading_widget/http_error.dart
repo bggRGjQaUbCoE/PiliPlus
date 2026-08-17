@@ -44,7 +44,6 @@ class HttpError extends StatelessWidget {
             style: FilledButton.styleFrom(
               tapTargetSize: .padded,
               backgroundColor: theme.colorScheme.primary.withAlpha(20),
-              shadowColor: Colors.transparent,
             ),
             child: Text(
               btnText ?? '点击重试',

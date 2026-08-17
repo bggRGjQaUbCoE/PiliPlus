@@ -166,7 +166,7 @@ class _DynMentionPanelState
           ),
         ),
         Expanded(
-          child: SimpleScaffold(
+          child: ScaffoldLayout(
             body: NotificationListener<ScrollNotification>(
               onNotification: (notification) {
                 if (notification is UserScrollNotification) {
@@ -240,7 +240,7 @@ class _DynMentionPanelState
                   return SliverMainAxisGroup(
                     slivers: [
                       SliverPinnedHeader(
-                        backgroundColor: theme.colorScheme.surface,
+                        backgroundColor: theme.bottomSheetTheme.backgroundColor,
                         child: Padding(
                           padding: const .symmetric(
                             horizontal: 16,

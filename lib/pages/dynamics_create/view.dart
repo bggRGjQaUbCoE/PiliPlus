@@ -300,6 +300,7 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
             SliverToBoxAdapter(
               child: Material(
                 borderRadius: Style.mdRadius,
+                color: theme.colorScheme.secondaryContainer,
                 child: InkWell(
                   borderRadius: Style.mdRadius,
                   onTap: () => onPickImage(() {
@@ -307,14 +308,9 @@ class _CreateDynPanelState extends CommonRichTextPubPageState<CreateDynPanel> {
                       enablePublish.value = true;
                     }
                   }),
-                  child: Ink(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      borderRadius: Style.mdRadius,
-                      color: theme.colorScheme.secondaryContainer,
-                    ),
-                    child: const Center(child: Icon(Icons.add, size: 35)),
+                  child: const SizedBox.square(
+                    dimension: 100,
+                    child: Icon(Icons.add, size: 35),
                   ),
                 ),
               ),

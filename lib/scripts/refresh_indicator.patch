@@ -1,0 +1,12 @@
+diff --git a/packages/flutter/lib/src/material/progress_indicator.dart b/packages/flutter/lib/src/material/progress_indicator.dart
+index 96cb72bac62..07bfadb685b 100644
+--- a/packages/flutter/lib/src/material/progress_indicator.dart
++++ b/packages/flutter/lib/src/material/progress_indicator.dart
+@@ -1279,6 +1279,7 @@ class _RefreshProgressIndicatorPainter extends _CircularProgressIndicatorPainter
+ 
+   @override
+   void paint(Canvas canvas, Size size) {
++    if (size == .zero) return;
+     super.paint(canvas, size);
+     if (arrowheadScale > 0.0) {
+       paintArrowhead(canvas, size);

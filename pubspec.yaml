@@ -21,7 +21,7 @@ version: 2.1.8+2026081004
 
 environment:
   sdk: ">=3.12.0"
-  flutter: 3.44.8
+  flutter: 3.47.0
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -83,7 +83,7 @@ dependencies:
     git:
       url: https://github.com/bggRGjQaUbCoE/extended_nested_scroll_view.git
       ref: dev
-  file_picker: ^12.0.0-beta.7
+  file_picker: ^12.0.0
   fixnum: ^1.1.1
   fl_chart: ^1.0.0
   flex_seed_scheme: ^4.0.1
@@ -182,37 +182,37 @@ dependency_overrides:
       ref: v6.1.5
   media_kit:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: media_kit
       ref: version_1.2.5
   media_kit_libs_android_video:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: libs/android/media_kit_libs_android_video
       ref: version_1.2.5
   media_kit_libs_ios_video:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: libs/ios/media_kit_libs_ios_video
       ref: version_1.2.5
   media_kit_libs_video:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: libs/universal/media_kit_libs_video
       ref: version_1.2.5
   media_kit_libs_windows_video:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: libs/windows/media_kit_libs_windows_video
       ref: version_1.2.5
   media_kit_native_event_loop:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: media_kit_native_event_loop
       ref: version_1.2.5
   media_kit_video:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: media_kit_video
       ref: version_1.2.5
   cached_network_image_ce:

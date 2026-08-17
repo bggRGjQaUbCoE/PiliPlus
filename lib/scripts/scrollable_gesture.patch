@@ -172,19 +172,19 @@ index 158e7c321ed..b0d1205895f 100644
  
  class _GestureSemantics extends SingleChildRenderObjectWidget {
 diff --git a/packages/flutter/lib/src/widgets/page_view.dart b/packages/flutter/lib/src/widgets/page_view.dart
-index 59fa2544abe..43c57ad5f56 100644
+index b7afb232d19..1fc29ac818a 100644
 --- a/packages/flutter/lib/src/widgets/page_view.dart
 +++ b/packages/flutter/lib/src/widgets/page_view.dart
 @@ -11,7 +11,7 @@ library;
  import 'dart:math' as math;
  
- import 'package:flutter/foundation.dart' show clampDouble, precisionErrorTolerance;
+ import 'package:flutter/foundation.dart';
 -import 'package:flutter/gestures.dart' show DragStartBehavior;
 +import 'package:flutter/gestures.dart' show DragStartBehavior, HorizontalDragGestureRecognizer;
  import 'package:flutter/rendering.dart';
  
  import 'basic.dart';
-@@ -697,6 +697,7 @@ class PageView extends StatefulWidget {
+@@ -700,6 +700,7 @@ class PageView extends StatefulWidget {
      this.hitTestBehavior = HitTestBehavior.opaque,
      this.scrollBehavior,
      this.padEnds = true,
@@ -192,7 +192,7 @@ index 59fa2544abe..43c57ad5f56 100644
    }) : assert(
           scrollCacheExtent == null || (scrollCacheExtent.value > 0.0) == allowImplicitScrolling,
           'scrollCacheExtent and allowImplicitScrolling must be consistent: '
-@@ -751,6 +752,7 @@ class PageView extends StatefulWidget {
+@@ -754,6 +755,7 @@ class PageView extends StatefulWidget {
      this.hitTestBehavior = HitTestBehavior.opaque,
      this.scrollBehavior,
      this.padEnds = true,
@@ -200,7 +200,7 @@ index 59fa2544abe..43c57ad5f56 100644
    }) : assert(
           scrollCacheExtent == null || (scrollCacheExtent.value > 0.0) == allowImplicitScrolling,
           'scrollCacheExtent and allowImplicitScrolling must be consistent: '
-@@ -793,6 +795,7 @@ class PageView extends StatefulWidget {
+@@ -796,6 +798,7 @@ class PageView extends StatefulWidget {
      this.hitTestBehavior = HitTestBehavior.opaque,
      this.scrollBehavior,
      this.padEnds = true,
@@ -208,7 +208,7 @@ index 59fa2544abe..43c57ad5f56 100644
    }) : assert(
           scrollCacheExtent == null || (scrollCacheExtent.value > 0.0) == allowImplicitScrolling,
           'scrollCacheExtent and allowImplicitScrolling must be consistent: '
-@@ -802,6 +805,8 @@ class PageView extends StatefulWidget {
+@@ -805,6 +808,8 @@ class PageView extends StatefulWidget {
         scrollCacheExtent =
             scrollCacheExtent ?? ScrollCacheExtent.viewport(allowImplicitScrolling ? 1.0 : 0.0);
  
@@ -217,7 +217,7 @@ index 59fa2544abe..43c57ad5f56 100644
    /// {@template flutter.widgets.PageView.allowImplicitScrolling}
    /// Controls whether the widget's pages will respond to
    /// [RenderObject.showOnScreen], which will allow for implicit accessibility
-@@ -1021,6 +1026,7 @@ class _PageViewState extends State<PageView> {
+@@ -1024,6 +1029,7 @@ class _PageViewState extends State<PageView> {
          physics: physics,
          restorationId: widget.restorationId,
          hitTestBehavior: widget.hitTestBehavior,
@@ -226,7 +226,7 @@ index 59fa2544abe..43c57ad5f56 100644
              widget.scrollBehavior ?? ScrollConfiguration.of(context).copyWith(scrollbars: false),
          viewportBuilder: (BuildContext context, ViewportOffset position) {
 diff --git a/packages/flutter/lib/src/widgets/scrollable.dart b/packages/flutter/lib/src/widgets/scrollable.dart
-index 9df2d633f16..001565fbb00 100644
+index 05e5a7e5cf4..19a7ea6c8ba 100644
 --- a/packages/flutter/lib/src/widgets/scrollable.dart
 +++ b/packages/flutter/lib/src/widgets/scrollable.dart
 @@ -45,6 +45,8 @@ import 'viewport.dart';
@@ -250,7 +250,7 @@ index 9df2d633f16..001565fbb00 100644
    /// {@template flutter.widgets.Scrollable.axisDirection}
    /// The direction in which this widget scrolls.
    ///
-@@ -811,8 +816,7 @@ class ScrollableState extends State<Scrollable>
+@@ -812,8 +817,7 @@ class ScrollableState extends State<Scrollable>
            _gestureRecognizers = <Type, GestureRecognizerFactory>{
              HorizontalDragGestureRecognizer:
                  GestureRecognizerFactoryWithHandlers<HorizontalDragGestureRecognizer>(
@@ -260,7 +260,7 @@ index 9df2d633f16..001565fbb00 100644
                    (HorizontalDragGestureRecognizer instance) {
                      instance
                        ..onDown = _handleDragDown
-@@ -1020,26 +1024,37 @@ class ScrollableState extends State<Scrollable>
+@@ -1021,26 +1025,37 @@ class ScrollableState extends State<Scrollable>
      //
      // Since notificationContext is pointing to _gestureDetectorKey.context, _ScrollableScope
      // must be placed above the widget using it: RawGestureDetector

@@ -29,6 +29,7 @@ import 'package:PiliPlus/pages/dynamics_create/view.dart';
 import 'package:PiliPlus/pages/dynamics_detail/controller.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
+import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -60,33 +61,15 @@ class _DynamicDetailPageState
 
   late final RxBool _isRefreshing = false.obs;
 
-  void _startRefresh() {
-    _isRefreshing.value = true;
-    _refreshController
-      ..value = 0
-      ..repeat();
-  }
-
   void _stopRefresh() {
     if (!mounted) return;
     _isRefreshing.value = false;
-    _refreshController.stop();
   }
 
   void _onRefresh(Future<void> future) {
-    _startRefresh();
+    _isRefreshing.value = true;
     future.whenComplete(_stopRefresh);
-    // Future.delayed(
-    //   const Duration(milliseconds: 800),
-    // ).whenComplete(_stopRefresh);
   }
-
-  AnimationController? refreshController;
-  AnimationController get _refreshController =>
-      refreshController ??= AnimationController(
-        vsync: this,
-        duration: CircularProgressIndicator.defaultAnimationDuration,
-      );
 
   @override
   dynamic get arguments => {'item': controller.dynItem};
@@ -117,7 +100,6 @@ class _DynamicDetailPageState
   @override
   void dispose() {
     _scrollable = null;
-    refreshController?.dispose();
     super.dispose();
   }
 
@@ -390,30 +372,9 @@ class _DynamicDetailPageState
             left: 0,
             right: 0,
             top: displacement,
-            child: Obx(() {
-              final isRefreshing = _isRefreshing.value;
-              return AnimatedScale(
-                scale: isRefreshing ? 1 : 0,
-                duration: const Duration(milliseconds: 200),
-                child: Center(
-                  child: SizedBox.fromSize(
-                    size: const .square(40),
-                    child: Material(
-                      type: .circle,
-                      color: theme.colorScheme.onSecondary,
-                      elevation: 2.0,
-                      child: Padding(
-                        padding: const .all(6),
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          controller: _refreshController,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            }),
+            child: Obx(
+              () => _RefreshIndicator(isRefreshing: _isRefreshing.value),
+            ),
           ),
         ],
       );
@@ -694,5 +655,92 @@ class _DynamicDetailPageState
       final position = PrimaryScrollController.of(context).position;
       position.jumpTo(position.maxScrollExtent);
     } catch (_) {}
+  }
+}
+
+class _RefreshIndicator extends StatefulWidget {
+  const _RefreshIndicator({
+    required this.isRefreshing,
+  });
+
+  final bool isRefreshing;
+
+  @override
+  State<_RefreshIndicator> createState() => _RefreshIndicatorState();
+}
+
+class _RefreshIndicatorState extends State<_RefreshIndicator>
+    with TickerProviderStateMixin {
+  late final AnimationController _scaleController;
+  late final AnimationController _progressController;
+  late Color _color;
+
+  @override
+  void initState() {
+    super.initState();
+    _scaleController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _progressController = AnimationController(
+      vsync: this,
+      duration: CircularProgressIndicator.defaultAnimationDuration,
+    );
+  }
+
+  @override
+  void dispose() {
+    _scaleController.dispose();
+    _progressController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(_RefreshIndicator oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isRefreshing != widget.isRefreshing) {
+      if (widget.isRefreshing) {
+        _scaleController.value = 1;
+        _progressController
+          ..value = 0.0
+          ..repeat();
+      } else {
+        _scaleController.reverse();
+        _progressController.stop();
+      }
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final colorScheme = ColorScheme.of(context);
+    _color = colorScheme.isDark
+        ? colorScheme.onInverseSurface
+        : colorScheme.surface;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: _scaleController,
+      child: Center(
+        child: SizedBox.square(
+          dimension: 40,
+          child: Material(
+            type: .circle,
+            elevation: 2.0,
+            color: _color,
+            child: Padding(
+              padding: const .all(6),
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                controller: _progressController,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

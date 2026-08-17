@@ -289,17 +289,14 @@ class _SettingPageState extends State<SettingPage> {
       bottom: 8,
     ),
     child: Material(
-      type: MaterialType.transparency,
+      color: theme.colorScheme.onInverseSurface,
+      borderRadius: const BorderRadius.all(Radius.circular(50)),
       child: InkWell(
         onTap: () => Get.toNamed('/settingsSearch'),
         borderRadius: const BorderRadius.all(Radius.circular(50)),
-        child: Ink(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.all(Radius.circular(50)),
-            color: theme.colorScheme.onInverseSurface,
-          ),
-          child: const Center(
+        child: const Padding(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: Center(
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [

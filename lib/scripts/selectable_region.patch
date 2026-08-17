@@ -119,7 +119,7 @@ index 09fba7fc4fb..57ee469358e 100644
    void computeSemanticsInformation(
      List<InlineSpanSemanticsInformation> collector, {
 diff --git a/packages/flutter/lib/src/rendering/paragraph.dart b/packages/flutter/lib/src/rendering/paragraph.dart
-index 97a41dafb8d..1dc2f36538d 100644
+index 5bcc4570209..6fd10048ace 100644
 --- a/packages/flutter/lib/src/rendering/paragraph.dart
 +++ b/packages/flutter/lib/src/rendering/paragraph.dart
 @@ -7,6 +7,7 @@
@@ -130,7 +130,7 @@ index 97a41dafb8d..1dc2f36538d 100644
  import 'dart:math' as math;
  import 'dart:ui'
      as ui
-@@ -502,27 +503,17 @@ class RenderParagraph extends RenderBox
+@@ -506,27 +507,17 @@ class RenderParagraph extends RenderBox
    }
  
    List<_SelectableFragment> _getSelectableFragments() {
@@ -169,7 +169,7 @@ index 97a41dafb8d..1dc2f36538d 100644
    }
  
    /// Determines whether the given [Selectable] was created by this
-@@ -1467,7 +1458,7 @@ class RenderParagraph extends RenderBox
+@@ -1512,7 +1503,7 @@ class RenderParagraph extends RenderBox
  class _SelectableFragment
      with Selectable, Diagnosticable, ChangeNotifier
      implements TextLayoutMetrics {
@@ -178,7 +178,7 @@ index 97a41dafb8d..1dc2f36538d 100644
      : assert(range.isValid && !range.isCollapsed && range.isNormalized) {
      if (kFlutterMemoryAllocationsEnabled) {
        ChangeNotifier.maybeDispatchObjectCreation(this);
-@@ -1478,6 +1469,7 @@ class _SelectableFragment
+@@ -1523,6 +1514,7 @@ class _SelectableFragment
    final TextRange range;
    final RenderParagraph paragraph;
    final String fullText;
@@ -186,17 +186,18 @@ index 97a41dafb8d..1dc2f36538d 100644
  
    TextPosition? _textSelectionStart;
    TextPosition? _textSelectionEnd;
-@@ -1509,18 +1501,36 @@ class _SelectableFragment
+@@ -1553,19 +1545,37 @@ class _SelectableFragment
+ 
      final int selectionStart = _textSelectionStart!.offset;
      final int selectionEnd = _textSelectionEnd!.offset;
++
      final bool isReversed = selectionStart > selectionEnd;
 -    final Offset startOffsetInParagraphCoordinates = paragraph._getOffsetForPosition(
--      TextPosition(offset: selectionStart),
+-      _textSelectionStart!,
 -    );
 -    final Offset endOffsetInParagraphCoordinates = selectionStart == selectionEnd
 -        ? startOffsetInParagraphCoordinates
--        : paragraph._getOffsetForPosition(TextPosition(offset: selectionEnd));
-+
+-        : paragraph._getOffsetForPosition(_textSelectionEnd!);
      final flipHandles = isReversed != (TextDirection.rtl == paragraph.textDirection);
      final selection = TextSelection(baseOffset: selectionStart, extentOffset: selectionEnd);
 +    final List<ui.TextBox> boxes = paragraph.getBoxesForSelection(selection, boxHeightStyle: .max);
@@ -230,7 +231,7 @@ index 97a41dafb8d..1dc2f36538d 100644
      final selectionCollapsed = selectionStart == selectionEnd;
      final (
        TextSelectionHandleType startSelectionHandleType,
-@@ -1564,12 +1574,15 @@ class _SelectableFragment
+@@ -1609,12 +1619,15 @@ class _SelectableFragment
              result = _updateSelectionEdge(
                edgeUpdate.globalPosition,
                isEnd: edgeUpdate.type == SelectionEventType.endEdgeUpdate,
@@ -246,7 +247,7 @@ index 97a41dafb8d..1dc2f36538d 100644
              );
            case TextGranularity.paragraph:
              result = _updateSelectionEdgeByMultiSelectableTextBoundary(
-@@ -1626,9 +1639,33 @@ class _SelectableFragment
+@@ -1671,9 +1684,33 @@ class _SelectableFragment
      if (_textSelectionStart == null || _textSelectionEnd == null) {
        return null;
      }
@@ -282,7 +283,7 @@ index 97a41dafb8d..1dc2f36538d 100644
    }
  
    @override
-@@ -1848,6 +1885,7 @@ class _SelectableFragment
+@@ -1893,6 +1930,7 @@ class _SelectableFragment
      Offset globalPosition, {
      required bool isEnd,
      required _TextBoundaryAtPosition getTextBoundary,
@@ -290,7 +291,7 @@ index 97a41dafb8d..1dc2f36538d 100644
    }) {
      // When the start/end edges are swapped, i.e. the start is after the end, and
      // the scrollable synthesizes an event for the opposite edge, this will potentially
-@@ -1866,6 +1904,7 @@ class _SelectableFragment
+@@ -1918,6 +1956,7 @@ class _SelectableFragment
        _rect,
        localPosition,
        direction: paragraph.textDirection,
@@ -298,7 +299,7 @@ index 97a41dafb8d..1dc2f36538d 100644
      );
  
      final TextPosition position = paragraph.getPositionForOffset(adjustedOffset);
-@@ -1920,7 +1959,7 @@ class _SelectableFragment
+@@ -1972,7 +2011,7 @@ class _SelectableFragment
      return SelectionUtils.getResultBasedOnRect(_rect, localPosition);
    }
  
@@ -307,7 +308,7 @@ index 97a41dafb8d..1dc2f36538d 100644
      _setSelectionPosition(null, isEnd: isEnd);
      final Matrix4 transform = paragraph.getTransformTo(null);
      transform.invert();
-@@ -1932,11 +1971,30 @@ class _SelectableFragment
+@@ -1991,11 +2030,30 @@ class _SelectableFragment
        _rect,
        localPosition,
        direction: paragraph.textDirection,
@@ -341,7 +342,7 @@ index 97a41dafb8d..1dc2f36538d 100644
      _setSelectionPosition(position, isEnd: isEnd);
      if (position.offset == range.end) {
        return SelectionResult.next;
-@@ -3568,8 +3626,25 @@ class _SelectableFragment
+@@ -3634,8 +3692,25 @@ class _SelectableFragment
        final selectionPaint = Paint()
          ..style = PaintingStyle.fill
          ..color = paragraph.selectionColor!;
@@ -368,7 +369,7 @@ index 97a41dafb8d..1dc2f36538d 100644
 +        context.canvas.drawRect(mergedBox.toRect().shift(offset), selectionPaint);
        }
      }
-     if (_startHandleLayerLink != null && value.startSelectionPoint != null) {
+   }
 diff --git a/packages/flutter/lib/src/rendering/selection.dart b/packages/flutter/lib/src/rendering/selection.dart
 index a813e141dc4..d045236d031 100644
 --- a/packages/flutter/lib/src/rendering/selection.dart
@@ -456,10 +457,10 @@ index a813e141dc4..d045236d031 100644
  
  /// Extends the start or end of the selection by a given [TextGranularity].
 diff --git a/packages/flutter/lib/src/widgets/scrollable.dart b/packages/flutter/lib/src/widgets/scrollable.dart
-index 9df2d633f16..c6a43cc97a3 100644
+index 05e5a7e5cf4..d9b1c2b27b7 100644
 --- a/packages/flutter/lib/src/widgets/scrollable.dart
 +++ b/packages/flutter/lib/src/widgets/scrollable.dart
-@@ -1177,6 +1177,9 @@ class _ScrollableSelectionContainerDelegate extends MultiSelectableSelectionCont
+@@ -1178,6 +1178,9 @@ class _ScrollableSelectionContainerDelegate extends MultiSelectableSelectionCont
      _position.addListener(_scheduleLayoutChange);
    }
  
@@ -469,7 +470,7 @@ index 9df2d633f16..c6a43cc97a3 100644
    // Pointer drag is a single point, it should not have a size.
    static const double _kDefaultDragTargetSize = 0;
  
-@@ -1276,6 +1279,7 @@ class _ScrollableSelectionContainerDelegate extends MultiSelectableSelectionCont
+@@ -1277,6 +1280,7 @@ class _ScrollableSelectionContainerDelegate extends MultiSelectableSelectionCont
        event = SelectionEdgeUpdateEvent.forEnd(
          globalPosition: endOffset,
          granularity: event.granularity,
@@ -477,7 +478,7 @@ index 9df2d633f16..c6a43cc97a3 100644
        );
      } else {
        _currentDragStartRelatedToOrigin = _inferPositionRelatedToOrigin(event.globalPosition);
-@@ -1286,6 +1290,7 @@ class _ScrollableSelectionContainerDelegate extends MultiSelectableSelectionCont
+@@ -1287,6 +1291,7 @@ class _ScrollableSelectionContainerDelegate extends MultiSelectableSelectionCont
        event = SelectionEdgeUpdateEvent.forStart(
          globalPosition: startOffset,
          granularity: event.granularity,
@@ -486,10 +487,10 @@ index 9df2d633f16..c6a43cc97a3 100644
      }
      final SelectionResult result = super.handleSelectionEdgeUpdate(event);
 diff --git a/packages/flutter/lib/src/widgets/selectable_region.dart b/packages/flutter/lib/src/widgets/selectable_region.dart
-index 59de8bae20b..2084a40b24d 100644
+index be97aa35189..b502af93f23 100644
 --- a/packages/flutter/lib/src/widgets/selectable_region.dart
 +++ b/packages/flutter/lib/src/widgets/selectable_region.dart
-@@ -401,9 +401,11 @@ class SelectableRegionState extends State<SelectableRegion>
+@@ -406,9 +406,11 @@ class SelectableRegionState extends State<SelectableRegion>
    final LayerLink _startHandleLayerLink = LayerLink();
    final LayerLink _endHandleLayerLink = LayerLink();
    final LayerLink _toolbarLayerLink = LayerLink();
@@ -502,7 +503,7 @@ index 59de8bae20b..2084a40b24d 100644
  
    bool get _hasSelectionOverlayGeometry =>
        _selectionDelegate.value.startSelectionPoint != null ||
-@@ -599,48 +601,32 @@ class SelectableRegionState extends State<SelectableRegion>
+@@ -604,48 +606,32 @@ class SelectableRegionState extends State<SelectableRegion>
    //
    // This method should be used in all instances when details.consecutiveTapCount
    // would be used.
@@ -570,7 +571,7 @@ index 59de8bae20b..2084a40b24d 100644
      }
    }
  
-@@ -782,22 +768,8 @@ class SelectableRegionState extends State<SelectableRegion>
+@@ -787,22 +773,8 @@ class SelectableRegionState extends State<SelectableRegion>
              _selectionStatusNotifier.value = SelectableRegionSelectionStatus.changing;
          }
        case 3:
@@ -595,7 +596,7 @@ index 59de8bae20b..2084a40b24d 100644
      }
      _updateSelectedContentIfNeeded();
    }
-@@ -1049,10 +1021,10 @@ class SelectableRegionState extends State<SelectableRegion>
+@@ -1054,10 +1026,10 @@ class SelectableRegionState extends State<SelectableRegion>
        case TargetPlatform.windows:
          // If _lastSecondaryTapDownPosition is within the current selection then
          // keep the current selection, if not then collapse it.
@@ -610,7 +611,7 @@ index 59de8bae20b..2084a40b24d 100644
            // Restore _lastSecondaryTapDownPosition since it may be cleared if a user
            // accesses contextMenuAnchors.
            _lastSecondaryTapDownPosition = details.globalPosition;
-@@ -1105,7 +1077,7 @@ class SelectableRegionState extends State<SelectableRegion>
+@@ -1110,7 +1082,7 @@ class SelectableRegionState extends State<SelectableRegion>
    /// If the selectable subtree returns a [SelectionResult.pending], this method
    /// continues to send [SelectionEdgeUpdateEvent]s every frame until the result
    /// is not pending or users end their gestures.
@@ -619,7 +620,7 @@ index 59de8bae20b..2084a40b24d 100644
      // This method can be called when the drag is not in progress. This can
      // happen if the child scrollable returns SelectionResult.pending, and
      // the selection area scheduled a selection update for the next frame, but
-@@ -1117,6 +1089,7 @@ class SelectableRegionState extends State<SelectableRegion>
+@@ -1122,6 +1094,7 @@ class SelectableRegionState extends State<SelectableRegion>
            SelectionEdgeUpdateEvent.forEnd(
              globalPosition: _selectionEndPosition!,
              granularity: textGranularity,
@@ -627,7 +628,7 @@ index 59de8bae20b..2084a40b24d 100644
            ),
          ) ==
          SelectionResult.pending) {
-@@ -1159,7 +1132,7 @@ class SelectableRegionState extends State<SelectableRegion>
+@@ -1164,7 +1137,7 @@ class SelectableRegionState extends State<SelectableRegion>
    /// If the selectable subtree returns a [SelectionResult.pending], this method
    /// continues to send [SelectionEdgeUpdateEvent]s every frame until the result
    /// is not pending or users end their gestures.
@@ -636,7 +637,7 @@ index 59de8bae20b..2084a40b24d 100644
      // This method can be called when the drag is not in progress. This can
      // happen if the child scrollable returns SelectionResult.pending, and
      // the selection area scheduled a selection update for the next frame, but
-@@ -1171,6 +1144,7 @@ class SelectableRegionState extends State<SelectableRegion>
+@@ -1176,6 +1149,7 @@ class SelectableRegionState extends State<SelectableRegion>
            SelectionEdgeUpdateEvent.forStart(
              globalPosition: _selectionStartPosition!,
              granularity: textGranularity,
@@ -644,7 +645,7 @@ index 59de8bae20b..2084a40b24d 100644
            ),
          ) ==
          SelectionResult.pending) {
-@@ -1216,7 +1190,7 @@ class SelectableRegionState extends State<SelectableRegion>
+@@ -1221,7 +1195,7 @@ class SelectableRegionState extends State<SelectableRegion>
      _selectionStartPosition =
          _selectionStartHandleDragPosition -
          Offset(0, _selectionDelegate.value.startSelectionPoint!.lineHeight / 2);
@@ -653,7 +654,7 @@ index 59de8bae20b..2084a40b24d 100644
  
      _selectionOverlay!.updateMagnifier(
        _buildInfoForMagnifier(details.globalPosition, _selectionDelegate.value.startSelectionPoint!),
-@@ -1244,7 +1218,7 @@ class SelectableRegionState extends State<SelectableRegion>
+@@ -1249,7 +1223,7 @@ class SelectableRegionState extends State<SelectableRegion>
      _selectionEndPosition =
          _selectionEndHandleDragPosition -
          Offset(0, _selectionDelegate.value.endSelectionPoint!.lineHeight / 2);
@@ -662,7 +663,7 @@ index 59de8bae20b..2084a40b24d 100644
  
      _selectionOverlay!.updateMagnifier(
        _buildInfoForMagnifier(details.globalPosition, _selectionDelegate.value.endSelectionPoint!),
-@@ -1957,6 +1931,8 @@ class SelectableRegionState extends State<SelectableRegion>
+@@ -1970,6 +1944,8 @@ class SelectableRegionState extends State<SelectableRegion>
          // the region on non-web platforms.
          if (kIsWeb) {
            _focusNode.unfocus();
@@ -671,7 +672,7 @@ index 59de8bae20b..2084a40b24d 100644
          }
        },
        child: CompositedTransformTarget(
-@@ -2087,6 +2063,11 @@ class _DirectionallyExtendCaretSelectionAction<T extends DirectionalCaretMovemen
+@@ -2100,6 +2076,11 @@ class _DirectionallyExtendCaretSelectionAction<T extends DirectionalCaretMovemen
  ///  * [MultiSelectableSelectionContainerDelegate], for the class that provides
  ///  the main implementation details of this [SelectionContainerDelegate].
  class StaticSelectionContainerDelegate extends MultiSelectableSelectionContainerDelegate {
@@ -683,7 +684,7 @@ index 59de8bae20b..2084a40b24d 100644
    /// The set of [Selectable]s that have received start events.
    final Set<Selectable> _hasReceivedStartEvent = <Selectable>{};
  
-@@ -2367,6 +2348,8 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
+@@ -2380,6 +2361,8 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
    /// Gets the list of [Selectable]s this delegate is managing.
    List<Selectable> selectables = <Selectable>[];
  
@@ -692,7 +693,7 @@ index 59de8bae20b..2084a40b24d 100644
    /// The number of additional pixels added to the selection handle drawable
    /// area.
    ///
-@@ -2822,8 +2805,17 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
+@@ -2835,8 +2818,17 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
        return null;
      }
      final buffer = StringBuffer();
@@ -712,7 +713,7 @@ index 59de8bae20b..2084a40b24d 100644
      }
      return SelectedContent(plainText: buffer.toString());
    }
-@@ -3129,6 +3121,7 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
+@@ -3164,6 +3156,7 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
    /// Updates the selection edges.
    @protected
    SelectionResult handleSelectionEdgeUpdate(SelectionEdgeUpdateEvent event) {
@@ -720,7 +721,7 @@ index 59de8bae20b..2084a40b24d 100644
      if (event.type == SelectionEventType.endEdgeUpdate) {
        return currentSelectionEndIndex == -1
            ? _initSelection(event, isEnd: true)
-@@ -3139,6 +3132,10 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
+@@ -3174,6 +3167,10 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
          : _adjustSelection(event, isEnd: false);
    }
  
@@ -745,7 +746,7 @@ index 5d5a2386a7a..92e7d1eb70a 100644
  
    /// Gets the paint transform from the [Selectable] child to
 diff --git a/packages/flutter/lib/src/widgets/text.dart b/packages/flutter/lib/src/widgets/text.dart
-index a3aa5fde862..8fbf6a1b16d 100644
+index a44b97eeb0b..334cbb7c7cc 100644
 --- a/packages/flutter/lib/src/widgets/text.dart
 +++ b/packages/flutter/lib/src/widgets/text.dart
 @@ -992,6 +992,9 @@ class _SelectableTextContainerDelegate extends StaticSelectionContainerDelegate

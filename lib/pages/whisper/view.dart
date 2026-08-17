@@ -120,7 +120,7 @@ class _WhisperPageState extends State<WhisperPage> {
           final divider = Divider(
             indent: 72,
             endIndent: 20,
-            height: 1,
+            height: 0,
             color: Colors.grey.withValues(alpha: 0.1),
           );
           return SliverList.separated(
@@ -175,9 +175,13 @@ class _WhisperPageState extends State<WhisperPage> {
                           isLabelVisible: count > 0,
                           label: Text(" $count "),
                           alignment: Alignment.topRight,
-                          child: CircleAvatar(
-                            radius: 22,
-                            backgroundColor: theme.colorScheme.onInverseSurface,
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              shape: .circle,
+                              color: theme.colorScheme.onInverseSurface,
+                            ),
                             child: Icon(
                               item.icon,
                               size: 20,

@@ -9,7 +9,7 @@
 ## 仓库基线
 
 - 当前分支：`agent/exoplayer-concrete-hwdec`
-- 当前 HEAD：`03ed055` (`Merge remote-tracking branch 'upstream/main' into agent/exoplayer-concrete-hwdec`)
+- 当前 HEAD：`fe332c4` (`docs: record upstream material ui sync`)
 - 最新 GitHub 发布源提交：`859d39c4ff3c77c37e1cc1d7131192df8f8b4241`
   (`chore: prepare 2.1.2 release`)
 - 最新功能快照：`0c647b51ae60defc39c6171e5ca9387e43e596d2`
@@ -19,7 +19,7 @@
 - 上游：`https://github.com/bggRGjQaUbCoE/PiliPlus.git`
 - 已获取并合入的 `upstream/main`：`f8b9ef3e6eca50dafb187cfbcdd67cab78ee4d61`
   (`upgrade deps`)
-- 当前分支相对 `upstream/main` 为本地领先 78、落后 0；merge-base 即
+- 当前分支相对 `upstream/main` 为本地领先 79、落后 0；merge-base 即
   `f8b9ef3e6eca50dafb187cfbcdd67cab78ee4d61`。
 - 应用内小窗、音频焦点/媒体控制、系统 PiP 恢复、版本更新和兼容记录已保存到上述
   功能快照。交接时应以实际 `git status` 为准；存在未提交修改时不得直接 merge 或

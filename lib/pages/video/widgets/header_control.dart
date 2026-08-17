@@ -66,7 +66,7 @@ import 'package:dio/dio.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show compute;
-import 'package:flutter/material.dart' hide showBottomSheet;
+import 'package:material_ui/material_ui.dart' hide showBottomSheet;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';

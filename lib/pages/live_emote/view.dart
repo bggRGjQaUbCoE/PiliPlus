@@ -10,7 +10,7 @@ import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/live/live_emote/datum.dart';
 import 'package:PiliPlus/models_new/live/live_emote/emoticon.dart';
 import 'package:PiliPlus/pages/live_emote/controller.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
 
 class LiveEmotePanel extends StatefulWidget {

@@ -7,7 +7,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/whisper/widgets/item.dart';
 import 'package:PiliPlus/pages/whisper_secondary/controller.dart';
 import 'package:PiliPlus/utils/extension/three_dot_ext.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
 
 class WhisperSecPage extends StatefulWidget {

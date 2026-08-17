@@ -4,7 +4,7 @@
 
 // ignore_for_file: prefer_initializing_formals
 
-import 'package:flutter/material.dart' hide PopScope;
+import 'package:material_ui/material_ui.dart' hide PopScope;
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 

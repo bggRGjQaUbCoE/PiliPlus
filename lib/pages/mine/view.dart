@@ -21,7 +21,7 @@ import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:flutter/material.dart' hide ListTile;
+import 'package:material_ui/material_ui.dart' hide ListTile;
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';

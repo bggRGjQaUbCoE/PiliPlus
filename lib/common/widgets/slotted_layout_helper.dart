@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart' show SlottedContainerRenderObjectMixin;
+import 'package:material_ui/material_ui.dart' show SlottedContainerRenderObjectMixin;
 import 'package:flutter/rendering.dart'
     show Offset, RenderBox, BoxParentData, BoxHitTestResult;
 

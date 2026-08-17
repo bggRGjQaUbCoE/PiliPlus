@@ -193,3 +193,13 @@ Actions artifact，不创建 GitHub Release；正式发布仍需手动触发 wor
 ## 许可证
 
 本项目依据 [GNU General Public License v3.0](LICENSE) 发布。
+
+## Star History
+
+<a href="https://star-history.dera.page/#bggRGjQaUbCoE/PiliPlus&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=bggRGjQaUbCoE/PiliPlus&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=bggRGjQaUbCoE/PiliPlus&type=Date" />
+   <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=bggRGjQaUbCoE/PiliPlus&type=Date" />
+ </picture>
+</a>

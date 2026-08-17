@@ -16,7 +16,7 @@ library;
 
 import 'dart:ui' as ui show TextHeightBehavior;
 
-import 'package:flutter/material.dart' hide Text;
+import 'package:material_ui/material_ui.dart' hide Text;
 
 /// A run of text with a single style.
 ///

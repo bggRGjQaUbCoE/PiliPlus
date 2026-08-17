@@ -1,6 +1,6 @@
 import 'package:PiliPlus/pages/setting/widgets/checkbox_num_list_tile.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
 
 class OrderedMultiSelectDialog<T> extends StatefulWidget {

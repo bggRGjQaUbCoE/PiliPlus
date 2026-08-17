@@ -2,7 +2,7 @@ import 'package:PiliPlus/models/common/member/search_type.dart';
 import 'package:PiliPlus/pages/member_search/child/controller.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
 
 class MemberSearchController extends GetxController

@@ -12,7 +12,7 @@ import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class MusicVideoCardH extends StatelessWidget {
   final BgmRecommend videoItem;

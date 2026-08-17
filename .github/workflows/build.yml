@@ -156,7 +156,6 @@ jobs:
               if: ${{ github.event_name == 'pull_request' }}
               run: |
                   flutter build apk --release --split-per-abi --android-project-arg dev=1 --no-pub
-
             - name: Remove signing material
               if: ${{ always() && github.event_name != 'pull_request' }}
               run: rm -f android/key.properties android/app/key.jks

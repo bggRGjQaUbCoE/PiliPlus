@@ -21,10 +21,10 @@ packages:
     dependency: transitive
     description:
       name: android_file_picker
-      sha256: "24ccc79cdc9612614703dda2d6fd6c67e8b7b16529b54ab983578488ef2d721c"
+      sha256: "665a5a57dfca27f91a715d300e4852a784f9f98e503dcff281bec9afb55767be"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.0"
+    version: "1.0.1"
   ansicolor:
     dependency: transitive
     description:
@@ -367,6 +367,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.2"
+  cupertino_ui:
+    dependency: "direct main"
+    description:
+      name: cupertino_ui
+      sha256: "7ed8ce4159d342eec4c65f4ea6eec57adaf9365404378541f38efc1da20a5b3d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   dart_style:
     dependency: transitive
     description:
@@ -533,34 +541,34 @@ packages:
     dependency: transitive
     description:
       name: file_picker_darwin
-      sha256: "27be6ab5d48771f036b273c4424d83919226d7ceda04c7389cf8d632d9332303"
+      sha256: "5d87d156c1d63920447a662b7117d3498c67e3444a44d2cb01ed955d6efa62ef"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.0"
+    version: "1.0.1"
   file_picker_linux:
     dependency: transitive
     description:
       name: file_picker_linux
-      sha256: "5f8e1de3d032b6d0b2e840d30481abe41ead3ab28c9753a0187f3465d6797bf1"
+      sha256: "93d3f62f97c657053e7b184fe0f5e22347d85067c053640a30b1ac8ad7844e3b"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.0"
+    version: "1.0.1"
   file_picker_platform_interface:
     dependency: transitive
     description:
       name: file_picker_platform_interface
-      sha256: bfa1bfc65e92d521063ebebe6ffea4e7b0c0be87bbae52d9e69aab08cd2f94f4
+      sha256: "9e7a7e01e179929241f0afeb2c8c69ac95e29e17c0abea36ed193881c6bef90c"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0"
+    version: "3.0.1"
   file_picker_web:
     dependency: transitive
     description:
       name: file_picker_web
-      sha256: "3c0d736648b92d488b4ce8de4c88a35998c98287eebd50e9cb3a60bc8a953d96"
+      sha256: f1af38b3c91fafe0ca97f659b5c6818a057473ef09bb8b722f9f3f5364aa7eed
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0"
+    version: "3.0.1"
   file_selector_linux:
     dependency: transitive
     description:
@@ -612,10 +620,11 @@ packages:
   flex_seed_scheme:
     dependency: "direct main"
     description:
-      name: flex_seed_scheme
-      sha256: a3183753bbcfc3af106224bff3ab3e1844b73f58062136b7499919f49f3667e7
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: dev
+      resolved-ref: ed3c2a298eb20309533095ca50a5fb64f0ba2dcf
+      url: "https://github.com/bggRGjQaUbCoE/flex_seed_scheme.git"
+    source: git
     version: "4.0.1"
   flutter:
     dependency: "direct main"
@@ -798,8 +807,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "version_4.7.2"
-      resolved-ref: "388fcb22ef24ac0a693949148d29fa6b4922159f"
+      ref: dev
+      resolved-ref: "12c9d4d1517186390e92f86063369f4a26d01fdb"
       url: "https://github.com/bggRGjQaUbCoE/getx.git"
     source: git
     version: "4.7.2"
@@ -1145,6 +1154,14 @@ packages:
     description:
       name: material_new_shapes
       sha256: e4bc375205e187e8fb232573387112dd8c0dd45b03af8aa2b3c79eb4b9e3e0dc
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
+  material_ui:
+    dependency: "direct main"
+    description:
+      name: material_ui
+      sha256: d9b4f6c69b80bc83d0a14357c86e4c14c8076e807ae73cf2960c8560f623995f
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
@@ -1734,10 +1751,10 @@ packages:
     dependency: "direct main"
     description:
       name: synchronized
-      sha256: "61894a1956de6b4fc1aefd0892e109514a1a706cbece3ac59decd90ff5a7a423"
+      sha256: "3a7b5d17422dd0f8d5c6c14feaa5a1c65638b9455f871a96f08437562c046931"
       url: "https://pub.dev"
     source: hosted
-    version: "3.4.1+1"
+    version: "3.4.1+2"
   term_glyph:
     dependency: transitive
     description:
@@ -1992,10 +2009,10 @@ packages:
     dependency: transitive
     description:
       name: windows_file_picker
-      sha256: bb25e1b0098c316cc5bcfa04e858f36644c68598884dcd254fbedbbd62f68406
+      sha256: "72cf23466e146f2c0f19e1d78be97ff6409dc15b0c090f8eb284f94f4a33de26"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.0"
+    version: "1.0.1"
   xdg_directories:
     dependency: transitive
     description:

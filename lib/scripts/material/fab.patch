@@ -1,0 +1,17 @@
+diff --git a/lib/src/floating_action_button.dart b/lib/src/floating_action_button.dart
+index 3989b3d..a63e564 100644
+--- a/lib/src/floating_action_button.dart
++++ b/lib/src/floating_action_button.dart
+@@ -621,9 +621,9 @@ class FloatingActionButton extends StatelessWidget {
+       result = Tooltip(message: tooltip, child: result);
+     }
+ 
+-    if (heroTag != null) {
+-      result = Hero(tag: heroTag!, child: result);
+-    }
++    // if (heroTag != null) {
++    //   result = Hero(tag: heroTag!, child: result);
++    // }
+ 
+     return MergeSemantics(child: result);
+   }

@@ -8,7 +8,7 @@ import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/reply/reply_search_type.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
 
 class ReplySearchItem extends StatelessWidget {

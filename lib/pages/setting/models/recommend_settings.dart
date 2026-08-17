@@ -4,7 +4,7 @@ import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/utils/recommend_filter.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
 
 List<SettingsModel> get recommendSettings => [

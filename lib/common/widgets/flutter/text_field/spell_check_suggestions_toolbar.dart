@@ -5,8 +5,8 @@
 // ignore_for_file: prefer_initializing_formals
 
 import 'package:PiliPlus/common/widgets/flutter/text_field/editable_text.dart';
-import 'package:flutter/cupertino.dart' hide EditableText, EditableTextState;
-import 'package:flutter/material.dart'
+import 'package:cupertino_ui/cupertino_ui.dart' hide EditableText, EditableTextState;
+import 'package:material_ui/material_ui.dart'
     hide EditableText, EditableTextState, SpellCheckSuggestionsToolbar;
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart'

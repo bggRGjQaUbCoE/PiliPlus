@@ -9,8 +9,8 @@
 ## 仓库基线
 
 - 当前分支：`agent/exoplayer-concrete-hwdec`
-- 当前 HEAD：`4b827302d526eb35a9314590cba0d3b2e87ce4c6`
-  (`Merge upstream/main into agent/exoplayer-concrete-hwdec`)
+- 当前 HEAD：`4207fb2540448e660e7df1fc763ec4a29f076826`
+  (`ci: accept current media_kit checksum format`)
 - 最新 GitHub 发布源提交：`859d39c4ff3c77c37e1cc1d7131192df8f8b4241`
   (`chore: prepare 2.1.2 release`)
 - 最新功能快照：`0c647b51ae60defc39c6171e5ca9387e43e596d2`
@@ -19,7 +19,7 @@
   (`Merge upstream/main into agent/exoplayer-concrete-hwdec`)
 - 上游：`https://github.com/bggRGjQaUbCoE/PiliPlus.git`
 - 已获取并合入的 `upstream/main`：`3a7d4614743cb7289293d6c47e13d96aec544f18`
-- 当前分支相对 `upstream/main` 为本地领先 74、落后 0；merge-base 即
+- 当前分支相对 `upstream/main` 为本地领先 76、落后 0；merge-base 即
   `3a7d4614743cb7289293d6c47e13d96aec544f18`。
 - 应用内小窗、音频焦点/媒体控制、系统 PiP 恢复、版本更新和兼容记录已保存到上述
   功能快照。交接时应以实际 `git status` 为准；存在未提交修改时不得直接 merge 或
@@ -1040,4 +1040,8 @@ the final audit artifact. The formal release baseline remains unchanged.
   `.dart_tool/package_config.json` 选择实际使用的 Git checkout，并允许已正确 checksum 幂等
   通过；缺失、重复或未知值仍会严格失败。
 - 本地 Flutter 3.47.0 Pub 缓存验证通过，输出 `media_kit native checksums already current`；
-  修复待提交并推送，待 Actions 新运行确认 Android 构建继续通过。
+  修复提交为 `4207fb2540448e660e7df1fc763ec4a29f076826` 并已推送。新的 Android-only Run
+  `31991855057` 已通过 Flutter quality、checksum 校验、Release APK 构建、签名材料清理、
+  重命名和三个 artifact 上传。产物为 `pili++_android_2.1.8+2026081004_arm64-v8a.apk`、
+  `pili++_android_2.1.8+2026081004_armeabi-v7a.apk`、
+  `pili++_android_2.1.8+2026081004_x86_64.apk`；本次手动运行未创建 GitHub Release。

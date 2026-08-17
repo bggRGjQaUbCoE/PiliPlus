@@ -122,6 +122,13 @@ jobs:
               shell: pwsh
               run: lib/scripts/patch.ps1 android
 
+            - name: Install dependencies
+              run: flutter pub get
+
+            - name: Refresh media_kit native checksums
+              shell: pwsh
+              run: tool/patch_media_kit_checksums.ps1
+
             - name: Write key
               if: github.event_name != 'pull_request'
               env:
@@ -143,12 +150,12 @@ jobs:
 
             - name: Flutter Build Release Apk
               if: ${{ github.event_name != 'pull_request' }}
-              run: flutter build apk --release --split-per-abi --dart-define-from-file=pili_release.json --pub
+              run: flutter build apk --release --split-per-abi --dart-define-from-file=pili_release.json --no-pub
 
             - name: Flutter Build Dev Apk
               if: ${{ github.event_name == 'pull_request' }}
               run: |
-                  flutter build apk --release --split-per-abi --android-project-arg dev=1 --pub
+                  flutter build apk --release --split-per-abi --android-project-arg dev=1 --no-pub
 
             - name: Remove signing material
               if: ${{ always() && github.event_name != 'pull_request' }}

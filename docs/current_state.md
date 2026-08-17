@@ -1,6 +1,6 @@
 # pili++ 当前项目状态
 
-> 最后核对：2026-08-15 +08:00
+> 最后核对：2026-08-16 +08:00
 >
 > 本文件记录会随开发变化、但后续任务必须知道的事实。开始任务时先核对这里与实际
 > Git、源码和构建产物；结束任务前更新。长期规则见 `AGENTS.md`，ExoPlayer 详细兼容
@@ -997,3 +997,17 @@ the final audit artifact. The formal release baseline remains unchanged.
   不再用 Git commit 数量重写 Android `versionCode`，避免自动构建生成低于既有交付包的
   版本。自动构建只上传 Actions artifact；创建 GitHub Release 仍需要手动触发并明确提供
   tag，正式交付仍应执行项目 release 校验和真机验收。
+- 2026-08-16 PR Run `31921644323` 在提交 `96bfeabccd63cc61f22e4776a35351bb61da4524` 上通过：
+  Flutter quality、Android 开发 APK、iOS 和 Windows 均成功；Android 的
+  `Refresh media_kit native checksums` 步骤成功，证明外部 `vnext` 资源校验修复生效。
+- 2026-08-16 手动 Android Release Run `31922285975`（仅 Android、无 tag）通过：四项
+  签名 Secrets 写入成功，Release 构建、清理签名材料、重命名和三个 artifact 上传均成功。
+  产物为 `pili++_android_2.1.8+2026081004_arm64-v8a.apk`、
+  `pili++_android_2.1.8+2026081004_armeabi-v7a.apk`、
+  `pili++_android_2.1.8+2026081004_x86_64.apk`，Actions artifact 摘要分别为
+  `783d2503499ffcd29091bcee5b510bd3374597a3b6e280f88d19a9e5945322f7`、
+  `42e3eb3cd3fe249b251afc8abd36ff0dc54c1f6766d29419fb7d388df1c8d4a5`、
+  `bca34690db279c67a1ead669f9ad7e45161cadc692c04db5d9ea8771e6e81d12`。
+- 之前 Run `31882803739` 的失败根因为 `media_kit` fork 固定的旧 MD5 与
+  `libmpv-android-video-build` `vnext` 于 2026-08-13 更新后的资源不一致；没有跳过校验，
+  新增 `tool/patch_media_kit_checksums.ps1` 严格替换已核实的三个当前 MD5 后恢复完整性校验。

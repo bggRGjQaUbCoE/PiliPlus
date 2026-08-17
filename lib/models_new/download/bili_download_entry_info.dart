@@ -5,7 +5,7 @@ import 'package:PiliPlus/pages/common/multi_select/base.dart'
     show MultiSelectData;
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/route_manager.dart';
 

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart' show ReloadMixin;
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/init.dart';
@@ -41,15 +41,13 @@ import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:expandable/expandable.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 class UgcIntroController extends CommonIntroController with ReloadMixin {
-  late ExpandableController expandableCtr;
-
+  late final RxBool expand;
   final RxBool status = true.obs;
 
   // up主粉丝数
@@ -72,18 +70,15 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   @override
   void onInit() {
     super.onInit();
-    bool alwaysExpandIntroPanel = Pref.alwaysExpandIntroPanel;
-    expandableCtr = ExpandableController(
-      initialExpanded: alwaysExpandIntroPanel,
-    );
+    final alwaysExpandIntroPanel = Pref.alwaysExpandIntroPanel;
+    expand = RxBool(alwaysExpandIntroPanel);
     if (!alwaysExpandIntroPanel && Pref.expandIntroPanelH) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!expandableCtr.expanded && !DeviceUtils.size.isPortrait) {
-          expandableCtr.toggle();
+        if (!expand.value && !DeviceUtils.size.isPortrait) {
+          expand.toggle();
         }
       });
     }
-
     videoDetail.value.title = Get.arguments['title'] ?? '';
   }
 
@@ -490,6 +485,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
             cid: cid,
             cover: cover,
             dimension: dimension,
+            title: episode.title,
           );
           return false;
         }
@@ -556,12 +552,6 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       if (kDebugMode) debugPrint('ugc onChangeEpisode: $e');
       return false;
     }
-  }
-
-  @override
-  void onClose() {
-    expandableCtr.dispose();
-    super.onClose();
   }
 
   /// 播放上一个

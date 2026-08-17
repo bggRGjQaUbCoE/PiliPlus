@@ -6,7 +6,7 @@ import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class SearchPgcItem extends StatelessWidget {
   const SearchPgcItem({

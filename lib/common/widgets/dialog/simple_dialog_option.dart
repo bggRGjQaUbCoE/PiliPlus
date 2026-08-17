@@ -1,5 +1,5 @@
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 final EdgeInsets _padding = PlatformUtils.isMobile
     ? const .symmetric(horizontal: 16, vertical: 14)

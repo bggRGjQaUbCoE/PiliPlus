@@ -9,7 +9,7 @@ import 'package:PiliPlus/pages/dynamics/widgets/interaction.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class DynamicPanel extends StatelessWidget {
   final DynamicItemModel item;

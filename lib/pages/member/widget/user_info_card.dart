@@ -3,7 +3,9 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/avatars.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart'
+    show tabBarScrollPhysics;
+import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/member/user_info_type.dart';
@@ -24,6 +26,7 @@ import 'package:PiliPlus/pages/member_guard/view.dart';
 import 'package:PiliPlus/pages/member_upower_rank/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
+import 'package:PiliPlus/utils/bili_colors.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/color_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
@@ -37,7 +40,7 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
@@ -278,13 +281,17 @@ class UserInfoCard extends StatelessWidget {
                     shape: .circle,
                     color: colorScheme.surface,
                   ),
-                  child: Icon(
-                    Icons.offline_bolt,
-                    color: card.officialVerify?.type == 0
-                        ? const Color(0xFFFFCC00)
-                        : Colors.lightBlueAccent,
-                    size: 18,
-                  ),
+                  child: card.officialVerify?.type == 0
+                      ? const Icon(
+                          Icons.offline_bolt,
+                          color: BiliColors.yellow,
+                          size: 18,
+                        )
+                      : const Icon(
+                          Icons.offline_bolt,
+                          color: Colors.lightBlueAccent,
+                          size: 18,
+                        ),
                 ),
               ),
               const TextSpan(text: ' '),
@@ -306,7 +313,7 @@ class UserInfoCard extends StatelessWidget {
   Widget _buildSign() {
     return Padding(
       padding: const .only(left: 20, top: 6, right: 20),
-      child: SelectableText(
+      child: SelectionText(
         card.sign!.trim().replaceAll(RegExp(r'\n{2,}'), '\n'),
         style: const TextStyle(fontSize: 14),
       ),
@@ -389,6 +396,7 @@ class UserInfoCard extends StatelessWidget {
   }
 
   Column _buildRight(ColorScheme colorScheme) => Column(
+    spacing: 5,
     mainAxisSize: .min,
     children: [
       Row(
@@ -412,7 +420,6 @@ class UserInfoCard extends StatelessWidget {
             .skip(1)
             .toList(),
       ),
-      const SizedBox(height: 5),
       Row(
         spacing: 10,
         mainAxisSize: .min,
@@ -435,33 +442,46 @@ class UserInfoCard extends StatelessWidget {
                 }
               },
               icon: const Icon(Icons.mail_outline, size: 21),
-              style: IconButton.styleFrom(
-                side: BorderSide(
-                  width: 1.0,
-                  color: colorScheme.outline.withValues(alpha: 0.3),
+              style: ButtonStyle(
+                side: WidgetStatePropertyAll(
+                  BorderSide(
+                    width: 1.0,
+                    color: colorScheme.outline.withValues(alpha: 0.3),
+                  ),
                 ),
-                padding: .zero,
-                tapTargetSize: .padded,
+                padding: const WidgetStatePropertyAll(.zero),
+                tapTargetSize: .shrinkWrap,
                 visualDensity: .compact,
               ),
             ),
           Expanded(
             child: FilledButton.tonal(
-              onPressed: onFollow,
-              style: FilledButton.styleFrom(
+              onPressed: !isOwner && relation == -1 ? null : onFollow,
+              style: ButtonStyle(
+                padding: const WidgetStatePropertyAll(.zero),
                 backgroundColor: relation != 0
-                    ? colorScheme.onInverseSurface
+                    ? WidgetStatePropertyAll(colorScheme.onInverseSurface)
                     : null,
                 tapTargetSize: .padded,
                 visualDensity: const VisualDensity(vertical: -1.8),
               ),
               child: Text.rich(
-                style: TextStyle(
-                  color: relation != 0 ? colorScheme.outline : null,
-                ),
+                style: relation != 0
+                    ? TextStyle(color: colorScheme.outline)
+                    : null,
                 TextSpan(
                   children: [
-                    if (relation != 0 && relation != 128) ...[
+                    if (relation == -1) ...[
+                      WidgetSpan(
+                        alignment: .middle,
+                        child: Icon(
+                          Icons.block,
+                          size: 16,
+                          color: colorScheme.outline,
+                        ),
+                      ),
+                      const TextSpan(text: ' '),
+                    ] else if (relation != 0 && relation != 128) ...[
                       WidgetSpan(
                         alignment: .middle,
                         child: Icon(
@@ -476,7 +496,7 @@ class UserInfoCard extends StatelessWidget {
                       text: isOwner
                           ? '编辑资料'
                           : switch (relation) {
-                              0 => '关注',
+                              0 || -1 => '关注',
                               1 => '悄悄关注',
                               2 => '已关注',
                               // 3 => '回关',
@@ -616,7 +636,7 @@ class UserInfoCard extends StatelessWidget {
             child: PageView.builder(
               controller: controller,
               itemCount: imgUrls.length,
-              physics: clampingScrollPhysics,
+              physics: tabBarScrollPhysics,
               itemBuilder: (context, index) {
                 final img = imgUrls[index];
                 return fromHero(

@@ -1,0 +1,13 @@
+diff --git a/packages/flutter/lib/src/material/text_field.dart b/packages/flutter/lib/src/material/text_field.dart
+index 0420aca37c2..d8eb0a639b4 100644
+--- a/packages/flutter/lib/src/material/text_field.dart
++++ b/packages/flutter/lib/src/material/text_field.dart
+@@ -301,7 +301,7 @@ class TextField extends StatefulWidget {
+     this.scrollPadding = const EdgeInsets.all(20.0),
+     this.dragStartBehavior = DragStartBehavior.start,
+     bool? enableInteractiveSelection,
+-    this.selectAllOnFocus,
++    this.selectAllOnFocus = false,
+     this.selectionControls,
+     this.onTap,
+     this.onTapAlwaysCalled = false,

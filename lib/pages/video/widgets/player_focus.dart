@@ -8,7 +8,7 @@ import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart'
     show KeyDownEvent, KeyUpEvent, LogicalKeyboardKey, HardwareKeyboard;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -107,6 +107,10 @@ class PlayerFocus extends StatelessWidget {
         introController!.onCancelTriple(isKeyQ);
       }
       return true;
+    } else if (event is KeyDownEvent) {
+      if (introController?.isTripling ?? false) {
+        introController!.onCancelTriple();
+      }
     }
 
     final isArrowUp = key == LogicalKeyboardKey.arrowUp;
@@ -180,8 +184,8 @@ class PlayerFocus extends StatelessWidget {
           return true;
 
         case LogicalKeyboardKey.keyD:
-          final newVal = !plPlayerController.enableShowDanmaku.value;
-          plPlayerController.enableShowDanmaku.value = newVal;
+          final newVal = !plPlayerController.enableShowDanmakuAdaptive.value;
+          plPlayerController.enableShowDanmakuAdaptive.value = newVal;
           if (!plPlayerController.tempPlayerConf) {
             GStorage.setting.put(
               plPlayerController.isLive

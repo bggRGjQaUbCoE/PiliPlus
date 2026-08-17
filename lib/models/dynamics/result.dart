@@ -7,6 +7,7 @@ import 'package:PiliPlus/models/model_avatar.dart';
 import 'package:PiliPlus/models/model_owner.dart';
 import 'package:PiliPlus/models_new/live/live_feed_index/watched_show.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
+import 'package:PiliPlus/utils/parse_bool.dart';
 import 'package:PiliPlus/utils/parse_int.dart';
 import 'package:PiliPlus/utils/parse_string.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -427,9 +428,10 @@ class ModuleAuthorModel extends Avatar {
     }
     type = json['type'];
     if (PendantAvatar.showDecorate) {
-      decorate = json['decorate'] == null
-          ? null
-          : Decorate.fromJson(json['decorate']);
+      final decorate = json['decorate'] ?? json['decoration_card'];
+      if (decorate != null) {
+        this.decorate = Decorate.fromJson(decorate);
+      }
     } else {
       pendant = null;
     }
@@ -464,7 +466,7 @@ class Fan {
 
   factory Fan.fromJson(Map<String, dynamic> json) => Fan(
     color: json["color"],
-    numStr: json["num_str"],
+    numStr: json["num_str"] ?? json['num_desc'],
   );
 }
 
@@ -1345,7 +1347,7 @@ class DynamicStat {
     if (safeToInt(json['count']) case final count? when count > 0) {
       this.count = count;
     }
-    status = json['status'];
+    status = safeToBool(json['status'], () => 'STATE_LIKE');
   }
 }
 

@@ -3,13 +3,14 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/member_guard/guard_top_list.dart';
 import 'package:PiliPlus/pages/member_guard/controller.dart';
 import 'package:PiliPlus/utils/extension/widget_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:flutter/material.dart' hide ListTile;
+import 'package:material_ui/material_ui.dart' hide ListTile;
 import 'package:get/get.dart';
 
 class MemberGuard extends StatefulWidget {
@@ -53,8 +54,7 @@ class _MemberGuardState extends State<MemberGuard> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return SimpleScaffold(
       appBar: AppBar(
         title: Text('$_userName的舰队${_count == null ? '' : '($_count)'}'),
       ),

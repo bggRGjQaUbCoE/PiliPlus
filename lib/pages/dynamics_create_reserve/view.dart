@@ -1,8 +1,9 @@
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/time_picker.dart';
 import 'package:PiliPlus/pages/dynamics_create_reserve/controller.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:flutter/material.dart' hide showTimePicker;
+import 'package:material_ui/material_ui.dart' hide showTimePicker;
 import 'package:flutter/services.dart'
     show TextInputFormatter, LengthLimitingTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -46,7 +47,7 @@ class _CreateReservePageState extends State<CreateReservePage> {
       ),
       const SizedBox(height: 10),
     ];
-    return Scaffold(
+    return SimpleScaffold(
       appBar: AppBar(title: const Text('添加直播预约')),
       body: ListView(
         padding: EdgeInsets.only(
@@ -67,7 +68,7 @@ class _CreateReservePageState extends State<CreateReservePage> {
                 () => PopupMenuButton(
                   requestFocus: false,
                   initialValue: _controller.subType.value,
-                  onSelected: (value) => _controller.subType.value = value,
+                  onSelected: _controller.subType.call,
                   itemBuilder: (context) {
                     return const [
                       PopupMenuItem(

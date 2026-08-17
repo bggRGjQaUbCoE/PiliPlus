@@ -44,7 +44,7 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flex_seed_scheme/flex_seed_scheme.dart' show FlexSchemeVariant;
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
 import 'package:hive_ce/hive.dart';
 
@@ -267,10 +267,10 @@ abstract final class Pref {
     }
 
     final codecs = _setting.get(SettingBoxKey.preferCodecs);
-    if (codecs is List && codecs.isNotEmpty) {
+    if (codecs is List) {
       return codecs.map((i) => VideoDecodeFormatType.values.byName(i)).toList();
     }
-    return const [];
+    return const <VideoDecodeFormatType>[.AVC, .AV1];
   }
 
   static String get hardwareDecoding => _setting.get(
@@ -326,9 +326,6 @@ abstract final class Pref {
 
   static double get blockLimit =>
       _setting.get(SettingBoxKey.blockLimit, defaultValue: 0.0);
-
-  static double get refreshDragPercentage =>
-      _setting.get(SettingBoxKey.refreshDragPercentage, defaultValue: 0.25);
 
   static double get refreshDisplacement => _setting.get(
     SettingBoxKey.refreshDisplacement,

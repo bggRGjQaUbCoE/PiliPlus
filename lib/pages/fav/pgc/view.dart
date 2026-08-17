@@ -1,7 +1,7 @@
 import 'package:PiliPlus/pages/fav/pgc/child_view.dart';
 import 'package:PiliPlus/pages/fav/pgc/controller.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
 
 class FavPgcPage extends StatefulWidget {

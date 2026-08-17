@@ -2,6 +2,18 @@ import Cocoa
 import FlutterMacOS
 
 class MainFlutterWindow: NSWindow {
+  private func applyOpaqueWindowAppearance() {
+    // 恢复系统默认的不透明窗口背景
+    self.isOpaque = true
+    self.backgroundColor = .windowBackgroundColor
+
+    // 正常显示标题栏时禁用透明效果
+    if self.titleVisibility == .visible {
+      self.titlebarAppearsTransparent = false
+      self.styleMask.remove(.fullSizeContentView)
+    }
+  }
+
   override func awakeFromNib() {
     let flutterViewController = FlutterViewController.init()
     // 先不显示窗口
@@ -9,9 +21,7 @@ class MainFlutterWindow: NSWindow {
     self.contentViewController = flutterViewController
     self.setFrame(self.frame, display: true)
 
-    // 背景别用默认黑色
-    self.isOpaque = false
-    self.backgroundColor = .clear
+    applyOpaqueWindowAppearance()
 
     RegisterGeneratedPlugins(registry: flutterViewController)
 
@@ -20,7 +30,10 @@ class MainFlutterWindow: NSWindow {
       forName: NSNotification.Name("io.flutter.embedding.engine.firstFrame"),
       object: flutterViewController.engine, queue: .main
     ) { [weak self] _ in
-      self?.makeKeyAndOrderFront(nil)
+      guard let self else { return }
+      // window_manager 配置完成后恢复不透明样式
+      self.applyOpaqueWindowAppearance()
+      self.makeKeyAndOrderFront(nil)
       NSApp.activate(ignoringOtherApps: true)
     }
     // 不在这里调用 makeKeyAndOrderFront

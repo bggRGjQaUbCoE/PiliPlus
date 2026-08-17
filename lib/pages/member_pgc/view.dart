@@ -6,7 +6,7 @@ import 'package:PiliPlus/models_new/space/space_archive/item.dart';
 import 'package:PiliPlus/pages/member_pgc/controller.dart';
 import 'package:PiliPlus/pages/member_pgc/widgets/pgc_card_v_member_pgc.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
 
 class MemberBangumi extends StatefulWidget {

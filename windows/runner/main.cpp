@@ -26,6 +26,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
 
   flutter::DartProject project(L"data");
 
+  // https://github.com/flutter/flutter/issues/188635
+  // https://github.com/flutter/flutter/issues/191050
+  // https://github.com/flutter/flutter/issues/191069
+  project.set_impeller_switch(flutter::ImpellerSwitch::Disabled);
+
   std::vector<std::string> command_line_arguments =
       GetCommandLineArguments();
 

@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/skeleton/video_reply.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
@@ -16,7 +17,7 @@ import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:easy_debounce/easy_throttle.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
 
 class MainReplyPage extends StatefulWidget {
@@ -57,19 +58,9 @@ class _MainReplyPageState extends State<MainReplyPage>
   @override
   Widget build(BuildContext context) {
     final colorScheme = ColorScheme.of(context);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return SimpleScaffold(
       appBar: AppBar(title: const Text('查看评论')),
-      body: NotificationListener<UserScrollNotification>(
-        onNotification: (notification) {
-          final direction = notification.direction;
-          if (direction == .forward) {
-            showFab();
-          } else if (direction == .reverse) {
-            hideFab();
-          }
-          return false;
-        },
+      body: fabAnimWrapper(
         child: refreshIndicator(
           onRefresh: _controller.onRefresh,
           child: Padding(
@@ -89,11 +80,13 @@ class _MainReplyPageState extends State<MainReplyPage>
           ),
         ).constraintWidth(),
       ),
-      floatingActionButtonLocation: const NoBottomPaddingFabLocation(),
-      floatingActionButton: SlideTransition(
+      fab: SlideTransition(
         position: fabAnimation,
         child: Padding(
-          padding: .only(bottom: padding.bottom + kFloatingActionButtonMargin),
+          padding: .only(
+            right: kFloatingActionButtonMargin + padding.right,
+            bottom: kFloatingActionButtonMargin + padding.bottom,
+          ),
           child: FloatingActionButton(
             heroTag: null,
             onPressed: () {
@@ -183,7 +176,7 @@ class _MainReplyPageState extends State<MainReplyPage>
       child: Padding(
         padding: const .fromLTRB(12, 2.5, 6, 2.5),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: .spaceBetween,
           children: [
             Obx(
               () {
@@ -220,8 +213,7 @@ class _MainReplyPageState extends State<MainReplyPage>
       int oid = replyItem.oid.toInt();
       int rpid = replyItem.id.toInt();
       Get.to(
-        Scaffold(
-          resizeToAvoidBottomInset: false,
+        SimpleScaffold(
           appBar: AppBar(
             title: const Text('评论详情'),
             shape: Border(

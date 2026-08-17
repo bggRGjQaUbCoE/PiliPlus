@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
@@ -18,7 +19,7 @@ import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
@@ -88,34 +89,37 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
     ThemeData theme,
     LoadingState<List<PgcReviewItemModel>?> loadingState,
   ) {
-    late final divider = Divider(
-      height: 1,
-      color: theme.colorScheme.outline.withValues(alpha: 0.1),
-    );
-    return switch (loadingState) {
-      Loading() => SliverPrototypeExtentList.builder(
-        prototypeItem: const VideoReplySkeleton(),
-        itemBuilder: (_, _) => const VideoReplySkeleton(),
-        itemCount: 8,
-      ),
-      Success(:final response) =>
-        response != null && response.isNotEmpty
-            ? SliverList.separated(
-                itemBuilder: (context, index) {
-                  if (index == response.length - 1) {
-                    _controller.onLoadMore();
-                  }
-                  return _itemWidget(theme, index, response[index]);
-                },
-                itemCount: response.length,
-                separatorBuilder: (context, index) => divider,
-              )
-            : HttpError(onReload: _controller.onReload),
-      Error(:final errMsg) => HttpError(
-        errMsg: errMsg,
-        onReload: _controller.onReload,
-      ),
-    };
+    switch (loadingState) {
+      case Loading():
+        return SliverPrototypeExtentList.builder(
+          prototypeItem: const VideoReplySkeleton(),
+          itemBuilder: (_, _) => const VideoReplySkeleton(),
+          itemCount: 8,
+        );
+      case Success(:final response):
+        if (response != null && response.isNotEmpty) {
+          final divider = Divider(
+            height: 1,
+            color: theme.colorScheme.outline.withValues(alpha: 0.1),
+          );
+          return SliverList.separated(
+            itemBuilder: (context, index) {
+              if (index == response.length - 1) {
+                _controller.onLoadMore();
+              }
+              return _itemWidget(theme, index, response[index]);
+            },
+            itemCount: response.length,
+            separatorBuilder: (context, index) => divider,
+          );
+        }
+        return HttpError(onReload: _controller.onReload);
+      case Error(:final errMsg):
+        return HttpError(
+          errMsg: errMsg,
+          onReload: _controller.onReload,
+        );
+    }
   }
 
   Widget _itemWidget(ThemeData theme, int index, PgcReviewItemModel item) {
@@ -287,7 +291,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                   style: const TextStyle(height: 1.75),
                 )
               else
-                SelectableText(
+                SelectionText(
                   item.content!,
                   style: const TextStyle(height: 1.75),
                 ),
@@ -377,7 +381,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
     child: Padding(
       padding: const EdgeInsets.fromLTRB(12, 2.5, 6, 2.5),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: .spaceBetween,
         children: [
           Obx(
             () {

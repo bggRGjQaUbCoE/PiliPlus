@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 mixin BaseFabMixin<T extends StatefulWidget> on State<T>, TickerProvider {
   late bool _isFabVisible = true;
@@ -33,6 +33,24 @@ mixin BaseFabMixin<T extends StatefulWidget> on State<T>, TickerProvider {
       _isFabVisible = false;
       fabAnimationCtr.forward();
     }
+  }
+
+  Widget fabAnimWrapper({required Widget child}) {
+    return NotificationListener<UserScrollNotification>(
+      onNotification: onNotification,
+      child: child,
+    );
+  }
+
+  bool onNotification(UserScrollNotification notification) {
+    switch (notification.direction) {
+      case .forward:
+        showFab();
+      case .reverse:
+        hideFab();
+      default:
+    }
+    return false;
   }
 }
 

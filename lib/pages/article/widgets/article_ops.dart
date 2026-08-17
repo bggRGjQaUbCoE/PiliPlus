@@ -7,7 +7,7 @@ import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
 
 class ArticleOpus extends StatelessWidget {
@@ -33,7 +33,7 @@ class ArticleOpus extends StatelessWidget {
           final item = _ops[index];
           switch (item.insert) {
             case String e:
-              return SelectableText(e);
+              return Text(e);
             case Insert(:final card):
               if (card != null) {
                 if (card.url?.isNotEmpty == true) {

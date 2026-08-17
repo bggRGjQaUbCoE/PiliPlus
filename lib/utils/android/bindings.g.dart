@@ -99,6 +99,7 @@ extension type Runnable._(jni$_.JObject _$this) implements jni$_.JObject {
       }
       final $i = jni$_.MethodInvocation.fromMessage($m);
       final $r = _$invokeMethod($p.sendPort.nativePort, $i);
+      $i.args?.release();
       jni$_.ProtectedJniExtensions.returnResult($i.result, $r);
     });
     implementer.add(

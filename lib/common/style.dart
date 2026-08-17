@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart'
+import 'package:material_ui/material_ui.dart'
     show BorderRadius, Radius, BoxConstraints, ButtonStyle, VisualDensity;
 
 abstract final class Style {
@@ -16,4 +16,5 @@ abstract final class Style {
     visualDensity: VisualDensity(horizontal: -2, vertical: -1.25),
     tapTargetSize: .shrinkWrap,
   );
+  static const placeHolder = '\uFFFC';
 }

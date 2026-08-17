@@ -810,6 +810,8 @@ abstract final class Api {
 
   static const String topicFeed = '/x/polymer/web-dynamic/v1/feed/topic';
 
+  static const String topicFold = '/x/topic/web/details/fold';
+
   static const String spaceOpus = '/x/polymer/web-dynamic/v1/opus/feed/space';
 
   static const String articleList = '/x/article/list/web/articles';
@@ -1012,4 +1014,7 @@ abstract final class Api {
   static const String replyReport = '/x/v2/reply/report';
 
   static const String dynReaction = '/x/polymer/web-dynamic/v1/detail/reaction';
+
+  static const String liveFeedback =
+      '${HttpString.liveBaseUrl}/xlive/app-interface/v2/index/feedback';
 }

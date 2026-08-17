@@ -1,5 +1,5 @@
-import 'dart:async';
-import 'dart:convert';
+import 'dart:async' show Timer, StreamSubscription;
+import 'dart:convert' show jsonDecode;
 import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/dialog/report.dart';
@@ -42,7 +42,7 @@ import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, kReleaseMode;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
@@ -148,6 +148,27 @@ class LiveRoomController extends GetxController {
     }
     return const SizedBox.shrink();
   });
+
+  StreamSubscription? _sizeSub;
+
+  void _onSizeChanged((int, int) value) {
+    final isVertical = value.$2 > value.$1;
+    isPortrait.value = isVertical;
+    plPlayerController.isVertical = isVertical;
+  }
+
+  void _startSizeSub() {
+    if (isPortrait.value) return;
+    _stopSizeSub();
+    _sizeSub = plPlayerController.videoPlayerController?.stream.size.listen(
+      _onSizeChanged,
+    );
+  }
+
+  void _stopSizeSub() {
+    _sizeSub?.cancel();
+    _sizeSub = null;
+  }
 
   @override
   void onInit() {
@@ -283,7 +304,7 @@ class LiveRoomController extends GetxController {
     currentQnDesc.value =
         LiveQuality.fromCode(currentQn)?.desc ?? currentQn.toString();
     videoUrl = VideoUtils.getLiveCdnUrl(item, index: liveUrlIndex);
-    return playerInit();
+    return playerInit()?.whenComplete(_startSizeSub);
   }
 
   Future<void> queryLiveInfoH5() async {
@@ -438,6 +459,7 @@ class LiveRoomController extends GetxController {
 
   @override
   void onClose() {
+    _stopSizeSub();
     closeLiveMsg();
     cancelLikeTimer();
     cancelLiveTimer();
@@ -486,7 +508,7 @@ class LiveRoomController extends GetxController {
 
   void addDm(dynamic msg, [DanmakuContentItem<DanmakuExtra>? item]) {
     if (plPlayerController.showDanmaku) {
-      if (item != null) {
+      if (item != null && plPlayerController.enableShowLiveDanmaku.value) {
         danmakuController?.addDanmaku(item);
       }
       if (autoScroll && !disableAutoScroll.value) {

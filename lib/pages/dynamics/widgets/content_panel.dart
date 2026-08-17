@@ -1,12 +1,19 @@
 // 内容
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
-import 'package:PiliPlus/common/widgets/flutter/text/text.dart' as custom_text;
+import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart';
+import 'package:PiliPlus/common/widgets/selection_text.dart';
+import 'package:PiliPlus/common/widgets/text_more/text_more.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/rich_node_panel.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
+import 'package:PiliPlus/utils/extension/selectable_region_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:collection/collection.dart' show IterableExtension;
+import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
+
+part 'package:PiliPlus/common/widgets/context_menu/dyn_menu_helper.dart';
 
 Widget content(
   BuildContext context, {
@@ -70,16 +77,20 @@ Widget content(
           ),
         if (richNodes != null)
           isDetail && floor == 1
-              ? SelectableText.rich(
+              ? SelectionText.rich(
                   richNodes,
                   style: isSave
                       ? const TextStyle(fontSize: 15)
                       : const TextStyle(fontSize: 16),
                   contextMenuBuilder: text == null || text.isEmpty
                       ? null
-                      : (_, state) => _contextMenuBuilder(state, text),
+                      : (_, state) => dynTextMenuBuilder(
+                          state,
+                          text,
+                          item.modules.moduleDynamic,
+                        ),
                 )
-              : custom_text.Text.rich(
+              : TextMore.rich(
                   style: floor == 1
                       ? const TextStyle(fontSize: 15)
                       : const TextStyle(fontSize: 14),
@@ -103,31 +114,6 @@ Widget content(
                 .toList(),
           ),
       ],
-    ),
-  );
-}
-
-Widget _contextMenuBuilder(EditableTextState state, String text) {
-  return AdaptiveTextSelectionToolbar.buttonItems(
-    buttonItems: state.contextMenuButtonItems
-      ..add(
-        ContextMenuButtonItem(label: '文本', onPressed: () => _onCopyText(text)),
-      ),
-    anchors: state.contextMenuAnchors,
-  );
-}
-
-void _onCopyText(String text) {
-  showDialog(
-    context: Get.context!,
-    builder: (context) => Dialog(
-      child: Padding(
-        padding: const .symmetric(horizontal: 20, vertical: 16),
-        child: SelectableText(
-          text,
-          style: const TextStyle(fontSize: 15, height: 1.7),
-        ),
-      ),
     ),
   );
 }

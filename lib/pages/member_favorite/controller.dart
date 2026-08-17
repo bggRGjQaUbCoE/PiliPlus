@@ -6,7 +6,7 @@ import 'package:PiliPlus/models_new/space/space_fav/data.dart';
 import 'package:PiliPlus/models_new/space/space_fav/list.dart';
 import 'package:PiliPlus/pages/common/common_data_controller.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 

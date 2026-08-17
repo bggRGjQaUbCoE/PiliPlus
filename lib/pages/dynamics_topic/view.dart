@@ -5,10 +5,13 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
+import 'package:PiliPlus/models_new/dynamic/dyn_topic_feed/fold_card_item.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_feed/item.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_top/top_details.dart';
 import 'package:PiliPlus/pages/common/fab_mixin.dart';
@@ -24,7 +27,7 @@ import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/waterfall.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -41,139 +44,128 @@ class DynTopicPage extends StatefulWidget {
 
 class _DynTopicPageState extends State<DynTopicPage>
     with DynMixin, SingleTickerProviderStateMixin, BaseFabMixin, FabMixin {
+  late EdgeInsets padding;
+  late ColorScheme colorScheme;
   final DynTopicController _controller = Get.put(
     DynTopicController(),
     tag: Utils.generateRandomString(8),
   );
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    colorScheme = ColorScheme.of(context);
+    padding = MediaQuery.viewPaddingOf(context);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final colorScheme = ColorScheme.of(context);
-    final padding = MediaQuery.viewPaddingOf(context);
-    return Material(
-      child: Stack(
-        clipBehavior: .none,
-        children: [
-          refreshIndicator(
-            onRefresh: _controller.onRefresh,
-            child: NotificationListener<UserScrollNotification>(
-              onNotification: (notification) {
-                final direction = notification.direction;
-                if (direction == .forward) {
-                  showFab();
-                } else if (direction == .reverse) {
-                  hideFab();
-                }
-                return false;
-              },
-              child: CustomScrollView(
-                controller: _controller.scrollController,
-                physics: const AlwaysScrollableScrollPhysics(),
-                slivers: [
-                  Obx(
-                    () => _buildAppBar(
-                      colorScheme,
-                      padding,
-                      _controller.topState.value,
-                    ),
-                  ),
-                  Obx(() {
-                    final allSortBy =
-                        _controller.topicSortByConf.value?.allSortBy;
-                    if (allSortBy != null && allSortBy.isNotEmpty) {
-                      return SliverPinnedHeader(
-                        backgroundColor: colorScheme.surface,
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            left: 12 + padding.left,
-                            top: 6,
-                            bottom: 6,
-                          ),
-                          child: Builder(
-                            builder: (context) {
-                              return ToggleButtons(
-                                fillColor: colorScheme.secondaryContainer,
-                                selectedColor: colorScheme.onSecondaryContainer,
-                                constraints: const BoxConstraints(
-                                  minWidth: 54,
-                                  minHeight: 24,
-                                ),
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                borderRadius: const .all(.circular(25)),
-                                onPressed: (index) {
-                                  _controller.onSort(allSortBy[index].sortBy!);
-                                  (context as Element).markNeedsBuild();
-                                },
-                                isSelected: allSortBy
-                                    .map((e) => e.sortBy == _controller.sortBy)
-                                    .toList(),
-                                children: allSortBy.map((e) {
-                                  return Text(
-                                    e.sortName!,
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      height: 1,
-                                    ),
-                                    strutStyle: const StrutStyle(
-                                      height: 1,
-                                      leading: 0,
-                                      fontSize: 13,
-                                    ),
-                                    textScaler: TextScaler.noScaling,
-                                  );
-                                }).toList(),
-                              );
+    return SimpleScaffold(
+      body: refreshIndicator(
+        onRefresh: _controller.onRefresh,
+        child: fabAnimWrapper(
+          child: CustomScrollView(
+            controller: _controller.scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              Obx(
+                () => _buildAppBar(
+                  colorScheme,
+                  padding,
+                  _controller.topState.value,
+                ),
+              ),
+              Obx(() {
+                final allSortBy = _controller.topicSortByConf.value?.allSortBy;
+                if (allSortBy != null && allSortBy.isNotEmpty) {
+                  return SliverPinnedHeader(
+                    backgroundColor: colorScheme.surface,
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        left: 12 + padding.left,
+                        top: 6,
+                        bottom: 6,
+                      ),
+                      child: Builder(
+                        builder: (context) {
+                          return ToggleButtons(
+                            fillColor: colorScheme.secondaryContainer,
+                            selectedColor: colorScheme.onSecondaryContainer,
+                            constraints: const BoxConstraints(
+                              minWidth: 54,
+                              minHeight: 24,
+                            ),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            borderRadius: const .all(.circular(25)),
+                            onPressed: (index) {
+                              _controller.onSort(allSortBy[index].sortBy!);
+                              (context as Element).markNeedsBuild();
                             },
-                          ),
-                        ),
-                      );
-                    }
-                    return const SliverToBoxAdapter();
-                  }),
-                  SliverPadding(
-                    padding: EdgeInsets.only(
-                      left: padding.left,
-                      right: padding.right,
-                      bottom: padding.bottom + 100,
+                            isSelected: allSortBy
+                                .map((e) => e.sortBy == _controller.sortBy)
+                                .toList(),
+                            children: allSortBy.map((e) {
+                              return Text(
+                                e.sortName!,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  height: 1,
+                                ),
+                                strutStyle: const StrutStyle(
+                                  height: 1,
+                                  leading: 0,
+                                  fontSize: 13,
+                                ),
+                                textScaler: TextScaler.noScaling,
+                              );
+                            }).toList(),
+                          );
+                        },
+                      ),
                     ),
-                    sliver: buildPage(
-                      Obx(() => _buildBody(_controller.loadingState.value)),
-                    ),
+                  );
+                }
+                return const SliverToBoxAdapter();
+              }),
+              SliverPadding(
+                padding: EdgeInsets.only(
+                  left: padding.left,
+                  right: padding.right,
+                  bottom: padding.bottom + 100,
+                ),
+                sliver: buildPage(
+                  Obx(() => _buildBody(_controller.loadingState.value)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      fab: SlideTransition(
+        position: fabAnimation,
+        child: Padding(
+          padding: .only(
+            right: kFloatingActionButtonMargin + padding.right,
+            bottom: kFloatingActionButtonMargin + padding.bottom,
+          ),
+          child: FloatingActionButton.extended(
+            onPressed: () {
+              if (_controller.isLogin) {
+                CreateDynPanel.onCreateDyn(
+                  context,
+                  topic: Pair(
+                    first: int.parse(_controller.topicId),
+                    second: _controller.topicName,
                   ),
-                ],
-              ),
-            ),
+                );
+              } else {
+                SmartDialog.showToast('账号未登录');
+              }
+            },
+            icon: const Icon(CustomIcons.topic_tag, size: 20),
+            label: const Text('参与话题'),
           ),
-          Positioned(
-            right: padding.right + kFloatingActionButtonMargin,
-            bottom: 0,
-            child: SlideTransition(
-              position: fabAnimation,
-              child: Padding(
-                padding: .only(
-                  bottom: padding.bottom + kFloatingActionButtonMargin,
-                ),
-                child: FloatingActionButton.extended(
-                  onPressed: () {
-                    if (_controller.isLogin) {
-                      CreateDynPanel.onCreateDyn(
-                        context,
-                        topic: Pair(
-                          first: int.parse(_controller.topicId),
-                          second: _controller.topicName,
-                        ),
-                      );
-                    } else {
-                      SmartDialog.showToast('账号未登录');
-                    }
-                  },
-                  icon: const Icon(CustomIcons.topic_tag, size: 20),
-                  label: const Text('参与话题'),
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -250,7 +242,7 @@ class _DynTopicPageState extends State<DynTopicPage>
                 ),
               ),
               const SizedBox(height: 6),
-              SelectableText(
+              SelectionText(
                 response.topicItem!.description!,
                 style: TextStyle(color: colorScheme.onSurfaceVariant),
               ),
@@ -372,33 +364,13 @@ class _DynTopicPageState extends State<DynTopicPage>
                   ? SliverWaterfallFlow(
                       gridDelegate: dynGridDelegate,
                       delegate: SliverChildBuilderDelegate(
-                        (_, index) {
-                          if (index == response.length - 1) {
-                            _controller.onLoadMore();
-                          }
-
-                          final item = response[index];
-                          if (item.dynamicCardItem != null) {
-                            return DynamicPanel(item: item.dynamicCardItem!);
-                          }
-
-                          return Text(item.topicType ?? 'err');
-                        },
+                        (_, index) => _itemBuilder(response, index),
                         childCount: response.length,
                       ),
                     )
                   : SliverList.builder(
-                      itemBuilder: (context, index) {
-                        if (index == response.length - 1) {
-                          _controller.onLoadMore();
-                        }
-                        final item = response[index];
-                        if (item.dynamicCardItem != null) {
-                          return DynamicPanel(item: item.dynamicCardItem!);
-                        } else {
-                          return Text(item.topicType ?? 'err');
-                        }
-                      },
+                      itemBuilder: (context, index) =>
+                          _itemBuilder(response, index),
                       itemCount: response.length,
                     )
             : HttpError(onReload: _controller.onReload),
@@ -407,5 +379,46 @@ class _DynTopicPageState extends State<DynTopicPage>
         onReload: _controller.onReload,
       ),
     };
+  }
+
+  Widget _itemBuilder(List<TopicCardItem> list, int index) {
+    if (index == list.length - 1) {
+      _controller.onLoadMore();
+    }
+
+    final item = list[index];
+
+    if (item.dynamicCardItem case final dynamicCardItem?) {
+      return DynamicPanel(item: dynamicCardItem);
+    }
+
+    if (item.foldCardItem case final foldCardItem?) {
+      return _buildFoldItem(foldCardItem);
+    }
+
+    return Text(item.topicType ?? 'err');
+  }
+
+  Widget _buildFoldItem(FoldCardItem item) {
+    return Padding(
+      padding: const .only(top: 12),
+      child: Material(
+        color: colorScheme.outline.withValues(alpha: .05),
+        child: InkWell(
+          onTap: _controller.topicFold,
+          child: Padding(
+            padding: const .symmetric(vertical: 10),
+            child: Row(
+              mainAxisSize: .min,
+              mainAxisAlignment: .center,
+              children: [
+                Text(item.foldDesc!),
+                const Icon(Icons.keyboard_arrow_right, size: 22),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

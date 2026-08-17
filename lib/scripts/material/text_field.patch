@@ -1,0 +1,13 @@
+diff --git a/lib/src/text_field.dart b/lib/src/text_field.dart
+index 7e3ff91..b9ac265 100644
+--- a/lib/src/text_field.dart
++++ b/lib/src/text_field.dart
+@@ -320,7 +320,7 @@ class TextField extends StatefulWidget {
+     this.scrollPadding = const EdgeInsets.all(20.0),
+     this.dragStartBehavior = DragStartBehavior.start,
+     bool? enableInteractiveSelection,
+-    this.selectAllOnFocus,
++    this.selectAllOnFocus = false,
+     this.selectionControls,
+     this.onTap,
+     this.onTapAlwaysCalled = false,

@@ -9,7 +9,7 @@ import 'package:PiliPlus/pages/live/widgets/live_item_app.dart';
 import 'package:PiliPlus/pages/live_area_detail/child/controller.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
 
 class LiveAreaChildPage extends StatefulWidget {

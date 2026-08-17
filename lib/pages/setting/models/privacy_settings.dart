@@ -2,7 +2,7 @@ import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/api_type.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
@@ -25,7 +25,11 @@ List<SettingsModel> get privacySettings => [
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('账号模式详情'),
-          content: SingleChildScrollView(child: _getAccountDetail(context)),
+          content: SelectionArea(
+            child: SingleChildScrollView(
+              child: _getAccountDetail(context),
+            ),
+          ),
           actions: [
             TextButton(
               onPressed: Get.back,
@@ -42,20 +46,20 @@ List<SettingsModel> get privacySettings => [
 ];
 
 Widget _getAccountDetail(BuildContext context) {
-  final slivers = <Widget>[];
+  final children = <Widget>[];
   final theme = TextTheme.of(context);
   for (final i in AccountType.values) {
     final url = ApiType.apiTypeSet[i];
     if (url == null) continue;
 
-    slivers
+    children
       ..add(Center(child: Text(i.title, style: theme.titleMedium)))
-      ..add(SelectableText(url.join('\n')));
+      ..add(Text(url.join('\n')));
   }
   return Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.start,
     spacing: 8,
-    children: slivers,
+    mainAxisSize: .min,
+    crossAxisAlignment: .start,
+    children: children,
   );
 }

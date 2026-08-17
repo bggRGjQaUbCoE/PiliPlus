@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/dynamic_panel.dart';
@@ -7,7 +8,7 @@ import 'package:PiliPlus/pages/member_dynamics/controller.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/waterfall.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
 import 'package:waterfall_flow/waterfall_flow.dart'
     hide SliverWaterfallFlowDelegateWithMaxCrossAxisExtent;
@@ -45,8 +46,7 @@ class _MemberDynamicsPageState extends State<MemberDynamicsPage>
     super.build(context);
     final padding = MediaQuery.viewPaddingOf(context);
     return widget.mid == null
-        ? Scaffold(
-            resizeToAvoidBottomInset: false,
+        ? SimpleScaffold(
             appBar: AppBar(title: const Text('我的动态')),
             body: Padding(
               padding: EdgeInsets.only(
@@ -85,30 +85,13 @@ class _MemberDynamicsPageState extends State<MemberDynamicsPage>
                   ? SliverWaterfallFlow(
                       gridDelegate: dynGridDelegate,
                       delegate: SliverChildBuilderDelegate(
-                        (_, index) {
-                          if (index == response.length - 1) {
-                            _memberDynamicController.onLoadMore();
-                          }
-                          return DynamicPanel(
-                            item: response[index],
-                            onRemove: _memberDynamicController.onRemove,
-                            onSetTop: _memberDynamicController.onSetTop,
-                          );
-                        },
+                        (_, index) => _itemBuilder(response, index),
                         childCount: response.length,
                       ),
                     )
                   : SliverList.builder(
-                      itemBuilder: (context, index) {
-                        if (index == response.length - 1) {
-                          _memberDynamicController.onLoadMore();
-                        }
-                        return DynamicPanel(
-                          item: response[index],
-                          onRemove: _memberDynamicController.onRemove,
-                          onSetTop: _memberDynamicController.onSetTop,
-                        );
-                      },
+                      itemBuilder: (context, index) =>
+                          _itemBuilder(response, index),
                       itemCount: response.length,
                     )
             : HttpError(onReload: _memberDynamicController.onReload),
@@ -117,5 +100,16 @@ class _MemberDynamicsPageState extends State<MemberDynamicsPage>
         onReload: _memberDynamicController.onReload,
       ),
     };
+  }
+
+  Widget _itemBuilder(List<DynamicItemModel> list, int index) {
+    if (index == list.length - 1) {
+      _memberDynamicController.onLoadMore();
+    }
+    return DynamicPanel(
+      item: list[index],
+      onRemove: _memberDynamicController.onRemove,
+      onSetTop: _memberDynamicController.onSetTop,
+    );
   }
 }

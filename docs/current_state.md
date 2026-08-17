@@ -1,6 +1,6 @@
 # pili++ 当前项目状态
 
-> 最后核对：2026-08-16 +08:00
+> 最后核对：2026-08-17 +08:00
 >
 > 本文件记录会随开发变化、但后续任务必须知道的事实。开始任务时先核对这里与实际
 > Git、源码和构建产物；结束任务前更新。长期规则见 `AGENTS.md`，ExoPlayer 详细兼容
@@ -8,26 +8,27 @@
 
 ## 仓库基线
 
-- 当前分支：`main`
-- 当前 HEAD：`2072a6665daec72ae56cddd61463a592189921a8`
-  (`feat: sync player fixes and release 2.1.7`)
+- 当前分支：`agent/exoplayer-concrete-hwdec`
+- 当前 HEAD：`4b827302d526eb35a9314590cba0d3b2e87ce4c6`
+  (`Merge upstream/main into agent/exoplayer-concrete-hwdec`)
 - 最新 GitHub 发布源提交：`859d39c4ff3c77c37e1cc1d7131192df8f8b4241`
   (`chore: prepare 2.1.2 release`)
 - 最新功能快照：`0c647b51ae60defc39c6171e5ca9387e43e596d2`
   (`feat: retry decoder failures with software video fallback`)
-- 最新上游合并提交：`ae6b7aaceefb5d4218693c15825f751c3b7a1f4d`
-  (`Merge upstream/main into main`)
+- 最新上游合并提交：`4b827302d526eb35a9314590cba0d3b2e87ce4c6`
+  (`Merge upstream/main into agent/exoplayer-concrete-hwdec`)
 - 上游：`https://github.com/bggRGjQaUbCoE/PiliPlus.git`
-- 已获取并合入的 `upstream/main`：`36dec609315cd34f8895cf15607f1cc582a66f01`
-- 当前分支相对 `upstream/main` 为本地领先 69、落后 0；merge-base 即
-  `36dec609315cd34f8895cf15607f1cc582a66f01`。
+- 已获取并合入的 `upstream/main`：`3a7d4614743cb7289293d6c47e13d96aec544f18`
+- 当前分支相对 `upstream/main` 为本地领先 74、落后 0；merge-base 即
+  `3a7d4614743cb7289293d6c47e13d96aec544f18`。
 - 应用内小窗、音频焦点/媒体控制、系统 PiP 恢复、版本更新和兼容记录已保存到上述
   功能快照。交接时应以实际 `git status` 为准；存在未提交修改时不得直接 merge 或
   rebase。
 - `README.md` 已更新当前 ExoPlayer 迁移进度、应用内小窗行为、默认开关状态和
   上游同步说明；远程状态以实际 `git status` 和跟踪分支为准。
-- 当前工作区未提交修改同时包含 2026-08-10 的竖屏全屏连续缩放/2.1.8 交付记录，以及
-  2026-08-11 的 ExoPlayer 换源宽高比修复；后续不得把两组修改互相覆盖或当作已提交。
+- 本次上游同步前的本地 CI 修复已提交为 `d7f7d259c6aa15676aebd02e19e9bae2aeecf023`；
+  合并提交 `4b827302d526eb35a9314590cba0d3b2e87ce4c6` 已包含上游 15 个提交，当前工作区
+  以实际 `git status` 为准。
 
 ## 应用与发布身份
 
@@ -1011,3 +1012,21 @@ the final audit artifact. The formal release baseline remains unchanged.
 - 之前 Run `31882803739` 的失败根因为 `media_kit` fork 固定的旧 MD5 与
   `libmpv-android-video-build` `vnext` 于 2026-08-13 更新后的资源不一致；没有跳过校验，
   新增 `tool/patch_media_kit_checksums.ps1` 严格替换已核实的三个当前 MD5 后恢复完整性校验。
+
+### 2026-08-17 上游同步
+
+- 在工作区干净且本地 CI 修复已提交为 `d7f7d259c6aa15676aebd02e19e9bae2aeecf023` 后，
+  fetch 并合入 `upstream/main@3a7d4614743cb7289293d6c47e13d96aec544f18`。上游本批新增 15 个
+  提交、改动 38 个文件；合并提交为 `4b827302d526eb35a9314590cba0d3b2e87ce4c6`。
+- `lib/main.dart`、`pubspec.yaml` 自动合并；`lib/pages/video/view.dart` 的唯一文本冲突已
+  人工处理：保留本地视频区域 `Listener` 和四个指针回调，以保持下拉进入应用内小窗手势；
+  采用上游黑色背景 `isAntiAlias: false` 与封面层布局修正。未删除播放器控制层、ExoPlayer
+  或应用内小窗逻辑。
+- 使用独立 Flutter 3.47.0 工具链并按 CI 应用项目 patches：`dart format --output=none
+  --set-exit-if-changed lib test` 通过（1330 个文件，0 changed）；`dart analyze` 通过，
+  0 error、0 warning、35 条既有 info；`flutter test --no-pub --concurrency=1` 通过 69/69。
+- Android `:app:testDebugUnitTest`/Release 构建已启动并完成源码与插件编译前置阶段，但在
+  `:app:mergeDebugAssets` 获取 Flutter 3.47 engine artifact 时，Java TLS 连接
+  `https://storage.googleapis.com/download.flutter.io/.../armeabi_v7a_debug-1.0.0-5f776256...pom`
+  被远端中断而失败。该次没有生成可交付 APK；Android 构建与真机验证保持待完成，不能以此
+  次失败宣称 Android Release 已验证。

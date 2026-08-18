@@ -12,6 +12,7 @@ List<Widget> dynContent(
   required DynamicItemModel item,
   required bool isSave,
   required bool isDetail,
+  bool isLongImageMode = false,
 }) {
   final moduleDynamic = item.modules.moduleDynamic;
   return [
@@ -23,6 +24,7 @@ List<Widget> dynContent(
         isDetail: isDetail,
         item: item,
         floor: floor,
+        isLongImageMode: isLongImageMode,
       ),
     module(
       context,

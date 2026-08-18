@@ -24,6 +24,7 @@ class DynamicPanel extends StatelessWidget {
   onSetPubSetting;
   final VoidCallback? onEdit;
   final ValueChanged<int>? onSetReplySubject;
+  final bool isLongImageMode;
 
   const DynamicPanel({
     super.key,
@@ -38,6 +39,7 @@ class DynamicPanel extends StatelessWidget {
     this.onSetPubSetting,
     this.onEdit,
     this.onSetReplySubject,
+    this.isLongImageMode = false,
   });
 
   @override
@@ -96,6 +98,7 @@ class DynamicPanel extends StatelessWidget {
               isDetail: isDetail,
               item: item,
               floor: 1,
+              isLongImageMode: isLongImageMode,
             ),
             const SizedBox(height: 2),
             if (!isDetail) ...[

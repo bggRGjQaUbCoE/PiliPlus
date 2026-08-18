@@ -15,9 +15,8 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart'
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_to_box_adapter.dart';
 import 'package:PiliPlus/common/widgets/tap_region_surface.dart';
-import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/models/common/reply/reply_option_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_page.dart';
@@ -34,7 +33,6 @@ import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
-import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:material_ui/material_ui.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -575,8 +573,10 @@ class _DynamicDetailPageState
                     icon: CustomIcons.share_node,
                     text: '分享',
                     stat: null,
-                    onPressed: (_) => ShareUtils.shareText(
-                      '${HttpString.dynamicShareBaseUrl}/${controller.dynItem.idStr}',
+                    onPressed: (_) => AuthorPanel.showShareSheet(
+                      context,
+                      controller.dynItem,
+                      moduleAuthor: controller.dynItem.modules.moduleAuthor,
                     ),
                   ),
                 ),

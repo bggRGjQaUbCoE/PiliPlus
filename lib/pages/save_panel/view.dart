@@ -7,6 +7,7 @@ import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
+import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/dynamic_panel.dart';
 import 'package:PiliPlus/pages/music/controller.dart';
@@ -18,6 +19,7 @@ import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -67,6 +69,7 @@ class _SavePanelState extends State<SavePanel> {
   final boundaryKey = GlobalKey();
 
   bool showBottom = true;
+  bool isLongImageMode = false;
 
   // item
   Object get _item => widget.item;
@@ -113,11 +116,7 @@ class _SavePanelState extends State<SavePanel> {
             pubdate = episode.pubTime;
             uname = pgcItem.upInfo?.uname;
 
-            final oid = reply.oid;
-            final type = reply.type.toInt();
-            final anchor = hasRoot ? 'anchor=${reply.id}&' : '';
-            uri =
-                'bilibili://comment/detail/$type/$oid/$rootId/?${anchor}enterUri=bilibili://pgc/season/ep/${ctr.epId}';
+            uri = 'https://www.bilibili.com/bangumi/play/ep${ctr.epId}';
           } else {
             final ctr = Get.find<UgcIntroController>(tag: heroTag);
             final videoDetail = ctr.videoDetail.value;
@@ -147,11 +146,7 @@ class _SavePanelState extends State<SavePanel> {
           uri =
               'https://www.bilibili.com/video/av$oid?comment_on=1&comment_root_id=$rootId${hasRoot ? '&comment_secondary_id=${reply.id}' : ''}';
         } else {
-          final enterUri = dynItem == null
-              ? ''
-              : 'enterUri=${parseDyn(dynItem)}';
-          uri =
-              'bilibili://comment/detail/$type/$oid/$rootId/?${hasRoot ? 'anchor=${reply.id}&' : ''}$enterUri';
+          uri = dynItem == null ? '' : parseDyn(dynItem);
         }
       } else if (currentRoute.startsWith('/Scaffold')) {
         try {
@@ -162,26 +157,17 @@ class _SavePanelState extends State<SavePanel> {
             uri =
                 'https://www.bilibili.com/video/av$oid?comment_on=1&comment_root_id=$rootId${hasRoot ? '&comment_secondary_id=${reply.id}' : ''}';
           } else {
-            String enterUri = Get.arguments['enterUri'] ?? '';
-            if (enterUri.isNotEmpty) {
-              enterUri = 'enterUri=${Uri.encodeComponent(enterUri)}';
-            } else if (const [11, 12, 17].contains(type)) {
-              enterUri = 'enterUri=bilibili://following/detail/$oid';
+            uri = Get.arguments['enterUri'] ?? '';
+            if (uri.isEmpty && const [11, 12, 17].contains(type)) {
+              uri = 'https://t.bilibili.com/$oid';
             }
-            uri =
-                'bilibili://comment/detail/$type/$oid/$rootId/?${hasRoot ? 'anchor=${reply.id}&' : ''}$enterUri';
           }
         } catch (_) {}
       } else if (currentRoute.startsWith('/articlePage')) {
         try {
-          final type = reply.type.toInt();
-          final oid = reply.oid;
-          final rootId = hasRoot ? reply.root : reply.id;
-          final anchor = hasRoot ? 'anchor=${reply.id}&' : '';
-          final enterUri =
-              'bilibili://following/detail/${Get.parameters['id'] ?? Get.arguments?['id']}';
-          uri =
-              'bilibili://comment/detail/$type/$oid/$rootId/?${anchor}enterUri=$enterUri';
+          final articleId =
+              Get.parameters['id'] ?? Get.arguments?['id'];
+          uri = 'https://www.bilibili.com/opus/$articleId';
         } catch (_) {}
       } else if (currentRoute.startsWith('/musicDetail')) {
         final type = reply.type.toInt();
@@ -219,6 +205,16 @@ class _SavePanelState extends State<SavePanel> {
       uri = parseDyn(i);
 
       if (kDebugMode) debugPrint(uri);
+    } else if (_item case final VideoDetailData video) {
+      itemType = '视频';
+      viewType = '观看';
+      uname = video.owner?.name;
+      uri = 'https://www.bilibili.com/video/${video.bvid}';
+    } else if (_item case final ArticleShareData article) {
+      itemType = '专栏';
+      viewType = '查看';
+      uname = article.uname;
+      uri = article.uri;
     }
   }
 
@@ -229,26 +225,27 @@ class _SavePanelState extends State<SavePanel> {
         case 'DYNAMIC_TYPE_AV':
           viewType = '观看';
           itemType = '视频';
-          uri = 'bilibili://video/${item.basic!.commentIdStr}';
+          final bvid = item.modules.moduleDynamic!.major!.archive!.bvid;
+          uri = 'https://www.bilibili.com/video/$bvid';
           break;
 
         case 'DYNAMIC_TYPE_ARTICLE':
           itemType = '专栏';
-          uri = 'bilibili://following/detail/${item.idStr}';
+          uri = 'https://www.bilibili.com/opus/${item.idStr}';
           break;
 
         case 'DYNAMIC_TYPE_LIVE_RCMD':
           viewType = '观看';
           itemType = '直播';
           final roomId = item.modules.moduleDynamic!.major!.liveRcmd!.roomId;
-          uri = 'bilibili://live/$roomId';
+          uri = 'https://live.bilibili.com/$roomId';
           break;
 
         case 'DYNAMIC_TYPE_UGC_SEASON':
           viewType = '观看';
           itemType = '合集';
-          final aid = item.modules.moduleDynamic!.major!.ugcSeason!.aid;
-          uri = 'bilibili://video/$aid';
+          final bvid = item.modules.moduleDynamic!.major!.ugcSeason!.bvid;
+          uri = 'https://www.bilibili.com/video/$bvid';
           break;
 
         case 'DYNAMIC_TYPE_PGC':
@@ -257,14 +254,14 @@ class _SavePanelState extends State<SavePanel> {
           itemType =
               item.modules.moduleDynamic?.major?.pgc?.badge?.text ?? '番剧';
           final epid = item.modules.moduleDynamic!.major!.pgc!.epid;
-          uri = 'bilibili://pgc/season/ep/$epid';
+          uri = 'https://www.bilibili.com/bangumi/play/ep$epid';
           break;
 
         // https://www.bilibili.com/medialist/detail/ml12345678
         case 'DYNAMIC_TYPE_MEDIALIST':
           itemType = '收藏夹';
           final mediaId = item.modules.moduleDynamic!.major!.medialist!.id;
-          uri = 'bilibili://medialist/detail/$mediaId';
+          uri = 'https://www.bilibili.com/medialist/detail/ml$mediaId';
           break;
 
         // 纯文字动态查看
@@ -277,7 +274,7 @@ class _SavePanelState extends State<SavePanel> {
         // case 'DYNAMIC_TYPE_DRAW':
         default:
           itemType = '动态';
-          uri = 'bilibili://following/detail/${item.idStr}';
+          uri = 'https://t.bilibili.com/${item.idStr}';
           break;
       }
     } catch (_) {}
@@ -381,6 +378,134 @@ class _SavePanelState extends State<SavePanel> {
                             item: dyn,
                             isDetail: true,
                             isSave: true,
+                            isLongImageMode: isLongImageMode,
+                          ),
+                        ),
+                        VideoDetailData video => IgnorePointer(
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              final width = constraints.maxWidth;
+                              final coverHeight = width * 9 / 16;
+                              final duration = video.duration ?? 0;
+                              String durationStr = '';
+                              if (duration > 0) {
+                                final h = duration ~/ 3600;
+                                final m = (duration % 3600) ~/ 60;
+                                final s = duration % 60;
+                                durationStr = h > 0
+                                    ? '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}'
+                                    : '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+                              }
+                              final stat = video.stat;
+                              final overlayText = <String>[
+                                if (durationStr.isNotEmpty) durationStr,
+                                if (stat?.view != null)
+                                  '${NumUtils.numFormat(stat!.view)}播放',
+                                if (stat?.danmaku != null)
+                                  '${NumUtils.numFormat(stat!.danmaku)}弹幕',
+                              ].join(' ｜ ');
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (video.pic?.isNotEmpty == true)
+                                    Stack(
+                                      children: [
+                                        NetworkImgLayer(
+                                          src: video.pic!,
+                                          width: width,
+                                          height: coverHeight,
+                                          fit: BoxFit.cover,
+                                        ),
+                                        if (overlayText.isNotEmpty)
+                                          Positioned(
+                                            left: 8,
+                                            bottom: 8,
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                horizontal: 6,
+                                                vertical: 3,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.black54,
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                              ),
+                                              child: Text(
+                                                overlayText,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  if (video.title?.isNotEmpty == true)
+                                    Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Text(
+                                        video.title!,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  if (video.desc?.isNotEmpty == true)
+                                    Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                        12,
+                                        0,
+                                        12,
+                                        12,
+                                      ),
+                                      child: Text(video.desc!),
+                                    ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                        ArticleShareData article => IgnorePointer(
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              final width = constraints.maxWidth;
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (article.cover?.isNotEmpty == true)
+                                    NetworkImgLayer(
+                                      src: article.cover!,
+                                      width: width,
+                                      height: width * 9 / 16,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  if (article.title.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Text(
+                                        article.title,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  if (article.content.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                        12,
+                                        0,
+                                        12,
+                                        12,
+                                      ),
+                                      child: Text(article.content),
+                                    ),
+                                ],
+                              );
+                            },
                           ),
                         ),
                         _ => throw UnsupportedError(_item.toString()),
@@ -546,7 +671,7 @@ class _SavePanelState extends State<SavePanel> {
                 bottom: 25 + padding.bottom,
               ),
               child: Row(
-                spacing: 40,
+                spacing: 30,
                 mainAxisAlignment: .center,
                 children: [
                   iconButton(
@@ -566,6 +691,15 @@ class _SavePanelState extends State<SavePanel> {
                         : const Icon(Icons.visibility),
                     onPressed: () => setState(() {
                       showBottom = !showBottom;
+                    }),
+                  ),
+                  iconButton(
+                    size: 42,
+                    tooltip: '长图切换',
+                    context: context,
+                    icon: const Icon(Icons.view_day),
+                    onPressed: () => setState(() {
+                      isLongImageMode = !isLongImageMode;
                     }),
                   ),
                   if (PlatformUtils.isMobile)
@@ -594,3 +728,19 @@ class _SavePanelState extends State<SavePanel> {
 }
 
 enum _CoverType { def16_9, square }
+
+class ArticleShareData {
+  final String? cover;
+  final String title;
+  final String content;
+  final String? uname;
+  final String uri;
+
+  const ArticleShareData({
+    this.cover,
+    required this.title,
+    required this.content,
+    this.uname,
+    required this.uri,
+  });
+}

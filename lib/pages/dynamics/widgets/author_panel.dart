@@ -241,6 +241,140 @@ class AuthorPanel extends StatelessWidget {
     return header;
   }
 
+  // 抽取分享相关三项 ListTile，供 morePanel 与动态详情页复用
+  static List<Widget> shareSheetItems(
+    BuildContext context,
+    DynamicItemModel item, {
+    ModuleAuthorModel? moduleAuthor,
+  }) {
+    final theme = Theme.of(context);
+    final ma = moduleAuthor ?? item.modules.moduleAuthor;
+    final showPmShare =
+        (item.basic?.commentType == 17 || item.basic?.commentType == 11) &&
+        item.modules.moduleDynamic?.major?.blocked == null;
+    return [
+      ListTile(
+        onTap: () {
+          Get.back();
+          SavePanel.toSavePanel(item: item);
+        },
+        minLeadingWidth: 0,
+        leading: const Icon(Icons.save_alt, size: 19),
+        title: Text('保存为图片', style: theme.textTheme.titleSmall!),
+      ),
+      ListTile(
+        title: Text('分享链接', style: theme.textTheme.titleSmall),
+        leading: const Icon(Icons.share_outlined, size: 19),
+        onTap: () {
+          Get.back();
+          ShareUtils.shareText(
+            '${HttpString.dynamicShareBaseUrl}/${item.idStr}',
+          );
+        },
+        minLeadingWidth: 0,
+      ),
+      if (showPmShare && ma != null)
+        ListTile(
+          title: Text('分享至消息', style: theme.textTheme.titleSmall),
+          leading: const Icon(Icons.forward_to_inbox, size: 19),
+          onTap: () {
+            Get.back();
+            try {
+              bool isDyn = item.basic!.commentType == 17;
+              String id = isDyn ? item.idStr : item.basic!.ridStr!;
+              int source = isDyn ? 11 : 2;
+              final moduleDynamic = item.modules.moduleDynamic!;
+              final title =
+                  moduleDynamic.desc?.text ??
+                  moduleDynamic.major!.opus!.summary!.text!;
+              String? thumb = isDyn
+                  ? ma.face
+                  : moduleDynamic.major?.opus?.pics?.firstOrNull?.url;
+              PageUtils.pmShare(
+                context,
+                content: {
+                  "id": id,
+                  "title": title,
+                  "headline": "",
+                  "source": source,
+                  if (thumb?.isNotEmpty == true) "thumb": thumb,
+                  "author": ma.name,
+                  "author_id": ma.mid.toString(),
+                },
+              );
+            } catch (e) {
+              SmartDialog.showToast(e.toString());
+            }
+          },
+          minLeadingWidth: 0,
+        ),
+    ];
+  }
+
+  // 弹出分享列表 BottomSheet（供动态详情页底部"分享"按钮调用）
+  static void showShareSheet(
+    BuildContext context,
+    DynamicItemModel item, {
+    ModuleAuthorModel? moduleAuthor,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      constraints: BoxConstraints(
+        maxWidth: min(640, context.mediaQueryShortestSide),
+      ),
+      builder: (context1) {
+        final theme = Theme.of(context);
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.viewPaddingOf(context1).bottom,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              InkWell(
+                onTap: Get.back,
+                borderRadius: Style.bottomSheetRadius,
+                child: SizedBox(
+                  height: 35,
+                  child: Center(
+                    child: Container(
+                      width: 32,
+                      height: 3,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.outline,
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(1.5),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              ...shareSheetItems(
+                context,
+                item,
+                moduleAuthor: moduleAuthor,
+              ),
+              const Divider(thickness: 0.1, height: 1),
+              ListTile(
+                onTap: Get.back,
+                minLeadingWidth: 0,
+                dense: true,
+                title: Text(
+                  '取消',
+                  style: TextStyle(color: theme.colorScheme.outline),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   void morePanel(BuildContext context) {
     String? bvid;
     try {
@@ -305,69 +439,11 @@ class AuthorPanel extends StatelessWidget {
                     style: theme.textTheme.titleSmall,
                   ),
                 ),
-              ListTile(
-                onTap: () {
-                  Get.back();
-                  SavePanel.toSavePanel(item: item);
-                },
-                minLeadingWidth: 0,
-                leading: const Icon(Icons.save_alt, size: 19),
-                title: Text('保存动态', style: theme.textTheme.titleSmall!),
+              ...shareSheetItems(
+                context,
+                item,
+                moduleAuthor: moduleAuthor,
               ),
-              ListTile(
-                title: Text(
-                  '分享动态',
-                  style: theme.textTheme.titleSmall,
-                ),
-                leading: const Icon(Icons.share_outlined, size: 19),
-                onTap: () {
-                  Get.back();
-                  ShareUtils.shareText(
-                    '${HttpString.dynamicShareBaseUrl}/${item.idStr}',
-                  );
-                },
-                minLeadingWidth: 0,
-              ),
-              if ((item.basic!.commentType == 17 ||
-                      item.basic!.commentType == 11) &&
-                  item.modules.moduleDynamic?.major?.blocked == null)
-                ListTile(
-                  title: Text(
-                    '分享至消息',
-                    style: theme.textTheme.titleSmall,
-                  ),
-                  leading: const Icon(Icons.forward_to_inbox, size: 19),
-                  onTap: () {
-                    Get.back();
-                    try {
-                      bool isDyn = item.basic!.commentType == 17;
-                      String id = isDyn ? item.idStr : item.basic!.ridStr!;
-                      int source = isDyn ? 11 : 2;
-                      final moduleDynamic = item.modules.moduleDynamic!;
-                      final title =
-                          moduleDynamic.desc?.text ??
-                          moduleDynamic.major!.opus!.summary!.text!;
-                      String? thumb = isDyn
-                          ? moduleAuthor.face
-                          : moduleDynamic.major?.opus?.pics?.firstOrNull?.url;
-                      PageUtils.pmShare(
-                        context,
-                        content: {
-                          "id": id,
-                          "title": title,
-                          "headline": "",
-                          "source": source,
-                          if (thumb?.isNotEmpty == true) "thumb": thumb,
-                          "author": moduleAuthor.name,
-                          "author_id": moduleAuthor.mid.toString(),
-                        },
-                      );
-                    } catch (e) {
-                      SmartDialog.showToast(e.toString());
-                    }
-                  },
-                  minLeadingWidth: 0,
-                ),
               ListTile(
                 title: Text(
                   '临时屏蔽：${moduleAuthor.name}',

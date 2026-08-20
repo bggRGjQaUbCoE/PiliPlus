@@ -26,6 +26,7 @@ import 'package:PiliPlus/plugin/pl_player/models/double_tap_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/duration.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
+import 'package:PiliPlus/plugin/pl_player/models/mpv_speed_shortcut.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
@@ -103,6 +104,12 @@ class PlPlayerController with BlockConfigMixin {
   late double lastPlaybackSpeed = 1.0;
   final RxDouble _playbackSpeed = Pref.playSpeedDefault.obs;
   late final RxDouble _longPressSpeed = Pref.longPressSpeedDefault.obs;
+  late final MpvSpeedShortcutMachine mpvSpeedShortcut = MpvSpeedShortcutMachine(
+    kTarget: Pref.mpvKeyKSpeed,
+    lTarget: Pref.mpvKeyLSpeed,
+  );
+  Future<void> _mpvSpeedQueue = Future<void>.value();
+  double? _mpvPendingSpeed;
 
   final RxDouble volume = RxDouble(
     PlatformUtils.isDesktop ? Pref.desktopVolume : 1.0,
@@ -1126,6 +1133,67 @@ class PlPlayerController with BlockConfigMixin {
     }
   }
 
+  void _dispatchMpvSpeedAction(MpvSpeedAction action) {
+    if (!action.handled) return;
+
+    final persistSlot = action.persistSlot;
+    final persistTarget = action.persistTarget;
+    if (persistSlot != null && persistTarget != null) {
+      final key = persistSlot == MpvSpeedSlot.k
+          ? VideoBoxKey.mpvKeyKSpeed
+          : VideoBoxKey.mpvKeyLSpeed;
+      GStorage.video.put(key, persistTarget);
+    }
+
+    final speed = action.playbackSpeed;
+    if (speed != null) {
+      _mpvPendingSpeed = speed;
+      _mpvSpeedQueue = _mpvSpeedQueue.catchError((_) {}).then((_) async {
+        await setPlaybackSpeed(speed);
+        if (_mpvPendingSpeed == speed) {
+          _mpvPendingSpeed = null;
+        }
+      });
+    }
+  }
+
+  void onMpvSpeedKeyDown(
+    MpvSpeedSlot slot,
+    Duration timeStamp, {
+    bool repeat = false,
+  }) {
+    if (isLive || videoPlayerController == null) return;
+    _dispatchMpvSpeedAction(
+      mpvSpeedShortcut.keyDown(
+        slot,
+        currentSpeed: _mpvPendingSpeed ?? playbackSpeed,
+        timeStamp: timeStamp,
+        repeat: repeat,
+      ),
+    );
+  }
+
+  void onMpvSpeedKeyUp(MpvSpeedSlot slot, Duration timeStamp) {
+    if (isLive) return;
+    _dispatchMpvSpeedAction(
+      mpvSpeedShortcut.keyUp(slot, timeStamp: timeStamp),
+    );
+  }
+
+  void adjustMpvSpeed(int deltaTenths) {
+    if (isLive || videoPlayerController == null) return;
+    _dispatchMpvSpeedAction(
+      mpvSpeedShortcut.adjust(
+        currentSpeed: _mpvPendingSpeed ?? playbackSpeed,
+        deltaTenths: deltaTenths,
+      ),
+    );
+  }
+
+  void releaseMpvSpeedShortcut() {
+    _dispatchMpvSpeedAction(mpvSpeedShortcut.releaseAll());
+  }
+
   // 还原默认速度
   double playSpeedDefault = Pref.playSpeedDefault;
   Future<void> setDefaultSpeed() async {
@@ -1557,6 +1625,8 @@ class PlPlayerController with BlockConfigMixin {
     }
 
     _playerCount = 0;
+    mpvSpeedShortcut.releaseAll();
+    _mpvPendingSpeed = null;
     if (removeSafeArea) {
       showSystemBar();
     }

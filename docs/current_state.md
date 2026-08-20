@@ -1102,8 +1102,26 @@ the final audit artifact. The formal release baseline remains unchanged.
   `75dfa37`；项目 material_ui 兼容补丁已重新应用。`dart format --output=none
   --set-exit-if-changed lib test` 通过（1330 文件，0 changed），`dart analyze` 通过，0 error、
   0 warning、35 条既有 info，`git diff --check` 通过。
-- 完整 Flutter 测试尚未得到结论：一次运行被工具调用中断，另一次因 SDK lockfile 审批服务
-  暂时不可用而无法重新启动；此前错误 SDK 3.44.8 与 3.47 framework 混用的缓存已清理，
-  不能把本批测试标为通过。Android `:app:testDebugUnitTest` 也未完成，当前 Gradle 原生
-  Windows library 初始化失败（`native-platform.dll`），没有产生新的 APK。上游同步后的
-  Android Release、真机 mpv/ExoPlayer、小窗/PiP 回归保持待验证。
+- 2026-08-20 在同步记录提交 `7267c89` 的准确源码状态上补完自动化验证：完整
+  `flutter test --no-pub --concurrency=1` 通过 69/69；格式检查通过（1330 文件、0 changed）；
+  `dart analyze` 为 0 error、0 warning、35 条既有 info；Android
+  `:app:testDebugUnitTest` 构建成功。此前 Flutter SDK lockfile 和 Gradle
+  `native-platform.dll` 阻塞均由允许固定 `D:` 工具链缓存目录正常写入后消除，不是源码失败。
+- Flutter 3.47.0 分 ABI Android Release 构建成功。以下三个验证包均通过
+  `tool/verify_release.ps1 -AllowAlreadyDelivered`，确认 applicationId
+  `com.shudo.plusplus`、应用名 `pili++`、versionName `2.1.8`、versionCode
+  `2026081004`、单一目标 ABI 和证书 SHA-256
+  `775803BD534E2A0984CF8E7796DCF1D82FD7D436F10A1FEDA77C6981F4C44C5C`：
+  - `build/app/outputs/flutter-apk/pili++-2.1.8-2026081004-armeabi-v7a-release-upstream-9a4e587-validation.apk`
+    （24,623,879 字节，SHA-256
+    `AEE656D4C5A92828E9E0C1A4B1B7638EE754210BCCD616BDF881CD3085104AA1`）；
+  - `build/app/outputs/flutter-apk/pili++-2.1.8-2026081004-arm64-v8a-release-upstream-9a4e587-validation.apk`
+    （24,709,859 字节，SHA-256
+    `092853380253109458A2E552CD463C503401A8BEE8E59A9C3472B5A7203D8702`）；
+  - `build/app/outputs/flutter-apk/pili++-2.1.8-2026081004-x86_64-release-upstream-9a4e587-validation.apk`
+    （25,693,505 字节，SHA-256
+    `0C668A6025AE08FBB41494A211690AFFE3939095F55D39A6263C94DDDA8FE87C`）。
+  这些包仅用于同步后源码审计，不替代最近正式交付、不更新发布基线。
+- 本批仍未执行 Android 真机回归。mpv/ExoPlayer 点播与直播、控制层和手势、音频、切源、
+  应用内小窗、系统 PiP、前后台及生命周期须在合并后的准确源码状态上复核；自动化通过不
+  等同真机验收。

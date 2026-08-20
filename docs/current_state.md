@@ -1,6 +1,6 @@
 # pili++ 当前项目状态
 
-> 最后核对：2026-08-17 +08:00
+> 最后核对：2026-08-20 +08:00
 >
 > 本文件记录会随开发变化、但后续任务必须知道的事实。开始任务时先核对这里与实际
 > Git、源码和构建产物；结束任务前更新。长期规则见 `AGENTS.md`，ExoPlayer 详细兼容
@@ -9,20 +9,20 @@
 ## 仓库基线
 
 - 当前分支：`agent/exoplayer-concrete-hwdec`
-- 本次播放器/上游合并基线：`03ed055`
-  (`Merge remote-tracking branch 'upstream/main' into agent/exoplayer-concrete-hwdec`)；其后仅有
-  状态文档提交。
+- 本次播放器/上游合并基线：`50942c2`
+  (`Merge remote-tracking branch 'upstream/main' into agent/exoplayer-concrete-hwdec`)；随后
+  追加纯格式提交 `26fe34d`。
 - 最新 GitHub 发布源提交：`859d39c4ff3c77c37e1cc1d7131192df8f8b4241`
   (`chore: prepare 2.1.2 release`)
 - 最新功能快照：`0c647b51ae60defc39c6171e5ca9387e43e596d2`
   (`feat: retry decoder failures with software video fallback`)
-- 最新上游合并提交：`03ed055`
+- 最新上游合并提交：`50942c2`
   (`Merge remote-tracking branch 'upstream/main' into agent/exoplayer-concrete-hwdec`)
 - 上游：`https://github.com/bggRGjQaUbCoE/PiliPlus.git`
-- 已获取并合入的 `upstream/main`：`f8b9ef3e6eca50dafb187cfbcdd67cab78ee4d61`
-  (`upgrade deps`)
-- 合并基线相对 `upstream/main` 已无落后；merge-base 即
-  `f8b9ef3e6eca50dafb187cfbcdd67cab78ee4d61`。当前分支提交数以 `git rev-list` 为准。
+- 已获取并合入的 `upstream/main`：`9a4e5874b9777315b992145b50d30ce9ce0e3b6f`
+  (`optimize imports`)
+- 当前分支相对 `upstream/main` 已无落后；merge-base 即
+  `9a4e5874b9777315b992145b50d30ce9ce0e3b6f`。当前分支提交数以 `git rev-list` 为准。
 - 应用内小窗、音频焦点/媒体控制、系统 PiP 恢复、版本更新和兼容记录已保存到上述
   功能快照。交接时应以实际 `git status` 为准；存在未提交修改时不得直接 merge 或
   rebase。
@@ -1077,3 +1077,33 @@ the final audit artifact. The formal release baseline remains unchanged.
   重命名和三个 artifact 上传。产物为 `pili++_android_2.1.8+2026081004_arm64-v8a.apk`、
   `pili++_android_2.1.8+2026081004_armeabi-v7a.apk`、
   `pili++_android_2.1.8+2026081004_x86_64.apk`；本次手动运行未创建 GitHub Release。
+
+### 2026-08-20 上游 8 提交同步
+
+- 在工作区干净、`HEAD=9733fe3`、`upstream/main=f8b9ef3` 的基础上，先 fetch 到
+  `upstream/main@9a4e5874b9777315b992145b50d30ce9ce0e3b6f`。同步前本地领先 83、上游领先
+  8，merge-base 为 `f8b9ef3e6eca50dafb187cfbcdd67cab78ee4d61`。
+- 上游新增提交为：`b11815c`（禁用 Linux Impeller）、`97652a1`（动态/Opus 分享和模型
+  修复）、`08456a1`（依赖升级，含 media_kit `75dfa37`）、`1226ef0`（批量 import 整理）、
+  `9d99693`（material_ui 构建脚本修复）、`8bf39dd`（桌面窗口/横滑和播放器信息调整）、
+  `b6e9da1`（关闭全部时退出桌面全屏）和 `9a4e587`（第二批 import 整理）。
+- 上游触及 267 个文件，其中 16 个与本地播放器/业务改造重叠；实际内容冲突只有
+  `lib/pages/video/widgets/header_control.dart` 和 `lib/plugin/pl_player/view/view.dart`。
+  前者保留本地后端中立 `PlayerInfoDialog`、Media3 轨道/信息入口，不重新引入上游旧的
+  `NativePlayer` 直接依赖；后者保留 `PlPlayerSurface` 和 Media3/mpv 渲染隔离，仅采用
+  import 整理。上游桌面关闭全屏修复、动态 Opus 分享、依赖锁文件、构建脚本和 import
+  整理均已合入；Android Media3 原生插件、应用内小窗、系统 PiP、签名身份和 checksum
+  校验脚本未被覆盖。
+- 合并提交为 `50942c2`，随后 Flutter 3.47 formatter 产生的两个 import 换行修复提交为
+  `26fe34d`。当前 merge-base 为 `upstream/main@9a4e587`，分支相对上游领先 85、落后 0，
+  工作区已清理。
+- 使用正确工具链 `D:\CodexToolchains\PiliPlus\flutter-sdk\flutter-3.47.0`（Flutter 3.47.0、
+  Dart 3.13.0、engine `5f77625673`）执行 `pub get` 成功，确认 media_kit checkout 已更新到
+  `75dfa37`；项目 material_ui 兼容补丁已重新应用。`dart format --output=none
+  --set-exit-if-changed lib test` 通过（1330 文件，0 changed），`dart analyze` 通过，0 error、
+  0 warning、35 条既有 info，`git diff --check` 通过。
+- 完整 Flutter 测试尚未得到结论：一次运行被工具调用中断，另一次因 SDK lockfile 审批服务
+  暂时不可用而无法重新启动；此前错误 SDK 3.44.8 与 3.47 framework 混用的缓存已清理，
+  不能把本批测试标为通过。Android `:app:testDebugUnitTest` 也未完成，当前 Gradle 原生
+  Windows library 初始化失败（`native-platform.dll`），没有产生新的 APK。上游同步后的
+  Android Release、真机 mpv/ExoPlayer、小窗/PiP 回归保持待验证。

@@ -27,6 +27,8 @@ import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:material_ui/material_ui.dart' hide TextField;
@@ -62,6 +64,7 @@ class ReplyPage extends CommonRichTextPubPage {
 
 class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
   final RxBool _syncToDynamic = false.obs;
+  late final Rx<Account> _selectedAccount = Accounts.main.obs;
   final heroTag = Get.arguments?['heroTag'];
 
   @override
@@ -161,7 +164,10 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
               onSubmitted: onSubmitted,
               focusNode: focusNode,
               decoration: InputDecoration(
-                hintText: widget.hint ?? "输入回复内容",
+                hintText: widget.hint ??
+                    (_selectedAccount.value.mid != Accounts.main.mid
+                        ? "以 UID: ${_selectedAccount.value.mid} 回复..."
+                        : "输入回复内容"),
                 border: InputBorder.none,
                 hintStyle: const TextStyle(fontSize: 14),
               ),
@@ -209,6 +215,10 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
                 selected: _syncToDynamic.value,
               ),
             ),
+            if (Accounts.account.length > 1) ...[
+              const SizedBox(width: 8),
+              Obx(_buildAccountSwitchBtn),
+            ],
             const Spacer(),
             Obx(
               () => FilledButton.tonal(
@@ -382,6 +392,111 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
     );
   }
 
+  Widget _buildAccountSwitchBtn() {
+    final isCustom = _selectedAccount.value.mid != Accounts.main.mid;
+    return ToolbarIconButton(
+      tooltip: isCustom
+          ? '以 UID: ${_selectedAccount.value.mid} 发送 (点击切换)'
+          : '切换发送账号 (当前: UID ${_selectedAccount.value.mid})',
+      onPressed: _onSwitchAccount,
+      icon: const Icon(Icons.switch_account_outlined, size: 22),
+      selected: isCustom,
+    );
+  }
+
+  void _onSwitchAccount() {
+    showModalBottomSheet(
+      context: context,
+      useSafeArea: true,
+      builder: (context) {
+        final theme = Theme.of(context);
+        final accounts = Accounts.account.values.toList();
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '选择发表评论的账号',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '仅对本次回复生效',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.outline,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: accounts.length,
+                  itemBuilder: (context, index) {
+                    final account = accounts[index];
+                    final isSelected =
+                        account.mid == _selectedAccount.value.mid;
+                    final isMain = account == Accounts.main;
+                    return ListTile(
+                      leading: Icon(
+                        isSelected
+                            ? Icons.check_circle
+                            : Icons.account_circle_outlined,
+                        color: isSelected
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.outline,
+                      ),
+                      title: Text(
+                        'UID: ${account.mid}',
+                        style: TextStyle(
+                          fontWeight:
+                              isSelected ? FontWeight.bold : FontWeight.normal,
+                          color: isSelected ? theme.colorScheme.primary : null,
+                        ),
+                      ),
+                      trailing: isMain
+                          ? Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primaryContainer,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '当前主号',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: theme.colorScheme.onPrimaryContainer,
+                                ),
+                              ),
+                            )
+                          : null,
+                      onTap: () {
+                        _selectedAccount.value = account;
+                        Get.back();
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Future<void> onCustomPublish({List? pictures}) async {
     Map<String, int> atNameToMid = {};
@@ -402,6 +517,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
       atNameToMid: atNameToMid,
       pictures: pictures,
       syncToDynamic: _syncToDynamic.value,
+      account: _selectedAccount.value,
     );
     if (res case Success(:final response)) {
       hasPub = true;

@@ -22,8 +22,8 @@ import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:easy_debounce/easy_throttle.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 enum DynType implements EnumWithLabel {
   reply('评论'),

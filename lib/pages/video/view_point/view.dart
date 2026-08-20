@@ -7,8 +7,8 @@ import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ViewPointsPage extends CommonSlidePage {
   const ViewPointsPage({

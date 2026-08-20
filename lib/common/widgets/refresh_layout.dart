@@ -1,8 +1,8 @@
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart'
     show kIndicatorSize;
 import 'package:PiliPlus/common/widgets/slotted_layout_helper.dart';
-import 'package:material_ui/material_ui.dart' hide RefreshIndicatorStatus;
 import 'package:flutter/rendering.dart' show BoxHitTestResult, ClipRectLayer;
+import 'package:material_ui/material_ui.dart' hide RefreshIndicatorStatus;
 
 enum RefreshType { indicator, body }
 

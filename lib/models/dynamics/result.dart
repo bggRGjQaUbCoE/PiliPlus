@@ -422,7 +422,7 @@ class ModuleAuthorModel extends Avatar {
       officialVerify ??= BaseOfficialVerify.fromJson(json['official']); // opus
     }
     pubAction = json['pub_action'];
-    pubTime = json['pub_time'];
+    pubTime = nonNullOrEmptyString(json['pub_time']);
     if (safeToInt(json['pub_ts']) case final pubTs? when pubTs > 0) {
       this.pubTs = pubTs;
     }
@@ -529,7 +529,10 @@ class DynamicAddModel {
     upowerLottery = json['upower_lottery'] != null
         ? UpowerLottery.fromJson(json['upower_lottery'])
         : null;
-    common = json['common'] != null ? AddCommon.fromJson(json['common']) : null;
+    final common = json['common'];
+    if (common != null && common['sub_type'] != 'game') {
+      this.common = AddCommon.fromJson(common);
+    }
     match = json['match'] != null ? AddMatch.fromJson(json['match']) : null;
   }
 }

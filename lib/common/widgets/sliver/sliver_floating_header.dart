@@ -18,9 +18,9 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart' show clampDouble;
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart'
     show RenderSliverSingleBoxAdapter, SliverGeometry, ScrollDirection;
+import 'package:material_ui/material_ui.dart';
 
 /// ref [SliverFloatingHeader]
 

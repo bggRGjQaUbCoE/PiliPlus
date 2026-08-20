@@ -27,9 +27,9 @@ import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class AuthorPanel extends StatelessWidget {
   final DynamicItemModel item;
@@ -323,7 +323,7 @@ class AuthorPanel extends StatelessWidget {
                 onTap: () {
                   Get.back();
                   ShareUtils.shareText(
-                    '${HttpString.dynamicShareBaseUrl}/${item.idStr}',
+                    '${HttpString.opusBaseUrl}/${item.idStr}',
                   );
                 },
                 minLeadingWidth: 0,

@@ -1,6 +1,6 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart'
     show RenderSliverConstrainedCrossAxis, SliverHitTestResult, RenderSliver;
+import 'package:material_ui/material_ui.dart';
 
 class CenteredSliverConstrainedCrossAxis extends SliverConstrainedCrossAxis {
   const CenteredSliverConstrainedCrossAxis({

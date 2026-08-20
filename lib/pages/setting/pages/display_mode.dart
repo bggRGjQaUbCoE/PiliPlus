@@ -3,10 +3,10 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hive_ce/hive.dart';
+import 'package:material_ui/material_ui.dart';
 
 class SetDisplayMode extends StatefulWidget {
   const SetDisplayMode({super.key});

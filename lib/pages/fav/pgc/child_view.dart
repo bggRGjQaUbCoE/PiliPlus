@@ -9,8 +9,8 @@ import 'package:PiliPlus/pages/fav/pgc/controller.dart';
 import 'package:PiliPlus/pages/fav/pgc/pgc_layout.dart';
 import 'package:PiliPlus/pages/fav/pgc/widget/item.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class FavPgcChildPage extends StatefulWidget {
   const FavPgcChildPage({

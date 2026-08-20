@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/slotted_layout_helper.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart' show ChildLayoutHelper;
+import 'package:material_ui/material_ui.dart';
 
 class SimpleScaffold extends StatelessWidget {
   const SimpleScaffold({

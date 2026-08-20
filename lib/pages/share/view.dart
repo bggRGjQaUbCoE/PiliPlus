@@ -6,10 +6,10 @@ import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/pages/contact/view.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class UserModel {
   UserModel({

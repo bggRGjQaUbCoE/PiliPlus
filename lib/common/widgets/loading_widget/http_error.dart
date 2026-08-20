@@ -1,7 +1,7 @@
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/widgets/selection_text.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:material_ui/material_ui.dart';
 
 class HttpError extends StatelessWidget {
   const HttpError({

@@ -36,9 +36,9 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:material_ui/material_ui.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 const Set<TargetPlatform> _kDesktopPlatforms = <TargetPlatform>{
   TargetPlatform.macOS,
@@ -576,7 +576,7 @@ class _DynamicDetailPageState
                     text: '分享',
                     stat: null,
                     onPressed: (_) => ShareUtils.shareText(
-                      '${HttpString.dynamicShareBaseUrl}/${controller.dynItem.idStr}',
+                      '${HttpString.opusBaseUrl}/${controller.dynItem.idStr}',
                     ),
                   ),
                 ),

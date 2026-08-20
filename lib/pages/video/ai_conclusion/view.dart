@@ -3,8 +3,8 @@ import 'package:PiliPlus/models_new/video/video_ai_conclusion/model_result.dart'
 import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class AiConclusionPanel extends CommonSlidePage {
   final AiConclusionResult item;

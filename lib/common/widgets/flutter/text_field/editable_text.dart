@@ -28,6 +28,10 @@ import 'package:PiliPlus/common/widgets/flutter/text_field/text_selection.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/rendering.dart'
+    hide RenderEditable, VerticalCaretMovementRun;
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart'
     hide
         EditableText,
@@ -35,10 +39,6 @@ import 'package:material_ui/material_ui.dart'
         SpellCheckConfiguration,
         TextSelectionGestureDetectorBuilder,
         TextSelectionOverlay;
-import 'package:flutter/rendering.dart'
-    hide RenderEditable, VerticalCaretMovementRun;
-import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
 
 /// Signature for a widget builder that builds a context menu for the given
 /// [EditableTextState].

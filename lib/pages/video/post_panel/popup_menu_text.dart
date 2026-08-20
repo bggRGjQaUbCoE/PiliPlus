@@ -1,5 +1,5 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:material_ui/material_ui.dart';
 
 typedef PopupMenuItemSelected<T> = bool Function(T value);
 

@@ -1,6 +1,6 @@
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class MultiSelectAppBarWidget extends StatelessWidget
     implements PreferredSizeWidget {

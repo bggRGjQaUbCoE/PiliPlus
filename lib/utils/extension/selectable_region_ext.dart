@@ -1,7 +1,7 @@
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 extension SelectableRegionStateExt on SelectableRegionState {
   static final _schemeRegex = RegExp(r'[\w\-]+://\S');

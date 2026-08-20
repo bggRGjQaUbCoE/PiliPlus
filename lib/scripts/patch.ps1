@@ -229,11 +229,22 @@ switch ($platform.ToLower()) {
     default {}
 }
 
+try {
+    $MaterialUiDir = Get-ChildItem "$PubCacheDir/hosted/pub.dev" -Directory |
+        Where-Object { $_.Name -like "material_ui-*" } |
+        Select-Object -Last 1
+
+    if ($MaterialUiDir) {
+        Remove-Item -Path $MaterialUiDir.FullName -Recurse -Force
+    }
+} catch {
+}
+
 flutter pub get
 
 $MaterialUiDir = Get-ChildItem "$PubCacheDir/hosted/pub.dev" -Directory |
     Where-Object { $_.Name -like "material_ui-*" } |
-    Select-Object -First 1
+    Select-Object -Last 1
 
 if (-not $MaterialUiDir) {
     throw "material_ui package not found in pub cache"

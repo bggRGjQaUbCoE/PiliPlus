@@ -22,9 +22,9 @@ import 'package:PiliPlus/utils/mobile_observer.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:win32/win32.dart' as kernel32;
 import 'package:window_manager/window_manager.dart';
@@ -161,7 +161,7 @@ class _MainAppState extends PopScopeState<MainApp>
   @override
   void onWindowClose() {
     if (_mainController.showTrayIcon && _mainController.minimizeOnExit) {
-      windowManager.hide();
+      _hide();
       _onHideWindow();
     } else {
       _onClose();
@@ -211,14 +211,29 @@ class _MainAppState extends PopScopeState<MainApp>
     }
   }
 
+  /// https://github.com/leanflutter/window_manager/issues/571
+  Future<void> _hide() async {
+    if (Platform.isWindows) {
+      await windowManager.setOpacity(0.0);
+    }
+    await windowManager.hide();
+  }
+
+  Future<void> _show() async {
+    if (Platform.isWindows) {
+      await windowManager.setOpacity(1.0);
+    }
+    await windowManager.show();
+  }
+
   @override
   Future<void> onTrayIconMouseDown() async {
     if (await windowManager.isVisible()) {
       _onHideWindow();
-      windowManager.hide();
+      _hide();
     } else {
       _onShowWindow();
-      windowManager.show();
+      _show();
     }
   }
 
@@ -232,7 +247,7 @@ class _MainAppState extends PopScopeState<MainApp>
   void onTrayMenuItemClick(MenuItem menuItem) {
     switch (menuItem.key) {
       case 'show':
-        windowManager.show();
+        _show();
       case 'exit':
         _onClose();
     }

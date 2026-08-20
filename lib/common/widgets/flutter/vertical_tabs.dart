@@ -10,10 +10,10 @@ import 'dart:ui' show SemanticsRole, lerpDouble;
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart' show DragStartBehavior;
-import 'package:material_ui/material_ui.dart' hide TabBar;
 import 'package:flutter/rendering.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/src/extension_instance.dart';
+import 'package:material_ui/material_ui.dart' hide TabBar;
 
 const double _kTabWidth = 51.0;
 const double _kTextAndIconTabWidth = 72.0;

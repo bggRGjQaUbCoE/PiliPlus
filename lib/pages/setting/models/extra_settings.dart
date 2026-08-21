@@ -215,6 +215,20 @@ List<SettingsModel> get extraSettings => [
     setKey: SettingBoxKey.continuePlayingPart,
     defaultVal: true,
   ),
+  const SwitchModel(
+    title: '启用评论账号切换',
+    subtitle: '在评论与回复弹窗中支持快速切换发送账号',
+    leading: Icon(Icons.switch_account_outlined),
+    setKey: SettingBoxKey.enableReplyAccountSwitch,
+    defaultVal: true,
+  ),
+  const SwitchModel(
+    title: '记住评论切换账号',
+    subtitle: '记住上次选择的回复账号，下次打开弹窗自动使用',
+    leading: Icon(Icons.manage_accounts_outlined),
+    setKey: SettingBoxKey.rememberReplyAccount,
+    defaultVal: true,
+  ),
   getBanWordModel(
     title: '评论关键词过滤',
     key: SettingBoxKey.banWordForReply,

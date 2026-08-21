@@ -1152,15 +1152,46 @@ class PlPlayerController with BlockConfigMixin {
     // screenManager.setOverlays(false);
   }
 
-  /// 暂停播放
+  /// iOS 上暂停时音频输出被直接截断，会产生爆音，
+  /// 暂停前后对音量做淡出、恢复处理。
   Future<void> pause({bool notify = true, bool isInterrupt = false}) async {
-    await _videoPlayerController?.pause();
+    final player = _videoPlayerController;
+    final needFade =
+        Platform.isIOS && playerStatus.isPlaying && player != null;
+    if (needFade) {
+      await _fadeOutVolume(player);
+    }
+    await player?.pause();
     playerStatus.value = PlayerStatus.paused;
+
+    if (needFade) {
+      await _restoreVolumeAfterPause(player);
+    }
 
     // 主动暂停时让出音频焦点
     if (!isInterrupt) {
       audioSessionHandler?.setActive(false);
     }
+  }
+
+  /// 淡出时长需要覆盖音频输出缓冲（iOS 上通常几十毫秒），
+  /// 让缓冲里的声音也一起淡出到零；步长足够小，单步音量变化不可感知。
+  Future<void> _fadeOutVolume(Player player) async {
+    const steps = 5;
+    const stepDuration = Duration(milliseconds: 25);
+    for (var i = steps - 1; i >= 0; i--) {
+      await player.setVolume(Pref.playerVolume * i / steps);
+      if (i > 0) {
+        await Future.delayed(stepDuration);
+      }
+    }
+  }
+
+  /// 等暂停生效、缓冲排空后再恢复音量，暂停状态下不会产生声音
+  Future<void> _restoreVolumeAfterPause(Player player) async {
+    const restoreDelay = Duration(milliseconds: 100);
+    await Future.delayed(restoreDelay);
+    await player.setVolume(Pref.playerVolume);
   }
 
   bool tripling = false;

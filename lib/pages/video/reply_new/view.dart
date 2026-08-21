@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart'
     show RichTextType;
 import 'package:PiliPlus/common/widgets/flutter/text_field/text_field.dart';
+import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show platformClampingPhysics;
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
@@ -14,6 +15,7 @@ import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models/common/publish_panel_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart' show FilePicModel;
 import 'package:PiliPlus/pages/common/publish/common_rich_text_pub_page.dart';
@@ -31,6 +33,7 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:collection/collection.dart';
 import 'package:material_ui/material_ui.dart' hide TextField;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -66,6 +69,32 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
   final RxBool _syncToDynamic = false.obs;
   late final Rx<Account> _selectedAccount = Accounts.main.obs;
   final heroTag = Get.arguments?['heroTag'];
+
+  @override
+  void initState() {
+    super.initState();
+    if (Pref.enableReplyAccountSwitch &&
+        Pref.rememberReplyAccount &&
+        Pref.lastReplyAccountMid != null) {
+      final savedAccount = Accounts.account.values.firstWhereOrNull(
+        (a) => a.mid == Pref.lastReplyAccountMid,
+      );
+      if (savedAccount != null) {
+        _selectedAccount.value = savedAccount;
+      }
+    }
+    _loadAccountProfiles();
+  }
+
+  void _loadAccountProfiles() {
+    for (final act in Accounts.account.values) {
+      if (Accounts.getCachedProfile(act.mid) == null) {
+        Accounts.fetchProfile(act.mid).then((_) {
+          if (mounted) setState(() {});
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -137,6 +166,19 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
     );
   }
 
+  String _buildInputHintText() {
+    if (Pref.enableReplyAccountSwitch &&
+        _selectedAccount.value.mid != Accounts.main.mid) {
+      final profile = Accounts.getCachedProfile(_selectedAccount.value.mid);
+      final name = profile?.name;
+      if (name != null && name.isNotEmpty) {
+        return "以 $name 回复...";
+      }
+      return "以 UID: ${_selectedAccount.value.mid} 回复...";
+    }
+    return "输入回复内容";
+  }
+
   List<Widget> buildInputView() {
     return [
       Padding(
@@ -164,10 +206,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
               onSubmitted: onSubmitted,
               focusNode: focusNode,
               decoration: InputDecoration(
-                hintText: widget.hint ??
-                    (_selectedAccount.value.mid != Accounts.main.mid
-                        ? "以 UID: ${_selectedAccount.value.mid} 回复..."
-                        : "输入回复内容"),
+                hintText: widget.hint ?? _buildInputHintText(),
                 border: InputBorder.none,
                 hintStyle: const TextStyle(fontSize: 14),
               ),
@@ -215,7 +254,8 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
                 selected: _syncToDynamic.value,
               ),
             ),
-            if (Accounts.account.length > 1) ...[
+            if (Pref.enableReplyAccountSwitch &&
+                Accounts.account.length > 1) ...[
               const SizedBox(width: 8),
               Obx(_buildAccountSwitchBtn),
             ],
@@ -393,13 +433,63 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
   }
 
   Widget _buildAccountSwitchBtn() {
-    final isCustom = _selectedAccount.value.mid != Accounts.main.mid;
+    final account = _selectedAccount.value;
+    final isCustom = account.mid != Accounts.main.mid;
+    final isMain = account == Accounts.main;
+    final profile = Accounts.getCachedProfile(account.mid);
+    final face = profile?.face ?? (isMain ? Pref.userInfoCache?.face : null);
+    final name = profile?.name ?? (isMain ? Pref.userInfoCache?.uname : null);
+
+    final String tooltip;
+    if (isCustom) {
+      tooltip = name != null
+          ? '当前发送账号: $name (UID: ${account.mid}) · 点击切换'
+          : '当前发送账号: UID ${account.mid} · 点击切换';
+    } else {
+      tooltip = name != null
+          ? '当前发送账号: $name (主号) · 点击切换'
+          : '当前发送账号: 主号 · 点击切换';
+    }
+
+    final theme = Theme.of(context);
+    Widget iconWidget;
+    if (face != null && face.isNotEmpty) {
+      iconWidget = Container(
+        width: 24,
+        height: 24,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: isCustom
+              ? Border.all(
+                  color: theme.colorScheme.primary,
+                  width: 2,
+                )
+              : Border.all(
+                  color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                  width: 1,
+                ),
+        ),
+        child: ClipOval(
+          child: NetworkImgLayer(
+            src: face,
+            width: 24,
+            height: 24,
+            type: ImageType.avatar,
+          ),
+        ),
+      );
+    } else {
+      iconWidget = Icon(
+        isCustom ? Icons.account_circle : Icons.account_circle_outlined,
+        size: 22,
+        color: isCustom ? theme.colorScheme.primary : null,
+      );
+    }
+
     return ToolbarIconButton(
-      tooltip: isCustom
-          ? '以 UID: ${_selectedAccount.value.mid} 发送 (点击切换)'
-          : '切换发送账号 (当前: UID ${_selectedAccount.value.mid})',
+      tooltip: tooltip,
       onPressed: _onSwitchAccount,
-      icon: const Icon(Icons.switch_account_outlined, size: 22),
+      icon: iconWidget,
       selected: isCustom,
     );
   }
@@ -428,7 +518,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
                       ),
                     ),
                     Text(
-                      '仅对本次回复生效',
+                      Pref.rememberReplyAccount ? '已开启记住账号' : '仅对本次回复生效',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.outline,
                       ),
@@ -446,25 +536,53 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
                     final isSelected =
                         account.mid == _selectedAccount.value.mid;
                     final isMain = account == Accounts.main;
+                    final profile = Accounts.getCachedProfile(account.mid);
+                    final face =
+                        profile?.face ??
+                        (isMain ? Pref.userInfoCache?.face : null);
+                    final name =
+                        profile?.name ??
+                        (isMain ? Pref.userInfoCache?.uname : null);
+
                     return ListTile(
-                      leading: Icon(
-                        isSelected
-                            ? Icons.check_circle
-                            : Icons.account_circle_outlined,
-                        color: isSelected
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.outline,
-                      ),
-                      title: Text(
-                        'UID: ${account.mid}',
-                        style: TextStyle(
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.normal,
-                          color: isSelected ? theme.colorScheme.primary : null,
-                        ),
-                      ),
-                      trailing: isMain
-                          ? Container(
+                      leading: face != null && face.isNotEmpty
+                          ? ClipOval(
+                              child: NetworkImgLayer(
+                                src: face,
+                                width: 40,
+                                height: 40,
+                                type: ImageType.avatar,
+                              ),
+                            )
+                          : CircleAvatar(
+                              radius: 20,
+                              backgroundColor:
+                                  theme.colorScheme.surfaceContainerHighest,
+                              child: Icon(
+                                Icons.person_outline,
+                                color: theme.colorScheme.outline,
+                              ),
+                            ),
+                      title: Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              name ?? 'UID: ${account.mid}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                color: isSelected
+                                    ? theme.colorScheme.primary
+                                    : null,
+                              ),
+                            ),
+                          ),
+                          if (isMain) ...[
+                            const SizedBox(width: 8),
+                            Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 6,
                                 vertical: 2,
@@ -480,10 +598,31 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
                                   color: theme.colorScheme.onPrimaryContainer,
                                 ),
                               ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      subtitle: name != null
+                          ? Text(
+                              'UID: ${account.mid}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: theme.colorScheme.outline,
+                              ),
+                            )
+                          : null,
+                      trailing: isSelected
+                          ? Icon(
+                              Icons.check_circle,
+                              color: theme.colorScheme.primary,
                             )
                           : null,
                       onTap: () {
                         _selectedAccount.value = account;
+                        if (Pref.enableReplyAccountSwitch &&
+                            Pref.rememberReplyAccount) {
+                          Pref.lastReplyAccountMid = account.mid;
+                        }
                         Get.back();
                       },
                     );
@@ -517,7 +656,9 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
       atNameToMid: atNameToMid,
       pictures: pictures,
       syncToDynamic: _syncToDynamic.value,
-      account: _selectedAccount.value,
+      account: Pref.enableReplyAccountSwitch
+          ? _selectedAccount.value
+          : Accounts.main,
     );
     if (res case Success(:final response)) {
       hasPub = true;

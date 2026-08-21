@@ -159,8 +159,9 @@ void findiDir(
   );
   if (!pubDev.existsSync()) return;
 
-  final lines = File('$workspace${Platform.pathSeparator}pubspec.lock')
-      .readAsLinesSync();
+  final lines = File(
+    '$workspace${Platform.pathSeparator}pubspec.lock',
+  ).readAsLinesSync();
 
   String? currentPackage;
   int count = 0;
@@ -284,10 +285,12 @@ void main(List<String> args) async {
 
     final pubGet = args.elementAtOrNull(2) == 'true'
         ? null
-        : Process.run('flutter', const [
-            'pub',
-            'get',
-          ], workingDirectory: workspace);
+        : Process.run(
+            'flutter',
+            const ['pub', 'get'],
+            workingDirectory: workspace,
+            runInShell: Platform.isWindows,
+          );
 
     final platform = args[0];
 

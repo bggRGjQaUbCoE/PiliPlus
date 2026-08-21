@@ -104,6 +104,17 @@ class PlPlayerController with BlockConfigMixin {
   final RxDouble _playbackSpeed = Pref.playSpeedDefault.obs;
   late final RxDouble _longPressSpeed = Pref.longPressSpeedDefault.obs;
 
+  /// 键盘快捷键倍速提示（Z/X/C），显示于播放器内中下部
+  final RxDouble keyboardSpeedToast = RxDouble(0.0);
+  Timer? _keyboardSpeedTimer;
+  void showKeyboardSpeedToast(double speed) {
+    keyboardSpeedToast.value = speed;
+    _keyboardSpeedTimer?.cancel();
+    _keyboardSpeedTimer = Timer(const Duration(seconds: 1), () {
+      keyboardSpeedToast.value = 0.0;
+    });
+  }
+
   final RxDouble volume = RxDouble(
     PlatformUtils.isDesktop ? Pref.desktopVolume : 1.0,
   );
@@ -1574,6 +1585,7 @@ class PlPlayerController with BlockConfigMixin {
       AndroidHelper$ToDart.onUserLeaveHint = null;
     }
     _timer?.cancel();
+    _keyboardSpeedTimer?.cancel();
     // _position.close();
     // _playerEventSubs?.cancel();
     // _sliderPosition.close();

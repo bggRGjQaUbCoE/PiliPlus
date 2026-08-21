@@ -528,8 +528,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
               height: 30,
               tooltip: '分段信息',
               icon: DisabledIcon(
-                iconSize: 22,
-                color: Colors.white,
                 disable: !videoDetailController.showVP.value,
                 child: const Icon(
                   CustomIcons.view_headline_rotate_90,

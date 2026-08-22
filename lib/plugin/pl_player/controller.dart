@@ -813,10 +813,10 @@ class PlPlayerController with BlockConfigMixin {
         // dely_open need provide length
         video =
             ('edl://'
-            '!no_clip;!no_chapters;'
+            '!no_chapters;'
             // '!delay_open,media_type=video;'
             '%${isFileSource ? utf8.encode(video).length : video.length}%$video;'
-            '!new_stream;!no_clip;!no_chapters;'
+            '!new_stream;!no_chapters;'
             // '!delay_open,media_type=audio;'
             '%${isFileSource ? utf8.encode(audio).length : audio.length}%$audio');
       }

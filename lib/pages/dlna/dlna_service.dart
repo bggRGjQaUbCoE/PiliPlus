@@ -28,7 +28,7 @@ Future<String?> resolveCastUrl(Map content) async {
     final aid = int.tryParse('${content['id']}');
     if (aid == null) return null;
     final info = await VideoHttp.videoIntro(bvid: IdUtils.av2bv(aid));
-    if (info case Success(:final videoInfo)) {
+    if (info case Success(response: final videoInfo)) {
       final cid = videoInfo.cid ?? videoInfo.pages?.firstOrNull?.cid;
       if (cid != null) {
         final play = await VideoHttp.tvPlayUrl(
@@ -36,7 +36,7 @@ Future<String?> resolveCastUrl(Map content) async {
           objectId: aid,
           playurlType: 1,
         );
-        if (play case Success(:final playInfo)) {
+        if (play case Success(response: final playInfo)) {
           final first = playInfo.durl?.firstOrNull;
           if (first != null && first.playUrls.isNotEmpty) {
             return VideoUtils.getCdnUrl(first.playUrls);

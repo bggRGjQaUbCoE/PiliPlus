@@ -8,6 +8,10 @@ import 'package:dlna_dart/dlna.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
+/// 会话级缓存：上次成功搜索到的投屏设备列表。
+/// 每次进入投屏页面先用它直接展示（可立即点击投屏），同时在后台重新搜索刷新。
+final Map<String, DLNADevice> _dlnaDeviceCache = {};
+
 class DLNAPage extends StatefulWidget {
   const DLNAPage({super.key});
 
@@ -29,26 +33,24 @@ class _DLNAPageState extends State<DLNAPage> {
   @override
   void initState() {
     super.initState();
-    _onSearch(isInit: true);
+    // 先复用缓存设备（可立即点击投屏），同时后台重新搜索刷新
+    _deviceList.addAll(_dlnaDeviceCache);
   }
 
   Future<void> _onSearch({bool isInit = false}) async {
     if (_isSearching) return;
     _isSearching = true;
-    if (!isInit && mounted) {
-      _lastDevice = null;
-      _deviceList.clear();
-      setState(() {});
-    }
+    if (mounted) setState(() {});
     final deviceManager = await _searcher.start();
     if (!mounted) {
+      _isSearching = false;
       return;
     }
     _timer = Timer(const Duration(seconds: 20), _searcher.stop);
     await for (final deviceList in deviceManager.devices.stream) {
       if (mounted) {
         _deviceList.addAll(deviceList);
-        setState(() {});
+        _dlnaDeviceCache.addAll(deviceList);
       }
     }
     if (mounted) {

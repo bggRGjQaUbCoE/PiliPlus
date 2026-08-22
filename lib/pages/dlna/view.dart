@@ -7,10 +7,7 @@ import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
 import 'package:dlna_dart/dlna.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
-
-/// 会话级缓存：上次成功搜索到的投屏设备列表。
-/// 每次进入投屏页面先用它直接展示（可立即点击投屏），同时在后台重新搜索刷新。
-final Map<String, DLNADevice> _dlnaDeviceCache = {};
+import 'package:PiliPlus/pages/dlna/dlna_service.dart';
 
 class DLNAPage extends StatefulWidget {
   const DLNAPage({super.key});
@@ -34,7 +31,7 @@ class _DLNAPageState extends State<DLNAPage> {
   void initState() {
     super.initState();
     // 先复用缓存设备（可立即点击投屏），同时后台重新搜索刷新
-    _deviceList.addAll(_dlnaDeviceCache);
+    _deviceList.addAll(dlnaDeviceCache);
   }
 
   Future<void> _onSearch({bool isInit = false}) async {
@@ -50,7 +47,7 @@ class _DLNAPageState extends State<DLNAPage> {
     await for (final deviceList in deviceManager.devices.stream) {
       if (mounted) {
         _deviceList.addAll(deviceList);
-        _dlnaDeviceCache.addAll(deviceList);
+        dlnaDeviceCache.addAll(deviceList);
       }
     }
     if (mounted) {

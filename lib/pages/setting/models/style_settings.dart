@@ -84,18 +84,11 @@ List<SettingsModel> get styleSettings => [
     defaultVal: false,
     needReboot: true,
   ),
-  SplitModel(
-    normalModel: const NormalModel.split(
-      title: 'App字体字重',
-      subtitle: '点击设置',
-      leading: Icon(Icons.text_fields),
-    ),
-    switchModel: SwitchModel.split(
-      defaultVal: false,
-      setKey: SettingBoxKey.appFontWeight,
-      onChanged: (_) => Get.updateMyAppTheme(),
-      onTap: _showFontWeightDialog,
-    ),
+  NormalModel(
+    title: 'App字体设置',
+    subtitle: '点击设置',
+    leading: const Icon(Icons.text_fields),
+    onTap: (context, setState) => Get.toNamed('/fontSetting'),
   ),
   NormalModel(
     title: '界面缩放',
@@ -324,20 +317,6 @@ List<SettingsModel> get styleSettings => [
     title: '滑动动画弹簧参数',
     leading: Icon(Icons.chrome_reader_mode_outlined),
     onTap: _showSpringDialog,
-  ),
-  NormalModel(
-    onTap: (context, setState) async {
-      final res = await Get.toNamed('/fontSizeSetting');
-      if (res != null) {
-        setState();
-      }
-    },
-    title: '字体大小',
-    leading: const Icon(Icons.format_size_outlined),
-    getSubtitle: () {
-      final scale = Pref.defaultTextScale;
-      return scale == 1.0 ? '默认' : scale.toString();
-    },
   ),
   NormalModel(
     onTap: (context, setState) => Get.toNamed(
@@ -636,23 +615,6 @@ void _showSpringDialog(BuildContext context, _) {
       ],
     ),
   );
-}
-
-Future<void> _showFontWeightDialog(BuildContext context) async {
-  final res = await showDialog<double>(
-    context: context,
-    builder: (context) => SliderDialog(
-      title: const Text('App字体字重'),
-      value: Pref.appFontWeight.toDouble() + 1,
-      min: 1,
-      max: FontWeight.values.length.toDouble(),
-      divisions: FontWeight.values.length - 1,
-    ),
-  );
-  if (res != null) {
-    await GStorage.setting.put(SettingBoxKey.appFontWeight, res.toInt() - 1);
-    Get.updateMyAppTheme();
-  }
 }
 
 Future<void> _showTransitionDialog(

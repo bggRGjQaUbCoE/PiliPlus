@@ -29,33 +29,34 @@ class _DynamicsPageState extends CommonPageState<DynamicsPage>
   @override
   bool get wantKeepAlive => true;
 
-  Widget _createDynamicBtn(ThemeData theme, {bool isRight = true}) => Container(
-    width: 34,
-    height: 34,
-    margin: isRight ? const .only(right: 16) : const .only(left: 16),
-    child: IconButton(
-      tooltip: '发布动态',
-      style: ButtonStyle(
-        padding: const WidgetStatePropertyAll(EdgeInsets.zero),
-        backgroundColor: WidgetStatePropertyAll(
-          theme.colorScheme.secondaryContainer,
+  Widget _createDynamicBtn(ColorScheme colorScheme, {bool isRight = true}) =>
+      Container(
+        width: 34,
+        height: 34,
+        margin: isRight ? const .only(right: 16) : const .only(left: 16),
+        child: IconButton(
+          tooltip: '发布动态',
+          style: ButtonStyle(
+            padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+            backgroundColor: WidgetStatePropertyAll(
+              colorScheme.secondaryContainer,
+            ),
+          ),
+          onPressed: () => CreateDynPanel.onCreateDyn(context),
+          icon: Icon(
+            Icons.add,
+            size: 18,
+            color: colorScheme.onSecondaryContainer,
+          ),
         ),
-      ),
-      onPressed: () => CreateDynPanel.onCreateDyn(context),
-      icon: Icon(
-        Icons.add,
-        size: 18,
-        color: theme.colorScheme.onSecondaryContainer,
-      ),
-    ),
-  );
+      );
 
-  Widget upPanelPart(ThemeData theme) {
+  Widget upPanelPart(ColorScheme colorScheme) {
     final isTop = upPanelPosition == .top;
     final needBg = upPanelPosition.index > 2;
     return Material(
       type: needBg ? .canvas : .transparency,
-      color: needBg ? theme.colorScheme.surface : null,
+      color: needBg ? colorScheme.surface : null,
       child: SizedBox(
         width: isTop ? null : 64,
         height: isTop ? 76 : null,
@@ -114,7 +115,7 @@ class _DynamicsPageState extends CommonPageState<DynamicsPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final theme = Theme.of(context);
+    final colorScheme = ColorScheme.of(context);
 
     Widget? drawer;
     Widget? endDrawer;
@@ -133,34 +134,34 @@ class _DynamicsPageState extends CommonPageState<DynamicsPage>
       case .top:
         child = Column(
           children: [
-            upPanelPart(theme),
+            upPanelPart(colorScheme),
             Expanded(child: child),
           ],
         );
-        actions = _createDynamicBtn(theme);
+        actions = _createDynamicBtn(colorScheme);
       case .leftFixed:
         child = Row(
           children: [
-            upPanelPart(theme),
+            upPanelPart(colorScheme),
             Expanded(child: child),
           ],
         );
-        actions = _createDynamicBtn(theme);
+        actions = _createDynamicBtn(colorScheme);
       case .rightFixed:
         child = Row(
           children: [
             Expanded(child: child),
-            upPanelPart(theme),
+            upPanelPart(colorScheme),
           ],
         );
-        actions = _createDynamicBtn(theme);
+        actions = _createDynamicBtn(colorScheme);
       case .leftDrawer:
-        drawer = upPanelPart(theme);
-        actions = _createDynamicBtn(theme);
+        drawer = upPanelPart(colorScheme);
+        actions = _createDynamicBtn(colorScheme);
         leading = const DrawerButton();
       case .rightDrawer:
-        endDrawer = upPanelPart(theme);
-        leading = _createDynamicBtn(theme, isRight: false);
+        endDrawer = upPanelPart(colorScheme);
+        leading = _createDynamicBtn(colorScheme, isRight: false);
         actions = const EndDrawerButton();
     }
 
@@ -179,14 +180,13 @@ class _DynamicsPageState extends CommonPageState<DynamicsPage>
                 isScrollable: true,
                 tabAlignment: .start,
                 dividerColor: Colors.transparent,
-                labelColor: theme.colorScheme.primary,
-                indicatorColor: theme.colorScheme.primary,
+                labelColor: colorScheme.primary,
+                indicatorColor: colorScheme.primary,
                 controller: _dynamicsController.tabController,
-                unselectedLabelColor: theme.colorScheme.onSurface,
+                unselectedLabelColor: colorScheme.onSurface,
                 labelStyle:
-                    TabBarTheme.of(
-                      context,
-                    ).labelStyle?.copyWith(fontSize: 13) ??
+                    TabBarTheme.of(context).labelStyle
+                        ?.copyWith(fontSize: 13) ??
                     const TextStyle(fontSize: 13),
                 tabs: DynamicsTabType.values
                     .map((e) => Tab(text: e.label))

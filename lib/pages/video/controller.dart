@@ -864,7 +864,7 @@ class VideoDetailController extends GetxController
           // it will cause all files to be opened simultaneously
           if (durl.length > 1) {
             // TODO: refa
-            final sb = StringBuffer('edl://!no_clip;!no_chapters;');
+            final sb = StringBuffer('edl://!no_chapters;');
             for (var i in durl) {
               final video = VideoUtils.getCdnUrl(i.playUrls);
               sb.write('%${video.length}%$video,length=${i.length! / 1000};');

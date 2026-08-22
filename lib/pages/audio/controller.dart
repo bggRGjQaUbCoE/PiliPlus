@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
@@ -16,6 +17,7 @@ import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart'
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/models/common/audio_normalization.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart'
     show FavMixin;
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
@@ -310,19 +312,56 @@ class AudioController extends GetxController
     }
   }
 
+  Map<String, String>? _audioFilterExtras() {
+    if (!Platform.isAndroid) {
+      return null;
+    }
+    final config = Pref.audioNormalization;
+    if (config == '0') {
+      return null;
+    }
+    final param = AudioNormalization.getParamFromConfig(config);
+    final volume = _videoDetailController?.volume;
+    final String audioNormalization;
+    if (volume != null && volume.isNotEmpty) {
+      audioNormalization = param.replaceFirstMapped(
+        PlPlayerController.loudnormRegExp,
+        (i) =>
+            'loudnorm=${volume.format(
+              Map.fromEntries(
+                i.group(1)!.split(':').map((item) {
+                  final parts = item.split('=');
+                  return MapEntry(parts[0].toLowerCase(), num.parse(parts[1]));
+                }),
+              ),
+            )}',
+      );
+    } else {
+      audioNormalization = param.replaceFirst(
+        PlPlayerController.loudnormRegExp,
+        AudioNormalization.getParamFromConfig(Pref.fallbackNormalization),
+      );
+    }
+    if (audioNormalization.isEmpty) {
+      return null;
+    }
+    return {'lavfi-complex': '"[aid1] $audioNormalization [ao]"'};
+  }
+
   Future<void> _onOpenMedia(
     String url, {
     String ua = Constants.userAgentApp,
     String? referer,
   }) async {
     await _initPlayerIfNeeded();
+    final extras = _audioFilterExtras();
     player
       ?..setMediaHeader(
         userAgent: ua,
         // mpv cannot clear referer option
         headers: {'Referer': ?referer},
       )
-      ..open(Media(url, start: _start));
+      ..open(Media(url, start: _start, extras: extras));
     _start = null;
   }
 
@@ -333,6 +372,7 @@ class AudioController extends GetxController
     player = await Player.create(
       configuration: PlayerConfiguration(
         options: {
+          if (Platform.isAndroid) 'ao': Pref.audioOutput,
           'volume': PlatformUtils.isDesktop
               ? (desktopVolume.value * 100).toString()
               : Pref.playerVolume.toString(),

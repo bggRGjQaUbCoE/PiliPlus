@@ -21,6 +21,8 @@ import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
+import 'package:PiliPlus/utils/download_dedup.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -67,12 +69,22 @@ class DownloadService extends GetxService {
 
   Future<void> _readDownloadList() async {
     downloadList.clear();
-    final downloadDir = Directory(await _getDownloadPath());
-    await for (final dir in downloadDir.list()) {
-      if (dir is Directory) {
-        downloadList.addAll(await _readDownloadDirectory(dir));
-      }
+    final paths = <String>[await _getDownloadPath()];
+    final extra = Pref.extraScanPaths;
+    if (extra != null) paths.addAll(extra);
+    final all = <BiliDownloadEntryInfo>[];
+    for (final p in paths) {
+      final dir = Directory(p);
+      if (!dir.existsSync()) continue;
+      try {
+        await for (final d in dir.list()) {
+          if (d is Directory) {
+            all.addAll(await _readDownloadDirectory(d));
+          }
+        }
+      } catch (_) {}
     }
+    downloadList.addAll(dedupeByCid(all, (e) => e.cid));
     downloadList.sort((a, b) => b.timeUpdateStamp.compareTo(a.timeUpdateStamp));
   }
 

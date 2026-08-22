@@ -301,8 +301,29 @@ class MyApp extends StatelessWidget {
 
   static Widget _builder(BuildContext context, Widget? child) {
     final uiScale = Pref.uiScale;
-    final mediaQuery = MediaQuery.of(context);
+    var mediaQuery = MediaQuery.of(context);
     final textScaler = TextScaler.linear(Pref.defaultTextScale);
+    // 修复 HyperOS 小窗/自由窗口模式下 MediaQuery 异常上报接近整个窗口
+    // 高度的安全区 padding，导致内容被顶出屏幕只剩底栏的问题。
+    // 参考: https://github.com/flutter/flutter/issues/161086
+    if (Platform.isAndroid) {
+      final sizeHeight = mediaQuery.size.height;
+      final viewPadding = mediaQuery.viewPadding;
+      final topAbnormal = viewPadding.top > sizeHeight * 0.4;
+      final bottomAbnormal = viewPadding.bottom > sizeHeight * 0.4;
+      if (topAbnormal || bottomAbnormal) {
+        mediaQuery = mediaQuery.copyWith(
+          padding: mediaQuery.padding.copyWith(
+            top: topAbnormal ? 0 : mediaQuery.padding.top,
+            bottom: bottomAbnormal ? 0 : mediaQuery.padding.bottom,
+          ),
+          viewPadding: viewPadding.copyWith(
+            top: topAbnormal ? 0 : viewPadding.top,
+            bottom: bottomAbnormal ? 0 : viewPadding.bottom,
+          ),
+        );
+      }
+    }
     if (uiScale != 1.0) {
       child = MediaQuery(
         data: mediaQuery.copyWith(

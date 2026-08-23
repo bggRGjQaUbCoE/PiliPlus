@@ -276,7 +276,9 @@ Future<void> _showAudioQaDialog(
     builder: (context) => SelectDialog<int>(
       title: '默认音质',
       value: Pref.defaultAudioQa,
-      values: AudioQuality.values.map((e) => (e.code, e.desc)).toList(),
+      values: AudioQuality.defaultAudioQualityOptions
+          .map((e) => (e.code, e.desc))
+          .toList(),
     ),
   );
   if (res != null) {
@@ -294,7 +296,9 @@ Future<void> _showAudioCellularQaDialog(
     builder: (context) => SelectDialog<int>(
       title: '蜂窝网络音质',
       value: Pref.defaultAudioQaCellular,
-      values: AudioQuality.values.map((e) => (e.code, e.desc)).toList(),
+      values: AudioQuality.defaultAudioQualityOptions
+          .map((e) => (e.code, e.desc))
+          .toList(),
     ),
   );
   if (res != null) {

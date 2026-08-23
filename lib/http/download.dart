@@ -108,14 +108,10 @@ abstract final class DownloadHttp {
           final List<int> audioIds = audioDashList
               .map((map) => map.id!)
               .toList();
-          int closestNumber = audioIds.findClosestTarget(
-            (e) => e <= preferAudioQa,
-            (a, b) => a > b ? a : b,
+          final int closestNumber = AudioQuality.selectAudioQuality(
+            preferAudioQa,
+            audioIds,
           );
-          if (!audioIds.contains(preferAudioQa) &&
-              audioIds.any((e) => e > preferAudioQa)) {
-            closestNumber = AudioQuality.k192.code;
-          }
           final AudioItem audioDash = audioDashList.firstWhere(
             (e) => e.id == closestNumber,
             orElse: () => audioDashList.first,

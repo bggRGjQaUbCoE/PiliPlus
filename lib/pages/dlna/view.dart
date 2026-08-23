@@ -30,6 +30,7 @@ class _DLNAPageState extends State<DLNAPage> {
   @override
   void initState() {
     super.initState();
+    initDlnaDeviceCache();
     // 先复用缓存设备（可立即点击投屏），同时后台重新搜索刷新
     _deviceList.addAll(dlnaDeviceCache);
   }
@@ -47,7 +48,7 @@ class _DLNAPageState extends State<DLNAPage> {
     await for (final deviceList in deviceManager.devices.stream) {
       if (mounted) {
         _deviceList.addAll(deviceList);
-        dlnaDeviceCache.addAll(deviceList);
+        saveDlnaDevices(deviceList);
       }
     }
     if (mounted) {

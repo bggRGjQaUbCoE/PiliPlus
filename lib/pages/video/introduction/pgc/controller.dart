@@ -121,6 +121,7 @@ class PgcIntroController extends CommonIntroController {
   // 分享视频
   @override
   void actionShareVideo(BuildContext context) {
+    initDlnaDeviceCache();
     String videoUrl =
         '${HttpString.baseUrl}/bangumi/play/ep$epId${videoDetailCtr.playedTimePos}';
     showDialog(

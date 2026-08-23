@@ -283,6 +283,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   // 分享视频
   @override
   void actionShareVideo(BuildContext context) {
+    initDlnaDeviceCache();
     final videoDetail = this.videoDetail.value;
     final playedTimePos = videoDetailCtr.playedTimePos;
     String videoUrl = '${HttpString.baseUrl}/video/$bvid';

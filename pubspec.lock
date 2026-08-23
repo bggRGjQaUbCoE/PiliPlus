@@ -391,15 +391,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.15"
-  desktop_webview_window:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: main
-      resolved-ref: b429f8ba6b8a99cd0f7eb5fe8d1621f325635c3d
-      url: "https://github.com/Predidit/linux_webview_window"
-    source: git
-    version: "0.2.4"
   device_info_plus:
     dependency: "direct main"
     description:
@@ -647,72 +638,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0"
-  flutter_inappwebview:
-    dependency: "direct main"
-    description:
-      name: flutter_inappwebview
-      sha256: "80092d13d3e29b6227e25b67973c67c7210bd5e35c4b747ca908e31eb71a46d5"
-      url: "https://pub.dev"
-    source: hosted
-    version: "6.1.5"
-  flutter_inappwebview_android:
-    dependency: "direct overridden"
-    description:
-      path: flutter_inappwebview_android
-      ref: "v6.1.5"
-      resolved-ref: "0bfa46dfff87f0d9e9d5e13cbd5c4a7c7310f8c9"
-      url: "https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git"
-    source: git
-    version: "1.1.3"
-  flutter_inappwebview_internal_annotations:
-    dependency: transitive
-    description:
-      name: flutter_inappwebview_internal_annotations
-      sha256: e30fba942e3debea7b7e6cdd4f0f59ce89dd403a9865193e3221293b6d1544c6
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.3.0"
-  flutter_inappwebview_ios:
-    dependency: transitive
-    description:
-      name: flutter_inappwebview_ios
-      sha256: "5818cf9b26cf0cbb0f62ff50772217d41ea8d3d9cc00279c45f8aabaa1b4025d"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.2"
-  flutter_inappwebview_macos:
-    dependency: transitive
-    description:
-      name: flutter_inappwebview_macos
-      sha256: c1fbb86af1a3738e3541364d7d1866315ffb0468a1a77e34198c9be571287da1
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.2"
-  flutter_inappwebview_platform_interface:
-    dependency: transitive
-    description:
-      name: flutter_inappwebview_platform_interface
-      sha256: cf5323e194096b6ede7a1ca808c3e0a078e4b33cc3f6338977d75b4024ba2500
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.3.0+1"
-  flutter_inappwebview_web:
-    dependency: transitive
-    description:
-      name: flutter_inappwebview_web
-      sha256: "55f89c83b0a0d3b7893306b3bb545ba4770a4df018204917148ebb42dc14a598"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.2"
-  flutter_inappwebview_windows:
-    dependency: "direct overridden"
-    description:
-      path: flutter_inappwebview_windows
-      ref: "v6.1.5"
-      resolved-ref: "0bfa46dfff87f0d9e9d5e13cbd5c4a7c7310f8c9"
-      url: "https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git"
-    source: git
-    version: "0.6.0"
   flutter_launcher_icons:
     dependency: "direct dev"
     description:
@@ -803,6 +728,14 @@ packages:
       url: "https://github.com/bggRGjQaUbCoE/font_awesome_flutter.git"
     source: git
     version: "10.9.0"
+  fullscreen_window:
+    dependency: transitive
+    description:
+      name: fullscreen_window
+      sha256: "262a19366157542c3e1fa07232ee7e8a5c82e5223d912b04a2771c47aa6a048d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.1"
   get:
     dependency: "direct main"
     description:
@@ -1980,6 +1913,47 @@ packages:
       url: "https://github.com/wgh136/webdav_client.git"
     source: git
     version: "1.2.2"
+  webview_flutter:
+    dependency: "direct main"
+    description:
+      name: webview_flutter
+      sha256: d53e1ccf5516f25017e3c9d44c39034db352d20fa34fe200674270242c2c5111
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.14.1"
+  webview_flutter_android:
+    dependency: transitive
+    description:
+      name: webview_flutter_android
+      sha256: b98656fa4461f8cc05c48a778b4d4883e60ec63e1778348f363f9bb9a477745d
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.14.0"
+  webview_flutter_platform_interface:
+    dependency: transitive
+    description:
+      name: webview_flutter_platform_interface
+      sha256: "1221c1b12f5278791042f2ec2841743784cf25c5a644e23d6680e5d718824f04"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.15.1"
+  webview_flutter_wkwebview:
+    dependency: transitive
+    description:
+      name: webview_flutter_wkwebview
+      sha256: c879dd64b87c452aa84381b244d5469da57ba7e8cca6884c7b1e0d406372c12d
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.26.0"
+  webview_win_floating:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: master
+      resolved-ref: c39cdc0a3aa4e72501bed28791b08ab512ef5b37
+      url: "https://github.com/My-Responsitories/webview_win_floating.git"
+    source: git
+    version: "3.0.3"
   win32:
     dependency: "direct main"
     description:

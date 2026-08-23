@@ -1,21 +1,20 @@
 import 'dart:io' show Platform;
 
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
-import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/http/browser_ua.dart';
-import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/models/common/webview_menu_type.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/path_utils.dart' show appSupportDirPath;
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:path/path.dart' as path;
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_win_floating/webview_plugin.dart';
 
 class WebviewPage extends StatefulWidget {
   const WebviewPage({
@@ -35,18 +34,26 @@ class WebviewPage extends StatefulWidget {
 
   @override
   State<WebviewPage> createState() => _WebviewPageState();
+
+  static WebViewController buildController() => Platform.isWindows
+      ? WebViewController.fromPlatformCreationParams(
+          WindowsWebViewControllerCreationParams(
+            userDataFolder: path.join(
+              appSupportDirPath,
+              'flutter_inappwebview',
+            ),
+          ),
+        )
+      : WebViewController();
 }
 
 class _WebviewPageState extends State<WebviewPage> {
-  late final String _url =
-      (widget.url ?? Get.parameters['url'])?.http2https ?? '';
-  late final String userAgent;
-  final RxString title = ''.obs;
-  final RxDouble progress = 1.0.obs;
+  late final String _url;
+  late final RxString _title;
+  late final RxDouble _progress = 1.0.obs;
   bool _inApp = false;
   bool _off = false;
-
-  InAppWebViewController? _webViewController;
+  late final WebViewController _controller;
 
   static final _prefixRegex = RegExp(
     r'^(?!(https?://))\S+://',
@@ -56,9 +63,12 @@ class _WebviewPageState extends State<WebviewPage> {
   @override
   void initState() {
     super.initState();
-    userAgent =
+    final parameters = Get.parameters;
+    _url = (widget.url ?? parameters['url']!).http2https;
+    _title = _url.obs;
+    final userAgent =
         widget.userAgent ??
-        switch (Get.parameters['uaType']) {
+        switch (parameters['uaType']) {
           'pc' => BrowserUa.pc,
           'mob' => BrowserUa.mob,
           _ => BrowserUa.platform,
@@ -67,12 +77,120 @@ class _WebviewPageState extends State<WebviewPage> {
       _inApp = map['inApp'] ?? false;
       _off = map['off'] ?? false;
     }
+
+    final delegate = NavigationDelegate(
+      onNavigationRequest: (request) async {
+        final url = request.url;
+        if (!_inApp &&
+            await PiliScheme.routePushFromUrl(
+              url,
+              selfHandle: true,
+              off: _off,
+            )) {
+          if (!Platform.isWindows) _progress.value = 1;
+          return NavigationDecision.prevent;
+        }
+
+        if (_prefixRegex.hasMatch(url)) {
+          if (Platform.isWindows || Platform.isLinux) {
+            PageUtils.launchURL(url);
+          } else {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('当前网页将要打开外部链接，是否打开'),
+                  action: SnackBarAction(
+                    label: '打开',
+                    onPressed: () => PageUtils.launchURL(url),
+                  ),
+                ),
+              );
+            }
+          }
+          if (!Platform.isWindows) _progress.value = 1;
+          return .prevent;
+        }
+        return .navigate;
+      },
+    );
+
+    final platformDelegate = delegate.platform;
+
+    if (platformDelegate is WindowsPlatformNavigationDelegate) {
+      platformDelegate
+        ..onPageTitleChanged = _title.call
+        ..setOnPageFinished(_injectJavaScriptForBilibili);
+    } else {
+      platformDelegate
+        ..setOnPageStarted((url) {
+          _progress.value = 0;
+        })
+        ..setOnProgress((p) {
+          _progress.value = p / 100;
+        })
+        ..setOnPageFinished((url) {
+          _controller.getTitle().then((t) {
+            if (t != null && t.isNotEmpty) _title.value = t;
+          });
+          _injectJavaScriptForBilibili(url);
+        });
+    }
+
+    _controller = WebviewPage.buildController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setUserAgent(userAgent)
+      ..setNavigationDelegate(delegate)
+      ..addJavaScriptChannel(
+        'finishButtonClicked',
+        onMessageReceived: (message) => Get.back(),
+      )
+      ..addJavaScriptChannel(
+        'infoBarClicked',
+        onMessageReceived: (message) async {
+          final uri = await _controller.currentUrl();
+          if (uri != null) {
+            final oid = Uri.parse(uri).queryParameters['oid'];
+            if (oid != null) {
+              PiliScheme.videoPush(int.parse(oid), null);
+            }
+          }
+        },
+      );
+
+    // (_controller.platform as WindowsPlatformWebViewController).openDevTools();
+
+    _controller.loadRequest(Uri.parse(_url));
   }
 
+  void _injectJavaScriptForBilibili(String url) {
+    if (url.startsWith('https://www.bilibili.com/h5/note-app')) {
+      _controller.runJavaScript("""
+        document.querySelector('.finish-btn')?.addEventListener('click', function() {
+          finishButtonClicked.postMessage('click');
+        });
+        document.querySelector('.info-bar')?.addEventListener('click', function() {
+          infoBarClicked.postMessage('click');
+        });
+      """);
+    } else if (url.startsWith('https://live.bilibili.com')) {
+      _controller.runJavaScript("""
+        document.styleSheets[0].insertRule('div.open-app-btn.bili-btn-warp {display:none;}', 0);
+        document.styleSheets[0].insertRule('#app__display-area > div.control-panel {display:none;}', 0);
+      """);
+    }
+  }
+
+  late ColorScheme colorScheme;
+  Color? _color;
   @override
-  void dispose() {
-    _webViewController = null;
-    super.dispose();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    colorScheme = ColorScheme.of(context);
+    final surface = colorScheme.surface;
+    if (_color != surface) {
+      _color = surface;
+      _controller.setBackgroundColor(surface);
+    }
   }
 
   @override
@@ -88,56 +206,56 @@ class _WebviewPageState extends State<WebviewPage> {
         ),
       );
     }
+    // shouldInterceptRequest: passport url, shouldInterceptAjaxRequest: edit note title
     return Scaffold(
       appBar: widget.url != null
           ? null
           : AppBar(
               title: Obx(
                 () => Text(
-                  title.value.isNotEmpty ? title.value : _url,
+                  _title.value.isNotEmpty ? _title.value : _url,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              bottom: PreferredSize(
-                preferredSize: Size.zero,
-                child: Obx(
-                  () => progress.value < 1
-                      ? LinearProgressIndicator(value: progress.value)
-                      : const SizedBox.shrink(),
-                ),
-              ),
+              bottom: Platform.isWindows
+                  ? null
+                  : PreferredSize(
+                      preferredSize: Size.zero,
+                      child: Obx(
+                        () => _progress.value < 1
+                            ? LinearProgressIndicator(value: _progress.value)
+                            : const SizedBox.shrink(),
+                      ),
+                    ),
               actions: [
-                PopupMenuButton(
+                // TODO: desktop
+                PopupMenuButton<WebviewMenuItem>(
                   onSelected: (item) async {
                     switch (item) {
                       case WebviewMenuItem.refresh:
-                        _webViewController?.reload();
+                        await _controller.reload();
                         break;
                       case WebviewMenuItem.copy:
-                        WebUri? uri = await _webViewController?.getUrl();
-                        if (uri != null) {
-                          Utils.copyText(uri.toString());
-                        }
+                        final uri = await _controller.currentUrl();
+                        if (uri != null) Utils.copyText(uri);
                         break;
                       case WebviewMenuItem.openInBrowser:
-                        WebUri? uri = await _webViewController?.getUrl();
-                        if (uri != null) {
-                          PageUtils.launchURL(uri.toString());
-                        }
+                        final uri = await _controller.currentUrl();
+                        if (uri != null) PageUtils.launchURL(uri);
                         break;
                       case WebviewMenuItem.clearCache:
                         try {
-                          await InAppWebViewController.clearAllCache();
-                          await _webViewController?.clearHistory();
-                          SmartDialog.showToast('已清理');
+                          await _controller.clearCache();
+                          await _controller.clearLocalStorage();
+                          SmartDialog.showToast('已清理缓存');
                         } catch (e) {
                           SmartDialog.showToast(e.toString());
                         }
                         break;
                       case WebviewMenuItem.goBack:
-                        if (await _webViewController?.canGoBack() == true) {
-                          _webViewController?.goBack();
+                        if (await _controller.canGoBack()) {
+                          _controller.goBack();
                         } else {
                           Get.back();
                         }
@@ -148,7 +266,7 @@ class _WebviewPageState extends State<WebviewPage> {
                         break;
                     }
                   },
-                  itemBuilder: (context) => <PopupMenuEntry<WebviewMenuItem>>[
+                  itemBuilder: (context) => [
                     ...WebviewMenuItem.values
                         .take(WebviewMenuItem.values.length - 1)
                         .map(
@@ -162,197 +280,22 @@ class _WebviewPageState extends State<WebviewPage> {
                       value: WebviewMenuItem.goBack,
                       child: Text(
                         WebviewMenuItem.goBack.title,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
+                        style: TextStyle(color: colorScheme.error),
                       ),
                     ),
                   ],
                 ),
               ],
             ),
-      body: SafeArea(
-        child: InAppWebView(
-          webViewEnvironment: webViewEnvironment,
-          initialSettings: InAppWebViewSettings(
-            clearCache: true,
-            javaScriptEnabled: true,
-            forceDark: ForceDark.AUTO,
-            useHybridComposition: false,
-            algorithmicDarkeningAllowed: true,
-            useShouldOverrideUrlLoading: true,
-            userAgent: userAgent,
-            mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
-          ),
-          initialUrlRequest: URLRequest(
-            url: WebUri.uri(Uri.tryParse(_url) ?? Uri()),
-          ),
-          onWebViewCreated: (InAppWebViewController controller) {
-            _webViewController = controller;
-            controller
-              ..addJavaScriptHandler(
-                handlerName: 'finishButtonClicked',
-                callback: (args) {
-                  Get.back();
-                },
-              )
-              ..addJavaScriptHandler(
-                handlerName: 'infoBarClicked',
-                callback: (args) async {
-                  WebUri? uri = await controller.getUrl();
-                  if (uri != null) {
-                    String? oid = uri.queryParameters['oid'];
-                    if (oid != null) {
-                      PiliScheme.videoPush(int.parse(oid), null);
-                    }
-                  }
-                },
-              );
-          },
-          onProgressChanged: (controller, progress) {
-            this.progress.value = progress / 100;
-          },
-          onTitleChanged: (controller, title) {
-            this.title.value = title ?? '';
-          },
-          onCloseWindow: (controller) => Get.back(),
-          onLoadStop: (controller, uri) {
-            final url = uri.toString();
-            if (url.startsWith('https://www.bilibili.com/h5/note-app')) {
-              controller
-                ..evaluateJavascript(
-                  source: """
-  document.querySelector('.finish-btn').addEventListener('click', function() {
-      window.flutter_inappwebview.callHandler('finishButtonClicked');
-  });
-""",
-                )
-                ..evaluateJavascript(
-                  source: """
-  document.querySelector('.info-bar').addEventListener('click', function() {
-      window.flutter_inappwebview.callHandler('infoBarClicked');
-  });
-""",
-                );
-            } else if (url.startsWith('https://live.bilibili.com')) {
-              controller.evaluateJavascript(
-                source: '''
-                  document.styleSheets[0].insertRule('div.open-app-btn.bili-btn-warp {display:none;}', 0);
-                  document.styleSheets[0].insertRule('#app__display-area > div.control-panel {display:none;}', 0);
-                  ''',
-              );
-            }
-            // _webViewController?.evaluateJavascript(
-            //   source: '''
-            //     document.querySelector('#internationalHeader').remove();
-            //     document.querySelector('#message-navbar').remove();
-            //   ''',
-            // );
-          },
-          onDownloadStartRequest: Platform.isAndroid
-              ? (controller, request) {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      String suggestedFilename = request.suggestedFilename
-                          .toString();
-                      String fileSize = CacheManager.formatSize(
-                        request.contentLength.toDouble(),
-                      );
-                      try {
-                        suggestedFilename = Uri.decodeComponent(
-                          suggestedFilename,
-                        );
-                      } catch (e) {
-                        if (kDebugMode) debugPrint(e.toString());
-                      }
-                      return AlertDialog(
-                        title: Text(
-                          '下载文件: $suggestedFilename ?',
-                          style: const TextStyle(fontSize: 18),
-                        ),
-                        content: SelectionText(request.url.toString()),
-                        actions: [
-                          TextButton(
-                            onPressed: Get.back,
-                            child: Text(
-                              '取消',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.outline,
-                              ),
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Get.back();
-                              PageUtils.launchURL(request.url.toString());
-                            },
-                            child: Text('确定 ($fileSize)'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                  progress.value = 1;
-                }
-              : null,
-          shouldInterceptAjaxRequest: (controller, ajaxRequest) async {
-            String url = ajaxRequest.url.toString();
-            if (url.startsWith('//api.bilibili.com/x/note/add') &&
-                widget.title != null) {
-              return ajaxRequest
-                ..data = ajaxRequest.data.toString().replaceFirst(
-                  '&title=--&',
-                  '&title=${widget.title}&',
-                );
-            }
-            return null;
-          },
-          shouldInterceptRequest: (controller, request) async {
-            String url = request.url.toString();
-            if (url.startsWith(
-              'https://passport.bilibili.com/x/passport-login/web',
-            )) {
-              progress.value = 1;
-              return WebResourceResponse();
-            }
-            return null;
-          },
-          shouldOverrideUrlLoading: (controller, navigationAction) async {
-            if (!_inApp) {
-              final hasMatch = await PiliScheme.routePush(
-                navigationAction.request.url?.uriValue ?? Uri(),
-                selfHandle: true,
-                off: _off,
-              );
-              // if (kDebugMode) debugPrint('webview: [$url], [$hasMatch]');
-              if (hasMatch) {
-                progress.value = 1;
-                return .CANCEL;
-              }
-            }
-            final url = navigationAction.request.url.toString();
-            if (_prefixRegex.hasMatch(url)) {
-              if (context.mounted) {
-                final snackBar = SnackBar(
-                  persist: false,
-                  showCloseIcon: true,
-                  content: const Text('当前网页将要打开外部链接，是否打开'),
-                  action: SnackBarAction(
-                    label: '打开',
-                    onPressed: () => PageUtils.launchURL(url),
-                  ),
-                );
-                ScaffoldMessenger.of(context).showSnackBar(snackBar);
-              }
-              progress.value = 1;
-              return .CANCEL;
-            }
-
-            return .ALLOW;
-          },
-        ),
-      ),
+      body: SafeArea(child: WebViewWidget(controller: _controller)),
     );
+  }
+
+  @override
+  void dispose() {
+    if (_controller.platform case WindowsPlatformWebViewController ctr) {
+      ctr.dispose();
+    }
+    super.dispose();
   }
 }

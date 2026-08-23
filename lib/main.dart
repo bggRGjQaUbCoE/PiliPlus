@@ -36,7 +36,6 @@ import 'package:dynamic_color/dynamic_color.dart' show DynamicColorPlugin;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -45,8 +44,6 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
 import 'package:window_manager/window_manager.dart' hide calcWindowPosition;
-
-WebViewEnvironment? webViewEnvironment;
 
 EdgeInsets? tmpPadding;
 
@@ -116,14 +113,6 @@ void main() async {
       if (Pref.horizontalScreen) ?fullMode() else ?portraitUpMode(),
       setupServiceLocator(),
     ]);
-  } else if (Platform.isWindows) {
-    if (await WebViewEnvironment.getAvailableVersion() != null) {
-      webViewEnvironment = await WebViewEnvironment.create(
-        settings: WebViewEnvironmentSettings(
-          userDataFolder: path.join(appSupportDirPath, 'flutter_inappwebview'),
-        ),
-      );
-    }
   } else if (Platform.isMacOS) {
     await setupServiceLocator();
   }

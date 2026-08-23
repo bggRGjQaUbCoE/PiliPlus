@@ -25,7 +25,7 @@ import 'package:PiliPlus/pages/dynamics_tab/controller.dart';
 import 'package:PiliPlus/pages/fav_detail/controller.dart'
     show BaseFavController;
 import 'package:PiliPlus/pages/group_panel/view.dart';
-import 'package:PiliPlus/pages/login/geetest/geetest_webview_dialog.dart';
+import 'package:PiliPlus/pages/login/geetest/geetest_webview_page.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
@@ -584,8 +584,8 @@ abstract final class RequestUtils {
       }
     }
 
-    final json = await GeetestWebviewDialog.geetest(gt!, challenge!);
-    if (json is Map) {
+    final json = await GeetestWebviewPage.geetest(gt!, challenge!);
+    if (json != null) {
       captchaData
         ..validate = json['geetest_validate']
         ..seccode = json['geetest_seccode']

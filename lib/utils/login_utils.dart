@@ -1,9 +1,8 @@
 import 'dart:async' show FutureOr;
-import 'dart:io' show Platform;
+import 'dart:io';
 
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/user.dart';
-import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
@@ -13,34 +12,25 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart' show Digest;
-import 'package:flutter_inappwebview/flutter_inappwebview.dart' as web;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 abstract final class LoginUtils {
   static FutureOr setWebCookie([Account? account]) {
-    if (Platform.isLinux) {
-      return null;
-    }
+    if (Platform.isLinux) return null;
     final cookies = (account ?? Accounts.main).cookieJar.toList();
-    final webManager = web.CookieManager.instance(
-      webViewEnvironment: webViewEnvironment,
-    );
-    final isWindows = Platform.isWindows;
+    final cookieManager = WebViewCookieManager();
     return Future.wait(
-      cookies.map(
-        (cookie) => webManager.setCookie(
-          url: web.WebUri(
-            '${isWindows ? 'https://' : ''} ${cookie.domain}',
-          ),
+      cookies.map((cookie) {
+        final webCookie = WebViewCookie(
           name: cookie.name,
           value: cookie.value,
           path: cookie.path ?? '/',
-          domain: cookie.domain,
-          isSecure: cookie.secure,
-          isHttpOnly: cookie.httpOnly,
-        ),
-      ),
+          domain: cookie.domain ?? 'bilibili.com',
+        );
+        return cookieManager.setCookie(webCookie);
+      }),
     );
   }
 
@@ -85,13 +75,7 @@ abstract final class LoginUtils {
       ..face.value = ''
       ..isLogin.value = false;
 
-    return Future.wait([
-      if (!Platform.isLinux)
-        web.CookieManager.instance(
-          webViewEnvironment: webViewEnvironment,
-        ).deleteAllCookies(),
-      GStorage.userInfo.delete('userInfoCache'),
-    ]);
+    return GStorage.userInfo.delete('userInfoCache');
   }
 
   static String generateBuvid() {

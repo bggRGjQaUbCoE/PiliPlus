@@ -69,10 +69,6 @@ dependencies:
   cookie_jar: ^4.0.8
   crypto: ^3.0.6
   cupertino_ui: ^1.0.0
-  desktop_webview_window:
-    git:
-      url: https://github.com/Predidit/linux_webview_window
-      ref: main
   device_info_plus: ^13.1.0
   dio: ^5.9.1
   dio_http2_adapter: ^2.7.1
@@ -94,7 +90,6 @@ dependencies:
       ref: dev
   flutter_displaymode: ^0.7.0
   flutter_html: ^3.0.0-beta.2
-  flutter_inappwebview: ^6.1.5
   flutter_smart_dialog:
     git:
       url: https://github.com/bggRGjQaUbCoE/flutter_smart_dialog.git
@@ -164,6 +159,11 @@ dependencies:
   wakelock_plus: ^1.2.8
   waterfall_flow: ^3.1.0
   web_socket_channel: ^3.0.3
+  webview_flutter: ^4.14.1
+  webview_win_floating:
+    git:
+      url: https://github.com/My-Responsitories/webview_win_floating.git
+      ref: master
   webdav_client:
     git:
       url: https://github.com/wgh136/webdav_client.git
@@ -176,16 +176,6 @@ dependencies:
       ref: main
 
 dependency_overrides:
-  flutter_inappwebview_android:
-    git:
-      url: https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git
-      path: flutter_inappwebview_android
-      ref: v6.1.5
-  flutter_inappwebview_windows:
-    git:
-      url: https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git
-      path: flutter_inappwebview_windows
-      ref: v6.1.5
   media_kit:
     git:
       url: https://github.com/bggRGjQaUbCoE/media-kit.git

@@ -9,16 +9,16 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/login.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/models/login/model.dart';
-import 'package:PiliPlus/pages/login/geetest/geetest_webview_dialog.dart';
+import 'package:PiliPlus/pages/login/geetest/geetest_webview_page.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class LoginPageController extends GetxController
     with GetSingleTickerProviderStateMixin {
@@ -122,8 +122,8 @@ class LoginPageController extends GetxController
     String geeChallenge,
     VoidCallback onSuccess,
   ) {
-    GeetestWebviewDialog.geetest(geeGt, geeChallenge).then((res) {
-      if (res is Map) {
+    GeetestWebviewPage.geetest(geeGt, geeChallenge).then((res) {
+      if (res != null) {
         captchaData
           ..validate = res['geetest_validate']
           ..seccode = res['geetest_seccode']

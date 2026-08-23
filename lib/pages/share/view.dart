@@ -4,14 +4,12 @@ import 'package:PiliPlus/common/widgets/self_sized_horizontal_list.dart';
 import 'package:PiliPlus/common/widgets/view_insets_safe_area.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/pages/contact/view.dart';
-import 'package:PiliPlus/pages/dlna/dlna_service.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:dlna_dart/dlna.dart';
 
 class UserModel {
   UserModel({
@@ -60,7 +58,6 @@ class _SharePanelState extends State<SharePanel> {
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
   final TextEditingController _controller = TextEditingController();
-  final List<DLNADevice> _dlnaDevices = [];
 
   @override
   void dispose() {
@@ -76,7 +73,6 @@ class _SharePanelState extends State<SharePanel> {
     if (widget.userList?.isNotEmpty == true) {
       _userList.addAll(widget.userList!);
     }
-    _dlnaDevices.addAll(dlnaDeviceCache.values);
   }
 
   @override
@@ -265,25 +261,6 @@ class _SharePanelState extends State<SharePanel> {
                 ),
               ],
             ),
-            if (_dlnaDevices.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              const Text(
-                '投屏到设备',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 74,
-                child: SelfSizedHorizontalList(
-                  padding: .zero,
-                  itemCount: _dlnaDevices.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 10),
-                  itemBuilder: (context, index) {
-                    return _buildDlnaDevice(context, _dlnaDevices[index]);
-                  },
-                ),
-              ),
-            ],
           ],
         ),
       ),
@@ -314,59 +291,6 @@ class _SharePanelState extends State<SharePanel> {
       SmartDialog.showToast('分享失败');
     } else {
       SmartDialog.showToast('部分分享失败');
-    }
-  }
-
-  Widget _buildDlnaDevice(BuildContext context, DLNADevice device) {
-    final theme = Theme.of(context);
-    return GestureDetector(
-      onTap: () => _castToDlna(device),
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 72,
-        child: Column(
-          children: [
-            Container(
-              width: 52,
-              height: 52,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: theme.colorScheme.onInverseSurface,
-              ),
-              child: const Icon(Icons.cast, size: 26),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              device.info.friendlyName,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 12),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _castToDlna(DLNADevice device) async {
-    final url = await resolveCastUrl(widget.content);
-    if (url == null || url.isEmpty) {
-      SmartDialog.showToast('该分享暂不支持投屏到设备');
-      return;
-    }
-    SmartDialog.showLoading();
-    try {
-      await castDlnaDevice(
-        device,
-        url: url,
-        title: widget.content['title']?.toString(),
-      );
-      SmartDialog.dismiss();
-      SmartDialog.showToast('已投屏到 ${device.info.friendlyName}');
-    } catch (_) {
-      SmartDialog.dismiss();
-      SmartDialog.showToast('投屏失败，请重试');
     }
   }
 }

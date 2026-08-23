@@ -18,6 +18,7 @@ import 'package:PiliPlus/models_new/video/video_detail/stat_detail.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/pages/video/reply/controller.dart';
+import 'package:PiliPlus/pages/dlna/dlna_service.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
@@ -233,6 +234,46 @@ class PgcIntroController extends CommonIntroController {
                   );
                 } catch (e) {
                   SmartDialog.showToast(e.toString());
+                }
+              },
+            ),
+          for (final device in dlnaDeviceCache.values)
+            DialogOption(
+              child: Row(
+                children: [
+                  const Icon(Icons.tv_rounded, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      '分享至${device.info.friendlyName}',
+                      style: const TextStyle(fontSize: 14),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              onPressed: () {
+                Get.back();
+                final cid = videoDetailCtr.cid.value;
+                if (cid != 0 && epId != null) {
+                  final item = pgcItem.episodes?.firstWhereOrNull(
+                    (item) => item.epId == epId,
+                  );
+                  final title = item != null
+                      ? (item.shareCopy ??
+                          '${pgcItem.title} ${item.showTitle ?? item.longTitle}')
+                      : pgcItem.title;
+                  castToCachedDevice(
+                    device: device,
+                    cid: cid,
+                    objectId: epId!,
+                    playurlType: 2,
+                    title: title,
+                    qn: videoDetailCtr.currentVideoQa.value?.code,
+                  );
+                } else {
+                  SmartDialog.showToast('无法获取视频信息');
                 }
               },
             ),

@@ -1,12 +1,12 @@
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
-import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:dlna_dart/dlna.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 /// 会话级缓存：上次成功搜索到的投屏设备列表（key 为设备地址）。
 /// 进入投屏页先复用它直接展示（可立即点击投屏），后台再重新搜索刷新；
-/// 分享页也复用它直接列出设备投屏，无需重新搜索。
+/// 分享弹窗中也会列出所有已缓存设备，点击即可直接投屏。
 final Map<String, DLNADevice> dlnaDeviceCache = {};
 
 /// 投屏到指定设备。
@@ -19,33 +19,41 @@ Future<void> castDlnaDevice(
   await device.play();
 }
 
-/// 把分享卡片内容解析成可投屏的媒体地址。
-/// 目前仅支持 UGC 视频（`source == 5`，尽力而为，音频会自动失败）；
-/// 直播/PGC/文章/动态的分享卡片不含可直接投屏的媒体地址，返回 null。
-Future<String?> resolveCastUrl(Map content) async {
+/// 点击分享弹窗里的 DLNA 设备直接投屏
+Future<void> castToCachedDevice({
+  required DLNADevice device,
+  required int cid,
+  required int objectId,
+  required int playurlType,
+  required String? title,
+  int? qn,
+}) async {
+  SmartDialog.showLoading(msg: '解析投屏地址...');
   try {
-    if (content['source'] != 5) return null;
-    final aid = int.tryParse('${content['id']}');
-    if (aid == null) return null;
-    final info = await VideoHttp.videoIntro(bvid: IdUtils.av2bv(aid));
-    if (info case Success(response: final videoInfo)) {
-      final cid = videoInfo.cid ?? videoInfo.pages?.firstOrNull?.cid;
-      if (cid != null) {
-        final play = await VideoHttp.tvPlayUrl(
-          cid: cid,
-          objectId: aid,
-          playurlType: 1,
-        );
-        if (play case Success(response: final playInfo)) {
-          final first = playInfo.durl?.firstOrNull;
-          if (first != null && first.playUrls.isNotEmpty) {
-            return VideoUtils.getCdnUrl(first.playUrls);
-          }
-        }
+    final res = await VideoHttp.tvPlayUrl(
+      cid: cid,
+      objectId: objectId,
+      playurlType: playurlType,
+      qn: qn,
+    );
+    if (res case Success(response: final response)) {
+      final first = response.durl?.firstOrNull;
+      if (first == null || first.playUrls.isEmpty) {
+        SmartDialog.dismiss();
+        SmartDialog.showToast('不支持投屏');
+        return;
       }
+      final url = VideoUtils.getCdnUrl(first.playUrls);
+      SmartDialog.showLoading(msg: '正在投屏到 ${device.info.friendlyName}...');
+      await castDlnaDevice(device, url: url, title: title);
+      SmartDialog.dismiss();
+      SmartDialog.showToast('已投屏至 ${device.info.friendlyName}');
+    } else {
+      SmartDialog.dismiss();
+      res.toast();
     }
-    return null;
-  } catch (_) {
-    return null;
+  } catch (e) {
+    SmartDialog.dismiss();
+    SmartDialog.showToast('投屏失败: $e');
   }
 }

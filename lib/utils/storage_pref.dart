@@ -743,6 +743,12 @@ abstract final class Pref {
         defaultValue: ReplySortType.hot.index,
       )];
 
+  static ReplySortType get reply2SortType =>
+      ReplySortType.values[_setting.get(
+        SettingBoxKey.reply2SortType,
+        defaultValue: ReplySortType.time.index,
+      )];
+
   static DynamicBadgeMode get dynamicBadgeMode =>
       DynamicBadgeMode.values[_setting.get(
         SettingBoxKey.dynamicBadgeMode,

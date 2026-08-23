@@ -1,5 +1,5 @@
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show ReplyInfo, DetailListReply;
+    show ReplyInfo, DetailListReply, Mode;
 import 'package:PiliPlus/grpc/reply.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
@@ -53,6 +53,9 @@ class VideoReplyReplyController extends ReplyController
   @override
   void onInit() {
     super.onInit();
+    final cacheSortType = Pref.reply2SortType;
+    sortType.value = cacheSortType;
+    mode = cacheSortType == .time ? Mode.MAIN_LIST_TIME : Mode.MAIN_LIST_HOT;
     queryData();
   }
 

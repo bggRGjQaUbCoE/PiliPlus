@@ -393,7 +393,6 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
           for (final device in dlnaDeviceCache.values)
             ListTile(
               dense: true,
-              leading: const Icon(Icons.tv_rounded, size: 20),
               title: Text(
                 '分享至${device.info.friendlyName}',
                 style: const TextStyle(fontSize: 14),

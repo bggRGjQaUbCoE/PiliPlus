@@ -239,19 +239,11 @@ class PgcIntroController extends CommonIntroController {
             ),
           for (final device in dlnaDeviceCache.values)
             DialogOption(
-              child: Row(
-                children: [
-                  const Icon(Icons.tv_rounded, size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      '分享至${device.info.friendlyName}',
-                      style: const TextStyle(fontSize: 14),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
+              child: Text(
+                '分享至${device.info.friendlyName}',
+                style: const TextStyle(fontSize: 14),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
               onPressed: () {
                 Get.back();

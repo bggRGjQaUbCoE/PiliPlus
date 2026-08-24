@@ -64,8 +64,12 @@ class _MainAppState extends PopScopeState<MainApp>
         trayManager.addListener(this);
         _handleTray();
       }
-    } else {
-      // FlutterSmartDialog throws
+    }
+    if (Platform.isWindows) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) PiliScheme.init();
+      });
+    } else if (!PlatformUtils.isDesktop) {
       PiliScheme.init();
     }
   }

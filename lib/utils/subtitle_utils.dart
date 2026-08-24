@@ -13,12 +13,12 @@ enum SubtitleFormat implements EnumWithLabel {
 
 abstract final class SubtitleUtils {
   static String _vttTimecode(num seconds) {
-    final int h = seconds ~/ 3600;
+    final h = (seconds ~/ 3600).toString().padLeft(2, '0');
     seconds %= 3600;
-    final int m = seconds ~/ 60;
+    final m = (seconds ~/ 60).toString().padLeft(2, '0');
     seconds %= 60;
-    final String sms = seconds.toStringAsFixed(3).padLeft(6, '0');
-    return "${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:$sms";
+    final sms = seconds.toStringAsFixed(3).padLeft(6, '0');
+    return "$h:$m:$sms";
   }
 
   static String json2Vtt(List list) {
@@ -34,13 +34,13 @@ abstract final class SubtitleUtils {
   }
 
   static String _srtTimecode(num seconds) {
-    final int h = seconds ~/ 3600;
+    final h = (seconds ~/ 3600).toString().padLeft(2, '0');
     seconds %= 3600;
-    final int m = seconds ~/ 60;
+    final m = (seconds ~/ 60).toString().padLeft(2, '0');
     seconds %= 60;
-    final int s = seconds.toInt();
-    final int ms = ((seconds - s) * 1000).round();
-    return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')},${ms.toString().padLeft(3, '0')}';
+    final s = seconds.toInt();
+    final ms = ((seconds - s) * 1000).round().toString().padLeft(3, '0');
+    return '$h:$m:${s.toString().padLeft(2, '0')},$ms';
   }
 
   static String json2Srt(List list) {

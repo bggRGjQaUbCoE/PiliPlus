@@ -1,0 +1,94 @@
+diff --git a/lib/src/route.dart b/lib/src/route.dart
+index 586afe6..007919a 100644
+--- a/lib/src/route.dart
++++ b/lib/src/route.dart
+@@ -201,7 +201,7 @@ mixin CupertinoRouteTransitionMixin<T> on PageRoute<T> {
+   // gesture is detected. The returned controller handles all of the subsequent
+   // drag events.
+   static _CupertinoBackGestureController<T> _startPopGesture<T>(PageRoute<T> route) {
+-    assert(route.popGestureEnabled);
++    assert(route.popGestureEnabled || route.popGestureEnabled_);
+ 
+     return _CupertinoBackGestureController<T>(
+       navigator: route.navigator!,
+@@ -252,6 +252,7 @@ mixin CupertinoRouteTransitionMixin<T> on PageRoute<T> {
+         linearTransition: linearTransition,
+         child: _CupertinoBackGestureDetector<T>(
+           enabledCallback: () => route.popGestureEnabled,
++          popGestureEnabled_: () => route.popGestureEnabled_,
+           onStartPopGesture: () => _startPopGesture<T>(route),
+           child: child,
+         ),
+@@ -698,6 +699,7 @@ class _CupertinoBackGestureDetector<T> extends StatefulWidget {
+   const _CupertinoBackGestureDetector({
+     super.key,
+     required this.enabledCallback,
++    required this.popGestureEnabled_,
+     required this.onStartPopGesture,
+     required this.child,
+   });
+@@ -706,6 +708,8 @@ class _CupertinoBackGestureDetector<T> extends StatefulWidget {
+ 
+   final ValueGetter<bool> enabledCallback;
+ 
++  final ValueGetter<bool> popGestureEnabled_;
++
+   final ValueGetter<_CupertinoBackGestureController<T>> onStartPopGesture;
+ 
+   @override
+@@ -720,7 +724,7 @@ class _CupertinoBackGestureDetectorState<T> extends State<_CupertinoBackGestureD
+   @override
+   void initState() {
+     super.initState();
+-    _recognizer = HorizontalDragGestureRecognizer(debugOwner: this)
++    _recognizer = _HorizontalDragGestureRecognizer(debugOwner: this)
+       ..onStart = _handleDragStart
+       ..onUpdate = _handleDragUpdate
+       ..onEnd = _handleDragEnd
+@@ -776,8 +780,14 @@ class _CupertinoBackGestureDetectorState<T> extends State<_CupertinoBackGestureD
+ 
+   void _handlePointerDown(PointerDownEvent event) {
+     if (widget.enabledCallback()) {
+-      _recognizer.addPointer(event);
+-    }
++      _recognizer
++        ..gestureSettings = null
++        ..addPointer(event);
++    } else if (widget.popGestureEnabled_()) {
++      _recognizer
++        ..gestureSettings = const DeviceGestureSettings(touchSlop: 28)
++        ..addPointer(event);
++     }
+   }
+ 
+   double _convertToLogical(double value) {
+@@ -883,7 +893,7 @@ class _CupertinoBackGestureController<T> {
+     } else {
+       if (isCurrent) {
+         // This route is destined to pop at this point. Reuse navigator's pop.
+-        navigator.pop();
++        navigator.pop(gesturePop);
+       }
+ 
+       // The popping may have finished inline if already at the target destination.
+@@ -1563,6 +1573,20 @@ class CupertinoDialogRoute<T> extends RawDialogRoute<T> {
+   static final Tween<double> _dialogScaleTween = Tween<double>(begin: 1.3, end: 1.0);
+ }
+ 
++class _HorizontalDragGestureRecognizer extends HorizontalDragGestureRecognizer {
++  _HorizontalDragGestureRecognizer({
++    super.debugOwner,
++    super.supportedDevices,
++    super.allowedButtonsFilter,
++  });
++
++  @override
++  void didStopTrackingLastPointer(int pointer) {
++    gestureSettings = null;
++    super.didStopTrackingLastPointer(pointer);
++  }
++}
++
+ /// A [PageTransitionsBuilder] that provides an iOS-style page transition
+ /// animation.
+ ///

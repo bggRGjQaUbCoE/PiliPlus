@@ -4,9 +4,9 @@ import 'dart:developer';
 
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:material_ui/material_ui.dart';
 
 class CachedNetworkSVGImage extends StatefulWidget {
   CachedNetworkSVGImage(

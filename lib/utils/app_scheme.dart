@@ -20,14 +20,15 @@ import 'package:PiliPlus/pages/subscription_detail/view.dart';
 import 'package:PiliPlus/pages/video/reply_reply/view.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/parse_string.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 abstract final class PiliScheme {
   static late AppLinks appLinks;
@@ -895,7 +896,7 @@ abstract final class PiliScheme {
       final res = await SearchHttp.ab2cWithDimension(
         bvid: bvid,
         aid: aid,
-        part: part != null ? int.tryParse(part) : null,
+        part: parseIntOrNull(part),
       );
       final cid = res?.cid;
       if (showDialog) {

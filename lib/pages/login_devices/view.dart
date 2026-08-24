@@ -7,8 +7,8 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/login_devices/device.dart';
 import 'package:PiliPlus/pages/login_devices/controller.dart';
 import 'package:PiliPlus/utils/extension/widget_ext.dart';
-import 'package:material_ui/material_ui.dart' hide ListTile;
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart' hide ListTile;
 
 class LoginDevicesPage extends StatefulWidget {
   const LoginDevicesPage({super.key});

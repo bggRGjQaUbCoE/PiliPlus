@@ -33,10 +33,10 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:material_ui/material_ui.dart';
 
 class EpisodePanel extends CommonSlidePage {
   const EpisodePanel({
@@ -238,8 +238,7 @@ class _EpisodePanelState extends State<EpisodePanel>
       return TabBarView(
         controller: _tabController,
         physics: tabBarScrollPhysics,
-        horizontalDragGestureRecognizer: () =>
-            TabBarDragGestureRecognizer(isDxAllowed: isDxAllowed),
+        horizontalDragGestureRecognizer: horizontalDragGestureRecognizer,
         children: List.generate(
           widget.list.length,
           (index) => _buildBody(

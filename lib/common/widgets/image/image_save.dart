@@ -5,9 +5,8 @@ import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 const _iconSize = 20.0;
 
@@ -17,11 +16,11 @@ void imageSaveDialog({
   dynamic aid,
   String? bvid,
 }) {
-  final double imgWidth = MediaQuery.sizeOf(Get.context!).shortestSide - 16;
   SmartDialog.show(
     animationType: .centerScale_otherSlide,
     builder: (context) {
       final colorScheme = ColorScheme.of(context);
+      final imgWidth = MediaQuery.sizeOf(context).shortestSide - 16;
       final height = imgWidth / Style.aspectRatio16x9;
       return Padding(
         padding: const .symmetric(horizontal: Style.safeSpace),
@@ -53,7 +52,10 @@ void imageSaveDialog({
                         Expanded(
                           child: SelectionText(
                             title,
-                            style: const TextStyle(fontSize: 14),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: colorScheme.onSurface,
+                            ),
                           ),
                         )
                       else

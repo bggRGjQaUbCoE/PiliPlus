@@ -8,8 +8,8 @@ import 'package:PiliPlus/pages/fav/note/controller.dart';
 import 'package:PiliPlus/pages/fav/note/widget/item.dart';
 import 'package:PiliPlus/pages/fav/pgc/pgc_layout.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class FavNoteChildPage extends StatefulWidget {
   const FavNoteChildPage({super.key, required this.isPublish});

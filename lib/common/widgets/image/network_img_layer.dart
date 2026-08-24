@@ -84,7 +84,7 @@ class NetworkImgLayer extends StatelessWidget {
       placeholder: (_, _) =>
           getPlaceHolder?.call() ??
           _placeholder(context, isEmote: isEmote, isAvatar: isAvatar),
-      errorWidget: (_, _, _) =>
+      errorBuilder: (_, _, _) =>
           _placeholder(context, isEmote: isEmote, isAvatar: isAvatar),
       colorBlendMode: reduce ? BlendMode.modulate : null,
       color: reduce ? reduceLuxColor : null,
@@ -102,9 +102,7 @@ class NetworkImgLayer extends StatelessWidget {
       clipBehavior: isEmote ? Clip.none : Clip.antiAlias,
       decoration: BoxDecoration(
         shape: isAvatar ? BoxShape.circle : BoxShape.rectangle,
-        color: Theme.of(
-          context,
-        ).colorScheme.onInverseSurface.withValues(alpha: 0.4),
+        color: ColorScheme.of(context).onInverseSurface.withValues(alpha: 0.4),
         borderRadius: isEmote || isAvatar ? null : borderRadius,
       ),
       child: Center(

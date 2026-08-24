@@ -28,6 +28,10 @@ import 'package:PiliPlus/common/widgets/flutter/text_field/text_selection.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/rendering.dart'
+    hide RenderEditable, VerticalCaretMovementRun;
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart'
     hide
         EditableText,
@@ -35,10 +39,6 @@ import 'package:material_ui/material_ui.dart'
         SpellCheckConfiguration,
         TextSelectionGestureDetectorBuilder,
         TextSelectionOverlay;
-import 'package:flutter/rendering.dart'
-    hide RenderEditable, VerticalCaretMovementRun;
-import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
 
 /// Signature for a widget builder that builds a context menu for the given
 /// [EditableTextState].
@@ -47,13 +47,18 @@ import 'package:flutter/services.dart';
 ///
 ///  * [SelectableRegionContextMenuBuilder], which performs the same role for
 ///    [SelectableRegion].
-typedef EditableTextContextMenuBuilder =
-    Widget Function(BuildContext context, EditableTextState editableTextState);
+typedef EditableTextContextMenuBuilder = Widget Function(
+  BuildContext context,
+  EditableTextState editableTextState,
+);
 
 // Signature for a function that determines the target location of the given
 // [TextPosition] after applying the given [TextBoundary].
-typedef _ApplyTextBoundary =
-    TextPosition Function(TextPosition, bool, TextBoundary);
+typedef _ApplyTextBoundary = TextPosition Function(
+  TextPosition,
+  bool,
+  TextBoundary,
+);
 
 // The time it takes for the cursor to fade from fully opaque to fully
 // transparent and vice versa. A full cursor blink, from transparent to opaque
@@ -4222,8 +4227,7 @@ class EditableTextState extends State<EditableText>
       _openInputConnection();
     } else {
       _flagInternalFocus();
-      widget.focusNode
-          .requestFocus(); // This eventually calls _openInputConnection also, see _handleFocusChanged.
+      widget.focusNode.requestFocus(); // This eventually calls _openInputConnection also, see _handleFocusChanged.
     }
   }
 
@@ -6078,103 +6082,100 @@ class EditableTextState extends State<EditableText>
                             scrollbars: _isMultiline,
                             overscroll: false,
                           ),
-                      viewportBuilder:
-                          (BuildContext context, ViewportOffset offset) {
-                            return CompositedTransformTarget(
-                              link: _toolbarLayerLink,
-                              child: Semantics(
-                                inputType: inputType,
-                                onCopy: _semanticsOnCopy(controls),
-                                onCut: _semanticsOnCut(controls),
-                                onPaste: _semanticsOnPaste(controls),
-                                child: _ScribbleFocusable(
-                                  editableKey: _editableKey,
-                                  enabled: _stylusHandwritingEnabled,
-                                  focusNode: widget.focusNode,
-                                  updateSelectionRects: () {
-                                    _openInputConnection();
-                                    _updateSelectionRects(force: true);
-                                  },
-                                  child: SizeChangedLayoutNotifier(
-                                    child: _Editable(
-                                      key: _editableKey,
-                                      controller: widget.controller,
-                                      startHandleLayerLink:
-                                          _startHandleLayerLink,
-                                      endHandleLayerLink: _endHandleLayerLink,
-                                      inlineSpan:
-                                          _OverridingTextStyleTextSpanUtils.applyTextSpacingOverrides(
-                                            lineHeightScaleFactor:
-                                                lineHeightScaleFactor,
-                                            letterSpacing: letterSpacing,
-                                            wordSpacing: wordSpacing,
-                                            textSpan: buildTextSpan(),
-                                          ),
-                                      value: _value,
-                                      cursorColor: _cursorColor,
-                                      backgroundCursorColor:
-                                          widget.backgroundCursorColor,
-                                      showCursor: _cursorVisibilityNotifier,
-                                      forceLine: widget.forceLine,
-                                      readOnly: widget.readOnly,
-                                      hasFocus: _hasFocus,
-                                      maxLines: widget.maxLines,
-                                      minLines: widget.minLines,
-                                      expands: widget.expands,
-                                      strutStyle: widget.strutStyle.merge(
-                                        StrutStyle(
-                                          height: lineHeightScaleFactor,
-                                        ),
+                      viewportBuilder: (BuildContext context, ViewportOffset offset) {
+                        return CompositedTransformTarget(
+                          link: _toolbarLayerLink,
+                          child: Semantics(
+                            inputType: inputType,
+                            onCopy: _semanticsOnCopy(controls),
+                            onCut: _semanticsOnCut(controls),
+                            onPaste: _semanticsOnPaste(controls),
+                            child: _ScribbleFocusable(
+                              editableKey: _editableKey,
+                              enabled: _stylusHandwritingEnabled,
+                              focusNode: widget.focusNode,
+                              updateSelectionRects: () {
+                                _openInputConnection();
+                                _updateSelectionRects(force: true);
+                              },
+                              child: SizeChangedLayoutNotifier(
+                                child: _Editable(
+                                  key: _editableKey,
+                                  controller: widget.controller,
+                                  startHandleLayerLink: _startHandleLayerLink,
+                                  endHandleLayerLink: _endHandleLayerLink,
+                                  inlineSpan:
+                                      _OverridingTextStyleTextSpanUtils.applyTextSpacingOverrides(
+                                        lineHeightScaleFactor:
+                                            lineHeightScaleFactor,
+                                        letterSpacing: letterSpacing,
+                                        wordSpacing: wordSpacing,
+                                        textSpan: buildTextSpan(),
                                       ),
-                                      selectionColor:
-                                          _selectionOverlay
-                                                  ?.spellCheckToolbarIsVisible ??
-                                              false
-                                          ? _spellCheckConfiguration
-                                                    .misspelledSelectionColor ??
-                                                widget.selectionColor
-                                          : widget.selectionColor,
-                                      textScaler: effectiveTextScaler,
-                                      textAlign: widget.textAlign,
-                                      textDirection: _textDirection,
-                                      locale: widget.locale,
-                                      textHeightBehavior:
-                                          widget.textHeightBehavior ??
-                                          DefaultTextHeightBehavior.maybeOf(
-                                            context,
-                                          ),
-                                      textWidthBasis: widget.textWidthBasis,
-                                      obscuringCharacter:
-                                          widget.obscuringCharacter,
-                                      obscureText: widget.obscureText,
-                                      offset: offset,
-                                      rendererIgnoresPointer:
-                                          widget.rendererIgnoresPointer,
-                                      cursorWidth: widget.cursorWidth,
-                                      cursorHeight: widget.cursorHeight,
-                                      cursorRadius: widget.cursorRadius,
-                                      cursorOffset:
-                                          widget.cursorOffset ?? Offset.zero,
-                                      selectionHeightStyle:
-                                          widget.selectionHeightStyle,
-                                      selectionWidthStyle:
-                                          widget.selectionWidthStyle,
-                                      paintCursorAboveText:
-                                          widget.paintCursorAboveText,
-                                      enableInteractiveSelection:
-                                          widget._userSelectionEnabled,
-                                      textSelectionDelegate: this,
-                                      devicePixelRatio: _devicePixelRatio,
-                                      promptRectRange: _currentPromptRectRange,
-                                      promptRectColor:
-                                          widget.autocorrectionTextRectColor,
-                                      clipBehavior: widget.clipBehavior,
+                                  value: _value,
+                                  cursorColor: _cursorColor,
+                                  backgroundCursorColor:
+                                      widget.backgroundCursorColor,
+                                  showCursor: _cursorVisibilityNotifier,
+                                  forceLine: widget.forceLine,
+                                  readOnly: widget.readOnly,
+                                  hasFocus: _hasFocus,
+                                  maxLines: widget.maxLines,
+                                  minLines: widget.minLines,
+                                  expands: widget.expands,
+                                  strutStyle: widget.strutStyle.merge(
+                                    StrutStyle(
+                                      height: lineHeightScaleFactor,
                                     ),
                                   ),
+                                  selectionColor:
+                                      _selectionOverlay
+                                              ?.spellCheckToolbarIsVisible ??
+                                          false
+                                      ? _spellCheckConfiguration
+                                                .misspelledSelectionColor ??
+                                            widget.selectionColor
+                                      : widget.selectionColor,
+                                  textScaler: effectiveTextScaler,
+                                  textAlign: widget.textAlign,
+                                  textDirection: _textDirection,
+                                  locale: widget.locale,
+                                  textHeightBehavior:
+                                      widget.textHeightBehavior ??
+                                      DefaultTextHeightBehavior.maybeOf(
+                                        context,
+                                      ),
+                                  textWidthBasis: widget.textWidthBasis,
+                                  obscuringCharacter: widget.obscuringCharacter,
+                                  obscureText: widget.obscureText,
+                                  offset: offset,
+                                  rendererIgnoresPointer:
+                                      widget.rendererIgnoresPointer,
+                                  cursorWidth: widget.cursorWidth,
+                                  cursorHeight: widget.cursorHeight,
+                                  cursorRadius: widget.cursorRadius,
+                                  cursorOffset:
+                                      widget.cursorOffset ?? Offset.zero,
+                                  selectionHeightStyle:
+                                      widget.selectionHeightStyle,
+                                  selectionWidthStyle:
+                                      widget.selectionWidthStyle,
+                                  paintCursorAboveText:
+                                      widget.paintCursorAboveText,
+                                  enableInteractiveSelection:
+                                      widget._userSelectionEnabled,
+                                  textSelectionDelegate: this,
+                                  devicePixelRatio: _devicePixelRatio,
+                                  promptRectRange: _currentPromptRectRange,
+                                  promptRectColor:
+                                      widget.autocorrectionTextRectColor,
+                                  clipBehavior: widget.clipBehavior,
                                 ),
                               ),
-                            );
-                          },
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),

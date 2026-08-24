@@ -1,6 +1,7 @@
-import 'package:material_ui/material_ui.dart' show SlottedContainerRenderObjectMixin;
 import 'package:flutter/rendering.dart'
     show Offset, RenderBox, BoxParentData, BoxHitTestResult;
+import 'package:material_ui/material_ui.dart'
+    show SlottedContainerRenderObjectMixin;
 
 Offset getOffset(RenderBox child) {
   return (child.parentData as BoxParentData).offset;

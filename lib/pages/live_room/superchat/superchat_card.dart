@@ -15,8 +15,8 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 part 'package:PiliPlus/common/widgets/context_menu/live_menu_helper.dart';
 
@@ -224,12 +224,7 @@ class _SuperChatCardState extends State<SuperChatCard> {
             child: Row(
               spacing: 12,
               children: [
-                NetworkImgLayer(
-                  src: item.userInfo.face,
-                  width: 45,
-                  height: 45,
-                  type: .avatar,
-                ),
+                _avatar(item.userInfo.face, item.userInfo.faceFrame),
                 Expanded(
                   child: Column(
                     mainAxisSize: .min,
@@ -270,5 +265,38 @@ class _SuperChatCardState extends State<SuperChatCard> {
         ),
       ],
     );
+  }
+
+  static Widget _avatar(String face, String? faceFrame) {
+    const size = 45.0;
+    final avatar = NetworkImgLayer(
+      src: face,
+      width: size,
+      height: size,
+      type: .avatar,
+    );
+    if (faceFrame != null && faceFrame.isNotEmpty) {
+      const ratio = 1.16;
+      const pendantSize = size * ratio;
+      const offset = ((1 - ratio) * size) / 2;
+      return Stack(
+        clipBehavior: .none,
+        alignment: .center,
+        children: [
+          avatar,
+          Positioned(
+            top: offset,
+            child: NetworkImgLayer(
+              type: .emote,
+              width: pendantSize,
+              height: pendantSize,
+              src: faceFrame,
+              getPlaceHolder: () => const SizedBox.shrink(),
+            ),
+          ),
+        ],
+      );
+    }
+    return avatar;
   }
 }

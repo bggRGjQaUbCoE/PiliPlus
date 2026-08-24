@@ -11,8 +11,8 @@ import 'package:PiliPlus/pages/msg_feed_top/like_detail/controller.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class LikeDetailPage extends StatefulWidget {
   const LikeDetailPage({super.key});

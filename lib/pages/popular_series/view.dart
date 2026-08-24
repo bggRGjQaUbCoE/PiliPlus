@@ -15,8 +15,8 @@ import 'package:PiliPlus/models_new/popular/popular_series_one/config.dart';
 import 'package:PiliPlus/pages/popular_series/controller.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class PopularSeriesPage extends StatefulWidget {
   const PopularSeriesPage({super.key});

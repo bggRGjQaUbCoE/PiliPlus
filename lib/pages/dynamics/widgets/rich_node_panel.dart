@@ -1,6 +1,5 @@
 import 'dart:io' show Platform;
 
-import 'package:PiliPlus/common/widgets/emote_span.dart';
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart';
@@ -12,10 +11,11 @@ import 'package:PiliPlus/models/common/image_preview_type.dart'
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/parse_string.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 const _linkFoldedText = '网页链接';
 
@@ -74,7 +74,7 @@ TextSpan? richNode(
           case 'RICH_TEXT_NODE_TYPE_EMOJI' when (i.emoji != null):
             final size = i.emoji!.size * 20.0;
             spanChildren.add(
-              EmoteSpan(
+              WidgetSpan(
                 rawText: i.origText,
                 child: NetworkImgLayer(
                   src: i.emoji!.url,
@@ -161,13 +161,11 @@ TextSpan? richNode(
                   text: '投票：${i.text}',
                   style: style,
                   recognizer: NoDeadlineTapGestureRecognizer()
-                    ..onTap = () {
-                      final dynIdStr = item.basic?.commentIdStr;
-                      final dynId = dynIdStr != null
-                          ? int.tryParse(dynIdStr)
-                          : null;
-                      showVoteDialog(context, int.parse(i.rid!), dynId);
-                    },
+                    ..onTap = () => showVoteDialog(
+                      context,
+                      int.parse(i.rid!),
+                      parseIntOrNull(item.basic?.commentIdStr),
+                    ),
                 ),
               );
             break;

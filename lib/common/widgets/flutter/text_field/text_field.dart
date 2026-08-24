@@ -35,6 +35,7 @@ import 'package:cupertino_ui/cupertino_ui.dart'
         TextSelectionGestureDetectorBuilderDelegate;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart'
     hide
         TextField,
@@ -47,7 +48,6 @@ import 'package:material_ui/material_ui.dart'
         TextSelectionGestureDetectorBuilder,
         TextSelectionOverlay,
         TextSelectionGestureDetectorBuilderDelegate;
-import 'package:flutter/services.dart';
 
 class _TextFieldSelectionGestureDetectorBuilder
     extends TextSelectionGestureDetectorBuilder {

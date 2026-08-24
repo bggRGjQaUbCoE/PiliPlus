@@ -1,6 +1,6 @@
 import 'package:PiliPlus/common/widgets/slotted_layout_helper.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart' show ChildLayoutHelper;
+import 'package:material_ui/material_ui.dart';
 
 enum IntroType { playlist, body }
 

@@ -5,8 +5,8 @@ import 'package:PiliPlus/models/common/reply/reply_search_type.dart';
 import 'package:PiliPlus/pages/video/reply_search_item/child/view.dart';
 import 'package:PiliPlus/pages/video/reply_search_item/controller.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ReplySearchPage extends StatefulWidget {
   const ReplySearchPage({

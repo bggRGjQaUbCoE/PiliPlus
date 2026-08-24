@@ -1,6 +1,6 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart' show RenderProxyBox;
 import 'package:flutter/scheduler.dart';
+import 'package:material_ui/material_ui.dart';
 
 typedef LayoutCallback = void Function(Size size);
 

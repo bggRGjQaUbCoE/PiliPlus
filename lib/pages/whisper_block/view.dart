@@ -8,10 +8,10 @@ import 'package:PiliPlus/grpc/bilibili/app/im/v1.pb.dart'
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/pages/whisper_block/controller.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class WhisperBlockPage extends StatefulWidget {
   const WhisperBlockPage({

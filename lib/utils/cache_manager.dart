@@ -31,7 +31,7 @@ abstract final class CacheManager {
 
   // 循环计算文件的大小
   @pragma('vm:notify-debugger-on-exception')
-  static Future<int> getTotalSizeOfFilesInDir(final Directory file) async {
+  static Future<int> getTotalSizeOfFilesInDir(Directory file) async {
     int total = 0;
     await for (final child in file.list(recursive: false)) {
       if (child is File) {

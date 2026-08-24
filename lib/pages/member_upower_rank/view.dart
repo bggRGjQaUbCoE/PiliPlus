@@ -11,8 +11,8 @@ import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/upower_rank/rank_info.dart';
 import 'package:PiliPlus/pages/member_upower_rank/controller.dart';
 import 'package:PiliPlus/utils/extension/widget_ext.dart';
-import 'package:material_ui/material_ui.dart' hide ListTile;
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart' hide ListTile;
 
 class UpowerRankPage extends StatefulWidget {
   const UpowerRankPage({

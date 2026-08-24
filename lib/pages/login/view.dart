@@ -297,8 +297,7 @@ class _LoginPageState extends State<LoginPage> {
                           ..toNamed(
                             '/webview',
                             parameters: {
-                              'url':
-                                  'https://passport.bilibili.com/h5-app/passport/login/findPassword',
+                              'url': 'https://passport.bilibili.com/h5-app/passport/login/findPassword',
                               'type': 'url',
                               'pageTitle': '忘记密码',
                             },
@@ -318,8 +317,7 @@ class _LoginPageState extends State<LoginPage> {
                           ..toNamed(
                             '/webview',
                             parameters: {
-                              'url':
-                                  'https://passport.bilibili.com/pc/passport/findPassword',
+                              'url': 'https://passport.bilibili.com/pc/passport/findPassword',
                               'type': 'url',
                               'pageTitle': '忘记密码',
                               'uaType': 'pc',

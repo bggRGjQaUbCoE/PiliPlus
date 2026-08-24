@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:material_ui/material_ui.dart';
 
 class MarqueeText extends StatelessWidget {
   final String text;
@@ -394,10 +394,10 @@ class _MarqueeSimulation extends Simulation {
   bool isDone(double timeInSeconds) => false;
 
   _MarqueeSimulation copyWith({
-    final double? initialValue,
-    final double? addSize,
-    final bool? notBounce,
-    final double? velocity,
+    double? initialValue,
+    double? addSize,
+    bool? notBounce,
+    double? velocity,
   }) => _MarqueeSimulation(
     initialValue ?? this.initialValue,
     addSize == null ? size : size + addSize,

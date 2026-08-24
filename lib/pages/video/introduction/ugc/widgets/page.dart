@@ -7,9 +7,9 @@ import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 // TODO refa
 class PagesPanel extends StatefulWidget {
@@ -81,10 +81,6 @@ class _PagesPanelState extends State<PagesPanel> {
     if (!_scrollController.hasClients || pages.isEmpty) {
       return;
     }
-    final double targetOffset = this.targetOffset.clamp(
-      _scrollController.position.minScrollExtent,
-      _scrollController.position.maxScrollExtent,
-    );
     _scrollController.animateTo(
       targetOffset,
       duration: const Duration(milliseconds: 300),

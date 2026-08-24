@@ -216,6 +216,21 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 
+  Future<void> _removeAccounts(Set<LoginAccount> accounts) async {
+    await Accounts.deleteAll(accounts);
+    if (mounted) _noAccount.value = Accounts.account.isEmpty;
+  }
+
+  static Future<LoginAccount?> _logoutWrapper(LoginAccount account) async {
+    try {
+      final res = await LoginHttp.logout(account);
+      return res.isSuccess ? account : null;
+    } catch (e, s) {
+      Utils.reportError(e, s);
+      return null;
+    }
+  }
+
   Future<void> _logoutDialog(BuildContext context) async {
     final result = await showDialog<Set<LoginAccount>>(
       context: context,
@@ -228,46 +243,27 @@ class _SettingPageState extends State<SettingPage> {
       ),
     );
     if (!context.mounted || result == null || result.isEmpty) return;
-    Future<void> removeAccounts(Set<LoginAccount> accounts) async {
-      await Accounts.deleteAll(accounts);
-      _noAccount.value = Accounts.account.isEmpty;
-    }
-
-    Future<({LoginAccount account, bool success})> logoutAccount(
-      LoginAccount account,
-    ) async {
-      try {
-        final res = await LoginHttp.logout(account);
-        return (account: account, success: res['status'] == true);
-      } catch (e, s) {
-        Utils.reportError(e, s);
-        return (account: account, success: false);
-      }
-    }
 
     showDialog(
       context: context,
       builder: (context) {
-        final theme = Theme.of(context);
         return AlertDialog(
           title: const Text('提示'),
           content: Text(
-            "确认要退出以下账号登录吗\n\n${result.map((i) => i.mid.toString()).join('\n')}",
+            "确认要退出以下账号登录吗\n\n${result.map((i) => i.mid).join('\n')}",
           ),
           actions: [
             TextButton(
               onPressed: Get.back,
               child: Text(
                 '点错了',
-                style: TextStyle(
-                  color: theme.colorScheme.outline,
-                ),
+                style: TextStyle(color: theme.colorScheme.outline),
               ),
             ),
             TextButton(
-              onPressed: () async {
+              onPressed: () {
+                _removeAccounts(result);
                 Get.back();
-                await removeAccounts(result);
               },
               child: Text(
                 '仅登出',
@@ -277,34 +273,20 @@ class _SettingPageState extends State<SettingPage> {
             TextButton(
               onPressed: () async {
                 SmartDialog.showLoading();
-                try {
-                  final responses = await Future.wait(
-                    result.map(logoutAccount),
-                  );
-                  final successfulAccounts = {
-                    for (final response in responses)
-                      if (response.success) response.account,
-                  };
-                  if (successfulAccounts.isNotEmpty) {
-                    await removeAccounts(successfulAccounts);
+                final res = await Future.wait(result.map(_logoutWrapper));
+                SmartDialog.dismiss();
+                final logoutAccounts = res.nonNulls.toSet();
+                if (logoutAccounts.isEmpty) {
+                  SmartDialog.showToast('所选账号均退出登录失败');
+                } else {
+                  _removeAccounts(logoutAccounts);
+                  Get.back();
+                  if (logoutAccounts.length != result.length) {
+                    result.removeWhere(logoutAccounts.contains);
+                    SmartDialog.showToast(
+                      '账号 ${result.map((i) => i.mid).join(",")} 退出登录失败',
+                    );
                   }
-                  final failedMids = responses
-                      .where((response) => !response.success)
-                      .map((response) => response.account.mid)
-                      .join('、');
-                  SmartDialog.dismiss();
-                  if (successfulAccounts.length == result.length) {
-                    Get.back();
-                  } else if (successfulAccounts.isEmpty) {
-                    SmartDialog.showToast('账号 $failedMids 退出登录失败');
-                  } else {
-                    Get.back();
-                    SmartDialog.showToast('账号 $failedMids 退出登录失败');
-                  }
-                } catch (e, s) {
-                  Utils.reportError(e, s);
-                  SmartDialog.dismiss();
-                  SmartDialog.showToast('退出登录失败：$e');
                 }
               },
               child: const Text('确认'),

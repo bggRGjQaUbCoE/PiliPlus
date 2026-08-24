@@ -46,12 +46,12 @@ import 'package:PiliPlus/utils/update.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:material_ui/material_ui.dart' hide RefreshIndicator;
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:material_ui/material_ui.dart' hide RefreshIndicator;
 
 List<SettingsModel> get extraSettings => [
   if (PlatformUtils.isDesktop) ...[
@@ -547,23 +547,32 @@ List<SettingsModel> get extraSettings => [
     leading: Icon(Icons.more_time_outlined),
     onTap: _showReplyDelayDialog,
   ),
-  NormalModel(
+  PopupModel(
     title: '评论展示',
     leading: const Icon(Icons.whatshot_outlined),
-    getSubtitle: () => '当前优先展示「${Pref.replySortType.title}」',
-    onTap: _showReplySortDialog,
+    value: () => Pref.replySortType,
+    items: ReplySortType.values.take(2),
+    onSelected: (value, setState) => GStorage.setting
+        .put(SettingBoxKey.replySortType, value.index)
+        .whenComplete(setState),
   ),
-  NormalModel(
+  PopupModel(
     title: '二级评论展示',
     leading: const Icon(Icons.subdirectory_arrow_right_outlined),
-    getSubtitle: () => '当前优先展示「${Pref.reply2SortType.title}」',
-    onTap: _showReply2SortDialog,
+    value: () => Pref.reply2SortType,
+    items: ReplySortType.values.take(2),
+    onSelected: (value, setState) => GStorage.setting
+        .put(SettingBoxKey.reply2SortType, value.index)
+        .whenComplete(setState),
   ),
-  NormalModel(
+  PopupModel(
     title: '动态展示',
     leading: const Icon(Icons.dynamic_feed_rounded),
-    getSubtitle: () => '当前优先展示「${Pref.defaultDynamicType.label}」',
-    onTap: _showDefDynDialog,
+    value: () => Pref.defaultDynamicType,
+    items: DynamicsTabType.values.take(4),
+    onSelected: (value, setState) => GStorage.setting
+        .put(SettingBoxKey.defaultDynamicType, value.index)
+        .whenComplete(setState),
   ),
   SwitchModel(
     title: '显示动态互动内容',
@@ -1060,63 +1069,6 @@ Future<void> _showReplyDelayDialog(
     await GStorage.setting.put(SettingBoxKey.retryDelay, res.toInt());
     setState();
     SmartDialog.showToast('重启生效');
-  }
-}
-
-Future<void> _showReplySortDialog(
-  BuildContext context,
-  VoidCallback setState,
-) async {
-  final res = await showDialog<ReplySortType>(
-    context: context,
-    builder: (context) => SelectDialog<ReplySortType>(
-      title: '评论展示',
-      value: Pref.replySortType,
-      values: ReplySortType.values.take(2).map((e) => (e, e.title)).toList(),
-    ),
-  );
-  if (res != null) {
-    await GStorage.setting.put(SettingBoxKey.replySortType, res.index);
-    setState();
-  }
-}
-
-Future<void> _showReply2SortDialog(
-  BuildContext context,
-  VoidCallback setState,
-) async {
-  final res = await showDialog<ReplySortType>(
-    context: context,
-    builder: (context) => SelectDialog<ReplySortType>(
-      title: '二级评论展示',
-      value: Pref.reply2SortType,
-      values: ReplySortType.values.take(2).map((e) => (e, e.title)).toList(),
-    ),
-  );
-  if (res != null) {
-    await GStorage.setting.put(SettingBoxKey.reply2SortType, res.index);
-    setState();
-  }
-}
-
-Future<void> _showDefDynDialog(
-  BuildContext context,
-  VoidCallback setState,
-) async {
-  final res = await showDialog<DynamicsTabType>(
-    context: context,
-    builder: (context) => SelectDialog<DynamicsTabType>(
-      title: '动态展示',
-      value: Pref.defaultDynamicType,
-      values: DynamicsTabType.values.take(4).map((e) => (e, e.label)).toList(),
-    ),
-  );
-  if (res != null) {
-    await GStorage.setting.put(
-      SettingBoxKey.defaultDynamicType,
-      res.index,
-    );
-    setState();
   }
 }
 

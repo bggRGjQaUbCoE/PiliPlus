@@ -9,7 +9,7 @@ typedef PopupMenuItemSelected<T> = void Function(
 );
 
 List<PopupMenuEntry<T>> enumItemBuilder<T extends EnumWithLabel>(
-  List<T> items,
+  Iterable<T> items,
 ) => items.map((e) => PopupMenuItem(value: e, child: Text(e.label))).toList();
 
 enum DescPosType { subtitle, title, trailing }
@@ -54,24 +54,20 @@ class _PopupListTileState<T> extends State<PopupListTile<T>> {
     if (PlatformUtils.isDesktop) {
       dx = details.globalPosition.dx + 1;
     } else {
-      final thisBox = context.findRenderObject() as RenderBox;
+      final thisBox = context.findRenderObject();
       final titleBox = _key!.currentContext!.findRenderObject() as RenderBox;
       final titleOffset = titleBox.localToGlobal(.zero, ancestor: thisBox);
       dx = thisOffset.dx + titleOffset.dx;
     }
-    showMenu<T?>(
+    showMenu<T>(
       context: context,
       position: RelativeRect.fromLTRB(dx, thisOffset.dy + 5, dx, 0),
       items: widget.itemBuilder(context),
       initialValue: value,
       requestFocus: false,
-    ).then<void>((T? newValue) {
-      if (!mounted) {
-        return;
-      }
-      if (newValue == null || newValue == value) {
-        return;
-      }
+    ).then<void>((newValue) {
+      if (!mounted) return;
+      if (newValue == null || newValue == value) return;
       widget.onSelected(newValue, _refresh);
     });
   }

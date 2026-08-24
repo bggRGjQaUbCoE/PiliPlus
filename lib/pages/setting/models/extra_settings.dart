@@ -554,9 +554,9 @@ List<SettingsModel> get extraSettings => [
     onTap: _showReplySortDialog,
   ),
   NormalModel(
-    title: '二级评论展示',
+    title: '楼中楼评论展示',
     leading: const Icon(Icons.subdirectory_arrow_right_outlined),
-    getSubtitle: () => '当前优先展示「${Pref.reply2SortType.title}」',
+    getSubtitle: () => '当前优先展示「${Pref.reply2SortType == ReplySortType.time ? '最早评论' : '最热评论'}」',
     onTap: _showReply2SortDialog,
   ),
   NormalModel(
@@ -1088,9 +1088,12 @@ Future<void> _showReply2SortDialog(
   final res = await showDialog<ReplySortType>(
     context: context,
     builder: (context) => SelectDialog<ReplySortType>(
-      title: '二级评论展示',
+      title: '楼中楼评论展示',
       value: Pref.reply2SortType,
-      values: ReplySortType.values.take(2).map((e) => (e, e.title)).toList(),
+      values: [
+        (ReplySortType.time, '最早评论'),
+        (ReplySortType.hot, '最热评论'),
+      ],
     ),
   );
   if (res != null) {

@@ -18,6 +18,7 @@ import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/audio_normalization.dart';
+import 'package:PiliPlus/models/video/play/url.dart' show Volume;
 import 'package:PiliPlus/pages/common/common_intro_controller.dart'
     show FavMixin;
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
@@ -287,6 +288,17 @@ class AudioController extends GetxController
   void _onPlay(PlayURLResp data) {
     final PlayInfo? playInfo = data.playerInfo.values.firstOrNull;
     if (playInfo != null) {
+      final Volume? volume = playInfo.hasVolume()
+          ? Volume(
+              measuredI: playInfo.volume.measuredI,
+              measuredLra: playInfo.volume.measuredLra,
+              measuredTp: playInfo.volume.measuredTp,
+              measuredThreshold: playInfo.volume.measuredThreshold,
+              targetOffset: playInfo.volume.targetOffset,
+              targetI: playInfo.volume.targetI,
+              targetTp: playInfo.volume.targetTp,
+            )
+          : null;
       if (playInfo.hasPlayDash()) {
         final playDash = playInfo.playDash;
         final audios = playDash.audio;
@@ -298,7 +310,7 @@ class AudioController extends GetxController
           (e) => e.id <= cacheAudioQa,
           (a, b) => a.id > b.id ? a : b,
         );
-        _onOpenMedia(VideoUtils.getCdnUrl(audio.playUrls));
+        _onOpenMedia(VideoUtils.getCdnUrl(audio.playUrls), volume: volume);
       } else if (playInfo.hasPlayUrl()) {
         final playUrl = playInfo.playUrl;
         final durls = playUrl.durl;
@@ -307,12 +319,12 @@ class AudioController extends GetxController
         }
         final durl = durls.first;
         position.value = 0;
-        _onOpenMedia(VideoUtils.getCdnUrl(durl.playUrls));
+        _onOpenMedia(VideoUtils.getCdnUrl(durl.playUrls), volume: volume);
       }
     }
   }
 
-  Map<String, String>? _audioFilterExtras() {
+  Map<String, String>? _audioFilterExtras(Volume? volume) {
     if (!Platform.isAndroid) {
       return null;
     }
@@ -321,7 +333,7 @@ class AudioController extends GetxController
       return null;
     }
     final param = AudioNormalization.getParamFromConfig(config);
-    final volume = _videoDetailController?.volume;
+    volume ??= _videoDetailController?.volume;
     final String audioNormalization;
     if (volume != null && volume.isNotEmpty) {
       audioNormalization = param.replaceFirstMapped(
@@ -352,9 +364,10 @@ class AudioController extends GetxController
     String url, {
     String ua = Constants.userAgentApp,
     String? referer,
+    Volume? volume,
   }) async {
     await _initPlayerIfNeeded();
-    final extras = _audioFilterExtras();
+    final extras = _audioFilterExtras(volume);
     player
       ?..setMediaHeader(
         userAgent: ua,

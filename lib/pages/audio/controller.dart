@@ -158,7 +158,12 @@ class AudioController extends GetxController
     final hasAudioUrl = audioUrl != null;
     if (hasAudioUrl) {
       _querySponsorBlock();
-      _onOpenMedia(audioUrl, ua: BrowserUa.pc, referer: HttpString.baseUrl);
+      _onOpenMedia(
+        audioUrl,
+        ua: BrowserUa.pc,
+        referer: HttpString.baseUrl,
+        volume: _videoDetailController?.volume,
+      );
     }
     ConnectivityUtils.isWiFi.then((isWiFi) {
       cacheAudioQa = isWiFi ? Pref.defaultAudioQa : Pref.defaultAudioQaCellular;
@@ -333,13 +338,13 @@ class AudioController extends GetxController
       return null;
     }
     final param = AudioNormalization.getParamFromConfig(config);
-    volume ??= _videoDetailController?.volume;
+    final effectiveVolume = volume;
     final String audioNormalization;
-    if (volume != null && volume.isNotEmpty) {
+    if (effectiveVolume != null && effectiveVolume.isNotEmpty) {
       audioNormalization = param.replaceFirstMapped(
         PlPlayerController.loudnormRegExp,
         (i) =>
-            'loudnorm=${volume.format(
+            'loudnorm=${effectiveVolume.format(
               Map.fromEntries(
                 i.group(1)!.split(':').map((item) {
                   final parts = item.split('=');

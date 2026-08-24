@@ -67,7 +67,14 @@ class _MainAppState extends PopScopeState<MainApp>
     }
     if (Platform.isWindows) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) PiliScheme.init();
+        if (mounted) {
+          PiliScheme.init(
+            beforeRoute: () async {
+              await _show();
+              await windowManager.focus();
+            },
+          );
+        }
       });
     } else if (!PlatformUtils.isDesktop) {
       PiliScheme.init();

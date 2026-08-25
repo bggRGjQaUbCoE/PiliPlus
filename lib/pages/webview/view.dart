@@ -53,8 +53,10 @@ class _WebviewPageState extends State<WebviewPage> {
   late final RxDouble _progress = 1.0.obs;
   bool _inApp = false;
   bool _off = false;
+  late bool _init = false;
   late final WebViewController _controller;
 
+  static const blankPage = 'about:blank';
   static final _prefixRegex = RegExp(
     r'^(?!(https?://))\S+://',
     caseSensitive: false,
@@ -119,7 +121,18 @@ class _WebviewPageState extends State<WebviewPage> {
     if (platformDelegate is WindowsPlatformNavigationDelegate) {
       platformDelegate
         ..onPageTitleChanged = _title.call
-        ..setOnPageFinished(_injectJavaScriptForBilibili);
+        ..setOnPageFinished((url) {
+          if (url == blankPage) {
+            if (_init) {
+              Get.back();
+            } else {
+              _init = true;
+              _controller.loadRequest(Uri.parse(_url));
+            }
+          } else {
+            _injectJavaScriptForBilibili(url);
+          }
+        });
     } else {
       platformDelegate
         ..setOnPageStarted((url) {
@@ -157,9 +170,16 @@ class _WebviewPageState extends State<WebviewPage> {
         },
       );
 
-    // (_controller.platform as WindowsPlatformWebViewController).openDevTools();
+    (_controller.platform as WindowsPlatformWebViewController).openDevTools();
 
-    _controller.loadRequest(Uri.parse(_url));
+    _initPage();
+  }
+
+  @pragma('vm:prefer-inline')
+  Future<void> _initPage() {
+    return _controller.loadRequest(
+      Uri.parse(Platform.isWindows || Platform.isLinux ? blankPage : _url),
+    );
   }
 
   void _injectJavaScriptForBilibili(String url) {

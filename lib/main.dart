@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:PiliPlus/build_config.dart';
 import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/widgets/back_detector.dart';
 import 'package:PiliPlus/common/widgets/custom_toast.dart';
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/common/widgets/scale_app.dart';
@@ -34,6 +33,7 @@ import 'package:catcher_2/catcher_2.dart';
 import 'package:collection/collection.dart';
 import 'package:dynamic_color/dynamic_color.dart' show DynamicColorPlugin;
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -177,6 +177,10 @@ void main() async {
     await MyApp.initPlatformState();
   }
 
+  if (PlatformUtils.isDesktop) {
+    GestureBinding.instance.pointerRouter.addGlobalRoute(_routePointer);
+  }
+
   if (Pref.enableLog) {
     // 异常捕获 logo记录
     final customParameters = {
@@ -207,6 +211,12 @@ KeyEventResult _onKeyEvent(KeyEvent event) {
     return .handled;
   }
   return .ignored;
+}
+
+void _routePointer(PointerEvent event) {
+  if (event is PointerDownEvent && event.buttons == kBackMouseButton) {
+    _onBack();
+  }
 }
 
 void _onBack() {
@@ -312,12 +322,6 @@ class MyApp extends StatelessWidget {
           viewPadding: tmpPadding,
         ),
         child: child!,
-      );
-    }
-    if (PlatformUtils.isDesktop) {
-      return BackDetector(
-        onBack: _onBack,
-        child: child,
       );
     }
     return child;

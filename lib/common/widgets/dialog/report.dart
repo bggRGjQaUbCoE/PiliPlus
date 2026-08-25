@@ -257,8 +257,8 @@ abstract final class ReportOptions {
     },
     '其他': {0: '其他*'},
   };
-  static ReasonCheck withContentReply = (reasonType) => reasonType != null;
-  static ReasonCheck contentRequiredReply = (reasonType) =>
+  static bool withContentReply(int? reasonType) => reasonType != null;
+  static bool contentRequiredReply(int? reasonType) =>
       reasonType == 0 || reasonType == 22;
 
   static Map<String, Map<int, String>> get dynamicReport => const {
@@ -293,7 +293,7 @@ abstract final class ReportOptions {
       11: '其它*',
     },
   };
-  static ReasonCheck danmakuReportCheck = (reasonType) => reasonType == 11;
+  static bool danmakuReportCheck(int? reasonType) => reasonType == 11;
 
   static Map<String, Map<int, String>> get liveDanmakuReport => const {
     '': {
@@ -306,7 +306,7 @@ abstract final class ReportOptions {
       0: '其他',
     },
   };
-  static ReasonCheck liveDanmakuReportCheck = (_) => false;
+  static bool liveDanmakuReportCheck(int? _) => false;
 
   static Map<String, Map<int, String>> get imMsgReport => const {
     '': {

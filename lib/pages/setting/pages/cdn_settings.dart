@@ -7,12 +7,12 @@ class CdnSettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final padding = MediaQuery.viewPaddingOf(context);
-    final settings = cdnSettings;
+    final settings = videoSettings
+        .where((item) => item.effectiveTitle.contains('CDN'))
+        .toList(growable: false);
     return SimpleScaffold(
-      appBar: AppBar(title: const Text('CDN 设置')),
+      appBar: AppBar(title: const Text('CDN 设置与诊断')),
       body: ListView.builder(
-        padding: EdgeInsets.only(bottom: padding.bottom + 100),
         itemCount: settings.length,
         itemBuilder: (context, index) => settings[index].widget,
       ),

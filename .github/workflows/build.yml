@@ -82,8 +82,7 @@ jobs:
               shell: pwsh
               run: lib/scripts/patch.ps1 android
 
-            - name: Write key
-              if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+            - name: Write fixed Android signing key
               env:
                   SIGN_KEYSTORE_BASE64: ${{ secrets.SIGN_KEYSTORE_BASE64 }}
                   KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -95,10 +94,12 @@ jobs:
                   test -n "$KEY_ALIAS" || { echo "Missing KEY_ALIAS"; exit 1; }
                   test -n "$KEY_PASSWORD" || { echo "Missing KEY_PASSWORD"; exit 1; }
                   echo "$SIGN_KEYSTORE_BASE64" | base64 --decode > android/app/key.jks
-                  echo storeFile='key.jks' >> android/key.properties
-                  echo storePassword="$KEYSTORE_PASSWORD" >> android/key.properties
-                  echo keyAlias="$KEY_ALIAS" >> android/key.properties
-                  echo keyPassword="$KEY_PASSWORD" >> android/key.properties
+                  {
+                    echo storeFile='key.jks'
+                    echo storePassword="$KEYSTORE_PASSWORD"
+                    echo keyAlias="$KEY_ALIAS"
+                    echo keyPassword="$KEY_PASSWORD"
+                  } > android/key.properties
 
             - name: Set and Extract version
               shell: pwsh

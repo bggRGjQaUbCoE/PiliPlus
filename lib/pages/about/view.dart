@@ -40,8 +40,7 @@ class AboutPage extends StatefulWidget {
 }
 
 class _AboutPageState extends State<AboutPage> {
-  final currentVersion =
-      '${BuildConfig.displayVersionName}+${BuildConfig.versionCode}';
+  final currentVersion = BuildConfig.displayVersionName;
   RxString cacheSize = ''.obs;
 
   late int _pressCount = 0;
@@ -172,10 +171,10 @@ Commit Hash: ${BuildConfig.commitHash}''',
             color: theme.colorScheme.outlineVariant,
           ),
           ListTile(
-            onTap: () => PageUtils.launchURL(Constants.sourceCodeUrl),
+            onTap: () => PageUtils.launchURL(Constants.sourceBranchUrl),
             leading: const Icon(Icons.code),
             title: const Text('Source Code'),
-            subtitle: Text(Constants.sourceCodeUrl, style: subTitleStyle),
+            subtitle: Text(Constants.sourceBranchUrl, style: subTitleStyle),
           ),
           if (Platform.isAndroid)
             ListTile(

@@ -6,9 +6,10 @@ abstract final class BuildConfig {
   );
   static const String versionName = String.fromEnvironment(
     'pili.name',
-    defaultValue: 'SNAPSHOT',
+    defaultValue: '2.1.5',
   );
-  static const displayVersionName = '$editionName-$versionName';
+
+  static const String displayVersionName = '$editionName-$versionName';
 
   static const int buildTime = int.fromEnvironment('pili.time');
   static const String commitHash = String.fromEnvironment(

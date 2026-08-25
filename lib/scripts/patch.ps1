@@ -12,28 +12,28 @@ $NewOverScrollIndicator = "362b1de29974ffc1ed6faa826e1df870d7bec75f";
 # set `gestureSettings`
 $BottomSheetAndroidPatch = "lib/scripts/bottom_sheet_android.patch"
 
-# https://github.com/bggRGjQaUbCoE/PiliPlus/issues/1906
+# Upstream issue #1906
 $BottomSheetIOSFlutterPatch = "lib/scripts/bottom_sheet_ios_flutter.patch"
 $BottomSheetIOSPiliPlusPatch = "lib/scripts/bottom_sheet_ios_piliplus.patch"
 
-# https://github.com/bggRGjQaUbCoE/PiliPlus/issues/1662
+# Upstream issue #1662
 # handle bottom scroll event
 $ScrollViewPatch = "lib/scripts/scroll_view.patch"
 
-# https://github.com/bggRGjQaUbCoE/PiliPlus/issues/2106
+# Upstream issue #2106
 # use `TouchGestureRecognizer` on all platforms
 $TextSelectionPatch = "lib/scripts/text_selection.patch"
 
-# https://github.com/bggRGjQaUbCoE/PiliPlus/issues/1947
+# Upstream issue #1947
 $NavigatorPatch = "lib/scripts/navigator.patch"
 
-# https://github.com/bggRGjQaUbCoE/PiliPlus/issues/2107
+# Upstream issue #2107
 $ImageAnimPatch = "lib/scripts/image_anim.patch"
 
 # remove `_scheduleRebuild`
 $LayoutBuilderPatch = "lib/scripts/layout_builder.patch"
 
-# https://github.com/bggRGjQaUbCoE/PiliPlus/issues/2308
+# Upstream issue #2308
 $NavigationDrawerPatch = "lib/scripts/navigation_drawer.patch"
 
 # apply text color to icon color

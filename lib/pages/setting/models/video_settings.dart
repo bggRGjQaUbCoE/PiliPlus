@@ -22,7 +22,39 @@ import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
-List<SettingsModel> get cdnSettings => [
+List<SettingsModel> get videoSettings => [
+  const SwitchModel(
+    title: '开启硬解',
+    subtitle: '以较低功耗播放视频，若异常卡死请关闭',
+    leading: Icon(Icons.flash_on_outlined),
+    setKey: SettingBoxKey.enableHA,
+    defaultVal: true,
+  ),
+  const SwitchModel(
+    title: '免登录1080P',
+    subtitle: '免登录查看1080P视频',
+    leading: Icon(Icons.hd_outlined),
+    setKey: SettingBoxKey.p1080,
+    defaultVal: true,
+  ),
+  NormalModel(
+    title: 'B站定向流量支持',
+    subtitle: '若套餐含B站定向流量，则会自动使用。可查阅运营商的流量记录确认。',
+    leading: const Icon(Icons.perm_data_setting_outlined),
+    getTrailing: (theme) => IgnorePointer(
+      child: Transform.scale(
+        scale: 0.8,
+        alignment: Alignment.centerRight,
+        child: Switch(
+          value: true,
+          onChanged: (_) {},
+          thumbIcon: WidgetStateProperty.all(
+            const Icon(Icons.lock_outline_rounded),
+          ),
+        ),
+      ),
+    ),
+  ),
   NormalModel(
     title: 'CDN 设置',
     leading: const Icon(MdiIcons.cloudPlusOutline),
@@ -59,41 +91,6 @@ List<SettingsModel> get cdnSettings => [
     setKey: SettingBoxKey.disableAudioCDN,
     defaultVal: false,
     onChanged: (value) => VideoUtils.disableAudioCDN = value,
-  ),
-];
-
-List<SettingsModel> get videoSettings => [
-  const SwitchModel(
-    title: '开启硬解',
-    subtitle: '以较低功耗播放视频，若异常卡死请关闭',
-    leading: Icon(Icons.flash_on_outlined),
-    setKey: SettingBoxKey.enableHA,
-    defaultVal: true,
-  ),
-  const SwitchModel(
-    title: '免登录1080P',
-    subtitle: '免登录查看1080P视频',
-    leading: Icon(Icons.hd_outlined),
-    setKey: SettingBoxKey.p1080,
-    defaultVal: true,
-  ),
-  NormalModel(
-    title: 'B站定向流量支持',
-    subtitle: '若套餐含B站定向流量，则会自动使用。可查阅运营商的流量记录确认。',
-    leading: const Icon(Icons.perm_data_setting_outlined),
-    getTrailing: (theme) => IgnorePointer(
-      child: Transform.scale(
-        scale: 0.8,
-        alignment: Alignment.centerRight,
-        child: Switch(
-          value: true,
-          onChanged: (_) {},
-          thumbIcon: WidgetStateProperty.all(
-            const Icon(Icons.lock_outline_rounded),
-          ),
-        ),
-      ),
-    ),
   ),
   NormalModel(
     title: '默认画质',
@@ -149,6 +146,12 @@ List<SettingsModel> get videoSettings => [
     getSubtitle: () =>
         '首选解码格式：${(Pref.preferCodecsCellular.map((i) => i.name).join(","))}，请根据设备支持情况与需求调整',
     onTap: _showCellularCodecsDialog,
+  ),
+  NormalModel(
+    title: 'PC 网络状态联动判断',
+    subtitle: '按有线或 Wi-Fi 状态联动画质、音质与编码偏好，并可设置网络高峰期',
+    leading: const Icon(Icons.lan_outlined),
+    onTap: (_, _) => Get.toNamed('/networkPolicy'),
   ),
   if (kDebugMode || Platform.isAndroid)
     NormalModel(

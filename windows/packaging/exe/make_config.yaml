@@ -2,7 +2,7 @@ script_template: inno_setup.iss
 # AppId 的值唯一标识此应用。
 # 不要在其他应用的安装程序中使用相同的 AppId 值。
 app_id: 5ef970f9-2b9e-4155-b7d6-a9d4dbd6b226
-publisher: dom
+publisher: 哥哥科技
 publisher_url: https://github.com/ucxn/Bili.Libre.Speed
 display_name: PiliPlus
 # create_desktop_icon: true

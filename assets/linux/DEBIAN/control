@@ -13,3 +13,4 @@ Depends: libgtk-3-0t64,
          libmpv2,
          gir1.2-ayatanaappindicator3-0.1,
          libayatana-appindicator3-1
+

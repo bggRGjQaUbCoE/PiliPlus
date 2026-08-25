@@ -377,6 +377,9 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
     int index,
     ({int warmup, int max}) limits,
   ) async {
+    // DNS is measured first and separately. All timers used by latency probes
+    // and throughput measurement start only after this await returns, so DNS
+    // time is never part of first-byte/header latency or bandwidth denominators.
     final dns = await _resolveDns(url);
     final probes = await _measureLatencyProbes(url, index, limits.max);
     _CdnSpeedSample sample;
@@ -455,7 +458,7 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
           break;
         }
       } catch (_) {
-        // 单次探测失败不影响主测速；结果页会保留成功样本数。
+        // 单次探测失败不影响主测速；详细诊断会保留成功样本数。
       } finally {
         if (identical(_tokens[index], token)) _tokens[index] = null;
       }
@@ -673,7 +676,11 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
           .toSet()
           .toList(growable: false);
       watch.stop();
-      return (addresses: addresses, elapsedUs: watch.elapsedMicroseconds, error: null);
+      return (
+        addresses: addresses,
+        elapsedUs: watch.elapsedMicroseconds,
+        error: null,
+      );
     } catch (e) {
       watch.stop();
       return (
@@ -693,7 +700,7 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
     final profile = ConnectivityUtils.current;
     final metrics = sample.hasError ? null : sample.metrics;
     return {
-      'schemaVersion': 1,
+      'schemaVersion': 2,
       'recordedAtUs': DateTime.now().microsecondsSinceEpoch,
       'testRunStartedAtUs': _testRunStartedAtUs,
       'cdn': {
@@ -777,6 +784,7 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
           'maxRate': metrics.maxRate,
           'standardDeviation': metrics.standardDeviation,
           'variance': metrics.variance,
+          'coefficientOfVariation': metrics.coefficientOfVariation,
           'absoluteJitter': metrics.absoluteJitter,
           'relativeJitter': metrics.relativeJitter,
           'rollingLow': metrics.rollingLow,
@@ -787,10 +795,18 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
           'gap500ms': metrics.gap500ms,
           'gap1000ms': metrics.gap1000ms,
           'latencySamplesUs': metrics.latencySamples,
+          'latencyMinUs': metrics.latencyMinUs,
+          'latencyMaxUs': metrics.latencyMaxUs,
+          'latencyP02Us': metrics.latencyP02Us,
+          'latencyP05Us': metrics.latencyP05Us,
+          'latencyP50Us': metrics.latencyP50Us,
+          'latencyP95Us': metrics.latencyP95Us,
+          'latencyP98Us': metrics.latencyP98Us,
           'latencyMeanUs': metrics.latencyMeanUs,
           'latencyStdUs': metrics.latencyStdUs,
           'latencyVariance': metrics.latencyVariance,
           'latencyJitterUs': metrics.latencyJitterUs,
+          'stabilityScore': metrics.stabilityScore,
         },
     };
   }
@@ -850,47 +866,63 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
         final bSample = _cdnResList[b.index].value;
         double score(_CdnSpeedSample? sample) {
           if (sample == null || sample.hasError) return double.negativeInfinity;
-          final metrics = sample.metrics;
-          return metrics.p05 /
-              (1 + metrics.relativeJitter + metrics.latencyMeanUs / 1000000 + metrics.maxGapUs / 1000000);
+          return sample.metrics.stabilityScore;
         }
+
         return score(bSample).compareTo(score(aSample));
       });
     _tempValues
       ..clear()
-      ..addEntries(selected.indexed.map((item) => MapEntry(item.$2, item.$1 + 1)));
+      ..addEntries(
+        selected.indexed.map((item) => MapEntry(item.$2, item.$1 + 1)),
+      );
     setState(() {});
   }
 
-  void _showDiagnosticDetails(BuildContext context, CDNService cdn, _CdnSpeedSample sample) {
+  void _showDiagnosticDetails(
+    BuildContext context,
+    CDNService cdn,
+    _CdnSpeedSample sample,
+  ) {
     final metrics = sample.metrics;
     final rows = [
-      '测试模式：${sample.type.name}；总接收 ${(sample.downloaded / 1048576).toStringAsPrecision(4)} MiB',
-      '测量区间：${_duration(sample.elapsedUs)}；固定 250ms 窗口样本：${metrics.segmentRates.length}',
-      '平均带宽：${_rate(sample, sample.averageRate)}',
+      '测试模式：${sample.type.name}；源主机：${sample.sourceHost.isEmpty ? "未知" : sample.sourceHost}',
+      '总接收：${(sample.downloaded / 1048576).toStringAsPrecision(4)} MiB；有效测量区间：${_duration(sample.elapsedUs)}',
+      '固定窗口：${_CdnMetrics.windowUs ~/ 1000} ms；窗口样本：${metrics.segmentRates.length}',
+      '平均带宽（计时不含前置 DNS）：${_rate(sample, sample.averageRate)}',
       '固定窗口最低／最高：${_rate(sample, metrics.minRate)} ／ ${_rate(sample, metrics.maxRate)}',
       'P02／P05／P50：${_rate(sample, metrics.p02)} ／ ${_rate(sample, metrics.p05)} ／ ${_rate(sample, metrics.p50)}',
       'P95／P98：${_rate(sample, metrics.p95)} ／ ${_rate(sample, metrics.p98)}',
-      'P95−P05 极差：${_rate(sample, metrics.p95 - metrics.p05)}',
-      'P98−P02 极差：${_rate(sample, metrics.p98 - metrics.p02)}',
-      '滚动带宽最低／最高：${_rate(sample, metrics.rollingLow)} ／ ${_rate(sample, metrics.rollingHigh)}',
-      '带宽趋势：${(metrics.trendPercent * 100).toStringAsPrecision(3)}%（后段相对前段）',
-      '带宽标准差：${_rate(sample, metrics.standardDeviation)}；方差 ${(metrics.variance / (sample.divisor * sample.divisor)).toStringAsPrecision(4)}',
-      '带宽抖动：${_rate(sample, metrics.absoluteJitter)}；相对 ${(metrics.relativeJitter * 100).toStringAsPrecision(3)}%',
-      '最大传输空窗：${_duration(metrics.maxGapUs)}；≥250/500/1000ms：${metrics.gap250ms}/${metrics.gap500ms}/${metrics.gap1000ms}',
-      'DNS 查询：${_ms(sample.dnsLookupUs)}；首包等待（不含 DNS）：${_ms(sample.firstByteUs)}；响应头（不含 DNS）：${sample.headersUs == null ? "—" : _ms(sample.headersUs!)}',
-      '首包样本：${metrics.latencySamples.length}；平均 ${_ms(metrics.latencyMeanUs)}；标准差 ${_ms(metrics.latencyStdUs)}；方差 ${(metrics.latencyVariance / 1000000).toStringAsPrecision(4)} ms²；抖动 ${_ms(metrics.latencyJitterUs)}',
-      '计算方法：原始累计字节按固定 250ms 时间边界插值取样；带宽抖动为相邻固定窗口速率差的绝对值平均；相对抖动 = 带宽抖动 ÷ 平均带宽。首包抖动按相邻首包等待差的绝对值平均计算。',
-      '综合排序优先看 P05 低谷带宽，再同时扣除相对抖动、首包等待与最大传输空窗；它只调整当前列表顺序，不会自动改写播放优先级。',
+      '去极端 5%（P95−P05）带宽极差：${_rate(sample, metrics.p95 - metrics.p05)}',
+      '去极端 2%（P98−P02）带宽极差：${_rate(sample, metrics.p98 - metrics.p02)}',
+      '1 秒滚动带宽最低／最高：${_rate(sample, metrics.rollingLow)} ／ ${_rate(sample, metrics.rollingHigh)}',
+      '前后段趋势：${(metrics.trendPercent * 100).toStringAsPrecision(3)}%',
+      '带宽标准差：${_rate(sample, metrics.standardDeviation)}；变异系数 CV：${(metrics.coefficientOfVariation * 100).toStringAsPrecision(3)}%',
+      '带宽方差：${(metrics.variance / (sample.divisor * sample.divisor)).toStringAsPrecision(5)} ${sample.unit}²',
+      '带宽绝对抖动：${_rate(sample, metrics.absoluteJitter)}；相对抖动：${(metrics.relativeJitter * 100).toStringAsPrecision(3)}%',
+      '抖动公式：J = mean(|Rᵢ − Rᵢ₋₁|)；相对抖动 = J ÷ mean(R)',
+      '最大传输空窗：${_duration(metrics.maxGapUs)}；≥250/500/1000 ms：${metrics.gap250ms}/${metrics.gap500ms}/${metrics.gap1000ms}',
+      'DNS 查询：${_ms(sample.dnsLookupUs)}${sample.dnsError == null ? "" : "（异常）"}',
+      '主请求响应头／首包（均不含前置 DNS）：${sample.headersUs == null ? "—" : _ms(sample.headersUs!)} ／ ${_ms(sample.firstByteUs)}',
+      '首包探测样本：${metrics.latencySamples.length}；最低／最高：${_ms(metrics.latencyMinUs)} ／ ${_ms(metrics.latencyMaxUs)}',
+      '首包 P02／P05／P50：${_ms(metrics.latencyP02Us)} ／ ${_ms(metrics.latencyP05Us)} ／ ${_ms(metrics.latencyP50Us)}',
+      '首包 P95／P98：${_ms(metrics.latencyP95Us)} ／ ${_ms(metrics.latencyP98Us)}',
+      '去极端 5%（P95−P05）延迟极差：${_ms(metrics.latencyP95Us - metrics.latencyP05Us)}',
+      '去极端 2%（P98−P02）延迟极差：${_ms(metrics.latencyP98Us - metrics.latencyP02Us)}',
+      '首包平均：${_ms(metrics.latencyMeanUs)}；标准差：${_ms(metrics.latencyStdUs)}；方差 ${(metrics.latencyVariance / 1000000).toStringAsPrecision(5)} ms²',
+      '首包抖动：${_ms(metrics.latencyJitterUs)}；公式同样为相邻样本绝对差的平均值',
+      '综合稳定分（仅用于本次相对排序，越高越好）：${(metrics.stabilityScore / sample.divisor).toStringAsPrecision(4)}',
+      '综合排序以 P05 低谷带宽为主，同时惩罚带宽抖动、CV、P95 首包延迟与最大传输空窗；不会自动改写播放优先级。',
       if (sample.resolvedIps.isNotEmpty) 'DNS 地址：${sample.resolvedIps.join("，")}',
       if (sample.dnsError case final error?) 'DNS 预解析异常：$error',
     ];
-    showDialog(
+
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('${cdn.desc} · 详细诊断'),
         content: SizedBox(
-          width: 620,
+          width: 720,
           child: SingleChildScrollView(
             child: SelectableText(rows.join('\n\n')),
           ),
@@ -950,10 +982,18 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('P05 ${_rate(sample!, metrics.p05)} · P50 ${_rate(sample, metrics.p50)} · P95 ${_rate(sample, metrics.p95)}'),
-                        Text('抖动 ${(metrics.relativeJitter * 100).toStringAsPrecision(3)}% · 最大空窗 ${_duration(metrics.maxGapUs)}'),
+                        Text(
+                          'P05 ${_rate(sample!, metrics.p05)} · P50 ${_rate(sample, metrics.p50)} · P95 ${_rate(sample, metrics.p95)}',
+                        ),
+                        Text(
+                          '带宽抖动 ${(metrics.relativeJitter * 100).toStringAsPrecision(3)}% · 首包抖动 ${_ms(metrics.latencyJitterUs)}',
+                        ),
+                        Text(
+                          '最大空窗 ${_duration(metrics.maxGapUs)} · 稳定分 ${(metrics.stabilityScore / sample.divisor).toStringAsPrecision(4)}',
+                        ),
                         TextButton.icon(
-                          onPressed: () => _showDiagnosticDetails(context, cdn, sample),
+                          onPressed: () =>
+                              _showDiagnosticDetails(context, cdn, sample),
                           icon: const Icon(Icons.analytics_outlined, size: 18),
                           label: const Text('详细诊断'),
                         ),
@@ -1018,7 +1058,9 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
                     final dnsUs = (sample['dnsLookupUs'] as num?) ?? 0;
                     final firstByteUs = (sample['firstByteUs'] as num?) ?? 0;
                     return ListTile(
-                      title: Text('${cdn['description'] ?? cdn['name'] ?? "CDN"} · $timestamp'),
+                      title: Text(
+                        '${cdn['description'] ?? cdn['name'] ?? "CDN"} · $timestamp',
+                      ),
                       subtitle: Text(
                         error == null
                             ? 'DNS ${_ms(dnsUs)} · 首包 ${_ms(firstByteUs)}'
@@ -1038,7 +1080,9 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
                                   IconButton(
                                     tooltip: '复制本条记录',
                                     onPressed: () => Clipboard.setData(
-                                      ClipboardData(text: encoder.convert(record)),
+                                      ClipboardData(
+                                        text: encoder.convert(record),
+                                      ),
                                     ),
                                     icon: const Icon(Icons.copy_outlined),
                                   ),
@@ -1078,20 +1122,27 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
           children: [
             const Padding(
               padding: EdgeInsets.fromLTRB(18, 12, 18, 4),
-              child: Text('按编号依次尝试；当前 CDN 打不开时自动回退到下一项。DNS、首包等待、固定时间窗带宽抖动与百分位均按单个 CDN 独立计算。'),
+              child: Text(
+                '按编号依次尝试；当前 CDN 打不开时自动回退到下一项。DNS 独立计时；首包、响应头与带宽计时均从 DNS 完成后开始，不把 DNS 耗时计入分母。固定 250ms 时间窗带宽、抖动、方差、百分位和传输空窗均按单个 CDN 独立计算。',
+              ),
             ),
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) => GridView.builder(
                   padding: const EdgeInsets.all(12),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: constraints.maxWidth >= 760 ? 2 : 1,
-                    childAspectRatio: constraints.maxWidth >= 760 ? 2.35 : 2.7,
+                    crossAxisCount: 2,
+                    childAspectRatio: constraints.maxWidth >= 900
+                        ? 2.2
+                        : constraints.maxWidth >= 600
+                        ? 1.35
+                        : 0.86,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
                   ),
                   itemCount: _testOrder.length,
-                  itemBuilder: (context, index) => _buildCdnCard(context, _testOrder[index]),
+                  itemBuilder: (context, index) =>
+                      _buildCdnCard(context, _testOrder[index]),
                 ),
               ),
             ),
@@ -1168,17 +1219,16 @@ class _CdnSpeedSample {
     this.dnsLookupUs = 0,
     this.dnsError,
     this.resolvedIps = const [],
-  })
-    : bytes = 0,
-      elapsedUs = 1,
-      firstByteUs = 0,
-      headersUs = null,
-      downloaded = 0,
-      sampleStartBytes = 0,
-      measurementStartUs = 0,
-      points = const [],
-      probes = const [],
-      type = _CdnSpeedSampleType.fallback;
+  }) : bytes = 0,
+       elapsedUs = 1,
+       firstByteUs = 0,
+       headersUs = null,
+       downloaded = 0,
+       sampleStartBytes = 0,
+       measurementStartUs = 0,
+       points = const [],
+       probes = const [],
+       type = _CdnSpeedSampleType.fallback;
 
   final int bytes;
   final int elapsedUs;
@@ -1197,13 +1247,15 @@ class _CdnSpeedSample {
   final String? errorMessage;
 
   bool get hasError => errorMessage != null;
-  int get divisor => type == _CdnSpeedSampleType.fallback ? 1000000 : 1048576;
+  int get divisor =>
+      type == _CdnSpeedSampleType.fallback ? 1000000 : 1048576;
   String get unit => switch (type) {
     _CdnSpeedSampleType.complete => 'MiB/s',
     _CdnSpeedSampleType.partial => 'M/s',
     _CdnSpeedSampleType.fallback => 'MB/s',
   };
-  double get averageRate => bytes * Duration.microsecondsPerSecond / elapsedUs;
+  double get averageRate =>
+      bytes * Duration.microsecondsPerSecond / elapsedUs;
   late final metrics = _CdnMetrics.from(this);
 }
 
@@ -1221,6 +1273,7 @@ class _CdnMetrics {
     required this.maxRate,
     required this.standardDeviation,
     required this.variance,
+    required this.coefficientOfVariation,
     required this.relativeJitter,
     required this.rollingLow,
     required this.rollingHigh,
@@ -1231,10 +1284,18 @@ class _CdnMetrics {
     required this.gap500ms,
     required this.gap1000ms,
     required this.latencySamples,
+    required this.latencyMinUs,
+    required this.latencyMaxUs,
+    required this.latencyP02Us,
+    required this.latencyP05Us,
+    required this.latencyP50Us,
+    required this.latencyP95Us,
+    required this.latencyP98Us,
     required this.latencyMeanUs,
     required this.latencyStdUs,
     required this.latencyVariance,
     required this.latencyJitterUs,
+    required this.stabilityScore,
   });
 
   final List<double> segmentRates;
@@ -1247,6 +1308,7 @@ class _CdnMetrics {
   final double maxRate;
   final double standardDeviation;
   final double variance;
+  final double coefficientOfVariation;
   final double relativeJitter;
   final double rollingLow;
   final double rollingHigh;
@@ -1257,15 +1319,24 @@ class _CdnMetrics {
   final int gap500ms;
   final int gap1000ms;
   final List<int> latencySamples;
+  final double latencyMinUs;
+  final double latencyMaxUs;
+  final double latencyP02Us;
+  final double latencyP05Us;
+  final double latencyP50Us;
+  final double latencyP95Us;
+  final double latencyP98Us;
   final double latencyMeanUs;
   final double latencyStdUs;
   final double latencyVariance;
   final double latencyJitterUs;
+  final double stabilityScore;
 
   factory _CdnMetrics.from(_CdnSpeedSample sample) {
     final activePoints = sample.points
         .where((point) => point.elapsedUs >= sample.measurementStartUs)
         .toList(growable: false);
+
     var previousTime = sample.measurementStartUs;
     var previousBytes = sample.sampleStartBytes;
     var maxGapUs = 0;
@@ -1289,6 +1360,7 @@ class _CdnMetrics {
       var pointIndex = 0;
       var leftTime = sample.measurementStartUs;
       var leftBytes = sample.sampleStartBytes.toDouble();
+
       double bytesAt(int targetUs) {
         while (pointIndex < activePoints.length &&
             activePoints[pointIndex].elapsedUs < targetUs) {
@@ -1299,8 +1371,8 @@ class _CdnMetrics {
         if (pointIndex >= activePoints.length) return leftBytes;
         final right = activePoints[pointIndex];
         if (right.elapsedUs == leftTime) return right.bytes.toDouble();
-        final fraction = (targetUs - leftTime) /
-            (right.elapsedUs - leftTime);
+        final fraction =
+            (targetUs - leftTime) / (right.elapsedUs - leftTime);
         return leftBytes + (right.bytes - leftBytes) * fraction;
       }
 
@@ -1320,66 +1392,75 @@ class _CdnMetrics {
       }
     }
     if (rates.isEmpty) rates.add(sample.averageRate);
+
     final sorted = List<double>.of(rates)..sort();
-    final mean = rates.reduce((a, b) => a + b) / rates.length;
-    final variance = rates
-            .map((rate) {
-              final delta = rate - mean;
-              return delta * delta;
-            })
-            .reduce((a, b) => a + b) /
-        rates.length;
-    final absoluteJitter = rates.length < 2
-        ? 0.0
-        : List<double>.generate(
-                rates.length - 1,
-                (index) => (rates[index + 1] - rates[index]).abs(),
-              ).reduce((a, b) => a + b) /
-            (rates.length - 1);
+    final mean = _mean(rates);
+    final variance = _variance(rates, mean);
+    final standardDeviation = math.sqrt(variance);
+    final absoluteJitter = _meanAbsoluteDifference(rates);
+    final coefficientOfVariation =
+        mean == 0 ? 0.0 : standardDeviation / mean;
+    final relativeJitter = mean == 0 ? 0.0 : absoluteJitter / mean;
+
     final latency = [
       for (final probe in sample.probes) probe.firstByteUs,
       if (sample.probes.isEmpty) sample.firstByteUs,
     ];
-    final latencyMean = latency.reduce((a, b) => a + b) / latency.length;
-    final latencyVariance = latency
-            .map((value) {
-              final delta = value - latencyMean;
-              return delta * delta;
-            })
-            .reduce((a, b) => a + b) /
-        latency.length;
-    final latencyJitter = latency.length < 2
-        ? 0.0
-        : List<double>.generate(
-                latency.length - 1,
-                (index) => (latency[index + 1] - latency[index]).abs().toDouble(),
-              ).reduce((a, b) => a + b) /
-            (latency.length - 1);
+    final latencySorted = latency.map((e) => e.toDouble()).toList()..sort();
+    final latencyMean = _mean(latencySorted);
+    final latencyVariance = _variance(latencySorted, latencyMean);
+    final latencyStd = math.sqrt(latencyVariance);
+    final latencyJitter = _meanAbsoluteDifference(
+      latency.map((e) => e.toDouble()).toList(),
+    );
+
     final rolling = <double>[];
     const rollingWindowCount = 1000000 ~/ windowUs;
     for (var index = rollingWindowCount; index <= rates.length; index++) {
       final window = rates.sublist(index - rollingWindowCount, index);
-      rolling.add(window.reduce((a, b) => a + b) / window.length);
+      rolling.add(_mean(window));
     }
     if (rolling.isEmpty) rolling.addAll(rates);
+
     final split = rates.length ~/ 2 == 0 ? 1 : rates.length ~/ 2;
-    final early = rates.take(split).reduce((a, b) => a + b) / split;
+    final early = _mean(rates.take(split).toList());
     final lateRates = rates.skip(split).toList();
-    final late = lateRates.isEmpty
-        ? early
-        : lateRates.reduce((a, b) => a + b) / lateRates.length;
+    final late = lateRates.isEmpty ? early : _mean(lateRates);
+
+    final p02 = _percentile(sorted, 0.02);
+    final p05 = _percentile(sorted, 0.05);
+    final p50 = _percentile(sorted, 0.50);
+    final p95 = _percentile(sorted, 0.95);
+    final p98 = _percentile(sorted, 0.98);
+    final latencyP02 = _percentile(latencySorted, 0.02);
+    final latencyP05 = _percentile(latencySorted, 0.05);
+    final latencyP50 = _percentile(latencySorted, 0.50);
+    final latencyP95 = _percentile(latencySorted, 0.95);
+    final latencyP98 = _percentile(latencySorted, 0.98);
+
+    // 相对排序分：以 P05 低谷吞吐为主，惩罚带宽波动、
+    // 高尾延迟和长传输空窗。只用于当前测速后的排序，不参与播放决策。
+    final stabilityPenalty =
+        1 +
+        relativeJitter * 2 +
+        coefficientOfVariation +
+        latencyP95 / 500000 +
+        maxGapUs / 1000000;
+    final stabilityScore = p05 / stabilityPenalty;
+
     return _CdnMetrics._(
       segmentRates: rates,
-      p02: _percentile(sorted, 0.02),
-      p05: _percentile(sorted, 0.05),
-      p50: _percentile(sorted, 0.50),
-      p95: _percentile(sorted, 0.95),
-      p98: _percentile(sorted, 0.98),
+      p02: p02,
+      p05: p05,
+      p50: p50,
+      p95: p95,
+      p98: p98,
       minRate: sorted.first,
       maxRate: sorted.last,
-      standardDeviation: math.sqrt(variance),
+      standardDeviation: standardDeviation,
       variance: variance,
-      relativeJitter: mean == 0 ? 0 : absoluteJitter / mean,
+      coefficientOfVariation: coefficientOfVariation,
+      relativeJitter: relativeJitter,
       rollingLow: rolling.reduce((a, b) => a < b ? a : b),
       rollingHigh: rolling.reduce((a, b) => a > b ? a : b),
       trendPercent: early == 0 ? 0 : late / early - 1,
@@ -1389,11 +1470,40 @@ class _CdnMetrics {
       gap500ms: gap500ms,
       gap1000ms: gap1000ms,
       latencySamples: latency,
+      latencyMinUs: latencySorted.first,
+      latencyMaxUs: latencySorted.last,
+      latencyP02Us: latencyP02,
+      latencyP05Us: latencyP05,
+      latencyP50Us: latencyP50,
+      latencyP95Us: latencyP95,
+      latencyP98Us: latencyP98,
       latencyMeanUs: latencyMean,
-      latencyStdUs: math.sqrt(latencyVariance),
+      latencyStdUs: latencyStd,
       latencyVariance: latencyVariance,
       latencyJitterUs: latencyJitter,
+      stabilityScore: stabilityScore,
     );
+  }
+
+  static double _mean(List<double> values) =>
+      values.reduce((a, b) => a + b) / values.length;
+
+  static double _variance(List<double> values, double mean) =>
+      values
+          .map((value) {
+            final delta = value - mean;
+            return delta * delta;
+          })
+          .reduce((a, b) => a + b) /
+      values.length;
+
+  static double _meanAbsoluteDifference(List<double> values) {
+    if (values.length < 2) return 0;
+    var sum = 0.0;
+    for (var index = 1; index < values.length; index++) {
+      sum += (values[index] - values[index - 1]).abs();
+    }
+    return sum / (values.length - 1);
   }
 
   static double _percentile(List<double> values, double p) {
@@ -1401,6 +1511,7 @@ class _CdnMetrics {
     final position = (values.length - 1) * p;
     final lower = position.floor();
     final upper = position.ceil();
-    return values[lower] + (values[upper] - values[lower]) * (position - lower);
+    return values[lower] +
+        (values[upper] - values[lower]) * (position - lower);
   }
 }

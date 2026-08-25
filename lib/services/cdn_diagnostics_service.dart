@@ -1,6 +1,8 @@
 import 'package:PiliPlus/utils/storage.dart';
 
 abstract final class CdnDiagnosticsService {
+  // Manual CDN diagnostics are intentionally append-only with no age/count/size
+  // pruning. Records live until the user explicitly clears app data/storage.
   static const _prefix = 'cdnDiagnostic:';
   static int _sequence = 0;
 
@@ -10,7 +12,7 @@ abstract final class CdnDiagnosticsService {
     try {
       await GStorage.video.put(key, record);
     } catch (_) {
-      // Diagnostics must never interfere with the speed test itself.
+      // 诊断记录失败绝不能反过来影响测速本身。
     }
   }
 

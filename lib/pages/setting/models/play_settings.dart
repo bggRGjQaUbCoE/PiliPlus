@@ -39,6 +39,12 @@ List<SettingsModel> get playSettings => [
       setKey: SettingBoxKey.enableTapDm,
       defaultVal: true,
     ),
+  NormalModel(
+    onTap: (context, setState) => Get.toNamed('/playSpeedSet'),
+    leading: const Icon(Icons.speed_outlined),
+    title: '倍速设置',
+    subtitle: '设置视频播放速度',
+  ),
   if (Platform.isAndroid)
     NormalModel(
       onTap: _showAngleDegreesDialog,

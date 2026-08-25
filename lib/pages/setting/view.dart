@@ -179,7 +179,34 @@ class _SettingPageState extends State<SettingPage> {
       padding: EdgeInsets.only(bottom: padding.bottom + 100),
       children: [
         _buildSearchItem(theme),
-        _buildEngineerEntrypoints(theme, titleStyle, subTitleStyle),
+        ListTile(
+          onTap: () => Get.toNamed('/playSpeedSet'),
+          leading: const Icon(Icons.speed_outlined),
+          title: Text('倍速设置', style: titleStyle),
+          subtitle: Text(
+            '默认/长按倍速、滑动临时倍速与倍速统计',
+            style: subTitleStyle,
+          ),
+        ),
+        ListTile(
+          onTap: () => Get.toNamed('/cdnSettings'),
+          leading: const Icon(MdiIcons.cloudOutline),
+          title: Text('CDN 设置', style: titleStyle),
+          subtitle: Text(
+            '宽带/蜂窝优先级、测速与工程网络诊断',
+            style: subTitleStyle,
+          ),
+        ),
+        ListTile(
+          onTap: () => Get.toNamed('/networkPolicy'),
+          leading: const Icon(Icons.lan_outlined),
+          title: Text('PC 网络联动状态', style: titleStyle),
+          subtitle: Text(
+            '当前网卡、链路、RSSI、运营商与等效网络判定',
+            style: subTitleStyle,
+          ),
+        ),
+        const Divider(height: 1),
         ..._items
             .take(_items.length - 1)
             .map(
@@ -216,37 +243,6 @@ class _SettingPageState extends State<SettingPage> {
       ],
     );
   }
-
-  Widget _buildEngineerEntrypoints(
-    ThemeData theme,
-    TextStyle titleStyle,
-    TextStyle subTitleStyle,
-  ) => Column(
-    children: [
-      ListTile(
-        leading: const Icon(Icons.speed_outlined),
-        title: Text('倍速设置', style: titleStyle),
-        subtitle: Text('默认、长按与倍速统计', style: subTitleStyle),
-        onTap: () => Get.toNamed('/playSpeedSet'),
-      ),
-      ListTile(
-        leading: const Icon(MdiIcons.cloudPlusOutline),
-        title: Text('CDN 设置', style: titleStyle),
-        subtitle: Text('优先级、测速与回退策略', style: subTitleStyle),
-        onTap: () => Get.toNamed('/cdnSettings'),
-      ),
-      ListTile(
-        leading: const Icon(Icons.lan_outlined),
-        title: Text('PC 网络状态联动判断', style: titleStyle),
-        subtitle: Text('等效宽带、等效移网与网络高峰期', style: subTitleStyle),
-        onTap: () => Get.toNamed('/networkPolicy'),
-      ),
-      Divider(
-        height: 1,
-        color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
-      ),
-    ],
-  );
 
   Future<void> _logoutDialog(BuildContext context) async {
     final result = await showDialog<Set<LoginAccount>>(

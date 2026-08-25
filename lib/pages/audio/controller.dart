@@ -16,6 +16,7 @@ import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart'
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/models/common/network_profile.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart'
     show FavMixin;
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
@@ -80,6 +81,9 @@ class AudioController extends GetxController
   late final AnimationController animController;
 
   List<StreamSubscription>? _subscriptions;
+  StreamSubscription<NetworkPolicyChange>? _networkPolicySubscription;
+  bool _queryingPlayUrl = false;
+  bool _pendingNetworkReload = false;
 
   int? index;
   List<DetailItem>? playlist;
@@ -157,8 +161,14 @@ class AudioController extends GetxController
       _querySponsorBlock();
       _onOpenMedia(audioUrl, ua: BrowserUa.pc, referer: HttpString.baseUrl);
     }
-    ConnectivityUtils.isWiFi.then((isWiFi) {
-      cacheAudioQa = isWiFi ? Pref.defaultAudioQa : Pref.defaultAudioQaCellular;
+    ConnectivityUtils.resolveForPlayback().then((profile) {
+      if (isClosed) return;
+      cacheAudioQa = profile.useCellularPreferences
+          ? Pref.defaultAudioQaCellular
+          : Pref.defaultAudioQa;
+      _networkPolicySubscription = ConnectivityUtils.changes.listen(
+        _onNetworkPolicyChanged,
+      );
       if (!hasAudioUrl) {
         _queryPlayUrl();
       }
@@ -266,23 +276,35 @@ class AudioController extends GetxController
     }
   }
 
-  Future<bool> _queryPlayUrl() async {
-    _querySponsorBlock();
-    final res = await AudioGrpc.audioPlayUrl(
-      itemType: itemType,
-      oid: oid,
-      subId: subId,
-    );
-    if (res case Success(:final response)) {
-      _onPlay(response);
-      return true;
-    } else {
-      res.toast();
+  Future<bool> _queryPlayUrl({bool autoplay = true}) async {
+    if (_queryingPlayUrl) {
       return false;
+    }
+    _queryingPlayUrl = true;
+    try {
+      _querySponsorBlock();
+      final res = await AudioGrpc.audioPlayUrl(
+        itemType: itemType,
+        oid: oid,
+        subId: subId,
+      );
+      if (res case Success(:final response)) {
+        await _onPlay(response, autoplay: autoplay);
+        return true;
+      } else {
+        res.toast();
+        return false;
+      }
+    } finally {
+      _queryingPlayUrl = false;
+      if (_pendingNetworkReload) {
+        _pendingNetworkReload = false;
+        await _reloadForNetworkPolicy();
+      }
     }
   }
 
-  void _onPlay(PlayURLResp data) {
+  Future<void> _onPlay(PlayURLResp data, {bool autoplay = true}) async {
     final PlayInfo? playInfo = data.playerInfo.values.firstOrNull;
     if (playInfo != null) {
       if (playInfo.hasPlayDash()) {
@@ -291,12 +313,15 @@ class AudioController extends GetxController
         if (audios.isEmpty) {
           return;
         }
-        position.value = 0;
+        if (_start == null) position.value = 0;
         final audio = audios.findClosestTarget(
           (e) => e.id <= cacheAudioQa,
           (a, b) => a.id > b.id ? a : b,
         );
-        _onOpenMedia(VideoUtils.getCdnUrl(audio.playUrls));
+        await _onOpenMedia(
+          VideoUtils.getCdnUrl(audio.playUrls),
+          autoplay: autoplay,
+        );
       } else if (playInfo.hasPlayUrl()) {
         final playUrl = playInfo.playUrl;
         final durls = playUrl.durl;
@@ -304,8 +329,11 @@ class AudioController extends GetxController
           return;
         }
         final durl = durls.first;
-        position.value = 0;
-        _onOpenMedia(VideoUtils.getCdnUrl(durl.playUrls));
+        if (_start == null) position.value = 0;
+        await _onOpenMedia(
+          VideoUtils.getCdnUrl(durl.playUrls),
+          autoplay: autoplay,
+        );
       }
     }
   }
@@ -314,16 +342,38 @@ class AudioController extends GetxController
     String url, {
     String ua = Constants.userAgentApp,
     String? referer,
+    bool autoplay = true,
   }) async {
     await _initPlayerIfNeeded();
-    player
-      ?..setMediaHeader(
+    final player = this.player;
+    if (player != null) {
+      player.setMediaHeader(
         userAgent: ua,
         // mpv cannot clear referer option
         headers: {'Referer': ?referer},
-      )
-      ..open(Media(url, start: _start));
+      );
+      await player.open(Media(url, start: _start), play: autoplay);
+    }
     _start = null;
+  }
+
+  Future<void> _onNetworkPolicyChanged(NetworkPolicyChange change) async {
+    if (change.reason != NetworkPolicyReason.network || isClosed) return;
+    cacheAudioQa = change.profile.useCellularPreferences
+        ? Pref.defaultAudioQaCellular
+        : Pref.defaultAudioQa;
+    if (_queryingPlayUrl) {
+      _pendingNetworkReload = true;
+      return;
+    }
+    await _reloadForNetworkPolicy();
+  }
+
+  Future<void> _reloadForNetworkPolicy() async {
+    final player = this.player;
+    if (player == null) return;
+    _start = player.state.position;
+    await _queryPlayUrl(autoplay: player.state.playing);
   }
 
   Future<void> _initPlayerIfNeeded() async {
@@ -773,6 +823,8 @@ class AudioController extends GetxController
     _subscriptions?.forEach((e) => e.cancel());
     _subscriptions?.clear();
     _subscriptions = null;
+    _networkPolicySubscription?.cancel();
+    _networkPolicySubscription = null;
     player?.dispose();
     player = null;
     animController.dispose();

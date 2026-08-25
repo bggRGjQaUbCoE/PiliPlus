@@ -7,9 +7,11 @@ import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/retry_interceptor.dart';
 import 'package:PiliPlus/http/user.dart';
+import 'package:PiliPlus/models/common/network_profile.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/accounts/account_manager/account_mgr.dart';
+import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -248,7 +250,15 @@ class Request {
         return status != null && status >= 200 && status < 300;
       };
 
-    if (Platform.isIOS) _watchConnectivity();
+    if (Platform.isIOS) {
+      _watchConnectivity();
+    } else {
+      ConnectivityUtils.changes.listen((change) {
+        if (change.reason == NetworkPolicyReason.network) {
+          _resetAdaptersForNetworkChange();
+        }
+      });
+    }
   }
 
   /*

@@ -568,6 +568,9 @@ abstract final class PlaybackStatsService {
     _lastPositionUs = positionUs;
   }
 
+  // A trailing pause is provisional: if playback resumes, it remains pause time.
+  // Only when this media session ends without any later resume do we
+  // retrospectively classify that final pause as comment-area time.
   static void _clearTrailingPause() {
     _trailingPauseUs = 0;
     _trailingNormalPauseUs = 0;
@@ -576,6 +579,9 @@ abstract final class PlaybackStatsService {
     _trailingRewindPauseBySpeed.clear();
   }
 
+  // Called only when the current CID/BV lifecycle is being finalized.
+  // Because updatePlaying(true) clears the trailing-pause accumulator, any
+  // duration reaching here is exactly: paused, then never played again.
   static void _reclassifyTrailingPauseAsComment() {
     if (_trailingPauseUs == 0) return;
     _add('pausedUs', -_trailingPauseUs);
@@ -683,7 +689,6 @@ abstract final class PlaybackStatsService {
     }
     _rewind = null;
     _pendingPositionUs = null;
-    _clearTrailingPause();
   }
 
   static Map<String, dynamic> snapshot() {
@@ -828,7 +833,6 @@ abstract final class PlaybackStatsService {
     };
     _rewind = null;
     _pendingPositionUs = null;
-    _clearTrailingPause();
     _dirty = true;
     _appLastWallUs = _clock.elapsedMicroseconds;
     if (_active) {

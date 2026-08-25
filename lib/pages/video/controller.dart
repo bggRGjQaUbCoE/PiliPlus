@@ -121,7 +121,6 @@ class VideoDetailController extends GetxController
   final Rxn<VideoQuality> currentVideoQa = Rxn<VideoQuality>();
   AudioQuality? currentAudioQa;
   late VideoDecodeFormatType currentDecodeFormats;
-  var _codecFallbackToastShown = false;
 
   String? get streamSizeAndBitrate {
     if (!videoState.value) return null;
@@ -1011,16 +1010,6 @@ class VideoDetailController extends GetxController
       (video) => currentDecodeFormats.codes.any(video.codecs!.startsWith),
       orElse: () => videos.first,
     );
-    if (!_codecFallbackToastShown &&
-        !preferCodecs.any(
-          (format) => format.codes.any(firstVideo.codecs!.startsWith),
-        )) {
-      _codecFallbackToastShown = true;
-      SmartDialog.showToast(
-        '首选解码格式均不可用，已回退到 ${currentDecodeFormats.name}',
-        displayTime: const Duration(seconds: 3),
-      );
-    }
     _setVideoHeight();
     videoUrl = _getCdnUrl(firstVideo.playUrls);
 

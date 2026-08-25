@@ -700,7 +700,7 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
 
   static final _id_updateDocProvider = _class.staticMethodId(
     r'updateDocProvider',
-    r'(JZ)V',
+    r'(Z)V',
   );
 
   static final _updateDocProvider =
@@ -709,7 +709,7 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
               jni$_.JThrowablePtr Function(
                 jni$_.Pointer<jni$_.Void>,
                 jni$_.JMethodIDPtr,
-                jni$_.VarArgs<(jni$_.Int64, jni$_.Int32)>,
+                jni$_.VarArgs<(jni$_.Int32,)>,
               )
             >
           >('globalEnv_CallStaticVoidMethod')
@@ -718,20 +718,17 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
               jni$_.Pointer<jni$_.Void>,
               jni$_.JMethodIDPtr,
               core$_.int,
-              core$_.int,
             )
           >();
 
-  /// from: `static public void updateDocProvider(long engineId, boolean enabled)`
+  /// from: `static public void updateDocProvider(boolean enabled)`
   static void updateDocProvider(
-    core$_.int engineId,
     core$_.bool enabled,
   ) {
     final _$$classRef = _class.reference;
     _updateDocProvider(
       _$$classRef.pointer,
       _id_updateDocProvider.pointer,
-      engineId,
       enabled ? 1 : 0,
     ).check();
   }

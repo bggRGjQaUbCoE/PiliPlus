@@ -46,7 +46,7 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/update.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart' show kDebugMode, PlatformDispatcher;
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -80,7 +80,7 @@ List<SettingsModel> get extraSettings => [
       leading: const Icon(Icons.storage),
       setKey: SettingBoxKey.enableDocProvider,
       defaultVal: Pref.enableDocProvider,
-      onChanged: _onDocProviderChanged,
+      onChanged: AndroidHelper.updateDocProvider,
     ),
   SplitModel(
     normalModel: const NormalModel.split(
@@ -1203,8 +1203,4 @@ void _showCacheDialog(BuildContext context, VoidCallback setState) {
       ],
     ),
   );
-}
-
-void _onDocProviderChanged(bool value) {
-  AndroidHelper.updateDocProvider(PlatformDispatcher.instance.engineId!, value);
 }

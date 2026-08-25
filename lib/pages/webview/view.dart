@@ -1,5 +1,7 @@
 import 'dart:io' show Platform;
 
+import 'package:PiliPlus/common/widgets/route_aware_mixin.dart'
+    show routeObserver;
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/models/common/webview_menu_type.dart';
@@ -48,7 +50,7 @@ class WebviewPage extends StatefulWidget {
       : WebViewController();
 }
 
-class _WebviewPageState extends State<WebviewPage> {
+class _WebviewPageState extends State<WebviewPage> with RouteAware {
   late final String _url;
   late final RxString _title;
   late final RxDouble _progress = 1.0.obs;
@@ -178,7 +180,25 @@ class _WebviewPageState extends State<WebviewPage> {
       }
     }
 
+    if (isFloating) {
+      routeObserver.subscribe(this, Get.routing.route as GetPageRoute);
+    }
+
     _initPage();
+  }
+
+  @override
+  void didPushNext() {
+    (_controller.platform as WindowsPlatformWebViewController).controller
+        .setVisibility(false);
+    super.didPushNext();
+  }
+
+  @override
+  void didPopNext() {
+    (_controller.platform as WindowsPlatformWebViewController).controller
+        .setVisibility(true);
+    super.didPopNext();
   }
 
   @pragma('vm:prefer-inline')
@@ -348,6 +368,9 @@ class _WebviewPageState extends State<WebviewPage> {
 
   @override
   void dispose() {
+    if (isFloating) {
+      routeObserver.unsubscribe(this);
+    }
     if (_controller.platform case WindowsPlatformWebViewController ctr) {
       ctr.dispose();
     }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:PiliPlus/common/skeleton/video_reply.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -12,7 +14,6 @@ import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -144,33 +145,32 @@ class _NoteListPageState extends State<NoteListPage>
               ),
             ),
           ),
-          child: Builder(
-            builder: (context) => FilledButton.tonal(
-              style: FilledButton.styleFrom(
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                padding: EdgeInsets.zero,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(6)),
-                ),
-              ),
-              onPressed: () {
-                if (!Accounts.main.isLogin) {
-                  SmartDialog.showToast('账号未登录');
-                  return;
-                }
-                MiniScaffold.of(context).showBottomSheet(
-                  constraints: const BoxConstraints(),
-                  (context) => WebviewPage(
-                    oid: widget.oid,
-                    title: widget.title,
-                    url:
-                        'https://www.bilibili.com/h5/note-app?oid=${widget.oid}&pagefrom=ugcvideo&is_stein_gate=${widget.isStein ? 1 : 0}',
+          child: Accounts.main.isLogin
+              ? Builder(
+                  builder: (context) => FilledButton.tonal(
+                    style: FilledButton.styleFrom(
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      padding: EdgeInsets.zero,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(6)),
+                      ),
+                    ),
+                    onPressed: () {
+                      MiniScaffold.of(context).showBottomSheet(
+                        enableDrag: !Platform.isWindows && !Platform.isLinux,
+                        constraints: const BoxConstraints(),
+                        (context) => WebviewPage(
+                          oid: widget.oid,
+                          title: widget.title,
+                          url:
+                              'https://www.bilibili.com/h5/note-app?oid=${widget.oid}&pagefrom=ugcvideo&is_stein_gate=${widget.isStein ? 1 : 0}',
+                        ),
+                      );
+                    },
+                    child: const Text('开始记笔记'),
                   ),
-                );
-              },
-              child: const Text('开始记笔记'),
-            ),
-          ),
+                )
+              : null,
         ),
       ],
     );

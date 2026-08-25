@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:PiliPlus/pages/article/view.dart';
 import 'package:PiliPlus/pages/article_list/view.dart';
 import 'package:PiliPlus/pages/audio/view.dart';
@@ -65,6 +67,7 @@ import 'package:PiliPlus/pages/sponsor_block/view.dart';
 import 'package:PiliPlus/pages/subscription/view.dart';
 import 'package:PiliPlus/pages/subscription_detail/view.dart';
 import 'package:PiliPlus/pages/video/view.dart';
+import 'package:PiliPlus/pages/webview/placeholder_view.dart';
 import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/pages/whisper/view.dart';
 import 'package:PiliPlus/pages/whisper_detail/view.dart';
@@ -80,7 +83,12 @@ class Routes {
     // 视频详情
     GetPage(name: '/videoV', page: () => const VideoDetailPageV()),
     //
-    GetPage(name: '/webview', page: () => const WebviewPage()),
+    GetPage(
+      name: '/webview',
+      page: () => Platform.isLinux
+          ? const PlaceholderWebviewPage()
+          : const WebviewPage(),
+    ),
     // 设置
     GetPage(name: '/setting', page: () => const SettingPage()),
     //

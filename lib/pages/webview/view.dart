@@ -2,7 +2,6 @@ import 'dart:io' show Platform;
 
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart'
     show routeObserver;
-import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/models/common/webview_menu_type.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
@@ -25,7 +24,6 @@ class WebviewPage extends StatefulWidget {
     this.url,
     this.oid,
     this.title,
-    this.userAgent,
   });
 
   final String? url;
@@ -33,7 +31,6 @@ class WebviewPage extends StatefulWidget {
   // note
   final int? oid;
   final String? title;
-  final String? userAgent;
 
   @override
   State<WebviewPage> createState() => _WebviewPageState();
@@ -72,13 +69,11 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
     final parameters = Get.parameters;
     _url = (widget.url ?? parameters['url']!).http2https;
     _title = _url.obs;
-    final userAgent =
-        widget.userAgent ??
-        switch (parameters['uaType']) {
-          'pc' => BrowserUa.pc,
-          'mob' => BrowserUa.mob,
-          _ => BrowserUa.platform,
-        };
+    final userAgent = switch (parameters['uaType']) {
+      'pc' => BrowserUa.pc,
+      'mob' => BrowserUa.mob,
+      _ => BrowserUa.platform,
+    };
     if (Get.arguments case final Map map) {
       _inApp = map['inApp'] ?? false;
       _off = map['off'] ?? false;
@@ -210,10 +205,10 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
     if (url.startsWith('https://www.bilibili.com/h5/note-app')) {
       _controller.runJavaScript("""
         document.querySelector('.finish-btn')?.addEventListener('click', function() {
-          finishButtonClicked.postMessage('click');
+          finishButtonClicked.postMessage('');
         });
         document.querySelector('.info-bar')?.addEventListener('click', function() {
-          infoBarClicked.postMessage('click');
+          infoBarClicked.postMessage('');
         });
       """);
     } else if (url.startsWith('https://live.bilibili.com')) {
@@ -282,18 +277,6 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
-    if (Platform.isLinux) {
-      return SimpleScaffold(
-        appBar: AppBar(),
-        body: Center(
-          child: TextButton(
-            onPressed: () => PageUtils.launchURL(_url),
-            child: const Text('unsupported'),
-          ),
-        ),
-      );
-    }
-
     Widget title = Obx(
       () => Text(
         _title.value.isNotEmpty ? _title.value : _url,

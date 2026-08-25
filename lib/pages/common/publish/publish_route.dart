@@ -10,13 +10,11 @@ class PublishRoute<T> extends PopupRoute<T> {
     Duration? transitionDuration,
     this._transitionBuilder,
     super.settings,
-  }) {
-    this.transitionDuration =
-        transitionDuration ??
-        (PlatformUtils.isDesktop
-            ? const Duration(milliseconds: 400)
-            : const Duration(milliseconds: 500));
-  }
+  }) : transitionDuration =
+           transitionDuration ??
+           (PlatformUtils.isDesktop
+               ? const Duration(milliseconds: 400)
+               : const Duration(milliseconds: 500));
 
   final RoutePageBuilder pageBuilder;
 
@@ -30,7 +28,7 @@ class PublishRoute<T> extends PopupRoute<T> {
   final Color barrierColor;
 
   @override
-  late final Duration transitionDuration;
+  final Duration transitionDuration;
 
   final RouteTransitionsBuilder? _transitionBuilder;
 

@@ -360,6 +360,8 @@ class PlPlayerController with WidgetsBindingObserver, BlockConfigMixin {
 
   bool _pauseDueToIOSBackgroundMode = false;
   bool _restoreVideoTrackDueToIOSBackgroundMode = false;
+  VideoTrack? _videoTrackBeforeIOSBackgroundMode;
+  Future<void> _iosLifecycleOperation = Future<void>.value();
 
   late int? cacheVideoQa = PlatformUtils.isMobile ? null : Pref.defaultVideoQa;
   late int cacheAudioQa = Pref.defaultAudioQa;
@@ -575,15 +577,31 @@ class PlPlayerController with WidgetsBindingObserver, BlockConfigMixin {
     switch (state) {
       case AppLifecycleState.paused:
       case AppLifecycleState.detached:
-        unawaited(_handleIOSBackground());
+        _scheduleIOSLifecycleOperation(_handleIOSBackground);
         break;
       case AppLifecycleState.resumed:
-        unawaited(_handleIOSForeground());
+        _scheduleIOSLifecycleOperation(_handleIOSForeground);
         break;
       case AppLifecycleState.inactive:
       case AppLifecycleState.hidden:
         break;
     }
+  }
+
+  void _scheduleIOSLifecycleOperation(Future<void> Function() operation) {
+    final previousOperation = _iosLifecycleOperation;
+    _iosLifecycleOperation = () async {
+      await previousOperation;
+      try {
+        await operation();
+      } catch (err, stack) {
+        if (kDebugMode) {
+          debugPrint('handle iOS player lifecycle failed: $err');
+          debugPrint(stack.toString());
+        }
+      }
+    }();
+    unawaited(_iosLifecycleOperation);
   }
 
   Future<void> _handleIOSBackground() async {
@@ -592,15 +610,30 @@ class PlPlayerController with WidgetsBindingObserver, BlockConfigMixin {
       return;
     }
 
-    if (!continuePlayInBackground.value && player.state.playing) {
+    final shouldPause = !continuePlayInBackground.value && player.state.playing;
+    final shouldDisableVideoTrack =
+        hwdec != null &&
+        !onlyPlayAudio.value &&
+        !_restoreVideoTrackDueToIOSBackgroundMode;
+
+    // Record all restoration state before the first await. Otherwise a quick
+    // foreground transition can observe incomplete state while pause() is still
+    // running, then the background task disables the video track afterwards.
+    if (shouldPause) {
       _pauseDueToIOSBackgroundMode = true;
-      await player.pause();
+    }
+    if (shouldDisableVideoTrack) {
+      _restoreVideoTrackDueToIOSBackgroundMode = true;
+      _videoTrackBeforeIOSBackgroundMode = player.state.track.video;
     }
 
-    if (hwdec != null &&
-        !onlyPlayAudio.value &&
-        !_restoreVideoTrackDueToIOSBackgroundMode) {
-      _restoreVideoTrackDueToIOSBackgroundMode = true;
+    if (shouldPause) {
+      await player.pause();
+    }
+    if (!identical(player, _videoPlayerController)) {
+      return;
+    }
+    if (shouldDisableVideoTrack) {
       await player.setVideoTrack(VideoTrack.no());
     }
   }
@@ -608,42 +641,48 @@ class PlPlayerController with WidgetsBindingObserver, BlockConfigMixin {
   Future<void> _handleIOSForeground() async {
     final player = _videoPlayerController;
     if (player == null) {
-      _pauseDueToIOSBackgroundMode = false;
-      _restoreVideoTrackDueToIOSBackgroundMode = false;
+      _clearIOSBackgroundRestorationState();
       return;
     }
 
     final shouldResumePlay = _pauseDueToIOSBackgroundMode;
     final shouldRestoreVideoTrack = _restoreVideoTrackDueToIOSBackgroundMode;
-    _pauseDueToIOSBackgroundMode = false;
-    _restoreVideoTrackDueToIOSBackgroundMode = false;
+    final videoTrack = _videoTrackBeforeIOSBackgroundMode;
+    _clearIOSBackgroundRestorationState();
 
     if (shouldResumePlay || shouldRestoreVideoTrack) {
-      await _restoreIOSHardwareDecoder(player);
+      _restoreIOSHardwareDecoder(player);
     }
 
+    if (!identical(player, _videoPlayerController)) {
+      return;
+    }
     if (shouldRestoreVideoTrack && !onlyPlayAudio.value) {
-      await player.setVideoTrack(VideoTrack.auto());
+      await player.setVideoTrack(videoTrack ?? VideoTrack.auto());
     }
 
-    if (shouldResumePlay) {
+    if (shouldResumePlay && identical(player, _videoPlayerController)) {
       await player.play();
     }
   }
 
-  Future<void> _restoreIOSHardwareDecoder(Player player) async {
-    if (hwdec == null || onlyPlayAudio.value) {
+  void _clearIOSBackgroundRestorationState() {
+    _pauseDueToIOSBackgroundMode = false;
+    _restoreVideoTrackDueToIOSBackgroundMode = false;
+    _videoTrackBeforeIOSBackgroundMode = null;
+  }
+
+  void _restoreIOSHardwareDecoder(Player player) {
+    final hardwareDecoder = hwdec;
+    if (hardwareDecoder == null || onlyPlayAudio.value) {
       return;
     }
 
     try {
-      final result = (player as dynamic).setProperty(
-        'hwdec',
-        'videotoolbox',
-      );
-      if (result is Future) {
-        await result;
-      }
+      // Restore the same decoder policy used to create VideoController instead
+      // of forcing a different value. Re-enabling the video track below then
+      // recreates the decoder with this policy.
+      player.setProperty('hwdec', hardwareDecoder);
     } catch (err, stack) {
       if (kDebugMode) {
         debugPrint('restore iOS hwdec failed: $err');

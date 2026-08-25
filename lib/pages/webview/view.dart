@@ -88,7 +88,7 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
               selfHandle: true,
               off: _off,
             )) {
-          if (!isFloating) _progress.value = 1;
+          if (!Platform.isWindows) _progress.value = 1;
           return NavigationDecision.prevent;
         }
 
@@ -108,7 +108,7 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
               );
             }
           }
-          if (!isFloating) _progress.value = 1;
+          if (!Platform.isWindows) _progress.value = 1;
           return .prevent;
         }
         return .navigate;
@@ -308,7 +308,7 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
                     )
                   : null,
               title: title,
-              bottom: isFloating
+              bottom: Platform.isWindows
                   ? null
                   : PreferredSize(
                       preferredSize: Size.zero,

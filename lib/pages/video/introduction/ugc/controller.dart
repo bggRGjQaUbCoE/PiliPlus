@@ -28,6 +28,7 @@ import 'package:PiliPlus/pages/video/related/controller.dart';
 import 'package:PiliPlus/pages/video/reply/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/services/service_locator.dart';
+import 'package:PiliPlus/services/playback_stats_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
@@ -112,6 +113,11 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
           ..isPageReversed = videoDetail.value.isPageReversed;
       }
       videoDetail.value = response;
+      PlaybackStatsService.setVideoUpUid(
+        cid: cid.value,
+        videoUpUid: response.owner?.mid,
+        videoUpName: response.owner?.name,
+      );
       try {
         if (videoDetailCtr.cover.value.isEmpty ||
             (videoDetailCtr.videoUrl.isNullOrEmpty &&
@@ -151,15 +157,16 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       if (res.data['code'] == 0) {
         staffRelations.addAll({'status': true, ...?res.data['data']});
       }
-    } else {
-      final mid = videoDetail.value.owner?.mid;
-      if (mid == null) {
-        return;
-      }
-      final res = await MemberHttp.memberCardInfo(mid: mid);
-      if (res case Success(:final response)) {
-        userStat.value = response;
-      }
+    }
+    final mid = videoDetail.value.owner?.mid;
+    if (mid == null) {
+      return;
+    }
+    final res = await MemberHttp.memberCardInfo(mid: mid);
+    if (res case Success(:final response)
+        when videoDetail.value.owner?.mid == mid) {
+      userStat.value = response;
+      unawaited(videoDetailCtr.applyPendingSubtitleFollowerPreference());
     }
   }
 

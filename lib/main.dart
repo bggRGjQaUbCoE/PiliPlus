@@ -14,9 +14,12 @@ import 'package:PiliPlus/router/app_pages.dart';
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/services/logger.dart';
+import 'package:PiliPlus/services/playback_stats_service.dart';
+import 'package:PiliPlus/services/traffic_stats_service.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/calc_window_position.dart';
+import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/core_palettes_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
@@ -99,12 +102,15 @@ void main() async {
     if (kDebugMode) debugPrint('GStorage init error: $e');
     exit(0);
   }
+  PlaybackStatsService.initializeAppLifecycle();
   ScaledWidgetsFlutterBinding.instance.scaleFactor = Pref.uiScale;
   await Future.wait([
     _initDownPath(),
     _initTmpPath(),
     CacheManager.ensureInitialized(),
   ]);
+  await ConnectivityUtils.initialize();
+  await TrafficStatsService.instance.initialize();
   Get
     ..lazyPut(AccountService.new)
     ..lazyPut(DownloadService.new);

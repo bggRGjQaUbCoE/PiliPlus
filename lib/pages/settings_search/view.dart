@@ -32,6 +32,7 @@ class _SettingsSearchPageState
     ...extraSettings,
     ...privacySettings,
     ...recommendSettings,
+    ...cdnSettings,
     ...videoSettings,
     ...playSettings,
     ...styleSettings,

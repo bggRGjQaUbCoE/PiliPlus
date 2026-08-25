@@ -457,7 +457,7 @@ abstract final class PageUtils {
     } else {
       Get.offOrToNamed(
         '/webview',
-        parameters: {'url': url, ...?parameters},
+        parameters: {'url': url.http2https, ...?parameters},
         preventDuplicates: off,
         off: off,
       );

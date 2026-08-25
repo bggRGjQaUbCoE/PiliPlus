@@ -1,12 +1,20 @@
 import 'package:PiliPlus/models/common/video/cdn_type.dart';
 import 'package:PiliPlus/models/common/video/video_decode_type.dart';
 import 'package:PiliPlus/models_new/live/live_room_play_info/codec.dart';
+import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 
 abstract final class VideoUtils {
-  static CDNService cdnService = Pref.defaultCDNService;
+  static List<CDNService> get cdnServices => Pref.defaultCDNServices;
+  static List<CDNService> get cdnServicesCellular =>
+      Pref.defaultCDNServicesCellular;
+  static List<CDNService> get effectiveCdnServices =>
+      ConnectivityUtils.current?.useCellularPreferences == true
+      ? cdnServicesCellular
+      : cdnServices;
+  static CDNService get cdnService => effectiveCdnServices.first;
   static String? liveCdnUrl = Pref.liveCdnUrl;
   static bool disableAudioCDN = Pref.disableAudioCDN;
 

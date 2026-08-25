@@ -28,7 +28,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.piliplus"
+        applicationId = "org.BroTech.gege.piliplus"
         minSdk = flutter.minSdkVersion
         targetSdk = 37
         versionCode = flutter.versionCode
@@ -66,11 +66,10 @@ android {
         }
         release {
             if (project.hasProperty("dev")) {
-                applicationIdSuffix = ".dev"
                 resValue(
                     type = "string",
                     name = "app_name",
-                    value = "PiliPlus dev",
+                    value = "PiliPlus",
                 )
             }
 //            proguardFiles(

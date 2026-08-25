@@ -66,7 +66,7 @@ abstract final class Update {
                       Text('${data['body']}'),
                       TextButton(
                         onPressed: () => PageUtils.launchURL(
-                          '${Constants.sourceCodeUrl}/commits/main',
+                          '${Constants.sourceCodeUrl}/commits/${Constants.sourceBranch}',
                         ),
                         child: Text(
                           "点此查看完整更新(即commit)内容",

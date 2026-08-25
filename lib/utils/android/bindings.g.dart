@@ -252,6 +252,63 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
     return _sdkInt(_$$classRef.pointer, _id_sdkInt.pointer).integer;
   }
 
+  static final _id_networkInfo = _class.staticMethodId(
+    r'networkInfo',
+    r'()[I',
+  );
+
+  static final _networkInfo =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallStaticObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `static public int[] networkInfo()`
+  /// The returned object must be released after use, by calling the [release] method.
+  static jni$_.JIntArray? networkInfo() {
+    final _$$classRef = _class.reference;
+    return _networkInfo(
+      _$$classRef.pointer,
+      _id_networkInfo.pointer,
+    ).object<jni$_.JIntArray?>();
+  }
+
+  static final _id_networkOperator = _class.staticMethodId(
+    r'networkOperator',
+    r'()Ljava/lang/String;',
+  );
+
+  static jni$_.JString? networkOperator() {
+    final _$$classRef = _class.reference;
+    return _networkInfo(
+      _$$classRef.pointer,
+      _id_networkOperator.pointer,
+    ).object<jni$_.JString?>();
+  }
+
+  static final _id_trafficStats = _class.staticMethodId(
+    r'trafficStats',
+    r'()[J',
+  );
+
+  static jni$_.JLongArray? trafficStats() {
+    final _$$classRef = _class.reference;
+    return _networkInfo(
+      _$$classRef.pointer,
+      _id_trafficStats.pointer,
+    ).object<jni$_.JLongArray?>();
+  }
+
   static final _id_back = _class.staticMethodId(
     r'back',
     r'()V',

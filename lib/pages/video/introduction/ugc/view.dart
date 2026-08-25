@@ -283,6 +283,18 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
         style: TextStyle(fontSize: 14, color: colorScheme.secondary),
       ),
     ),
+    Obx(() {
+      final metrics = videoDetailCtr.streamSizeAndBitrate;
+      return metrics == null
+          ? const SizedBox.shrink()
+          : Padding(
+              padding: const .only(top: 4),
+              child: Text(
+                '当前视频流：$metrics',
+                style: TextStyle(fontSize: 13, color: colorScheme.outline),
+              ),
+            );
+    }),
     if (videoDetail.descV2 case final descV2? when descV2.isNotEmpty) ...[
       const SizedBox(height: 8),
       SelectionText.rich(

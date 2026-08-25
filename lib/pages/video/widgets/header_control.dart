@@ -502,21 +502,39 @@ class HeaderControlState extends State<HeaderControl>
                     title: const Text('CDN 设置', style: titleStyle),
                     leading: const Icon(MdiIcons.cloudPlusOutline, size: 20),
                     subtitle: Text(
-                      '当前：${VideoUtils.cdnService.desc}，无法播放请切换',
+                      '当前：${VideoUtils.effectiveCdnServices.map((item) => item.desc).join(" → ")}',
                       style: subTitleStyle,
                     ),
                     onTap: () async {
                       Get.back();
-                      final result = await showDialog<CDNService>(
+                      final profile = await ConnectivityUtils.resolveForPlayback();
+                      if (!context.mounted) return;
+                      final cellular = profile.useCellularPreferences;
+                      final speedConfig = Pref.cdnSpeedTest
+                          ? await showCdnSpeedConfigDialog(context)
+                          : null;
+                      if (Pref.cdnSpeedTest && speedConfig == null ||
+                          !context.mounted) {
+                        return;
+                      }
+                      final result = await showDialog<List<CDNService>>(
                         context: context,
                         builder: (context) => CdnSelectDialog(
                           sample: videoInfo.dash?.video?.firstOrNull,
+                          initValues: cellular
+                              ? Pref.defaultCDNServicesCellular
+                              : Pref.defaultCDNServices,
+                          speedConfig: speedConfig,
                         ),
                       );
-                      if (result != null) {
-                        VideoUtils.cdnService = result;
-                        setting.put(SettingBoxKey.CDNService, result.name);
-                        SmartDialog.showToast('已设置为 ${result.desc}，正在重载视频');
+                      if (result != null && result.isNotEmpty) {
+                        await setting.put(
+                          cellular
+                              ? SettingBoxKey.CDNServicesCellular
+                              : SettingBoxKey.CDNServices,
+                          result.map((item) => item.name).toList(),
+                        );
+                        SmartDialog.showToast('CDN 优先级已更新，正在重载视频');
                         videoDetailCtr.queryVideoUrl(fromReset: true);
                       }
                     },
@@ -950,7 +968,7 @@ class HeaderControlState extends State<HeaderControl>
                     final isCurr = currentVideoQa.code == item.quality;
                     return ListTile(
                       dense: true,
-                      onTap: () async {
+                      onTap: () {
                         if (isCurr) {
                           return;
                         }
@@ -967,9 +985,11 @@ class HeaderControlState extends State<HeaderControl>
                         // update
                         if (!plPlayerController.tempPlayerConf) {
                           setting.put(
-                            await ConnectivityUtils.isWiFi
-                                ? SettingBoxKey.defaultVideoQa
-                                : SettingBoxKey.defaultVideoQaCellular,
+                            plPlayerController.playbackNetworkProfile
+                                        ?.useCellularPreferences ==
+                                    true
+                                ? SettingBoxKey.defaultVideoQaCellular
+                                : SettingBoxKey.defaultVideoQa,
                             quality,
                           );
                         }
@@ -1030,7 +1050,7 @@ class HeaderControlState extends State<HeaderControl>
                     final isCurr = currentAudioQa.code == item.id;
                     return ListTile(
                       dense: true,
-                      onTap: () async {
+                      onTap: () {
                         if (isCurr) {
                           return;
                         }
@@ -1047,9 +1067,11 @@ class HeaderControlState extends State<HeaderControl>
                         // update
                         if (!plPlayerController.tempPlayerConf) {
                           setting.put(
-                            await ConnectivityUtils.isWiFi
-                                ? SettingBoxKey.defaultAudioQa
-                                : SettingBoxKey.defaultAudioQaCellular,
+                            plPlayerController.playbackNetworkProfile
+                                        ?.useCellularPreferences ==
+                                    true
+                                ? SettingBoxKey.defaultAudioQaCellular
+                                : SettingBoxKey.defaultAudioQa,
                             quality,
                           );
                         }
@@ -1121,12 +1143,10 @@ class HeaderControlState extends State<HeaderControl>
                           final isCurr = curCodecs.any(item.startsWith);
                           return ListTile(
                             dense: true,
-                            onTap: () {
+                            onTap: () async {
                               if (isCurr) return;
                               Get.back();
-                              videoDetailCtr
-                                ..currentDecodeFormats = format
-                                ..updatePlayer();
+                              await videoDetailCtr.setDecodeFormat(format);
                               SmartDialog.showToast("解码已变为：${format.name}");
                             },
                             contentPadding: const .symmetric(horizontal: 20),

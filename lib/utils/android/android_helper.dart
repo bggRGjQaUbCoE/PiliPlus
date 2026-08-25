@@ -9,6 +9,63 @@ abstract final class PiliAndroidHelper {
   @pragma('vm:prefer-inline')
   static void back() => AndroidHelper.back();
 
+  static ({
+    int? linkSpeed,
+    int? rssi,
+    int? signalLevel,
+    int? downstreamKbps,
+    int? upstreamKbps,
+    int? networkType,
+    bool metered,
+    bool captivePortal,
+    bool congested,
+    bool bandwidthConstrained,
+    bool validated,
+    bool internet,
+    bool vpn,
+    bool roaming,
+    bool weakHint,
+  })? networkInfo() {
+    final info = AndroidHelper.networkInfo();
+    if (info == null) return null;
+    try {
+      final flags = info[3];
+      return (
+        linkSpeed: info[0] < 0 ? null : info[0],
+        rssi: info[1] <= -127 || info[1] > 0 ? null : info[1],
+        signalLevel: info[2] < 0 ? null : info[2],
+        downstreamKbps: info[4] <= 0 ? null : info[4],
+        upstreamKbps: info[5] <= 0 ? null : info[5],
+        networkType: info[6] < 0 ? null : info[6],
+        metered: flags & 1 != 0,
+        captivePortal: flags & 2 != 0,
+        congested: flags & 4 != 0,
+        bandwidthConstrained: flags & 8 != 0,
+        validated: flags & 16 != 0,
+        internet: flags & 32 != 0,
+        vpn: flags & 64 != 0,
+        roaming: flags & 128 != 0,
+        weakHint: flags & 14 != 0,
+      );
+    } finally {
+      info.release();
+    }
+  }
+
+  static String? networkOperator() => AndroidHelper.networkOperator()
+      ?.toDartString(releaseOriginal: true);
+
+  static ({int received, int sent})? trafficStats() {
+    final stats = AndroidHelper.trafficStats();
+    if (stats == null) return null;
+    try {
+      if (stats[0] < 0 || stats[1] < 0) return null;
+      return (received: stats[0], sent: stats[1]);
+    } finally {
+      stats.release();
+    }
+  }
+
   static void biliSendCommAntifraud(
     int action,
     int oid,

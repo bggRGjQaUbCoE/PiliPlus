@@ -12,9 +12,6 @@ try {
     $updatedContent = foreach ($line in (Get-Content -Path 'pubspec.yaml' -Encoding UTF8)) {
         if ($line -match '^\s*version:\s*([\d\.]+)') {
             $versionName = $matches[1]
-            if ($Arg -eq 'android') {
-                $versionName += '-' + $commitHash.Substring(0, 9)
-            }
             "version: $versionName+$versionCode"
         }
         else {

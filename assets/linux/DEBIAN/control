@@ -8,9 +8,8 @@ Architecture: amd64
 Essential: no
 Installed-Size: size_need_change
 Description: third-party Bilibili client developed in Flutter
-Homepage: https://github.com/bggRGjQaUbCoE/PiliPlus
+Homepage: https://github.com/ucxn/Bili.Libre.Speed
 Depends: libgtk-3-0t64,
          libmpv2,
          gir1.2-ayatanaappindicator3-0.1,
          libayatana-appindicator3-1
-

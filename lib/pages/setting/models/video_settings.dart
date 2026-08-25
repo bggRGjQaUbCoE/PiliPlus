@@ -22,6 +22,46 @@ import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
+List<SettingsModel> get cdnSettings => [
+  NormalModel(
+    title: 'CDN 设置',
+    leading: const Icon(MdiIcons.cloudPlusOutline),
+    getSubtitle: () =>
+        '依次使用：${Pref.defaultCDNServices.map((item) => item.desc).join(" → ")}',
+    onTap: (context, setState) =>
+        _showCDNDialog(context, setState, cellular: false),
+  ),
+  NormalModel(
+    title: '蜂窝网络 CDN 设置',
+    leading: const Icon(MdiIcons.cloudPlusOutline),
+    getSubtitle: () =>
+        '依次使用：${Pref.defaultCDNServicesCellular.map((item) => item.desc).join(" → ")}',
+    onTap: (context, setState) =>
+        _showCDNDialog(context, setState, cellular: true),
+  ),
+  NormalModel(
+    title: '直播 CDN 设置',
+    leading: const Icon(MdiIcons.cloudPlusOutline),
+    getSubtitle: () => '当前使用：${Pref.liveCdnUrl ?? "默认"}',
+    onTap: _showLiveCDNDialog,
+  ),
+  const SwitchModel(
+    title: 'CDN 测速',
+    leading: Icon(Icons.speed),
+    subtitle: '测速通过模拟加载视频实现，注意流量消耗，结果仅供参考',
+    setKey: SettingBoxKey.cdnSpeedTest,
+    defaultVal: true,
+  ),
+  SwitchModel(
+    title: '音频不跟随 CDN 设置',
+    subtitle: '直接采用备用 URL，可解决部分视频无声',
+    leading: const Icon(MdiIcons.musicNotePlus),
+    setKey: SettingBoxKey.disableAudioCDN,
+    defaultVal: false,
+    onChanged: (value) => VideoUtils.disableAudioCDN = value,
+  ),
+];
+
 List<SettingsModel> get videoSettings => [
   const SwitchModel(
     title: '开启硬解',
@@ -54,34 +94,6 @@ List<SettingsModel> get videoSettings => [
         ),
       ),
     ),
-  ),
-  NormalModel(
-    title: 'CDN 设置',
-    leading: const Icon(MdiIcons.cloudPlusOutline),
-    getSubtitle: () =>
-        '当前使用：${VideoUtils.cdnService.desc}，部分 CDN 可能失效，如无法播放请尝试切换',
-    onTap: _showCDNDialog,
-  ),
-  NormalModel(
-    title: '直播 CDN 设置',
-    leading: const Icon(MdiIcons.cloudPlusOutline),
-    getSubtitle: () => '当前使用：${Pref.liveCdnUrl ?? "默认"}',
-    onTap: _showLiveCDNDialog,
-  ),
-  const SwitchModel(
-    title: 'CDN 测速',
-    leading: Icon(Icons.speed),
-    subtitle: '测速通过模拟加载视频实现，注意流量消耗，结果仅供参考',
-    setKey: SettingBoxKey.cdnSpeedTest,
-    defaultVal: true,
-  ),
-  SwitchModel(
-    title: '音频不跟随 CDN 设置',
-    subtitle: '直接采用备用 URL，可解决部分视频无声',
-    leading: const Icon(MdiIcons.musicNotePlus),
-    setKey: SettingBoxKey.disableAudioCDN,
-    defaultVal: false,
-    onChanged: (value) => VideoUtils.disableAudioCDN = value,
   ),
   NormalModel(
     title: '默认画质',
@@ -160,9 +172,25 @@ List<SettingsModel> get videoSettings => [
     onTap: _showBufferSecDialog,
   ),
   NormalModel(
+    title: '蜂窝网络缓冲大小',
+    leading: const Icon(Icons.storage_outlined),
+    getSubtitle: () =>
+        '当前：${Pref.bufferSizeCellular}MB。等效移网播放时使用，与缓冲时长取先达到的一项',
+    onTap: _showCellularBufferSizeDialog,
+  ),
+  NormalModel(
+    title: '蜂窝网络缓冲时长',
+    leading: const Icon(Icons.av_timer),
+    getSubtitle: () =>
+        '当前：${Pref.bufferSecCellular}s。等效移网播放时使用，与缓冲大小取先达到的一项',
+    onTap: _showCellularBufferSecDialog,
+  ),
+  NormalModel(
     title: '自动同步',
     leading: const Icon(Icons.sync_rounded),
-    getSubtitle: () => '当前：${Pref.autosync}（此项即mpv的--autosync）',
+    getSubtitle: () => Pref.autosync == '0'
+        ? '当前：0，不向 mpv 传递 --autosync'
+        : '当前：${Pref.autosync}（此项即mpv的--autosync）',
     onTap: _showAutoSyncDialog,
   ),
   NormalModel(
@@ -179,14 +207,29 @@ List<SettingsModel> get videoSettings => [
   ),
 ];
 
-Future<void> _showCDNDialog(BuildContext context, VoidCallback setState) async {
-  final res = await showDialog<CDNService>(
+Future<void> _showCDNDialog(
+  BuildContext context,
+  VoidCallback setState, {
+  required bool cellular,
+}) async {
+  final speedConfig = Pref.cdnSpeedTest
+      ? await showCdnSpeedConfigDialog(context)
+      : null;
+  if (Pref.cdnSpeedTest && speedConfig == null || !context.mounted) return;
+  final res = await showDialog<List<CDNService>>(
     context: context,
-    builder: (context) => const CdnSelectDialog(),
+    builder: (context) => CdnSelectDialog(
+      initValues: cellular
+          ? Pref.defaultCDNServicesCellular
+          : Pref.defaultCDNServices,
+      speedConfig: speedConfig,
+    ),
   );
-  if (res != null) {
-    VideoUtils.cdnService = res;
-    await GStorage.setting.put(SettingBoxKey.CDNService, res.name);
+  if (res != null && res.isNotEmpty) {
+    await GStorage.setting.put(
+      cellular ? SettingBoxKey.CDNServicesCellular : SettingBoxKey.CDNServices,
+      res.map((item) => item.name).toList(),
+    );
     setState();
   }
 }
@@ -571,3 +614,27 @@ void _showBufferSecDialog(BuildContext context, VoidCallback setState) =>
       title: '缓冲时长',
       suffix: 's',
     );
+
+void _showCellularBufferSizeDialog(
+  BuildContext context,
+  VoidCallback setState,
+) => _showDecimalDialog(
+  context,
+  setState,
+  key: SettingBoxKey.bufferSizeCellular,
+  defVal: Pref.bufferSizeCellular,
+  title: '蜂窝网络缓冲大小',
+  suffix: 'MB',
+);
+
+void _showCellularBufferSecDialog(
+  BuildContext context,
+  VoidCallback setState,
+) => _showDecimalDialog(
+  context,
+  setState,
+  key: SettingBoxKey.bufferSecCellular,
+  defVal: Pref.bufferSecCellular,
+  title: '蜂窝网络缓冲时长',
+  suffix: 's',
+);

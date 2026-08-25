@@ -41,7 +41,6 @@ class LiveRoomChatPanel extends StatelessWidget {
     late final nameColor = isPP
         ? Colors.white.withValues(alpha: 0.9)
         : Colors.white.withValues(alpha: 0.6);
-    late final devicePixelRatio = MediaQuery.devicePixelRatioOf(context);
     late final colorScheme = ColorScheme.of(context);
     late final primary = colorScheme.isDark
         ? colorScheme.primary
@@ -119,7 +118,7 @@ class LiveRoomChatPanel extends StatelessWidget {
                                     ..onTap = () =>
                                         Get.toNamed('/member?mid=${reply.mid}'),
                                 ),
-                              _buildMsg(devicePixelRatio, item),
+                              _buildMsg(item),
                             ],
                           ),
                         ),
@@ -233,16 +232,16 @@ class LiveRoomChatPanel extends StatelessWidget {
     );
   }
 
-  InlineSpan _buildMsg(double devicePixelRatio, DanmakuMsg obj) {
+  InlineSpan _buildMsg(DanmakuMsg obj) {
     final uemote = obj.uemote;
     if (uemote != null) {
       // "room_{{room_id}}_{{int}}" , "upower_[{{emote}}]" , "official_{{int}}"
       final double width, height;
       if (uemote.isOfficial) {
-        width = uemote.width / devicePixelRatio;
-        height = uemote.height / devicePixelRatio;
+        width = uemote.width / 3;
+        height = uemote.height / 3;
       } else {
-        width = height = 162.0 / devicePixelRatio;
+        width = height = 54;
       }
       return WidgetSpan(
         child: NetworkImgLayer(

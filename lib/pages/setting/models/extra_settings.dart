@@ -519,7 +519,7 @@ List<SettingsModel> get extraSettings => [
     subtitle: '禁止打开入口，降低网络社交依赖',
     leading: Icon(Icons.beach_access_outlined),
     setKey: SettingBoxKey.disableLikeMsg,
-    defaultVal: false,
+    defaultVal: true,
   ),
   const SwitchModel(
     title: '默认展示评论区',
@@ -556,7 +556,7 @@ List<SettingsModel> get extraSettings => [
   NormalModel(
     title: '二级评论展示',
     leading: const Icon(Icons.subdirectory_arrow_right_outlined),
-    getSubtitle: () => '当前优先展示「${Pref.reply2SortType.title}」',
+    getSubtitle: () => '当前优先展示「${Pref.reply2SortType.reply2Title}」',
     onTap: _showReply2SortDialog,
   ),
   NormalModel(
@@ -1090,7 +1090,10 @@ Future<void> _showReply2SortDialog(
     builder: (context) => SelectDialog<ReplySortType>(
       title: '二级评论展示',
       value: Pref.reply2SortType,
-      values: ReplySortType.values.take(2).map((e) => (e, e.title)).toList(),
+      values: ReplySortType.values
+          .take(2)
+          .map((e) => (e, e.reply2Title))
+          .toList(),
     ),
   );
   if (res != null) {

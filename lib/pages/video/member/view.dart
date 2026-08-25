@@ -57,20 +57,10 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
     _controller = Get.put(
       HorizontalMemberPageController(
         mid: widget.mid,
-        currAid: widget.videoDetailController.aid.toString(),
       ),
       tag: widget.videoDetailController.heroTag,
     );
     _bvid = widget.videoDetailController.bvid;
-    if (_controller.loadingState.value
-        case Success<List<SpaceArchiveItem>?> res) {
-      final index = res.response?.indexWhere((e) => e.bvid == _bvid) ?? -1;
-      if (index != -1) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _controller.scrollController.jumpTo(112.0 * index);
-        });
-      }
-    }
   }
 
   @override
@@ -156,9 +146,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
   Widget _buildSortBtn() {
     return TextButton.icon(
       style: Style.buttonStyle,
-      onPressed: () => _controller
-        ..lastAid = widget.videoDetailController.aid.toString()
-        ..queryBySort(),
+      onPressed: _controller.queryBySort,
       icon: Icon(
         Icons.sort,
         size: 16,

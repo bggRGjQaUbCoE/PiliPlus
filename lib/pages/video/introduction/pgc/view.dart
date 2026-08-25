@@ -273,6 +273,15 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
           ),
           style: TextStyle(fontSize: 12, color: colorScheme.outline),
         ),
+        Obx(() {
+          final metrics = videoDetailCtr.streamSizeAndBitrate;
+          return metrics == null
+              ? const SizedBox.shrink()
+              : Text(
+                  '当前视频流：$metrics',
+                  style: TextStyle(fontSize: 12, color: colorScheme.outline),
+                );
+        }),
       ];
       Widget stat() => Wrap(
         spacing: 6,

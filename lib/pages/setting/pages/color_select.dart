@@ -2,6 +2,7 @@ import 'dart:io' show Platform;
 
 import 'package:PiliPlus/common/widgets/animated_height.dart';
 import 'package:PiliPlus/common/widgets/color_palette.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/main.dart' show MyApp;
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
@@ -18,7 +19,8 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:collection/collection.dart';
 import 'package:flex_seed_scheme/flex_seed_scheme.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kReleaseMode;
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
@@ -49,7 +51,9 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
     val ??= !ctr.dynamicColor.value;
     if (val && !await MyApp.initPlatformState()) {
       SmartDialog.showToast('设备可能不支持动态取色');
-      return;
+      if (kReleaseMode) {
+        return;
+      }
     }
     ctr.dynamicColor.value = val;
     await GStorage.setting.put(SettingBoxKey.dynamicColor, val);
@@ -67,10 +71,12 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
     final padding = MediaQuery.viewPaddingOf(
       context,
     ).copyWith(top: 0, bottom: 0);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return SimpleScaffold(
       appBar: AppBar(title: const Text('选择应用主题')),
       body: ListView(
+        padding: .only(
+          bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
+        ),
         children: [
           ListTile(
             onTap: () async {
@@ -79,7 +85,7 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
                 builder: (context) => SelectDialog<ThemeType>(
                   title: '主题模式',
                   value: ctr.themeType.value,
-                  values: ThemeType.values.map((e) => (e, e.desc)).toList(),
+                  values: ThemeType.values.map((e) => (e, e.label)).toList(),
                 ),
               );
               if (result != null) {
@@ -95,7 +101,7 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
             title: Text('主题模式', style: titleStyle),
             subtitle: Obx(
               () => Text(
-                '当前模式：${ctr.themeType.value.desc}',
+                '当前模式：${ctr.themeType.value.label}',
                 style: subTitleStyle,
               ),
             ),
@@ -138,8 +144,8 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
           Padding(
             padding: padding + const .all(12),
             child: Obx(
-              () => AnimatedHeight(
-                expand: ctr.dynamicColor.value,
+              () => AnimatedHeightWidgetExt(
+                expand: !ctr.dynamicColor.value,
                 duration: const Duration(milliseconds: 200),
                 child: Wrap(
                   alignment: .center,

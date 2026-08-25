@@ -1,5 +1,5 @@
 import 'package:PiliPlus/common/skeleton/skeleton.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class MsgFeedTopSkeleton extends StatelessWidget {
   const MsgFeedTopSkeleton({super.key});
@@ -18,7 +18,7 @@ class MsgFeedTopSkeleton extends StatelessWidget {
           ),
         ),
         title: UnconstrainedBox(
-          alignment: Alignment.centerLeft,
+          alignment: .centerLeft,
           child: Container(
             width: 100,
             height: 11,

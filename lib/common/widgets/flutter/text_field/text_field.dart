@@ -13,7 +13,6 @@ library;
 
 import 'dart:ui' as ui show BoxHeightStyle, BoxWidthStyle;
 
-import 'package:PiliPlus/common/widgets/flutter/text_field/adaptive_text_selection_toolbar.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/cupertino/spell_check_suggestions_toolbar.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/cupertino/text_field.dart';
@@ -22,7 +21,7 @@ import 'package:PiliPlus/common/widgets/flutter/text_field/spell_check.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/spell_check_suggestions_toolbar.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/system_context_menu.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/text_selection.dart';
-import 'package:flutter/cupertino.dart'
+import 'package:cupertino_ui/cupertino_ui.dart'
     hide
         EditableText,
         EditableTextState,
@@ -36,20 +35,19 @@ import 'package:flutter/cupertino.dart'
         TextSelectionGestureDetectorBuilderDelegate;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart'
+import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart'
     hide
         TextField,
         EditableText,
         EditableTextState,
         EditableTextContextMenuBuilder,
-        AdaptiveTextSelectionToolbar,
         SystemContextMenu,
         SpellCheckSuggestionsToolbar,
         SpellCheckConfiguration,
         TextSelectionGestureDetectorBuilder,
         TextSelectionOverlay,
         TextSelectionGestureDetectorBuilderDelegate;
-import 'package:flutter/services.dart';
 
 class _TextFieldSelectionGestureDetectorBuilder
     extends TextSelectionGestureDetectorBuilder {
@@ -299,7 +297,7 @@ class RichTextField extends StatefulWidget {
     this.scrollPadding = const EdgeInsets.all(20.0),
     this.dragStartBehavior = DragStartBehavior.start,
     bool? enableInteractiveSelection,
-    this.selectAllOnFocus,
+    this.selectAllOnFocus = false,
     this.selectionControls,
     this.onTap,
     this.onTapAlwaysCalled = false,
@@ -905,8 +903,9 @@ class RichTextField extends StatefulWidget {
         editableTextState: editableTextState,
       );
     }
-    return AdaptiveTextSelectionToolbar.editableText(
-      editableTextState: editableTextState,
+    return AdaptiveTextSelectionToolbar.buttonItems(
+      anchors: editableTextState.contextMenuAnchors,
+      buttonItems: editableTextState.contextMenuButtonItems,
     );
   }
 

@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
@@ -18,9 +19,9 @@ import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class PgcReviewChildPage extends StatefulWidget {
   const PgcReviewChildPage({
@@ -88,44 +89,48 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
     ThemeData theme,
     LoadingState<List<PgcReviewItemModel>?> loadingState,
   ) {
-    late final divider = Divider(
-      height: 1,
-      color: theme.colorScheme.outline.withValues(alpha: 0.1),
-    );
-    return switch (loadingState) {
-      Loading() => SliverPrototypeExtentList.builder(
-        prototypeItem: const VideoReplySkeleton(),
-        itemBuilder: (_, _) => const VideoReplySkeleton(),
-        itemCount: 8,
-      ),
-      Success(:final response) =>
-        response != null && response.isNotEmpty
-            ? SliverList.separated(
-                itemBuilder: (context, index) {
-                  if (index == response.length - 1) {
-                    _controller.onLoadMore();
-                  }
-                  return _itemWidget(theme, index, response[index]);
-                },
-                itemCount: response.length,
-                separatorBuilder: (context, index) => divider,
-              )
-            : HttpError(onReload: _controller.onReload),
-      Error(:final errMsg) => HttpError(
-        errMsg: errMsg,
-        onReload: _controller.onReload,
-      ),
-    };
+    switch (loadingState) {
+      case Loading():
+        return SliverPrototypeExtentList.builder(
+          prototypeItem: const VideoReplySkeleton(),
+          itemBuilder: (_, _) => const VideoReplySkeleton(),
+          itemCount: 8,
+        );
+      case Success(:final response):
+        if (response != null && response.isNotEmpty) {
+          final divider = Divider(
+            height: 1,
+            color: theme.colorScheme.outline.withValues(alpha: 0.1),
+          );
+          return SliverList.separated(
+            itemBuilder: (context, index) {
+              if (index == response.length - 1) {
+                _controller.onLoadMore();
+              }
+              return _itemWidget(theme, index, response[index]);
+            },
+            itemCount: response.length,
+            separatorBuilder: (context, index) => divider,
+          );
+        }
+        return HttpError(onReload: _controller.onReload);
+      case Error(:final errMsg):
+        return HttpError(
+          errMsg: errMsg,
+          onReload: _controller.onReload,
+        );
+    }
   }
 
   Widget _itemWidget(ThemeData theme, int index, PgcReviewItemModel item) {
+    final author = item.author!;
     void showMore() => showDialog(
       context: context,
       builder: (context) => SimpleDialog(
         clipBehavior: Clip.hardEdge,
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
         children: [
-          if (item.author!.mid == Accounts.main.mid) ...[
+          if (author.mid == Accounts.main.mid) ...[
             DialogOption(
               child: const Text('编辑', style: TextStyle(fontSize: 14)),
               onPressed: () {
@@ -197,14 +202,14 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
             children: [
               GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: () => Get.toNamed('/member?mid=${item.author!.mid}'),
+                onTap: () => Get.toNamed('/member?mid=${author.mid}'),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     NetworkImgLayer(
                       height: 34,
                       width: 34,
-                      src: item.author!.avatar,
+                      src: author.avatar,
                       type: ImageType.avatar,
                     ),
                     const SizedBox(width: 10),
@@ -218,19 +223,19 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              item.author!.uname!,
+                              author.uname!,
                               style: TextStyle(
                                 color:
-                                    item.author?.vip?.status != null &&
-                                        item.author!.vip!.status > 0 &&
-                                        item.author!.vip!.type == 2
+                                    author.vip != null &&
+                                        author.vip!.status > 0 &&
+                                        author.vip!.type == 2
                                     ? theme.colorScheme.vipColor
                                     : theme.colorScheme.outline,
                                 fontSize: 13,
                               ),
                             ),
                             BiliUtils.levelPicture(
-                              item.author!.level!,
+                              author.level!,
                               height: 11,
                             ),
                           ],
@@ -287,7 +292,7 @@ class _PgcReviewChildPageState extends State<PgcReviewChildPage>
                   style: const TextStyle(height: 1.75),
                 )
               else
-                SelectableText(
+                SelectionText(
                   item.content!,
                   style: const TextStyle(height: 1.75),
                 ),

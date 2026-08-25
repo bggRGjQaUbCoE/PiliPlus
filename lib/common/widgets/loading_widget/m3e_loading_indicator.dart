@@ -18,10 +18,10 @@
 import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/loading_widget/morphs.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart' show SpringSimulation;
 import 'package:flutter/semantics.dart';
 import 'package:material_new_shapes/material_new_shapes.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// reimplement of https://github.com/EmilyMoonstone/material_3_expressive/tree/main/packages/loading_indicator_m3e
 

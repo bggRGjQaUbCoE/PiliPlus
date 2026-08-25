@@ -1,9 +1,11 @@
+import 'package:PiliPlus/common/widgets/scroll_physics.dart'
+    show platformClampingPhysics;
 import 'package:PiliPlus/models/common/super_chat_type.dart';
 import 'package:PiliPlus/pages/live_room/controller.dart';
 import 'package:PiliPlus/pages/live_room/superchat/superchat_card.dart';
 import 'package:PiliPlus/pages/search/controller.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
+import 'package:material_ui/material_ui.dart';
 
 class SuperChatPanel extends StatefulWidget {
   const SuperChatPanel({
@@ -32,7 +34,7 @@ class _SuperChatPanelState extends DebounceStreamState<SuperChatPanel, bool>
       () => ListView.separated(
         key: const PageStorageKey(_SuperChatPanelState),
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        physics: const ClampingScrollPhysics(),
+        physics: platformClampingPhysics,
         itemCount: widget.controller.superChatMsg.length,
         findItemIndexCallback: (key) {
           final index = widget.controller.superChatMsg.indexWhere(

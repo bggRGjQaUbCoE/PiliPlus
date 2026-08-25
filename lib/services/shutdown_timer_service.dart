@@ -1,15 +1,21 @@
 // 定时关闭服务
-import 'dart:async';
-import 'dart:io';
+
+import 'dart:async' show Timer;
+import 'dart:io' show exit;
 
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/menu_row.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPicker;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:material_ui/material_ui.dart';
+
+const _kSqueeze = 1.25;
+const _kItemExtent = 38.0;
 
 enum _ShutdownType with EnumWithLabel {
   pause('暂停视频'),
@@ -66,7 +72,7 @@ class ShutdownTimerService {
 
   void _handleShutdown() {
     switch (_shutdownType) {
-      case _ShutdownType.pause:
+      case .pause:
         late final player = PlPlayerController.instance;
         final isPlaying =
             this.isPlaying?.call() ?? player?.playerStatus.isPlaying ?? false;
@@ -79,7 +85,7 @@ class ShutdownTimerService {
             SmartDialog.showToast('定时时间已到，已暂停');
           }
         }
-      case _ShutdownType.exit:
+      case .exit:
         if (_waitUntilCompleted) {
           final isPlaying =
               this.isPlaying?.call() ??
@@ -96,11 +102,11 @@ class ShutdownTimerService {
 
   void handleWaiting() {
     switch (_shutdownType) {
-      case _ShutdownType.pause:
+      case .pause:
         _isWaiting = false;
         _durationInMinutes = 0;
         SmartDialog.showToast('定时时间已到，已暂停');
-      case _ShutdownType.exit:
+      case .exit:
         _syncProgressAndExit();
     }
   }
@@ -135,6 +141,88 @@ class ShutdownTimerService {
     }
   }
 
+  Widget _pickerBuider(
+    int count, {
+    required ValueChanged<int> onSelectedItemChanged,
+    required FixedExtentScrollController scrollController,
+  }) {
+    return CupertinoPicker(
+      // looping: true,
+      squeeze: _kSqueeze,
+      itemExtent: _kItemExtent,
+      scrollController: scrollController,
+      onSelectedItemChanged: onSelectedItemChanged,
+      children: List.generate(
+        count,
+        (index) => Center(
+          child: Text(
+            index.toString().padLeft(2, '0'),
+            style: const TextStyle(fontSize: 20, letterSpacing: .4),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showTimePickerDialog(BuildContext context, StateSetter setState) {
+    final values = _parseMinutes(_durationInMinutes);
+    var hour = values.$1;
+    var minute = values.$2;
+
+    final hourController = FixedExtentScrollController(initialItem: hour);
+    final minuteController = FixedExtentScrollController(initialItem: minute);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        contentPadding: const .fromLTRB(20, 6, 20, 0),
+        actionsPadding: const .fromLTRB(20, 0, 20, 16),
+        constraints: const .tightFor(width: 320, height: 320),
+        content: Row(
+          children: [
+            Expanded(
+              child: _pickerBuider(
+                25,
+                scrollController: hourController,
+                onSelectedItemChanged: (value) => hour = value,
+              ),
+            ),
+            const Text('时'),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _pickerBuider(
+                60,
+                scrollController: minuteController,
+                onSelectedItemChanged: (value) => minute = value,
+              ),
+            ),
+            const Text('分'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              '取消',
+              style: TextStyle(color: ColorScheme.of(context).outline),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _startShutdownTimer(hour * 60 + minute);
+              setState(() {});
+            },
+            child: const Text('确认'),
+          ),
+        ],
+      ),
+    ).whenComplete(() {
+      hourController.dispose();
+      minuteController.dispose();
+    });
+  }
+
   void showScheduleExitDialog(
     BuildContext context, {
     required bool isFullScreen,
@@ -145,130 +233,110 @@ class ShutdownTimerService {
     if (isLive) {
       _waitUntilCompleted = false;
     }
+
+    final child = StatefulBuilder(
+      builder: (context, setState) {
+        final theme = Theme.of(context);
+        return Padding(
+          padding: const .all(12),
+          child: Material(
+            clipBehavior: .hardEdge,
+            color: theme.colorScheme.surface,
+            borderRadius: const .all(.circular(12)),
+            child: ListView(
+              padding: const .symmetric(vertical: 14),
+              children: [
+                const Center(child: Text('定时关闭', style: titleStyle)),
+                const SizedBox(height: 10),
+                ...{...scheduleTimeMinutes, _durationInMinutes}
+                    .sorted(Comparable.compare)
+                    .map(
+                      (minutes) => ListTile(
+                        dense: true,
+                        onTap: () {
+                          Navigator.pop(context);
+                          _startShutdownTimer(minutes);
+                        },
+                        title: Text(
+                          switch (minutes) {
+                            0 => '禁用',
+                            _ => _format(minutes),
+                          },
+                          style: titleStyle,
+                        ),
+                        trailing: _durationInMinutes == minutes
+                            ? Icon(
+                                size: 20,
+                                Icons.done,
+                                color: theme.colorScheme.primary,
+                              )
+                            : null,
+                      ),
+                    ),
+                ListTile(
+                  dense: true,
+                  onTap: () => _showTimePickerDialog(context, setState),
+                  title: const Text('自定义', style: titleStyle),
+                ),
+                if (!isLive) ...[
+                  Builder(
+                    builder: (context) {
+                      void onChanged([_]) {
+                        _waitUntilCompleted = !_waitUntilCompleted;
+                        (context as Element).markNeedsBuild();
+                      }
+
+                      return ListTile(
+                        dense: true,
+                        onTap: onChanged,
+                        title: const Text('额外等待视频播放完毕', style: titleStyle),
+                        trailing: Transform.scale(
+                          alignment: .centerRight,
+                          scale: 0.8,
+                          child: Switch(
+                            value: _waitUntilCompleted,
+                            onChanged: onChanged,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+                const SizedBox(height: 5),
+                Padding(
+                  padding: const .only(left: 18),
+                  child: Builder(
+                    builder: (context) {
+                      return Row(
+                        spacing: 12,
+                        children: [
+                          const Text('倒计时结束:', style: titleStyle),
+                          ..._ShutdownType.values.map(
+                            (e) => ActionRowLineItem(
+                              onTap: () {
+                                _shutdownType = e;
+                                (context as Element).markNeedsBuild();
+                              },
+                              text: ' ${e.label} ',
+                              selectStatus: _shutdownType == e,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
     PageUtils.showVideoBottomSheet(
       context,
       maxWidth: 512,
-      child: StatefulBuilder(
-        builder: (_, setState) {
-          final ThemeData theme = Theme.of(context);
-          return Theme(
-            data: theme,
-            child: Padding(
-              padding: const .all(12),
-              child: Material(
-                clipBehavior: .hardEdge,
-                color: theme.colorScheme.surface,
-                borderRadius: const .all(.circular(12)),
-                child: ListView(
-                  padding: const .symmetric(vertical: 14),
-                  children: [
-                    const Center(child: Text('定时关闭', style: titleStyle)),
-                    const SizedBox(height: 10),
-                    ...{...scheduleTimeMinutes, _durationInMinutes}
-                        .sorted(Comparable.compare)
-                        .map(
-                          (minutes) => ListTile(
-                            dense: true,
-                            onTap: () {
-                              Navigator.pop(context);
-                              _startShutdownTimer(minutes);
-                            },
-                            title: Text(
-                              switch (minutes) {
-                                0 => '禁用',
-                                _ => _format(minutes),
-                              },
-                              style: titleStyle,
-                            ),
-                            trailing: _durationInMinutes == minutes
-                                ? Icon(
-                                    size: 20,
-                                    Icons.done,
-                                    color: theme.colorScheme.primary,
-                                  )
-                                : null,
-                          ),
-                        ),
-                    ListTile(
-                      dense: true,
-                      onTap: () {
-                        final (int hour, int minute) = _parseMinutes(
-                          _durationInMinutes,
-                        );
-                        showTimePicker(
-                          context: context,
-                          initialEntryMode: .inputOnly,
-                          initialTime: TimeOfDay(hour: hour, minute: minute),
-                          builder: (context, child) => MediaQuery(
-                            data: MediaQuery.of(
-                              context,
-                            ).copyWith(alwaysUse24HourFormat: true),
-                            child: child!,
-                          ),
-                        ).then((time) {
-                          if (time != null) {
-                            _startShutdownTimer(time.hour * 60 + time.minute);
-                            setState(() {});
-                          }
-                        });
-                      },
-                      title: const Text('自定义', style: titleStyle),
-                    ),
-                    if (!isLive) ...[
-                      Builder(
-                        builder: (context) {
-                          void onChanged([_]) {
-                            _waitUntilCompleted = !_waitUntilCompleted;
-                            (context as Element).markNeedsBuild();
-                          }
-
-                          return ListTile(
-                            dense: true,
-                            onTap: onChanged,
-                            title: const Text('额外等待视频播放完毕', style: titleStyle),
-                            trailing: Transform.scale(
-                              alignment: Alignment.centerRight,
-                              scale: 0.8,
-                              child: Switch(
-                                value: _waitUntilCompleted,
-                                onChanged: onChanged,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                    const SizedBox(height: 5),
-                    Padding(
-                      padding: const .only(left: 18),
-                      child: Builder(
-                        builder: (context) {
-                          return Row(
-                            spacing: 12,
-                            children: [
-                              const Text('倒计时结束:', style: titleStyle),
-                              ..._ShutdownType.values.map(
-                                (e) => ActionRowLineItem(
-                                  onTap: () {
-                                    _shutdownType = e;
-                                    (context as Element).markNeedsBuild();
-                                  },
-                                  text: ' ${e.label} ',
-                                  selectStatus: _shutdownType == e,
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
+      child: isLive ? Theme(data: ThemeUtils.darkTheme, child: child) : child,
     );
   }
 }

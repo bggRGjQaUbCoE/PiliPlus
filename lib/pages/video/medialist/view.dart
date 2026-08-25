@@ -12,7 +12,7 @@ import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
 import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -67,42 +67,46 @@ class _MediaListPanelState extends State<MediaListPanel>
       color: theme.colorScheme.surface,
       child: Column(
         children: [
-          AppBar(
-            primary: false,
-            toolbarHeight: 45,
-            automaticallyImplyLeading: false,
-            titleSpacing: 16,
-            title: Text(widget.panelTitle ?? '稍后再看'),
-            backgroundColor: Colors.transparent,
-            actions: [
-              iconButton(
-                iconSize: 20,
-                tooltip: widget.desc ? '顺序播放' : '倒序播放',
-                icon: widget.desc
-                    ? const Icon(MdiIcons.sortAscending)
-                    : const Icon(MdiIcons.sortDescending),
-                onPressed: () {
-                  Get.back();
-                  widget.onReverse();
-                },
-              ),
-              iconButton(
-                iconSize: 20,
-                tooltip: '关闭',
-                icon: const Icon(Icons.close),
-                onPressed: Get.back,
-              ),
-              const SizedBox(width: 14),
-            ],
-            shape: Border(
-              bottom: BorderSide(
-                color: theme.colorScheme.outline.withValues(alpha: 0.1),
+          Container(
+            height: 45,
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: theme.colorScheme.outline.withValues(alpha: 0.1),
+                ),
               ),
             ),
+            child: Row(
+              children: [
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    widget.panelTitle ?? '稍后再看',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
+                iconButton(
+                  iconSize: 20,
+                  tooltip: widget.desc ? '顺序播放' : '倒序播放',
+                  icon: widget.desc
+                      ? const Icon(MdiIcons.sortAscending)
+                      : const Icon(MdiIcons.sortDescending),
+                  onPressed: () {
+                    Get.back();
+                    widget.onReverse();
+                  },
+                ),
+                iconButton(
+                  iconSize: 20,
+                  tooltip: '关闭',
+                  icon: const Icon(Icons.close),
+                  onPressed: Get.back,
+                ),
+                const SizedBox(width: 14),
+              ],
+            ),
           ),
-          Expanded(
-            child: enableSlide ? slideList(theme) : buildList(theme),
-          ),
+          Expanded(child: enableSlide ? slideList(theme) : buildList(theme)),
         ],
       ),
     );

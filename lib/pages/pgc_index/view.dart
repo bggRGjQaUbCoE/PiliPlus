@@ -1,6 +1,8 @@
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/animated_height.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/self_sized_horizontal_list.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_index_condition/data.dart';
@@ -11,8 +13,8 @@ import 'package:PiliPlus/pages/pgc_index/controller.dart';
 import 'package:PiliPlus/pages/pgc_index/widgets/pgc_card_v_pgc_index.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class PgcIndexPage extends StatefulWidget {
   const PgcIndexPage({super.key, this.indexType});
@@ -44,8 +46,7 @@ class _PgcIndexPageState extends State<PgcIndexPage>
     super.build(context);
     final theme = Theme.of(context);
     return widget.indexType == null
-        ? Scaffold(
-            resizeToAvoidBottomInset: false,
+        ? SimpleScaffold(
             appBar: AppBar(title: const Text('索引')),
             body: Obx(() => _buildBody(theme, _ctr.conditionState.value)),
           )
@@ -73,14 +74,16 @@ class _PgcIndexPageState extends State<PgcIndexPage>
                 if (widget.indexType != null)
                   const SliverToBoxAdapter(child: SizedBox(height: 12)),
                 SliverToBoxAdapter(
-                  child: AnimatedSize(
-                    curve: Curves.easeInOut,
-                    alignment: Alignment.topCenter,
-                    duration: const Duration(milliseconds: 200),
-                    child: count > 5
-                        ? Obx(() => _buildSortsWidget(theme, count, response))
-                        : _buildSortsWidget(theme, count, response),
-                  ),
+                  child: count > 5
+                      ? Obx(
+                          () => AnimatedHeightWidget(
+                            curve: Curves.easeInOut,
+                            expand: _ctr.isExpand.value,
+                            duration: const Duration(milliseconds: 200),
+                            child: _buildSortsWidget(theme, count, response),
+                          ),
+                        )
+                      : _buildSortsWidget(theme, count, response),
                 ),
                 SliverPadding(
                   padding: EdgeInsets.only(
@@ -112,42 +115,39 @@ class _PgcIndexPageState extends State<PgcIndexPage>
     Object item,
     Map<String, dynamic> indexParams,
   ) {
+    final String text;
+    final String key;
+    final String? value;
+    final bool isCurr;
+
     if (item is PgcConditionOrder) {
-      final isCurr = indexParams['order'] == item.field;
-      return SearchText(
-        bgColor: isCurr
-            ? theme.colorScheme.secondaryContainer
-            : Colors.transparent,
-        textColor: isCurr
-            ? theme.colorScheme.onSecondaryContainer
-            : theme.colorScheme.onSurfaceVariant,
-        text: item.name!,
-        padding: const .symmetric(horizontal: 6, vertical: 3),
-        onTap: (_) => _ctr
-          ..indexParams['order'] = item.field
-          ..onReload(),
-      );
+      text = item.name!;
+      key = 'order';
+      value = item.field;
+      isCurr = indexParams[key] == item.field;
+    } else if (item is PgcConditionValue) {
+      text = item.name!;
+      if (data.order?.isNotEmpty == true) index -= 1;
+      key = data.filter![index].field!;
+      value = item.keyword;
+      isCurr = indexParams[key] == item.keyword;
+    } else {
+      throw UnsupportedError(item.toString());
     }
-    if (item is PgcConditionValue) {
-      final hasOrder = data.order?.isNotEmpty == true;
-      if (hasOrder) index -= 1;
-      final key = data.filter![index].field!;
-      final isCurr = indexParams[key] == item.keyword;
-      return SearchText(
-        bgColor: isCurr
-            ? theme.colorScheme.secondaryContainer
-            : Colors.transparent,
-        textColor: isCurr
-            ? theme.colorScheme.onSecondaryContainer
-            : theme.colorScheme.onSurfaceVariant,
-        text: item.name!,
-        padding: const .symmetric(horizontal: 6, vertical: 3),
-        onTap: (_) => _ctr
-          ..indexParams[key] = item.keyword
-          ..onReload(),
-      );
-    }
-    throw UnsupportedError(item.toString());
+
+    return SearchText(
+      bgColor: isCurr
+          ? theme.colorScheme.secondaryContainer
+          : Colors.transparent,
+      textColor: isCurr
+          ? theme.colorScheme.onSecondaryContainer
+          : theme.colorScheme.onSurfaceVariant,
+      text: text,
+      padding: const .symmetric(horizontal: 6, vertical: 3),
+      onTap: (_) => _ctr
+        ..indexParams[key] = value
+        ..onReload(),
+    );
   }
 
   Widget _buildSortsWidget(
@@ -197,17 +197,15 @@ class _PgcIndexPageState extends State<PgcIndexPage>
       if (count > 5) ...[
         const SizedBox(height: 8),
         GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () => _ctr.isExpand.value = !_ctr.isExpand.value,
+          behavior: .opaque,
+          onTap: _ctr.isExpand.toggle,
           child: Center(
             child: Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisSize: .min,
               children: [
                 Text(
                   _ctr.isExpand.value ? '收起' : '展开',
-                  style: TextStyle(
-                    color: theme.colorScheme.outline,
-                  ),
+                  style: TextStyle(color: theme.colorScheme.outline),
                 ),
                 Icon(
                   _ctr.isExpand.value

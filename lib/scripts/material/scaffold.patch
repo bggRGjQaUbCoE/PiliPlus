@@ -1,0 +1,145 @@
+diff --git a/lib/src/bottom_sheet.dart b/lib/src/bottom_sheet.dart
+index 0fba5686f28..f6243932c9e 100644
+--- a/lib/src/bottom_sheet.dart
++++ b/lib/src/bottom_sheet.dart
+@@ -254,8 +254,11 @@ class BottomSheet extends StatefulWidget {
+   }
+ }
+ 
++typedef BottomSheetState = _BottomSheetState;
++
+ class _BottomSheetState extends State<BottomSheet> {
+   final GlobalKey _childKey = GlobalKey(debugLabel: 'BottomSheet child');
++  GlobalKey get childKey => _childKey;
+ 
+   double get _childHeight {
+     final renderBox = _childKey.currentContext!.findRenderObject()! as RenderBox;
+@@ -266,14 +269,14 @@ class _BottomSheetState extends State<BottomSheet> {
+ 
+   Set<WidgetState> dragHandleStates = <WidgetState>{};
+ 
+-  void _handleDragStart(DragStartDetails details) {
++  void handleDragStart(DragStartDetails details) {
+     setState(() {
+       dragHandleStates.add(WidgetState.dragged);
+     });
+     widget.onDragStart?.call(details);
+   }
+ 
+-  void _handleDragUpdate(DragUpdateDetails details) {
++  void handleDragUpdate(DragUpdateDetails details) {
+     assert(
+       (widget.enableDrag || (widget.showDragHandle ?? false)) && widget.animationController != null,
+       "'BottomSheet.animationController' cannot be null when 'BottomSheet.enableDrag' or 'BottomSheet.showDragHandle' is true. "
+@@ -285,7 +288,7 @@ class _BottomSheetState extends State<BottomSheet> {
+     widget.animationController!.value -= details.primaryDelta! / _childHeight;
+   }
+ 
+-  void _handleDragEnd(DragEndDetails details) {
++  void handleDragEnd(DragEndDetails details) {
+     assert(
+       (widget.enableDrag || (widget.showDragHandle ?? false)) && widget.animationController != null,
+       "'BottomSheet.animationController' cannot be null when 'BottomSheet.enableDrag' or 'BottomSheet.showDragHandle' is true. "
+@@ -376,9 +379,9 @@ class _BottomSheetState extends State<BottomSheet> {
+       // no need to add it.
+       if (!widget.enableDrag) {
+         dragHandle = _BottomSheetGestureDetector(
+-          onVerticalDragStart: _handleDragStart,
+-          onVerticalDragUpdate: _handleDragUpdate,
+-          onVerticalDragEnd: _handleDragEnd,
++          onVerticalDragStart: handleDragStart,
++          onVerticalDragUpdate: handleDragUpdate,
++          onVerticalDragEnd: handleDragEnd,
+           child: dragHandle,
+         );
+       }
+@@ -420,9 +423,9 @@ class _BottomSheetState extends State<BottomSheet> {
+     return !widget.enableDrag
+         ? bottomSheet
+         : _BottomSheetGestureDetector(
+-            onVerticalDragStart: _handleDragStart,
+-            onVerticalDragUpdate: _handleDragUpdate,
+-            onVerticalDragEnd: _handleDragEnd,
++            onVerticalDragStart: handleDragStart,
++            onVerticalDragUpdate: handleDragUpdate,
++            onVerticalDragEnd: handleDragEnd,
+             child: bottomSheet,
+           );
+   }
+@@ -1472,6 +1475,8 @@ class _BottomSheetGestureDetector extends StatelessWidget {
+   }
+ }
+ 
++typedef BottomSheetDefaultsM3 = _BottomSheetDefaultsM3;
++
+ // BEGIN GENERATED TOKEN PROPERTIES - BottomSheet
+ 
+ // Do not edit by hand. The code between the "BEGIN GENERATED" and
+diff --git a/lib/src/scaffold.dart b/lib/src/scaffold.dart
+index 6f4fc67ff84..9b306c84094 100644
+--- a/lib/src/scaffold.dart
++++ b/lib/src/scaffold.dart
+@@ -3295,7 +3295,9 @@ class _DismissDrawerAction extends DismissAction {
+ class ScaffoldFeatureController<T extends Widget, U> {
+   const ScaffoldFeatureController._(this._widget, this._completer, this.close, this.setState);
+   final T _widget;
++  T get widget => _widget;
+   final Completer<U> _completer;
++  Completer<U> get completer => _completer;
+ 
+   /// Completes when the feature controlled by this object is no longer visible.
+   Future<U> get closed => _completer.future;
+@@ -3307,6 +3309,9 @@ class ScaffoldFeatureController<T extends Widget, U> {
+   final StateSetter? setState;
+ }
+ 
++typedef StandardBottomSheet = _StandardBottomSheet;
++typedef StandardBottomSheetState = _StandardBottomSheetState;
++
+ class _StandardBottomSheet extends StatefulWidget {
+   const _StandardBottomSheet({
+     super.key,
+@@ -3372,12 +3377,12 @@ class _StandardBottomSheetState extends State<_StandardBottomSheet> {
+     widget.onClosing?.call();
+   }
+ 
+-  void _handleDragStart(DragStartDetails details) {
++  void handleDragStart(DragStartDetails details) {
+     // Allow the bottom sheet to track the user's finger accurately.
+     animationCurve = Curves.linear;
+   }
+ 
+-  void _handleDragEnd(DragEndDetails details, {bool? isClosing}) {
++  void handleDragEnd(DragEndDetails details, {bool? isClosing}) {
+     // Allow the bottom sheet to animate smoothly from its current position.
+     animationCurve = Split(widget.animationController.value, endCurve: _standardBottomSheetCurve);
+   }
+@@ -3430,8 +3435,8 @@ class _StandardBottomSheetState extends State<_StandardBottomSheet> {
+             animationController: widget.animationController,
+             enableDrag: widget.enableDrag,
+             showDragHandle: widget.showDragHandle,
+-            onDragStart: _handleDragStart,
+-            onDragEnd: _handleDragEnd,
++            onDragStart: handleDragStart,
++            onDragEnd: handleDragEnd,
+             onClosing: widget.onClosing!,
+             builder: widget.builder,
+             backgroundColor: widget.backgroundColor,
+@@ -3463,7 +3468,17 @@ class PersistentBottomSheetController
+     this._isLocalHistoryEntry,
+   ) : super._();
+ 
++  const PersistentBottomSheetController(
++    super.widget,
++    super.completer,
++    super.close,
++    StateSetter super.setState,
++    this._isLocalHistoryEntry,
++  ) : super._();
++
+   final bool _isLocalHistoryEntry;
++
++  bool get isLocalHistoryEntry => _isLocalHistoryEntry;
+ }
+ 
+ class _ScaffoldScope extends InheritedWidget {

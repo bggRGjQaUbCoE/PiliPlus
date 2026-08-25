@@ -1,4 +1,6 @@
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:PiliPlus/common/widgets/view_insets_safe_area.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
 import 'package:PiliPlus/pages/search/controller.dart' show DebounceStreamState;
 import 'package:PiliPlus/pages/setting/models/extra_settings.dart';
@@ -10,8 +12,8 @@ import 'package:PiliPlus/pages/setting/models/style_settings.dart';
 import 'package:PiliPlus/pages/setting/models/video_settings.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/waterfall.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:waterfall_flow/waterfall_flow.dart'
     hide SliverWaterfallFlowDelegateWithMaxCrossAxisExtent;
 
@@ -59,7 +61,7 @@ class _SettingsSearchPageState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return SimpleScaffold(
       appBar: AppBar(
         actions: [
           IconButton(
@@ -88,25 +90,27 @@ class _SettingsSearchPageState
           ),
         ),
       ),
-      body: CustomScrollView(
-        slivers: [
-          ViewSliverSafeArea(
-            sliver: Obx(
-              () => _list.isEmpty
-                  ? const HttpError()
-                  : SliverWaterfallFlow(
-                      gridDelegate:
-                          SliverWaterfallFlowDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: Grid.smallCardWidth * 2,
-                          ),
-                      delegate: SliverChildBuilderDelegate(
-                        (_, index) => _list[index].widget,
-                        childCount: _list.length,
+      body: ViewInsetsSafeArea(
+        child: CustomScrollView(
+          slivers: [
+            ViewSliverSafeArea(
+              sliver: Obx(
+                () => _list.isEmpty
+                    ? const HttpError()
+                    : SliverWaterfallFlow(
+                        gridDelegate:
+                            SliverWaterfallFlowDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: Grid.smallCardWidth * 2,
+                            ),
+                        delegate: SliverChildBuilderDelegate(
+                          (_, index) => _list[index].widget,
+                          childCount: _list.length,
+                        ),
                       ),
-                    ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -4,10 +4,10 @@ import 'package:PiliPlus/grpc/bilibili/app/im/v1.pb.dart'
 import 'package:PiliPlus/pages/common/common_whisper_controller.dart';
 import 'package:PiliPlus/pages/contact/view.dart';
 import 'package:PiliPlus/pages/whisper_settings/view.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:material_ui/material_ui.dart';
 
 extension ThreeDotItemTypeExt on ThreeDotItemType {
   Icon get icon => switch (this) {
@@ -74,10 +74,8 @@ extension ThreeDotItemTypeExt on ThreeDotItemType {
               'talkerId': talkerId,
               'name': item.title,
               'face': switch (talkerId) {
-                844424930131966 =>
-                  'https://message.biliimg.com/bfs/im/489a63efadfb202366c2f88853d2217b5ddc7a13.png',
-                844424930131964 =>
-                  'https://i0.hdslb.com/bfs/im_new/58eda511672db078466e7ab8db22a95c1503684976.png',
+                844424930131966 => 'https://message.biliimg.com/bfs/im/489a63efadfb202366c2f88853d2217b5ddc7a13.png',
+                844424930131964 => 'https://i0.hdslb.com/bfs/im_new/58eda511672db078466e7ab8db22a95c1503684976.png',
                 _ => item.icon,
               },
             },

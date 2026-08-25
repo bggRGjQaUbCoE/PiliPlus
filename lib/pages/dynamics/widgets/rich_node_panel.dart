@@ -8,14 +8,14 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart'
     show SourceModel;
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/parse_string.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 const _linkFoldedText = '网页链接';
 
@@ -27,7 +27,7 @@ TextSpan? richNode(
 }) {
   try {
     late final style = TextStyle(color: theme.colorScheme.primary);
-    List<InlineSpan> spanChildren = [];
+    final List<InlineSpan> spanChildren = [];
 
     final moduleDynamic = item.modules.moduleDynamic;
     List<RichTextNodeItem>? richTextNodes;
@@ -68,10 +68,20 @@ TextSpan? richNode(
             if (i.origText == _linkFoldedText) {
               item.linkFolded = true;
             }
+            spanChildren.add(TextSpan(text: i.origText));
+            break;
+          // 表情
+          case 'RICH_TEXT_NODE_TYPE_EMOJI' when (i.emoji != null):
+            final size = i.emoji!.size * 20.0;
             spanChildren.add(
-              TextSpan(
-                text: i.origText,
-                style: const TextStyle(height: 1.65),
+              WidgetSpan(
+                rawText: i.origText,
+                child: NetworkImgLayer(
+                  src: i.emoji!.url,
+                  type: .emote,
+                  width: size,
+                  height: size,
+                ),
               ),
             );
             break;
@@ -79,7 +89,7 @@ TextSpan? richNode(
           case 'RICH_TEXT_NODE_TYPE_AT':
             spanChildren.add(
               TextSpan(
-                text: ' ${i.text}',
+                text: '${spanChildren.isNotEmpty ? ' ' : ''}${i.text}',
                 style: style,
                 recognizer: NoDeadlineTapGestureRecognizer()
                   ..onTap = () => Get.toNamed('/member?mid=${i.rid}'),
@@ -151,29 +161,13 @@ TextSpan? richNode(
                   text: '投票：${i.text}',
                   style: style,
                   recognizer: NoDeadlineTapGestureRecognizer()
-                    ..onTap = () {
-                      final dynIdStr = item.basic?.commentIdStr;
-                      final dynId = dynIdStr != null
-                          ? int.tryParse(dynIdStr)
-                          : null;
-                      showVoteDialog(context, int.parse(i.rid!), dynId);
-                    },
+                    ..onTap = () => showVoteDialog(
+                      context,
+                      int.parse(i.rid!),
+                      parseIntOrNull(item.basic?.commentIdStr),
+                    ),
                 ),
               );
-            break;
-          // 表情
-          case 'RICH_TEXT_NODE_TYPE_EMOJI' when (i.emoji != null):
-            final size = i.emoji!.size * 20.0;
-            spanChildren.add(
-              WidgetSpan(
-                child: NetworkImgLayer(
-                  src: i.emoji!.url,
-                  type: ImageType.emote,
-                  width: size,
-                  height: size,
-                ),
-              ),
-            );
             break;
           // 抽奖
           case 'RICH_TEXT_NODE_TYPE_LOTTERY':
@@ -203,7 +197,6 @@ TextSpan? richNode(
                 ),
               );
             break;
-
           case 'RICH_TEXT_NODE_TYPE_GOODS':
             spanChildren
               ..add(
@@ -256,6 +249,7 @@ TextSpan? richNode(
                             bvid: i.rid,
                             cid: cid,
                             dimension: res!.dimension,
+                            title: res.title,
                           );
                         }
                       } catch (err) {
@@ -365,7 +359,10 @@ TextSpan? richNode(
             break;
         }
       }
-      return TextSpan(children: spanChildren);
+      return TextSpan(
+        children: spanChildren,
+        style: const TextStyle(height: 1.65),
+      );
     }
   } catch (err) {
     if (kDebugMode) debugPrint('❌rich_node_panel err: $err');

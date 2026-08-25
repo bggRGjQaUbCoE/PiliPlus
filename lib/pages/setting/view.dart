@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/login.dart';
 import 'package:PiliPlus/models/common/setting_type.dart';
@@ -10,10 +11,11 @@ import 'package:PiliPlus/pages/webdav/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
-import 'package:flutter/material.dart' hide ListTile;
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:material_ui/material_ui.dart' hide ListTile;
 
 class _SettingsModel {
   final SettingType type;
@@ -91,8 +93,7 @@ class _SettingPageState extends State<SettingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return SimpleScaffold(
       appBar: AppBar(
         title: _isPortrait ? const Text('设置') : Text(_type.title),
       ),
@@ -227,9 +228,21 @@ class _SettingPageState extends State<SettingPage> {
       ),
     );
     if (!context.mounted || result == null || result.isEmpty) return;
-    Future<void> logout() {
-      _noAccount.value = result.length == Accounts.account.length;
-      return Accounts.deleteAll(result);
+    Future<void> removeAccounts(Set<LoginAccount> accounts) async {
+      await Accounts.deleteAll(accounts);
+      _noAccount.value = Accounts.account.isEmpty;
+    }
+
+    Future<({LoginAccount account, bool success})> logoutAccount(
+      LoginAccount account,
+    ) async {
+      try {
+        final res = await LoginHttp.logout(account);
+        return (account: account, success: res['status'] == true);
+      } catch (e, s) {
+        Utils.reportError(e, s);
+        return (account: account, success: false);
+      }
     }
 
     showDialog(
@@ -252,9 +265,9 @@ class _SettingPageState extends State<SettingPage> {
               ),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 Get.back();
-                logout();
+                await removeAccounts(result);
               },
               child: Text(
                 '仅登出',
@@ -264,14 +277,34 @@ class _SettingPageState extends State<SettingPage> {
             TextButton(
               onPressed: () async {
                 SmartDialog.showLoading();
-                final res = await LoginHttp.logout(Accounts.main);
-                if (res['status']) {
+                try {
+                  final responses = await Future.wait(
+                    result.map(logoutAccount),
+                  );
+                  final successfulAccounts = {
+                    for (final response in responses)
+                      if (response.success) response.account,
+                  };
+                  if (successfulAccounts.isNotEmpty) {
+                    await removeAccounts(successfulAccounts);
+                  }
+                  final failedMids = responses
+                      .where((response) => !response.success)
+                      .map((response) => response.account.mid)
+                      .join('、');
                   SmartDialog.dismiss();
-                  logout();
-                  Get.back();
-                } else {
+                  if (successfulAccounts.length == result.length) {
+                    Get.back();
+                  } else if (successfulAccounts.isEmpty) {
+                    SmartDialog.showToast('账号 $failedMids 退出登录失败');
+                  } else {
+                    Get.back();
+                    SmartDialog.showToast('账号 $failedMids 退出登录失败');
+                  }
+                } catch (e, s) {
+                  Utils.reportError(e, s);
                   SmartDialog.dismiss();
-                  SmartDialog.showToast(res['msg'].toString());
+                  SmartDialog.showToast('退出登录失败：$e');
                 }
               },
               child: const Text('确认'),
@@ -289,17 +322,14 @@ class _SettingPageState extends State<SettingPage> {
       bottom: 8,
     ),
     child: Material(
-      type: MaterialType.transparency,
+      color: theme.colorScheme.onInverseSurface,
+      borderRadius: const BorderRadius.all(Radius.circular(50)),
       child: InkWell(
         onTap: () => Get.toNamed('/settingsSearch'),
         borderRadius: const BorderRadius.all(Radius.circular(50)),
-        child: Ink(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.all(Radius.circular(50)),
-            color: theme.colorScheme.onInverseSurface,
-          ),
-          child: const Center(
+        child: const Padding(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: Center(
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [

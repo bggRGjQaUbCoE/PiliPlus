@@ -22,18 +22,21 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_builder.dart';
+import 'package:PiliPlus/common/widgets/image_viewer/gallery_viewer.dart';
+import 'package:PiliPlus/common/widgets/scaffold/mini_scaffold.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
+import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ImageModel {
   ImageModel({
@@ -94,13 +97,17 @@ class ImageGridView extends StatelessWidget {
         !fullScreen &&
         Get.currentRoute.startsWith(_regex) &&
         !context.mediaQuerySize.isPortrait) {
-      final scaffoldState = Scaffold.maybeOf(context);
+      final scaffoldState = MiniScaffold.maybeOf(context);
       if (scaffoldState != null) {
         onViewImage?.call();
-        PageUtils.onHorizontalPreviewState(
-          scaffoldState,
-          imgList,
-          index,
+        scaffoldState.showBottomSheet(
+          constraints: const BoxConstraints(),
+          (context) => GalleryViewer(
+            sources: imgList,
+            initIndex: index,
+            quality: GlobalData().imgQuality,
+          ),
+          enableDrag: false,
         );
         return;
       }
@@ -123,17 +130,14 @@ class ImageGridView extends StatelessWidget {
     final bool hasUp = index - col >= 0;
     final bool hasDown = index + col < length;
 
-    final bool isRowStart = (index % col) == 0;
-    final bool isRowEnd = (index % col) == col - 1 || index == length - 1;
-
-    final bool hasLeft = !isRowStart;
-    final bool hasRight = !isRowEnd && (index + 1) < length;
+    final bool isRowStart = index % col == 0;
+    final bool isRowEnd = index % col == col - 1 || index == length - 1;
 
     return BorderRadius.only(
-      topLeft: !hasUp && !hasLeft ? r : Radius.zero,
-      topRight: !hasUp && !hasRight ? r : Radius.zero,
-      bottomLeft: !hasDown && !hasLeft ? r : Radius.zero,
-      bottomRight: !hasDown && !hasRight ? r : Radius.zero,
+      topLeft: !hasUp && isRowStart ? r : Radius.zero,
+      topRight: !hasUp && isRowEnd ? r : Radius.zero,
+      bottomLeft: !hasDown && isRowStart ? r : Radius.zero,
+      bottomRight: !hasDown && isRowEnd ? r : Radius.zero,
     );
   }
 

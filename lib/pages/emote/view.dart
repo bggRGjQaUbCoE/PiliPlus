@@ -2,7 +2,8 @@ import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/custom_tooltip.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart'
+    show tabBarView, platformClampingPhysics;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/emote/emote.dart';
@@ -10,7 +11,7 @@ import 'package:PiliPlus/models_new/emote/package.dart';
 import 'package:PiliPlus/pages/emote/controller.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
 
 class EmotePanel extends StatefulWidget {
@@ -68,7 +69,7 @@ class _EmotePanelState extends State<EmotePanel>
                           final size = flag ? 40.0 : 60.0;
                           final isTextEmote = e.type == 4;
                           return GridView.builder(
-                            physics: const ClampingScrollPhysics(),
+                            physics: platformClampingPhysics,
                             padding: const EdgeInsets.only(
                               left: 12,
                               right: 12,

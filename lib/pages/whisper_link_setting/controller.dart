@@ -94,7 +94,7 @@ class WhisperLinkSettingController extends GetxController {
         ? await ImGrpc.unpinSession(sessionId: sessionId)
         : await ImGrpc.pinSession(sessionId: sessionId);
     if (res.isSuccess) {
-      isPinned.value = !isPinned.value;
+      isPinned.toggle();
     } else {
       res.toast();
     }

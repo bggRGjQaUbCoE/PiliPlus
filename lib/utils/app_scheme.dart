@@ -2,6 +2,7 @@
 
 import 'dart:async' show StreamSubscription;
 
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pbenum.dart'
     show PlaylistSource;
@@ -19,14 +20,15 @@ import 'package:PiliPlus/pages/subscription_detail/view.dart';
 import 'package:PiliPlus/pages/video/reply_reply/view.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/parse_string.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 abstract final class PiliScheme {
   static late AppLinks appLinks;
@@ -366,8 +368,7 @@ abstract final class PiliScheme {
             return false;
           case 'livearea':
             Get.to(
-              Scaffold(
-                resizeToAvoidBottomInset: false,
+              SimpleScaffold(
                 appBar: AppBar(title: const Text('直播')),
                 body: const ViewSafeArea(child: LivePage()),
               ),
@@ -375,8 +376,7 @@ abstract final class PiliScheme {
             return true;
           case 'rank':
             Get.to(
-              Scaffold(
-                resizeToAvoidBottomInset: false,
+              SimpleScaffold(
                 appBar: AppBar(title: const Text('排行榜')),
                 body: const ViewSafeArea(child: RankPage()),
               ),
@@ -637,6 +637,7 @@ abstract final class PiliScheme {
                 bvid: bvid,
                 cid: cid,
                 dimension: res!.dimension,
+                title: res.title,
                 extraArguments: {
                   'sourceType': SourceType.playlist,
                   'favTitle': '播放列表',
@@ -895,7 +896,7 @@ abstract final class PiliScheme {
       final res = await SearchHttp.ab2cWithDimension(
         bvid: bvid,
         aid: aid,
-        part: part != null ? int.tryParse(part) : null,
+        part: parseIntOrNull(part),
       );
       final cid = res?.cid;
       if (showDialog) {
@@ -909,6 +910,7 @@ abstract final class PiliScheme {
           progress: progress,
           off: off,
           dimension: res!.dimension,
+          title: res.title,
         );
       }
     } catch (e) {

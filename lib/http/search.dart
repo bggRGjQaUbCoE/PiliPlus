@@ -7,16 +7,16 @@ import 'package:PiliPlus/models/common/search/search_type.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/models/search/suggest.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_pub_search/data.dart';
+import 'package:PiliPlus/models_new/pagelist/page_item.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/models_new/search/search_rcmd/data.dart';
 import 'package:PiliPlus/models_new/search/search_trending/data.dart';
-import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:material_ui/material_ui.dart';
 
 abstract final class SearchHttp {
   // 获取搜索建议
@@ -177,17 +177,14 @@ abstract final class SearchHttp {
     return (await ab2cWithDimension(aid: aid, bvid: bvid, part: part))?.cid;
   }
 
-  static Future<({int? cid, Dimension? dimension})?> ab2cWithDimension({
+  static Future<PageItem?> ab2cWithDimension({
     dynamic aid,
     dynamic bvid,
     int? part,
   }) async {
     final res = await Request().get(
       Api.ab2c,
-      queryParameters: {
-        'aid': ?aid,
-        'bvid': ?bvid,
-      },
+      queryParameters: {'aid': ?aid, 'bvid': ?bvid},
     );
     if (res.data['code'] == 0) {
       if (res.data['data'] case List list) {
@@ -195,12 +192,7 @@ abstract final class SearchHttp {
             ? (list.getOrNull(part - 1) ?? list.firstOrNull)
             : list.firstOrNull;
         if (target != null) {
-          return (
-            cid: target['cid'] as int?,
-            dimension: target['dimension'] == null
-                ? null
-                : Dimension.fromJson(target['dimension']),
-          );
+          return PageItem.fromJson(target);
         }
       }
       return null;

@@ -1,0 +1,12 @@
+diff --git a/lib/src/scaffold.dart b/lib/src/scaffold.dart
+index 168fc5b..ae317cf 100644
+--- a/lib/src/scaffold.dart
++++ b/lib/src/scaffold.dart
+@@ -2611,6 +2611,7 @@ class ScaffoldState extends State<Scaffold>
+     final LocalHistoryEntry? entry = isPersistent
+         ? null
+         : LocalHistoryEntry(
++            popGestureEnabled: true,
+             onRemove: () {
+               if (!removedEntry && _currentBottomSheet?._widget == bottomSheet && !doingDispose) {
+                 removeCurrentBottomSheet();

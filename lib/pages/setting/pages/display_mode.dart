@@ -1,11 +1,12 @@
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hive_ce/hive.dart';
+import 'package:material_ui/material_ui.dart';
 
 class SetDisplayMode extends StatefulWidget {
   const SetDisplayMode({super.key});
@@ -59,8 +60,7 @@ class _SetDisplayModeState extends State<SetDisplayMode> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return SimpleScaffold(
       appBar: AppBar(title: const Text('屏幕帧率设置')),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,6 +89,9 @@ class _SetDisplayModeState extends State<SetDisplayMode> {
               groupValue: preferred,
               child: ListView.builder(
                 itemCount: modes.length,
+                padding: .only(
+                  bottom: MediaQuery.viewPaddingOf(context).bottom,
+                ),
                 itemBuilder: (context, index) {
                   final DisplayMode mode = modes[index];
                   return RadioListTile<DisplayMode>(

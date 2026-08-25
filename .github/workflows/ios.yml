@@ -41,7 +41,7 @@ jobs:
           # Some Flutter/Xcode versions still require a Development Team during
           # `flutter build ios --no-codesign`. Generate Flutter iOS build files
           # first, then call xcodebuild directly with signing disabled.
-          flutter build ios --release --no-codesign --config-only --dart-define-from-file=pili_release.json
+          flutter build ios --release --no-codesign --config-only --dart-define-from-file=pili_release.json --no-pub
           xcodebuild \
             -workspace ios/Runner.xcworkspace \
             -scheme Runner \

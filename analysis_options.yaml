@@ -12,6 +12,14 @@ include: package:flutter_lints/flutter.yaml
 analyzer:
   exclude:
     - lib/grpc/bilibili/**
+    - lib/utils/android/bindings.g.dart
+    - android/**
+    - ios/**
+    - linux/**
+    - macos/**
+    - windows/**
+    - web/**
+    - build/**
     # - lib/common/widgets/flutter/**
 
 formatter:
@@ -64,7 +72,8 @@ linter:
     - unnecessary_lambdas
     - use_is_even_rather_than_modulo
     - unnecessary_async
-    - unnecessary_await_in_return
+    # Deprecated https://dart.dev/tools/linter-rules/unnecessary_await_in_return
+    # - unnecessary_await_in_return
     - unnecessary_getters_setters
     - prefer_const_literals_to_create_immutables
     - no_literal_bool_comparisons

@@ -11,10 +11,10 @@ import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class PgcPanel extends StatefulWidget {
   const PgcPanel({
@@ -79,10 +79,7 @@ class _PgcPanelState extends State<PgcPanel> {
   void scrollToIndex() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       listViewScrollCtr.animateTo(
-        (currentIndex * 150.0).clamp(
-          listViewScrollCtr.position.minScrollExtent,
-          listViewScrollCtr.position.maxScrollExtent,
-        ),
+        currentIndex * 150.0,
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
       );

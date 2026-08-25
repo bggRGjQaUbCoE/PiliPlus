@@ -17,11 +17,11 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
 # update when release
-version: 2.1.0+1
+version: 2.1.2+1
 
 environment:
-  sdk: ">=3.12.0"
-  flutter: 3.44.6
+  sdk: ">=3.13.0"
+  flutter: 3.47.1
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -68,6 +68,7 @@ dependencies:
   connectivity_plus: ^7.1.1
   cookie_jar: ^4.0.8
   crypto: ^3.0.6
+  cupertino_ui: ^1.0.0
   desktop_webview_window:
     git:
       url: https://github.com/Predidit/linux_webview_window
@@ -76,20 +77,21 @@ dependencies:
   dio: ^5.9.1
   dio_http2_adapter: ^2.7.1
   dlna_dart: ^0.1.0
-  dynamic_color: ^1.8.1
+  dynamic_color: ^2.1.0
   easy_debounce: ^2.0.3
   encrypt: ^5.0.3
   extended_nested_scroll_view:
     git:
       url: https://github.com/bggRGjQaUbCoE/extended_nested_scroll_view.git
-      ref: mod
-  file_picker:
-    git:
-      url: https://github.com/bggRGjQaUbCoE/flutter_file_picker.git
       ref: dev
+  ffi: ^2.2.0
+  file_picker: ^12.0.0
   fixnum: ^1.1.1
   fl_chart: ^1.0.0
-  flex_seed_scheme: ^4.0.1
+  flex_seed_scheme:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/flex_seed_scheme.git
+      ref: dev
   flutter_displaymode: ^0.7.0
   flutter_html: ^3.0.0-beta.2
   flutter_inappwebview: ^6.1.5
@@ -110,7 +112,7 @@ dependencies:
   get:
     git:
       url: https://github.com/bggRGjQaUbCoE/getx.git
-      ref: version_4.7.2
+      ref: dev
   hive_ce: ^2.19.3
   html: ^0.15.4
   http2: ^2.3.1
@@ -127,6 +129,7 @@ dependencies:
       url: https://github.com/bggRGjQaUbCoE/material_design_icons_flutter.git
       ref: const
   material_new_shapes: ^1.0.0
+  material_ui: ^1.0.0
   media_kit: 1.1.11
   media_kit_libs_video: 1.0.5
   media_kit_video: 1.2.5
@@ -138,7 +141,7 @@ dependencies:
   package_info_plus: ^10.1.0
   path: ^1.9.1
   path_provider: ^2.1.5
-  permission_handler_android: ^13.0.1
+  permission_handler_android: ^14.0.0
   permission_handler_apple: ^9.4.7
   permission_handler_platform_interface: ^4.3.0
   pretty_qr_code: ^3.3.0
@@ -185,37 +188,37 @@ dependency_overrides:
       ref: v6.1.5
   media_kit:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: media_kit
       ref: version_1.2.5
   media_kit_libs_android_video:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: libs/android/media_kit_libs_android_video
       ref: version_1.2.5
   media_kit_libs_ios_video:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: libs/ios/media_kit_libs_ios_video
       ref: version_1.2.5
   media_kit_libs_video:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: libs/universal/media_kit_libs_video
       ref: version_1.2.5
   media_kit_libs_windows_video:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: libs/windows/media_kit_libs_windows_video
       ref: version_1.2.5
   media_kit_native_event_loop:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: media_kit_native_event_loop
       ref: version_1.2.5
   media_kit_video:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: media_kit_video
       ref: version_1.2.5
   cached_network_image_ce:
@@ -231,11 +234,7 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.4
   flutter_lints: ^6.0.0
   flutter_native_splash: ^2.4.6
-  jnigen:
-    git:
-      url: https://github.com/dart-lang/native.git
-      path: pkgs/jnigen
-      ref: 55520836d363aac7f1ebae47387d03a30302be7b
+  jnigen: ^0.17.0
 
 flutter_launcher_icons:
   android: true

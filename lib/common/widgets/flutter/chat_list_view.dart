@@ -6,13 +6,15 @@
 
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart' hide ListView;
+import 'package:PiliPlus/common/widgets/sliver/sliver_constrained_cross_axis.dart';
+import 'package:flutter/foundation.dart' show precisionErrorTolerance;
 import 'package:flutter/rendering.dart' hide RenderSliverList;
+import 'package:material_ui/material_ui.dart' hide ListView;
 
 class ChatListView extends BoxScrollView {
   ChatListView.separated({
     super.key,
+    required this.maxExtent,
     super.scrollDirection,
     super.controller,
     super.primary,
@@ -75,11 +77,16 @@ class ChatListView extends BoxScrollView {
        ),
        super(semanticChildCount: itemCount, reverse: true);
 
+  final double maxExtent;
+
   final SliverChildDelegate childrenDelegate;
 
   @override
   Widget buildChildLayout(BuildContext context) {
-    return SliverChatList(delegate: childrenDelegate);
+    return CenteredSliverConstrainedCrossAxis(
+      maxExtent: maxExtent,
+      sliver: SliverChatList(delegate: childrenDelegate),
+    );
   }
 
   static int _computeActualChildCount(int itemCount) {

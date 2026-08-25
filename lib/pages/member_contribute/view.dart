@@ -9,8 +9,8 @@ import 'package:PiliPlus/pages/member_opus/view.dart';
 import 'package:PiliPlus/pages/member_season_series/view.dart';
 import 'package:PiliPlus/pages/member_video/view.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class MemberContribute extends StatefulWidget {
   const MemberContribute({

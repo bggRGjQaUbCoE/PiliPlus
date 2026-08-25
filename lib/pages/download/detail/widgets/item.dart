@@ -21,7 +21,7 @@ import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart' as path;
@@ -218,27 +218,29 @@ class DetailItem extends StatelessWidget {
                             left: 0,
                             right: 0,
                             bottom: 0,
-                            child: Stack(
-                              clipBehavior: Clip.none,
+                            child: Column(
+                              crossAxisAlignment: .end,
                               children: [
+                                Padding(
+                                  padding: const .only(right: 6, bottom: 3),
+                                  child: PBadge(
+                                    isStack: false,
+                                    text: progress >= entry.totalTimeMilli - 400
+                                        ? '已看完'
+                                        : '${DurationUtils.formatDuration(
+                                                progress ~/ 1000,
+                                              )}/'
+                                              '${DurationUtils.formatDuration(
+                                                entry.totalTimeMilli ~/ 1000,
+                                              )}',
+                                    type: .gray,
+                                  ),
+                                ),
                                 VideoProgressIndicator(
                                   color: theme.colorScheme.primary,
                                   backgroundColor:
                                       theme.colorScheme.secondaryContainer,
                                   progress: progress / entry.totalTimeMilli,
-                                ),
-                                PBadge(
-                                  text: progress >= entry.totalTimeMilli - 400
-                                      ? '已看完'
-                                      : '${DurationUtils.formatDuration(
-                                              progress ~/ 1000,
-                                            )}/'
-                                            '${DurationUtils.formatDuration(
-                                              entry.totalTimeMilli ~/ 1000,
-                                            )}',
-                                  right: 6,
-                                  bottom: 7,
-                                  type: PBadgeType.gray,
                                 ),
                               ],
                             ),

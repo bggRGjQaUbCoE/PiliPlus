@@ -4,9 +4,9 @@
 
 // ignore_for_file: prefer_initializing_formals
 
-import 'package:flutter/material.dart' hide PopScope;
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:material_ui/material_ui.dart' hide PopScope;
 
 abstract class PopScopeState<T extends StatefulWidget> extends State<T>
     implements PopEntry<Object> {

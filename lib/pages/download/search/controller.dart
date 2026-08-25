@@ -32,7 +32,8 @@ class DownloadSearchController
           .where(
             (e) =>
                 e.title.toLowerCase().contains(text) ||
-                e.showTitle.toLowerCase().contains(text),
+                e.showTitle.toLowerCase().contains(text) ||
+                (e.ownerName?.toLowerCase().contains(text) ?? false),
           )
           .toList(),
     );

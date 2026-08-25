@@ -3,8 +3,8 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models_new/space/space_shop/item.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class MemberShopItem extends StatelessWidget {
   const MemberShopItem({
@@ -19,11 +19,9 @@ class MemberShopItem extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final belowLabels = item.belowLabels?.map((e) => e.title).join('|');
     return Card(
-      clipBehavior: Clip.hardEdge,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(6)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: .all(.circular(6))),
       child: InkWell(
+        borderRadius: const .all(.circular(6)),
         onTap: () {
           if (item.cardUrl case final cardUrl?) {
             Get.toNamed('/webview', parameters: {'url': cardUrl});
@@ -34,7 +32,7 @@ class MemberShopItem extends StatelessWidget {
           children: [
             LayoutBuilder(
               builder: (context, constraints) => NetworkImgLayer(
-                type: .emote,
+                borderRadius: const .vertical(top: .circular(6)),
                 src: item.cover?.url,
                 width: constraints.maxWidth,
                 height: constraints.maxWidth,

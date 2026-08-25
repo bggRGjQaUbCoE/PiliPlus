@@ -4,11 +4,11 @@ import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
-import 'package:PiliPlus/common/widgets/flutter/page/tabs.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart'
+    show tabBarScrollPhysics;
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -32,11 +32,11 @@ import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart' hide TabBarView;
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:material_ui/material_ui.dart';
 
 class EpisodePanel extends CommonSlidePage {
   const EpisodePanel({
@@ -235,11 +235,10 @@ class _EpisodePanelState extends State<EpisodePanel>
   @override
   Widget buildList(ThemeData theme) {
     if (_isMulti) {
-      return TabBarView<TabBarDragGestureRecognizer>(
+      return TabBarView(
         controller: _tabController,
-        physics: clampingScrollPhysics,
-        horizontalDragGestureRecognizer: () =>
-            TabBarDragGestureRecognizer(isDxAllowed: isDxAllowed),
+        physics: tabBarScrollPhysics,
+        horizontalDragGestureRecognizer: horizontalDragGestureRecognizer,
         children: List.generate(
           widget.list.length,
           (index) => _buildBody(
@@ -268,7 +267,7 @@ class _EpisodePanelState extends State<EpisodePanel>
 
   double _calcItemHeight(ugc.BaseEpisodeItem episode) {
     if (episode is ugc.EpisodeItem && episode.pages!.length > 1) {
-      return 157; // 110 + 2 + 10 + 35
+      return 167; // 110 + 2 + 10 + 45
     }
     return 112;
   }
@@ -318,7 +317,7 @@ class _EpisodePanelState extends State<EpisodePanel>
                                 vertical: 5,
                               ), // 10
                               child: PagesPanel(
-                                // 35
+                                // 45
                                 list: isCurrTab && isCurrItem
                                     ? null
                                     : episode.pages,
@@ -433,6 +432,7 @@ class _EpisodePanelState extends State<EpisodePanel>
           type: .transparency,
           child: InkWell(
             onTap: () {
+              if (isCurrentIndex) return;
               if (episode.badge == "会员" &&
                   Accounts.mainEqVideo &&
                   vipStatus != 1) {

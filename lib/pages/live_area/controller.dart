@@ -4,7 +4,7 @@ import 'package:PiliPlus/models_new/live/live_area_list/area_item.dart';
 import 'package:PiliPlus/models_new/live/live_area_list/area_list.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:flutter/material.dart' show TabController;
+import 'package:material_ui/material_ui.dart' show TabController;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
@@ -61,13 +61,13 @@ class LiveAreaController extends CommonListController<List<AreaList>?, AreaList>
         ids: response.map((e) => e.id).join(','),
       );
       if (res.isSuccess) {
-        isEditing.value = !isEditing.value;
+        isEditing.toggle();
         SmartDialog.showToast('设置成功');
       } else {
         res.toast();
       }
     } else {
-      isEditing.value = !isEditing.value;
+      isEditing.toggle();
     }
   }
 
@@ -75,7 +75,7 @@ class LiveAreaController extends CommonListController<List<AreaList>?, AreaList>
     if (isEditing.value) {
       setFavTag();
     } else {
-      isEditing.value = !isEditing.value;
+      isEditing.toggle();
     }
   }
 

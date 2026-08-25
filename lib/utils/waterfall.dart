@@ -1,9 +1,10 @@
 import 'package:PiliPlus/common/skeleton/dynamic_card.dart';
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/sliver/sliver_constrained_cross_axis.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show SliverConstraints;
+import 'package:material_ui/material_ui.dart';
 import 'package:waterfall_flow/waterfall_flow.dart'
     show SliverWaterfallFlowDelegate;
 
@@ -18,18 +19,9 @@ mixin DynMixin {
     if (GlobalData().dynamicsWaterfallFlow) {
       return child;
     }
-    return SliverLayoutBuilder(
-      builder: (context, constraints) {
-        final maxWidth = constraints.crossAxisExtent;
-        final cardWidth = Grid.smallCardWidth * 2;
-        final flag = cardWidth < maxWidth;
-        return SliverPadding(
-          padding: EdgeInsets.symmetric(
-            horizontal: flag ? (maxWidth - cardWidth) / 2 : 0,
-          ),
-          sliver: child,
-        );
-      },
+    return CenteredSliverConstrainedCrossAxis(
+      maxExtent: Grid.smallCardWidth * 2,
+      sliver: child,
     );
   }
 

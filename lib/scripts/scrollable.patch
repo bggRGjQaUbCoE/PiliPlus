@@ -1,0 +1,12 @@
+diff --git a/packages/flutter/lib/src/widgets/scrollable.dart b/packages/flutter/lib/src/widgets/scrollable.dart
+index 9df2d633f16..f39e6760df9 100644
+--- a/packages/flutter/lib/src/widgets/scrollable.dart
++++ b/packages/flutter/lib/src/widgets/scrollable.dart
+@@ -766,6 +766,7 @@ class ScrollableState extends State<Scrollable>
+   Map<Type, GestureRecognizerFactory> _gestureRecognizers =
+       const <Type, GestureRecognizerFactory>{};
+   bool _shouldIgnorePointer = false;
++  bool get shouldIgnorePointer => _shouldIgnorePointer;
+ 
+   bool? _lastCanDrag;
+   Axis? _lastAxisDirection;

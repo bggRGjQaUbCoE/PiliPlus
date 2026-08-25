@@ -1,18 +1,21 @@
-import 'dart:io';
+import 'dart:io' show Platform;
 
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/models/common/webview_menu_type.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
+import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class WebviewPage extends StatefulWidget {
   const WebviewPage({
@@ -35,7 +38,8 @@ class WebviewPage extends StatefulWidget {
 }
 
 class _WebviewPageState extends State<WebviewPage> {
-  late final String _url = widget.url ?? Get.parameters['url'] ?? '';
+  late final String _url =
+      (widget.url ?? Get.parameters['url'])?.http2https ?? '';
   late final String userAgent;
   final RxString title = ''.obs;
   final RxDouble progress = 1.0.obs;
@@ -74,9 +78,8 @@ class _WebviewPageState extends State<WebviewPage> {
   @override
   Widget build(BuildContext context) {
     if (Platform.isLinux) {
-      return Scaffold(
+      return SimpleScaffold(
         appBar: AppBar(),
-        resizeToAvoidBottomInset: false,
         body: Center(
           child: TextButton(
             onPressed: () => PageUtils.launchURL(_url),
@@ -268,7 +271,7 @@ class _WebviewPageState extends State<WebviewPage> {
                           '下载文件: $suggestedFilename ?',
                           style: const TextStyle(fontSize: 18),
                         ),
-                        content: SelectableText(request.url.toString()),
+                        content: SelectionText(request.url.toString()),
                         actions: [
                           TextButton(
                             onPressed: Get.back,
@@ -316,25 +319,25 @@ class _WebviewPageState extends State<WebviewPage> {
             return null;
           },
           shouldOverrideUrlLoading: (controller, navigationAction) async {
-            if (_inApp) {
-              return NavigationActionPolicy.ALLOW;
+            if (!_inApp) {
+              final hasMatch = await PiliScheme.routePush(
+                navigationAction.request.url?.uriValue ?? Uri(),
+                selfHandle: true,
+                off: _off,
+              );
+              // if (kDebugMode) debugPrint('webview: [$url], [$hasMatch]');
+              if (hasMatch) {
+                progress.value = 1;
+                return .CANCEL;
+              }
             }
-            late String url = navigationAction.request.url.toString();
-            bool hasMatch = await PiliScheme.routePush(
-              navigationAction.request.url?.uriValue ?? Uri(),
-              selfHandle: true,
-              off: _off,
-            );
-            // if (kDebugMode) debugPrint('webview: [$url], [$hasMatch]');
-            if (hasMatch) {
-              progress.value = 1;
-              return NavigationActionPolicy.CANCEL;
-            } else if (_prefixRegex.hasMatch(url)) {
+            final url = navigationAction.request.url.toString();
+            if (_prefixRegex.hasMatch(url)) {
               if (context.mounted) {
-                SnackBar snackBar = SnackBar(
-                  content: const Text('当前网页将要打开外部链接，是否打开'),
-                  showCloseIcon: true,
+                final snackBar = SnackBar(
                   persist: false,
+                  showCloseIcon: true,
+                  content: const Text('当前网页将要打开外部链接，是否打开'),
                   action: SnackBarAction(
                     label: '打开',
                     onPressed: () => PageUtils.launchURL(url),
@@ -343,10 +346,10 @@ class _WebviewPageState extends State<WebviewPage> {
                 ScaffoldMessenger.of(context).showSnackBar(snackBar);
               }
               progress.value = 1;
-              return NavigationActionPolicy.CANCEL;
+              return .CANCEL;
             }
 
-            return NavigationActionPolicy.ALLOW;
+            return .ALLOW;
           },
         ),
       ),

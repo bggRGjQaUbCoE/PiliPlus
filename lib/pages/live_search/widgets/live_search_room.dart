@@ -4,7 +4,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models_new/live/live_search/room_item.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 // 视频卡片 - 垂直布局
 class LiveCardVSearch extends StatelessWidget {
@@ -22,13 +22,13 @@ class LiveCardVSearch extends StatelessWidget {
       cover: item.cover,
     );
     return Card(
-      clipBehavior: Clip.hardEdge,
       child: InkWell(
         onTap: () => PageUtils.toLiveRoom(item.roomid),
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
+        borderRadius: const .all(.circular(12)),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: .start,
           children: [
             AspectRatio(
               aspectRatio: Style.aspectRatio,
@@ -43,17 +43,13 @@ class LiveCardVSearch extends StatelessWidget {
                         src: item.cover!,
                         width: maxWidth,
                         height: maxHeight,
-                        type: .emote,
+                        borderRadius: const .vertical(top: .circular(12)),
                       ),
                       Positioned(
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        child: AnimatedOpacity(
-                          opacity: 1,
-                          duration: const Duration(milliseconds: 200),
-                          child: videoStat(context),
-                        ),
+                        child: videoStat(),
                       ),
                     ],
                   );
@@ -63,7 +59,7 @@ class LiveCardVSearch extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(5, 8, 5, 4),
               child: Text(
-                '${item.title}',
+                item.title.toString(),
                 textAlign: TextAlign.start,
                 style: const TextStyle(
                   letterSpacing: 0.3,
@@ -78,7 +74,7 @@ class LiveCardVSearch extends StatelessWidget {
     );
   }
 
-  Widget videoStat(BuildContext context) {
+  Widget videoStat() {
     return Container(
       height: 50,
       padding: const EdgeInsets.only(top: 26, left: 10, right: 10),
@@ -97,7 +93,7 @@ class LiveCardVSearch extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            '${item.name}',
+            item.name.toString(),
             style: const TextStyle(fontSize: 11, color: Colors.white),
           ),
           if (item.watchedShow?.textLarge case final textLarge?)

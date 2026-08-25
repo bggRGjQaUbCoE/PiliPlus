@@ -9,6 +9,7 @@ import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart' show appSupportDirPath;
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -56,6 +57,7 @@ class _WebviewPageState extends State<WebviewPage> {
   late bool _init = false;
   late final WebViewController _controller;
 
+  static final isFloating = Platform.isWindows || Platform.isLinux;
   static const blankPage = 'about:blank';
   static final _prefixRegex = RegExp(
     r'^(?!(https?://))\S+://',
@@ -89,12 +91,12 @@ class _WebviewPageState extends State<WebviewPage> {
               selfHandle: true,
               off: _off,
             )) {
-          if (!Platform.isWindows) _progress.value = 1;
+          if (!isFloating) _progress.value = 1;
           return NavigationDecision.prevent;
         }
 
         if (_prefixRegex.hasMatch(url)) {
-          if (Platform.isWindows || Platform.isLinux) {
+          if (isFloating) {
             PageUtils.launchURL(url);
           } else {
             if (mounted) {
@@ -109,7 +111,7 @@ class _WebviewPageState extends State<WebviewPage> {
               );
             }
           }
-          if (!Platform.isWindows) _progress.value = 1;
+          if (!isFloating) _progress.value = 1;
           return .prevent;
         }
         return .navigate;
@@ -170,16 +172,18 @@ class _WebviewPageState extends State<WebviewPage> {
         },
       );
 
-    (_controller.platform as WindowsPlatformWebViewController).openDevTools();
+    if (kDebugMode) {
+      if (_controller.platform case WindowsPlatformWebViewController ctr) {
+        ctr.openDevTools();
+      }
+    }
 
     _initPage();
   }
 
   @pragma('vm:prefer-inline')
   Future<void> _initPage() {
-    return _controller.loadRequest(
-      Uri.parse(Platform.isWindows || Platform.isLinux ? blankPage : _url),
-    );
+    return _controller.loadRequest(Uri.parse(isFloating ? blankPage : _url));
   }
 
   void _injectJavaScriptForBilibili(String url) {
@@ -213,6 +217,49 @@ class _WebviewPageState extends State<WebviewPage> {
     }
   }
 
+  Future<void> _handleAction(WebviewMenuItem item) async {
+    switch (item) {
+      case WebviewMenuItem.refresh:
+        await _controller.reload();
+        break;
+      case WebviewMenuItem.copy:
+        final uri = await _controller.currentUrl();
+        if (uri != null) Utils.copyText(uri);
+        break;
+      case WebviewMenuItem.openInBrowser:
+        final uri = await _controller.currentUrl();
+        if (uri != null) PageUtils.launchURL(uri);
+        break;
+      case WebviewMenuItem.clearCache:
+        try {
+          await _controller.clearCache();
+          await _controller.clearLocalStorage();
+          SmartDialog.showToast('已清理缓存');
+        } catch (e) {
+          SmartDialog.showToast(e.toString());
+        }
+        break;
+      case WebviewMenuItem.goBack:
+        if (await _controller.canGoBack()) {
+          _controller.goBack();
+        } else {
+          Get.back();
+        }
+        break;
+      case WebviewMenuItem.resetCookie:
+        await LoginUtils.setWebCookie();
+        SmartDialog.showToast('设置成功，刷新或重新打开网页');
+        break;
+    }
+  }
+
+  Widget _textButton(WebviewMenuItem item) {
+    return TextButton(
+      child: Text(item.title),
+      onPressed: () => _handleAction(item),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (Platform.isLinux) {
@@ -226,19 +273,39 @@ class _WebviewPageState extends State<WebviewPage> {
         ),
       );
     }
+
+    Widget title = Obx(
+      () => Text(
+        _title.value.isNotEmpty ? _title.value : _url,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+
+    if (isFloating) {
+      title = Row(
+        children: [
+          ...WebviewMenuItem.values
+              .take(WebviewMenuItem.values.length - 1)
+              .map(_textButton),
+          title,
+        ],
+      );
+    }
+
     // shouldInterceptRequest: passport url, shouldInterceptAjaxRequest: edit note title
     return Scaffold(
       appBar: widget.url != null
           ? null
           : AppBar(
-              title: Obx(
-                () => Text(
-                  _title.value.isNotEmpty ? _title.value : _url,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              bottom: Platform.isWindows
+              leading: isFloating
+                  ? IconButton(
+                      onPressed: Get.back,
+                      icon: const Icon(Icons.arrow_back_outlined),
+                    )
+                  : null,
+              title: title,
+              bottom: isFloating
                   ? null
                   : PreferredSize(
                       preferredSize: Size.zero,
@@ -248,64 +315,32 @@ class _WebviewPageState extends State<WebviewPage> {
                             : const SizedBox.shrink(),
                       ),
                     ),
-              actions: [
-                // TODO: desktop
-                PopupMenuButton<WebviewMenuItem>(
-                  onSelected: (item) async {
-                    switch (item) {
-                      case WebviewMenuItem.refresh:
-                        await _controller.reload();
-                        break;
-                      case WebviewMenuItem.copy:
-                        final uri = await _controller.currentUrl();
-                        if (uri != null) Utils.copyText(uri);
-                        break;
-                      case WebviewMenuItem.openInBrowser:
-                        final uri = await _controller.currentUrl();
-                        if (uri != null) PageUtils.launchURL(uri);
-                        break;
-                      case WebviewMenuItem.clearCache:
-                        try {
-                          await _controller.clearCache();
-                          await _controller.clearLocalStorage();
-                          SmartDialog.showToast('已清理缓存');
-                        } catch (e) {
-                          SmartDialog.showToast(e.toString());
-                        }
-                        break;
-                      case WebviewMenuItem.goBack:
-                        if (await _controller.canGoBack()) {
-                          _controller.goBack();
-                        } else {
-                          Get.back();
-                        }
-                        break;
-                      case WebviewMenuItem.resetCookie:
-                        await LoginUtils.setWebCookie();
-                        SmartDialog.showToast('设置成功，刷新或重新打开网页');
-                        break;
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    ...WebviewMenuItem.values
-                        .take(WebviewMenuItem.values.length - 1)
-                        .map(
-                          (item) => PopupMenuItem(
-                            value: item,
-                            child: Text(item.title),
+              actions: isFloating
+                  ? null
+                  : [
+                      // TODO: desktop
+                      PopupMenuButton<WebviewMenuItem>(
+                        onSelected: _handleAction,
+                        itemBuilder: (context) => [
+                          ...WebviewMenuItem.values
+                              .take(WebviewMenuItem.values.length - 1)
+                              .map(
+                                (item) => PopupMenuItem(
+                                  value: item,
+                                  child: Text(item.title),
+                                ),
+                              ),
+                          const PopupMenuDivider(),
+                          PopupMenuItem(
+                            value: WebviewMenuItem.goBack,
+                            child: Text(
+                              WebviewMenuItem.goBack.title,
+                              style: TextStyle(color: colorScheme.error),
+                            ),
                           ),
-                        ),
-                    const PopupMenuDivider(),
-                    PopupMenuItem(
-                      value: WebviewMenuItem.goBack,
-                      child: Text(
-                        WebviewMenuItem.goBack.title,
-                        style: TextStyle(color: colorScheme.error),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
             ),
       body: SafeArea(child: WebViewWidget(controller: _controller)),
     );

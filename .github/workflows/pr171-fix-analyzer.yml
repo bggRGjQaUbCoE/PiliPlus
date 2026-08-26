@@ -1,0 +1,61 @@
+name: PR171 fix analyzer errors
+on:
+  push:
+    branches: [resolve/pr171-ci]
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: resolve/pr171-ohos
+          fetch-depth: 0
+      - name: Fix remaining semantic-port errors
+        shell: bash
+        run: |
+          set -eu
+          git config user.name "哥哥科技"
+          git config user.email "175325443+ucxn@users.noreply.github.com"
+          python3 - <<'PY'
+          from pathlib import Path
+
+          # 1) Lifecycle merge: one extra brace closed the State class early.
+          p = Path('lib/plugin/pl_player/view/view.dart')
+          s = p.read_text()
+          bad = '''    if (state != AppLifecycleState.paused && state != AppLifecycleState.detached) {\n      plPlayerController.autoResumeInPipIfNeeded();\n    }\n    }\n    if (!plPlayerController.continuePlayInBackground.value) {'''
+          good = '''    if (state != AppLifecycleState.paused && state != AppLifecycleState.detached) {\n      plPlayerController.autoResumeInPipIfNeeded();\n    }\n    if (!plPlayerController.continuePlayInBackground.value) {'''
+          if bad not in s:
+              raise SystemExit('lifecycle brace pattern not found')
+          p.write_text(s.replace(bad, good, 1))
+
+          # 2) OHOS added a serialized setDataSource wrapper. Carry liveUid through
+          # both wrapper -> private implementation layers for playback statistics.
+          p = Path('lib/plugin/pl_player/controller.dart')
+          s = p.read_text()
+          call = '''        pgcType: pgcType,\n        videoType: videoType,'''
+          if call not in s:
+              raise SystemExit('setDataSource wrapper call anchor not found')
+          s = s.replace(call, '''        pgcType: pgcType,\n        liveUid: liveUid,\n        videoType: videoType,''', 1)
+          private_sig = '''    int? seasonId,\n    int? pgcType,\n    VideoType? videoType,'''
+          if private_sig not in s:
+              raise SystemExit('private _setDataSource signature anchor not found')
+          s = s.replace(private_sig, '''    int? seasonId,\n    int? pgcType,\n    int? liveUid,\n    VideoType? videoType,''', 1)
+          p.write_text(s)
+
+          # 3) This PR targets the OHOS fork. Keep the shared Windows probe API
+          # shape but do not import a win32 FFI implementation incompatible with
+          # the fork's pinned win32 version. Windows enhancement can be ported
+          # separately without blocking the playback-time feature.
+          Path('lib/utils/windows/network_info.dart').write_text('''final class WindowsNetworkInfo {\n  const WindowsNetworkInfo({this.rssi, this.wifiMbps, this.wiredMbps});\n\n  final int? rssi;\n  final int? wifiMbps;\n  final int? wiredMbps;\n}\n\nabstract final class WindowsNetworkInfoReader {\n  static const _empty = WindowsNetworkInfo();\n\n  static WindowsNetworkInfo read() => _empty;\n}\n''')
+          PY
+
+          if grep -R -n -E '^(<<<<<<<|=======|>>>>>>>)' lib android; then
+            echo 'Conflict markers remain' >&2
+            exit 1
+          fi
+          git diff --check
+          git add lib/plugin/pl_player/view/view.dart lib/plugin/pl_player/controller.dart lib/utils/windows/network_info.dart
+          git commit -m "fix: adapt playback insights to OHOS runtime"
+          git push origin HEAD:resolve/pr171-ohos

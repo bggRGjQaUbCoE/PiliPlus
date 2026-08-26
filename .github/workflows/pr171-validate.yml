@@ -1,0 +1,22 @@
+name: PR171 validate resolved OHOS tree
+on:
+  push:
+    branches: [resolve/pr171-ci]
+permissions:
+  contents: read
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: resolve/pr171-ohos
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: "3.41.9"
+          cache: true
+      - run: flutter pub get
+        env:
+          GIT_LFS_SKIP_SMUDGE: 1
+      - run: dart analyze --no-fatal-warnings

@@ -475,13 +475,10 @@ abstract final class PageUtils {
       if (off) {
         Get.offNamed(
           '/webview',
-          parameters: {
-            'url': url,
-            ...?parameters,
-          },
+          parameters: {'url': url.http2https, ...?parameters},
         );
       } else {
-        PiliScheme.routePushFromUrl(url, parameters: parameters);
+        PiliScheme.routePushFromUrl(url.http2https, parameters: parameters);
       }
     }
   }

@@ -52,9 +52,9 @@ import 'package:PiliPlus/plugin/pl_player/widgets/common_btn.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/forward_seek.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/mpv_convert_webp.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/play_pause_btn.dart';
+import 'package:PiliPlus/services/playback_stats_service.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
-import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
@@ -359,11 +359,14 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (const <AppLifecycleState>[.paused, .detached].contains(state)) {
+      unawaited(PlaybackStatsService.flush());
+    }
     final player = plPlayerController.videoPlayerController;
     if (player == null) return;
-    if (state != AppLifecycleState.paused &&
-        state != AppLifecycleState.detached) {
+    if (state != AppLifecycleState.paused && state != AppLifecycleState.detached) {
       plPlayerController.autoResumeInPipIfNeeded();
+    }
     }
     if (!plPlayerController.continuePlayInBackground.value) {
       if (const <AppLifecycleState>[.paused, .detached].contains(state)) {
@@ -881,7 +884,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                     height: 35,
                     padding: const EdgeInsets.only(left: 15, right: 10),
                     value: item.quality,
-                    onTap: () async {
+                    onTap: () {
                       if (currentVideoQa.code == item.quality) {
                         return;
                       }
@@ -897,9 +900,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                       // update
                       if (!plPlayerController.tempPlayerConf) {
                         GStorage.setting.put(
-                          await ConnectivityUtils.isWiFi
-                              ? SettingBoxKey.defaultVideoQa
-                              : SettingBoxKey.defaultVideoQaCellular,
+                          plPlayerController.playbackNetworkProfile
+                                      ?.useCellularPreferences ==
+                                  true
+                              ? SettingBoxKey.defaultVideoQaCellular
+                              : SettingBoxKey.defaultVideoQa,
                           quality,
                         );
                       }
@@ -1258,17 +1263,32 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   }
 
   LongPressGestureRecognizer? _longPressRecognizer;
+  int _longPressSpeedStep = 0;
   LongPressGestureRecognizer get longPressRecognizer => _longPressRecognizer ??=
       LongPressGestureRecognizer(
           duration: plPlayerController.enableTapDm
               ? const Duration(milliseconds: 300)
               : null,
         )
-        ..onLongPressStart = ((_) =>
-            plPlayerController.setLongPressStatus(true))
-        ..onLongPressEnd = ((_) => plPlayerController.setLongPressStatus(false))
-        ..onLongPressCancel = (() =>
-            plPlayerController.setLongPressStatus(false));
+        ..onLongPressStart = ((_) {
+          _longPressSpeedStep = 0;
+          plPlayerController.setLongPressStatus(true);
+        })
+        ..onLongPressMoveUpdate = ((details) {
+          if (!plPlayerController.enableLongPressSlideSpeed) return;
+          final step = (-details.offsetFromOrigin.dy / 24).truncate();
+          if (step == _longPressSpeedStep) return;
+          plPlayerController.adjustLongPressSpeed(step - _longPressSpeedStep);
+          _longPressSpeedStep = step;
+        })
+        ..onLongPressEnd = ((_) {
+          _longPressSpeedStep = 0;
+          plPlayerController.setLongPressStatus(false);
+        })
+        ..onLongPressCancel = (() {
+          _longPressSpeedStep = 0;
+          plPlayerController.setLongPressStatus(false);
+        });
   late final ImmediateTapGestureRecognizer _tapGestureRecognizer;
   late final DoubleTapGestureRecognizer _doubleTapGestureRecognizer;
   late final PlayerScaleGestureRecognizer _scaleGestureRecognizer;
@@ -1511,7 +1531,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                       ),
                       child: Obx(
                         () => Text(
-                          '${plPlayerController.enableAutoLongPressSpeed ? (plPlayerController.longPressStatus.value ? plPlayerController.lastPlaybackSpeed : plPlayerController.playbackSpeed) * 2 : plPlayerController.longPressSpeed}倍速中',
+                          '${plPlayerController.playbackSpeed}倍速中',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 13,

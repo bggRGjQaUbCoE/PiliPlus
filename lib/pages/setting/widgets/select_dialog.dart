@@ -6,6 +6,7 @@ import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/video/cdn_type.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
+import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:dio/dio.dart';
@@ -107,7 +108,7 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
         length,
         (_) => ValueNotifier<String?>(null),
       );
-      _tokens = List.generate(length, (_) => CancelToken());
+      _tokens = List.filled(length, null);
       _startSpeedTest();
     }
     super.initState();
@@ -141,27 +142,39 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
 
   Future<void> _startSpeedTest() async {
     try {
+      final limits =
+          (await ConnectivityUtils.resolveForPlayback())
+              .useCellularPreferences
+          ? (warmup: 4194304, max: 16777216)
+          : (warmup: 8388608, max: 67108864);
       final videoItem = widget.sample ?? await _getSampleUrl();
-      await _testAllCdnServices(videoItem);
+      await _testAllCdnServices(videoItem, limits);
     } catch (e) {
       if (kDebugMode) debugPrint('CDN speed test failed: $e');
     }
   }
 
-  Future<void> _testAllCdnServices(BaseItem videoItem) async {
+  Future<void> _testAllCdnServices(
+    BaseItem videoItem,
+    ({int warmup, int max}) limits,
+  ) async {
     for (final item in CDNService.values) {
       if (!mounted) break;
-      await _testSingleCdn(item, videoItem);
+      await _testSingleCdn(item, videoItem, limits);
     }
   }
 
-  Future<void> _testSingleCdn(CDNService item, BaseItem videoItem) async {
+  Future<void> _testSingleCdn(
+    CDNService item,
+    BaseItem videoItem,
+    ({int warmup, int max}) limits,
+  ) async {
     try {
       final cdnUrl = VideoUtils.getCdnUrl(
         videoItem.playUrls,
         defaultCDNService: item,
       );
-      await _measureDownloadSpeed(cdnUrl, item.index);
+      await _measureDownloadSpeed(cdnUrl, item.index, limits);
     } catch (e) {
       _handleSpeedTestError(e, item.index);
     }
@@ -169,50 +182,204 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
 
   late final Dio _dio;
 
-  Future<void> _measureDownloadSpeed(String url, int index) async {
-    const maxSize = 8 * 1024 * 1024;
-    int downloaded = 0;
+  Future<void> _measureDownloadSpeed(
+    String url,
+    int index,
+    ({int warmup, int max}) limits,
+  ) async {
+    _CdnSpeedSample sample;
+    try {
+      sample = await _measureStream(url, index, limits);
+    } catch (e) {
+      if (!mounted) return;
+      if (kDebugMode) debugPrint('CDN stream speed test failed: $e');
+      sample = await _measureLegacy(url, index, limits);
+    }
+    if (mounted) _updateSpeedResult(index, sample);
+  }
 
-    final cancelToken = _tokens[index];
-    final start = DateTime.now().microsecondsSinceEpoch;
+  CancelToken _newToken(int index) {
+    final token = CancelToken();
+    _tokens[index]?.cancel();
+    _tokens[index] = token;
+    return token;
+  }
 
-    void onClose() {
-      cancelToken?.cancel();
-      _tokens[index] = null;
+  Future<_CdnSpeedSample> _measureStream(
+    String url,
+    int index,
+    ({int warmup, int max}) limits,
+  ) async {
+    final token = _newToken(index);
+    final watch = Stopwatch()..start();
+    Timer? measureTimer;
+    var intentionalStop = false;
+    var downloaded = 0;
+    int? firstByteUs;
+    int? sampleStartUs;
+    var sampleStartBytes = 0;
+
+    final totalTimer = Timer(const Duration(seconds: 15), () {
+      intentionalStop = true;
+      token.cancel();
+    });
+
+    try {
+      final response = await _dio.get<ResponseBody>(
+        url,
+        cancelToken: token,
+        options: Options(
+          headers: {'range': 'bytes=0-${limits.max - 1}'},
+          responseType: ResponseType.stream,
+          receiveTimeout: Duration.zero,
+          validateStatus: (status) => status == 200 || status == 206,
+        ),
+      );
+      final stream = response.data?.stream;
+      if (stream == null) throw StateError('测速响应为空');
+
+      await for (final chunk in stream) {
+        if (chunk.isEmpty) continue;
+        final now = watch.elapsedMicroseconds;
+        firstByteUs ??= now;
+        final total = downloaded + chunk.length;
+        downloaded = total > limits.max ? limits.max : total;
+
+        if (sampleStartUs == null && downloaded >= limits.warmup) {
+          sampleStartUs = now;
+          sampleStartBytes = downloaded;
+          measureTimer = Timer(const Duration(seconds: 8), () {
+            intentionalStop = true;
+            token.cancel();
+          });
+        }
+        if (downloaded >= limits.max) break;
+      }
+    } on DioException {
+      if (!intentionalStop) rethrow;
+    } finally {
+      totalTimer.cancel();
+      measureTimer?.cancel();
+      if (identical(_tokens[index], token)) _tokens[index] = null;
     }
 
-    await _dio.get(
-      url,
-      cancelToken: cancelToken,
-      onReceiveProgress: (count, total) {
-        if (!mounted) {
-          return;
-        }
-
-        final duration = DateTime.now().microsecondsSinceEpoch - start;
-
-        downloaded += count;
-
-        if (duration > 15000000) {
-          onClose();
-          if (downloaded > 0) {
-            _updateSpeedResult(index, downloaded, duration);
-            downloaded = 0;
-          } else {
-            throw TimeoutException('测速超时');
-          }
-        } else if (downloaded >= maxSize) {
-          onClose();
-          _updateSpeedResult(index, downloaded, duration);
-          downloaded = 0;
-        }
-      },
+    return _buildSample(
+      watch: watch,
+      downloaded: downloaded,
+      firstByteUs: firstByteUs,
+      sampleStartUs: sampleStartUs,
+      sampleStartBytes: sampleStartBytes,
+      type: downloaded >= limits.max
+          ? _CdnSpeedSampleType.complete
+          : _CdnSpeedSampleType.partial,
     );
   }
 
-  void _updateSpeedResult(int index, int downloaded, int duration) {
-    final speed = (downloaded / duration).toStringAsPrecision(3);
-    _cdnResList[index].value = '${speed}MB/s';
+  Future<_CdnSpeedSample> _measureLegacy(
+    String url,
+    int index,
+    ({int warmup, int max}) limits,
+  ) async {
+    final token = _newToken(index);
+    final watch = Stopwatch()..start();
+    Timer? measureTimer;
+    var intentionalStop = false;
+    var downloaded = 0;
+    int? firstByteUs;
+    int? sampleStartUs;
+    var sampleStartBytes = 0;
+
+    final totalTimer = Timer(const Duration(seconds: 15), () {
+      intentionalStop = true;
+      token.cancel();
+    });
+
+    try {
+      await _dio.get(
+        url,
+        cancelToken: token,
+        onReceiveProgress: (count, _) {
+          if (count <= 0 || intentionalStop) return;
+          final now = watch.elapsedMicroseconds;
+          firstByteUs ??= now;
+          downloaded = count > limits.max ? limits.max : count;
+
+          if (sampleStartUs == null && downloaded >= limits.warmup) {
+            sampleStartUs = now;
+            sampleStartBytes = downloaded;
+            measureTimer = Timer(const Duration(seconds: 8), () {
+              intentionalStop = true;
+              token.cancel();
+            });
+          }
+          if (downloaded >= limits.max) {
+            intentionalStop = true;
+            token.cancel();
+          }
+        },
+      );
+    } on DioException {
+      if (!intentionalStop) rethrow;
+    } finally {
+      totalTimer.cancel();
+      measureTimer?.cancel();
+      if (identical(_tokens[index], token)) _tokens[index] = null;
+    }
+
+    return _buildSample(
+      watch: watch,
+      downloaded: downloaded,
+      firstByteUs: firstByteUs,
+      sampleStartUs: sampleStartUs,
+      sampleStartBytes: sampleStartBytes,
+      type: _CdnSpeedSampleType.fallback,
+    );
+  }
+
+  _CdnSpeedSample _buildSample({
+    required Stopwatch watch,
+    required int downloaded,
+    required int? firstByteUs,
+    required int? sampleStartUs,
+    required int sampleStartBytes,
+    required _CdnSpeedSampleType type,
+  }) {
+    watch.stop();
+    if (downloaded <= 0 || firstByteUs == null) {
+      throw TimeoutException('测速超时');
+    }
+
+    var bytes = downloaded - sampleStartBytes;
+    var startUs = sampleStartUs;
+    if (bytes <= 0 || startUs == null) {
+      bytes = downloaded;
+      startUs = firstByteUs;
+    }
+    final elapsedUs = watch.elapsedMicroseconds - startUs;
+    return (
+      bytes: bytes,
+      elapsedUs: elapsedUs > 0 ? elapsedUs : 1,
+      firstByteUs: firstByteUs,
+      type: type,
+    );
+  }
+
+  void _updateSpeedResult(int index, _CdnSpeedSample sample) {
+    final isFallback = sample.type == _CdnSpeedSampleType.fallback;
+    final divisor = isFallback ? 1000 * 1000 : 1024 * 1024;
+    final speed =
+        sample.bytes *
+        Duration.microsecondsPerSecond /
+        sample.elapsedUs /
+        divisor;
+    final unit = switch (sample.type) {
+      _CdnSpeedSampleType.complete => 'MiB/s',
+      _CdnSpeedSampleType.partial => 'M/s',
+      _CdnSpeedSampleType.fallback => 'MB/s',
+    };
+    final firstByteMs = sample.firstByteUs / 1000;
+    _cdnResList[index].value =
+        '${speed.toStringAsPrecision(3)} $unit · 首包 ${firstByteMs.toStringAsPrecision(3)}ms';
   }
 
   void _handleSpeedTestError(dynamic error, int index) {
@@ -266,3 +433,12 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
     );
   }
 }
+
+enum _CdnSpeedSampleType { complete, partial, fallback }
+
+typedef _CdnSpeedSample = ({
+  int bytes,
+  int elapsedUs,
+  int firstByteUs,
+  _CdnSpeedSampleType type,
+});

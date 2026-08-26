@@ -7,6 +7,14 @@ library;
 abstract final class PiliAndroidHelper {
   static void back() {}
 
+  static ({
+    int? linkSpeed,
+    int? rssi,
+    int? signalLevel,
+    bool metered,
+    bool weakHint,
+  })? networkInfo() => null;
+
   static void biliSendCommAntifraud(
     int action,
     int oid,

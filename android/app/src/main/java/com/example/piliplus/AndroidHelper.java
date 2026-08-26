@@ -20,6 +20,10 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Icon;
 import android.media.session.PlaybackState;
 import android.net.Uri;
+import android.net.ConnectivityManager;
+import android.net.NetworkCapabilities;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.provider.MediaStore;
 import android.provider.Settings;
@@ -62,6 +66,47 @@ public final class AndroidHelper {
 
     public static int sdkInt() {
         return Build.VERSION.SDK_INT;
+    }
+
+    @SuppressWarnings("deprecation")
+    public static int[] networkInfo() {
+        Context context = getContext();
+        ConnectivityManager connectivityManager = context.getSystemService(ConnectivityManager.class);
+        NetworkCapabilities capabilities = connectivityManager == null
+                ? null
+                : connectivityManager.getNetworkCapabilities(connectivityManager.getActiveNetwork());
+        if (capabilities == null || !capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+            return null;
+        }
+
+        int linkSpeed = -1;
+        int rssi = -127;
+        int signalLevel = -1;
+        WifiManager wifiManager = context.getSystemService(WifiManager.class);
+        if (wifiManager != null) {
+            WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+            if (wifiInfo != null) {
+                linkSpeed = wifiInfo.getLinkSpeed();
+                rssi = wifiInfo.getRssi();
+                if (rssi > -127 && rssi <= 0) {
+                    signalLevel = WifiManager.calculateSignalLevel(rssi, 5);
+                }
+            }
+        }
+
+        int flags = connectivityManager.isActiveNetworkMetered() ? 1 : 0;
+        if (capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL)) {
+            flags |= 2;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+                && !capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_CONGESTED)) {
+            flags |= 4;
+        }
+        if (Build.VERSION.SDK_INT >= 36
+                && !capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_BANDWIDTH_CONSTRAINED)) {
+            flags |= 8;
+        }
+        return new int[]{linkSpeed, rssi, signalLevel, flags};
     }
 
     public static void back() {

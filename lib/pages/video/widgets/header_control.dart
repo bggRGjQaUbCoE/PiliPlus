@@ -43,7 +43,6 @@ import 'package:PiliPlus/services/shutdown_timer_service.dart'
     show shutdownTimerService;
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
-import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
@@ -945,7 +944,7 @@ class HeaderControlState extends State<HeaderControl>
                     final isCurr = currentVideoQa.code == item.quality;
                     return ListTile(
                       dense: true,
-                      onTap: () async {
+                      onTap: () {
                         if (isCurr) {
                           return;
                         }
@@ -962,9 +961,11 @@ class HeaderControlState extends State<HeaderControl>
                         // update
                         if (!plPlayerController.tempPlayerConf) {
                           setting.put(
-                            await ConnectivityUtils.isWiFi
-                                ? SettingBoxKey.defaultVideoQa
-                                : SettingBoxKey.defaultVideoQaCellular,
+                            plPlayerController.playbackNetworkProfile
+                                        ?.useCellularPreferences ==
+                                    true
+                                ? SettingBoxKey.defaultVideoQaCellular
+                                : SettingBoxKey.defaultVideoQa,
                             quality,
                           );
                         }
@@ -1025,7 +1026,7 @@ class HeaderControlState extends State<HeaderControl>
                     final isCurr = currentAudioQa.code == item.id;
                     return ListTile(
                       dense: true,
-                      onTap: () async {
+                      onTap: () {
                         if (isCurr) {
                           return;
                         }
@@ -1042,9 +1043,11 @@ class HeaderControlState extends State<HeaderControl>
                         // update
                         if (!plPlayerController.tempPlayerConf) {
                           setting.put(
-                            await ConnectivityUtils.isWiFi
-                                ? SettingBoxKey.defaultAudioQa
-                                : SettingBoxKey.defaultAudioQaCellular,
+                            plPlayerController.playbackNetworkProfile
+                                        ?.useCellularPreferences ==
+                                    true
+                                ? SettingBoxKey.defaultAudioQaCellular
+                                : SettingBoxKey.defaultAudioQa,
                             quality,
                           );
                         }
@@ -1116,12 +1119,10 @@ class HeaderControlState extends State<HeaderControl>
                           final isCurr = curCodecs.any(item.startsWith);
                           return ListTile(
                             dense: true,
-                            onTap: () {
+                            onTap: () async {
                               if (isCurr) return;
                               Get.back();
-                              videoDetailCtr
-                                ..currentDecodeFormats = format
-                                ..updatePlayer();
+                              await videoDetailCtr.setDecodeFormat(format);
                               SmartDialog.showToast("解码已变为：${format.name}");
                             },
                             contentPadding: const .symmetric(horizontal: 20),

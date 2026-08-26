@@ -8,6 +8,7 @@ import 'package:PiliPlus/harmony_adapt/harmony_channel.dart';
 import 'package:PiliPlus/http/live.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/models/common/network_profile.dart';
 import 'package:PiliPlus/models/common/super_chat_type.dart';
 import 'package:PiliPlus/models/common/video/live_quality.dart';
 import 'package:PiliPlus/models/model_owner.dart';
@@ -25,17 +26,17 @@ import 'package:PiliPlus/pages/live_room/send_danmaku/view.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
+import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/danmaku_options.dart';
+import 'package:PiliPlus/services/playback_stats_service.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/tcp/live.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/danmaku_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -115,7 +116,7 @@ class LiveRoomController extends GetxController {
   late final RxInt pageIndex = 0.obs;
   PageController? pageController;
 
-  int? currentQn = PlatformUtils.isMobile ? null : Pref.liveQuality;
+  int? currentQn;
   final currentQnDesc = ''.obs;
   final RxBool isPortrait = false.obs;
   late List<({int code, String desc})> acceptQnList = [];
@@ -151,6 +152,11 @@ class LiveRoomController extends GetxController {
   });
 
   StreamSubscription? _sizeSub;
+  NetworkProfile? _networkProfile;
+  bool _queryingLiveUrl = false;
+  bool _pendingNetworkReload = false;
+  late final Future<void> Function(NetworkPolicyChange)?
+  _previousNetworkPolicyCallback;
 
   void _onSizeChanged((int, int) value) {
     final isVertical = value.$2 > value.$1;
@@ -183,10 +189,11 @@ class LiveRoomController extends GetxController {
     isLogin = account.isLogin;
     mid = account.mid;
     HarmonyChannel.holdContinuation(this);
-    // 跨设备接续等场景显式指定初始状态（听直播/暂停），优先于默认行为
     if (Get.parameters['onlyAudio'] == 'true') {
       plPlayerController.onlyPlayAudio.value = true;
     }
+    _previousNetworkPolicyCallback = plPlayerController.onNetworkPolicyChanged;
+    plPlayerController.onNetworkPolicyChanged = _onNetworkPolicyChanged;
     queryLiveUrl(
       autoplay: Get.parameters['autoplay'] != 'false',
       autoFullScreenFlag: true,
@@ -210,6 +217,7 @@ class LiveRoomController extends GetxController {
     return plPlayerController.setDataSource(
       NetworkSource(videoSource: videoUrl!, audioSource: null),
       isLive: true,
+      liveUid: ruid,
       autoplay: autoplay,
       isVertical: isPortrait.value,
       autoFullScreenFlag: autoFullScreenFlag,
@@ -217,49 +225,93 @@ class LiveRoomController extends GetxController {
   }
 
   Future<void> queryLiveUrl({
-    bool autoplay = true,
     bool autoFullScreenFlag = false,
+    bool autoplay = true,
   }) async {
-    currentQn ??= await ConnectivityUtils.isWiFi
-        ? Pref.liveQuality
-        : Pref.liveQualityCellular;
-    final res = await LiveHttp.liveRoomInfo(
-      roomId: roomId,
-      qn: currentQn,
-      onlyAudio: plPlayerController.onlyPlayAudio.value,
-    );
-    if (res case Success(:final response)) {
-      if (response.liveStatus != 1) {
-        _showDialog('当前直播间未开播');
-        return;
-      }
-      final playurl = response.playurlInfo?.playurl;
-      if (playurl == null) {
-        _showDialog('无法获取播放地址');
-        return;
-      }
-      ruid = response.uid;
-      if (response.roomId case final roomId?) {
-        this.roomId = roomId;
-      }
-      liveTime.value = response.liveTime;
-      startLiveTimer();
-      isPortrait.value = response.isPortrait ?? false;
-      stream = playurl.stream;
-      _initStreamIndex();
-      await initLiveUrl(
-        streamIndex: streamIndex,
-        formatIndex: formatIndex,
-        codecIndex: codecIndex,
-        liveUrlIndex: liveUrlIndex,
-        autoplay: autoplay,
-        autoFullScreenFlag: autoFullScreenFlag,
+    if (_queryingLiveUrl) return;
+    _queryingLiveUrl = true;
+    try {
+      final profile = await plPlayerController.resolveNetworkProfile();
+      final previous = _networkProfile;
+      _networkProfile = profile;
+      plPlayerController.applyNetworkProfile(
+        profile,
+        resetSessionPreferences:
+            plPlayerController.cacheVideoQa == null ||
+            previous?.identity != profile.identity,
       );
-      isLoaded.value = true;
-    } else {
-      _showDialog(res.toString());
+      if (currentQn == null || previous?.identity != profile.identity) {
+        currentQn = profile.useCellularPreferences
+            ? Pref.liveQualityCellular
+            : Pref.liveQuality;
+      }
+
+      final res = await LiveHttp.liveRoomInfo(
+        roomId: roomId,
+        qn: currentQn,
+        onlyAudio: plPlayerController.onlyPlayAudio.value,
+      );
+      if (res case Success(:final response)) {
+        if (response.liveStatus != 1) {
+          _showDialog('当前直播间未开播');
+          return;
+        }
+        final playurl = response.playurlInfo?.playurl;
+        if (playurl == null) {
+          _showDialog('无法获取播放地址');
+          return;
+        }
+        ruid = response.uid;
+        if (response.roomId case final roomId?) {
+          this.roomId = roomId;
+        }
+        liveTime.value = response.liveTime;
+        startLiveTimer();
+        isPortrait.value = response.isPortrait ?? false;
+        stream = playurl.stream;
+        _initStreamIndex();
+        await initLiveUrl(
+          streamIndex: streamIndex,
+          formatIndex: formatIndex,
+          codecIndex: codecIndex,
+          liveUrlIndex: liveUrlIndex,
+          autoplay: autoplay,
+          autoFullScreenFlag: autoFullScreenFlag,
+        );
+        isLoaded.value = true;
+      } else {
+        _showDialog(res.toString());
+      }
+    } finally {
+      _queryingLiveUrl = false;
+      if (_pendingNetworkReload) {
+        _pendingNetworkReload = false;
+        await _reloadForNetworkPolicy();
+      }
     }
   }
+
+  Future<void> _onNetworkPolicyChanged(NetworkPolicyChange change) async {
+    if (plPlayerController.isResolvingNetworkProfile) return;
+    plPlayerController.applyNetworkProfile(
+      change.profile,
+      resetSessionPreferences: change.reason == NetworkPolicyReason.network,
+      refreshPeakPreferences: change.reason == NetworkPolicyReason.peak,
+    );
+    _networkProfile = change.profile;
+    if (change.reason != NetworkPolicyReason.network) return;
+    currentQn = change.profile.useCellularPreferences
+        ? Pref.liveQualityCellular
+        : Pref.liveQuality;
+    if (_queryingLiveUrl) {
+      _pendingNetworkReload = true;
+      return;
+    }
+    await _reloadForNetworkPolicy();
+  }
+
+  Future<void> _reloadForNetworkPolicy() =>
+      queryLiveUrl(autoplay: plPlayerController.playerStatus.isPlaying);
 
   late List<Stream> stream;
   int streamIndex = 0;
@@ -483,6 +535,12 @@ class LiveRoomController extends GetxController {
   @override
   void onClose() {
     HarmonyChannel.releaseContinuation(this);
+    PlaybackStatsService.endMediaIfMatches(
+      isLive: true,
+      liveUid: ruid,
+      position: plPlayerController.videoPlayerController?.state.position ?? Duration.zero,
+    );
+    plPlayerController.onNetworkPolicyChanged = _previousNetworkPolicyCallback;
     _stopSizeSub();
     closeLiveMsg();
     cancelLikeTimer();

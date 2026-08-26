@@ -138,6 +138,12 @@ List<SettingsModel> get videoSettings => [
         '首选解码格式：${(Pref.preferCodecsCellular.map((i) => i.name).join(","))}，请根据设备支持情况与需求调整',
     onTap: _showCellularCodecsDialog,
   ),
+  NormalModel(
+    title: 'PC 网络状态联动判断',
+    subtitle: '按有线或 Wi-Fi 状态联动画质、音质与编码偏好，并可设置网络高峰期',
+    leading: const Icon(Icons.lan_outlined),
+    onTap: (_, _) => Get.toNamed('/networkPolicy'),
+  ),
   if (kDebugMode || Platform.isAndroid)
     NormalModel(
       title: '音频输出设备',

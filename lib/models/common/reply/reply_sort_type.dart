@@ -8,4 +8,6 @@ enum ReplySortType {
   final String label;
   final String? text;
   const ReplySortType(this.title, this.label, {this.text});
+
+  String get reply2Title => this == time ? '最早评论' : title;
 }

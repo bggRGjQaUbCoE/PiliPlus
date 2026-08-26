@@ -270,7 +270,9 @@ abstract final class Pref {
       return codecs.map((i) => VideoDecodeFormatType.values.byName(i)).toList();
     }
     if (OS.isHarmony) return const <VideoDecodeFormatType>[.HEVC, .AVC];
-    return const <VideoDecodeFormatType>[.AVC, .AV1];
+    return PlatformUtils.isMobile
+        ? const <VideoDecodeFormatType>[.AVC, .HEVC]
+        : const <VideoDecodeFormatType>[.AVC, .AV1];
   }
 
   static List<VideoDecodeFormatType> get preferCodecsCellular {
@@ -278,7 +280,48 @@ abstract final class Pref {
     if (codecs is List) {
       return codecs.map((i) => VideoDecodeFormatType.values.byName(i)).toList();
     }
-    return preferCodecs;
+    return const <VideoDecodeFormatType>[.HEVC, .AV1];
+  }
+
+  static bool get wiredNetworkPolicy =>
+      _setting.get(SettingBoxKey.wiredNetworkPolicy, defaultValue: false);
+
+  static int get wiredMinLinkSpeed =>
+      _setting.get(SettingBoxKey.wiredMinLinkSpeed, defaultValue: 1000);
+
+  static bool get wiredNonstandardLinkSpeed => _setting.get(
+    SettingBoxKey.wiredNonstandardLinkSpeed,
+    defaultValue: false,
+  );
+
+  static bool get wifiNetworkPolicy =>
+      _setting.get(SettingBoxKey.wifiNetworkPolicy, defaultValue: false);
+
+  static int get wifiNetworkPolicyMode =>
+      _setting.get(SettingBoxKey.wifiNetworkPolicyMode, defaultValue: 0);
+
+  static int get wifiRssiThreshold =>
+      _setting.get(SettingBoxKey.wifiRssiThreshold, defaultValue: -70);
+
+  static int get wifiMinLinkSpeed =>
+      _setting.get(SettingBoxKey.wifiMinLinkSpeed, defaultValue: 100);
+
+  static List<Map<String, dynamic>> get networkPeakPeriods =>
+      (_setting.get(SettingBoxKey.networkPeakPeriods) as List?)
+          ?.whereType<Map>()
+          .map(Map<String, dynamic>.from)
+          .toList() ??
+      const [];
+
+  static List<VideoDecodeFormatType> get networkPeakCodecs {
+    final codecs = _setting.get(SettingBoxKey.networkPeakCodecs);
+    if (codecs is List) {
+      return codecs
+          .whereType<String>()
+          .map(VideoDecodeFormatType.values.byName)
+          .toList();
+    }
+    return const [];
   }
 
   static String get hardwareDecoding => _setting.get(
@@ -892,6 +935,14 @@ abstract final class Pref {
 
   static bool get enableAutoLongPressSpeed =>
       _setting.get(SettingBoxKey.enableAutoLongPressSpeed, defaultValue: false);
+
+  static double get longPressSpeedFactor =>
+      _setting.get(SettingBoxKey.longPressSpeedFactor, defaultValue: 2.0);
+
+  static bool get enableLongPressSlideSpeed => _setting.get(
+    SettingBoxKey.enableLongPressSlideSpeed,
+    defaultValue: false,
+  );
 
   static double get playSpeedDefault =>
       _video.get(VideoBoxKey.playSpeedDefault, defaultValue: 1.0);

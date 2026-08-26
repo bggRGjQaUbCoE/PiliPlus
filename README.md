@@ -1,253 +1,34 @@
 <div align="center">
-    <img width="200" height="200" src="assets/images/logo/logo.png">
+  <img width="200" height="200" src="assets/images/logo/logo.png" alt="PiliPlus">
+  <h1>PiliPlus FreeRate</h1>
+  <p>使用 Flutter 开发的 Bilibili 第三方客户端 · 哥哥科技维护的自由速率分支</p>
+  <p><img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/ucxn/Bili.Libre.Speed"> <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/ucxn/Bili.Libre.Speed"> <img alt="GitHub all releases" src="https://img.shields.io/github/downloads/ucxn/Bili.Libre.Speed/total"></p>
+  <img src="assets/screenshots/510shots_so.png" width="32%" alt="home" /> <img src="assets/screenshots/174shots_so.png" width="32%" alt="home" /> <img src="assets/screenshots/850shots_so.png" width="32%" alt="home" />
+  <br><img src="assets/screenshots/main_screen.png" width="96%" alt="main screen" />
 </div>
 
+## FreeRate · 自由速率
 
+哥哥科技维护的 PiliPlus 分支，顾名思义——“自由速率”~ 专为偏爱高倍速、高信息熵的朋友们打造：热爱博物、渴求信息、资源饥渴、节约时间……凡是想在有限的生命中了解更多信息、高效看视频的，都可以选择本软件！测试宽带真实业务速率：网络 CDN 诊断、高峰调控、弱网优化，助你流畅，护你冲浪！
 
-<div align="center">
-    <h1>PiliPlus</h1>
-<div align="center">
+**高倍速与观看统计：** 默认倍速、长按倍速与长按倍率系数均可自定义，长按期间可滑动调整临时倍速，持续 2 秒可锁定当前速度；统计区分普通观看/倒带重看、播放/暂停/缓冲与基础/临时倍速，计算实际/名义平均倍速、倍速节约时间、倒带等效倍速与完成率，并记录评论区停留、前进跳转、按 UP 主/年份/直播主播汇总等，完整原始统计可随设置导入导出。 **网络与 CDN：** Wi-Fi/蜂窝可分别设置画质、音质、编码及 CDN 优先级，多 CDN 按顺序使用，连接失败自动回退并明确提示；测速直接模拟真实视频业务，可设置单 CDN 数据量、预热、冷却与并行/串行模式，长期保存原始诊断，分离 DNS 与首包等待，记录响应头、250 ms 固定窗吞吐、P02/P05/P50/P95、带宽抖动与趋势、最大传输空窗、解析 IP 等指标。
 
-![GitHub repo size](https://img.shields.io/github/repo-size/ucxn/Bili.Libre.Speed)
-![GitHub Repo stars](https://img.shields.io/github/stars/ucxn/Bili.Libre.Speed)
-![GitHub all releases](https://img.shields.io/github/downloads/ucxn/Bili.Libre.Speed/total)
-</div>
-    <p>使用Flutter开发的BiliBili第三方客户端</p>
+**弱网、高峰与缓冲：** PC 可按有线链路速率、Wi-Fi RSSI/协商速率等状态判断“等效宽带/等效移网”，Windows 可查看当前网卡、收发协商速率、Metric、MTU 等；网络高峰期支持多时段、条目独立启停，并临时覆盖编码偏好；按流量计费的 Wi-Fi 直接沿用蜂窝策略。缓冲分为宽带、非蜂窝弱网、真蜂窝三套配置，弱网可选择与宽带同步；联动判断主要发生在启动、进入播放器等关键节点，不持续扫描。 **更多可观察性：** 应用流量按小时统计上下行，并区分 Wi-Fi、等效移网与真蜂窝；播放器显示当前视频流大小/估算大小与总码率；首选编码不可用、CDN 回退、硬解兜底均给出明确提示；AI 字幕增加 UP 主粉丝数阈值控制。
 
-<img src="assets/screenshots/510shots_so.png" width="32%" alt="home" />
-<img src="assets/screenshots/174shots_so.png" width="32%" alt="home" />
-<img src="assets/screenshots/850shots_so.png" width="32%" alt="home" />
-<br/>
-<img src="assets/screenshots/main_screen.png" width="96%" alt="home" />
-<br/>
-</div>
+## PiliPlus 基础功能
 
+**内容与播放：** 推荐/最热视频/热门直播/番剧、分 P/合集/互动视频，弹幕/高级弹幕/字幕、高能进度条、SponsorBlock、DLNA、PIP、离线缓存与播放、音频播放、片头片尾跳过、画质/音质/解码预设、硬件加速、超分辨率、记忆播放、视频比例、滑动缩略图预览、视频动图、Live Photo、AI 原声翻译、课堂视频等；**账号与互动：** Cookie/短信/极验登录、多账号、无痕/游客模式，用户主页/粉丝/关注/拉黑，动态/评论/私信/SuperChat/投票/分享，点赞/投币/收藏、关注分组、收藏夹/稍后再看管理，图文/富文本/表情/@用户、楼中楼、举报/置顶/撤回/删除等；**搜索与设置：** 热搜/搜索历史/默认搜索词，投稿/番剧/直播间/用户搜索及排序筛选，WebDAV 设置备份/恢复，主题、图片质量、震动、高帧率、自动全屏/横屏、字幕/弹幕大小、亮度/音量等。
 
-<br/>
+## 平台与下载
 
-## 适配平台
+**适配平台：** Android、iOS、Pad、Windows、Linux。可从右侧 Releases 下载，也可拉取 `dev` 分支本地编译。Android 使用独立包名 `org.BroTech.gege.piliplus`，可与上游 PiliPlus 并存；本分支 Release 使用固定签名，同签名的后续构建可直接覆盖升级。
 
-- [x] Android
-- [x] iOS
-- [x] Pad
-- [x] Windows
-- [x] Linux
+## 声明与致谢
 
-[![Packaging status](https://repology.org/badge/vertical-allrepos/piliplus.svg)](https://repology.org/project/piliplus/versions)
+本项目基于 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus) 继续开发，仅用于学习和测试，请于下载后 24 小时内删除；所用 API 皆从官方网站收集，不提供任何破解内容。本仓库对倍速、网络、CDN 与播放策略进行了更激进的修改，感谢原作者 [guozhigq/pilipala](https://github.com/guozhigq/pilipala)、上游 [orz12/PiliPalaX](https://github.com/orz12/PiliPalaX) 以及 PiliPlus 全体贡献者的开源工作。
 
-## refactor
-
-- [ ] gRPC [wip]
-- [x] 用户界面
-- [x] 其他
-
-## feat
-
-- [x] 编辑动态
-- [x] DLNA 投屏
-- [x] 离线缓存/播放
-- [x] 移动端支持点击弹幕悬停，点赞、复制、举报 by [@My-Responsitories](https://github.com/My-Responsitories)
-- [x] 播放音频
-- [x] 跳过番剧片头/片尾
-- [x] 安卓端 `loudnorm` 适配 by [@My-Responsitories](https://github.com/My-Responsitories)
-- [x] Win/Mac 支持极验、短信登录 by [@My-Responsitories](https://github.com/My-Responsitories)
-- [x] 视频截取动图 by [@My-Responsitories](https://github.com/My-Responsitories)
-- [x] AI 原声翻译
-- [x] SuperChat
-- [x] 播放课堂视频
-- [x] 发起投票
-- [x] 发布动态/评论支持`富文本编辑`/`表情显示`/`@用户`
-- [x] 修改消息设置
-- [x] 修改聊天设置
-- [x] 展示折叠消息
-- [x] 查看用户图文
-- [x] 动态话题
-- [x] 直播分区
-- [x] 分享`视频`/`番剧`/`动态`/`专栏`/`直播`至消息
-- [x] 创建/修改/删除关注分组
-- [x] 移除粉丝
-- [x] 直播弹幕发送表情
-- [x] 收藏夹排序
-- [x] 稍后再看 ~~`未看`~~ / `未看完` / ~~`已看完`~~ 分类
-- [x] WebDAV 备份/恢复设置
-- [x] 保存评论/动态
-- [x] 高级弹幕 by [@My-Responsitories](https://github.com/My-Responsitories)
-- [x] 取消/置顶评论
-- [x] 记笔记
-- [x] 多账号支持 by [@My-Responsitories](https://github.com/My-Responsitories)
-- [x] 屏蔽带货动态/评论
-- [x] 互动视频
-- [x] 发评/动态反诈
-- [x] 高能进度条
-- [x] 滑动跳转预览视频缩略图
-- [x] Live Photo
-- [x] 复制/移动/排序收藏夹/稍后再看视频
-- [x] 超分辨率
-- [x] 合并弹幕
-- [x] 会员彩色弹幕
-- [x] 播放全部/继续播放/倒序播放
-- [x] Cookie登录
-- [x] 显示视频分段信息
-- [x] 调节字幕大小
-- [x] 调节全屏弹幕大小
-- [x] 收藏夹/稍后再看多选删除
-- [x] 搜索用户动态
-- [x] 直播弹幕
-- [x] 修改头像/用户名/签名/性别/生日
-- [x] 创建/编辑/删除收藏夹
-- [x] 评论楼中楼查看对话
-- [x] 评论楼中楼定位点击查看的评论
-- [x] 评论楼中楼按热度/时间排序
-- [x] 评论点踩
-- [x] 私信发图
-- [x] 投币动画
-- [x] 取消/追番，更新追番状态
-- [x] 取消/订阅合集
-- [x] SponsorBlock
-- [x] 显示视频完整合集
-- [x] 三连动画
-- [x] 番剧三连
-- [x] 带图评论
-- [x] 视频TAG
-- [x] 筛选搜索
-- [x] 转发动态
-- [x] 合集图片
-- [x] 删除/置顶/撤回私信
-- [x] 举报用户/评论/视频/动态
-- [x] 删除/发布/置顶文本/图片动态
-- [x] 其他
-
-## opt
-
-- [x] 专栏界面
-- [x] 私信界面
-- [x] 收藏面板
-- [x] PIP
-- [x] 视频封面
-- [x] 回复界面
-- [x] 系统通知
-- [x] 评论显示
-- [x] 亮度调节
-- [x] 视频播放
-- [x] 视频staff
-- [x] 防止bottomsheet遮挡全屏视频
-- [x] 其他
-
-## fix
-
-- [x] 番剧分集点赞/投币/收藏
-- [x] bugs
-
-<br/>
-
-## 功能
-
-- [x] 推荐视频列表(app端)
-- [x] 最热视频列表
-- [x] 热门直播
-- [x] 番剧列表
-- [x] 屏蔽黑名单内用户视频
-- [x] 无痕模式（播放视为未登录）
-- [x] 游客模式（推荐视为未登录）
-
-- [x] 用户相关
-  - [x] 粉丝、关注用户、拉黑用户查看
-  - [x] 用户主页查看
-  - [x] 关注/取关用户
-  - [x] 离线缓存
-  - [x] 稍后再看
-  - [x] 观看记录
-  - [x] 我的收藏
-  - [x] 站内私信
-
-- [x] 动态相关
-  - [x] 全部、投稿、番剧分类查看
-  - [x] 动态评论查看
-  - [x] 动态评论回复功能
-
-- [x] 视频播放相关
-  - [x] 双击快进/快退
-  - [x] 双击播放/暂停
-  - [x] 垂直方向调节亮度/音量
-  - [x] 垂直方向上滑全屏、下滑退出全屏
-  - [x] 水平方向手势快进/快退
-  - [x] 全屏方向设置
-  - [x] 倍速选择/长按2倍速
-  - [x] 硬件加速（视机型而定）
-  - [x] 画质选择（高清画质未解锁）
-  - [x] 音质选择（视视频而定）
-  - [x] 解码格式选择（视视频而定）
-  - [x] 弹幕
-  - [x] 字幕
-  - [x] 记忆播放
-  - [x] 视频比例：高度/宽度适应、填充、包含等
-
-- [x] 搜索相关
-  - [x] 热搜
-  - [x] 搜索历史
-  - [x] 默认搜索词
-  - [x] 投稿、番剧、直播间、用户搜索
-  - [x] 视频搜索排序、按时长筛选
-
-- [x] 视频详情页相关
-  - [x] 视频选集(分p)切换
-  - [x] 点赞、投币、收藏/取消收藏
-  - [x] 相关视频查看
-  - [x] 评论用户身份标识
-  - [x] 评论(排序)查看、二楼评论查看
-  - [x] 主楼、二楼评论回复功能
-  - [x] 评论点赞
-  - [x] 评论笔记图片查看、保存
-
-- [x] 设置相关
-  - [x] 画质、音质、解码方式预设
-  - [x] 图片质量设定
-  - [x] 主题模式：亮色/暗色/跟随系统
-  - [x] 震动反馈(可选)
-  - [x] 高帧率
-  - [x] 自动全屏
-  - [x] 横屏适配
-- [ ] 等等
-
-<br/>
-
-## 下载
-
-可以通过右侧release进行下载或拉取代码到本地进行编译
-
-<br/>
-
-## 声明
-
-此项目（PiliPlus）是个人为了兴趣而开发，仅用于学习和测试，请于下载后24小时内删除。
-所用API皆从官方网站收集，不提供任何破解内容。
-在此致敬原作者：[guozhigq/pilipala](https://github.com/guozhigq/pilipala)
-在此致敬上游作者：[orz12/PiliPalaX](https://github.com/orz12/PiliPalaX)
-本仓库做了更激进的修改，感谢原作者的开源精神。
-
-感谢使用
-
-
-<br/>
-
-## 致谢
-
-- [bilibili-API-collect](https://github.com/SocialSisterYi/bilibili-API-collect)
-- [flutter_meedu_videoplayer](https://github.com/zezo357/flutter_meedu_videoplayer)
-- [media-kit](https://github.com/media-kit/media-kit)
-- [dio](https://pub.dev/packages/dio)
-- 等等
-
-<br/>
-<br/>
-<br/>
+特别感谢 [@My-Responsitories](https://github.com/My-Responsitories) 等贡献者，以及 [bilibili-API-collect](https://github.com/SocialSisterYi/bilibili-API-collect)、[flutter_meedu_videoplayer](https://github.com/zezo357/flutter_meedu_videoplayer)、[media-kit](https://github.com/media-kit/media-kit)、[dio](https://pub.dev/packages/dio) 等项目。PiliPlus，乾杯-( ゜- ゜)つロ
 
 ## Star History
 
-<a href="https://star-history.dera.page/#ucxn/Bili.Libre.Speed&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=ucxn/Bili.Libre.Speed&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=ucxn/Bili.Libre.Speed&type=Date" />
-   <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=ucxn/Bili.Libre.Speed&type=Date" />
- </picture>
-</a>
+<a href="https://star-history.dera.page/#ucxn/Bili.Libre.Speed&Date"><picture><source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=ucxn/Bili.Libre.Speed&type=Date&theme=dark" /><source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=ucxn/Bili.Libre.Speed&type=Date" /><img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=ucxn/Bili.Libre.Speed&type=Date" /></picture></a>

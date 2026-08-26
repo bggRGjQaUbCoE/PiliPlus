@@ -6,7 +6,7 @@ abstract final class BuildConfig {
   );
   static const String versionName = String.fromEnvironment(
     'pili.name',
-    defaultValue: '2.1.5',
+    defaultValue: 'SNAPSHOT',
   );
 
   static const String displayVersionName = '$editionName-$versionName';

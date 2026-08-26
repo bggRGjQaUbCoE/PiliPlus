@@ -135,9 +135,9 @@ abstract final class ThemeUtils {
           fontFamily: fontFamily,
           fontWeight: fontWeight,
         ),
-        decoration: BoxDecoration(
-          color: Colors.grey[700]!.withValues(alpha: 0.9),
-          borderRadius: const BorderRadius.all(Radius.circular(4)),
+        decoration: const BoxDecoration(
+          color: Color(0xE6616161), // Colors.grey[700]!.withValues(alpha: 0.9)
+          borderRadius: BorderRadius.all(Radius.circular(4)),
         ),
       ),
       cupertinoOverrideTheme: CupertinoThemeData(

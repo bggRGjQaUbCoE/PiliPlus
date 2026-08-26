@@ -3,7 +3,7 @@ import 'dart:io' show Platform;
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/http/browser_ua.dart';
-import 'package:PiliPlus/main.dart';
+import 'package:PiliPlus/main.dart' show webViewEnvironment;
 import 'package:PiliPlus/models/common/webview_menu_type.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
@@ -23,7 +23,6 @@ class WebviewPage extends StatefulWidget {
     this.url,
     this.oid,
     this.title,
-    this.userAgent,
   });
 
   final String? url;
@@ -31,18 +30,16 @@ class WebviewPage extends StatefulWidget {
   // note
   final int? oid;
   final String? title;
-  final String? userAgent;
 
   @override
   State<WebviewPage> createState() => _WebviewPageState();
 }
 
 class _WebviewPageState extends State<WebviewPage> {
-  late final String _url =
-      (widget.url ?? Get.parameters['url'])?.http2https ?? '';
+  late final String _url;
   late final String userAgent;
-  final RxString title = ''.obs;
-  final RxDouble progress = 1.0.obs;
+  late final RxString _title;
+  final RxDouble _progress = 1.0.obs;
   bool _inApp = false;
   bool _off = false;
 
@@ -56,13 +53,14 @@ class _WebviewPageState extends State<WebviewPage> {
   @override
   void initState() {
     super.initState();
-    userAgent =
-        widget.userAgent ??
-        switch (Get.parameters['uaType']) {
-          'pc' => BrowserUa.pc,
-          'mob' => BrowserUa.mob,
-          _ => BrowserUa.platform,
-        };
+    final parameters = Get.parameters;
+    _url = (widget.url ?? parameters['url']!).http2https;
+    _title = _url.obs;
+    userAgent = switch (parameters['uaType']) {
+      'pc' => BrowserUa.pc,
+      'mob' => BrowserUa.mob,
+      _ => BrowserUa.platform,
+    };
     if (Get.arguments case final Map map) {
       _inApp = map['inApp'] ?? false;
       _off = map['off'] ?? false;
@@ -94,7 +92,7 @@ class _WebviewPageState extends State<WebviewPage> {
           : AppBar(
               title: Obx(
                 () => Text(
-                  title.value.isNotEmpty ? title.value : _url,
+                  _title.value.isNotEmpty ? _title.value : _url,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -102,8 +100,8 @@ class _WebviewPageState extends State<WebviewPage> {
               bottom: PreferredSize(
                 preferredSize: Size.zero,
                 child: Obx(
-                  () => progress.value < 1
-                      ? LinearProgressIndicator(value: progress.value)
+                  () => _progress.value < 1
+                      ? LinearProgressIndicator(value: _progress.value)
                       : const SizedBox.shrink(),
                 ),
               ),
@@ -178,7 +176,7 @@ class _WebviewPageState extends State<WebviewPage> {
             clearCache: true,
             javaScriptEnabled: true,
             forceDark: ForceDark.AUTO,
-            useHybridComposition: false,
+            useHybridComposition: true,
             algorithmicDarkeningAllowed: true,
             useShouldOverrideUrlLoading: true,
             userAgent: userAgent,
@@ -188,8 +186,7 @@ class _WebviewPageState extends State<WebviewPage> {
             url: WebUri.uri(Uri.tryParse(_url) ?? Uri()),
           ),
           onWebViewCreated: (InAppWebViewController controller) {
-            _webViewController = controller;
-            controller
+            _webViewController = controller
               ..addJavaScriptHandler(
                 handlerName: 'finishButtonClicked',
                 callback: (args) {
@@ -210,10 +207,10 @@ class _WebviewPageState extends State<WebviewPage> {
               );
           },
           onProgressChanged: (controller, progress) {
-            this.progress.value = progress / 100;
+            _progress.value = progress / 100;
           },
           onTitleChanged: (controller, title) {
-            this.title.value = title ?? '';
+            _title.value = title ?? '';
           },
           onCloseWindow: (controller) => Get.back(),
           onLoadStop: (controller, uri) {
@@ -222,23 +219,23 @@ class _WebviewPageState extends State<WebviewPage> {
               controller
                 ..evaluateJavascript(
                   source: """
-  document.querySelector('.finish-btn').addEventListener('click', function() {
-      window.flutter_inappwebview.callHandler('finishButtonClicked');
-  });
+document.querySelector('.finish-btn').addEventListener('click', function() {
+    window.flutter_inappwebview.callHandler('finishButtonClicked');
+});
 """,
                 )
                 ..evaluateJavascript(
                   source: """
-  document.querySelector('.info-bar').addEventListener('click', function() {
-      window.flutter_inappwebview.callHandler('infoBarClicked');
-  });
+document.querySelector('.info-bar').addEventListener('click', function() {
+    window.flutter_inappwebview.callHandler('infoBarClicked');
+});
 """,
                 );
             } else if (url.startsWith('https://live.bilibili.com')) {
               controller.evaluateJavascript(
                 source: '''
-                  document.styleSheets[0].insertRule('div.open-app-btn.bili-btn-warp {display:none;}', 0);
-                  document.styleSheets[0].insertRule('#app__display-area > div.control-panel {display:none;}', 0);
+document.styleSheets[0].insertRule('div.open-app-btn.bili-btn-warp {display:none;}', 0);
+document.styleSheets[0].insertRule('#app__display-area > div.control-panel {display:none;}', 0);
                   ''',
               );
             }
@@ -256,8 +253,8 @@ class _WebviewPageState extends State<WebviewPage> {
                     builder: (context) {
                       String suggestedFilename = request.suggestedFilename
                           .toString();
-                      String fileSize = CacheManager.formatSize(
-                        request.contentLength.toDouble(),
+                      final fileSize = CacheManager.formatSize(
+                        request.contentLength,
                       );
                       try {
                         suggestedFilename = Uri.decodeComponent(
@@ -266,12 +263,13 @@ class _WebviewPageState extends State<WebviewPage> {
                       } catch (e) {
                         if (kDebugMode) debugPrint(e.toString());
                       }
+                      final url = request.url.toString();
                       return AlertDialog(
                         title: Text(
                           '下载文件: $suggestedFilename ?',
                           style: const TextStyle(fontSize: 18),
                         ),
-                        content: SelectionText(request.url.toString()),
+                        content: SelectionText(url),
                         actions: [
                           TextButton(
                             onPressed: Get.back,
@@ -285,7 +283,7 @@ class _WebviewPageState extends State<WebviewPage> {
                           TextButton(
                             onPressed: () {
                               Get.back();
-                              PageUtils.launchURL(request.url.toString());
+                              PageUtils.launchURL(url);
                             },
                             child: Text('确定 ($fileSize)'),
                           ),
@@ -293,7 +291,7 @@ class _WebviewPageState extends State<WebviewPage> {
                       );
                     },
                   );
-                  progress.value = 1;
+                  _progress.value = 1;
                 }
               : null,
           shouldInterceptAjaxRequest: (controller, ajaxRequest) async {
@@ -313,7 +311,7 @@ class _WebviewPageState extends State<WebviewPage> {
             if (url.startsWith(
               'https://passport.bilibili.com/x/passport-login/web',
             )) {
-              progress.value = 1;
+              _progress.value = 1;
               return WebResourceResponse();
             }
             return null;
@@ -327,7 +325,7 @@ class _WebviewPageState extends State<WebviewPage> {
               );
               // if (kDebugMode) debugPrint('webview: [$url], [$hasMatch]');
               if (hasMatch) {
-                progress.value = 1;
+                _progress.value = 1;
                 return .CANCEL;
               }
             }
@@ -345,7 +343,7 @@ class _WebviewPageState extends State<WebviewPage> {
                 );
                 ScaffoldMessenger.of(context).showSnackBar(snackBar);
               }
-              progress.value = 1;
+              _progress.value = 1;
               return .CANCEL;
             }
 

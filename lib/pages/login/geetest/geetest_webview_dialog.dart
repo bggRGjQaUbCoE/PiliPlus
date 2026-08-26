@@ -8,9 +8,9 @@ import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:dio/dio.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class GeetestWebviewDialog extends StatefulWidget {
   const GeetestWebviewDialog(this.gt, this.challenge, {super.key});
@@ -21,8 +21,8 @@ class GeetestWebviewDialog extends StatefulWidget {
   @override
   State<GeetestWebviewDialog> createState() => _GeetestWebviewDialogState();
 
-  static Future geetest(String gt, String challenge) {
-    return showDialog(
+  static Future<Map<String, dynamic>?> geetest(String gt, String challenge) {
+    return showDialog<Map<String, dynamic>>(
       context: Get.context!,
       builder: (context) => GeetestWebviewDialog(gt, challenge),
     );
@@ -105,9 +105,7 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
       return;
     }
 
-    final response = (config as Success<String>).response;
-
-    _linuxWebview = await WebviewWindow.create(
+    final webview = await WebviewWindow.create(
       configuration: const CreateConfiguration(
         windowWidth: 300,
         windowHeight: 400,
@@ -115,12 +113,14 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
       ),
     );
 
+    _linuxWebview = webview;
+
     if (!mounted) {
       _closeLinuxWebview();
       return;
     }
 
-    _linuxWebview!.addOnWebMessageReceivedCallback((msg) {
+    webview.addOnWebMessageReceivedCallback((msg) {
       final msgStr = msg.toString();
       if (msgStr.startsWith("success:")) {
         final dataStr = msgStr.substring("success:".length);
@@ -137,7 +137,7 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
       }
     });
 
-    _linuxWebview!.onClose.whenComplete(() {
+    webview.onClose.whenComplete(() {
       if (mounted) {
         Get.back();
       }
@@ -149,12 +149,12 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
 <script src="$_geetestJsUri"></script>
 <script>
   R=(n,o)=>webkit.messageHandlers.msgToNative.postMessage(n+':'+JSON.stringify(o))
-  ${_showJs(response)}
+  ${_showJs(config.data)}
 </script>
 </body></html>
 ''';
 
-    _linuxWebview!.launch(
+    webview.launch(
       'data:text/html;base64,${base64.encode(utf8.encode(html))}',
     );
 
@@ -210,7 +210,7 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
             clearCache: true,
             javaScriptEnabled: true,
             forceDark: ForceDark.AUTO,
-            useHybridComposition: false,
+            useHybridComposition: true,
             algorithmicDarkeningAllowed: true,
             useShouldOverrideUrlLoading: true,
             userAgent: BrowserUa.mob,

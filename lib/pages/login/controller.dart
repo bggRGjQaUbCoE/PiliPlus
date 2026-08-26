@@ -16,9 +16,9 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class LoginPageController extends GetxController
     with GetSingleTickerProviderStateMixin {
@@ -123,7 +123,7 @@ class LoginPageController extends GetxController
     VoidCallback onSuccess,
   ) {
     GeetestWebviewDialog.geetest(geeGt, geeChallenge).then((res) {
-      if (res is Map) {
+      if (res != null) {
         captchaData
           ..validate = res['geetest_validate']
           ..seccode = res['geetest_seccode']

@@ -12,7 +12,6 @@ import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -108,26 +107,28 @@ class _NoteListPageState extends State<NoteListPage>
 
   @override
   Widget buildList(ThemeData theme) {
+    final child = refreshIndicator(
+      onRefresh: _controller.onRefresh,
+      child: CustomScrollView(
+        key: _key,
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          SliverPadding(
+            padding: const .only(bottom: 100),
+            sliver: Obx(
+              () => _buildBody(theme, _controller.loadingState.value),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (!Accounts.main.isLogin) {
+      return child;
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(
-          child: refreshIndicator(
-            onRefresh: _controller.onRefresh,
-            child: CustomScrollView(
-              key: _key,
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                SliverPadding(
-                  padding: const .only(bottom: 100),
-                  sliver: Obx(
-                    () => _buildBody(theme, _controller.loadingState.value),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        Expanded(child: child),
         Container(
           padding: EdgeInsets.only(
             left: 12,
@@ -154,10 +155,6 @@ class _NoteListPageState extends State<NoteListPage>
                 ),
               ),
               onPressed: () {
-                if (!Accounts.main.isLogin) {
-                  SmartDialog.showToast('账号未登录');
-                  return;
-                }
                 MiniScaffold.of(context).showBottomSheet(
                   constraints: const BoxConstraints(),
                   (context) => WebviewPage(

@@ -38,14 +38,6 @@ List<SettingsModel> get replySettings => [
     ),
     onTap: _showReplyLengthDialog,
   ),
-  getBanWordModel(
-    title: '评论关键词过滤',
-    key: SettingBoxKey.banWordForReply,
-    onChanged: (value) {
-      ReplyGrpc.replyRegExp = value;
-      ReplyGrpc.enableFilter = value.pattern.isNotEmpty;
-    },
-  ),
   const SwitchModel(
     title: '记录评论',
     leading: Icon(Icons.message_outlined),
@@ -88,6 +80,20 @@ List<SettingsModel> get replySettings => [
     leading: Icon(Icons.alternate_email),
     setKey: SettingBoxKey.blockAtOnlyReply,
     onChanged: _onBlockAtOnlyReplyChanged,
+  ),
+  const SwitchModel(
+    title: '屏蔽复制简介评论',
+    leading: Icon(Icons.summarize),
+    setKey: SettingBoxKey.filterIntro,
+    defaultVal: false,
+  ),
+  getBanWordModel(
+    title: '评论关键词过滤',
+    key: SettingBoxKey.banWordForReply,
+    onChanged: (value) {
+      ReplyGrpc.replyRegExp = value;
+      ReplyGrpc.enableFilter = value.pattern.isNotEmpty;
+    },
   ),
   SwitchModel(
     title: '评论区搜索关键词',

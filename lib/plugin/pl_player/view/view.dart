@@ -367,7 +367,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     if (state != AppLifecycleState.paused && state != AppLifecycleState.detached) {
       plPlayerController.autoResumeInPipIfNeeded();
     }
-    }
     if (!plPlayerController.continuePlayInBackground.value) {
       if (const <AppLifecycleState>[.paused, .detached].contains(state)) {
         // 画中画中收到的 paused 来自进入 PiP 时的退后台（鸿蒙），视频仍然

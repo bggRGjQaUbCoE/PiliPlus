@@ -15,10 +15,29 @@ import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:audio_service/audio_service.dart';
+import 'package:audio_service_mpris/audio_service_mpris.dart';
 import 'package:collection/collection.dart';
 import 'package:path/path.dart' as path;
+import 'package:window_manager/window_manager.dart';
 
 Future<VideoPlayerServiceHandler> initAudioService() {
+  if (Platform.isLinux) {
+    AudioServiceMpris.init(
+      dBusName: 'piliplus',
+      identity: 'Audio Service ${Constants.appName}',
+      desktopEntry: 'com.example.piliplus',
+      canControl: true,
+      canPlay: true,
+      canPause: true,
+      canGoNext: false,
+      canGoPrevious: false,
+      onRaiseRequest: () {
+        windowManager
+          ..show()
+          ..focus();
+      },
+    );
+  }
   return AudioService.init(
     builder: VideoPlayerServiceHandler.new,
     config: const AudioServiceConfig(
@@ -66,6 +85,22 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     return (onSeek?.call(position) ??
         PlPlayerController.seekToIfExists(position, isSeek: false));
     // await player.seekTo(position);
+  }
+
+  // Mpris Volume
+  @override
+  Future<dynamic> customAction(String name, [Map<String, dynamic>? extras]) {
+    if (name == 'dbusVolume') {
+      final value = extras?['value'];
+      if (value is num) {
+        return PlPlayerController.setVolumeIfExists(
+              value.toDouble().clamp(0.0, 1.0),
+              showIndicator: false,
+            ) ??
+            Future.value();
+      }
+    }
+    return Future.value();
   }
 
   void setMediaItem(MediaItem newMediaItem) {

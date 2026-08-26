@@ -124,7 +124,7 @@ void main() async {
         ),
       );
     }
-  } else if (Platform.isMacOS) {
+  } else if (Platform.isMacOS || Platform.isLinux) {
     await setupServiceLocator();
   }
 

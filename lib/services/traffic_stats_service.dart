@@ -99,6 +99,31 @@ final class TrafficStatsService with WidgetsBindingObserver {
     };
   }
 
+  Future<({int day, int week, int month})> currentPeriodUsage() async {
+    final data = await snapshot();
+    final now = DateTime.now();
+    final dayStart = DateTime(now.year, now.month, now.day);
+    final weekStart = dayStart.subtract(Duration(days: dayStart.weekday - 1));
+    final monthStart = DateTime(now.year, now.month);
+    var day = 0;
+    var week = 0;
+    var month = 0;
+    for (final entry in data.entries) {
+      final time = DateTime.tryParse('${entry.key}:00:00');
+      if (time == null) continue;
+      var total = 0;
+      final hourly = entry.value as Map;
+      for (final category in hourly.values.whereType<Map>()) {
+        total += (category['received'] as num? ?? 0).toInt();
+        total += (category['sent'] as num? ?? 0).toInt();
+      }
+      if (!time.isBefore(monthStart)) month += total;
+      if (!time.isBefore(weekStart)) week += total;
+      if (!time.isBefore(dayStart)) day += total;
+    }
+    return (day: day, week: week, month: month);
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.inactive ||

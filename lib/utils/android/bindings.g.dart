@@ -296,6 +296,21 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
     ).object<jni$_.JString?>();
   }
 
+  static final _id_subscriptionInfoJson = _class.staticMethodId(
+    r'subscriptionInfoJson',
+    r'()Ljava/lang/String;',
+  );
+
+  /// from: `static public java.lang.String subscriptionInfoJson()`
+  /// The returned object must be released after use, by calling the [release] method.
+  static jni$_.JString? subscriptionInfoJson() {
+    final _$$classRef = _class.reference;
+    return _networkInfo(
+      _$$classRef.pointer,
+      _id_subscriptionInfoJson.pointer,
+    ).object<jni$_.JString?>();
+  }
+
   static final _id_trafficStats = _class.staticMethodId(
     r'trafficStats',
     r'()[J',

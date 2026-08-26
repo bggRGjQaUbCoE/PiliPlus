@@ -329,6 +329,38 @@ abstract final class Pref {
     return const [];
   }
 
+  static int get cellularQualityMode =>
+      _setting.get(SettingBoxKey.cellularQualityMode, defaultValue: 0);
+
+  static String get cellularQualityMatch =>
+      _setting.get(SettingBoxKey.cellularQualityMatch, defaultValue: '');
+
+  static int get cellularQualityJudgeMode =>
+      _setting.get(SettingBoxKey.cellularQualityJudgeMode, defaultValue: 3);
+
+  static int get cellularDownstreamThresholdMbps => _setting.get(
+    SettingBoxKey.cellularDownstreamThresholdMbps,
+    defaultValue: 100,
+  );
+
+  static int get cellularDbmThreshold =>
+      _setting.get(SettingBoxKey.cellularDbmThreshold, defaultValue: -105);
+
+  static int get cellularSignalLevelThreshold => _setting.get(
+    SettingBoxKey.cellularSignalLevelThreshold,
+    defaultValue: 3,
+  );
+
+  static bool get webdavBackupPlaybackStats => _setting.get(
+    SettingBoxKey.webdavBackupPlaybackStats,
+    defaultValue: true,
+  );
+
+  static bool get webdavBackupCdnDiagnostics => _setting.get(
+    SettingBoxKey.webdavBackupCdnDiagnostics,
+    defaultValue: true,
+  );
+
   static String get hardwareDecoding => _setting.get(
     SettingBoxKey.hardwareDecoding,
     defaultValue: Platform.isAndroid
@@ -906,25 +938,42 @@ abstract final class Pref {
       _setting.get(SettingBoxKey.enableLongShowControl, defaultValue: false);
 
   static double get bufferSize =>
-      _setting.get(SettingBoxKey.bufferSize, defaultValue: 4.0);
+      _setting.get(SettingBoxKey.bufferSize, defaultValue: 504.0);
 
   static double get bufferSec =>
-      _setting.get(SettingBoxKey.bufferSec, defaultValue: 16.0);
+      _setting.get(SettingBoxKey.bufferSec, defaultValue: 1008.0);
 
+  // 真蜂窝专用：即使蜂窝被质量策略判为“等效宽带”，仍使用这里的
+  // 缓冲参数，以免高质量蜂窝因为大缓存额外消耗流量。
   static double get bufferSizeCellular =>
       _setting.get(SettingBoxKey.bufferSizeCellular, defaultValue: 4.0);
 
   static double get bufferSecCellular =>
       _setting.get(SettingBoxKey.bufferSecCellular, defaultValue: 16.0);
 
+  static bool get bufferWeakSync =>
+      _setting.get(SettingBoxKey.bufferWeakSync, defaultValue: false);
+
+  static double get bufferSizeWeak => bufferWeakSync
+      ? bufferSize
+      : _setting.get(SettingBoxKey.bufferSizeWeak, defaultValue: 211.0);
+
+  static double get bufferSecWeak => bufferWeakSync
+      ? bufferSec
+      : _setting.get(SettingBoxKey.bufferSecWeak, defaultValue: 985.0);
+
+  // bufferProfile: 0=宽带，1=非蜂窝弱网，2=真蜂窝。
   static Map<String, String> initBuffer([
     double playbackSpeed = 1.0,
-    bool cellular = false,
+    int bufferProfile = 0,
   ]) {
-    final bufSec = (cellular ? bufferSecCellular : bufferSec) * playbackSpeed;
-    final bufSiz =
-        ((cellular ? bufferSizeCellular : bufferSize) * 0x100000)
-            .toStringAsFixed(0);
+    final (sizeMiB, seconds) = switch (bufferProfile) {
+      2 => (bufferSizeCellular, bufferSecCellular),
+      1 => (bufferSizeWeak, bufferSecWeak),
+      _ => (bufferSize, bufferSec),
+    };
+    final bufSec = seconds * playbackSpeed;
+    final bufSiz = (sizeMiB * 0x100000).toStringAsFixed(0);
     return {
       'cache': 'yes',
       'cache-secs': bufSec.toStringAsFixed(3),
@@ -934,12 +983,15 @@ abstract final class Pref {
     };
   }
 
-  static Map<String, String> initLiveBuffer([bool cellular = false]) {
+  static Map<String, String> initLiveBuffer([int bufferProfile = 0]) {
+    final sizeMiB = switch (bufferProfile) {
+      2 => bufferSizeCellular,
+      1 => bufferSizeWeak,
+      _ => bufferSize,
+    };
     return {
       'cache': 'yes',
-      'demuxer-max-bytes':
-          ((cellular ? bufferSizeCellular : bufferSize) * 0x200000)
-              .toStringAsFixed(0),
+      'demuxer-max-bytes': (sizeMiB * 0x200000).toStringAsFixed(0),
       'demuxer-max-back-bytes': '0',
     };
   }

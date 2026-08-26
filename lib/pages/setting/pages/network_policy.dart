@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/time_picker.dart' as pili;
@@ -8,6 +10,7 @@ import 'package:PiliPlus/pages/setting/widgets/ordered_multi_select_dialog.dart'
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/switch_item.dart';
 import 'package:PiliPlus/utils/connectivity_utils.dart';
+import 'package:PiliPlus/utils/permission_handler.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -30,12 +33,26 @@ class _NetworkPolicyPageState extends State<NetworkPolicyPage> {
   late int wifiMode = Pref.wifiNetworkPolicyMode;
   late int rssi = Pref.wifiRssiThreshold;
   late int wifiSpeed = Pref.wifiMinLinkSpeed;
+  late int cellularMode = Pref.cellularQualityMode;
+  late int cellularJudgeMode = Pref.cellularQualityJudgeMode;
+  late String cellularMatch = Pref.cellularQualityMatch;
+  late int cellularDownstream = Pref.cellularDownstreamThresholdMbps;
+  late int cellularDbm = Pref.cellularDbmThreshold;
+  late int cellularSignalLevel = Pref.cellularSignalLevelThreshold;
+  bool? phonePermission;
   NetworkProfile? profile = ConnectivityUtils.current;
 
   @override
   void initState() {
     super.initState();
     _refreshStatus();
+    _refreshPhonePermission();
+  }
+
+  Future<void> _refreshPhonePermission() async {
+    if (!Platform.isAndroid) return;
+    final granted = await Permission.phone.isGranted;
+    if (mounted) setState(() => phonePermission = granted);
   }
 
   Future<void> _refreshStatus() async {
@@ -97,6 +114,58 @@ class _NetworkPolicyPageState extends State<NetworkPolicyPage> {
         ],
       ),
     );
+  }
+
+  Future<String?> _inputString({
+    required String title,
+    required String value,
+    String? hint,
+  }) {
+    var text = value;
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: TextFormField(
+          autofocus: true,
+          initialValue: text,
+          minLines: 1,
+          maxLines: 4,
+          decoration: InputDecoration(
+            hintText: hint,
+            border: const OutlineInputBorder(borderRadius: .all(.circular(6))),
+          ),
+          onChanged: (value) => text = value,
+        ),
+        actions: [
+          TextButton(onPressed: Get.back, child: const Text('取消')),
+          TextButton(onPressed: () => Get.back(result: text.trim()), child: const Text('确定')),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _setCellularMode() async {
+    final value = await showDialog<int>(
+      context: context,
+      builder: (context) => SelectDialog<int>(
+        title: '蜂窝当做优质网络',
+        value: cellularMode,
+        values: const [
+          (0, '关闭'),
+          (1, '默认将蜂窝设为 Wi-Fi / 等效宽带'),
+          (2, '默认将蜂窝设为流量 / 等效移网'),
+        ],
+      ),
+    );
+    if (value == null) return;
+    cellularMode = value;
+    await _put(SettingBoxKey.cellularQualityMode, value);
+    if (value != 0 && Platform.isAndroid && !(await Permission.phone.isGranted)) {
+      await Permission.phone.request();
+      await _refreshPhonePermission();
+      await _refreshStatus();
+    }
   }
 
   Future<void> _setWiredSpeed() async {
@@ -183,20 +252,9 @@ class _NetworkPolicyPageState extends State<NetworkPolicyPage> {
       if (value.mtu case final mtu?) 'MTU：$mtu',
       if (value.carrierName case final carrier?) '运营商：$carrier',
       if (value.networkType case final type?) '蜂窝网络类型代码：$type',
-      '按流量计费：${value.metered ? "是" : "否"}',
-      if (value.internet case final internet?)
-        '互联网能力：${internet ? "有" : "无"}',
-      if (value.validated case final validated?)
-        '系统验证：${validated ? "已验证" : "未验证"}',
-      if (value.captivePortal case final captivePortal?)
-        '门户认证：${captivePortal ? "是" : "否"}',
-      if (value.congested case final congested?)
-        '拥塞：${congested ? "是" : "否"}',
-      if (value.bandwidthConstrained case final constrained?)
-        '带宽受限：${constrained ? "是" : "否"}',
-      if (value.vpn case final vpn?) 'VPN：${vpn ? "是" : "否"}',
-      if (value.roaming case final roaming?) '漫游：${roaming ? "是" : "否"}',
-      '弱网络提示：${value.weakHint ? "有" : "无"}',
+      if (value.cellularDbm case final dbm?) 'cellularDbm=$dbm',
+      ...value.cellularDetails,
+      '按流量计费：${value.metered ? "是" : "否"}，互联网能力：${value.internet == null ? "未知" : value.internet! ? "有" : "无"}、系统验证：${value.validated == null ? "未知" : value.validated! ? "已验证" : "未验证"}；门户认证：${value.captivePortal == null ? "未知" : value.captivePortal! ? "是" : "否"}，拥塞：${value.congested == null ? "未知" : value.congested! ? "是" : "否"}、带宽受限：${value.bandwidthConstrained == null ? "未知" : value.bandwidthConstrained! ? "是" : "否"}，VPN：${value.vpn == null ? "未知" : value.vpn! ? "是" : "否"}，漫游：${value.roaming == null ? "未知" : value.roaming! ? "是" : "否"}，弱网络提示：${value.weakHint ? "有" : "无"}。',
     ];
     return details.join('\n');
   }
@@ -343,6 +401,137 @@ class _NetworkPolicyPageState extends State<NetworkPolicyPage> {
                   if (value != null) {
                     wifiSpeed = value;
                     await _put(SettingBoxKey.wifiMinLinkSpeed, value);
+                  }
+                },
+              ),
+            ],
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.signal_cellular_alt),
+              title: const Text('蜂窝当做优质网络'),
+              subtitle: Text(
+                const [
+                  '关闭：真蜂窝固定使用蜂窝播放偏好',
+                  '默认将蜂窝设为 WiFi；质量低于阈值时改用流量偏好',
+                  '默认将蜂窝设为流量；质量高于阈值时改用 WiFi 偏好',
+                ][cellularMode],
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: _setCellularMode,
+            ),
+            if (cellularMode != 0) ...[
+              if (Platform.isAndroid)
+                ListTile(
+                  title: const Text('READ_PHONE_STATE'),
+                  subtitle: Text(
+                    phonePermission == true
+                        ? 'granted；SubscriptionInfo 原始字段可参与精确匹配'
+                        : '未授权；仍可使用 networkOperatorName、蜂窝信号和系统带宽估计',
+                  ),
+                  trailing: OutlinedButton(
+                    onPressed: () async {
+                      await Permission.phone.request();
+                      await _refreshPhonePermission();
+                      await _refreshStatus();
+                    },
+                    child: const Text('请求'),
+                  ),
+                ),
+              ListTile(
+                title: const Text('配置运营商 / Subscription 原始字段'),
+                subtitle: Text(
+                  cellularMatch.isEmpty
+                      ? '未配置：该功能不会生效。逗号分隔，和上方原始字段值或 path=value 完整匹配'
+                      : cellularMatch,
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () async {
+                  final value = await _inputString(
+                    title: '配置运营商 / Subscription 原始字段',
+                    value: cellularMatch,
+                    hint: '中国移动,工作卡,defaultDataSubscription.simSlotIndex=0',
+                  );
+                  if (value != null) {
+                    cellularMatch = value;
+                    await _put(SettingBoxKey.cellularQualityMatch, value);
+                  }
+                },
+              ),
+              ListTile(
+                title: const Text('蜂窝质量判断方式'),
+                subtitle: Text(
+                  const ['仅使用信号判断', '仅使用下行速率判断', '两者同时满足', '两者任一满足'][cellularJudgeMode],
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () async {
+                  final value = await showDialog<int>(
+                    context: context,
+                    builder: (context) => SelectDialog<int>(
+                      title: '蜂窝质量判断方式',
+                      value: cellularJudgeMode,
+                      values: const [
+                        (0, '仅使用信号判断'),
+                        (1, '仅使用下行速率判断'),
+                        (2, '信号和下行速率同时满足'),
+                        (3, '信号或下行速率任一满足'),
+                      ],
+                    ),
+                  );
+                  if (value != null) {
+                    cellularJudgeMode = value;
+                    await _put(SettingBoxKey.cellularQualityJudgeMode, value);
+                  }
+                },
+              ),
+              ListTile(
+                title: const Text('系统估计下行阈值'),
+                subtitle: Text(
+                  '当前 $cellularDownstream Mbps；默认按宽带时低于该值降级，默认按流量时高于该值升级',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () async {
+                  final value = await _inputInt(
+                    title: '蜂窝系统估计下行阈值',
+                    value: cellularDownstream,
+                    suffix: 'Mbps',
+                  );
+                  if (value != null) {
+                    cellularDownstream = value;
+                    await _put(SettingBoxKey.cellularDownstreamThresholdMbps, value);
+                  }
+                },
+              ),
+              ListTile(
+                title: const Text('蜂窝 dBm 阈值'),
+                subtitle: Text(
+                  '当前 $cellularDbm dBm；优先使用 CellSignalStrength.getDbm()，读不到才退回系统 0~4 等级',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () async {
+                  final value = await _inputInt(
+                    title: '蜂窝 dBm 阈值',
+                    value: cellularDbm,
+                    suffix: 'dBm',
+                    signed: true,
+                  );
+                  if (value != null) {
+                    cellularDbm = value;
+                    await _put(SettingBoxKey.cellularDbmThreshold, value);
+                  }
+                },
+              ),
+              ListTile(
+                title: const Text('蜂窝系统信号等级阈值'),
+                subtitle: Text('当前 $cellularSignalLevel / 4；仅在 dBm 不可用时作为后备'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () async {
+                  final value = await _inputInt(
+                    title: '蜂窝系统信号等级阈值（0~4）',
+                    value: cellularSignalLevel,
+                  );
+                  if (value != null && value <= 4) {
+                    cellularSignalLevel = value;
+                    await _put(SettingBoxKey.cellularSignalLevelThreshold, value);
                   }
                 },
               ),

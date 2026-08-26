@@ -164,7 +164,7 @@ List<SettingsModel> get videoSettings => [
     title: '缓冲大小',
     leading: const Icon(Icons.storage_outlined),
     getSubtitle: () =>
-        '当前：${Pref.bufferSize}MB。同时为前向和后向缓冲区大小。对于直播流，无后向缓冲大小，全部转给前向（此选项即mpv的--demuxer-max-bytes，--demuxer-max-back-bytes）',
+        '当前：${Pref.bufferSize}MiB。同时为前向和后向缓冲区大小。对于直播流，无后向缓冲大小，全部转给前向（此选项即mpv的--demuxer-max-bytes，--demuxer-max-back-bytes）',
     onTap: _showBufferSizeDialog,
   ),
   NormalModel(
@@ -175,18 +175,41 @@ List<SettingsModel> get videoSettings => [
     onTap: _showBufferSecDialog,
   ),
   NormalModel(
-    title: '蜂窝网络缓冲大小',
-    leading: const Icon(Icons.storage_outlined),
+    title: '真蜂窝缓冲大小',
+    leading: const Icon(Icons.signal_cellular_alt),
     getSubtitle: () =>
-        '当前：${Pref.bufferSizeCellular}MB。等效移网播放时使用，与缓冲时长取先达到的一项',
+        '当前：${Pref.bufferSizeCellular}MiB。只要物理接入是真蜂窝就使用，与等效宽带/等效移网判定无关',
     onTap: _showCellularBufferSizeDialog,
   ),
   NormalModel(
-    title: '蜂窝网络缓冲时长',
+    title: '真蜂窝缓冲时长',
     leading: const Icon(Icons.av_timer),
     getSubtitle: () =>
-        '当前：${Pref.bufferSecCellular}s。等效移网播放时使用，与缓冲大小取先达到的一项',
+        '当前：${Pref.bufferSecCellular}s。只要物理接入是真蜂窝就使用，与缓冲大小取先达到的一项',
     onTap: _showCellularBufferSecDialog,
+  ),
+  const SwitchModel(
+    title: '弱网缓冲区和宽带缓冲区同步',
+    subtitle: '默认关闭。开启后弱网直接使用宽带缓冲大小和时长',
+    leading: Icon(Icons.sync_alt),
+    setKey: SettingBoxKey.bufferWeakSync,
+    defaultVal: false,
+  ),
+  NormalModel(
+    title: '弱网缓冲大小',
+    leading: const Icon(Icons.network_check),
+    getSubtitle: () => Pref.bufferWeakSync
+        ? '已与宽带同步：${Pref.bufferSizeWeak}MiB'
+        : '当前：${Pref.bufferSizeWeak}MiB。仅非蜂窝网络被判断为弱网/等效移网时使用',
+    onTap: _showWeakBufferSizeDialog,
+  ),
+  NormalModel(
+    title: '弱网缓冲时长',
+    leading: const Icon(Icons.timer_outlined),
+    getSubtitle: () => Pref.bufferWeakSync
+        ? '已与宽带同步：${Pref.bufferSecWeak}s'
+        : '当前：${Pref.bufferSecWeak}s。仅非蜂窝网络被判断为弱网/等效移网时使用',
+    onTap: _showWeakBufferSecDialog,
   ),
   NormalModel(
     title: '自动同步',
@@ -605,7 +628,7 @@ void _showBufferSizeDialog(BuildContext context, VoidCallback setState) =>
       key: SettingBoxKey.bufferSize,
       defVal: Pref.bufferSize,
       title: '缓冲大小',
-      suffix: 'MB',
+      suffix: 'MiB',
     );
 
 void _showBufferSecDialog(BuildContext context, VoidCallback setState) =>
@@ -626,8 +649,8 @@ void _showCellularBufferSizeDialog(
   setState,
   key: SettingBoxKey.bufferSizeCellular,
   defVal: Pref.bufferSizeCellular,
-  title: '蜂窝网络缓冲大小',
-  suffix: 'MB',
+  title: '真蜂窝缓冲大小',
+  suffix: 'MiB',
 );
 
 void _showCellularBufferSecDialog(
@@ -638,6 +661,43 @@ void _showCellularBufferSecDialog(
   setState,
   key: SettingBoxKey.bufferSecCellular,
   defVal: Pref.bufferSecCellular,
-  title: '蜂窝网络缓冲时长',
+  title: '真蜂窝缓冲时长',
   suffix: 's',
 );
+
+
+void _showWeakBufferSizeDialog(
+  BuildContext context,
+  VoidCallback setState,
+) {
+  if (Pref.bufferWeakSync) {
+    SmartDialog.showToast('当前与宽带缓冲区同步，请先关闭同步');
+    return;
+  }
+  _showDecimalDialog(
+    context,
+    setState,
+    key: SettingBoxKey.bufferSizeWeak,
+    defVal: Pref.bufferSizeWeak,
+    title: '弱网缓冲大小',
+    suffix: 'MiB',
+  );
+}
+
+void _showWeakBufferSecDialog(
+  BuildContext context,
+  VoidCallback setState,
+) {
+  if (Pref.bufferWeakSync) {
+    SmartDialog.showToast('当前与宽带缓冲区同步，请先关闭同步');
+    return;
+  }
+  _showDecimalDialog(
+    context,
+    setState,
+    key: SettingBoxKey.bufferSecWeak,
+    defVal: Pref.bufferSecWeak,
+    title: '弱网缓冲时长',
+    suffix: 's',
+  );
+}

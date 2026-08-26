@@ -79,7 +79,10 @@ class WebDav {
   Future<void> backup() async {
     // Keep the payload bound to the same settings snapshot as the connection.
     final config = _getConfig();
-    final data = GStorage.exportAllSettings();
+    final data = GStorage.exportAllSettings(
+      includePlaybackStats: Pref.webdavBackupPlaybackStats,
+      includeCdnDiagnostics: Pref.webdavBackupCdnDiagnostics,
+    );
     final webdav.Client client;
     try {
       client = await _connect(config);

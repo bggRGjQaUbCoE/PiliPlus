@@ -833,6 +833,7 @@ abstract final class PlaybackStatsService {
     };
     _rewind = null;
     _pendingPositionUs = null;
+    _clearTrailingPause();
     _dirty = true;
     _appLastWallUs = _clock.elapsedMicroseconds;
     if (_active) {

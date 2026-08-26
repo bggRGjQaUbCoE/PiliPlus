@@ -57,6 +57,54 @@ class _AboutPageState extends State<AboutPage> {
     super.dispose();
   }
 
+  Future<({bool playbackStats, bool cdnDiagnostics})?>
+  _selectSettingsBackupOptions() {
+    var playbackStats = true;
+    var cdnDiagnostics = true;
+    return showDialog<({bool playbackStats, bool cdnDiagnostics})>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('导出设置包含内容'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('完整播放 / 倍速统计'),
+                subtitle: const Text('包含按倍速、倒带、评论区、UP 主、年份等完整原始统计'),
+                value: playbackStats,
+                onChanged: (value) =>
+                    setState(() => playbackStats = value ?? true),
+              ),
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('CDN 历史诊断'),
+                subtitle: const Text('包含长期保存的每次手动测速原始记录和派生指标'),
+                value: cdnDiagnostics,
+                onChanged: (value) =>
+                    setState(() => cdnDiagnostics = value ?? true),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('取消'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop((
+                playbackStats: playbackStats,
+                cdnDiagnostics: cdnDiagnostics,
+              )),
+              child: const Text('继续'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void getCacheSize() {
     CacheManager.loadApplicationCache().then((res) {
       if (mounted) {
@@ -258,13 +306,20 @@ Commit Hash: ${BuildConfig.commitHash}''',
             title: const Text('导入/导出设置'),
             dense: false,
             leading: const Icon(Icons.import_export_outlined),
-            onTap: () => showImportExportDialog<Map<String, dynamic>>(
-              context,
-              title: '设置',
-              localFileName: () => 'setting_${DeviceUtils.platformName}',
-              onExport: GStorage.exportAllSettings,
-              onImport: GStorage.importAllJsonSettings,
-            ),
+            onTap: () async {
+              final options = await _selectSettingsBackupOptions();
+              if (options == null || !context.mounted) return;
+              await showImportExportDialog<Map<String, dynamic>>(
+                context,
+                title: '设置',
+                localFileName: () => 'setting_${DeviceUtils.platformName}',
+                onExport: () => GStorage.exportAllSettings(
+                  includePlaybackStats: options.playbackStats,
+                  includeCdnDiagnostics: options.cdnDiagnostics,
+                ),
+                onImport: GStorage.importAllJsonSettings,
+              );
+            },
           ),
           ListTile(
             title: const Text('重置所有设置'),

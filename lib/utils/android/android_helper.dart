@@ -16,6 +16,7 @@ abstract final class PiliAndroidHelper {
     int? downstreamKbps,
     int? upstreamKbps,
     int? networkType,
+    int? cellularDbm,
     bool metered,
     bool captivePortal,
     bool congested,
@@ -37,6 +38,7 @@ abstract final class PiliAndroidHelper {
         downstreamKbps: info[4] <= 0 ? null : info[4],
         upstreamKbps: info[5] <= 0 ? null : info[5],
         networkType: info[6] < 0 ? null : info[6],
+        cellularDbm: info[7] != 2147483647 ? info[7] : null,
         metered: flags & 1 != 0,
         captivePortal: flags & 2 != 0,
         congested: flags & 4 != 0,
@@ -54,6 +56,20 @@ abstract final class PiliAndroidHelper {
 
   static String? networkOperator() => AndroidHelper.networkOperator()
       ?.toDartString(releaseOriginal: true);
+
+  static Map<String, dynamic>? subscriptionInfo() {
+    final raw = AndroidHelper.subscriptionInfoJson()
+        ?.toDartString(releaseOriginal: true);
+    if (raw == null || raw.isEmpty) return null;
+    try {
+      final value = jsonDecode(raw);
+      return value is Map
+          ? value.map((key, value) => MapEntry(key.toString(), value))
+          : null;
+    } catch (_) {
+      return null;
+    }
+  }
 
   static ({int received, int sent})? trafficStats() {
     final stats = AndroidHelper.trafficStats();

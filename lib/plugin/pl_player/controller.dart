@@ -892,18 +892,19 @@ class PlPlayerController with BlockConfigMixin {
       }
     }
 
+    final profile = playbackNetworkProfile ?? ConnectivityUtils.current;
+    final bufferProfile = profile?.transport == NetworkTransport.cellular
+        ? 2
+        : profile?.useCellularPreferences == true
+        ? 1
+        : 0;
     final Map<String, String> extras = {
       if (dataSource is FileSource)
         'cache': 'no'
       else if (isLive)
-        ...Pref.initLiveBuffer(
-          playbackNetworkProfile?.useCellularPreferences == true,
-        )
+        ...Pref.initLiveBuffer(bufferProfile)
       else
-        ...Pref.initBuffer(
-          _playbackSpeed.value,
-          playbackNetworkProfile?.useCellularPreferences == true,
-        ),
+        ...Pref.initBuffer(_playbackSpeed.value, bufferProfile),
     };
 
     String video = dataSource.videoSource;

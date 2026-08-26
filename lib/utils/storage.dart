@@ -10,6 +10,7 @@ import 'package:PiliPlus/utils/accounts/account_type_adapter.dart';
 import 'package:PiliPlus/utils/accounts/cookie_jar_adapter.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/set_int_adapter.dart';
+import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:hive_ce/hive.dart';
@@ -77,10 +78,26 @@ abstract final class GStorage {
     }
   }
 
-  static String exportAllSettings() {
+  static String exportAllSettings({
+    bool includePlaybackStats = true,
+    bool includeCdnDiagnostics = true,
+  }) {
+    final videoData = Map<dynamic, dynamic>.from(video.toMap());
+    if (!includePlaybackStats) {
+      videoData.remove(VideoBoxKey.playbackStats);
+    }
+    if (!includeCdnDiagnostics) {
+      videoData.removeWhere(
+        (key, _) => key is String && key.startsWith('cdnDiagnostic:'),
+      );
+    }
     return Utils.jsonEncoder.convert({
+      'backupMeta': {
+        'includePlaybackStats': includePlaybackStats,
+        'includeCdnDiagnostics': includeCdnDiagnostics,
+      },
       setting.name: setting.toMap(),
-      video.name: video.toMap(),
+      video.name: videoData,
     });
   }
 
@@ -90,9 +107,36 @@ abstract final class GStorage {
   static Future<List<void>> importAllJsonSettings(
     Map<String, dynamic> map,
   ) {
+    final meta = map['backupMeta'];
+    final preservePlayback =
+        meta is Map && meta['includePlaybackStats'] == false
+        ? video.get(VideoBoxKey.playbackStats)
+        : null;
+    final preserveDiagnostics = <dynamic, dynamic>{};
+    if (meta is Map && meta['includeCdnDiagnostics'] == false) {
+      for (final key in video.keys) {
+        if (key is String && key.startsWith('cdnDiagnostic:')) {
+          preserveDiagnostics[key] = video.get(key);
+        }
+      }
+    }
+    final importedSettings = Map<dynamic, dynamic>.from(
+      map[setting.name] as Map? ?? const {},
+    );
+    final importedVideo = Map<dynamic, dynamic>.from(
+      map[video.name] as Map? ?? const {},
+    );
     return Future.wait([
-      setting.clear().then((_) => setting.putAll(map[setting.name])),
-      video.clear().then((_) => video.putAll(map[video.name])),
+      setting.clear().then((_) => setting.putAll(importedSettings)),
+      video.clear().then((_) async {
+        await video.putAll(importedVideo);
+        if (preservePlayback != null) {
+          await video.put(VideoBoxKey.playbackStats, preservePlayback);
+        }
+        if (preserveDiagnostics.isNotEmpty) {
+          await video.putAll(preserveDiagnostics);
+        }
+      }),
     ]);
   }
 

@@ -26,6 +26,8 @@ class _WebDavSettingPageState extends State<WebDavSettingPage> {
   final _passwordCtr = TextEditingController(text: Pref.webdavPassword);
   final _directoryCtr = TextEditingController(text: Pref.webdavDirectory);
   bool _obscureText = true;
+  bool _backupPlaybackStats = Pref.webdavBackupPlaybackStats;
+  bool _backupCdnDiagnostics = Pref.webdavBackupCdnDiagnostics;
 
   @override
   void dispose() {
@@ -90,7 +92,24 @@ class _WebDavSettingPageState extends State<WebDavSettingPage> {
                 border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('备份完整播放 / 倍速统计'),
+              subtitle: const Text('包含按倍速、倒带、评论区、UP 主、年份等完整统计'),
+              value: _backupPlaybackStats,
+              onChanged: (value) =>
+                  setState(() => _backupPlaybackStats = value),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('备份 CDN 历史诊断'),
+              subtitle: const Text('包含长期保存的手动 CDN 测试组和全部原始记录'),
+              value: _backupCdnDiagnostics,
+              onChanged: (value) =>
+                  setState(() => _backupCdnDiagnostics = value),
+            ),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
@@ -100,7 +119,15 @@ class _WebDavSettingPageState extends State<WebDavSettingPage> {
                         borderRadius: Style.mdRadius,
                       ),
                     ),
-                    onPressed: WebDav().backup,
+                    onPressed: () async {
+                      await GStorage.setting.putAll({
+                        SettingBoxKey.webdavBackupPlaybackStats:
+                            _backupPlaybackStats,
+                        SettingBoxKey.webdavBackupCdnDiagnostics:
+                            _backupCdnDiagnostics,
+                      });
+                      await WebDav().backup();
+                    },
                     child: const Text('备份设置'),
                   ),
                 ),
@@ -135,6 +162,8 @@ class _WebDavSettingPageState extends State<WebDavSettingPage> {
                 SettingBoxKey.webdavUsername: _usernameCtr.text,
                 SettingBoxKey.webdavPassword: _passwordCtr.text,
                 SettingBoxKey.webdavDirectory: _directoryCtr.text,
+                SettingBoxKey.webdavBackupPlaybackStats: _backupPlaybackStats,
+                SettingBoxKey.webdavBackupCdnDiagnostics: _backupCdnDiagnostics,
               });
               if (_uriCtr.text.isEmpty) {
                 return;

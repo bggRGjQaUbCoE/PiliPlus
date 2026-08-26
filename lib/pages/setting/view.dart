@@ -217,7 +217,13 @@ class _SettingPageState extends State<SettingPage> {
                 title: Text(item.type.title, style: titleStyle),
                 subtitle: item.subtitle == null
                     ? null
-                    : Text(item.subtitle!, style: subTitleStyle),
+                    : Text(
+                        item.type == SettingType.extraSetting &&
+                                Accounts.x
+                            ? item.subtitle!.replaceAll('ai', 'AI')
+                            : item.subtitle!,
+                        style: subTitleStyle,
+                      ),
               ),
             ),
         ListTile(

@@ -251,16 +251,68 @@ abstract final class ConnectivityUtils {
         final android = Platform.isAndroid
             ? PiliAndroidHelper.networkInfo()
             : null;
+        final carrierName = Platform.isAndroid
+            ? PiliAndroidHelper.networkOperator()
+            : null;
+        final subscription = Platform.isAndroid
+            ? PiliAndroidHelper.subscriptionInfo()
+            : null;
+        final flattened = _flattenCellularDetails(subscription);
+        final configured = Pref.cellularQualityMatch
+            .split(',')
+            .map((item) => item.trim())
+            .where((item) => item.isNotEmpty)
+            .toSet();
+        final matched = configured.isNotEmpty &&
+            configured.any(flattened.matchValues.contains);
+
+        bool useCellularPreferences = true;
+        if (Pref.cellularQualityMode != 0 && matched) {
+          final downstream = android?.downstreamKbps;
+          final dbm = android?.cellularDbm;
+          final level = android?.signalLevel;
+          final speedWeak = downstream == null
+              ? null
+              : downstream < Pref.cellularDownstreamThresholdMbps * 1000;
+          final speedGood = downstream == null
+              ? null
+              : downstream > Pref.cellularDownstreamThresholdMbps * 1000;
+          final signalWeak = dbm != null
+              ? dbm < Pref.cellularDbmThreshold
+              : level == null
+              ? null
+              : level < Pref.cellularSignalLevelThreshold;
+          final signalGood = dbm != null
+              ? dbm > Pref.cellularDbmThreshold
+              : level == null
+              ? null
+              : level > Pref.cellularSignalLevelThreshold;
+          if (Pref.cellularQualityMode == 1) {
+            // 默认按宽带；满足“弱”条件才降为蜂窝策略。
+            useCellularPreferences = _matchesCellularQuality(
+              signalWeak,
+              speedWeak,
+            );
+          } else {
+            // 默认按蜂窝；满足“优”条件才升为宽带策略。
+            useCellularPreferences = !_matchesCellularQuality(
+              signalGood,
+              speedGood,
+            );
+          }
+        }
+
         return NetworkProfile(
           transport: NetworkTransport.cellular,
-          useCellularPreferences: true,
+          useCellularPreferences: useCellularPreferences,
           signalLevel: android?.signalLevel,
           downstreamKbps: android?.downstreamKbps,
           upstreamKbps: android?.upstreamKbps,
           networkType: android?.networkType,
-          carrierName: Platform.isAndroid
-              ? PiliAndroidHelper.networkOperator()
-              : null,
+          carrierName: carrierName,
+          cellularDbm: android?.cellularDbm,
+          cellularDetails: flattened.details,
+          cellularMatchValues: flattened.matchValues.toList(growable: false),
           metered: true,
           captivePortal: android?.captivePortal ?? false,
           congested: android?.congested ?? false,
@@ -276,6 +328,52 @@ abstract final class ConnectivityUtils {
     } catch (_) {
       return _current ?? _fallback;
     }
+  }
+
+  static bool _matchesCellularQuality(bool? signal, bool? speed) =>
+      switch (Pref.cellularQualityJudgeMode) {
+        0 => signal == true,
+        1 => speed == true,
+        2 => signal == true && speed == true,
+        _ => signal == true || speed == true,
+      };
+
+  static ({List<String> details, Set<String> matchValues})
+  _flattenCellularDetails(Map<String, dynamic>? value) {
+    final details = <String>[];
+    final matchValues = <String>{};
+    void walk(Object? current, String path) {
+      if (current is Map) {
+        for (final entry in current.entries) {
+          walk(
+            entry.value,
+            path.isEmpty ? entry.key.toString() : '$path.${entry.key}',
+          );
+        }
+        return;
+      }
+      if (current is List) {
+        for (final (index, item) in current.indexed) {
+          walk(item, '$path[$index]');
+        }
+        return;
+      }
+      if (current == null) return;
+      final raw = current.toString();
+      if (raw.isEmpty) return;
+      final line = '$path=$raw';
+      details.add(line);
+      // 所有 SubscriptionInfo 都展示，但只有当前默认数据订阅和根级
+      // Telephony 字段参与匹配，避免双卡时另一张闲置 SIM 误触发策略。
+      if (!path.startsWith('subscriptions[')) {
+        matchValues
+          ..add(raw)
+          ..add(line);
+      }
+    }
+
+    if (value != null) walk(value, '');
+    return (details: details, matchValues: matchValues);
   }
 
   static bool _isStandardWiredSpeed(int speed) => _standardWiredSpeeds.any(

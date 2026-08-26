@@ -21,6 +21,9 @@ final class NetworkProfile {
     this.upstreamKbps,
     this.networkType,
     this.carrierName,
+    this.cellularDbm,
+    this.cellularDetails = const [],
+    this.cellularMatchValues = const [],
     this.adapterName,
     this.adapterDescription,
     this.receiveLinkSpeedMbps,
@@ -47,6 +50,9 @@ final class NetworkProfile {
   final int? upstreamKbps;
   final int? networkType;
   final String? carrierName;
+  final int? cellularDbm;
+  final List<String> cellularDetails;
+  final List<String> cellularMatchValues;
   final String? adapterName;
   final String? adapterDescription;
   final int? receiveLinkSpeedMbps;

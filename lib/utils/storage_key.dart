@@ -18,6 +18,9 @@ abstract final class SettingBoxKey {
       bufferSec = 'bufferSec',
       bufferSizeCellular = 'bufferSizeCellular',
       bufferSecCellular = 'bufferSecCellular',
+      bufferSizeWeak = 'bufferSizeWeak',
+      bufferSecWeak = 'bufferSecWeak',
+      bufferWeakSync = 'bufferWeakSync',
       hardwareDecoding = 'hardwareDecoding',
       videoSync = 'videoSync',
       autosync = 'autosync',
@@ -170,7 +173,15 @@ abstract final class SettingBoxKey {
       wifiRssiThreshold = 'wifiRssiThreshold',
       wifiMinLinkSpeed = 'wifiMinLinkSpeed',
       networkPeakPeriods = 'networkPeakPeriods',
-      networkPeakCodecs = 'networkPeakCodecs';
+      networkPeakCodecs = 'networkPeakCodecs',
+      cellularQualityMode = 'cellularQualityMode',
+      cellularQualityMatch = 'cellularQualityMatch',
+      cellularQualityJudgeMode = 'cellularQualityJudgeMode',
+      cellularDownstreamThresholdMbps = 'cellularDownstreamThresholdMbps',
+      cellularDbmThreshold = 'cellularDbmThreshold',
+      cellularSignalLevelThreshold = 'cellularSignalLevelThreshold',
+      webdavBackupPlaybackStats = 'webdavBackupPlaybackStats',
+      webdavBackupCdnDiagnostics = 'webdavBackupCdnDiagnostics';
 
   static const String minimizeOnExit = 'minimizeOnExit',
       windowSize = 'windowSize',

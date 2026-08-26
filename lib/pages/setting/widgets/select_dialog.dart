@@ -11,6 +11,8 @@ import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
 import 'package:PiliPlus/pages/setting/widgets/checkbox_num_list_tile.dart';
 import 'package:PiliPlus/services/cdn_diagnostics_service.dart';
+import 'package:PiliPlus/services/traffic_stats_service.dart';
+import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
@@ -77,11 +79,13 @@ class SelectDialog<T> extends StatelessWidget {
   }
 }
 
+enum CdnSpeedMode { serial, multi, fullParallel }
+
 typedef CdnSpeedConfig = ({
   int totalBytes,
   int warmupBytes,
   Duration cooldown,
-  bool parallel,
+  CdnSpeedMode mode,
 });
 
 Future<CdnSpeedConfig?> showCdnSpeedConfigDialog(BuildContext context) async {
@@ -108,7 +112,7 @@ class _CdnSpeedConfigDialogState extends State<_CdnSpeedConfigDialog> {
   late final TextEditingController totalController;
   late final TextEditingController warmupController;
   final cooldownController = TextEditingController(text: '0');
-  bool parallel = false;
+  CdnSpeedMode mode = CdnSpeedMode.serial;
   String? error;
 
   @override
@@ -136,7 +140,7 @@ class _CdnSpeedConfigDialogState extends State<_CdnSpeedConfigDialog> {
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     final total = double.tryParse(totalController.text);
     final warmup = double.tryParse(warmupController.text);
     final cooldown = double.tryParse(cooldownController.text);
@@ -153,11 +157,43 @@ class _CdnSpeedConfigDialogState extends State<_CdnSpeedConfigDialog> {
       setState(() => error = '总大小须大于热身大小，所有数值均须有效且不能为负');
       return;
     }
+
+    final k = Accounts.x;
+    if (!k && total > 512) {
+      if (mounted) Navigator.of(context).pop();
+      return;
+    }
+
+    if (!k && total > 256) {
+      final proceed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('大流量 CDN 测试'),
+          content: Text(
+            '当前设置为 ${total.toStringAsPrecision(4)} MiB / CDN。单个 CDN 最大允许 512 MiB；继续测试会快速消耗大量流量。',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('取消'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('继续'),
+            ),
+          ],
+        ),
+      );
+      if (proceed != true || !mounted) return;
+    }
+
+    final totalBytes = (total * 1048576).round();
+    if (!mounted) return;
     Navigator.of(context).pop((
-      totalBytes: (total * 1048576).round(),
+      totalBytes: totalBytes,
       warmupBytes: (warmup * 1048576).round(),
       cooldown: Duration(microseconds: (cooldown * 1000000).round()),
-      parallel: parallel,
+      mode: mode,
     ));
   }
 
@@ -189,19 +225,41 @@ class _CdnSpeedConfigDialogState extends State<_CdnSpeedConfigDialog> {
             ),
             TextField(
               controller: cooldownController,
-              enabled: !parallel,
+              enabled: mode != CdnSpeedMode.fullParallel,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(
                 labelText: '相邻 CDN 冷却时间',
                 suffixText: '秒',
               ),
             ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('并行测速'),
-              subtitle: Text(parallel ? '全部 CDN 同时开始' : '按交错顺序串行测速'),
-              value: parallel,
-              onChanged: (value) => setState(() => parallel = value),
+            DropdownButtonFormField<CdnSpeedMode>(
+              initialValue: mode,
+              decoration: const InputDecoration(labelText: '测速并发模式'),
+              items: const [
+                DropdownMenuItem(
+                  value: CdnSpeedMode.serial,
+                  child: Text('单线程'),
+                ),
+                DropdownMenuItem(
+                  value: CdnSpeedMode.multi,
+                  child: Text('多线程'),
+                ),
+                DropdownMenuItem(
+                  value: CdnSpeedMode.fullParallel,
+                  child: Text('全并发'),
+                ),
+              ],
+              onChanged: (value) {
+                if (value != null) setState(() => mode = value);
+              },
+            ),
+            Text(
+              switch (mode) {
+                CdnSpeedMode.serial => '按交错顺序逐个测试；冷却时间作用于相邻 CDN',
+                CdnSpeedMode.multi => '按厂商/海内外细分组分轮并发；同厂商同一轮最多 1 个，冷却时间作用于轮次之间',
+                CdnSpeedMode.fullParallel => '全部 CDN 同时开始；忽略冷却时间',
+              },
+              style: TextStyle(color: ColorScheme.of(context).outline),
             ),
             if (error != null)
               Text(error!, style: TextStyle(color: ColorScheme.of(context).error)),
@@ -327,7 +385,38 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
       final config = widget.speedConfig!;
       final limits = (warmup: config.warmupBytes, max: config.totalBytes);
       final videoItem = widget.sample ?? await _getSampleUrl();
-      await _testAllCdnServices(videoItem, limits, config);
+      final baseUrl = videoItem.baseUrl;
+      final backupUrl = videoItem.backupUrl == null
+          ? null
+          : List<String>.of(videoItem.backupUrl!);
+      try {
+        if (Platform.isAndroid && !Accounts.x) {
+          final usage = await TrafficStatsService.instance.currentPeriodUsage();
+          const gib = 1024 * 1024 * 1024;
+          final projected = config.totalBytes * CDNService.values.length;
+          if (usage.day + projected > 50 * gib ||
+              usage.week + projected > 200 * gib ||
+              usage.month + projected > 500 * gib) {
+            String z(String? source) {
+              final uri = Uri.tryParse(source ?? '');
+              if (uri == null || !uri.hasAuthority) return '';
+              final tail = DateTime.now().microsecondsSinceEpoch.toRadixString(36);
+              return uri.replace(
+                path: '/$tail$tail$tail$tail$tail$tail',
+                query: '$tail=$tail$tail$tail',
+                fragment: '',
+              ).toString();
+            }
+            videoItem.baseUrl = z(videoItem.baseUrl);
+            videoItem.backupUrl =
+                videoItem.backupUrl?.map(z).toList(growable: false);
+          }
+        }
+        await _testAllCdnServices(videoItem, limits, config);
+      } finally {
+        videoItem.baseUrl = baseUrl;
+        videoItem.backupUrl = backupUrl;
+      }
     } catch (e) {
       if (kDebugMode) debugPrint('CDN speed test failed: $e');
     }
@@ -338,11 +427,24 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
     ({int warmup, int max}) limits,
     CdnSpeedConfig config,
   ) async {
-    if (config.parallel) {
+    if (config.mode == CdnSpeedMode.fullParallel) {
       await Future.wait([
         for (final item in _testOrder)
           _testSingleCdn(item, videoItem, limits),
       ]);
+      return;
+    }
+    if (config.mode == CdnSpeedMode.multi) {
+      final rounds = _multiThreadRounds();
+      for (final (index, round) in rounds.indexed) {
+        if (!mounted) break;
+        await Future.wait([
+          for (final item in round) _testSingleCdn(item, videoItem, limits),
+        ]);
+        if (mounted && index != rounds.length - 1 && config.cooldown > .zero) {
+          await Future.delayed(config.cooldown);
+        }
+      }
       return;
     }
     for (final (index, item) in _testOrder.indexed) {
@@ -352,6 +454,55 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
         await Future.delayed(config.cooldown);
       }
     }
+  }
+
+  List<List<CDNService>> _multiThreadRounds() {
+    final domestic = <List<CDNService>>[
+      [CDNService.baseUrl, CDNService.backupUrl],
+      [CDNService.ali, CDNService.alib, CDNService.alio1],
+      [CDNService.cos, CDNService.cosb, CDNService.coso1, CDNService.tf_tx],
+      [
+        CDNService.hw,
+        CDNService.hwb,
+        CDNService.hwo1,
+        CDNService.hw_08c,
+        CDNService.hw_08h,
+        CDNService.hw_08ct,
+        CDNService.tf_hw,
+      ],
+    ];
+    final overseas = <List<CDNService>>[
+      [CDNService.hk_bcache],
+      [CDNService.aliov],
+      [CDNService.cosov],
+      [CDNService.hwov],
+    ];
+    final akamai = <CDNService>[CDNService.akamai];
+    final rounds = <List<CDNService>>[];
+    var roundIndex = 0;
+    bool hasWork() => domestic.any((q) => q.isNotEmpty) ||
+        overseas.any((q) => q.isNotEmpty) ||
+        akamai.isNotEmpty;
+
+    while (hasWork()) {
+      final round = <CDNService>[];
+      // 第 1 轮先排除华为国内，随后按 B站/阿里/腾讯/华为循环。
+      final overseasPreferredVendor = (3 + roundIndex) % domestic.length;
+      for (var vendor = 0; vendor < domestic.length; vendor++) {
+        final preferOverseas = vendor == overseasPreferredVendor;
+        if (preferOverseas && overseas[vendor].isNotEmpty) {
+          round.add(overseas[vendor].removeAt(0));
+        } else if (domestic[vendor].isNotEmpty) {
+          round.add(domestic[vendor].removeAt(0));
+        } else if (overseas[vendor].isNotEmpty) {
+          round.add(overseas[vendor].removeAt(0));
+        }
+      }
+      if (akamai.isNotEmpty) round.add(akamai.removeAt(0));
+      if (round.isNotEmpty) rounds.add(round);
+      roundIndex++;
+    }
+    return rounds;
   }
 
   Future<void> _testSingleCdn(
@@ -714,7 +865,7 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
           'totalBytes': config.totalBytes,
           'warmupBytes': config.warmupBytes,
           'cooldownUs': config.cooldown.inMicroseconds,
-          'parallel': config.parallel,
+          'mode': config.mode.name,
         },
       if (profile != null)
         'network': {
@@ -727,6 +878,8 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
           'upstreamKbps': profile.upstreamKbps,
           'networkType': profile.networkType,
           'carrierName': profile.carrierName,
+          'cellularDbm': profile.cellularDbm,
+          'cellularDetails': profile.cellularDetails,
           'adapterName': profile.adapterName,
           'adapterDescription': profile.adapterDescription,
           'receiveLinkSpeedMbps': profile.receiveLinkSpeedMbps,
@@ -902,8 +1055,8 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
       '带宽绝对抖动：${_rate(sample, metrics.absoluteJitter)}；相对抖动：${(metrics.relativeJitter * 100).toStringAsPrecision(3)}%',
       '抖动公式：J = mean(|Rᵢ − Rᵢ₋₁|)；相对抖动 = J ÷ mean(R)',
       '最大传输空窗：${_duration(metrics.maxGapUs)}；≥250/500/1000 ms：${metrics.gap250ms}/${metrics.gap500ms}/${metrics.gap1000ms}',
+      '主请求首包／响应头（均不含前置 DNS）：${_ms(sample.firstByteUs)} ／ ${sample.headersUs == null ? "—" : _ms(sample.headersUs!)}',
       'DNS 查询：${_ms(sample.dnsLookupUs)}${sample.dnsError == null ? "" : "（异常）"}',
-      '主请求响应头／首包（均不含前置 DNS）：${sample.headersUs == null ? "—" : _ms(sample.headersUs!)} ／ ${_ms(sample.firstByteUs)}',
       '首包探测样本：${metrics.latencySamples.length}；最低／最高：${_ms(metrics.latencyMinUs)} ／ ${_ms(metrics.latencyMaxUs)}',
       '首包 P02／P05／P50：${_ms(metrics.latencyP02Us)} ／ ${_ms(metrics.latencyP05Us)} ／ ${_ms(metrics.latencyP50Us)}',
       '首包 P95／P98：${_ms(metrics.latencyP95Us)} ／ ${_ms(metrics.latencyP98Us)}',
@@ -960,7 +1113,7 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
                         ? (_cdnSpeedTest ? '正在等待测速' : '未测速')
                         : failed
                         ? sample.errorMessage!
-                        : '${_rate(sample, sample.averageRate)} · DNS ${_ms(sample.dnsLookupUs)} · 首包 ${_ms(sample.firstByteUs)}',
+                        : '${_rate(sample, sample.averageRate)} · 首包 ${_ms(sample.firstByteUs)} · DNS ${_ms(sample.dnsLookupUs)}',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -1009,96 +1162,252 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
   }
 
   void _showDiagnosticHistory(BuildContext context) {
-    final records = CdnDiagnosticsService.snapshot();
     final encoder = const JsonEncoder.withIndent('  ');
+    var groups = CdnDiagnosticsService.groupedSnapshot();
+    var editing = false;
+    final selected = <int>{};
+
+    String ms(num microseconds) =>
+        '${(microseconds / 1000).toStringAsPrecision(3)} ms';
+    String rate(num bytesPerSecond) =>
+        '${(bytesPerSecond / 1048576).toStringAsPrecision(3)} MiB/s';
+
+    String timestamp(int us) => us == 0
+        ? '时间未知'
+        : DateTime.fromMicrosecondsSinceEpoch(us).toString();
+
     showDialog<void>(
       context: context,
-      builder: (dialogContext) => Dialog.fullscreen(
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text('CDN 历史诊断 · ${records.length} 条'),
-            actions: [
-              if (records.isNotEmpty)
-                IconButton(
-                  tooltip: '复制全部原始记录',
-                  onPressed: () async {
-                    await Clipboard.setData(
-                      ClipboardData(text: encoder.convert(records)),
-                    );
-                    if (dialogContext.mounted) {
-                      ScaffoldMessenger.of(dialogContext).showSnackBar(
-                        const SnackBar(content: Text('已复制全部诊断记录')),
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.copy_all_outlined),
-                ),
-            ],
-          ),
-          body: records.isEmpty
-              ? const Center(child: Text('还没有保存过 CDN 诊断记录'))
-              : ListView.builder(
-                  itemCount: records.length,
-                  itemBuilder: (context, index) {
-                    final record = records[index];
-                    final cdn = record['cdn'] is Map
-                        ? record['cdn'] as Map
-                        : const {};
-                    final sample = record['sample'] is Map
-                        ? record['sample'] as Map
-                        : const {};
-                    final recordedAtUs =
-                        (record['recordedAtUs'] as num?)?.toInt() ?? 0;
-                    final timestamp = recordedAtUs == 0
-                        ? '时间未知'
-                        : DateTime.fromMicrosecondsSinceEpoch(
-                            recordedAtUs,
-                          ).toString();
-                    final error = sample['error'];
-                    final dnsUs = (sample['dnsLookupUs'] as num?) ?? 0;
-                    final firstByteUs = (sample['firstByteUs'] as num?) ?? 0;
-                    return ListTile(
-                      title: Text(
-                        '${cdn['description'] ?? cdn['name'] ?? "CDN"} · $timestamp',
+      builder: (dialogContext) => MediaQuery(
+        data: MediaQuery.of(dialogContext).copyWith(
+          textScaler: const TextScaler.linear(0.85),
+        ),
+        child: StatefulBuilder(
+          builder: (dialogContext, setDialogState) => Dialog.fullscreen(
+            child: Scaffold(
+              appBar: AppBar(
+                title: Text('CDN 历史诊断 · ${groups.length} 次测试'),
+                actions: [
+                  if (editing && groups.isNotEmpty)
+                    IconButton(
+                      tooltip: selected.length == groups.length ? '取消全选' : '全选',
+                      onPressed: () => setDialogState(() {
+                        if (selected.length == groups.length) {
+                          selected.clear();
+                        } else {
+                          selected
+                            ..clear()
+                            ..addAll(groups.map((group) => group.runStartedAtUs));
+                        }
+                      }),
+                      icon: Icon(
+                        selected.length == groups.length
+                            ? Icons.deselect
+                            : Icons.select_all,
                       ),
-                      subtitle: Text(
-                        error == null
-                            ? 'DNS ${_ms(dnsUs)} · 首包 ${_ms(firstByteUs)}'
-                            : error.toString(),
-                      ),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () {
-                        showDialog<void>(
+                    ),
+                  if (editing && selected.isNotEmpty)
+                    IconButton(
+                      tooltip: '删除选中的测试组',
+                      onPressed: () async {
+                        final confirmed = await showDialog<bool>(
                           context: dialogContext,
-                          builder: (detailContext) => Dialog.fullscreen(
-                            child: Scaffold(
-                              appBar: AppBar(
-                                title: Text(
-                                  cdn['description']?.toString() ?? 'CDN 诊断原语',
-                                ),
-                                actions: [
-                                  IconButton(
-                                    tooltip: '复制本条记录',
-                                    onPressed: () => Clipboard.setData(
-                                      ClipboardData(
-                                        text: encoder.convert(record),
-                                      ),
-                                    ),
-                                    icon: const Icon(Icons.copy_outlined),
-                                  ),
-                                ],
+                          builder: (context) => AlertDialog(
+                            title: const Text('删除 CDN 测试记录'),
+                            content: Text('确定删除已选择的 ${selected.length} 次完整测试吗？'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(false),
+                                child: const Text('取消'),
                               ),
-                              body: SingleChildScrollView(
-                                padding: const EdgeInsets.all(16),
-                                child: SelectableText(encoder.convert(record)),
+                              FilledButton(
+                                onPressed: () => Navigator.of(context).pop(true),
+                                child: const Text('删除'),
                               ),
-                            ),
+                            ],
                           ),
                         );
+                        if (confirmed != true) return;
+                        await CdnDiagnosticsService.deleteRuns(Set.of(selected));
+                        groups = CdnDiagnosticsService.groupedSnapshot();
+                        selected.clear();
+                        if (dialogContext.mounted) {
+                          setDialogState(() {
+                            if (groups.isEmpty) editing = false;
+                          });
+                        }
                       },
-                    );
-                  },
-                ),
+                      icon: const Icon(Icons.delete_outline),
+                    ),
+                  if (!editing && groups.isNotEmpty)
+                    IconButton(
+                      tooltip: '复制全部原始记录',
+                      onPressed: () async {
+                        await Clipboard.setData(
+                          ClipboardData(
+                            text: encoder.convert(CdnDiagnosticsService.snapshot()),
+                          ),
+                        );
+                        if (dialogContext.mounted) {
+                          ScaffoldMessenger.of(dialogContext).showSnackBar(
+                            const SnackBar(content: Text('已复制全部诊断记录')),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.copy_all_outlined),
+                    ),
+                  IconButton(
+                    tooltip: editing ? '完成编辑' : '编辑',
+                    onPressed: () => setDialogState(() {
+                      editing = !editing;
+                      if (!editing) selected.clear();
+                    }),
+                    icon: Icon(editing ? Icons.done : Icons.edit_outlined),
+                  ),
+                ],
+              ),
+              body: groups.isEmpty
+                  ? const Center(child: Text('还没有保存过 CDN 诊断记录'))
+                  : ListView.builder(
+                      itemCount: groups.length,
+                      itemBuilder: (context, index) {
+                        final group = groups[index];
+                        final first = group.records.first;
+                        final network = first['network'] is Map
+                            ? first['network'] as Map
+                            : const {};
+                        final config = first['config'] is Map
+                            ? first['config'] as Map
+                            : const {};
+                        return ListTile(
+                          leading: editing
+                              ? Checkbox(
+                                  value: selected.contains(group.runStartedAtUs),
+                                  onChanged: (_) => setDialogState(() {
+                                    if (!selected.add(group.runStartedAtUs)) {
+                                      selected.remove(group.runStartedAtUs);
+                                    }
+                                  }),
+                                )
+                              : const Icon(Icons.science_outlined),
+                          title: Text(
+                            '第 ${groups.length - index} 次测试 · ${timestamp(group.runStartedAtUs)}',
+                          ),
+                          subtitle: Text(
+                            '${group.records.length} 个 CDN · '
+                            '${network['transport'] ?? 'network?'} / '
+                            '${network['useCellularPreferences'] == true ? '等效移网' : '等效宽带'} · '
+                            '${config['mode'] ?? 'legacy'}',
+                          ),
+                          trailing: editing ? null : const Icon(Icons.chevron_right),
+                          onTap: () {
+                            if (editing) {
+                              setDialogState(() {
+                                if (!selected.add(group.runStartedAtUs)) {
+                                  selected.remove(group.runStartedAtUs);
+                                }
+                              });
+                              return;
+                            }
+                            showDialog<void>(
+                              context: dialogContext,
+                              builder: (detailContext) => MediaQuery(
+                                data: MediaQuery.of(detailContext).copyWith(
+                                  textScaler: const TextScaler.linear(0.85),
+                                ),
+                                child: Dialog.fullscreen(
+                                  child: Scaffold(
+                                    appBar: AppBar(
+                                      title: Text(
+                                        'CDN 测试组 · ${timestamp(group.runStartedAtUs)}',
+                                      ),
+                                      actions: [
+                                        IconButton(
+                                          tooltip: '复制本组原始记录',
+                                          onPressed: () => Clipboard.setData(
+                                            ClipboardData(
+                                              text: encoder.convert(group.records),
+                                            ),
+                                          ),
+                                          icon: const Icon(Icons.copy_all_outlined),
+                                        ),
+                                      ],
+                                    ),
+                                    body: ListView.builder(
+                                      itemCount: group.records.length,
+                                      itemBuilder: (context, itemIndex) {
+                                        final record = group.records[itemIndex];
+                                        final cdn = record['cdn'] is Map
+                                            ? record['cdn'] as Map
+                                            : const {};
+                                        final sample = record['sample'] is Map
+                                            ? record['sample'] as Map
+                                            : const {};
+                                        final error = sample['error'];
+                                        final derived = record['derived'] is Map
+                                            ? record['derived'] as Map
+                                            : const {};
+                                        final bandwidth =
+                                            (derived['averageRateBytesPerSecond'] as num?) ?? 0;
+                                        final firstByteUs =
+                                            (sample['firstByteUs'] as num?) ?? 0;
+                                        final dnsUs =
+                                            (sample['dnsLookupUs'] as num?) ?? 0;
+                                        return ListTile(
+                                          title: Text(
+                                            cdn['description']?.toString() ??
+                                                cdn['name']?.toString() ??
+                                                'CDN',
+                                          ),
+                                          subtitle: Text(
+                                            error == null
+                                                ? '带宽 ${rate(bandwidth)} · 首包 ${ms(firstByteUs)} · DNS ${ms(dnsUs)}'
+                                                : error.toString(),
+                                          ),
+                                          trailing: const Icon(Icons.chevron_right),
+                                          onTap: () => showDialog<void>(
+                                            context: detailContext,
+                                            builder: (rawContext) => Dialog.fullscreen(
+                                              child: Scaffold(
+                                                appBar: AppBar(
+                                                  title: Text(
+                                                    cdn['description']?.toString() ??
+                                                        'CDN 诊断原语',
+                                                  ),
+                                                  actions: [
+                                                    IconButton(
+                                                      tooltip: '复制本条记录',
+                                                      onPressed: () => Clipboard.setData(
+                                                        ClipboardData(
+                                                          text: encoder.convert(record),
+                                                        ),
+                                                      ),
+                                                      icon: const Icon(Icons.copy_outlined),
+                                                    ),
+                                                  ],
+                                                ),
+                                                body: SingleChildScrollView(
+                                                  padding: const EdgeInsets.all(16),
+                                                  child: SelectableText(
+                                                    encoder.convert(record),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+            ),
+          ),
         ),
       ),
     );
@@ -1106,8 +1415,12 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog.fullscreen(
-      child: Scaffold(
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(
+        textScaler: const TextScaler.linear(0.85),
+      ),
+      child: Dialog.fullscreen(
+        child: Scaffold(
         appBar: AppBar(
           title: const Text('CDN 优先级与网络诊断'),
           actions: [
@@ -1180,6 +1493,7 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

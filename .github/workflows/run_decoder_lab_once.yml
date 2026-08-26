@@ -1,6 +1,7 @@
-name: Run Decoder Lab Once
+name: Decoder Lab Android + Windows
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - dev

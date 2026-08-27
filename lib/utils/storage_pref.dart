@@ -430,6 +430,22 @@ abstract final class Pref {
     return length;
   }
 
+  static bool get enableReplyAccountSwitch => _setting.get(
+    SettingBoxKey.enableReplyAccountSwitch,
+    defaultValue: true,
+  );
+
+  static bool get rememberReplyAccount => _setting.get(
+    SettingBoxKey.rememberReplyAccount,
+    defaultValue: true,
+  );
+
+  static int? get lastReplyAccountMid =>
+      _setting.get(SettingBoxKey.lastReplyAccountMid);
+
+  static set lastReplyAccountMid(int? value) =>
+      _setting.put(SettingBoxKey.lastReplyAccountMid, value);
+
   static int get defaultPicQa =>
       _setting.get(SettingBoxKey.defaultPicQa, defaultValue: 10);
 

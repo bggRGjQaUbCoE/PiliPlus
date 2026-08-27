@@ -29,6 +29,7 @@ Future<VideoPlayerServiceHandler> initAudioService() {
       canControl: true,
       canPlay: true,
       canPause: true,
+      canSeek: true,
       canGoNext: false,
       canGoPrevious: false,
       onRaiseRequest: () {
@@ -204,6 +205,11 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     // }
     if (!PlPlayerController.instanceExists()) return;
     if (data == null) return;
+
+    // 直播间不可 Seek
+    if (Platform.isLinux) {
+      Mpris().canSeek = data is! RoomInfoH5Data;
+    }
 
     Uri getUri(String? cover) => Uri.parse(ImageUtils.safeThumbnailUrl(cover));
 

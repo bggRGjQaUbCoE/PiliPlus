@@ -148,7 +148,8 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
   Widget _buildBody(LoadingState<List<ReplyInfo>?> loadingState) {
     switch (loadingState) {
       case Loading():
-        return SliverList.builder(
+        return SliverPrototypeExtentList.builder(
+          prototypeItem: const VideoReplySkeleton(),
           itemBuilder: (context, index) => const VideoReplySkeleton(),
           itemCount: 5,
         );

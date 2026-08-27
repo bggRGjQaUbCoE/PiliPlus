@@ -141,8 +141,9 @@ class _FollowChildPageState extends State<FollowChildPage>
 
   Widget _buildBody(LoadingState<List<FollowItemModel>?> loadingState) {
     return switch (loadingState) {
-      Loading() => SliverList.builder(
+      Loading() => SliverPrototypeExtentList.builder(
         itemCount: 12,
+        prototypeItem: const MsgFeedTopSkeleton(),
         itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
       ),
       Success(:final response) =>

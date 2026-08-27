@@ -57,8 +57,9 @@ class _LikeDetailPageState extends State<LikeDetailPage> {
   ) {
     switch (loadingState) {
       case Loading():
-        return SliverList.builder(
+        return SliverPrototypeExtentList.builder(
           itemCount: 12,
+          prototypeItem: const MsgFeedTopSkeleton(),
           itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
         );
       case Success(:final response):

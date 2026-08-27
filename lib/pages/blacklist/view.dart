@@ -10,8 +10,8 @@ import 'package:PiliPlus/pages/blacklist/controller.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class BlackListPage extends StatefulWidget {
   const BlackListPage({super.key});
@@ -66,8 +66,9 @@ class _BlackListPageState extends State<BlackListPage> {
   Widget _buildBody(LoadingState<List<BlackListItem>?> loadingState) {
     late final style = TextStyle(color: Theme.of(context).colorScheme.outline);
     return switch (loadingState) {
-      Loading() => SliverList.builder(
+      Loading() => SliverPrototypeExtentList.builder(
         itemCount: 12,
+        prototypeItem: const MsgFeedTopSkeleton(),
         itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
       ),
       Success(:final response) =>

@@ -63,8 +63,9 @@ class _SysMsgPageState extends State<SysMsgPage> {
         return SliverSafeArea(
           top: false,
           bottom: false,
-          sliver: SliverList.builder(
+          sliver: SliverPrototypeExtentList.builder(
             itemCount: 12,
+            prototypeItem: const MsgFeedSysMsgSkeleton(),
             itemBuilder: (context, index) => const MsgFeedSysMsgSkeleton(),
           ),
         );

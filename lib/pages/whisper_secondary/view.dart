@@ -7,8 +7,8 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/whisper/widgets/item.dart';
 import 'package:PiliPlus/pages/whisper_secondary/controller.dart';
 import 'package:PiliPlus/utils/extension/three_dot_ext.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class WhisperSecPage extends StatefulWidget {
   const WhisperSecPage({
@@ -91,8 +91,9 @@ class _WhisperSecPageState extends State<WhisperSecPage> {
   Widget _buildBody(LoadingState<List<Session>?> loadingState) {
     switch (loadingState) {
       case Loading():
-        return SliverList.builder(
+        return SliverPrototypeExtentList.builder(
           itemCount: 12,
+          prototypeItem: const WhisperItemSkeleton(),
           itemBuilder: (context, index) => const WhisperItemSkeleton(),
         );
       case Success(:final response):

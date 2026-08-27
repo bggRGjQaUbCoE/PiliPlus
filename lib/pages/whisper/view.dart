@@ -9,9 +9,9 @@ import 'package:PiliPlus/pages/whisper/widgets/item.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/extension/three_dot_ext.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class WhisperPage extends StatefulWidget {
   const WhisperPage({super.key});
@@ -111,8 +111,9 @@ class _WhisperPageState extends State<WhisperPage> {
   Widget _buildBody(LoadingState<List<Session>?> loadingState) {
     switch (loadingState) {
       case Loading():
-        return SliverList.builder(
+        return SliverPrototypeExtentList.builder(
           itemCount: 12,
+          prototypeItem: const WhisperItemSkeleton(),
           itemBuilder: (context, index) => const WhisperItemSkeleton(),
         );
       case Success(:final response):

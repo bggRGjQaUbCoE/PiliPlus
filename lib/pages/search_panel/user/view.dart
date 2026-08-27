@@ -5,9 +5,9 @@ import 'package:PiliPlus/pages/search_panel/user/controller.dart';
 import 'package:PiliPlus/pages/search_panel/user/widgets/item.dart';
 import 'package:PiliPlus/pages/search_panel/view.dart';
 import 'package:PiliPlus/utils/grid.dart';
+import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart'
     hide SliverGridDelegateWithMaxCrossAxisExtent;
-import 'package:get/get.dart';
 
 class SearchUserPanel extends CommonSearchPanel {
   const SearchUserPanel({

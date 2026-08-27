@@ -10,8 +10,8 @@ import 'package:PiliPlus/pages/member_like_arc/controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class MemberLikeArcPage extends StatefulWidget {
   const MemberLikeArcPage({

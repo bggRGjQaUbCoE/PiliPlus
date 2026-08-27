@@ -11,8 +11,8 @@ import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:stream_transform/stream_transform.dart';
 
 mixin DebounceStreamMixin<T> {
@@ -161,24 +161,24 @@ class SSearchController extends GetxController
   }
 
   // 搜索
-  Future<void> submit() async {
+  void submit() {
     if (controller.text.isEmpty) {
-      if (hintText.isNullOrEmpty) {
-        return;
-      }
+      if (hintText.isNullOrEmpty) return;
       controller.text = hintText!;
       validateUid();
     }
 
     if (recordSearchHistory.value) {
-      historyList
-        ..remove(controller.text)
-        ..insert(0, controller.text);
-      GStorage.historyWord.put('cacheList', historyList);
+      final index = historyList.indexOf(controller.text);
+      if (index != 0) {
+        if (index != -1) historyList.removeAt(index);
+        historyList.insert(0, controller.text);
+        GStorage.historyWord.put('cacheList', historyList);
+      }
     }
 
     searchFocusNode.unfocus();
-    await Get.toNamed(
+    Get.toNamed(
       '/searchResult',
       parameters: {
         'tag': tag,
@@ -188,8 +188,7 @@ class SSearchController extends GetxController
         'initIndex': initIndex,
         'fromSearch': true,
       },
-    );
-    searchFocusNode.requestFocus();
+    )?.whenComplete(searchFocusNode.requestFocus);
   }
 
   Future<void> queryRecommendList() async {

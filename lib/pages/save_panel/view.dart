@@ -14,7 +14,6 @@ import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
-import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
@@ -22,11 +21,11 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart' show DateFormat;
+import 'package:material_ui/material_ui.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -86,142 +85,145 @@ class _SavePanelState extends State<SavePanel> {
   @override
   void initState() {
     super.initState();
-    if (_item case final ReplyInfo reply) {
-      itemType = '评论';
-      final currentRoute = Get.currentRoute;
-      late final hasRoot = reply.hasRoot();
-
-      if (currentRoute == '/videoV') {
-        final rootId = hasRoot ? reply.root : reply.id;
-
-        uri =
-            'https://www.bilibili.com/video/av${reply.oid}?comment_on=1&comment_root_id=$rootId${hasRoot ? '&comment_secondary_id=${reply.id}' : ''}';
-        try {
-          final heroTag = Get.arguments['heroTag'];
-          final videoType = Get.arguments['videoType'];
-          if (videoType == VideoType.pgc || videoType == VideoType.pugv) {
-            final ctr = Get.find<PgcIntroController>(tag: heroTag);
-            final pgcItem = ctr.pgcItem;
-            final cid = ctr.cid.value;
-            final episode = pgcItem.episodes!.firstWhere(
-              (e) => e.cid == cid,
-            );
-            cover = episode.cover;
-            title =
-                episode.shareCopy ??
-                '${pgcItem.title} ${episode.showTitle ?? episode.longTitle ?? ''}';
-            pubdate = episode.pubTime;
-            uname = pgcItem.upInfo?.uname;
-
-            final oid = reply.oid;
-            final type = reply.type.toInt();
-            final anchor = hasRoot ? 'anchor=${reply.id}&' : '';
-            uri =
-                'bilibili://comment/detail/$type/$oid/$rootId/?${anchor}enterUri=bilibili://pgc/season/ep/${ctr.epId}';
-          } else {
-            final ctr = Get.find<UgcIntroController>(tag: heroTag);
-            final videoDetail = ctr.videoDetail.value;
-            cover = videoDetail.pic;
-            title = videoDetail.title;
-            pubdate = videoDetail.pubdate;
-            uname = videoDetail.owner?.name;
-
-            final cid = ctr.cid.value;
-            final part =
-                ctr.videoDetail.value.pages?.indexWhere((i) => i.cid == cid) ??
-                -1;
-            if (part > 0) uri += '&p=${part + 1}';
-          }
-        } catch (_) {}
-      } else if (currentRoute.startsWith('/dynamicDetail')) {
-        DynamicItemModel? dynItem;
-        try {
-          dynItem = Get.arguments['item'] as DynamicItemModel;
-          uname = dynItem.modules.moduleAuthor?.name;
-        } catch (_) {}
-        final type = reply.type.toInt();
-        final oid = reply.oid;
-        final rootId = hasRoot ? reply.root : reply.id;
-
-        if (type == 1) {
-          uri =
-              'https://www.bilibili.com/video/av$oid?comment_on=1&comment_root_id=$rootId${hasRoot ? '&comment_secondary_id=${reply.id}' : ''}';
-        } else {
-          final enterUri = dynItem == null
-              ? ''
-              : 'enterUri=${parseDyn(dynItem)}';
-          uri =
-              'bilibili://comment/detail/$type/$oid/$rootId/?${hasRoot ? 'anchor=${reply.id}&' : ''}$enterUri';
-        }
-      } else if (currentRoute.startsWith('/Scaffold')) {
-        try {
-          final type = reply.type.toInt();
-          final oid = Get.arguments['oid'] ?? reply.oid;
-          final rootId = hasRoot ? reply.root : reply.id;
-          if (type == 1) {
-            uri =
-                'https://www.bilibili.com/video/av$oid?comment_on=1&comment_root_id=$rootId${hasRoot ? '&comment_secondary_id=${reply.id}' : ''}';
-          } else {
-            String enterUri = Get.arguments['enterUri'] ?? '';
-            if (enterUri.isNotEmpty) {
-              enterUri = 'enterUri=${Uri.encodeComponent(enterUri)}';
-            } else if (const [11, 12, 17].contains(type)) {
-              enterUri = 'enterUri=bilibili://following/detail/$oid';
-            }
-            uri =
-                'bilibili://comment/detail/$type/$oid/$rootId/?${hasRoot ? 'anchor=${reply.id}&' : ''}$enterUri';
-          }
-        } catch (_) {}
-      } else if (currentRoute.startsWith('/articlePage')) {
-        try {
-          final type = reply.type.toInt();
-          final oid = reply.oid;
-          final rootId = hasRoot ? reply.root : reply.id;
-          final anchor = hasRoot ? 'anchor=${reply.id}&' : '';
-          final enterUri =
-              'bilibili://following/detail/${Get.parameters['id'] ?? Get.arguments?['id']}';
-          uri =
-              'bilibili://comment/detail/$type/$oid/$rootId/?${anchor}enterUri=$enterUri';
-        } catch (_) {}
-      } else if (currentRoute.startsWith('/musicDetail')) {
-        final type = reply.type.toInt();
-        final oid = reply.oid;
-        final rootId = hasRoot ? reply.root : reply.id;
-        final anchor = hasRoot ? 'anchor=${reply.id}&' : '';
-        String enterUri = '';
-        try {
-          final ctr = Get.find<MusicDetailController>(
-            tag: Get.parameters['musicId'],
-          );
-          enterUri = 'enterUri=${Uri.encodeComponent(ctr.shareUrl)}'; // official client cannot parse it
-          final data = ctr.infoState.value.dataOrNull;
-          if (data != null) {
-            coverType = _CoverType.square;
-            cover = data.mvCover;
-            title = data.musicTitle;
-            if (data.musicPublish != null) {
-              final time = DateTime.tryParse(
-                data.musicPublish!,
-              )?.millisecondsSinceEpoch;
-              if (time != null) {
-                pubdate = time ~/ 1000;
-                dateFormat = DateFormatUtils.longFormat;
-              }
-            }
-          }
-        } catch (_) {}
-        uri = 'bilibili://comment/detail/$type/$oid/$rootId/?$anchor$enterUri';
-      }
-
-      if (kDebugMode) debugPrint(uri);
+    if (_item case final ReplyInfo i) {
+      _parseReply(i);
     } else if (_item case final DynamicItemModel i) {
-      uri = parseDyn(i);
-
+      _parseDyn(i);
       if (kDebugMode) debugPrint(uri);
     }
   }
 
-  String parseDyn(DynamicItemModel item) {
+  void _parseReply(ReplyInfo reply) {
+    itemType = '评论';
+    final currentRoute = Get.currentRoute;
+    late final hasRoot = reply.hasRoot();
+
+    if (currentRoute == '/videoV') {
+      final rootId = hasRoot ? reply.root : reply.id;
+
+      uri =
+          'https://www.bilibili.com/video/av${reply.oid}?comment_on=1&comment_root_id=$rootId${hasRoot ? '&comment_secondary_id=${reply.id}' : ''}';
+      try {
+        final heroTag = Get.arguments['heroTag'];
+        final videoType = Get.arguments['videoType'];
+        if (videoType == VideoType.pgc || videoType == VideoType.pugv) {
+          final ctr = Get.find<PgcIntroController>(tag: heroTag);
+          final pgcItem = ctr.pgcItem;
+          final cid = ctr.cid.value;
+          final episode = pgcItem.episodes!.firstWhere(
+            (e) => e.cid == cid,
+          );
+          cover = episode.cover;
+          title =
+              episode.shareCopy ??
+              '${pgcItem.title} ${episode.showTitle ?? episode.longTitle ?? ''}';
+          pubdate = episode.pubTime;
+          uname = pgcItem.upInfo?.uname;
+
+          final oid = reply.oid;
+          final type = reply.type.toInt();
+          final anchor = hasRoot ? 'anchor=${reply.id}&' : '';
+          uri =
+              'bilibili://comment/detail/$type/$oid/$rootId/?${anchor}enterUri=bilibili://pgc/season/ep/${ctr.epId}';
+        } else {
+          final ctr = Get.find<UgcIntroController>(tag: heroTag);
+          final videoDetail = ctr.videoDetail.value;
+          cover = videoDetail.pic;
+          title = videoDetail.title;
+          pubdate = videoDetail.pubdate;
+          uname = videoDetail.owner?.name;
+
+          final cid = ctr.cid.value;
+          final part =
+              ctr.videoDetail.value.pages?.indexWhere((i) => i.cid == cid) ??
+              -1;
+          if (part > 0) uri += '&p=${part + 1}';
+        }
+      } catch (_) {}
+    } else if (currentRoute.startsWith('/dynamicDetail')) {
+      DynamicItemModel? dynItem;
+      try {
+        dynItem = Get.arguments['item'] as DynamicItemModel;
+        uname = dynItem.modules.moduleAuthor?.name;
+      } catch (_) {}
+      final type = reply.type.toInt();
+      final oid = reply.oid;
+      final rootId = hasRoot ? reply.root : reply.id;
+
+      if (type == 1) {
+        uri =
+            'https://www.bilibili.com/video/av$oid?comment_on=1&comment_root_id=$rootId${hasRoot ? '&comment_secondary_id=${reply.id}' : ''}';
+      } else {
+        final enterUri = dynItem == null
+            ? ''
+            : 'enterUri=${_parseDyn(dynItem)}';
+        uri =
+            'bilibili://comment/detail/$type/$oid/$rootId/?${hasRoot ? 'anchor=${reply.id}&' : ''}$enterUri';
+      }
+    } else if (currentRoute.startsWith('/Scaffold')) {
+      try {
+        final type = reply.type.toInt();
+        final oid = Get.arguments['oid'] ?? reply.oid;
+        final rootId = hasRoot ? reply.root : reply.id;
+        if (type == 1) {
+          uri =
+              'https://www.bilibili.com/video/av$oid?comment_on=1&comment_root_id=$rootId${hasRoot ? '&comment_secondary_id=${reply.id}' : ''}';
+        } else {
+          String enterUri = Get.arguments['enterUri'] ?? '';
+          if (enterUri.isNotEmpty) {
+            enterUri = 'enterUri=${Uri.encodeComponent(enterUri)}';
+          } else if (const [11, 12, 17].contains(type)) {
+            enterUri = 'enterUri=bilibili://following/detail/$oid';
+          }
+          uri =
+              'bilibili://comment/detail/$type/$oid/$rootId/?${hasRoot ? 'anchor=${reply.id}&' : ''}$enterUri';
+        }
+      } catch (_) {}
+    } else if (currentRoute.startsWith('/articlePage')) {
+      try {
+        final type = reply.type.toInt();
+        final oid = reply.oid;
+        final rootId = hasRoot ? reply.root : reply.id;
+        final anchor = hasRoot ? 'anchor=${reply.id}&' : '';
+        final enterUri =
+            'bilibili://following/detail/${Get.parameters['id'] ?? Get.arguments?['id']}';
+        uri =
+            'bilibili://comment/detail/$type/$oid/$rootId/?${anchor}enterUri=$enterUri';
+      } catch (_) {}
+    } else if (currentRoute.startsWith('/musicDetail')) {
+      final type = reply.type.toInt();
+      final oid = reply.oid;
+      final rootId = hasRoot ? reply.root : reply.id;
+      final anchor = hasRoot ? 'anchor=${reply.id}&' : '';
+      String enterUri = '';
+      try {
+        final ctr = Get.find<MusicDetailController>(
+          tag: Get.parameters['musicId'],
+        );
+        enterUri = 'enterUri=${Uri.encodeComponent(ctr.shareUrl)}'; // official client cannot parse it
+        final data = ctr.infoState.value.dataOrNull;
+        if (data != null) {
+          coverType = _CoverType.square;
+          cover = data.mvCover;
+          title = data.musicTitle;
+          if (data.musicPublish != null) {
+            final time = DateTime.tryParse(
+              data.musicPublish!,
+            )?.millisecondsSinceEpoch;
+            if (time != null) {
+              pubdate = time ~/ 1000;
+              dateFormat = DateFormatUtils.longFormat;
+            }
+          }
+        }
+      } catch (_) {}
+      uri = 'bilibili://comment/detail/$type/$oid/$rootId/?$anchor$enterUri';
+    }
+
+    if (kDebugMode) debugPrint(uri);
+  }
+
+  String _parseDyn(DynamicItemModel item) {
     String uri = '';
     try {
       switch (item.type) {
@@ -334,9 +336,9 @@ class _SavePanelState extends State<SavePanel> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final colorScheme = ColorScheme.of(context);
     final padding = MediaQuery.viewPaddingOf(context);
-    final maxWidth = context.mediaQueryShortestSide;
+    final maxWidth = MediaQuery.sizeOf(context).shortestSide;
     late final coverSize = MediaQuery.textScalerOf(context).scale(65);
     return Stack(
       clipBehavior: .none,
@@ -355,7 +357,7 @@ class _SavePanelState extends State<SavePanel> {
               key: boundaryKey,
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
+                  color: colorScheme.surface,
                   borderRadius: const .all(.circular(12)),
                 ),
                 child: AnimatedSize(
@@ -366,24 +368,22 @@ class _SavePanelState extends State<SavePanel> {
                     mainAxisSize: .min,
                     crossAxisAlignment: .start,
                     children: [
-                      switch (_item) {
-                        ReplyInfo reply => IgnorePointer(
-                          child: ReplyItemGrpc(
+                      IgnorePointer(
+                        child: switch (_item) {
+                          ReplyInfo reply => ReplyItemGrpc(
                             replyItem: reply,
                             replyLevel: 0,
                             needDivider: false,
                             upMid: widget.upMid,
                           ),
-                        ),
-                        DynamicItemModel dyn => IgnorePointer(
-                          child: DynamicPanel(
+                          DynamicItemModel dyn => DynamicPanel(
                             item: dyn,
                             isDetail: true,
                             isSave: true,
                           ),
-                        ),
-                        _ => throw UnsupportedError(_item.toString()),
-                      },
+                          _ => throw UnsupportedError(_item.toString()),
+                        },
+                      ),
                       if (cover?.isNotEmpty == true &&
                           title?.isNotEmpty == true)
                         Container(
@@ -391,7 +391,7 @@ class _SavePanelState extends State<SavePanel> {
                           margin: const .symmetric(horizontal: 12),
                           padding: const .all(8),
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.onInverseSurface,
+                            color: colorScheme.onInverseSurface,
                             borderRadius: const .all(.circular(8)),
                           ),
                           child: Row(
@@ -424,7 +424,7 @@ class _SavePanelState extends State<SavePanel> {
                                           format: dateFormat,
                                         ),
                                         style: TextStyle(
-                                          color: theme.colorScheme.outline,
+                                          color: colorScheme.outline,
                                         ),
                                       ),
                                   ],
@@ -454,17 +454,14 @@ class _SavePanelState extends State<SavePanel> {
                                                   maxLines: 1,
                                                   overflow: .ellipsis,
                                                   style: TextStyle(
-                                                    color: theme
-                                                        .colorScheme
-                                                        .primary,
+                                                    color: colorScheme.primary,
                                                   ),
                                                 ),
                                               Text(
                                                 '识别二维码，$viewType$itemType',
                                                 textAlign: .end,
                                                 style: TextStyle(
-                                                  color: theme
-                                                      .colorScheme
+                                                  color: colorScheme
                                                       .onSurfaceVariant,
                                                 ),
                                               ),
@@ -474,8 +471,7 @@ class _SavePanelState extends State<SavePanel> {
                                                 textAlign: .end,
                                                 style: TextStyle(
                                                   fontSize: 13,
-                                                  color:
-                                                      theme.colorScheme.outline,
+                                                  color: colorScheme.outline,
                                                 ),
                                               ),
                                             ],
@@ -488,9 +484,9 @@ class _SavePanelState extends State<SavePanel> {
                                             height: 88,
                                             margin: const .all(12),
                                             padding: const .all(3),
-                                            color: theme.isDark
+                                            color: colorScheme.isDark
                                                 ? Colors.white
-                                                : theme.colorScheme.surface,
+                                                : colorScheme.surface,
                                             child: PrettyQrView.data(
                                               data: uri,
                                               decoration:
@@ -510,7 +506,7 @@ class _SavePanelState extends State<SavePanel> {
                                     Assets.logo2,
                                     width: 100,
                                     cacheWidth: 100.cacheSize(context),
-                                    color: theme.colorScheme.onSurfaceVariant,
+                                    color: colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                               ],
@@ -553,8 +549,8 @@ class _SavePanelState extends State<SavePanel> {
                     tooltip: '关闭',
                     icon: const Icon(Icons.clear),
                     onPressed: Get.back,
-                    bgColor: theme.colorScheme.onInverseSurface,
-                    iconColor: theme.colorScheme.onSurfaceVariant,
+                    bgColor: colorScheme.onInverseSurface,
+                    iconColor: colorScheme.onSurfaceVariant,
                   ),
                   iconButton(
                     size: 42,

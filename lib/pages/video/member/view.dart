@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/skeleton/video_card_h.dart';
+import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -178,9 +179,11 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
     LoadingState<List<SpaceArchiveItem>?> loadingState,
   ) {
     return switch (loadingState) {
-      Loading() => SliverFixedExtentList.builder(
-        itemCount: 10,
-        itemBuilder: (_, _) => const VideoCardHSkeleton(),
+      Loading() => const SliverFixedExtentList(
+        delegate: SliverSingleChildDelegate(
+          count: 10,
+          child: VideoCardHSkeleton(),
+        ),
         itemExtent: 112,
       ),
       Success(:final response) =>

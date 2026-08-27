@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/skeleton/fav_pgc_item.dart';
+import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
@@ -161,10 +162,12 @@ class _FavPgcChildPageState extends State<FavPgcChildPage>
 
   Widget _buildBody(LoadingState<List<FavPgcItemModel>?> loadingState) {
     return switch (loadingState) {
-      Loading() => SliverGrid.builder(
+      Loading() => SliverGrid(
         gridDelegate: gridDelegate,
-        itemBuilder: (context, index) => const FavPgcItemSkeleton(),
-        itemCount: 10,
+        delegate: const SliverSingleChildDelegate(
+          count: 10,
+          child: FavPgcItemSkeleton(),
+        ),
       ),
       Success(:final response) =>
         response != null && response.isNotEmpty

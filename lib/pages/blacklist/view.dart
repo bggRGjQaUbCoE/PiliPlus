@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/skeleton/msg_feed_top.dart';
+import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -66,10 +67,12 @@ class _BlackListPageState extends State<BlackListPage> {
   Widget _buildBody(LoadingState<List<BlackListItem>?> loadingState) {
     late final style = TextStyle(color: Theme.of(context).colorScheme.outline);
     return switch (loadingState) {
-      Loading() => SliverPrototypeExtentList.builder(
-        itemCount: 12,
-        prototypeItem: const MsgFeedTopSkeleton(),
-        itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
+      Loading() => const SliverPrototypeExtentList(
+        prototypeItem: MsgFeedTopSkeleton(),
+        delegate: SliverSingleChildDelegate(
+          count: 12,
+          child: MsgFeedTopSkeleton(),
+        ),
       ),
       Success(:final response) =>
         response != null && response.isNotEmpty

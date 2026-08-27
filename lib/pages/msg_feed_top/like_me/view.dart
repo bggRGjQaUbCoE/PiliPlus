@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/skeleton/msg_feed_top.dart';
+import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
@@ -74,10 +75,12 @@ class _LikeMePageState extends State<LikeMePage> {
   Widget _buildBody(ThemeData theme, LoadingState loadingState) {
     switch (loadingState) {
       case Loading():
-        return SliverPrototypeExtentList.builder(
-          itemCount: 12,
-          prototypeItem: const MsgFeedTopSkeleton(),
-          itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
+        return const SliverPrototypeExtentList(
+          prototypeItem: MsgFeedTopSkeleton(),
+          delegate: SliverSingleChildDelegate(
+            count: 12,
+            child: MsgFeedTopSkeleton(),
+          ),
         );
       case Success(:final response):
         final divider = Divider(

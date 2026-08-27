@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/skeleton/video_card_v.dart';
+import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/button/more_btn.dart';
@@ -185,10 +186,12 @@ class _LivePageState extends State<LivePage>
 
   Widget _buildBody(ThemeData theme, LoadingState<List?> loadingState) {
     return switch (loadingState) {
-      Loading() => SliverGrid.builder(
+      Loading() => SliverGrid(
         gridDelegate: gridDelegate,
-        itemBuilder: (context, index) => const VideoCardVSkeleton(),
-        itemCount: 10,
+        delegate: const SliverSingleChildDelegate(
+          child: VideoCardVSkeleton(),
+          count: 10,
+        ),
       ),
       Success(:final response) => SliverMainAxisGroup(
         slivers: [

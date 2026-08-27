@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/skeleton/video_card_v.dart';
+import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -130,9 +131,11 @@ class _RcmdPageState extends State<RcmdPage>
     };
   }
 
-  Widget get _buildSkeleton => SliverGrid.builder(
+  Widget get _buildSkeleton => SliverGrid(
     gridDelegate: gridDelegate,
-    itemBuilder: (context, index) => const VideoCardVSkeleton(),
-    itemCount: 10,
+    delegate: const SliverSingleChildDelegate(
+      count: 10,
+      child: VideoCardVSkeleton(),
+    ),
   );
 }

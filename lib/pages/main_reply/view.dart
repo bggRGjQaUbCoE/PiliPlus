@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/skeleton/video_reply.dart';
+import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -112,10 +113,12 @@ class _MainReplyPageState extends State<MainReplyPage>
     LoadingState<List<ReplyInfo>?> loadingState,
   ) {
     return switch (loadingState) {
-      Loading() => SliverPrototypeExtentList.builder(
-        itemCount: 10,
-        itemBuilder: (_, _) => const VideoReplySkeleton(),
-        prototypeItem: const VideoReplySkeleton(),
+      Loading() => const SliverPrototypeExtentList(
+        prototypeItem: VideoReplySkeleton(),
+        delegate: SliverSingleChildDelegate(
+          count: 10,
+          child: VideoReplySkeleton(),
+        ),
       ),
       Success(:final response) =>
         response != null && response.isNotEmpty

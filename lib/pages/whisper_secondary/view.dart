@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/skeleton/whisper_item.dart';
+import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
@@ -91,10 +92,12 @@ class _WhisperSecPageState extends State<WhisperSecPage> {
   Widget _buildBody(LoadingState<List<Session>?> loadingState) {
     switch (loadingState) {
       case Loading():
-        return SliverPrototypeExtentList.builder(
-          itemCount: 12,
-          prototypeItem: const WhisperItemSkeleton(),
-          itemBuilder: (context, index) => const WhisperItemSkeleton(),
+        return const SliverPrototypeExtentList(
+          prototypeItem: WhisperItemSkeleton(),
+          delegate: SliverSingleChildDelegate(
+            count: 12,
+            child: WhisperItemSkeleton(),
+          ),
         );
       case Success(:final response):
         if (response != null && response.isNotEmpty) {

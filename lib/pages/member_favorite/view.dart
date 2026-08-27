@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/skeleton/video_card_h.dart';
+import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
@@ -69,10 +70,12 @@ class _MemberFavoriteState extends State<MemberFavorite>
     return switch (loadingState) {
       Loading() => SliverPadding(
         padding: const EdgeInsets.only(top: 7),
-        sliver: SliverGrid.builder(
+        sliver: SliverGrid(
           gridDelegate: gridDelegate,
-          itemBuilder: (context, index) => const VideoCardHSkeleton(),
-          itemCount: 10,
+          delegate: const SliverSingleChildDelegate(
+            count: 10,
+            child: VideoCardHSkeleton(),
+          ),
         ),
       ),
       Success(:final response) =>

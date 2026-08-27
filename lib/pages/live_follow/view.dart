@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/skeleton/video_card_v.dart';
+import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -62,10 +63,12 @@ class _LiveFollowPageState extends State<LiveFollowPage> {
 
   Widget _buildBody(LoadingState<List<LiveFollowItem>?> loadingState) {
     return switch (loadingState) {
-      Loading() => SliverGrid.builder(
+      Loading() => SliverGrid(
         gridDelegate: gridDelegate,
-        itemBuilder: (context, index) => const VideoCardVSkeleton(),
-        itemCount: 10,
+        delegate: const SliverSingleChildDelegate(
+          count: 10,
+          child: VideoCardVSkeleton(),
+        ),
       ),
       Success(:final response) =>
         response != null && response.isNotEmpty

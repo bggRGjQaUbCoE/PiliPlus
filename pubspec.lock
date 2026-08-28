@@ -110,8 +110,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "9d6854a78a6f5319c955bedfd4ef93b7cd58ce71"
-      resolved-ref: "9d6854a78a6f5319c955bedfd4ef93b7cd58ce71"
+      ref: "653da3844e43841e13153f374266abc07aaf47ba"
+      resolved-ref: "653da3844e43841e13153f374266abc07aaf47ba"
       url: "https://github.com/Tobiichi-Origuchi/audio-service-mpris.git"
     source: git
     version: "1.0.0-beta.2"

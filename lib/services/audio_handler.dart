@@ -22,6 +22,7 @@ import 'package:window_manager/window_manager.dart';
 
 Future<VideoPlayerServiceHandler> initAudioService() {
   if (Platform.isLinux) {
+    final speeds = Pref.speedList;
     AudioServiceMpris.init(
       dBusName: 'piliplus',
       identity: 'Audio Service ${Constants.appName}',
@@ -32,6 +33,8 @@ Future<VideoPlayerServiceHandler> initAudioService() {
       canSeek: true,
       canGoNext: false,
       canGoPrevious: false,
+      minimumRate: speeds.isEmpty ? 1.0 : speeds.first,
+      maximumRate: speeds.isEmpty ? 1.0 : speeds.last,
       onRaiseRequest: () {
         windowManager
           ..show()
@@ -104,6 +107,17 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     return Future.value();
   }
 
+  // Mpris Rate
+  @override
+  Future<void> setSpeed(double speed) async {
+    final instance = PlPlayerController.instance;
+    if (instance == null) return;
+    final snapped = Pref.speedList.reduce(
+      (a, b) => (speed - a).abs() <= (speed - b).abs() ? a : b,
+    );
+    await instance.setPlaybackSpeed(snapped);
+  }
+
   void setMediaItem(MediaItem newMediaItem) {
     if (!enableBackgroundPlay) return;
     // if (kDebugMode) {
@@ -141,6 +155,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
         processingState: isBuffering
             ? AudioProcessingState.buffering
             : processingState,
+        speed: PlPlayerController.instance?.playbackSpeed ?? 1.0,
         controls: [
           if (!isLive)
             const MediaControl(
@@ -346,6 +361,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     playbackState.add(
       playbackState.value.copyWith(
         updatePosition: position,
+        speed: PlPlayerController.instance?.playbackSpeed ?? 1.0,
       ),
     );
   }

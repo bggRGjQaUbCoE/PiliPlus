@@ -45,7 +45,7 @@ dependencies:
   audio_service_mpris:
     git:
       url: https://github.com/Tobiichi-Origuchi/audio-service-mpris.git
-      ref: 9d6854a78a6f5319c955bedfd4ef93b7cd58ce71
+      ref: 653da3844e43841e13153f374266abc07aaf47ba
   audio_session: ^0.2.2
   battery_plus: ^7.0.0
   brotli: ^0.6.0

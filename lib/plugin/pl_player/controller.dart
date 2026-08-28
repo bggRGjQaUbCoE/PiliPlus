@@ -49,6 +49,7 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:archive/archive.dart' show getCrc32;
+import 'package:audio_service_mpris/audio_service_mpris.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -1205,6 +1206,9 @@ class PlPlayerController with BlockConfigMixin {
   Future<void> setVolume(double volume, {bool showIndicator = true}) async {
     if (this.volume.value != volume) {
       this.volume.value = volume;
+      if (Platform.isLinux) {
+        Mpris().volume = volume.clamp(0.0, 1.0);
+      }
       try {
         if (PlatformUtils.isDesktop) {
           await _videoPlayerController!.setVolume(volume * 100);

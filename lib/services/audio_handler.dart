@@ -1,3 +1,4 @@
+import 'dart:async' show FutureOr;
 import 'dart:io' show File, Platform;
 import 'dart:ui' show PlatformDispatcher;
 
@@ -31,8 +32,8 @@ Future<VideoPlayerServiceHandler> initAudioService() {
       canPlay: true,
       canPause: true,
       canSeek: true,
-      canGoNext: false,
-      canGoPrevious: false,
+      canGoNext: true,
+      canGoPrevious: true,
       minimumRate: speeds.isEmpty ? 1.0 : speeds.first,
       maximumRate: speeds.isEmpty ? 1.0 : speeds.last,
       onRaiseRequest: () {
@@ -65,6 +66,8 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   Future<void>? Function()? onPlay;
   Future<void>? Function()? onPause;
   Future<void>? Function(Duration position)? onSeek;
+  FutureOr<void> Function()? onSkipToNext;
+  FutureOr<void> Function()? onSkipToPrevious;
 
   @override
   Future<void> play() {
@@ -116,6 +119,18 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     // await player.seekTo(position);
   }
 
+  @override
+  Future<void> skipToNext() async {
+    _stopped = false;
+    await onSkipToNext?.call();
+  }
+
+  @override
+  Future<void> skipToPrevious() async {
+    _stopped = false;
+    await onSkipToPrevious?.call();
+  }
+
   // Mpris Volume
   @override
   Future<dynamic> customAction(String name, [Map<String, dynamic>? extras]) {
@@ -137,10 +152,13 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   Future<void> setSpeed(double speed) async {
     final instance = PlPlayerController.instance;
     if (instance == null) return;
-    final snapped = Pref.speedList.reduce(
+    final steps = Pref.speedList;
+    if (steps.isEmpty) return;
+    final snapped = steps.reduce(
       (a, b) => (speed - a).abs() <= (speed - b).abs() ? a : b, // 自动吸附
     );
     await instance.setPlaybackSpeed(snapped);
+    playbackState.add(playbackState.value.copyWith(speed: snapped));
   }
 
   void setMediaItem(MediaItem newMediaItem) {

@@ -60,6 +60,7 @@ Future<VideoPlayerServiceHandler> initAudioService() {
 class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   static final List<MediaItem> _item = [];
   bool enableBackgroundPlay = Pref.enableBackgroundPlay;
+  bool _stopped = false;
 
   Future<void>? Function()? onPlay;
   Future<void>? Function()? onPause;
@@ -67,6 +68,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
 
   @override
   Future<void> play() {
+    _stopped = false;
     return onPlay?.call() ??
         PlPlayerController.playIfExists() ??
         Future.syncValue(null);
@@ -80,7 +82,30 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   }
 
   @override
+  Future<void> stop() async {
+    if (!Platform.isLinux) {
+      await super.stop();
+      return;
+    }
+    if (_stopped) return;
+    _stopped = true;
+    await (onPause?.call() ?? PlPlayerController.pauseIfExists());
+    await (onSeek?.call(Duration.zero) ??
+        PlPlayerController.seekToIfExists(Duration.zero, isSeek: false));
+    if (_item.isNotEmpty) {
+      playbackState.add(
+        playbackState.value.copyWith(
+          processingState: AudioProcessingState.ready,
+          playing: false,
+          updatePosition: Duration.zero,
+        ),
+      );
+    }
+  }
+
+  @override
   Future<void> seek(Duration position) {
+    _stopped = false;
     playbackState.add(
       playbackState.value.copyWith(
         updatePosition: position,
@@ -113,13 +138,14 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     final instance = PlPlayerController.instance;
     if (instance == null) return;
     final snapped = Pref.speedList.reduce(
-      (a, b) => (speed - a).abs() <= (speed - b).abs() ? a : b,
+      (a, b) => (speed - a).abs() <= (speed - b).abs() ? a : b, // 自动吸附
     );
     await instance.setPlaybackSpeed(snapped);
   }
 
   void setMediaItem(MediaItem newMediaItem) {
     if (!enableBackgroundPlay) return;
+    _stopped = false;
     // if (kDebugMode) {
     //   debugPrint("此时调用栈为：");
     //   debugPrint(newMediaItem);
@@ -150,6 +176,9 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     }
 
     final playing = status.isPlaying;
+    if (playing) {
+      _stopped = false;
+    }
     playbackState.add(
       playbackState.value.copyWith(
         processingState: isBuffering
@@ -321,12 +350,12 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
         ),
       );
       setMediaItem(_item.last);
-      stop();
     }
   }
 
   void clear() {
     if (!enableBackgroundPlay) return;
+    _stopped = false;
     mediaItem.add(null);
     _item.clear();
     /**

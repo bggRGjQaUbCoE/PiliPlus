@@ -1252,7 +1252,7 @@ class PlPlayerController with BlockConfigMixin {
 
   /// 设置后台播放
   void setBackgroundPlay(bool val) {
-    videoPlayerServiceHandler?.enableBackgroundPlay = val;
+    setEnableBackgroundPlay(val);
     if (!tempPlayerConf) {
       setting.put(SettingBoxKey.enableBackgroundPlay, val);
     }

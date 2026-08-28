@@ -279,8 +279,7 @@ List<SettingsModel> get playSettings => [
       leading: const Icon(Icons.volume_up_outlined),
       setKey: SettingBoxKey.enableBackgroundPlay,
       defaultVal: true,
-      onChanged: (value) =>
-          videoPlayerServiceHandler!.enableBackgroundPlay = value,
+      onChanged: setEnableBackgroundPlay,
     ),
   PopupModel(
     title: '播放顺序',

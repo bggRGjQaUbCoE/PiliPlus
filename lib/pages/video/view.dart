@@ -141,8 +141,12 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
     PlPlayerController.setPlayCallBack(playCallBack);
     videoDetailController = Get.put(VideoDetailController(), tag: heroTag);
-    videoPlayerServiceHandler?.onSkipToNext = introController.nextPlay;
-    videoPlayerServiceHandler?.onSkipToPrevious = introController.prevPlay;
+    videoPlayerServiceHandler?.onSkipToNext = () {
+      introController.nextPlay();
+    };
+    videoPlayerServiceHandler?.onSkipToPrevious = () {
+      introController.prevPlay();
+    };
 
     if (videoDetailController.removeSafeArea) {
       hideSystemBar();

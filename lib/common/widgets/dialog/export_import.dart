@@ -31,7 +31,7 @@ void exportToLocalFile({
   final res = utf8.encode(onExport());
   StorageUtils.saveBytes2File(
     name:
-        'piliplus_${localFileName()}_'
+        'pilinova_${localFileName()}_'
         '${DateFormat('yyyyMMddHHmmss').format(DateTime.now())}.json',
     bytes: res,
     allowedExtensions: const ['json'],

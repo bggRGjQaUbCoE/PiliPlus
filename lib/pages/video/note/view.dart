@@ -23,12 +23,14 @@ class NoteListPage extends CommonSlidePage {
     required this.oid,
     required this.isStein,
     required this.title,
+    this.onOpenNote,
   });
 
   final String? heroTag;
   final int oid;
   final bool isStein;
   final String? title;
+  final ValueChanged<int>? onOpenNote;
 
   @override
   State<NoteListPage> createState() => _NoteListPageState();
@@ -214,13 +216,17 @@ class _NoteListPageState extends State<NoteListPage>
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
-        onTap: () => Get.toNamed(
-          '/articlePage',
-          parameters: {
-            'id': item.cvid!.toString(),
-            'type': 'read',
-          },
-        ),
+        onTap: () {
+          final cvid = item.cvid!;
+          if (widget.onOpenNote case final onOpenNote?) {
+            onOpenNote(cvid);
+          } else {
+            Get.toNamed(
+              '/articlePage',
+              parameters: {'id': cvid.toString(), 'type': 'read'},
+            );
+          }
+        },
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(

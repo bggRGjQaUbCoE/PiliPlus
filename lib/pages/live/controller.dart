@@ -88,19 +88,26 @@ class LiveController extends CommonListController with AccountMixin {
   }
 
   @override
-  Future<void> onRefresh() {
+  void resetForRefresh() {
+    super.resetForRefresh();
     count = null;
-    page = 1;
-    isEnd = false;
+  }
+
+  @override
+  Future<void> onRefresh() async {
     if (areaIndex.value != 0) {
-      queryTop().whenComplete(followController.jumpToTop);
-      return queryData();
+      await Future.wait([queryTop(), super.onRefresh()]);
+    } else {
+      await super.onRefresh();
     }
-    return queryData().whenComplete(followController.jumpToTop);
+    followController.jumpToTop();
   }
 
   Future<void> queryTop() async {
-    final res = await LiveHttp.liveFeedIndex(pn: page, moduleSelect: true);
+    final res = await LiveHttp.liveFeedIndex(
+      pn: initialPage,
+      moduleSelect: true,
+    );
     if (res case Success(:final response)) {
       topState.value = Pair(
         first: response.followItem,

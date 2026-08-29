@@ -93,6 +93,12 @@ class SearchPanelController<R extends SearchNumData<T>, T>
   String? gaiaVtoken;
 
   @override
+  void resetForRefresh() {
+    super.resetForRefresh();
+    gaiaVtoken = null;
+  }
+
+  @override
   Future<LoadingState<R>> customGetData() => SearchHttp.searchByType<R>(
     searchType: searchType,
     keyword: keyword,

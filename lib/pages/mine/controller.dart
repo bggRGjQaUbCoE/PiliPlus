@@ -74,6 +74,24 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
         }
       },
     ),
+    (
+      icon: Icons.headphones_outlined,
+      title: '听视频',
+      onTap: () {
+        if (isLogin) {
+          Get.toNamed('/listenVideo');
+        }
+      },
+    ),
+    (
+      icon: Icons.video_settings_outlined,
+      title: '创作服务',
+      onTap: () {
+        if (isLogin) {
+          Get.toNamed('/creatorCenter');
+        }
+      },
+    ),
   ];
 
   @override
@@ -139,11 +157,7 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
 
   @override
   Future<LoadingState<FavFolderData>> customGetData() {
-    return FavHttp.userfavFolder(
-      pn: 1,
-      ps: 20,
-      mid: Accounts.main.mid,
-    );
+    return FavHttp.userfavFolder(pn: 1, ps: 20, mid: Accounts.main.mid);
   }
 
   static void onChangeAnonymity() {

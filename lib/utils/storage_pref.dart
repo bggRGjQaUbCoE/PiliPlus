@@ -13,6 +13,7 @@ import 'package:PiliPlus/models/common/member/tab_type.dart';
 import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/models/common/reply/reply_sort_type.dart';
+import 'package:PiliPlus/models/common/rcmd_mode.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
 import 'package:PiliPlus/models/common/super_chat_type.dart';
@@ -126,10 +127,8 @@ abstract final class Pref {
     }
     return SegmentType.values
         .map(
-          (item) => Pair(
-            first: item,
-            second: SkipType.values[list[item.index]],
-          ),
+          (item) =>
+              Pair(first: item, second: SkipType.values[list[item.index]]),
         )
         .toList();
   }
@@ -139,13 +138,11 @@ abstract final class Pref {
     if (list == null || list.length != SegmentType.values.length) {
       return SegmentType.values.map((i) => i.color).toList();
     }
-    return SegmentType.values.map(
-      (item) {
-        final String e = list[item.index];
-        final color = e.isNotEmpty ? int.tryParse('FF$e', radix: 16) : null;
-        return color != null ? Color(color) : item.color;
-      },
-    ).toList();
+    return SegmentType.values.map((item) {
+      final String e = list[item.index];
+      final color = e.isNotEmpty ? int.tryParse('FF$e', radix: 16) : null;
+      return color != null ? Color(color) : item.color;
+    }).toList();
   }
 
   static bool get feedBackEnable =>
@@ -174,6 +171,12 @@ abstract final class Pref {
 
   static NavigationBarType get defaultHomePage =>
       NavigationBarType.values[defaultHomePageIndex];
+
+  static RcmdMode get rcmdMode =>
+      RcmdMode.values[_setting.get(
+        SettingBoxKey.rcmdMode,
+        defaultValue: RcmdMode.personalized.index,
+      )];
 
   static int get defaultHomePageIndex => _setting.get(
     SettingBoxKey.defaultHomePage,
@@ -306,8 +309,51 @@ abstract final class Pref {
   static String get banWordForRecommend =>
       _setting.get(SettingBoxKey.banWordForRecommend, defaultValue: '');
 
+  static bool get filterPromotionalTitles =>
+      _setting.get(SettingBoxKey.filterPromotionalTitles, defaultValue: false);
+
+  static bool get filterClickbaitTitles =>
+      _setting.get(SettingBoxKey.filterClickbaitTitles, defaultValue: false);
+
+  static bool get hideDuplicateRecommendTitles => _setting.get(
+    SettingBoxKey.hideDuplicateRecommendTitles,
+    defaultValue: false,
+  );
+
+  static bool get hideSimilarRecommendTitles => _setting.get(
+    SettingBoxKey.hideSimilarRecommendTitles,
+    defaultValue: false,
+  );
+
+  static bool get hideDuplicateSearchTitles => _setting.get(
+    SettingBoxKey.hideDuplicateSearchTitles,
+    defaultValue: false,
+  );
+
+  static bool get hideSimilarSearchTitles => _setting.get(
+    SettingBoxKey.hideSimilarSearchTitles,
+    defaultValue: false,
+  );
+
   static String get banWordForReply =>
       _setting.get(SettingBoxKey.banWordForReply, defaultValue: '');
+
+  static String get banWordForReplyUser =>
+      _setting.get(SettingBoxKey.banWordForReplyUser, defaultValue: '');
+
+  static String get banWordForReplyZone =>
+      _setting.get(SettingBoxKey.banWordForReplyZone, defaultValue: '');
+
+  static bool get hideDuplicateReply =>
+      _setting.get(SettingBoxKey.hideDuplicateReply, defaultValue: false);
+
+  static bool get hideSimilarReply =>
+      _setting.get(SettingBoxKey.hideSimilarReply, defaultValue: false);
+
+  static bool get enableMessageNotifications => _setting.get(
+    SettingBoxKey.enableMessageNotifications,
+    defaultValue: false,
+  );
 
   static String get banWordForZone =>
       _setting.get(SettingBoxKey.banWordForZone, defaultValue: '');
@@ -544,6 +590,30 @@ abstract final class Pref {
 
   static bool get antiGoodsDyn =>
       _setting.get(SettingBoxKey.antiGoodsDyn, defaultValue: false);
+
+  static String get banWordForDynUser =>
+      _setting.get(SettingBoxKey.banWordForDynUser, defaultValue: '');
+
+  static String get banWordForDynUid =>
+      _setting.get(SettingBoxKey.banWordForDynUid, defaultValue: '');
+
+  static Set<String> get hiddenDynamicTypes => Set<String>.from(
+    _setting.get(SettingBoxKey.hiddenDynamicTypes, defaultValue: const []),
+  );
+
+  static Set<String> get hiddenSpaceSections => Set<String>.from(
+    _setting.get(SettingBoxKey.hiddenSpaceSections, defaultValue: const []),
+  );
+
+  static Set<int> get blockedReplyLevels => Set<int>.from(
+    _setting.get(SettingBoxKey.blockedReplyLevels, defaultValue: const []),
+  );
+
+  static bool get hideDynamicsNav =>
+      _setting.get(SettingBoxKey.hideDynamicsNav, defaultValue: false);
+
+  static bool get hideMessagesNav =>
+      _setting.get(SettingBoxKey.hideMessagesNav, defaultValue: false);
 
   static bool get antiGoodsReply =>
       _setting.get(SettingBoxKey.antiGoodsReply, defaultValue: false);

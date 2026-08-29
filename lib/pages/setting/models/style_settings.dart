@@ -373,6 +373,20 @@ List<SettingsModel> get styleSettings => [
     defaultVal: false,
     onChanged: (value) => Get.find<MainController>().directExitOnBack = value,
   ),
+  const SwitchModel(
+    title: '隐藏动态底栏入口',
+    subtitle: '重启后隐藏动态导航；仍可从其它入口打开动态页',
+    leading: Icon(Icons.dynamic_feed_outlined),
+    setKey: SettingBoxKey.hideDynamicsNav,
+    needReboot: true,
+  ),
+  const SwitchModel(
+    title: '隐藏消息底栏入口',
+    subtitle: '重启后隐藏消息导航；首页右上角消息入口仍保留',
+    leading: Icon(Icons.notifications_off_outlined),
+    setKey: SettingBoxKey.hideMessagesNav,
+    needReboot: true,
+  ),
   if (Platform.isAndroid)
     NormalModel(
       onTap: (context, setState) => Get.toNamed('/displayModeSetting'),

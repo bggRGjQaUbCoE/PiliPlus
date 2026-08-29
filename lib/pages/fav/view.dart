@@ -24,9 +24,36 @@ class _FavPageState extends State<FavPage> with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   final FavController _favController = Get.put(FavController());
   late final RxBool _showVideoFavMenu;
+  bool _isSearching = false;
+
+  void _openVideoSearch() {
+    if (_favController.loadingState.value case Success(:final response)) {
+      if (response != null && response.isNotEmpty) {
+        final item = response.first;
+        Get.toNamed(
+          '/favSearch',
+          arguments: {
+            'type': 1,
+            'mediaId': item.id,
+            'title': item.title,
+            'count': item.mediaCount,
+            'isOwner': true,
+          },
+        );
+        return;
+      }
+    }
+    SmartDialog.showToast('暂无可搜索的收藏视频');
+  }
 
   void listener() {
     _showVideoFavMenu.value = _tabController.index == 0;
+    if (_tabController.index != 0 && _isSearching) {
+      setState(() {
+        _isSearching = false;
+        _favController.folderQuery.value = '';
+      });
+    }
   }
 
   @override
@@ -54,7 +81,17 @@ class _FavPageState extends State<FavPage> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     return SimpleScaffold(
       appBar: AppBar(
-        title: const Text('我的收藏'),
+        title: _isSearching
+            ? TextField(
+                autofocus: true,
+                textInputAction: TextInputAction.search,
+                decoration: const InputDecoration(
+                  hintText: '搜索收藏夹名称',
+                  border: InputBorder.none,
+                ),
+                onChanged: _favController.updateFolderSearch,
+              )
+            : const Text('我的收藏'),
         actions: [
           Obx(
             () => _showVideoFavMenu.value
@@ -99,29 +136,44 @@ class _FavPageState extends State<FavPage> with SingleTickerProviderStateMixin {
           ),
           Obx(
             () => _showVideoFavMenu.value
-                ? IconButton(
-                    onPressed: () {
-                      if (_favController.loadingState.value case Success(
-                        :final response,
-                      )) {
-                        try {
-                          final item = response!.first;
-                          Get.toNamed(
-                            '/favSearch',
-                            arguments: {
-                              'type': 1,
-                              'mediaId': item.id,
-                              'title': item.title,
-                              'count': item.mediaCount,
-                              'isOwner': true,
-                            },
-                          );
-                        } catch (_) {}
-                      }
-                    },
-                    icon: const Icon(Icons.search_outlined),
-                    tooltip: '搜索',
-                  )
+                ? _isSearching
+                      ? IconButton(
+                          onPressed: () => setState(() {
+                            _isSearching = false;
+                            _favController.folderQuery.value = '';
+                          }),
+                          icon: const Icon(Icons.close),
+                          tooltip: '关闭搜索',
+                        )
+                      : PopupMenuButton<String>(
+                          tooltip: '搜索',
+                          icon: const Icon(Icons.search_outlined),
+                          onSelected: (value) {
+                            if (value == 'folder') {
+                              setState(() => _isSearching = true);
+                            } else {
+                              _openVideoSearch();
+                            }
+                          },
+                          itemBuilder: (context) => const [
+                            PopupMenuItem(
+                              value: 'folder',
+                              child: ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                leading: Icon(Icons.folder_outlined),
+                                title: Text('搜索收藏夹'),
+                              ),
+                            ),
+                            PopupMenuItem(
+                              value: 'video',
+                              child: ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                leading: Icon(Icons.video_library_outlined),
+                                title: Text('搜索收藏视频'),
+                              ),
+                            ),
+                          ],
+                        )
                 : const SizedBox.shrink(),
           ),
           const SizedBox(width: 6),

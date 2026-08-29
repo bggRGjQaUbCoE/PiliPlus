@@ -5,17 +5,23 @@ import 'package:PiliPlus/models/common/search/search_type.dart';
 import 'package:PiliPlus/models/common/search/video_search_type.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
+import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/pages/search_panel/controller.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/text_similarity.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 class SearchVideoController
     extends SearchPanelController<SearchVideoData, SearchVideoItemModel> {
+  static const int _emptyPageRetryLimit = 4;
+
   SearchVideoController({
     required super.keyword,
     required super.searchType,
@@ -23,9 +29,12 @@ class SearchVideoController
   });
 
   late bool hasJump2Video = false;
+  final TextDeduplicator _titleDeduplicator = TextDeduplicator();
+  bool _filteredEmptyPage = false;
 
   @override
   void onInit() {
+    hasFooter = true;
     super.onInit();
     videoDurationType = VideoDurationType.all;
     videoZoneType = VideoZoneType.all;
@@ -40,6 +49,69 @@ class SearchVideoController
   List<SearchVideoItemModel>? getDataList(SearchVideoData response) {
     return response.list;
   }
+
+  @override
+  void resetForRefresh() {
+    super.resetForRefresh();
+    _titleDeduplicator.clear();
+  }
+
+  @override
+  Future<LoadingState<SearchVideoData>> customGetData() async {
+    _filteredEmptyPage = false;
+    LoadingState<SearchVideoData>? lastResponse;
+    int currentPage = page;
+    for (var attempt = 0; attempt < _emptyPageRetryLimit; attempt++) {
+      final response = await SearchHttp.searchByType<SearchVideoData>(
+        searchType: searchType,
+        keyword: keyword,
+        page: currentPage,
+        order: order,
+        duration: videoDurationType?.index,
+        tids: videoZoneType?.tids,
+        orderSort: userOrderType?.value.orderSort,
+        userType: userType?.value.index,
+        categoryId: articleZoneType?.value.categoryId,
+        pubBegin: pubBegin,
+        pubEnd: pubEnd,
+        gaiaVtoken: gaiaVtoken,
+        onSuccess: (String gaiaVtoken) {
+          this.gaiaVtoken = gaiaVtoken;
+          queryData(page == 1);
+        },
+      );
+      lastResponse = response;
+      if (response case Success(:final response)) {
+        final list = response.list;
+        if (list == null || list.isEmpty) {
+          page = currentPage;
+          return lastResponse;
+        }
+        list.removeWhere(_isDuplicateTitle);
+        if (list.isNotEmpty) {
+          page = currentPage;
+          return lastResponse;
+        }
+        currentPage++;
+      } else {
+        page = currentPage;
+        return lastResponse;
+      }
+    }
+    page = currentPage;
+    _filteredEmptyPage = true;
+    return lastResponse ?? const Error('搜索结果为空');
+  }
+
+  @override
+  bool shouldMarkEmptyAsEnd(SearchVideoData response) => !_filteredEmptyPage;
+
+  bool _isDuplicateTitle(SearchVideoItemModel item) =>
+      _titleDeduplicator.isDuplicate(
+        item.title,
+        exact: Pref.hideDuplicateSearchTitles,
+        fuzzy: Pref.hideSimilarSearchTitles,
+      );
 
   @override
   bool customHandleResponse(bool isRefresh, Success<SearchVideoData> response) {

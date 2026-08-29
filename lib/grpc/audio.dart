@@ -7,6 +7,28 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:fixnum/fixnum.dart';
 
 abstract final class AudioGrpc {
+  static Future<LoadingState<RcmdPlaylistResp>> audioRcmdPlaylist({
+    String? next,
+  }) {
+    return GrpcReq.request(
+      GrpcUrl.audioRcmdPlaylist,
+      RcmdPlaylistReq(
+        from: RcmdPlaylistReq_RcmdFrom.INDEX_ENTRY,
+        id: Int64.ZERO,
+        needHistory: true,
+        needTopCards: true,
+        playerArgs: PlayerArgs(
+          qn: Int64(80),
+          fnval: Int64(4048),
+          forceHost: Int64.TWO,
+          voiceBalance: Int64.ONE,
+        ),
+        page: Pagination(pageSize: 20, next: next),
+      ),
+      RcmdPlaylistResp.fromBuffer,
+    );
+  }
+
   static Future<LoadingState<PlayURLResp>> audioPlayUrl({
     required Int64 oid,
     required List<Int64> subId,
@@ -17,11 +39,7 @@ abstract final class AudioGrpc {
     return GrpcReq.request(
       GrpcUrl.audioPlayUrl,
       PlayURLReq(
-        item: PlayItem(
-          oid: oid,
-          subId: subId,
-          itemType: itemType,
-        ),
+        item: PlayItem(oid: oid, subId: subId, itemType: itemType),
         playerArgs: PlayerArgs(
           qn: Int64(qn),
           fnval: Int64(fnval),
@@ -51,11 +69,7 @@ abstract final class AudioGrpc {
       PlaylistReq(
         from: from,
         id: id,
-        anchor: PlayItem(
-          oid: oid,
-          subId: subId,
-          itemType: itemType,
-        ),
+        anchor: PlayItem(oid: oid, subId: subId, itemType: itemType),
         pageOpt: pageOpt,
         playerArgs: PlayerArgs(
           qn: Int64(qn),
@@ -80,11 +94,7 @@ abstract final class AudioGrpc {
     return GrpcReq.request(
       GrpcUrl.audioThumbUp,
       ThumbUpReq(
-        item: PlayItem(
-          oid: oid,
-          itemType: itemType,
-          subId: subId,
-        ),
+        item: PlayItem(oid: oid, itemType: itemType, subId: subId),
         action: type,
       ),
       ThumbUpResp.fromBuffer,
@@ -99,11 +109,7 @@ abstract final class AudioGrpc {
     return GrpcReq.request(
       GrpcUrl.audioTripleLike,
       TripleLikeReq(
-        item: PlayItem(
-          oid: oid,
-          subId: subId,
-          itemType: itemType,
-        ),
+        item: PlayItem(oid: oid, subId: subId, itemType: itemType),
       ),
       TripleLikeResp.fromBuffer,
     );
@@ -119,11 +125,7 @@ abstract final class AudioGrpc {
     return GrpcReq.request(
       GrpcUrl.audioCoinAdd,
       CoinAddReq(
-        item: PlayItem(
-          oid: oid,
-          subId: subId,
-          itemType: itemType,
-        ),
+        item: PlayItem(oid: oid, subId: subId, itemType: itemType),
         num: num,
         thumbUp: thumbUp,
       ),

@@ -8,11 +8,7 @@ import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 class FavPanel extends StatefulWidget {
-  const FavPanel({
-    super.key,
-    required this.ctr,
-    this.scrollController,
-  });
+  const FavPanel({super.key, required this.ctr, this.scrollController});
 
   final FavMixin ctr;
   final ScrollController? scrollController;
@@ -23,6 +19,7 @@ class FavPanel extends StatefulWidget {
 
 class _FavPanelState extends State<FavPanel> {
   LoadingState loadingState = LoadingState.loading();
+  String keyword = '';
 
   @override
   void initState() {
@@ -43,7 +40,15 @@ class _FavPanelState extends State<FavPanel> {
       case Loading():
         return m3eLoading;
       case Success():
-        final list = widget.ctr.favFolderData.value.list!;
+        final list = widget.ctr.favFolderData.value.list!
+            .where(
+              (item) =>
+                  item.title.toLowerCase().contains(keyword.toLowerCase()),
+            )
+            .toList();
+        if (list.isEmpty) {
+          return Center(child: Text(keyword.isEmpty ? '暂无收藏夹' : '没有匹配的收藏夹'));
+        }
         return ListView.builder(
           controller: widget.scrollController,
           itemCount: list.length,
@@ -133,11 +138,25 @@ class _FavPanelState extends State<FavPanel> {
             const SizedBox(width: 16),
           ],
         ),
-        Expanded(child: _buildBody),
-        Divider(
-          height: 1,
-          color: theme.outline.withValues(alpha: 0.1),
+        Padding(
+          padding: const .symmetric(horizontal: 16, vertical: 6),
+          child: SearchBar(
+            hintText: '搜索收藏夹',
+            leading: const Icon(Icons.search),
+            trailing: keyword.isEmpty
+                ? null
+                : [
+                    IconButton(
+                      tooltip: '清空',
+                      onPressed: () => setState(() => keyword = ''),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+            onChanged: (value) => setState(() => keyword = value.trim()),
+          ),
         ),
+        Expanded(child: _buildBody),
+        Divider(height: 1, color: theme.outline.withValues(alpha: 0.1)),
         Padding(
           padding: .only(
             left: 20,

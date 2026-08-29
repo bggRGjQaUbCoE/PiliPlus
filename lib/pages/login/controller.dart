@@ -117,11 +117,7 @@ class LoginPageController extends GetxController
   }
 
   // 申请极验验证码
-  void getCaptcha(
-    String geeGt,
-    String geeChallenge,
-    VoidCallback onSuccess,
-  ) {
+  void getCaptcha(String geeGt, String geeChallenge, VoidCallback onSuccess) {
     GeetestWebviewDialog.geetest(geeGt, geeChallenge).then((res) {
       if (res != null) {
         captchaData
@@ -161,9 +157,7 @@ class LoginPageController extends GetxController
       final result = await Request().get(
         "/x/member/web/account",
         options: Options(
-          headers: {
-            "cookie": validateCookie(cookieTextController.text),
-          },
+          headers: {"cookie": validateCookie(cookieTextController.text)},
           extra: {'account': AnonymousAccount()},
         ),
       );
@@ -269,10 +263,7 @@ class LoginPageController extends GetxController
               horizontal: 16,
               vertical: 12,
             ),
-            title: const Text(
-              "本次登录需要验证您的手机号",
-              textAlign: TextAlign.center,
-            ),
+            title: const Text("本次登录需要验证您的手机号", textAlign: TextAlign.center),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -324,31 +315,27 @@ class LoginPageController extends GetxController
                     return;
                   }
 
-                  getCaptcha(
-                    geeGt,
-                    geeChallenge,
-                    () async {
-                      final safeCenterSendSmsCodeRes =
-                          await LoginHttp.safeCenterSmsCode(
-                            tmpCode: currentUri.queryParameters['tmp_token']!,
-                            geeChallenge: geeChallenge,
-                            geeSeccode: captchaData.seccode,
-                            geeValidate: captchaData.validate,
-                            recaptchaToken: captchaData.token,
-                            refererUrl: url,
-                          );
-                      if (!safeCenterSendSmsCodeRes['status']) {
-                        SmartDialog.showToast(
-                          "发送短信验证码失败，请尝试其它登录方式\n"
-                          "(${safeCenterSendSmsCodeRes['code']}) ${safeCenterSendSmsCodeRes['msg']}",
+                  getCaptcha(geeGt, geeChallenge, () async {
+                    final safeCenterSendSmsCodeRes =
+                        await LoginHttp.safeCenterSmsCode(
+                          tmpCode: currentUri.queryParameters['tmp_token']!,
+                          geeChallenge: geeChallenge,
+                          geeSeccode: captchaData.seccode,
+                          geeValidate: captchaData.validate,
+                          recaptchaToken: captchaData.token,
+                          refererUrl: url,
                         );
-                        return;
-                      }
-                      SmartDialog.showToast("短信验证码已发送，请查收");
-                      captchaKey =
-                          safeCenterSendSmsCodeRes['data']['captcha_key'];
-                    },
-                  );
+                    if (!safeCenterSendSmsCodeRes['status']) {
+                      SmartDialog.showToast(
+                        "发送短信验证码失败，请尝试其它登录方式\n"
+                        "(${safeCenterSendSmsCodeRes['code']}) ${safeCenterSendSmsCodeRes['msg']}",
+                      );
+                      return;
+                    }
+                    SmartDialog.showToast("短信验证码已发送，请查收");
+                    captchaKey =
+                        safeCenterSendSmsCodeRes['data']['captcha_key'];
+                  });
                 },
               ),
               TextButton(
@@ -647,9 +634,7 @@ class LoginPageController extends GetxController
     final selectAccount = List.of(Accounts.accountMode);
     final options = {
       AnonymousAccount(): '0',
-      ...Accounts.account.toMap().map(
-        (k, v) => MapEntry(v, k as String),
-      ),
+      ...Accounts.account.toMap().map((k, v) => MapEntry(v, k as String)),
     };
     bool quickSelect = selectAccount.every((e) => e == selectAccount.first);
     return showDialog(
@@ -740,6 +725,14 @@ class LoginPageController extends GetxController
           ),
         ),
         actions: [
+          TextButton.icon(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Get.toNamed('/loginPage');
+            },
+            icon: const Icon(Icons.person_add_alt_1_outlined),
+            label: const Text('添加账号'),
+          ),
           TextButton(
             onPressed: Get.back,
             child: Text('取消', style: TextStyle(color: colorScheme.outline)),

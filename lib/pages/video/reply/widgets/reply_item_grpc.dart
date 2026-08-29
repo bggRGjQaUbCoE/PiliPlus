@@ -15,19 +15,20 @@ import 'package:PiliPlus/common/widgets/text_ellipsis/text_ellipsis.dart';
 import 'package:PiliPlus/common/widgets/text_more/text_more.dart';
 import 'package:PiliPlus/common/widgets/translucent_row.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show ReplyInfo, ReplyControl, Content, Url, ReplyControl_VoteOption, Emote;
+    show ReplyInfo, ReplyControl, Content, Url, ReplyControl_VoteOption, Emote,
+        RichTextNote;
 import 'package:PiliPlus/grpc/reply.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/reply.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
+import 'package:PiliPlus/pages/dynamics_create/view.dart';
 import 'package:PiliPlus/pages/member/widget/medal_widget.dart';
 import 'package:PiliPlus/pages/save_panel/view.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/zan_grpc.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/color_utils.dart';
 import 'package:PiliPlus/utils/danmaku_utils.dart';
@@ -43,6 +44,7 @@ import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -138,12 +140,30 @@ class ReplyItemGrpc extends StatelessWidget {
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
-        onTap: () => replyReply?.call(replyItem, null),
+        onTap: () => _onReplyTap(context),
         onLongPress: showMore,
         onSecondaryTap: PlatformUtils.isMobile ? null : showMore,
         child: child,
       ),
     );
+  }
+
+  void _onReplyTap(BuildContext context) {
+    final replyControl = replyItem.replyControl;
+    final content = replyItem.content;
+    if (replyControl.isNote && replyControl.isNoteV2) {
+      final note = content.richText.note;
+      _openFullNote(
+        context,
+        note: note,
+        clickUrl: note.hasClickUrl() ? note.clickUrl : null,
+        opusId: content.richText.opus.hasOpusId()
+            ? content.richText.opus.opusId.toString()
+            : null,
+      );
+      return;
+    }
+    replyReply?.call(replyItem, null);
   }
 
   Widget _buildHeader(BuildContext context, ColorScheme colorScheme) {
@@ -231,9 +251,10 @@ class ReplyItemGrpc extends StatelessWidget {
                         color: colorScheme.outline,
                       ),
                     ),
-                    if (replyItem.replyControl.hasLocation())
+                    if (replyItem
+                        .replyControl.location.trim().isNotEmpty)
                       Text(
-                        ' • ${replyItem.replyControl.location}',
+                        ' • ${_formatLocation(replyItem.replyControl.location)}',
                         style: TextStyle(
                           fontSize: 11,
                           color: colorScheme.outline,
@@ -281,15 +302,17 @@ class ReplyItemGrpc extends StatelessWidget {
                   ),
                 ),
               ),
-            Padding(
-              padding: const .only(right: 80),
-              child: header,
-            ),
+            Padding(padding: const .only(right: 80), child: header),
           ],
         );
       }
     }
     return header;
+  }
+
+  String _formatLocation(String location) {
+    final value = location.trim();
+    return value.startsWith('IP属地') ? value : 'IP属地：$value';
   }
 
   Widget _buildVoteOption(
@@ -697,9 +720,7 @@ class ReplyItemGrpc extends StatelessWidget {
                           ),
                         TextSpan(
                           text: '共${replyItem.count}条回复',
-                          style: TextStyle(
-                            color: colorScheme.primary,
-                          ),
+                          style: TextStyle(color: colorScheme.primary),
                         ),
                       ],
                     ),
@@ -784,13 +805,7 @@ class ReplyItemGrpc extends StatelessWidget {
                   String? cvid =
                       match?.group(1) ?? match?.group(2) ?? match?.group(3);
                   if (cvid != null) {
-                    Get.toNamed(
-                      '/articlePage',
-                      parameters: {
-                        'id': cvid,
-                        'type': 'read',
-                      },
-                    );
+                    _openFullNote(context, clickUrl: matchStr);
                     return;
                   }
                   PageUtils.handleWebview(matchStr);
@@ -953,31 +968,22 @@ class ReplyItemGrpc extends StatelessWidget {
     // }
 
     if (!hasNote && replyControl.isNote && replyControl.isNoteV2) {
-      final Color color;
-      NoDeadlineTapGestureRecognizer? recognizer;
-
-      final hasClickUrl = content.richText.note.hasClickUrl();
-      if (hasClickUrl || content.richText.opus.hasOpusId()) {
-        color = colorScheme.primary;
-        recognizer = NoDeadlineTapGestureRecognizer()
-          ..onTap = () => hasClickUrl
-              ? PiliScheme.routePushFromUrl(content.richText.note.clickUrl)
-              : Get.toNamed(
-                  '/articlePage',
-                  parameters: {
-                    'id': content.richText.opus.opusId.toString(),
-                    'type': 'opus',
-                  },
-                );
-      } else {
-        color = colorScheme.secondary;
-      }
+      final note = content.richText.note;
+      final hasClickUrl = note.hasClickUrl();
       spanChildren.insert(
         0,
         TextSpan(
           text: '[笔记] ',
-          style: TextStyle(color: color),
-          recognizer: recognizer,
+          style: TextStyle(color: colorScheme.primary),
+          recognizer: NoDeadlineTapGestureRecognizer()
+            ..onTap = () => _openFullNote(
+              context,
+              note: note,
+              clickUrl: hasClickUrl ? note.clickUrl : null,
+              opusId: content.richText.opus.hasOpusId()
+                  ? content.richText.opus.opusId.toString()
+                  : null,
+            ),
         ),
       );
     }
@@ -999,9 +1005,7 @@ class ReplyItemGrpc extends StatelessWidget {
     final style = theme.textTheme.titleSmall!;
 
     return Padding(
-      padding: .only(
-        bottom: MediaQuery.viewPaddingOf(context).bottom + 20,
-      ),
+      padding: .only(bottom: MediaQuery.viewPaddingOf(context).bottom + 20),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -1088,9 +1092,7 @@ class ReplyItemGrpc extends StatelessWidget {
                             if (ownerMid != item.member.mid.toInt()) ...[
                               TextSpan(
                                 text: '@${item.member.name}',
-                                style: TextStyle(
-                                  color: colorScheme.primary,
-                                ),
+                                style: TextStyle(color: colorScheme.primary),
                               ),
                               const TextSpan(text: ':\n'),
                             ],
@@ -1103,9 +1105,7 @@ class ReplyItemGrpc extends StatelessWidget {
                           onPressed: () => Get.back(result: false),
                           child: Text(
                             '取消',
-                            style: TextStyle(
-                              color: colorScheme.outline,
-                            ),
+                            style: TextStyle(color: colorScheme.outline),
                           ),
                         ),
                         TextButton(
@@ -1187,7 +1187,32 @@ class ReplyItemGrpc extends StatelessWidget {
           ListTile(
             onTap: () {
               Get.back();
-              Utils.copyText(message);
+              _showCommentShare(context, item);
+            },
+            minLeadingWidth: 0,
+            leading: const Icon(Icons.share_outlined, size: 19),
+            title: Text('分享', style: style),
+          ),
+          ListTile(
+            onTap: () {
+              Get.back();
+              showDialog(
+                context: context,
+                builder: (context) => Dialog(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
+                    child: SelectableText(
+                      message,
+                      style: const TextStyle(fontSize: 15, height: 1.7),
+                      contextMenuBuilder: (_, editableTextState) =>
+                          _filterMenuBuilder(context, editableTextState),
+                    ),
+                  ),
+                ),
+              );
             },
             minLeadingWidth: 0,
             leading: const Icon(Icons.copy_all_outlined, size: 19),
@@ -1223,6 +1248,219 @@ class ReplyItemGrpc extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+
+  void _openFullNote(
+    BuildContext context, {
+    RichTextNote? note,
+    String? clickUrl,
+    String? opusId,
+  }) {
+    clickUrl ??= note?.hasClickUrl() == true ? note!.clickUrl : null;
+    final cvid = clickUrl == null
+        ? null
+        : RegExp(
+            r'(?:cvid=|/read/cv|/cv|^cv)(\d+)',
+            caseSensitive: false,
+          ).firstMatch(clickUrl)?.group(1);
+    final url = cvid != null
+        ? 'https://www.bilibili.com/h5/note-app/view?cvid=$cvid'
+        : opusId != null
+        ? 'https://www.bilibili.com/opus/$opusId'
+        : clickUrl;
+
+    if (url != null && url.isNotEmpty) {
+      try {
+        final args = Get.arguments;
+        final tag = getTag?.call() ?? (args is Map ? args['heroTag'] : null);
+        Get.find<VideoDetailController>(tag: tag?.toString()).showNoteDetail(
+          context,
+          url,
+        );
+        return;
+      } catch (_) {}
+
+      if (cvid != null) {
+        Get.toNamed(
+          '/articlePage',
+          parameters: {'id': cvid, 'type': 'read'},
+        );
+      } else if (opusId != null) {
+        Get.toNamed(
+          '/articlePage',
+          parameters: {'id': opusId, 'type': 'opus'},
+        );
+      } else {
+        PageUtils.handleWebview(url, inApp: true);
+      }
+      return;
+    }
+
+    if (note != null) {
+      _showNotePreview(context, note);
+    }
+  }
+
+  void _showNotePreview(BuildContext context, RichTextNote note) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('完整笔记'),
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 560),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SelectableText(
+                  note.summary.isNotEmpty
+                      ? note.summary
+                      : replyItem.content.message,
+                  style: const TextStyle(height: 1.7),
+                ),
+                if (note.lastMtimeText.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(note.lastMtimeText),
+                ],
+                for (final image in note.images) ...[
+                  const SizedBox(height: 12),
+                  NetworkImgLayer(src: image, width: 420, height: 236.25),
+                ],
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: Get.back, child: const Text('关闭')),
+        ],
+      ),
+    );
+  }
+
+  void _showCommentShare(BuildContext context, ReplyInfo item) {
+    final rootId = item.root == Int64.ZERO ? item.id : item.root;
+    final url =
+        'https://www.bilibili.com/video/av${item.oid}'
+        '?comment_root_id=$rootId&comment_secondary_id=${item.id}';
+    final message = item.content.message;
+    final excerpt = message.length > 80
+        ? '${message.substring(0, 80)}…'
+        : message;
+    showDialog(
+      context: context,
+      builder: (context) => SimpleDialog(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.dynamic_feed_outlined),
+            title: const Text('分享到动态'),
+            onTap: () {
+              if (!Accounts.main.isLogin) {
+                SmartDialog.showToast('登录后才能分享到动态');
+                return;
+              }
+              Get.back();
+              CreateDynPanel.onCreateDyn(
+                context,
+                items: [RichTextItem.fromStart('$message\n$url')],
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.forward_to_inbox_outlined),
+            title: const Text('分享到消息'),
+            onTap: () {
+              if (!Accounts.main.isLogin) {
+                SmartDialog.showToast('登录后才能分享到消息');
+                return;
+              }
+              Get.back();
+              PageUtils.pmShare(
+                context,
+                content: {
+                  'id': item.oid.toString(),
+                  'title': '${item.member.name}：$excerpt',
+                  'headline': excerpt,
+                  'source': 5,
+                  'thumb': item.member.face,
+                  'author': item.member.name,
+                  'author_id': item.member.mid.toString(),
+                  'reply_id': item.id.toString(),
+                },
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.ios_share_outlined),
+            title: const Text('分享到其他应用'),
+            onTap: () {
+              Get.back();
+              ShareUtils.shareText('${item.member.name}：$message\n$url');
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.link_outlined),
+            title: const Text('复制评论链接'),
+            onTap: () {
+              Get.back();
+              Utils.copyText(url);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Widget _filterMenuBuilder(
+    BuildContext context,
+    EditableTextState editableTextState,
+  ) {
+    final items = editableTextState.contextMenuButtonItems;
+    if (!editableTextState.textEditingValue.selection.isCollapsed) {
+      items.add(
+        ContextMenuButtonItem(
+          onPressed: () {
+            Navigator.of(context).pop();
+            final select = editableTextState.textEditingValue;
+            String text = RegExp.escape(
+              select.selection.textInside(select.text),
+            );
+            if (ReplyGrpc.enableFilter) text = '|$text';
+
+            showConfirmDialog(
+              context: context,
+              title: const Text('是否确认评论过滤的变更：'),
+              content: Text.rich(
+                TextSpan(
+                  text: ReplyGrpc.replyRegExp.pattern,
+                  children: [
+                    TextSpan(
+                      text: text,
+                      style: const TextStyle(
+                        color: Colors.green,
+                        fontWeight: .bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              onConfirm: () {
+                final filter = ReplyGrpc.replyRegExp.pattern + text;
+                ReplyGrpc.replyRegExp = RegExp(filter, caseSensitive: true);
+                ReplyGrpc.enableFilter = true;
+                GStorage.setting.put(SettingBoxKey.banWordForReply, filter);
+                SmartDialog.showToast('已保存');
+              },
+            );
+          },
+          label: '加入过滤',
+        ),
+      );
+    }
+    return AdaptiveTextSelectionToolbar.buttonItems(
+      buttonItems: items,
+      anchors: editableTextState.contextMenuAnchors,
     );
   }
 }

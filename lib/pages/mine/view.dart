@@ -102,31 +102,24 @@ class _MediaPageState extends CommonPageState<MinePage>
   }
 
   Widget _buildActions(Color primary) {
-    return Row(
-      mainAxisAlignment: .spaceEvenly,
+    return Wrap(
+      alignment: .spaceEvenly,
       children: controller.list
           .map(
-            (e) => Flexible(
+            (e) => SizedBox(
+              width: 80,
+              height: 80,
               child: InkWell(
                 onTap: e.onTap,
                 borderRadius: Style.mdRadius,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 80),
-                  child: AspectRatio(
-                    aspectRatio: 1,
-                    child: Column(
-                      spacing: 6,
-                      mainAxisSize: .min,
-                      mainAxisAlignment: .center,
-                      children: [
-                        Icon(e.icon, color: primary),
-                        Text(
-                          e.title,
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                      ],
-                    ),
-                  ),
+                child: Column(
+                  spacing: 6,
+                  mainAxisSize: .min,
+                  mainAxisAlignment: .center,
+                  children: [
+                    Icon(e.icon, color: primary),
+                    Text(e.title, style: const TextStyle(fontSize: 13)),
+                  ],
                 ),
               ),
             ),
@@ -173,26 +166,24 @@ class _MediaPageState extends CommonPageState<MinePage>
             onPressed: () => Get.toNamed('/myReply'),
             icon: const Icon(Icons.message_outlined),
           ),
-        Obx(
-          () {
-            final anonymity = MineController.anonymity.value;
-            return IconButton(
-              iconSize: iconSize,
-              padding: padding,
-              style: style,
-              tooltip: "${anonymity ? '退出' : '进入'}无痕模式",
-              onPressed: MineController.onChangeAnonymity,
-              icon: anonymity
-                  ? const Icon(MdiIcons.incognito)
-                  : const Icon(MdiIcons.incognitoOff),
-            );
-          },
-        ),
+        Obx(() {
+          final anonymity = MineController.anonymity.value;
+          return IconButton(
+            iconSize: iconSize,
+            padding: padding,
+            style: style,
+            tooltip: "${anonymity ? '退出' : '进入'}无痕模式",
+            onPressed: MineController.onChangeAnonymity,
+            icon: anonymity
+                ? const Icon(MdiIcons.incognito)
+                : const Icon(MdiIcons.incognitoOff),
+          );
+        }),
         IconButton(
           iconSize: iconSize,
           padding: padding,
           style: style,
-          tooltip: '切换账号',
+          tooltip: '账号管理',
           onPressed: () => LoginPageController.switchAccountDialog(context),
           icon: const Icon(Icons.switch_account_outlined),
         ),
@@ -326,18 +317,12 @@ class _MediaPageState extends CommonPageState<MinePage>
                       Text.rich(
                         TextSpan(
                           children: [
-                            TextSpan(
-                              text: '硬币 ',
-                              style: coinLabelStyle,
-                            ),
+                            TextSpan(text: '硬币 ', style: coinLabelStyle),
                             TextSpan(
                               text: userInfo.money?.toString() ?? '-',
                               style: coinValStyle,
                             ),
-                            TextSpan(
-                              text: "      经验 ",
-                              style: coinLabelStyle,
-                            ),
+                            TextSpan(text: "      经验 ", style: coinLabelStyle),
                             TextSpan(
                               text: levelInfo?.currentExp?.toString() ?? '-',
                               style: coinValStyle,
@@ -423,14 +408,8 @@ class _MediaPageState extends CommonPageState<MinePage>
               mainAxisSize: .min,
               mainAxisAlignment: .center,
               children: [
-                Text(
-                  count?.toString() ?? '-',
-                  style: countStyle,
-                ),
-                Text(
-                  name,
-                  style: labelStyle,
-                ),
+                Text(count?.toString() ?? '-', style: countStyle),
+                Text(name, style: labelStyle),
               ],
             ),
           ),
@@ -447,10 +426,7 @@ class _MediaPageState extends CommonPageState<MinePage>
   Widget _buildFav(ThemeData theme, Color secondary) {
     return Column(
       children: [
-        Divider(
-          height: 20,
-          color: theme.dividerColor.withValues(alpha: 0.1),
-        ),
+        Divider(height: 20, color: theme.dividerColor.withValues(alpha: 0.1)),
         ListTile(
           onTap: () => Get.toNamed('/fav')?.whenComplete(_autoRefresh),
           dense: true,
@@ -557,12 +533,7 @@ class _MediaPageState extends CommonPageState<MinePage>
       ),
       Error(:final errMsg) => SizedBox(
         height: 160,
-        child: Center(
-          child: Text(
-            errMsg ?? '',
-            textAlign: .center,
-          ),
-        ),
+        child: Center(child: Text(errMsg ?? '', textAlign: .center)),
       ),
     };
   }

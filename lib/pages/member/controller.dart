@@ -17,6 +17,7 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension/nested_scroll_ext.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
+import 'package:PiliPlus/utils/space_filter.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart'
     show ExtendedNestedScrollViewState;
@@ -74,6 +75,7 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
   @override
   bool customHandleResponse(bool isRefresh, Success<SpaceData> response) {
     final data = response.response;
+    SpaceFilter.apply(data);
     final card = data.card;
     username = card?.name ?? '';
     userAvatar = card?.face;
@@ -112,7 +114,15 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
         data.series?.item?.isNotEmpty == true) {
       hasSeasonOrSeries = true;
     }
-    tab2?.retainWhere((item) => MemberTabType.contains(item.param!));
+    final originalTabs = List<SpaceTab2>.of(tab2 ?? const []);
+    tab2?.retainWhere(
+      (item) =>
+          MemberTabType.contains(item.param!) &&
+          !SpaceFilter.hideTab(item.param),
+    );
+    if (tab2?.isEmpty == true && originalTabs.isNotEmpty) {
+      tab2 = [originalTabs.first];
+    }
     if (tab2?.isNotEmpty == true) {
       if (data.hasItem != true && tab2!.first.param == 'home') {
         // remove empty home tab

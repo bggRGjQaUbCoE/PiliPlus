@@ -43,6 +43,7 @@ import 'package:PiliPlus/pages/video/download_panel/view.dart';
 import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/pages/video/medialist/view.dart';
+import 'package:PiliPlus/pages/video/note/detail_view.dart';
 import 'package:PiliPlus/pages/video/note/view.dart';
 import 'package:PiliPlus/pages/video/post_panel/view.dart';
 import 'package:PiliPlus/pages/video/send_danmaku/view.dart';
@@ -1354,6 +1355,10 @@ class VideoDetailController extends GetxController
         heroTag: heroTag,
         isStein: graphVersion != null,
         title: title,
+        onOpenNote: (cvid) => showNoteDetail(
+          context,
+          'https://www.bilibili.com/h5/note-app/view?cvid=$cvid',
+        ),
       );
       PageUtils.showVideoBottomSheet(
         context,
@@ -1369,7 +1374,29 @@ class VideoDetailController extends GetxController
           heroTag: heroTag,
           isStein: graphVersion != null,
           title: title,
+          onOpenNote: (cvid) => showNoteDetail(
+            context,
+            'https://www.bilibili.com/h5/note-app/view?cvid=$cvid',
+          ),
         ),
+      );
+    }
+  }
+
+  void showNoteDetail(BuildContext context, String url) {
+    final child = VideoNoteDetailPage(url: url);
+    if (plPlayerController.isFullScreen.value || showVideoSheet) {
+      PageUtils.showVideoBottomSheet(
+        context,
+        child: plPlayerController.darkVideoPage
+            ? Theme(data: ThemeUtils.darkTheme, child: child)
+            : child,
+      );
+    } else {
+      childKey.currentState?.showBottomSheet(
+        backgroundColor: Colors.transparent,
+        constraints: const BoxConstraints(),
+        (context) => child,
       );
     }
   }

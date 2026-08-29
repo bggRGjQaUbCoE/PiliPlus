@@ -14,6 +14,15 @@ abstract final class ReplyGrpc {
     caseSensitive: false,
   );
   static bool enableFilter = replyRegExp.pattern.isNotEmpty;
+  static RegExp replyUserRegExp = RegExp(
+    Pref.banWordForReplyUser,
+    caseSensitive: false,
+  );
+  static RegExp replyZoneRegExp = RegExp(
+    Pref.banWordForReplyZone,
+    caseSensitive: false,
+  );
+  static Set<int> blockedReplyLevels = Pref.blockedReplyLevels;
 
   // static Future replyInfo({required int rpid}) {
   //   return _request(
@@ -38,6 +47,11 @@ abstract final class ReplyGrpc {
 
   static bool needRemoveGrpc(ReplyInfo reply) {
     return (enableFilter && replyRegExp.hasMatch(reply.content.message)) ||
+        (replyUserRegExp.pattern.isNotEmpty &&
+            replyUserRegExp.hasMatch(reply.member.name)) ||
+        (replyZoneRegExp.pattern.isNotEmpty &&
+            replyZoneRegExp.hasMatch(reply.replyControl.location)) ||
+        blockedReplyLevels.contains(reply.member.level.toInt()) ||
         (antiGoodsReply && needRemoveGoodGrpc(reply));
   }
 

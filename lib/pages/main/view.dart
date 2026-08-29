@@ -563,6 +563,17 @@ class _MainAppState extends PopScopeState<MainApp>
               );
             },
           )
+        : type == .messages
+        ? Obx(() {
+            final count = _mainController.msgUnReadCount.value;
+            final isNumBadge = _mainController.msgBadgeMode == .number;
+            return Badge(
+              isLabelVisible:
+                  _mainController.msgBadgeMode != .hidden && count.isNotEmpty,
+              label: isNumBadge && count.isNotEmpty ? Text(count) : null,
+              child: icon,
+            );
+          })
         : icon;
   }
 

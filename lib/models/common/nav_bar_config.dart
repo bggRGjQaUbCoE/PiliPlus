@@ -4,6 +4,7 @@ import 'package:PiliPlus/pages/dynamics/view.dart';
 import 'package:PiliPlus/pages/home/view.dart';
 import 'package:PiliPlus/pages/mine/view.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:PiliPlus/pages/whisper/view.dart';
 
 enum NavigationBarType implements EnumWithLabel {
   home(
@@ -23,6 +24,12 @@ enum NavigationBarType implements EnumWithLabel {
     Icon(Icons.person_outline),
     Icon(Icons.person),
     MinePage(),
+  ),
+  messages(
+    '消息',
+    Icon(Icons.notifications_none),
+    Icon(Icons.notifications),
+    WhisperPage(),
   ),
   ;
 

@@ -27,14 +27,33 @@ class ReplyMePage extends StatefulWidget {
 
 class _ReplyMePageState extends State<ReplyMePage> {
   final _replyMeController = Get.put(ReplyMeController());
+  bool _isSearching = false;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return SimpleScaffold(
       appBar: AppBar(
-        title: const Text('回复我的'),
+        title: _isSearching
+            ? TextField(
+                autofocus: true,
+                textInputAction: TextInputAction.search,
+                decoration: const InputDecoration(
+                  hintText: '搜索回复内容或用户名',
+                  border: InputBorder.none,
+                ),
+                onChanged: _replyMeController.updateSearch,
+              )
+            : const Text('回复我的'),
         actions: [
+          IconButton(
+            tooltip: _isSearching ? '关闭搜索' : '搜索',
+            onPressed: () => setState(() {
+              _isSearching = !_isSearching;
+              if (!_isSearching) _replyMeController.searchQuery.value = '';
+            }),
+            icon: Icon(_isSearching ? Icons.close : Icons.search_outlined),
+          ),
           IconButton(
             onPressed: () => Get.to(
               const WhisperSettingsPage(
@@ -53,6 +72,7 @@ class _ReplyMePageState extends State<ReplyMePage> {
       body: refreshIndicator(
         onRefresh: _replyMeController.onRefresh,
         child: CustomScrollView(
+          controller: _replyMeController.scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             SliverPadding(
@@ -80,26 +100,39 @@ class _ReplyMePageState extends State<ReplyMePage> {
           itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
         );
       case Success(:final response):
-        if (response != null && response.isNotEmpty) {
-          final divider = Divider(
-            indent: 72,
-            endIndent: 20,
-            height: 6,
-            color: Colors.grey.withValues(alpha: 0.1),
+        if (response == null || response.isEmpty) {
+          return HttpError(onReload: _replyMeController.onReload);
+        }
+        final visible = _replyMeController.visibleItems(response);
+        if (visible.isEmpty) {
+          return HttpError(
+            errMsg: '没有找到匹配回复',
+            onReload: _replyMeController.isEnd
+                ? null
+                : _replyMeController.onLoadMore,
+            btnText: '加载更多回复',
           );
-          return SliverList.separated(
-            itemCount: response.length,
-            itemBuilder: (context, int index) {
-              if (index == response.length - 1) {
-                _replyMeController.onLoadMore();
-              }
+        }
+        final divider = Divider(
+          indent: 72,
+          endIndent: 20,
+          height: 6,
+          color: Colors.grey.withValues(alpha: 0.1),
+        );
+        return SliverList.separated(
+          itemCount: visible.length,
+          itemBuilder: (context, int index) {
+            if (index == visible.length - 1 &&
+                _replyMeController.searchQuery.value.isEmpty) {
+              _replyMeController.onLoadMore();
+            }
 
-              MsgReplyItem item = response[index];
+              MsgReplyItem item = visible[index];
 
               void onLongPress() => showConfirmDialog(
                 context: context,
                 title: const Text('确定删除该通知?'),
-                onConfirm: () => _replyMeController.onRemove(item.id, index),
+                onConfirm: () => _replyMeController.onRemove(item.id),
               );
 
               return ListTile(
@@ -197,8 +230,6 @@ class _ReplyMePageState extends State<ReplyMePage> {
             },
             separatorBuilder: (context, index) => divider,
           );
-        }
-        return HttpError(onReload: _replyMeController.onReload);
       case Error(:final errMsg):
         return HttpError(
           errMsg: errMsg,

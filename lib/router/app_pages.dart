@@ -5,6 +5,7 @@ import 'package:PiliPlus/pages/blacklist/view.dart';
 import 'package:PiliPlus/pages/bubble/view.dart';
 import 'package:PiliPlus/pages/danmaku_block/view.dart';
 import 'package:PiliPlus/pages/dlna/view.dart';
+import 'package:PiliPlus/pages/creator_center/view.dart';
 import 'package:PiliPlus/pages/download/view.dart';
 import 'package:PiliPlus/pages/dynamics/view.dart';
 import 'package:PiliPlus/pages/dynamics_create_vote/view.dart';
@@ -28,6 +29,7 @@ import 'package:PiliPlus/pages/later/view.dart';
 import 'package:PiliPlus/pages/later_search/view.dart';
 import 'package:PiliPlus/pages/live_dm_block/view.dart';
 import 'package:PiliPlus/pages/live_room/view.dart';
+import 'package:PiliPlus/pages/listen_video/view.dart';
 import 'package:PiliPlus/pages/login/view.dart';
 import 'package:PiliPlus/pages/main/view.dart';
 import 'package:PiliPlus/pages/main_reply/view.dart';
@@ -167,6 +169,8 @@ class Routes {
     GetPage(name: '/popularSeries', page: () => const PopularSeriesPage()),
     GetPage(name: '/popularPrecious', page: () => const PopularPreciousPage()),
     GetPage(name: '/audio', page: () => const AudioPage()),
+    GetPage(name: '/listenVideo', page: () => const ListenVideoPage()),
+    GetPage(name: '/creatorCenter', page: () => const CreatorCenterPage()),
     GetPage(name: '/mainReply', page: () => const MainReplyPage()),
     GetPage(name: '/followed', page: () => const FollowedPage()),
     GetPage(name: '/sameFollowing', page: () => const FollowSamePage()),

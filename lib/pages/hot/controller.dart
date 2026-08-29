@@ -6,6 +6,9 @@ import 'package:PiliPlus/pages/common/common_list_controller.dart';
 class HotController
     extends CommonListController<List<HotVideoItemModel>, HotVideoItemModel> {
   @override
+  bool get autoLoadMore => true;
+
+  @override
   void onInit() {
     super.onInit();
     queryData();

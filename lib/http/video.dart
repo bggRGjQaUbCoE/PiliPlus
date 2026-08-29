@@ -29,6 +29,7 @@ import 'package:PiliPlus/models_new/video/video_play_info/data.dart';
 import 'package:PiliPlus/models_new/video/video_relation/data.dart';
 import 'package:PiliPlus/models_new/video/video_shot/data.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/app_sign.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
@@ -53,6 +54,7 @@ abstract final class VideoHttp {
   static Future<LoadingState<List<RcmdVideoItemModel>>> rcmdVideoList({
     required int ps,
     required int freshIdx,
+    bool anonymous = false,
   }) async {
     final res = await Request().get(
       Api.recommendListWeb,
@@ -65,6 +67,9 @@ abstract final class VideoHttp {
         'brush': freshIdx,
         'fresh_type': 4,
       }),
+      options: anonymous
+          ? Options(extra: {'account': AnonymousAccount()})
+          : null,
     );
     if (res.data['code'] == 0) {
       List<RcmdVideoItemModel> list = <RcmdVideoItemModel>[];

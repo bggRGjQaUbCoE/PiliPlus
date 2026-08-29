@@ -42,6 +42,9 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
         FabMixin {
   late ColorScheme colorScheme;
   late VideoReplyController _videoReplyController;
+  final TextEditingController _searchController = TextEditingController();
+  bool _isSearching = false;
+  String _query = '';
 
   String get heroTag => widget.heroTag;
 
@@ -62,6 +65,12 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
     super.didChangeDependencies();
     colorScheme = ColorScheme.of(context);
     bottom = MediaQuery.viewPaddingOf(context).bottom;
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   late double bottom;
@@ -85,34 +94,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
                 backgroundColor: colorScheme.surface,
                 child: Padding(
                   padding: const .fromLTRB(12, 2.5, 6, 2.5),
-                  child: Obx(() {
-                    final sortType = _videoReplyController.sortType.value;
-                    return Row(
-                      mainAxisAlignment: .spaceBetween,
-                      children: [
-                        Text(
-                          sortType.desc,
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                        TextButton.icon(
-                          style: Style.buttonStyle,
-                          onPressed: _videoReplyController.queryBySort,
-                          icon: Icon(
-                            Icons.sort,
-                            size: 16,
-                            color: colorScheme.secondary,
-                          ),
-                          label: Text(
-                            sortType.descShort,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: colorScheme.secondary,
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  }),
+                  child: _buildReplyHeader(),
                 ),
               ),
               Obx(() => _buildBody(_videoReplyController.loadingState.value)),
@@ -145,6 +127,88 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
     );
   }
 
+  Widget _buildReplyHeader() {
+    if (_isSearching) {
+      return Row(
+        children: [
+          const Icon(Icons.search, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              autofocus: true,
+              controller: _searchController,
+              textInputAction: TextInputAction.search,
+              decoration: const InputDecoration(
+                hintText: '搜索已加载评论',
+                border: InputBorder.none,
+                isDense: true,
+              ),
+              onChanged: (value) => setState(() => _query = value.trim()),
+            ),
+          ),
+          IconButton(
+            tooltip: '关闭搜索',
+            onPressed: () => setState(() {
+              _isSearching = false;
+              _query = '';
+              _searchController.clear();
+            }),
+            icon: const Icon(Icons.close, size: 20),
+          ),
+        ],
+      );
+    }
+
+    return Obx(() {
+      final sortType = _videoReplyController.sortType.value;
+      return Row(
+        mainAxisAlignment: .spaceBetween,
+        children: [
+          Text(sortType.desc, style: const TextStyle(fontSize: 13)),
+          Row(
+            mainAxisSize: .min,
+            children: [
+              IconButton(
+                tooltip: '搜索评论',
+                onPressed: () => setState(() => _isSearching = true),
+                icon: Icon(
+                  Icons.search_outlined,
+                  size: 20,
+                  color: colorScheme.secondary,
+                ),
+              ),
+              TextButton.icon(
+                style: Style.buttonStyle,
+                onPressed: _videoReplyController.queryBySort,
+                icon: Icon(
+                  Icons.sort,
+                  size: 16,
+                  color: colorScheme.secondary,
+                ),
+                label: Text(
+                  sortType.descShort,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: colorScheme.secondary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    });
+  }
+
+  bool _matchesQuery(ReplyInfo reply) {
+    final query = _query.toLowerCase();
+    bool matches(ReplyInfo item) =>
+        item.content.message.toLowerCase().contains(query) ||
+        item.member.name.toLowerCase().contains(query) ||
+        item.replyControl.location.toLowerCase().contains(query);
+    return matches(reply) || reply.replies.any(matches);
+  }
+
   Widget _buildBody(LoadingState<List<ReplyInfo>?> loadingState) {
     switch (loadingState) {
       case Loading():
@@ -154,7 +218,20 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
         );
       case Success(:final response):
         if (response != null && response.isNotEmpty) {
-          var count = response.length + 1;
+          final visibleResponse = _query.isEmpty
+              ? response
+              : response.where(_matchesQuery).toList();
+          if (visibleResponse.isEmpty) {
+            return HttpError(
+              errMsg: '没有找到匹配评论',
+              onReload: _videoReplyController.isEnd
+                  ? null
+                  : _videoReplyController.onLoadMore,
+              btnText: '加载更多评论',
+            );
+          }
+
+          var count = visibleResponse.length + 1;
           final voteCard = _videoReplyController.voteCard;
           final hasVote = voteCard != null;
           if (hasVote) {
@@ -169,33 +246,49 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
                   index--;
                 }
               }
-              if (index == response.length) {
-                _videoReplyController.onLoadMore();
+              if (index == visibleResponse.length) {
+                if (_query.isEmpty) {
+                  _videoReplyController.onLoadMore();
+                }
                 return Container(
                   height: 125,
                   alignment: .center,
                   margin: .only(bottom: bottom),
-                  child: Text(
-                    _videoReplyController.isEnd ? '没有更多了' : '加载中...',
-                    textAlign: .center,
-                    style: TextStyle(fontSize: 12, color: colorScheme.outline),
-                  ),
+                  child: _query.isNotEmpty && !_videoReplyController.isEnd
+                      ? TextButton.icon(
+                          onPressed: _videoReplyController.onLoadMore,
+                          icon: const Icon(Icons.expand_more),
+                          label: const Text('加载更多评论'),
+                        )
+                      : Text(
+                          _videoReplyController.isEnd ? '没有更多了' : '加载中...',
+                          textAlign: .center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: colorScheme.outline,
+                          ),
+                        ),
                 );
               } else {
+                final item = visibleResponse[index];
+                final responseIndex = response.indexOf(item);
                 return ReplyItemGrpc(
-                  replyItem: response[index],
+                  replyItem: item,
                   replyLevel: widget.replyLevel,
                   replyReply: replyReply,
                   onReply: _videoReplyController.onReply,
-                  onDelete: (item, subIndex) =>
-                      _videoReplyController.onRemove(index, item, subIndex),
+                  onDelete: (item, subIndex) => _videoReplyController.onRemove(
+                    responseIndex,
+                    item,
+                    subIndex,
+                  ),
                   upMid: _videoReplyController.upMid,
                   getTag: () => heroTag,
                   onCheckReply: (item) =>
                       _videoReplyController.onCheckReply(item, isManual: true),
                   onToggleTop: (item) => _videoReplyController.onToggleTop(
                     item,
-                    index,
+                    responseIndex,
                     _videoReplyController.aid,
                     _videoReplyController.videoType.replyType,
                   ),

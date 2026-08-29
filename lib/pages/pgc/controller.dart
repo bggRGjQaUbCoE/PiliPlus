@@ -28,6 +28,9 @@ class PgcController
   final accountService = Get.find<AccountService>();
 
   @override
+  bool get autoLoadMore => true;
+
+  @override
   void onInit() {
     super.onInit();
 
@@ -39,20 +42,21 @@ class PgcController
   }
 
   @override
-  Future<void> onRefresh() {
+  Future<void> onRefresh() async {
+    final tasks = <Future<void>>[super.onRefresh()];
     if (accountService.isLogin.value) {
-      _refreshPgcFollow();
+      tasks.add(_refreshPgcFollow());
     }
     if (showPgcTimeline) {
-      queryPgcTimeline();
+      tasks.add(queryPgcTimeline());
     }
-    return super.onRefresh();
+    await Future.wait(tasks);
   }
 
-  void _refreshPgcFollow() {
+  Future<void> _refreshPgcFollow() async {
     followPage = 1;
     followEnd = false;
-    queryPgcFollow();
+    await queryPgcFollow();
   }
 
   // follow

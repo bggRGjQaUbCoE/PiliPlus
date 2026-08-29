@@ -11,6 +11,7 @@ import 'package:PiliPlus/pages/video/reply_new/view.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/reply_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/text_similarity.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -18,6 +19,7 @@ import 'package:material_ui/material_ui.dart';
 
 abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
   final RxInt count = (-1).obs;
+  final TextDeduplicator _replyDeduplicator = TextDeduplicator();
 
   late final Rx<ReplySortType> sortType;
   late Mode mode;
@@ -77,11 +79,31 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
   }
 
   @override
-  Future<void> onRefresh() {
+  void resetForRefresh() {
+    super.resetForRefresh();
+    _replyDeduplicator.clear();
     cursorNext = null;
     subjectControl = null;
     paginationReply = null;
-    return super.onRefresh();
+  }
+
+  @override
+  void handleListResponse(List<ReplyInfo> dataList) {
+    if (!Pref.hideDuplicateReply && !Pref.hideSimilarReply) return;
+    dataList.removeWhere(_isDuplicateReply);
+    for (final reply in dataList) {
+      reply.replies.removeWhere(_isDuplicateReply);
+    }
+  }
+
+  bool _isDuplicateReply(ReplyInfo reply) {
+    return _replyDeduplicator.isDuplicate(
+      reply.content.message,
+      exact: Pref.hideDuplicateReply,
+      fuzzy: Pref.hideSimilarReply,
+      threshold: 0.88,
+      minimumFuzzyLength: 8,
+    );
   }
 
   // 排序搜索评论

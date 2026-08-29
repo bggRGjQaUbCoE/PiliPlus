@@ -13,6 +13,7 @@ import 'package:PiliPlus/pages/dynamics/controller.dart';
 import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/mine/view.dart';
 import 'package:PiliPlus/services/account_service.dart';
+import 'package:PiliPlus/services/message_notification_service.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
@@ -49,6 +50,7 @@ class MainController extends GetxController
   late final dynamicController = Get.putOrFind(DynamicsController.new);
 
   late bool hasHome = false;
+  late bool hasMessages = false;
   late final homeController = Get.putOrFind(HomeController.new);
 
   late DynamicBadgeMode msgBadgeMode = Pref.msgBadgeMode;
@@ -70,6 +72,8 @@ class MainController extends GetxController
 
   static const _period = 5 * 60 * 1000;
   late int _lastSelectTime = 0;
+  Timer? _messageNotificationTimer;
+  int? _lastNotificationUnread;
 
   @override
   void onInit() {
@@ -112,12 +116,19 @@ class MainController extends GetxController
     }
 
     hasHome = navigationBars.contains(NavigationBarType.home);
-    if (msgBadgeMode != DynamicBadgeMode.hidden) {
-      if (hasHome) {
-        lastCheckUnreadAt = DateTime.now().millisecondsSinceEpoch;
-        queryUnreadMsg();
-      }
+    hasMessages = navigationBars.contains(NavigationBarType.messages);
+    if ((msgBadgeMode != DynamicBadgeMode.hidden && (hasHome || hasMessages)) ||
+        Pref.enableMessageNotifications) {
+      lastCheckUnreadAt = DateTime.now().millisecondsSinceEpoch;
+      MessageNotificationService.initialize();
+      queryUnreadMsg();
     }
+    _messageNotificationTimer = Timer.periodic(
+      const Duration(milliseconds: _period),
+      (_) {
+        if (Pref.enableMessageNotifications) queryUnreadMsg();
+      },
+    );
   }
 
   Future<int> _msgUnread() async {
@@ -166,17 +177,33 @@ class MainController extends GetxController
   }
 
   Future<void> queryUnreadMsg([bool isChangeType = false]) async {
+    final notificationsEnabled = Pref.enableMessageNotifications;
     if (!accountService.isLogin.value ||
-        !hasHome ||
         msgUnReadTypes.isEmpty ||
-        msgBadgeMode == DynamicBadgeMode.hidden) {
+        ((!hasHome && !hasMessages) ||
+                msgBadgeMode == DynamicBadgeMode.hidden) &&
+            !notificationsEnabled) {
       msgUnReadCount.value = '';
+      _lastNotificationUnread = null;
       return;
     }
 
     final res = await Future.wait([_msgUnread(), _msgFeedUnread()]);
 
     final count = res.sum;
+
+    if (notificationsEnabled) {
+      final previous = _lastNotificationUnread;
+      _lastNotificationUnread = count;
+      if (previous != null && count > previous) {
+        MessageNotificationService.showUnread(
+          total: count,
+          added: count - previous,
+        );
+      }
+    } else {
+      _lastNotificationUnread = null;
+    }
 
     final countStr = count == 0
         ? ''
@@ -227,11 +254,32 @@ class MainController extends GetxController
         (GStorage.setting.get(SettingBoxKey.navBarSort) as List?)?.fromCast();
     late final List<NavigationBarType> navigationBars;
     if (navBarSort == null || navBarSort.isEmpty) {
-      navigationBars = NavigationBarType.values;
+      navigationBars = [
+        NavigationBarType.home,
+        NavigationBarType.dynamics,
+        NavigationBarType.messages,
+        NavigationBarType.mine,
+      ];
     } else {
+      if (!navBarSort.contains(NavigationBarType.messages.index)) {
+        final mineIndex = navBarSort.indexOf(NavigationBarType.mine.index);
+        navBarSort.insert(
+          mineIndex == -1 ? navBarSort.length : mineIndex,
+          NavigationBarType.messages.index,
+        );
+      }
       navigationBars = navBarSort
           .map((i) => NavigationBarType.values[i])
           .toList();
+    }
+    if (Pref.hideDynamicsNav) {
+      navigationBars.remove(NavigationBarType.dynamics);
+    }
+    if (Pref.hideMessagesNav) {
+      navigationBars.remove(NavigationBarType.messages);
+    }
+    if (navigationBars.isEmpty) {
+      navigationBars.add(NavigationBarType.home);
     }
     this.navigationBars = navigationBars;
     final defPage = Pref.defaultHomePage;
@@ -255,7 +303,7 @@ class MainController extends GetxController
 
   void checkUnread([bool shouldCheck = false]) {
     if (accountService.isLogin.value &&
-        hasHome &&
+        (hasHome || hasMessages) &&
         msgBadgeMode != DynamicBadgeMode.hidden) {
       if (shouldCheck &&
           navigationBars[selectedIndex.value] != NavigationBarType.home) {
@@ -302,6 +350,9 @@ class MainController extends GetxController
         checkUnread();
       } else if (currentNav == NavigationBarType.dynamics) {
         setDynCount();
+      } else if (currentNav == NavigationBarType.messages) {
+        msgUnReadCount.value = '';
+        lastCheckUnreadAt = DateTime.now().millisecondsSinceEpoch;
       }
     } else {
       int now = DateTime.now().millisecondsSinceEpoch;
@@ -346,6 +397,7 @@ class MainController extends GetxController
 
   @override
   void onClose() {
+    _messageNotificationTimer?.cancel();
     barOffset?.close();
     controller.dispose();
     super.onClose();

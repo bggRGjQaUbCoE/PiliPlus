@@ -47,6 +47,50 @@ class DynamicsDataModel {
 
   static bool antiGoodsDyn = Pref.antiGoodsDyn;
 
+  static RegExp banWordForDynUser = RegExp(
+    Pref.banWordForDynUser,
+    caseSensitive: false,
+  );
+  static RegExp banWordForDynUid = RegExp(
+    Pref.banWordForDynUid,
+    caseSensitive: false,
+  );
+  static Set<String> hiddenDynamicTypes = Pref.hiddenDynamicTypes;
+
+  static const Map<String, String> dynamicTypeLabels = {
+    'DYNAMIC_TYPE_FORWARD': '转发',
+    'DYNAMIC_TYPE_AV': '投稿视频',
+    'DYNAMIC_TYPE_PGC': '番剧、电影等',
+    'DYNAMIC_TYPE_COURSES_SEASON': '付费课程',
+    'DYNAMIC_TYPE_WORD': '文字',
+    'DYNAMIC_TYPE_DRAW': '图文',
+    'DYNAMIC_TYPE_ARTICLE': '文章',
+    'DYNAMIC_TYPE_MUSIC': '音频',
+    'DYNAMIC_TYPE_COMMON_SQUARE': '通用卡片',
+    'DYNAMIC_TYPE_LIVE': '直播',
+    'DYNAMIC_TYPE_MEDIALIST': '播放列表',
+    'DYNAMIC_TYPE_AD': '广告',
+    'DYNAMIC_TYPE_APPLET': '小程序',
+    'DYNAMIC_TYPE_SUBSCRIPTION': '订阅',
+    'DYNAMIC_TYPE_LIVE_RCMD': '直播推荐',
+    'DYNAMIC_TYPE_UGC_SEASON': '合集',
+    'DYNAMIC_TYPE_STORY': '故事',
+    'DYNAMIC_TYPE_TOPIC_RCMD': '话题推荐',
+    'DYNAMIC_TYPE_NOTICE': '通知',
+  };
+
+  static bool _matchesAuthor(DynamicItemModel item) {
+    final author = item.modules.moduleAuthor;
+    return (banWordForDynUser.pattern.isNotEmpty &&
+            banWordForDynUser.hasMatch(author?.name ?? '')) ||
+        (banWordForDynUid.pattern.isNotEmpty &&
+            banWordForDynUid.hasMatch(author?.mid.toString() ?? ''));
+  }
+
+  static bool _matchesPurifyRules(DynamicItemModel item) {
+    return hiddenDynamicTypes.contains(item.type) || _matchesAuthor(item);
+  }
+
   DynamicsDataModel.fromJson(
     Map<String, dynamic> json, {
     DynamicsTabType type = DynamicsTabType.all,
@@ -61,6 +105,10 @@ class DynamicsDataModel {
           type != DynamicsTabType.up && tempBannedList?.isNotEmpty == true;
       for (final e in list) {
         DynamicItemModel item = DynamicItemModel.fromJson(e);
+        if (_matchesPurifyRules(item) ||
+            (item.orig != null && _matchesPurifyRules(item.orig!))) {
+          continue;
+        }
         if (antiGoodsDyn &&
             (item.orig?.modules.moduleDynamic?.additional?.type ==
                     'ADDITIONAL_TYPE_GOODS' ||

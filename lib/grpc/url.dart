@@ -54,6 +54,7 @@ abstract final class GrpcUrl {
   static const audio = '/bilibili.app.listener.v1.Listener';
   static const audioPlayUrl = '$audio/PlayURL';
   static const audioPlayList = '$audio/Playlist';
+  static const audioRcmdPlaylist = '$audio/RcmdPlaylist';
   static const audioThumbUp = '$audio/ThumbUp';
   static const audioTripleLike = '$audio/TripleLike';
   static const audioCoinAdd = '$audio/CoinAdd';

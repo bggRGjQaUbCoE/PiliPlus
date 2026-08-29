@@ -82,6 +82,57 @@ class _AboutPageState extends State<AboutPage> {
     ),
   );
 
+  Future<void> _showAccountImportExport() async {
+    final accounts = Accounts.account.toMap();
+    if (accounts.isEmpty) {
+      SmartDialog.showToast('当前没有可导出的登录账号');
+      return;
+    }
+    const allAccounts = '__all_accounts__';
+    final selected = await showDialog<Object>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text('选择要导出的账号'),
+        children: [
+          DialogOption(
+            onPressed: () => Navigator.pop(context, allAccounts),
+            child: Text('全部账号（${accounts.length}）'),
+          ),
+          for (final entry in accounts.entries)
+            DialogOption(
+              onPressed: () => Navigator.pop(context, entry.key),
+              child: Text(
+                'UID ${entry.key}${entry.value.type.isEmpty ? '' : ' · ${entry.value.type.map((type) => type.title).join('、')}'}',
+              ),
+            ),
+        ],
+      ),
+    );
+    if (selected == null || !mounted) return;
+
+    final exportAccounts = selected == allAccounts
+        ? accounts
+        : {selected: accounts[selected]!};
+    showImportExportDialog<Map>(
+      context,
+      title: selected == allAccounts ? '全部账号登录信息' : 'UID $selected 登录信息',
+      localFileName: () =>
+          selected == allAccounts ? 'accounts_all' : 'account_$selected',
+      onExport: () => Utils.jsonEncoder.convert(exportAccounts),
+      onImport: (json) async {
+        final result = json.map(
+          (key, value) => MapEntry(key, LoginAccount.fromJson(value)),
+        );
+        await Accounts.account.putAll(result);
+        await Accounts.refresh();
+        MineController.anonymity.value = !Accounts.heartbeat.isLogin;
+        if (Accounts.main.isLogin) {
+          await LoginUtils.onLoginMain();
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -236,24 +287,7 @@ Commit Hash: ${BuildConfig.commitHash}''',
           ListTile(
             title: const Text('导入/导出登录信息'),
             leading: const Icon(Icons.import_export_outlined),
-            onTap: () => showImportExportDialog<Map>(
-              context,
-              title: '登录信息',
-              localFileName: () => 'account',
-              onExport: () =>
-                  Utils.jsonEncoder.convert(Accounts.account.toMap()),
-              onImport: (json) async {
-                final res = json.map(
-                  (key, value) => MapEntry(key, LoginAccount.fromJson(value)),
-                );
-                await Accounts.account.putAll(res);
-                await Accounts.refresh();
-                MineController.anonymity.value = !Accounts.heartbeat.isLogin;
-                if (Accounts.main.isLogin) {
-                  await LoginUtils.onLoginMain();
-                }
-              },
-            ),
+            onTap: _showAccountImportExport,
           ),
           ListTile(
             title: const Text('导入/导出设置'),

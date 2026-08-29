@@ -26,6 +26,7 @@ import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
+import 'package:PiliPlus/pages/setting/widgets/multi_select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/slider_dialog.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
@@ -43,6 +44,7 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/space_filter.dart';
 import 'package:PiliPlus/utils/update.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:file_picker/file_picker.dart';
@@ -225,19 +227,71 @@ List<SettingsModel> get extraSettings => [
     defaultVal: true,
   ),
   getBanWordModel(
-    title: '评论关键词过滤',
-    key: SettingBoxKey.banWordForReply,
-    onChanged: (value) {
-      ReplyGrpc.replyRegExp = value;
-      ReplyGrpc.enableFilter = value.pattern.isNotEmpty;
-    },
-  ),
-  getBanWordModel(
     title: '动态关键词过滤',
     key: SettingBoxKey.banWordForDyn,
     onChanged: (value) {
       DynamicsDataModel.banWordForDyn = value;
       DynamicsDataModel.enableFilter = value.pattern.isNotEmpty;
+    },
+  ),
+  getBanWordModel(
+    title: '动态 UP 主名称过滤',
+    key: SettingBoxKey.banWordForDynUser,
+    onChanged: (value) => DynamicsDataModel.banWordForDynUser = value,
+  ),
+  getBanWordModel(
+    title: '动态 UID 过滤',
+    key: SettingBoxKey.banWordForDynUid,
+    onChanged: (value) => DynamicsDataModel.banWordForDynUid = value,
+  ),
+  NormalModel(
+    title: '按类型净化动态',
+    getSubtitle: () => DynamicsDataModel.hiddenDynamicTypes.isEmpty
+        ? '自定义隐藏广告、直播、转发、付费内容等动态类型'
+        : '已隐藏 ${DynamicsDataModel.hiddenDynamicTypes.length} 种类型',
+    leading: const Icon(Icons.auto_delete_outlined),
+    onTap: (context, setState) async {
+      final result = await showDialog<Set<String>>(
+        context: context,
+        builder: (context) => MultiSelectDialog<String>(
+          title: '净化动态类型',
+          initValues: DynamicsDataModel.hiddenDynamicTypes,
+          values: DynamicsDataModel.dynamicTypeLabels,
+        ),
+      );
+      if (result != null) {
+        DynamicsDataModel.hiddenDynamicTypes = result;
+        await GStorage.setting.put(
+          SettingBoxKey.hiddenDynamicTypes,
+          result.toList(),
+        );
+        setState();
+      }
+    },
+  ),
+  NormalModel(
+    title: '净化用户空间',
+    getSubtitle: () => SpaceFilter.hiddenSections.isEmpty
+        ? '自定义隐藏空间分页和首页模块'
+        : '已隐藏 ${SpaceFilter.hiddenSections.length} 个页面或模块',
+    leading: const Icon(Icons.person_off_outlined),
+    onTap: (context, setState) async {
+      final result = await showDialog<Set<String>>(
+        context: context,
+        builder: (context) => MultiSelectDialog<String>(
+          title: '净化用户空间',
+          initValues: SpaceFilter.hiddenSections,
+          values: SpaceFilter.labels,
+        ),
+      );
+      if (result != null) {
+        SpaceFilter.hiddenSections = result;
+        await GStorage.setting.put(
+          SettingBoxKey.hiddenSpaceSections,
+          result.toList(),
+        );
+        setState();
+      }
     },
   ),
   const SwitchModel(

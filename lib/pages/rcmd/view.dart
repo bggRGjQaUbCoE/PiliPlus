@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/video_card/video_card_v.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/models/common/rcmd_mode.dart';
 import 'package:PiliPlus/pages/rcmd/controller.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -38,6 +39,54 @@ class _RcmdPageState extends State<RcmdPage>
           controller: controller.scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
+            SliverToBoxAdapter(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Obx(
+                  () => Wrap(
+                    spacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      PopupMenuButton<RcmdMode>(
+                        tooltip: '初见推荐模式',
+                        initialValue: controller.rcmdMode.value,
+                        onSelected: controller.switchMode,
+                        itemBuilder: (context) => RcmdMode.values
+                            .map(
+                              (mode) => PopupMenuItem(
+                                value: mode,
+                                child: ListTile(
+                                  dense: true,
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(mode.label),
+                                  subtitle: Text(mode.description),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        child: Chip(
+                          avatar: const Icon(Icons.explore_outlined, size: 18),
+                          label: Text(controller.rcmdMode.value.label),
+                        ),
+                      ),
+                      SegmentedButton<bool>(
+                        segments: const [
+                          ButtonSegment(value: true, label: Text('移动端')),
+                          ButtonSegment(value: false, label: Text('网页端')),
+                        ],
+                        selected: {controller.appRcmd.value},
+                        onSelectionChanged:
+                            controller.rcmdMode.value == RcmdMode.personalized
+                            ? (value) => controller.switchSource(value.first)
+                            : null,
+                        showSelectedIcon: false,
+                        style: const ButtonStyle(visualDensity: .compact),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
             SliverPadding(
               padding: const .only(top: Style.cardSpace, bottom: 100),
               sliver: Obx(

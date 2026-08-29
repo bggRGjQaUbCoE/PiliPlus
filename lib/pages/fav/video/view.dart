@@ -47,45 +47,56 @@ class _FavVideoPageState extends State<FavVideoPage>
   }
 
   Widget _buildBody(LoadingState<List<FavFolderInfo>?> loadingState) {
-    return switch (loadingState) {
-      Loading() => gridSkeleton,
-      Success(:final response) =>
-        response != null && response.isNotEmpty
-            ? SliverGrid.builder(
-                gridDelegate: gridDelegate,
-                itemBuilder: (BuildContext context, int index) {
-                  if (index == response.length - 1) {
-                    _favController.onLoadMore();
-                  }
-                  final item = response[index];
-                  String heroTag = Utils.makeHeroTag(item.fid);
-                  return FavVideoItem(
-                    heroTag: heroTag,
-                    item: item,
-                    onTap: () async {
-                      final res = await Get.toNamed(
-                        '/favDetail',
-                        arguments: item,
-                        parameters: {
-                          'heroTag': heroTag,
-                          'mediaId': item.id.toString(),
-                        },
-                      );
-                      if (res == true) {
-                        _favController.loadingState
-                          ..value.data!.removeAt(index)
-                          ..refresh();
-                      }
-                    },
-                  );
-                },
-                itemCount: response.length,
-              )
-            : HttpError(onReload: _favController.onReload),
-      Error(:final errMsg) => HttpError(
-        errMsg: errMsg,
-        onReload: _favController.onReload,
-      ),
-    };
+    switch (loadingState) {
+      case Loading():
+        return gridSkeleton;
+      case Success(:final response):
+        if (response == null || response.isEmpty) {
+          return HttpError(onReload: _favController.onReload);
+        }
+        final folders = _favController.visibleFolders(response);
+        if (folders.isEmpty) {
+          return HttpError(
+            errMsg: '没有找到匹配收藏夹',
+            onReload: _favController.isEnd ? null : _favController.onLoadMore,
+            btnText: '加载更多收藏夹',
+          );
+        }
+        return SliverGrid.builder(
+          gridDelegate: gridDelegate,
+          itemBuilder: (BuildContext context, int index) {
+            if (index == folders.length - 1) {
+              _favController.onLoadMore();
+            }
+            final item = folders[index];
+            String heroTag = Utils.makeHeroTag(item.fid);
+            return FavVideoItem(
+              heroTag: heroTag,
+              item: item,
+              onTap: () async {
+                final res = await Get.toNamed(
+                  '/favDetail',
+                  arguments: item,
+                  parameters: {
+                    'heroTag': heroTag,
+                    'mediaId': item.id.toString(),
+                  },
+                );
+                if (res == true) {
+                  _favController.loadingState
+                    ..value.data!.remove(item)
+                    ..refresh();
+                }
+              },
+            );
+          },
+          itemCount: folders.length,
+        );
+      case Error(:final errMsg):
+        return HttpError(
+          errMsg: errMsg,
+          onReload: _favController.onReload,
+        );
+    }
   }
 }

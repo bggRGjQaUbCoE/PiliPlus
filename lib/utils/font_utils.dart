@@ -1,5 +1,6 @@
 import 'dart:ffi';
-import 'dart:io' show Directory, File;
+import 'dart:io' show File;
+import 'dart:typed_data';
 import 'dart:ui' show loadFontFromList;
 
 import 'package:PiliPlus/utils/android/bindings.g.dart';
@@ -8,7 +9,6 @@ import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/utils.dart';
 import 'package:ffi/ffi.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart'
@@ -23,86 +23,57 @@ abstract final class FontUtils {
   static bool _initialized = false;
 
   static const _kFontExts = ['ttf', 'ttc', 'otf'];
-  static final _kFontDir = path.join(appSupportDirPath, 'font');
-  static final _loadedFonts = <String>{};
-  static final customFonts = Pref.customAppFont;
+  static const kFontFamly = '__custom';
+  static final fontFile = File(path.join(appSupportDirPath, 'customFont.otf'));
 
   static Future<void>? init() {
-    final fontFamily = Pref.appFont;
-    if (fontFamily != null && customFonts.containsKey(fontFamily)) {
-      return loadFontIfNecessary(fontFamily);
+    if (kFontFamly == Pref.appFont) {
+      final file = fontFile;
+      if (file.existsSync()) {
+        return file.readAsBytes().then(_loadFont);
+      } else {
+        GStorage.setting.delete(SettingBoxKey.appFont);
+      }
     }
     return null;
   }
 
-  static void removeFont(String fontFamily) {
-    final path = customFonts.remove(fontFamily);
-    if (path != null) {
-      final file = File(path);
-      if (file.existsSync()) {
-        file.delete();
-      }
-      GStorage.setting.put(SettingBoxKey.customAppFont, customFonts);
+  static void removeFont() {
+    final file = fontFile;
+    if (file.existsSync()) {
+      file.delete();
     }
   }
 
-  static Future<void> clearFonts() {
-    customFonts.clear();
-    _loadedFonts.clear();
-    final dir = Directory(_kFontDir);
-    return Future.wait([
-      if (dir.existsSync()) dir.delete(recursive: true),
-      GStorage.setting.deleteAll({
-        SettingBoxKey.appFont,
-        SettingBoxKey.customAppFont,
-      }),
-    ]);
-  }
-
-  static Future<void>? loadFontIfNecessary(String fontFamily) {
-    if (_loadedFonts.contains(fontFamily)) return null;
-    return _loadFont(fontFamily);
-  }
-
   @pragma('vm:notify-debugger-on-exception')
-  static Future<void> _loadFont(String fontFamily) async {
+  static Future<void> _loadFont(
+    Uint8List bytes, [
+    String fontFamily = kFontFamly,
+  ]) async {
     try {
-      _loadedFonts.add(fontFamily);
-      final bytes = await File(customFonts[fontFamily]!).readAsBytes();
       await loadFontFromList(bytes, fontFamily: fontFamily);
     } catch (_) {}
   }
 
   @pragma('vm:notify-debugger-on-exception')
-  static Future<String?> pickFonts() async {
+  static Future<Map<String, Uint8List>?> pickFonts() async {
     try {
-      final files = await FilePicker.pickFiles(
+      final file = await FilePicker.pickFiles(
         type: .custom,
         allowedExtensions: _kFontExts,
       );
-      if (files.isNotEmpty) {
-        final dir = Directory(_kFontDir);
-        if (!dir.existsSync()) {
-          await dir.create(recursive: true);
-        }
-        final futures = <Future<void>>[];
-        final newFonts = <String, String>{};
-        for (var file in files) {
-          final now = DateTime.now().millisecondsSinceEpoch.toString();
-          final name = file.xFile.name;
-          final saveTo = path.join(_kFontDir, '$now-$name');
-
-          futures.add(file.xFile.saveTo(saveTo));
-          newFonts['$now/${Utils.getFileName(file.xFile.path.replaceAll('\\', '/'), fileExt: false)}'] =
-              saveTo;
-        }
-        await Future.wait(futures);
-        customFonts.addAll(newFonts);
-        await GStorage.setting.put(SettingBoxKey.customAppFont, customFonts);
-
-        final firstFont = newFonts.keys.first;
-        await loadFontIfNecessary(firstFont);
-        return firstFont;
+      if (file.isNotEmpty) {
+        final Map<String, Uint8List> fonts = {};
+        final now = DateTime.now().millisecondsSinceEpoch.toString();
+        await Future.wait(
+          file.map((file) async {
+            final name = '$now/${path.basenameWithoutExtension(file.name)}';
+            final bytes = await file.readAsBytes();
+            await _loadFont(bytes, name);
+            fonts[name] = bytes;
+          }),
+        );
+        return fonts;
       }
     } catch (_) {
       if (kDebugMode) rethrow;

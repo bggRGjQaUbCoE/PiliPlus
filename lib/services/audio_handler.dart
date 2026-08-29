@@ -402,12 +402,14 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
       _item.removeWhere((item) => item.id.endsWith(herotag));
     }
     if (_item.isNotEmpty) {
-      playbackState.add(
-        playbackState.value.copyWith(
-          processingState: AudioProcessingState.idle,
-          playing: false,
-        ),
-      );
+      if (!Platform.isLinux) {
+        playbackState.add(
+          playbackState.value.copyWith(
+            processingState: AudioProcessingState.idle,
+            playing: false,
+          ),
+        );
+      }
       setMediaItem(_item.last);
     }
   }

@@ -202,7 +202,7 @@ class _MediaPageState extends CommonPageState<MinePage>
               iconSize: iconSize,
               padding: padding,
               style: style,
-              tooltip: '切换至${controller.nextThemeType.desc}主题',
+              tooltip: '切换至${controller.nextThemeType.label}主题',
               onPressed: controller.onChangeTheme,
               icon: controller.themeType.value.icon,
             );

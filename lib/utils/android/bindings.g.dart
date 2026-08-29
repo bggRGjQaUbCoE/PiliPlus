@@ -666,6 +666,72 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
       _$icon.pointer,
     ).check();
   }
+
+  static final _id_fontFamilies = _class.staticMethodId(
+    r'fontFamilies',
+    r'()[Ljava/lang/String;',
+  );
+
+  static final _fontFamilies =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallStaticObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `static public java.lang.String[] fontFamilies()`
+  /// The returned object must be released after use, by calling the [release] method.
+  static jni$_.JArray<jni$_.JString?>? fontFamilies() {
+    final _$$classRef = _class.reference;
+    return _fontFamilies(
+      _$$classRef.pointer,
+      _id_fontFamilies.pointer,
+    ).object<jni$_.JArray<jni$_.JString?>?>();
+  }
+
+  static final _id_updateDocProvider = _class.staticMethodId(
+    r'updateDocProvider',
+    r'(Z)V',
+  );
+
+  static final _updateDocProvider =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JThrowablePtr Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Int32,)>,
+              )
+            >
+          >('globalEnv_CallStaticVoidMethod')
+          .asFunction<
+            jni$_.JThrowablePtr Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              core$_.int,
+            )
+          >();
+
+  /// from: `static public void updateDocProvider(boolean enabled)`
+  static void updateDocProvider(
+    core$_.bool enabled,
+  ) {
+    final _$$classRef = _class.reference;
+    _updateDocProvider(
+      _$$classRef.pointer,
+      _id_updateDocProvider.pointer,
+      enabled ? 1 : 0,
+    ).check();
+  }
 }
 
 final class $AndroidHelper$Type$ extends jni$_.JType<AndroidHelper> {

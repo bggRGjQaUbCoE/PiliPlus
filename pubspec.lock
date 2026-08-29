@@ -21,10 +21,10 @@ packages:
     dependency: transitive
     description:
       name: android_file_picker
-      sha256: "665a5a57dfca27f91a715d300e4852a784f9f98e503dcff281bec9afb55767be"
+      sha256: "3384b62685e04ce7afeaf57e94bf29bc167e32240be6c6cb382a94632aec0241"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.1"
+    version: "1.0.2"
   ansicolor:
     dependency: transitive
     description:
@@ -69,10 +69,10 @@ packages:
     dependency: "direct main"
     description:
       name: archive
-      sha256: be169cf6ac481e052c4538715d88841d567150dfe1df38aaec76461a4e7b39f2
+      sha256: ace891da0862b0e4cabbb064ee3fd87b2728b898949fdb366d83fe98342c9f19
       url: "https://pub.dev"
     source: hosted
-    version: "4.1.0"
+    version: "4.2.0"
   args:
     dependency: transitive
     description:
@@ -242,7 +242,7 @@ packages:
     description:
       path: "."
       ref: dev
-      resolved-ref: "9138d8d2aeefc564efd2f35fde3f54ad1b7e89a7"
+      resolved-ref: b0b1e0966fcee6f0ccba3f78fba5c16d0fafb366
       url: "https://github.com/My-Responsitories/catcher_2.git"
     source: git
     version: "2.1.9"
@@ -347,10 +347,10 @@ packages:
     dependency: transitive
     description:
       name: cross_file
-      sha256: "92c9c43c383bfa1c32079d3bc492d55d6d4318044b7b47edaff8971cbb555c51"
+      sha256: f141ea4f277af142a0356955707f6556f37b03947d39d55585981a06ca437bd6
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.5+4"
+    version: "0.3.5+5"
   crypto:
     dependency: "direct main"
     description:
@@ -371,10 +371,10 @@ packages:
     dependency: "direct main"
     description:
       name: cupertino_ui
-      sha256: "7ed8ce4159d342eec4c65f4ea6eec57adaf9365404378541f38efc1da20a5b3d"
+      sha256: "2137c0d41f3b62cc4d3d2495e6c354bd6b6133cd21c6bb155736cc31dbd49a11"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.0"
+    version: "1.0.1"
   dart_style:
     dependency: transitive
     description:
@@ -506,7 +506,7 @@ packages:
     source: hosted
     version: "1.3.3"
   ffi:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: ffi
       sha256: "6d7fd89431262d8f3125e81b50d3847a091d846eafcd4fdb88dd06f36d705a45"
@@ -533,18 +533,18 @@ packages:
     dependency: "direct main"
     description:
       name: file_picker
-      sha256: afbaa8015d9efabd224f41084ed9fdeddfa65389ebd7cd3a9eb1476aca66b46d
+      sha256: "80f3ebee5e23b30f1c3163fbc8b4cd49ef959b4a2d8475ed370f17c34d726dc7"
       url: "https://pub.dev"
     source: hosted
-    version: "12.0.0"
+    version: "12.1.0"
   file_picker_darwin:
     dependency: transitive
     description:
       name: file_picker_darwin
-      sha256: "5d87d156c1d63920447a662b7117d3498c67e3444a44d2cb01ed955d6efa62ef"
+      sha256: b505d03b6f631dc79ee070866e0935c6472c029172d389d747e2d5594dcab9ff
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.1"
+    version: "1.0.2"
   file_picker_linux:
     dependency: transitive
     description:
@@ -557,18 +557,18 @@ packages:
     dependency: transitive
     description:
       name: file_picker_platform_interface
-      sha256: "9e7a7e01e179929241f0afeb2c8c69ac95e29e17c0abea36ed193881c6bef90c"
+      sha256: b1ddd7909853c9df0eb4dbc5b388837ff313e28d6d5a9a71a83794b70c4c86bd
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.1"
+    version: "3.1.0"
   file_picker_web:
     dependency: transitive
     description:
       name: file_picker_web
-      sha256: f1af38b3c91fafe0ca97f659b5c6818a057473ef09bb8b722f9f3f5364aa7eed
+      sha256: "067051c42bb6ceb7650f2771206ca4c4908855a786cc03a0cb7240da441106f3"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.1"
+    version: "3.0.2"
   file_selector_linux:
     dependency: transitive
     description:
@@ -620,12 +620,11 @@ packages:
   flex_seed_scheme:
     dependency: "direct main"
     description:
-      path: "."
-      ref: dev
-      resolved-ref: ed3c2a298eb20309533095ca50a5fb64f0ba2dcf
-      url: "https://github.com/bggRGjQaUbCoE/flex_seed_scheme.git"
-    source: git
-    version: "4.0.1"
+      name: flex_seed_scheme
+      sha256: "6d725df2c2abd6f2d87cf67bfd3fb335e3b4aa4cfef4d85afcb322b6fa600a6b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.0.0"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -755,10 +754,10 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: ae01ce1d3c6a8f259e6f9e6d54435e2d1517340f
+      resolved-ref: "5a1be84314e8c53efa3b7324cd8dc535fefe931a"
       url: "https://github.com/bggRGjQaUbCoE/flutter_smart_dialog.git"
     source: git
-    version: "5.1.1"
+    version: "5.3.0"
   flutter_sortable_wrap:
     dependency: "direct main"
     description:
@@ -1161,16 +1160,16 @@ packages:
     dependency: "direct main"
     description:
       name: material_ui
-      sha256: "4f3f38b9953df0a87d6bf5f21880029f77c47048487d5339410c39936be4683b"
+      sha256: "7ba1ca315d50a004791dbab290417c52a61466d56db2822fe3c5c2994903110c"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.1"
+    version: "1.1.0"
   media_kit:
     dependency: "direct main"
     description:
       path: media_kit
       ref: "version_1.2.5"
-      resolved-ref: a2aa2e71873137e2f740a8771175226a1b584106
+      resolved-ref: "08b7b9410968fa39ae2fc814d57f9f889079afc9"
       url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
     source: git
     version: "1.1.11"
@@ -1179,7 +1178,7 @@ packages:
     description:
       path: "libs/android/media_kit_libs_android_video"
       ref: "version_1.2.5"
-      resolved-ref: a2aa2e71873137e2f740a8771175226a1b584106
+      resolved-ref: "08b7b9410968fa39ae2fc814d57f9f889079afc9"
       url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
     source: git
     version: "1.3.7"
@@ -1188,7 +1187,7 @@ packages:
     description:
       path: "libs/ios/media_kit_libs_ios_video"
       ref: "version_1.2.5"
-      resolved-ref: a2aa2e71873137e2f740a8771175226a1b584106
+      resolved-ref: "08b7b9410968fa39ae2fc814d57f9f889079afc9"
       url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
     source: git
     version: "1.1.4"
@@ -1213,7 +1212,7 @@ packages:
     description:
       path: "libs/universal/media_kit_libs_video"
       ref: "version_1.2.5"
-      resolved-ref: a2aa2e71873137e2f740a8771175226a1b584106
+      resolved-ref: "08b7b9410968fa39ae2fc814d57f9f889079afc9"
       url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
     source: git
     version: "1.0.5"
@@ -1222,7 +1221,7 @@ packages:
     description:
       path: "libs/windows/media_kit_libs_windows_video"
       ref: "version_1.2.5"
-      resolved-ref: a2aa2e71873137e2f740a8771175226a1b584106
+      resolved-ref: "08b7b9410968fa39ae2fc814d57f9f889079afc9"
       url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
     source: git
     version: "1.0.10"
@@ -1231,7 +1230,7 @@ packages:
     description:
       path: media_kit_native_event_loop
       ref: "version_1.2.5"
-      resolved-ref: a2aa2e71873137e2f740a8771175226a1b584106
+      resolved-ref: "08b7b9410968fa39ae2fc814d57f9f889079afc9"
       url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
     source: git
     version: "1.0.9"
@@ -1240,7 +1239,7 @@ packages:
     description:
       path: media_kit_video
       ref: "version_1.2.5"
-      resolved-ref: a2aa2e71873137e2f740a8771175226a1b584106
+      resolved-ref: "08b7b9410968fa39ae2fc814d57f9f889079afc9"
       url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
     source: git
     version: "1.2.5"
@@ -2009,10 +2008,10 @@ packages:
     dependency: transitive
     description:
       name: windows_file_picker
-      sha256: "72cf23466e146f2c0f19e1d78be97ff6409dc15b0c090f8eb284f94f4a33de26"
+      sha256: "1659127cb9e9e31a136352bfcb50fa4bb9e242dd7e0b71f99c3943b142e3026a"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.1"
+    version: "1.0.2"
   xdg_directories:
     dependency: transitive
     description:

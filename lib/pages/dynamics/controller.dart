@@ -12,8 +12,8 @@ import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:easy_debounce/easy_throttle.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart' show TabController;
 
 class DynamicsController
     extends CommonDataController<FollowUpModel, FollowUpModel>
@@ -95,8 +95,12 @@ class DynamicsController
 
   @override
   Future<void> onRefresh() {
-    singleRefresh();
-    return controller!.onRefresh();
+    final controller = this.controller;
+    if (controller != null) {
+      singleRefresh();
+      return controller.onRefresh();
+    }
+    return singleRefresh();
   }
 
   @override

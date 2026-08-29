@@ -191,7 +191,7 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
 
         final duration = DateTime.now().microsecondsSinceEpoch - start;
 
-        downloaded += count;
+        downloaded = count;
 
         if (duration > 15000000) {
           onClose();

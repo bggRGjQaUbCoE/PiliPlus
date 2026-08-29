@@ -268,7 +268,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
               icon: Icon(Icons.sort, size: 16, color: colorScheme.secondary),
               label: Obx(
                 () => Text(
-                  _controller.sortType.value.text!,
+                  _controller.sortType.value.label,
                   style: TextStyle(fontSize: 13, color: colorScheme.secondary),
                 ),
               ),

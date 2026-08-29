@@ -17,7 +17,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
 # update when release
-version: 2.1.1+1
+version: 2.1.2+1
 
 environment:
   sdk: ">=3.13.0"
@@ -84,13 +84,11 @@ dependencies:
     git:
       url: https://github.com/bggRGjQaUbCoE/extended_nested_scroll_view.git
       ref: dev
+  ffi: ^2.2.0
   file_picker: ^12.0.0
   fixnum: ^1.1.1
   fl_chart: ^1.0.0
-  flex_seed_scheme:
-    git:
-      url: https://github.com/bggRGjQaUbCoE/flex_seed_scheme.git
-      ref: dev
+  flex_seed_scheme: ^5.0.0
   flutter_displaymode: ^0.7.0
   flutter_html: ^3.0.0-beta.2
   flutter_inappwebview: ^6.1.5

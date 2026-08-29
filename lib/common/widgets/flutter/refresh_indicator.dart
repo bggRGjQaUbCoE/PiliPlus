@@ -520,16 +520,18 @@ class RefreshIndicatorState extends State<RefreshIndicator>
       body: child,
       scale: _scaleFactor,
       position: _positionFactor,
-      indicator: AnimatedBuilder(
-        animation: _positionController,
-        builder: (context, child) => RefreshProgressIndicator(
-          value: showIndeterminateIndicator ? null : _value.value,
-          valueColor: _valueColor,
-          backgroundColor: widget.backgroundColor,
-          strokeWidth: widget.strokeWidth,
-          elevation: widget.elevation,
-        ),
-      ),
+      indicator: _status == null
+          ? null
+          : AnimatedBuilder(
+              animation: _positionController,
+              builder: (context, child) => RefreshProgressIndicator(
+                value: showIndeterminateIndicator ? null : _value.value,
+                valueColor: _valueColor,
+                backgroundColor: widget.backgroundColor,
+                strokeWidth: widget.strokeWidth,
+                elevation: widget.elevation,
+              ),
+            ),
     );
 
     if (PlatformUtils.isDarwin) {

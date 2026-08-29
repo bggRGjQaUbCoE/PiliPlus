@@ -119,7 +119,7 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
               icon: Icon(Icons.sort, size: 16, color: secondary),
               label: Obx(
                 () => Text(
-                  controller.sortType.value.label,
+                  controller.sortType.value.descShort,
                   style: TextStyle(fontSize: 13, color: secondary),
                 ),
               ),

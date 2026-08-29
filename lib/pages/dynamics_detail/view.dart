@@ -628,13 +628,13 @@ class _DynamicDetailPageState
           return Row(
             mainAxisAlignment: .spaceBetween,
             children: [
-              Text(sortType.title),
+              Text(sortType.desc),
               TextButton.icon(
                 style: Style.buttonStyle,
                 onPressed: controller.queryBySort,
                 icon: Icon(Icons.sort, size: 16, color: secondary),
                 label: Text(
-                  sortType.label,
+                  sortType.descShort,
                   style: TextStyle(fontSize: 13, color: secondary),
                 ),
               ),

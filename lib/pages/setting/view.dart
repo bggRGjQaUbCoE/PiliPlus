@@ -11,6 +11,7 @@ import 'package:PiliPlus/pages/webdav/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -227,9 +228,21 @@ class _SettingPageState extends State<SettingPage> {
       ),
     );
     if (!context.mounted || result == null || result.isEmpty) return;
-    Future<void> logout() {
-      _noAccount.value = result.length == Accounts.account.length;
-      return Accounts.deleteAll(result);
+    Future<void> removeAccounts(Set<LoginAccount> accounts) async {
+      await Accounts.deleteAll(accounts);
+      _noAccount.value = Accounts.account.isEmpty;
+    }
+
+    Future<({LoginAccount account, bool success})> logoutAccount(
+      LoginAccount account,
+    ) async {
+      try {
+        final res = await LoginHttp.logout(account);
+        return (account: account, success: res['status'] == true);
+      } catch (e, s) {
+        Utils.reportError(e, s);
+        return (account: account, success: false);
+      }
     }
 
     showDialog(
@@ -252,9 +265,9 @@ class _SettingPageState extends State<SettingPage> {
               ),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 Get.back();
-                logout();
+                await removeAccounts(result);
               },
               child: Text(
                 '仅登出',
@@ -264,14 +277,34 @@ class _SettingPageState extends State<SettingPage> {
             TextButton(
               onPressed: () async {
                 SmartDialog.showLoading();
-                final res = await LoginHttp.logout(Accounts.main);
-                if (res['status']) {
+                try {
+                  final responses = await Future.wait(
+                    result.map(logoutAccount),
+                  );
+                  final successfulAccounts = {
+                    for (final response in responses)
+                      if (response.success) response.account,
+                  };
+                  if (successfulAccounts.isNotEmpty) {
+                    await removeAccounts(successfulAccounts);
+                  }
+                  final failedMids = responses
+                      .where((response) => !response.success)
+                      .map((response) => response.account.mid)
+                      .join('、');
                   SmartDialog.dismiss();
-                  logout();
-                  Get.back();
-                } else {
+                  if (successfulAccounts.length == result.length) {
+                    Get.back();
+                  } else if (successfulAccounts.isEmpty) {
+                    SmartDialog.showToast('账号 $failedMids 退出登录失败');
+                  } else {
+                    Get.back();
+                    SmartDialog.showToast('账号 $failedMids 退出登录失败');
+                  }
+                } catch (e, s) {
+                  Utils.reportError(e, s);
                   SmartDialog.dismiss();
-                  SmartDialog.showToast(res['msg'].toString());
+                  SmartDialog.showToast('退出登录失败：$e');
                 }
               },
               child: const Text('确认'),

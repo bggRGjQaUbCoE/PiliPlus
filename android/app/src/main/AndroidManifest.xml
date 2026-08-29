@@ -207,6 +207,17 @@
                     android:path="/launch" />
             </intent-filter>
         </activity>
+        <provider
+            android:name=".BiliDocumentsProvider"
+            android:permission="android.permission.MANAGE_DOCUMENTS"
+            android:enabled="false"
+            android:exported="true"
+            android:authorities="com.example.piliplus.MTDataFilesProvider"
+            android:grantUriPermissions="true">
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
         <service
             android:name="com.ryanheise.audioservice.AudioService"
             android:exported="true"

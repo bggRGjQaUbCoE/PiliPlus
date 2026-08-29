@@ -89,7 +89,9 @@ class RenderLevel extends RenderBox {
   @override
   void describeSemanticsConfiguration(SemanticsConfiguration config) {
     super.describeSemanticsConfiguration(config);
-    config.label = '${_flash ? "硬核" : ""}$_level级';
+    config
+      ..textDirection = .ltr
+      ..label = '${_flash ? "硬核" : ""}$_level级';
   }
 
   static Color lookupBackgroundColor(int level) {

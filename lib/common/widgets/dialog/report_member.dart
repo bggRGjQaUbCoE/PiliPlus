@@ -1,6 +1,10 @@
+import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/http/member.dart';
+import 'package:PiliPlus/utils/extension/theme_ext.dart';
+import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
 const _reason = ['头像违规', '昵称违规', '签名违规'];
@@ -23,15 +27,34 @@ Future<void> showMemberReportDialog(
         clipBehavior: Clip.hardEdge,
         contentPadding: const EdgeInsets.symmetric(vertical: 16),
         titleTextStyle: theme.textTheme.bodyMedium,
-        title: Column(
-          spacing: 4,
+        title: Row(
           crossAxisAlignment: .start,
           children: [
-            Text(
-              '举报: $name',
-              style: const TextStyle(fontSize: 18),
+            Expanded(
+              child: Column(
+                spacing: 4,
+                crossAxisAlignment: .start,
+                children: [
+                  Text(
+                    '举报: $name',
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                  Text('uid: $mid'),
+                ],
+              ),
             ),
-            Text('uid: $mid'),
+            iconButton(
+              iconSize: 21,
+              tooltip: '网页举报',
+              onPressed: () => Get.toNamed(
+                '/webview',
+                parameters: {
+                  'url':
+                      'https://account.bilibili.com/h5/account-h5/gr/report?navhide=1&targetmid=$mid&${ThemeUtils.themeUrl(theme.isDark)}',
+                },
+              ),
+              icon: const Icon(MdiIcons.web),
+            ),
           ],
         ),
         content: SingleChildScrollView(

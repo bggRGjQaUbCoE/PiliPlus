@@ -816,6 +816,7 @@ class VideoDetailController extends GetxController
         ..cacheAudioQa = isWiFi
             ? Pref.defaultAudioQa
             : Pref.defaultAudioQaCellular;
+      preferCodecs = isWiFi ? Pref.preferCodecs : Pref.preferCodecsCellular;
     }
 
     final result = await VideoHttp.videoUrl(

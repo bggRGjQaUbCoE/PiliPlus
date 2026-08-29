@@ -17,15 +17,17 @@ import 'package:jni/jni.dart';
 import 'package:path/path.dart' as path;
 import 'package:win32/win32.dart';
 
+typedef AppFont = ({String? fontFamily, bool isCustom});
+
 abstract final class FontUtils {
   static final _fonts = <String>{};
   static bool _initialized = false;
 
   static const _kFontExts = ['ttf', 'ttc', 'otf'];
 
-  static var _appFont = _initAppFont();
-  static ({String? fontFamily, bool isCustom}) get appFont => _appFont;
-  static set appFont(({String? fontFamily, bool isCustom}) value) {
+  static AppFont _appFont = _initAppFont();
+  static AppFont get appFont => _appFont;
+  static set appFont(AppFont value) {
     assert(isCustom == _isCutsomFont(fontFamily));
     _appFont = value;
   }
@@ -34,7 +36,7 @@ abstract final class FontUtils {
     return fontFamily?.contains('/') ?? false;
   }
 
-  static ({String? fontFamily, bool isCustom}) _initAppFont() {
+  static AppFont _initAppFont() {
     final appFont = GStorage.setting.get(SettingBoxKey.appFont);
     if (_isCutsomFont(appFont)) {
       if (fontFile.existsSync()) {
@@ -60,6 +62,7 @@ abstract final class FontUtils {
     return null;
   }
 
+  @pragma('vm:notify-debugger-on-exception')
   static Future<void> _readAndLoad() async {
     try {
       final bytes = await fontFile.readAsBytes();
@@ -87,15 +90,15 @@ abstract final class FontUtils {
   @pragma('vm:notify-debugger-on-exception')
   static Future<Map<String, Uint8List>?> pickFonts() async {
     try {
-      final file = await FilePicker.pickFiles(
+      final files = await FilePicker.pickFiles(
         type: .custom,
         allowedExtensions: _kFontExts,
       );
-      if (file.isNotEmpty) {
+      if (files.isNotEmpty) {
         final Map<String, Uint8List> fonts = {};
         final now = DateTime.now().millisecondsSinceEpoch.toString();
         await Future.wait(
-          file.map((file) async {
+          files.map((file) async {
             final name = '$now/${path.basenameWithoutExtension(file.name)}';
             final bytes = await file.readAsBytes();
             await _loadFont(bytes, fontFamily: name);

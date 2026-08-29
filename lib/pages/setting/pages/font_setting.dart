@@ -24,7 +24,7 @@ class FontSettingPage extends StatefulWidget {
 }
 
 class _FontSettingPageState extends State<FontSettingPage> {
-  var _appFont = FontUtils.appFont;
+  AppFont _appFont = FontUtils.appFont;
   String? get _selectedFont => _appFont.fontFamily;
 
   int _selectedWeight = Pref.appFontWeight;
@@ -43,11 +43,9 @@ class _FontSettingPageState extends State<FontSettingPage> {
   void initState() {
     super.initState();
     _fonts = FontUtils.getFont().toList();
-    if (_selectedFont != null) {
-      var index = -1;
-      if (!_appFont.isCustom) {
-        index = _fonts.indexWhere((e) => e == _selectedFont);
-      }
+
+    if (_selectedFont != null && !_appFont.isCustom) {
+      final index = _fonts.indexWhere((e) => e == _selectedFont);
       if (index != -1) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (scrollController.hasClients) {

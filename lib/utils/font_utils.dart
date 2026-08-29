@@ -8,7 +8,6 @@ import 'package:PiliPlus/utils/fontconfig.g.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:ffi/ffi.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart'
@@ -23,22 +22,52 @@ abstract final class FontUtils {
   static bool _initialized = false;
 
   static const _kFontExts = ['ttf', 'ttc', 'otf'];
-  static const kFontFamly = '__custom';
+
+  static var _appFont = _initAppFont();
+  static ({String? fontFamily, bool isCustom}) get appFont => _appFont;
+  static set appFont(({String? fontFamily, bool isCustom}) value) {
+    assert(isCustom == _isCutsomFont(fontFamily));
+    _appFont = value;
+  }
+
+  static bool _isCutsomFont(String? fontFamily) {
+    return fontFamily?.contains('/') ?? false;
+  }
+
+  static ({String? fontFamily, bool isCustom}) _initAppFont() {
+    final appFont = GStorage.setting.get(SettingBoxKey.appFont);
+    if (_isCutsomFont(appFont)) {
+      if (fontFile.existsSync()) {
+        return (fontFamily: appFont, isCustom: true);
+      } else {
+        GStorage.setting.delete(SettingBoxKey.appFont);
+        return (fontFamily: null, isCustom: false);
+      }
+    } else {
+      return (fontFamily: appFont, isCustom: false);
+    }
+  }
+
+  static String? get fontFamily => _appFont.fontFamily;
+  static bool get isCustom => _appFont.isCustom;
+
   static final fontFile = File(path.join(appSupportDirPath, 'customFont.otf'));
 
   static Future<void>? init() {
-    if (kFontFamly == Pref.appFont) {
-      final file = fontFile;
-      if (file.existsSync()) {
-        return file.readAsBytes().then(_loadFont);
-      } else {
-        GStorage.setting.delete(SettingBoxKey.appFont);
-      }
+    if (isCustom) {
+      return _readAndLoad();
     }
     return null;
   }
 
-  static void removeFont() {
+  static Future<void> _readAndLoad() async {
+    try {
+      final bytes = await fontFile.readAsBytes();
+      await _loadFont(bytes, fontFamily: fontFamily!);
+    } catch (_) {}
+  }
+
+  static void removeFontIfExists() {
     final file = fontFile;
     if (file.existsSync()) {
       file.delete();
@@ -47,9 +76,9 @@ abstract final class FontUtils {
 
   @pragma('vm:notify-debugger-on-exception')
   static Future<void> _loadFont(
-    Uint8List bytes, [
-    String fontFamily = kFontFamly,
-  ]) async {
+    Uint8List bytes, {
+    required String fontFamily,
+  }) async {
     try {
       await loadFontFromList(bytes, fontFamily: fontFamily);
     } catch (_) {}
@@ -69,7 +98,7 @@ abstract final class FontUtils {
           file.map((file) async {
             final name = '$now/${path.basenameWithoutExtension(file.name)}';
             final bytes = await file.readAsBytes();
-            await _loadFont(bytes, name);
+            await _loadFont(bytes, fontFamily: name);
             fonts[name] = bytes;
           }),
         );

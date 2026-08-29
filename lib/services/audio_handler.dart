@@ -98,7 +98,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     if (_item.isNotEmpty) {
       playbackState.add(
         playbackState.value.copyWith(
-          processingState: AudioProcessingState.ready,
+          processingState: AudioProcessingState.completed,
           playing: false,
           updatePosition: Duration.zero,
         ),
@@ -268,9 +268,13 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     if (!PlPlayerController.instanceExists()) return;
     if (data == null) return;
 
-    // 直播间不可 Seek
+    // 直播间不可 Seek/GoNext/GoPrevious
     if (Platform.isLinux) {
-      Mpris().canSeek = data is! RoomInfoH5Data;
+      final isLive = data is RoomInfoH5Data;
+      Mpris()
+        ..canSeek = !isLive
+        ..canGoNext = !isLive
+        ..canGoPrevious = !isLive;
     }
 
     Uri getUri(String? cover) => Uri.parse(ImageUtils.safeThumbnailUrl(cover));

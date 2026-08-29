@@ -68,6 +68,9 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   Future<void>? Function(Duration position)? onSeek;
   FutureOr<void> Function()? onSkipToNext;
   FutureOr<void> Function()? onSkipToPrevious;
+  Future<void>? Function(double speed)? onSetSpeed;
+  Future<void>? Function(double volume)? onSetVolume;
+  double? Function()? onGetSpeed;
 
   @override
   Future<void> play() {
@@ -137,8 +140,10 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     if (name == 'dbusVolume') {
       final value = extras?['value'];
       if (value is num) {
-        return PlPlayerController.setVolumeIfExists(
-              value.toDouble().clamp(0.0, 1.0),
+        final volume = value.toDouble().clamp(0.0, 1.0);
+        return onSetVolume?.call(volume) ??
+            PlPlayerController.setVolumeIfExists(
+              volume,
               showIndicator: false,
             ) ??
             Future.value();
@@ -150,15 +155,29 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   // Mpris Rate
   @override
   Future<void> setSpeed(double speed) async {
-    final instance = PlPlayerController.instance;
-    if (instance == null) return;
     final steps = Pref.speedList;
     if (steps.isEmpty) return;
     final snapped = steps.reduce(
       (a, b) => (speed - a).abs() <= (speed - b).abs() ? a : b, // 自动吸附
     );
-    await instance.setPlaybackSpeed(snapped);
+    if (Platform.isLinux) {
+      await (onSetSpeed?.call(snapped) ??
+          PlPlayerController.instance?.setPlaybackSpeed(snapped));
+    } else {
+      final instance = PlPlayerController.instance;
+      if (instance == null) return;
+      await instance.setPlaybackSpeed(snapped);
+    }
     playbackState.add(playbackState.value.copyWith(speed: snapped));
+  }
+
+  double get _currentSpeed {
+    if (Platform.isLinux) {
+      return onGetSpeed?.call() ??
+          PlPlayerController.instance?.playbackSpeed ??
+          1.0;
+    }
+    return PlPlayerController.instance?.playbackSpeed ?? 1.0;
   }
 
   void setMediaItem(MediaItem newMediaItem) {
@@ -202,7 +221,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
         processingState: isBuffering
             ? AudioProcessingState.buffering
             : processingState,
-        speed: PlPlayerController.instance?.playbackSpeed ?? 1.0,
+        speed: _currentSpeed,
         controls: [
           if (!isLive)
             const MediaControl(
@@ -412,7 +431,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     playbackState.add(
       playbackState.value.copyWith(
         updatePosition: position,
-        speed: PlPlayerController.instance?.playbackSpeed ?? 1.0,
+        speed: _currentSpeed,
       ),
     );
   }

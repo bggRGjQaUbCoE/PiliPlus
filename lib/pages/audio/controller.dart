@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
@@ -44,6 +45,7 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
+import 'package:audio_service_mpris/audio_service_mpris.dart';
 import 'package:fixnum/fixnum.dart' show Int64;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -117,6 +119,9 @@ class AudioController extends GetxController
       _lastVolume = null;
     }
     desktopVolume.value = volume;
+    if (Platform.isLinux) {
+      Mpris().volume = volume.clamp(0.0, 1.0);
+    }
     player?.setVolume(volume * 100);
   }
 
@@ -168,7 +173,14 @@ class AudioController extends GetxController
       ..onPause = onPause
       ..onSeek = onSeek
       ..onSkipToNext = playNext
-      ..onSkipToPrevious = playPrev;
+      ..onSkipToPrevious = playPrev
+      ..onSetSpeed = (speed) async {
+        setSpeed(speed);
+      }
+      ..onSetVolume = (volume) async {
+        setVolume(volume);
+      }
+      ..onGetSpeed = () => player?.state.rate ?? 1.0;
 
     animController = AnimationController(
       vsync: this,
@@ -773,6 +785,9 @@ class AudioController extends GetxController
       ..onSeek = null
       ..onSkipToNext = null
       ..onSkipToPrevious = null
+      ..onSetSpeed = null
+      ..onSetVolume = null
+      ..onGetSpeed = null
       ..onVideoDetailDispose(hashCode.toString());
     _subscriptions?.forEach((e) => e.cancel());
     _subscriptions?.clear();

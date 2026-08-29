@@ -193,6 +193,11 @@ class AudioController extends GetxController
     }
   }
 
+  // rebind Mpris skip owner
+  void rebindSkip() {
+    videoPlayerServiceHandler?.bindSkip(this, playNext, playPrev);
+  }
+
   bool isPlaying() {
     return player?.state.playing ?? false;
   }

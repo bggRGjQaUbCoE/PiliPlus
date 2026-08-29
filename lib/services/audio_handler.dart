@@ -42,6 +42,7 @@ Future<VideoPlayerServiceHandler> initAudioService() {
           ..focus();
       },
     );
+    Mpris().volume = Pref.desktopVolume.clamp(0.0, 1.0);
   }
   return AudioService.init(
     builder: VideoPlayerServiceHandler.new,
@@ -73,6 +74,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   Future<void>? Function(double volume)? onSetVolume;
   double? Function()? onGetSpeed;
 
+  // bind Mpris skip owner
   void bindSkip(
     Object owner,
     FutureOr<void> Function()? next,
@@ -83,6 +85,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     onSkipToPrevious = previous;
   }
 
+  // unbind Mpris skip owner
   void unbindSkip(Object owner) {
     if (_skipOwner != owner) return;
     _skipOwner = null;

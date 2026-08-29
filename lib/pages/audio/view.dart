@@ -9,6 +9,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/audio_video_progress_bar.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
+import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show platformClampingPhysics;
@@ -80,7 +81,7 @@ extension _ListOrderExt on ListOrder {
   String get title => const ['无序', '正序', '倒序', '随机'][value];
 }
 
-class _AudioPageState extends State<AudioPage> {
+class _AudioPageState extends State<AudioPage> with RouteAware, RouteAwareMixin {
   final _controller = Get.put(
     AudioController(),
     tag: Utils.generateRandomString(8),
@@ -90,6 +91,12 @@ class _AudioPageState extends State<AudioPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _controller.didChangeDependencies(context);
+  }
+
+  @override
+  void didPopNext() {
+    super.didPopNext();
+    _controller.rebindSkip();
   }
 
   @override

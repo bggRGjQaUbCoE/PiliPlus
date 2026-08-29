@@ -141,12 +141,15 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
     PlPlayerController.setPlayCallBack(playCallBack);
     videoDetailController = Get.put(VideoDetailController(), tag: heroTag);
-    videoPlayerServiceHandler?.onSkipToNext = () {
-      introController.nextPlay();
-    };
-    videoPlayerServiceHandler?.onSkipToPrevious = () {
-      introController.prevPlay();
-    };
+    videoPlayerServiceHandler?.bindSkip(
+      this,
+      () {
+        introController.nextPlay();
+      },
+      () {
+        introController.prevPlay();
+      },
+    );
 
     if (videoDetailController.removeSafeArea) {
       hideSystemBar();
@@ -357,8 +360,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
     if (!videoDetailController.plPlayerController.isCloseAll) {
       videoPlayerServiceHandler
-        ?..onSkipToNext = null
-        ..onSkipToPrevious = null
+        ?..unbindSkip(this)
         ..onVideoDetailDispose(heroTag);
       if (plPlayerController != null) {
         videoDetailController.makeHeartBeat();
@@ -420,6 +422,16 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     }
 
     PlPlayerController.setPlayCallBack(playCallBack);
+
+    videoPlayerServiceHandler?.bindSkip(
+      this,
+      () {
+        introController.nextPlay();
+      },
+      () {
+        introController.prevPlay();
+      },
+    );
 
     introController.startTimer();
 

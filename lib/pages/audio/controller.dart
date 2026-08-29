@@ -172,8 +172,7 @@ class AudioController extends GetxController
       ?..onPlay = onPlay
       ..onPause = onPause
       ..onSeek = onSeek
-      ..onSkipToNext = playNext
-      ..onSkipToPrevious = playPrev
+      ..bindSkip(this, playNext, playPrev)
       ..onSetSpeed = (speed) async {
         setSpeed(speed);
       }
@@ -783,8 +782,7 @@ class AudioController extends GetxController
       ?..onPlay = null
       ..onPause = null
       ..onSeek = null
-      ..onSkipToNext = null
-      ..onSkipToPrevious = null
+      ..unbindSkip(this)
       ..onSetSpeed = null
       ..onSetVolume = null
       ..onGetSpeed = null

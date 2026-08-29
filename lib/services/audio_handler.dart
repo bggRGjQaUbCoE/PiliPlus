@@ -68,9 +68,27 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   Future<void>? Function(Duration position)? onSeek;
   FutureOr<void> Function()? onSkipToNext;
   FutureOr<void> Function()? onSkipToPrevious;
+  Object? _skipOwner;
   Future<void>? Function(double speed)? onSetSpeed;
   Future<void>? Function(double volume)? onSetVolume;
   double? Function()? onGetSpeed;
+
+  void bindSkip(
+    Object owner,
+    FutureOr<void> Function()? next,
+    FutureOr<void> Function()? previous,
+  ) {
+    _skipOwner = owner;
+    onSkipToNext = next;
+    onSkipToPrevious = previous;
+  }
+
+  void unbindSkip(Object owner) {
+    if (_skipOwner != owner) return;
+    _skipOwner = null;
+    onSkipToNext = null;
+    onSkipToPrevious = null;
+  }
 
   @override
   Future<void> play() {
@@ -399,6 +417,9 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     _stopped = false;
     mediaItem.add(null);
     _item.clear();
+    _skipOwner = null;
+    onSkipToNext = null;
+    onSkipToPrevious = null;
     /**
      * if (playbackState.processingState == AudioProcessingState.idle &&
             previousState?.processingState != AudioProcessingState.idle) {

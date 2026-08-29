@@ -133,6 +133,9 @@ class _FontSettingPageState extends State<FontSettingPage> {
               iconSize: 22,
               tooltip: '移除',
               onPressed: () {
+                if (_selectedFont == font) {
+                  _appFont = (fontFamily: null, isCustom: false);
+                }
                 _customFonts.remove(font);
                 setState(() {});
               },

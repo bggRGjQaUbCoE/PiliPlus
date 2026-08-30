@@ -181,14 +181,8 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     final snapped = steps.reduce(
       (a, b) => (speed - a).abs() <= (speed - b).abs() ? a : b, // 自动吸附
     );
-    if (Platform.isLinux) {
-      await (onSetSpeed?.call(snapped) ??
-          PlPlayerController.instance?.setPlaybackSpeed(snapped));
-    } else {
-      final instance = PlPlayerController.instance;
-      if (instance == null) return;
-      await instance.setPlaybackSpeed(snapped);
-    }
+    await (onSetSpeed?.call(snapped) ??
+        PlPlayerController.instance?.setPlaybackSpeed(snapped));
     playbackState.add(playbackState.value.copyWith(speed: snapped));
   }
 

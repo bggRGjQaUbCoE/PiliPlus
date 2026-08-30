@@ -639,7 +639,7 @@ class Renderer {
   }
 
   String _unknownMacro(String name, List<List<TexNode>> args) {
-    warnings.add('未知宏：\\$name（已保留原文）');
+    warnings.add('未知宏：\\$name');
     if (args.isEmpty) {
       return name.isEmpty ? '' : '\\$name ';
     }

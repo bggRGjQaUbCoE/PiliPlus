@@ -28,7 +28,7 @@ abstract final class FontUtils {
   static AppFont _appFont = _initAppFont();
   static AppFont get appFont => _appFont;
   static set appFont(AppFont value) {
-    assert(isCustom == _isCutsomFont(fontFamily));
+    assert(value.isCustom == _isCutsomFont(value.fontFamily));
     _appFont = value;
   }
 

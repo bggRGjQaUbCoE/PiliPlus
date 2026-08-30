@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
+import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/grpc/audio.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart'
     show
@@ -292,10 +293,22 @@ class AudioController extends GetxController
           return;
         }
         position.value = 0;
-        final audio = audios.findClosestTarget(
-          (e) => e.id <= cacheAudioQa,
-          (a, b) => a.id > b.id ? a : b,
-        );
+        final int? autoTargetId =
+            cacheAudioQa == AudioQuality.autoAdvanced.code
+                ? AudioQuality.selectAudioQuality(
+                    AudioQuality.autoAdvanced.code,
+                    audios.map((e) => e.id).toList(),
+                  )
+                : null;
+        final audio = autoTargetId != null
+            ? audios.firstWhere(
+                (e) => e.id == autoTargetId,
+                orElse: () => audios.first,
+              )
+            : audios.findClosestTarget(
+                (e) => e.id <= cacheAudioQa,
+                (a, b) => a.id > b.id ? a : b,
+              );
         _onOpenMedia(VideoUtils.getCdnUrl(audio.playUrls));
       } else if (playInfo.hasPlayUrl()) {
         final playUrl = playInfo.playUrl;

@@ -953,14 +953,10 @@ class VideoDetailController extends GetxController
       final audioList = data.dash?.audio;
       if (audioList != null && audioList.isNotEmpty) {
         final List<int> audioIds = audioList.map((map) => map.id!).toList();
-        int closestNumber = audioIds.findClosestTarget(
-          (e) => e <= plPlayerController.cacheAudioQa,
-          (a, b) => a > b ? a : b,
+        final int closestNumber = AudioQuality.selectAudioQuality(
+          plPlayerController.cacheAudioQa,
+          audioIds,
         );
-        if (!audioIds.contains(plPlayerController.cacheAudioQa) &&
-            audioIds.any((e) => e > plPlayerController.cacheAudioQa)) {
-          closestNumber = AudioQuality.k192.code;
-        }
         firstAudio = audioList.firstWhere(
           (e) => e.id == closestNumber,
           orElse: () => audioList.first,

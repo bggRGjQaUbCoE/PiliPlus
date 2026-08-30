@@ -27,7 +27,11 @@ class _FontSettingPageState extends State<FontSettingPage> {
   AppFont _appFont = FontUtils.appFont;
   String? get _selectedFont => _appFont.fontFamily;
 
-  int _selectedWeight = Pref.appFontWeight;
+  // ignore: deprecated_member_use
+  static final _normalFontWeight = FontWeight.normal.index;
+
+  // ignore: deprecated_member_use
+  int _selectedWeight = Pref.appFontWeight.index;
   double _selectedScale = Pref.defaultTextScale;
 
   final Map<String, Uint8List> _customFonts = {};
@@ -151,7 +155,7 @@ class _FontSettingPageState extends State<FontSettingPage> {
           TextButton(
             onPressed: () => setState(() {
               _appFont = (fontFamily: null, isCustom: false);
-              _selectedWeight = -1;
+              _selectedWeight = _normalFontWeight;
               _selectedScale = 1;
             }),
             child: const Text('重置'),
@@ -183,9 +187,7 @@ class _FontSettingPageState extends State<FontSettingPage> {
                   '注：部分字体可能无法应用',
                   style: TextStyle(
                     fontFamily: _selectedFont ?? '',
-                    fontWeight: _selectedWeight == -1
-                        ? .normal
-                        : .values[_selectedWeight],
+                    fontWeight: .values[_selectedWeight],
                     fontSize: 14 * _selectedScale,
                   ),
                 ),
@@ -308,28 +310,20 @@ class _FontSettingPageState extends State<FontSettingPage> {
                         const Text('字重：', style: TextStyle(fontWeight: .bold)),
                         const SizedBox(
                           width: 40,
-                          child: Text.rich(
-                            TextSpan(
-                              children: [
-                                TextSpan(text: '默认/\n'),
-                                TextSpan(
-                                  text: 'w100',
-                                  style: TextStyle(fontWeight: .w100),
-                                ),
-                              ],
-                            ),
+                          child: Text(
+                            'w100',
+                            style: TextStyle(fontWeight: .w100),
                           ),
                         ),
                         Expanded(
                           child: Slider(
                             padding: .zero,
                             value: _selectedWeight.toDouble(),
-                            min: -1,
+                            min: 0,
                             max: 8,
-                            divisions: 9,
-                            label: _selectedWeight == -1
-                                ? '默认'
-                                : 'w${(_selectedWeight + 1) * 100}',
+                            divisions: 8,
+                            secondaryTrackValue: _normalFontWeight.toDouble(),
+                            label: 'w${(_selectedWeight + 1) * 100}',
                             onChanged: (value) {
                               setState(() => _selectedWeight = value.toInt());
                             },

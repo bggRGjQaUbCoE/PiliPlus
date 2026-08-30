@@ -18,9 +18,7 @@ Future<bool> showConfirmDialog({
               onPressed: Get.back,
               child: Text(
                 '取消',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.outline,
-                ),
+                style: TextStyle(color: ColorScheme.of(context).outline),
               ),
             ),
             TextButton(
@@ -36,32 +34,32 @@ Future<bool> showConfirmDialog({
       false;
 }
 
+Widget _statusItem({
+  required bool enabled,
+  required String text,
+  required VoidCallback onTap,
+}) {
+  return ListTile(
+    dense: true,
+    enabled: enabled,
+    title: Padding(
+      padding: const EdgeInsets.only(left: 10),
+      child: Text(
+        '标记为 $text',
+        style: const TextStyle(fontSize: 14),
+      ),
+    ),
+    trailing: !enabled ? const Icon(size: 22, Icons.check) : null,
+    onTap: onTap,
+  );
+}
+
 void showPgcFollowDialog({
   required BuildContext context,
   required String type,
   required int followStatus,
   required ValueChanged<int> onUpdateStatus,
 }) {
-  Widget statusItem({
-    required bool enabled,
-    required String text,
-    required VoidCallback onTap,
-  }) {
-    return ListTile(
-      dense: true,
-      enabled: enabled,
-      title: Padding(
-        padding: const EdgeInsets.only(left: 10),
-        child: Text(
-          '标记为 $text',
-          style: const TextStyle(fontSize: 14),
-        ),
-      ),
-      trailing: !enabled ? const Icon(size: 22, Icons.check) : null,
-      onTap: onTap,
-    );
-  }
-
   showDialog(
     context: context,
     builder: (context) => SimpleDialog(
@@ -73,7 +71,7 @@ void showPgcFollowDialog({
           (followStatus: 2, title: '在看'),
           (followStatus: 1, title: '想看'),
         ].map(
-          (item) => statusItem(
+          (item) => _statusItem(
             enabled: followStatus != item.followStatus,
             text: item.title,
             onTap: () {

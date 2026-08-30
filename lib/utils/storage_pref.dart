@@ -246,26 +246,6 @@ abstract final class Pref {
   );
 
   static List<VideoDecodeFormatType> get preferCodecs {
-    // TODO: remove next 2 version
-    if (_setting.get('defaultDecode') case String codecStr) {
-      String? codecStr2 = _setting.get('secondDecode');
-      _setting.deleteAll(const ['defaultDecode', 'secondDecode']);
-      final codecs = [
-        VideoDecodeFormatType.values.firstWhere(
-          (i) => i.codes.contains(codecStr),
-        ),
-        if (codecStr2 != null && codecStr2 != codecStr)
-          VideoDecodeFormatType.values.firstWhere(
-            (i) => i.codes.contains(codecStr2),
-          ),
-      ];
-      _setting.put(
-        SettingBoxKey.preferCodecs,
-        codecs.map((i) => i.name).toList(),
-      );
-      return codecs;
-    }
-
     final codecs = _setting.get(SettingBoxKey.preferCodecs);
     if (codecs is List) {
       return codecs.map((i) => VideoDecodeFormatType.values.byName(i)).toList();
@@ -592,8 +572,17 @@ abstract final class Pref {
     defaultValue: LiveQuality.superHD.code,
   );
 
-  static int get appFontWeight =>
-      _setting.get(SettingBoxKey.appFontWeight, defaultValue: -1);
+  static FontWeight get appFontWeight {
+    final int? val = _setting.get(SettingBoxKey.appFontWeight);
+    if (val == null) {
+      return .normal;
+    } else if (val == -1) {
+      // TODO: remove next 2 version
+      _setting.delete(SettingBoxKey.appFontWeight);
+      return .normal;
+    }
+    return .values[val];
+  }
 
   static bool get enableDragSubtitle =>
       _setting.get(SettingBoxKey.enableDragSubtitle, defaultValue: false);

@@ -32,15 +32,9 @@ abstract final class ThemeUtils {
     required bool isDynamic,
     bool isDark = false,
   }) {
-    final appFontWeight = Pref.appFontWeight.clamp(
-      -1,
-      FontWeight.values.length - 1,
-    );
-    final fontWeight = appFontWeight == -1
-        ? null
-        : FontWeight.values[appFontWeight];
+    final fontWeight = Pref.appFontWeight;
     final fontFamily = FontUtils.fontFamily;
-    final noCustomText = fontFamily == null && fontWeight == null;
+    final noCustomText = fontFamily == null && fontWeight == .normal;
     late final textStyle = TextStyle(fontWeight: fontWeight);
     ThemeData theme = ThemeData(
       useMaterial3: true,

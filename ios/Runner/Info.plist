@@ -139,5 +139,7 @@
 			<string>_upnp._tcp</string>
 			<string>_http._tcp</string>
 		</array>
+		<key>ITSAppUsesNonExemptEncryption</key>
+		<false/>
 	</dict>
 </plist>

@@ -1,11 +1,19 @@
 #include "my_application.h"
 
+#include <string.h>
+
 #include <flutter_linux/flutter_linux.h>
 #ifdef GDK_WINDOWING_X11
 #include <gdk/gdkx.h>
 #endif
 
 #include "flutter/generated_plugin_registrant.h"
+
+// In hide-to-tray mode (Dart sets this to false) the window close should be
+// delegated to window_manager so the process and tray icon stay alive.
+static gboolean g_quit_on_window_close = TRUE;
+
+static FlMethodChannel *g_window_channel = nullptr;
 
 struct _MyApplication {
   GtkApplication parent_instance;
@@ -22,6 +30,9 @@ static void first_frame_cb(MyApplication *self, FlView *view) {
 // Called when window is requested to be closed.
 static gboolean window_delete_event_cb(GtkWidget *widget, GdkEvent *event,
                                        gpointer data) {
+  if (!g_quit_on_window_close) {
+    return FALSE;
+  }
   // Get the application and quit it.
   GtkApplication *app = gtk_window_get_application(GTK_WINDOW(widget));
   if (app != nullptr) {
@@ -29,6 +40,26 @@ static gboolean window_delete_event_cb(GtkWidget *widget, GdkEvent *event,
   }
   // Return TRUE to prevent further processing of the delete event.
   return TRUE;
+}
+
+// Handles "set_quit_on_close" on the piliplus/window channel; Dart passes
+// false when the tray icon should keep the app alive on window close.
+static void my_application_method_call_cb(FlMethodChannel *channel,
+                                          FlMethodCall *method_call,
+                                          gpointer user_data) {
+  if (strcmp(fl_method_call_get_name(method_call), "set_quit_on_close") == 0) {
+    FlValue *args = fl_method_call_get_args(method_call);
+    gboolean value = FALSE;
+    if (fl_value_get_type(args) == FL_VALUE_TYPE_BOOL) {
+      value = fl_value_get_bool(args);
+    }
+    g_quit_on_window_close = value;
+    g_autoptr(FlMethodResponse) response =
+        FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_null()));
+    fl_method_call_respond(method_call, response, nullptr);
+  } else {
+    fl_method_call_respond_not_implemented(method_call, nullptr);
+  }
 }
 
 // Implements GApplication::activate.
@@ -101,6 +132,14 @@ static void my_application_activate(GApplication *application) {
                    NULL);
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
+
+  g_autoptr(FlStandardMethodCodec) codec = fl_standard_method_codec_new();
+  g_window_channel =
+      fl_method_channel_new(fl_engine_get_binary_messenger(
+                                fl_view_get_engine(view)),
+                            "piliplus/window", FL_METHOD_CODEC(codec));
+  fl_method_channel_set_method_call_handler(
+      g_window_channel, my_application_method_call_cb, self, nullptr);
 
   gtk_widget_grab_focus(GTK_WIDGET(view));
 }

@@ -63,6 +63,14 @@ class _MainAppState extends PopScopeState<MainApp>
       windowManager
         ..addListener(this)
         ..setPreventClose(true);
+      if (Platform.isLinux) {
+        // Keep the process (and tray) alive when closing hides to tray.
+        const windowChannel = MethodChannel('piliplus/window');
+        windowChannel.invokeMethod(
+          'set_quit_on_close',
+          !(_mainController.showTrayIcon && _mainController.minimizeOnExit),
+        );
+      }
       if (_mainController.showTrayIcon) {
         trayManager.addListener(this);
         _handleTray();

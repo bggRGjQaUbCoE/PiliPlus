@@ -71,12 +71,12 @@ class ReplyItemGrpc extends StatelessWidget {
     this.onReply,
     this.onDelete,
     this.upMid,
-    this.showDialogue,
+    this.dialogueCallback,
+    this.getReplyChain,
     this.getTag,
     this.onViewImage,
     this.onCheckReply,
     this.onToggleTop,
-    this.jumpToDialogue,
   });
   final ReplyInfo replyItem;
   final int replyLevel;
@@ -85,12 +85,12 @@ class ReplyItemGrpc extends StatelessWidget {
   final ValueChanged<ReplyInfo>? onReply;
   final Function(ReplyInfo replyItem, int? subIndex)? onDelete;
   final Int64? upMid;
-  final VoidCallback? showDialogue;
+  final VoidCallback? dialogueCallback;
+  final ValueGetter<Iterable<ReplyInfo>>? getReplyChain;
   final Function? getTag;
   final VoidCallback? onViewImage;
   final ValueChanged<ReplyInfo>? onCheckReply;
   final ValueChanged<ReplyInfo>? onToggleTop;
-  final VoidCallback? jumpToDialogue;
 
   static final _voteRegExp = RegExp(r"^\{vote:\d+?\}$");
   static final _timeRegExp = RegExp(r'^(?:\d+[:：])?\d+[:：]\d+$');
@@ -488,7 +488,7 @@ class ReplyItemGrpc extends StatelessWidget {
       dialogBtn = SizedBox(
         height: 32,
         child: TextButton(
-          onPressed: showDialogue,
+          onPressed: dialogueCallback,
           style: buttonStyle,
           child: Text('查看对话', style: textStyle),
         ),
@@ -497,7 +497,7 @@ class ReplyItemGrpc extends StatelessWidget {
       dialogBtn = SizedBox(
         height: 32,
         child: TextButton(
-          onPressed: jumpToDialogue,
+          onPressed: dialogueCallback,
           style: buttonStyle,
           child: Text('跳转回复', style: textStyle),
         ),
@@ -1230,6 +1230,16 @@ class ReplyItemGrpc extends StatelessWidget {
             leading: const Icon(Icons.save_alt, size: 19),
             title: Text('保存评论', style: style),
           ),
+          if (getReplyChain != null && item.id != item.root)
+            ListTile(
+              onTap: () {
+                Get.back();
+                SavePanel.toSavePanel(upMid: upMid, item: getReplyChain!());
+              },
+              minLeadingWidth: 0,
+              leading: const Icon(Icons.save_alt, size: 19),
+              title: Text('保存评论链', style: style),
+            ),
           if (kDebugMode || item.mid == ownerMid)
             ListTile(
               onTap: () {

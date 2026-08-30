@@ -315,22 +315,24 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
       onReply: (replyItem) => controller.onReply(replyItem, index: index),
       onDelete: (item, subIndex) => controller.onRemove(index, item, null),
       upMid: controller.upMid,
-      showDialogue: () => MiniScaffold.of(context).showBottomSheet(
-        constraints: const BoxConstraints(),
-        (context) => VideoReplyReplyPanel(
-          oid: replyItem.oid.toInt(),
-          rpid: replyItem.root.toInt(),
-          dialog: replyItem.dialog.toInt(),
-          replyType: widget.replyType,
-          isVideoDetail: true,
-          isNested: widget.isNested,
-        ),
-      ),
-      jumpToDialogue: () {
-        if (!controller.setIndexById(replyItem.parent)) {
-          SmartDialog.showToast('评论可能已被删除');
-        }
-      },
+      dialogueCallback: isDialogue
+          ? () {
+              if (!controller.setIndexById(replyItem.parent)) {
+                SmartDialog.showToast('评论可能已被删除');
+              }
+            }
+          : () => MiniScaffold.of(context).showBottomSheet(
+              constraints: const BoxConstraints(),
+              (context) => VideoReplyReplyPanel(
+                oid: replyItem.oid.toInt(),
+                rpid: replyItem.root.toInt(),
+                dialog: replyItem.dialog.toInt(),
+                replyType: widget.replyType,
+                isVideoDetail: true,
+                isNested: widget.isNested,
+              ),
+            ),
+      getReplyChain: () => controller.getParentChain(index, firstFloor),
       onCheckReply: controller.onCheckReply,
     );
   }

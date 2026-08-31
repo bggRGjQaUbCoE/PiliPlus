@@ -353,10 +353,10 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       videoPlayerServiceHandler?.onVideoDetailDispose(heroTag);
       if (plPlayerController != null) {
         videoDetailController.makeHeartBeat();
-        plPlayerController!.dispose();
-      } else {
-        PlPlayerController.updatePlayCount();
       }
+      videoDetailController.plPlayerController.dispose(
+        owner: videoDetailController.playerOwner,
+      );
     }
     removeObserverMobile(this);
 

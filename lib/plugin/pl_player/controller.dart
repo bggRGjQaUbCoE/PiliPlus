@@ -28,6 +28,7 @@ import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
+import 'package:PiliPlus/plugin/pl_player/models/source_owner.dart';
 import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/services/service_locator.dart';
@@ -98,7 +99,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     durationInMilliseconds = value.inMilliseconds;
   }
 
-  int _playerCount = 0;
+  final PlayerSourceCoordinator _sourceCoordinator = PlayerSourceCoordinator();
 
   late double lastPlaybackSpeed = 1.0;
   final RxDouble _playbackSpeed = Pref.playSpeedDefault.obs;
@@ -560,11 +561,15 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   // 获取实例 传参
-  static PlPlayerController getInstance({bool isLive = false}) {
+  static PlPlayerController getInstance({
+    required Object owner,
+    bool isLive = false,
+  }) {
     // 如果实例尚未创建，则创建一个新实例
-    return (_instance ??= PlPlayerController._())
-      ..isLive = isLive
-      .._playerCount += 1;
+    final instance = _instance ??= PlPlayerController._();
+    instance._sourceCoordinator.register(owner);
+    instance.isLive = isLive;
+    return instance;
   }
 
   bool _processing = false;
@@ -576,6 +581,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   // 初始化资源
   Future<void> setDataSource(
     DataSource dataSource, {
+    required Object owner,
     bool isLive = false,
     bool autoplay = true,
     // 初始化播放位置
@@ -598,8 +604,9 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     VoidCallback? onInit,
     Volume? volume,
     bool autoFullScreenFlag = false,
-  }) async {
+  }) => _sourceCoordinator.run(owner, (isCurrent) async {
     try {
+      if (!isCurrent()) return;
       _processing = true;
       this.isLive = isLive;
       _videoType = videoType ?? VideoType.ugc;
@@ -629,17 +636,13 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
         await pause(notify: false);
       }
 
-      if (_playerCount == 0) {
+      if (!isCurrent()) {
         return;
       }
       // 配置Player 音轨、字幕等等
-      await _createVideoController(dataSource, seekTo, volume);
+      await _createVideoController(dataSource, seekTo, volume, isCurrent);
 
-      if (_playerCount == 0) {
-        _removeListeners();
-        _videoPlayerController?.dispose();
-        _videoPlayerController = null;
-        _videoController = null;
+      if (!isCurrent() || _videoPlayerController == null) {
         return;
       }
 
@@ -652,10 +655,13 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
         triggerFullScreen(status: true);
       }
 
-      await _initializePlayer();
+      await _initializePlayer(isCurrent);
+      if (!isCurrent()) return;
       onInit?.call();
     } catch (err, stackTrace) {
-      dataStatus.value = DataStatus.error;
+      if (isCurrent()) {
+        dataStatus.value = DataStatus.error;
+      }
       if (kDebugMode) {
         debugPrint(stackTrace.toString());
         debugPrint('plPlayer err:  $err');
@@ -663,7 +669,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     } finally {
       _processing = false;
     }
-  }
+  });
 
   String? shadersDirPath;
   Future<String> get copyShadersToExternalDirectory async {
@@ -765,6 +771,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     DataSource dataSource,
     Duration? seekTo,
     Volume? volume,
+    bool Function() isCurrent,
   ) async {
     isBuffering.value = false;
     _heartDuration = 0;
@@ -774,7 +781,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
     if (player == null) {
       player = await _initPlayer();
-      if (_playerCount == 0) {
+      if (!isCurrent()) {
         _removeListeners();
         player.dispose();
         player = null;
@@ -838,8 +845,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   // 开始播放
-  Future<void> _initializePlayer() async {
-    if (_instance == null) return;
+  Future<void> _initializePlayer(bool Function() isCurrent) async {
+    if (!isCurrent() || _instance == null) return;
     // 设置倍速
     if (isLive) {
       await setPlaybackSpeed(1.0);
@@ -848,6 +855,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
         await setPlaybackSpeed(_playbackSpeed.value);
       }
     }
+    if (!isCurrent()) return;
     _initVideoFit();
     // if (_looping) {
     //   await setLooping(_looping);
@@ -1034,7 +1042,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   /// 跳转至指定位置
   Future<void> seekTo(Duration position, {bool isSeek = true}) async {
-    if (_playerCount == 0) {
+    if (!_sourceCoordinator.hasOwners) {
       return;
     }
     if (position < Duration.zero) {
@@ -1101,7 +1109,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   /// 播放视频
   Future<void> play({bool repeat = false, bool hideControls = true}) async {
-    if (_playerCount == 0) return;
+    if (!_sourceCoordinator.hasOwners) return;
     // 播放时自动隐藏控制条
     controls = !hideControls;
     // repeat为true，将从头播放
@@ -1408,7 +1416,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   void addPositionListener(ValueChanged<Duration> listener) {
-    if (_playerCount == 0) return;
+    if (!_sourceCoordinator.hasOwners) return;
     _positionListeners.add(listener);
   }
 
@@ -1416,7 +1424,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       _positionListeners.remove(listener);
 
   void addStatusLister(ValueChanged<PlayerStatus> listener) {
-    if (_playerCount == 0) return;
+    if (!_sourceCoordinator.hasOwners) return;
     _statusListeners.add(listener);
   }
 
@@ -1508,22 +1516,28 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   void onCloseAll() {
     _isCloseAll = true;
     if (PlatformUtils.isDesktop) exitDesktopFullScreen();
-    dispose();
+    _sourceCoordinator.clear();
+    _disposeAll();
     Get.until((route) => route.isFirst);
   }
 
-  void dispose() {
-    // 每次减1，最后销毁
-    resetScreenRotation();
-    cancelLongPressTimer();
-    _cancelSubForSeek();
-    if (!_isCloseAll && _playerCount > 1) {
-      _playerCount -= 1;
+  void dispose({required Object owner}) {
+    final wasActive = _sourceCoordinator.isActive(owner);
+    if (!_sourceCoordinator.release(owner)) return;
+    if (wasActive) {
+      setPlayCallBack(null);
+    }
+    if (_sourceCoordinator.hasOwners) {
       _heartDuration = 0;
       return;
     }
+    _disposeAll();
+  }
 
-    _playerCount = 0;
+  void _disposeAll() {
+    resetScreenRotation();
+    cancelLongPressTimer();
+    _cancelSubForSeek();
     if (removeSafeArea) {
       showSystemBar();
     }
@@ -1571,14 +1585,6 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     _videoController = null;
     _instance = null;
     videoPlayerServiceHandler?.clear();
-  }
-
-  static void updatePlayCount() {
-    if (_instance?._playerCount == 1) {
-      _instance?.dispose();
-    } else {
-      _instance?._playerCount -= 1;
-    }
   }
 
   void setContinuePlayInBackground() {
@@ -1687,7 +1693,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
       setPlayCallBack(null);
 
-      if (Platform.isAndroid && _playerCount <= 1) {
+      if (Platform.isAndroid && _sourceCoordinator.ownerCount <= 1) {
         _disableAutoEnterPip();
         if (!setSystemBrightness) {
           ScreenBrightnessPlatform.instance.resetApplicationScreenBrightness();

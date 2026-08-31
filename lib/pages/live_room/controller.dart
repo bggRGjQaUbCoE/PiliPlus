@@ -53,7 +53,9 @@ class LiveRoomController extends GetxController {
   int roomId = Get.arguments;
   int? ruid;
   DanmakuController<DanmakuExtra>? danmakuController;
-  final plPlayerController = PlPlayerController.getInstance(
+  final Object playerOwner = Object();
+  late final plPlayerController = PlPlayerController.getInstance(
+    owner: playerOwner,
     isLive: true,
   );
 
@@ -200,6 +202,7 @@ class LiveRoomController extends GetxController {
       autoplay: autoplay,
       isVertical: isPortrait.value,
       autoFullScreenFlag: autoFullScreenFlag,
+      owner: playerOwner,
     );
   }
 

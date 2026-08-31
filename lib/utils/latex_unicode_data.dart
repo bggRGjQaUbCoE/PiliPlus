@@ -377,4 +377,8 @@ abstract final class LatexData {
 
   /// Literal chars produced by backslash escapes (`{`, `%` ...).
   static const String literalChars = '{}&%#_\$[]~ ';
+
+  /// FIGURE SPACE: half-width monospace that survives bilibili's whitespace
+  /// flattening; pads matrix cells inside the box frame.
+  static const String padChar = '\u2007';
 }

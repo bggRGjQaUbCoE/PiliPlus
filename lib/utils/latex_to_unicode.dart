@@ -717,12 +717,12 @@ class Renderer {
     if (!LatexData.matrixEnvs.contains(name)) {
       return render(items);
     }
-    final List<String> rows = [];
+    final List<List<String>> rows = [];
     var cells = <String>[];
     var cell = StringBuffer();
     void flushRow() {
       if (cell.isNotEmpty) cells.add(cell.toString());
-      rows.add(cells.join(' '));
+      rows.add(List.of(cells));
       cells = [];
       cell = StringBuffer();
     }
@@ -738,7 +738,13 @@ class Renderer {
       }
     }
     flushRow();
-    return '[ ${rows.where((r) => r.trim().isNotEmpty).join(' ; ')} ]';
+    final kept = rows.where((r) => r.any((c) => c.trim().isNotEmpty)).toList();
+    if (kept.isEmpty) return '';
+    if (kept.length == 1) {
+      // A single row keeps the compact inline form (font-agnostic).
+      return '[ ${kept.first.join(' ')} ]';
+    }
+    return _frameMatrix(kept);
   }
 
   String _flat(TexNode node) {
@@ -748,6 +754,40 @@ class Renderer {
       _ => render([node]),
     };
   }
+}
+
+/// Box frame around a multi-row matrix, cells centered on [LatexData.padChar]
+/// (figure space: half-width monospace, flattening-proof). Column width is
+/// measured on the rendered cells, so nested formulas align too.
+String _frameMatrix(List<List<String>> sourceRows, {int pad = 2}) {
+  final rows = sourceRows.map((r) => r.map((c) => c.trim()).toList()).toList();
+  final cols = rows.map((r) => r.length).reduce((a, b) => a > b ? a : b);
+  final widths = List<int>.filled(cols, 0);
+  for (final r in rows) {
+    for (var i = 0; i < r.length; i++) {
+      if (r[i].length > widths[i]) widths[i] = r[i].length;
+    }
+  }
+  String center(String s, int w) {
+    final rest = w - s.length;
+    final l = rest ~/ 2;
+    return LatexData.padChar * l + s + LatexData.padChar * (rest - l);
+  }
+
+  List<String> content(List<String> row) => [
+    for (var i = 0; i < cols; i++)
+      i < row.length
+          ? center(row[i], widths[i] + 2 * pad)
+          : LatexData.padChar * (widths[i] + 2 * pad),
+  ];
+  final lines = rows.map((r) => content(r).join(LatexData.padChar)).toList();
+  final maxw = lines.map((s) => s.length).reduce((a, b) => a > b ? a : b);
+  final buffer = StringBuffer('┌${LatexData.padChar * maxw}┐');
+  for (final line in lines) {
+    buffer.write('\n│$line│');
+  }
+  buffer.write('\n└${LatexData.padChar * maxw}┘');
+  return buffer.toString();
 }
 
 const Map<String, TokenKind> _punctKinds = {

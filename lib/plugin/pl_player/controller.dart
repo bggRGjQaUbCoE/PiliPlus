@@ -68,7 +68,7 @@ import 'package:window_manager/window_manager.dart';
 
 typedef PlayCallback = Future<void>? Function();
 
-class PlPlayerController with BlockConfigMixin {
+class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   Player? _videoPlayerController;
   VideoController? _videoController;
 
@@ -574,12 +574,6 @@ class PlPlayerController with BlockConfigMixin {
   // offline
   bool get isFileSource => dataSource is FileSource;
 
-  late final _audioNormalization = Pref.audioNormalization;
-  late final enableAudioNormalization =
-      Platform.isAndroid && _audioNormalization != '0';
-  late final String _audioNormalizationParam =
-      AudioNormalization.getParamFromConfig(_audioNormalization);
-
   // 初始化资源
   Future<void> setDataSource(
     DataSource dataSource, {
@@ -824,15 +818,7 @@ class PlPlayerController with BlockConfigMixin {
             // '!delay_open,media_type=audio;'
             '%${isFileSource ? utf8.encode(audio).length : audio.length}%$audio');
       }
-      if (enableAudioNormalization) {
-        final String audioNormalization = AudioNormalization.parse(
-          volume,
-          _audioNormalizationParam,
-        );
-        if (audioNormalization.isNotEmpty) {
-          extras['lavfi-complex'] = '"[aid1] $audioNormalization [ao]"';
-        }
-      }
+      audioFilterExtras(volume, map: extras);
     }
 
     await player.open(

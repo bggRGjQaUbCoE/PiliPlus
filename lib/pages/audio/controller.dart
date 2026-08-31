@@ -59,7 +59,8 @@ class AudioController extends GetxController
         TripleMixin,
         FavMixin,
         BlockConfigMixin,
-        BlockMixin {
+        BlockMixin,
+        AudioNormalizationMixin {
   late Int64 id;
   late Int64 oid;
   late List<Int64> subId;
@@ -331,24 +332,6 @@ class AudioController extends GetxController
     }
   }
 
-  late final _audioNormalization = Pref.audioNormalization;
-  late final enableAudioNormalization =
-      Platform.isAndroid && _audioNormalization != '0';
-  late final String _audioNormalizationParam =
-      AudioNormalization.getParamFromConfig(_audioNormalization);
-
-  Map<String, String>? _audioFilterExtras(http_model.Volume? volume) {
-    if (!enableAudioNormalization) return null;
-    final String audioNormalization = AudioNormalization.parse(
-      volume,
-      _audioNormalizationParam,
-    );
-    if (audioNormalization.isEmpty) {
-      return null;
-    }
-    return {'lavfi-complex': '"[aid1] $audioNormalization [ao]"'};
-  }
-
   Future<void> _onOpenMedia(
     String url, {
     String ua = Constants.userAgentApp,
@@ -356,7 +339,7 @@ class AudioController extends GetxController
     http_model.Volume? volume,
   }) async {
     await _initPlayerIfNeeded();
-    final extras = _audioFilterExtras(volume);
+    final extras = audioFilterExtras(volume);
     player
       ?..setMediaHeader(
         userAgent: ua,

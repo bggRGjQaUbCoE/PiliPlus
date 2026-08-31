@@ -14,7 +14,7 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode, visibleForTesting;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -45,7 +45,7 @@ class AccountManager extends Interceptor {
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final path = options.path;
 
-    late final Account account = options.extra['account'] ?? _findAccount(path);
+    final account = bindRequestAccount(options, _findAccount(path));
 
     if (account is NoAccount || _skipCookie(path)) return handler.next(options);
 
@@ -187,9 +187,10 @@ class AccountManager extends Interceptor {
   }
 
   Future<void> _saveCookies(Response response) async {
-    final Account account =
-        response.requestOptions.extra['account'] ??
-        _findAccount(response.requestOptions.path);
+    final account = boundRequestAccount(response.requestOptions);
+    if (account == null || account is NoAccount) {
+      return;
+    }
     final setCookies = response.headers[HttpHeaders.setCookieHeader];
     if (setCookies == null || setCookies.isEmpty) {
       return;
@@ -235,6 +236,25 @@ class AccountManager extends Interceptor {
             orElse: () => AccountType.main,
           ),
         );
+
+  @visibleForTesting
+  static Account bindRequestAccount(
+    RequestOptions options,
+    Account resolvedAccount,
+  ) {
+    final explicitAccount = options.extra['account'];
+    if (explicitAccount is Account) {
+      return explicitAccount;
+    }
+    options.extra['account'] = resolvedAccount;
+    return resolvedAccount;
+  }
+
+  @visibleForTesting
+  static Account? boundRequestAccount(RequestOptions options) {
+    final account = options.extra['account'];
+    return account is Account ? account : null;
+  }
 
   static Future<String> dioError(DioException error) async {
     switch (error.type) {

@@ -18,7 +18,7 @@ import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/audio_normalization.dart';
-import 'package:PiliPlus/models/video/play/url.dart' show Volume;
+import 'package:PiliPlus/models/video/play/url.dart' as http_model show Volume;
 import 'package:PiliPlus/pages/common/common_intro_controller.dart'
     show FavMixin;
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
@@ -293,17 +293,19 @@ class AudioController extends GetxController
   void _onPlay(PlayURLResp data) {
     final PlayInfo? playInfo = data.playerInfo.values.firstOrNull;
     if (playInfo != null) {
-      final Volume? volume = playInfo.hasVolume()
-          ? Volume(
-              measuredI: playInfo.volume.measuredI,
-              measuredLra: playInfo.volume.measuredLra,
-              measuredTp: playInfo.volume.measuredTp,
-              measuredThreshold: playInfo.volume.measuredThreshold,
-              targetOffset: playInfo.volume.targetOffset,
-              targetI: playInfo.volume.targetI,
-              targetTp: playInfo.volume.targetTp,
-            )
-          : null;
+      http_model.Volume? volume;
+      if (playInfo.hasVolume()) {
+        final volumeInfo = playInfo.volume;
+        volume = http_model.Volume(
+          measuredI: volumeInfo.measuredI,
+          measuredLra: volumeInfo.measuredLra,
+          measuredTp: volumeInfo.measuredTp,
+          measuredThreshold: volumeInfo.measuredThreshold,
+          targetOffset: volumeInfo.targetOffset,
+          targetI: volumeInfo.targetI,
+          targetTp: volumeInfo.targetTp,
+        );
+      }
       if (playInfo.hasPlayDash()) {
         final playDash = playInfo.playDash;
         final audios = playDash.audio;
@@ -329,22 +331,20 @@ class AudioController extends GetxController
     }
   }
 
-  Map<String, String>? _audioFilterExtras(Volume? volume) {
-    if (!Platform.isAndroid) {
-      return null;
-    }
-    final config = Pref.audioNormalization;
-    if (config == '0') {
-      return null;
-    }
-    final param = AudioNormalization.getParamFromConfig(config);
-    final effectiveVolume = volume;
+  late final _audioNormalization = Pref.audioNormalization;
+  late final enableAudioNormalization =
+      Platform.isAndroid && _audioNormalization != '0';
+  late final String _audioNormalizationParam =
+      AudioNormalization.getParamFromConfig(_audioNormalization);
+
+  Map<String, String>? _audioFilterExtras(http_model.Volume? volume) {
+    if (!enableAudioNormalization) return null;
     final String audioNormalization;
-    if (effectiveVolume != null && effectiveVolume.isNotEmpty) {
-      audioNormalization = param.replaceFirstMapped(
+    if (volume != null && volume.isNotEmpty) {
+      audioNormalization = _audioNormalizationParam.replaceFirstMapped(
         PlPlayerController.loudnormRegExp,
         (i) =>
-            'loudnorm=${effectiveVolume.format(
+            'loudnorm=${volume.format(
               Map.fromEntries(
                 i.group(1)!.split(':').map((item) {
                   final parts = item.split('=');
@@ -354,7 +354,7 @@ class AudioController extends GetxController
             )}',
       );
     } else {
-      audioNormalization = param.replaceFirst(
+      audioNormalization = _audioNormalizationParam.replaceFirst(
         PlPlayerController.loudnormRegExp,
         AudioNormalization.getParamFromConfig(Pref.fallbackNormalization),
       );
@@ -369,7 +369,7 @@ class AudioController extends GetxController
     String url, {
     String ua = Constants.userAgentApp,
     String? referer,
-    Volume? volume,
+    http_model.Volume? volume,
   }) async {
     await _initPlayerIfNeeded();
     final extras = _audioFilterExtras(volume);

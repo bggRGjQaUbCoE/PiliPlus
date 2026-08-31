@@ -81,13 +81,15 @@ class LoginAccount extends Account {
 
   @override
   Future<void> delete() {
-    assert(_hasDelete = true);
+    _hasDelete = true;
     return Future.wait([cookieJar.deleteAll(), _box.delete(_midStr)]);
   }
 
   @override
   Future<void> onChange() {
-    assert(!_hasDelete);
+    if (_hasDelete) {
+      return Future<void>.value();
+    }
     return _box.put(_midStr, this);
   }
 

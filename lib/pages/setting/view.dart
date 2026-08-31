@@ -261,9 +261,9 @@ class _SettingPageState extends State<SettingPage> {
               ),
             ),
             TextButton(
-              onPressed: () {
-                _removeAccounts(result);
-                Get.back();
+              onPressed: () async {
+                await _removeAccounts(result);
+                if (context.mounted) Get.back();
               },
               child: Text(
                 '仅登出',
@@ -279,7 +279,8 @@ class _SettingPageState extends State<SettingPage> {
                 if (logoutAccounts.isEmpty) {
                   SmartDialog.showToast('所选账号均退出登录失败');
                 } else {
-                  _removeAccounts(logoutAccounts);
+                  await _removeAccounts(logoutAccounts);
+                  if (!context.mounted) return;
                   Get.back();
                   if (logoutAccounts.length != result.length) {
                     result.removeWhere(logoutAccounts.contains);

@@ -87,13 +87,51 @@ abstract final class GStorage {
   static Future<void> importAllSettings(String data) =>
       importAllJsonSettings(jsonDecode(data));
 
-  static Future<List<void>> importAllJsonSettings(
+  static Future<void> importAllJsonSettings(
     Map<String, dynamic> map,
+  ) async {
+    final importedSetting = _settingsSection(map, setting.name);
+    final importedVideo = _settingsSection(map, video.name);
+    final previousSetting = Map<dynamic, dynamic>.of(setting.toMap());
+    final previousVideo = Map<dynamic, dynamic>.of(video.toMap());
+
+    try {
+      await _replaceBox(setting, importedSetting);
+      await _replaceBox(video, importedVideo);
+    } catch (error, stackTrace) {
+      try {
+        await _replaceBox(setting, previousSetting);
+        await _replaceBox(video, previousVideo);
+      } catch (rollbackError) {
+        Error.throwWithStackTrace(
+          StateError(
+            'Failed to import settings ($error) and restore the previous '
+            'snapshot ($rollbackError)',
+          ),
+          stackTrace,
+        );
+      }
+      Error.throwWithStackTrace(error, stackTrace);
+    }
+  }
+
+  static Map<dynamic, dynamic> _settingsSection(
+    Map<String, dynamic> data,
+    String name,
   ) {
-    return Future.wait([
-      setting.clear().then((_) => setting.putAll(map[setting.name])),
-      video.clear().then((_) => video.putAll(map[video.name])),
-    ]);
+    final section = data[name];
+    if (section is! Map) {
+      throw FormatException('Invalid or missing settings section: $name');
+    }
+    return Map<dynamic, dynamic>.of(section);
+  }
+
+  static Future<void> _replaceBox(
+    Box<dynamic> box,
+    Map<dynamic, dynamic> values,
+  ) async {
+    await box.clear();
+    await box.putAll(values);
   }
 
   static void regAdapter() {

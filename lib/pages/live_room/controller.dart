@@ -20,6 +20,7 @@ import 'package:PiliPlus/models_new/live/live_room_play_info/stream.dart';
 import 'package:PiliPlus/models_new/live/live_superchat/item.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/pages/danmaku/danmaku_model.dart';
+import 'package:PiliPlus/pages/live_room/live_message_buffer.dart';
 import 'package:PiliPlus/pages/live_room/send_danmaku/view.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
@@ -47,6 +48,9 @@ import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 class LiveRoomController extends GetxController {
+  static const maxRetainedMessages = 2000;
+  static const _messageTrimCount = 256;
+
   LiveRoomController(this.heroTag);
   final String heroTag;
 
@@ -102,9 +106,14 @@ class LiveRoomController extends GetxController {
   // dm
   LiveDmInfoData? dmInfo;
   List<RichTextItem>? savedDanmaku;
-  int builtLength = 0;
-  final messages = <dynamic>[].obs;
-  bool get shouldRefresh => builtLength != messages.length;
+  final messages = LiveMessageList<dynamic>();
+  late final LiveMessageBuffer<dynamic> _messageBuffer = LiveMessageBuffer(
+    messages.nonReactiveValues,
+    maxLength: maxRetainedMessages,
+    trimCount: _messageTrimCount,
+  );
+  bool get shouldRefresh => _messageBuffer.shouldRefresh;
+  int get messageCountForBuild => _messageBuffer.markBuilt();
   late final fsSC = Rxn<SuperChatItem>();
   late final RxList<SuperChatItem> superChatMsg = <SuperChatItem>[].obs;
   final disableAutoScroll = false.obs;
@@ -394,7 +403,8 @@ class LiveRoomController extends GetxController {
     final res = await LiveHttp.liveRoomDmPrefetch(roomId: roomId);
     if (res case Success(:final response)) {
       if (response != null && response.isNotEmpty) {
-        messages.addAll(response);
+        _messageBuffer.addAll(response);
+        messages.refresh();
         scrollToBottom();
       }
     } else {
@@ -465,7 +475,8 @@ class LiveRoomController extends GetxController {
     cancelLiveTimer();
     savedDanmaku?.clear();
     savedDanmaku = null;
-    messages.clear();
+    _messageBuffer.clear();
+    messages.refresh();
     if (showSuperChat) {
       superChatMsg.clear();
       fsSC.value = null;
@@ -512,13 +523,14 @@ class LiveRoomController extends GetxController {
         danmakuController?.addDanmaku(item);
       }
       if (autoScroll && !disableAutoScroll.value) {
-        messages.add(msg);
+        _messageBuffer.add(msg);
+        messages.refresh();
         scrollToBottom();
         return;
       }
     }
 
-    messages.addOnly(msg);
+    _messageBuffer.add(msg);
   }
 
   @pragma('vm:notify-debugger-on-exception')

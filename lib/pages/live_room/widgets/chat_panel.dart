@@ -54,8 +54,7 @@ class LiveRoomChatPanel extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             controller: liveRoomController.scrollController,
             separatorBuilder: (_, _) => const SizedBox(height: 8),
-            itemCount: liveRoomController.builtLength =
-                liveRoomController.messages.length,
+            itemCount: liveRoomController.messageCountForBuild,
             physics: platformClampingPhysics,
             itemBuilder: (_, index) {
               final item = liveRoomController.messages[index];

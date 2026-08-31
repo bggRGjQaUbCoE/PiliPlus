@@ -1,3 +1,6 @@
+import 'package:PiliPlus/models/video/play/url.dart' show Volume;
+import 'package:PiliPlus/utils/storage_pref.dart';
+
 enum AudioNormalization {
   disable('禁用'),
   // ref https://github.com/KRTirtho/spotube/commit/da10ab2e291d4ba4d3082b9a6ae535639fb8f1b7
@@ -23,4 +26,28 @@ enum AudioNormalization {
     '2' => loudnorm.param,
     _ => config,
   };
+
+  static final _loudnormRegExp = RegExp('loudnorm=([^,]+)');
+
+  static String parse(Volume? volume, String param) {
+    if (volume != null && volume.isNotEmpty) {
+      return param.replaceFirstMapped(
+        _loudnormRegExp,
+        (i) =>
+            'loudnorm=${volume.format(
+              Map.fromEntries(
+                i.group(1)!.split(':').map((item) {
+                  final parts = item.split('=');
+                  return MapEntry(parts[0].toLowerCase(), num.parse(parts[1]));
+                }),
+              ),
+            )}',
+      );
+    } else {
+      return param.replaceFirst(
+        _loudnormRegExp,
+        AudioNormalization.getParamFromConfig(Pref.fallbackNormalization),
+      );
+    }
+  }
 }

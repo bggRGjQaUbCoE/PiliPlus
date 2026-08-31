@@ -339,26 +339,10 @@ class AudioController extends GetxController
 
   Map<String, String>? _audioFilterExtras(http_model.Volume? volume) {
     if (!enableAudioNormalization) return null;
-    final String audioNormalization;
-    if (volume != null && volume.isNotEmpty) {
-      audioNormalization = _audioNormalizationParam.replaceFirstMapped(
-        PlPlayerController.loudnormRegExp,
-        (i) =>
-            'loudnorm=${volume.format(
-              Map.fromEntries(
-                i.group(1)!.split(':').map((item) {
-                  final parts = item.split('=');
-                  return MapEntry(parts[0].toLowerCase(), num.parse(parts[1]));
-                }),
-              ),
-            )}',
-      );
-    } else {
-      audioNormalization = _audioNormalizationParam.replaceFirst(
-        PlPlayerController.loudnormRegExp,
-        AudioNormalization.getParamFromConfig(Pref.fallbackNormalization),
-      );
-    }
+    final String audioNormalization = AudioNormalization.parse(
+      volume,
+      _audioNormalizationParam,
+    );
     if (audioNormalization.isEmpty) {
       return null;
     }

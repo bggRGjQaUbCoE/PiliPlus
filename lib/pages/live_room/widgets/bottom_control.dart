@@ -80,6 +80,7 @@ class _BottomControlState extends State<BottomControl> with HeaderMixin {
                     parameters: {
                       'roomId': liveRoomCtr.roomId.toString(),
                     },
+                    arguments: liveRoomCtr,
                   );
                 } else {
                   SmartDialog.showToast('账号未登录');

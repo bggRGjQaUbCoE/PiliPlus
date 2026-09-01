@@ -75,14 +75,28 @@ restore_pub_packages() {
         if [[ -n "$dir" ]]; then
             rm -rf "$dir"
             echo "Removed cached $name: $dir"
+            restored_any_pub=1
         fi
     done < <(jq -r '.pub_packages? // [] | .[]' "$state_file" 2>/dev/null) || true
 }
 
 platform=$(jq -r '.platform // ""' "$state_file")
 
+restored_any_pub=0
 if [[ -n "$platform" ]]; then
     restore_pub_packages "$platform"
+fi
+
+# Deleting the patched pub packages above left their cache dirs (and the
+# package_config entries pointing at them) dangling, so re-resolve dependencies
+# to pull down pristine copies again. This keeps the project analysable/launchable
+# right after restore instead of surfacing ~27K resolution errors.
+if [[ "$restored_any_pub" == "1" ]]; then
+    if ( cd "$PROJECT_ROOT" && flutter pub get >/dev/null 2>&1 ); then
+        echo "Restored pristine pub packages via flutter pub get"
+    else
+        echo "Warning: flutter pub get failed after restoring patches" >&2
+    fi
 fi
 
 rm -f "$state_file" "$PROJECT_ROOT/pili_release.json"

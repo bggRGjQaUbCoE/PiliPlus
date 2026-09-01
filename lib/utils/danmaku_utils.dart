@@ -15,4 +15,8 @@ abstract final class DmUtils {
   };
 
   static const int segLength = 60 * 6 * 1000;
+
+  static int calcSegment(int progress) {
+    return progress ~/ segLength;
+  }
 }

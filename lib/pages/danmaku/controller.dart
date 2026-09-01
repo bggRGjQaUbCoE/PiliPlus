@@ -35,10 +35,6 @@ class PlDanmakuController {
     _requestedSeg.clear();
   }
 
-  static int calcSegment(int progress) {
-    return progress ~/ DmUtils.segLength;
-  }
-
   Future<void> queryDanmaku(int segmentIndex) async {
     if (_isFileSource) {
       return;
@@ -98,7 +94,7 @@ class PlDanmakuController {
     if (_isFileSource) {
       initFileDmIfNeeded();
     } else {
-      final int segmentIndex = calcSegment(progress);
+      final int segmentIndex = DmUtils.calcSegment(progress);
       if (!_requestedSeg.contains(segmentIndex)) {
         queryDanmaku(segmentIndex);
         return null;

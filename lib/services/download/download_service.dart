@@ -331,6 +331,7 @@ class DownloadService extends GetxService {
           for (final response in responses) {
             danmaku.elems.addAll(response.data.elems);
           }
+          responses.clear();
         }
         await danmakuFile.writeAsBytes(danmaku.writeToBuffer());
 

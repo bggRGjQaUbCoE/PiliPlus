@@ -13,10 +13,9 @@ import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
-import 'package:PiliPlus/pages/danmaku/controller.dart';
-import 'package:PiliPlus/services/download/async_task_pool.dart';
 import 'package:PiliPlus/services/download/download_manager.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
+import 'package:PiliPlus/utils/danmaku_utils.dart';
 import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
@@ -35,7 +34,6 @@ class DownloadService extends GetxService {
   static const _maxDanmakuConcurrency = 4;
 
   final _lock = Lock();
-  final _danmakuPool = AsyncTaskPool(_maxDanmakuConcurrency);
 
   final flagNotifier = SetNotifier();
   final waitDownloadQueue = RxList<BiliDownloadEntryInfo>();
@@ -315,25 +313,20 @@ class DownloadService extends GetxService {
         if (!isUpdate) {
           _updateCurStatus(DownloadStatus.getDanmaku);
         }
-        final seg = (entry.totalTimeMilli / PlDanmakuController.segmentLength)
-            .ceil();
+        final seg = (entry.totalTimeMilli / DmUtils.segLength).ceil();
         if (seg <= 0) {
           throw StateError('Invalid danmaku segment count: $seg');
         }
 
-        final danmaku = (await _danmakuPool.run(
-          () => DmGrpc.dmSegMobile(cid: cid, segmentIndex: 1),
+        final danmaku = (await DmGrpc.dmSegMobile(
+          cid: cid,
+          segmentIndex: 1,
         )).data;
         for (var start = 2; start <= seg; start += _maxDanmakuConcurrency) {
           final end = start + _maxDanmakuConcurrency - 1;
           final responses = await Future.wait([
             for (var index = start; index <= seg && index <= end; index++)
-              _danmakuPool.run(
-                () => DmGrpc.dmSegMobile(
-                  cid: cid,
-                  segmentIndex: index,
-                ),
-              ),
+              DmGrpc.dmSegMobile(cid: cid, segmentIndex: index),
           ]);
           for (final response in responses) {
             danmaku.elems.addAll(response.data.elems);

@@ -27,12 +27,10 @@ jobs:
           flutter-version-file: pubspec.yaml
 
       - name: Set and Extract version
-        shell: pwsh
-        run: lib/scripts/build.ps1
+        run: dart run lib/scripts/pre_build.dart gen-build-info --platform ios --ci --tag '${{ inputs.tag }}'
 
       - name: Apply Patch
-        shell: pwsh
-        run: lib/scripts/patch.ps1 iOS
+        run: dart run lib/scripts/pre_build.dart apply-patches --platform ios
 
       - name: Build iOS
         run: |

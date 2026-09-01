@@ -37,12 +37,10 @@ jobs:
         shell: pwsh
 
       - name: Set and Extract version
-        shell: pwsh
-        run: lib/scripts/build.ps1
+        run: dart run lib/scripts/pre_build.dart gen-build-info --platform windows --ci --tag '${{ inputs.tag }}'
 
       - name: Apply Patch
-        shell: pwsh
-        run: lib/scripts/patch.ps1 windows
+        run: dart run lib/scripts/pre_build.dart apply-patches --platform windows
 
       - name: Build Windows
         run: |

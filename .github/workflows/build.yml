@@ -79,8 +79,7 @@ jobs:
                   cache: true
 
             - name: Apply Patch
-              shell: pwsh
-              run: lib/scripts/patch.ps1 android
+              run: dart run lib/scripts/pre_build.dart apply-patches --platform android
 
             - name: Write key
               if: github.event_name == 'workflow_dispatch'
@@ -95,8 +94,7 @@ jobs:
 
             - name: Set and Extract version
               if: ${{ github.event_name == 'workflow_dispatch' }}
-              shell: pwsh
-              run: lib/scripts/build.ps1 android
+              run: dart run lib/scripts/pre_build.dart gen-build-info --platform android --ci --tag '${{ github.event.inputs.tag }}'
 
             - name: Flutter Build Release Apk
               if: ${{ github.event_name == 'workflow_dispatch' }}

@@ -1,0 +1,70 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "pre-build: generate build info",
+      "type": "shell",
+      "command": "dart",
+      "args": [
+        "run",
+        "${workspaceFolder}/lib/scripts/pre_build.dart",
+        "gen-build-info"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "apply-patches (SDK copy)",
+      "type": "shell",
+      "command": "dart",
+      "args": [
+        "run",
+        "${workspaceFolder}/lib/scripts/pre_build.dart",
+        "apply-patches",
+        "--sdk-copy",
+        "--platform",
+        "$(flutter",
+        "devices",
+        "--machine",
+        "2>/dev/null",
+        "|",
+        "jq",
+        "-r",
+        "'.[]",
+        "|",
+        "select(.id",
+        "==",
+        "\"${command:flutter.getSelectedDeviceId}\").targetPlatform'",
+        "|",
+        "sed",
+        "'s/-.*//;s/darwin/macos/')"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "apply-patches (direct)",
+      "type": "shell",
+      "command": "dart",
+      "args": [
+        "run",
+        "${workspaceFolder}/lib/scripts/pre_build.dart",
+        "apply-patches",
+        "--device-id",
+        "${command:flutter.getSelectedDeviceId}"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "pre-build: apply patches (SDK copy) and gen build info",
+      "dependsOn": [
+        "apply-patches (SDK copy)",
+        "pre-build: generate build info"
+      ],
+      "dependsOrder": "sequence",
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}

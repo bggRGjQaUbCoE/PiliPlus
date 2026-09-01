@@ -36,6 +36,7 @@
       "type": "dart",
       "preLaunchTask": "pre-build: apply patches and gen build info",
       "postDebugTask": "restore patches",
+      "suppressPrompts": true,
       "args": [
         "--dart-define-from-file=pili_release.json"
       ]
@@ -47,6 +48,7 @@
       "flutterMode": "profile",
       "preLaunchTask": "pre-build: apply patches and gen build info",
       "postDebugTask": "restore patches",
+      "suppressPrompts": true,
       "args": [
         "--dart-define-from-file=pili_release.json"
       ]
@@ -58,6 +60,7 @@
       "flutterMode": "release",
       "preLaunchTask": "pre-build: apply patches and gen build info",
       "postDebugTask": "restore patches",
+      "suppressPrompts": true,
       "args": [
         "--dart-define-from-file=pili_release.json"
       ]

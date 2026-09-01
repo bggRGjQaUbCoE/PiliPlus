@@ -1,13 +1,13 @@
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/sponsor_block.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
 import 'package:PiliPlus/models_new/sponsor_block/user_info.dart';
 import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
+import 'package:PiliPlus/utils/accounts/account_manager/account_mgr.dart';
 import 'package:PiliPlus/utils/filtering_text.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -329,7 +329,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
                     Get.back();
                     _blockServer = HttpString.sponsorBlockBaseUrl;
                     setting.put(SettingBoxKey.blockServer, _blockServer);
-                    Request.accountManager.blockServer = _blockServer;
+                    AccountManager.blockServer = _blockServer;
                     (context as Element).markNeedsBuild();
                   },
                   child: const Text('重置'),
@@ -348,7 +348,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
                     Get.back();
                     _blockServer = _textController.text;
                     setting.put(SettingBoxKey.blockServer, _blockServer);
-                    Request.accountManager.blockServer = _blockServer;
+                    AccountManager.blockServer = _blockServer;
                     _checkServerStatus();
                     _getUserInfo();
                     (context as Element).markNeedsBuild();

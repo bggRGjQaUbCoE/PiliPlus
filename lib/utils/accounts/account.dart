@@ -86,10 +86,8 @@ class LoginAccount extends Account {
   }
 
   @override
-  Future<void> onChange() {
-    if (_hasDelete) {
-      return Future<void>.value();
-    }
+  Future<void>? onChange() {
+    if (_hasDelete) return null;
     return _box.put(_midStr, this);
   }
 

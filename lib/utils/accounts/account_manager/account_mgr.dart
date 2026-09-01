@@ -240,9 +240,9 @@ class AccountManager extends Interceptor {
     if (options.extra['account'] is NoAccount ||
         path.startsWith(HttpString.appBaseUrl) ||
         _skipCookie(path)) {
-      return account;
+      return null;
     }
-    return null;
+    return account;
   }
 
   static Future<String> dioError(DioException error) async {

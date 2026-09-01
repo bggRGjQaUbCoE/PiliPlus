@@ -237,7 +237,7 @@ class AccountManager extends Interceptor {
   static Account? _boundRequestAccount(RequestOptions options) {
     final path = options.path;
     final account = options.extra['account'] as Account;
-    if (options.extra['account'] is NoAccount ||
+    if (account is NoAccount ||
         path.startsWith(HttpString.appBaseUrl) ||
         _skipCookie(path)) {
       return null;

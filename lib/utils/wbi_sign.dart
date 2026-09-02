@@ -55,8 +55,7 @@ abstract final class WbiSign {
 
   // 对 imgKey 和 subKey 进行字符顺序打乱编码
   static String getMixinKey(String orig) {
-    final codeUnits = orig.codeUnits;
-    return String.fromCharCodes(_mixinKeyEncTab.map((i) => codeUnits[i]));
+    return String.fromCharCodes(_mixinKeyEncTab.map(orig.codeUnitAt));
   }
 
   // 为请求参数进行 wbi 签名

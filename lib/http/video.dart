@@ -201,7 +201,7 @@ abstract final class VideoHttp {
     int? avid,
     String? bvid,
     required int cid,
-    int? qn,
+    required int qn,
     dynamic epid,
     dynamic seasonId,
     required bool tryLook,
@@ -217,7 +217,7 @@ abstract final class VideoHttp {
       'ep_id': ?epid,
       'season_id': ?seasonId,
       'cid': cid,
-      'qn': qn ?? 80,
+      'qn': qn,
       // 获取所有格式的视频
       'fnval': 4048,
       'fourk': 1,

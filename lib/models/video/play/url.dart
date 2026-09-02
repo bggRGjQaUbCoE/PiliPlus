@@ -58,6 +58,19 @@ class PlayUrlModel {
   Language? language;
   List<SegmentItemModel>? clipInfoList;
 
+  Set<int> get availableVideoQualities => {
+    for (final item in dash?.video ?? const <VideoItem>[]) ?item.id,
+  };
+
+  int? findAvailableVideoQuality(int preferredQuality) {
+    final qualities = availableVideoQualities.toList();
+    if (qualities.isEmpty) return null;
+    return qualities.findClosestTarget(
+      (quality) => quality <= preferredQuality,
+      (a, b) => a > b ? a : b,
+    );
+  }
+
   PlayUrlModel.fromJson(Map<String, dynamic> json) {
     from = json['from'];
     result = json['result'];

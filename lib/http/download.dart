@@ -41,17 +41,11 @@ abstract final class DownloadHttp {
     if (res case Success(:final response)) {
       final dash = response.dash;
       if (dash != null) {
-        final videoList = dash.video!;
-        final curHighestVideoQa = videoList.first.quality.code;
+        final videoList = dash.video;
         final preferVideoQa = entry.preferedVideoQuality;
-        int targetVideoQa = curHighestVideoQa;
-        if (response.acceptQuality?.isNotEmpty == true &&
-            preferVideoQa <= curHighestVideoQa) {
-          // 如果预设的画质低于当前最高
-          targetVideoQa = response.acceptQuality!.findClosestTarget(
-            (e) => e <= preferVideoQa,
-            (a, b) => a > b ? a : b,
-          );
+        final targetVideoQa = response.findAvailableVideoQuality(preferVideoQa);
+        if (videoList == null || videoList.isEmpty || targetVideoQa == null) {
+          throw StateError('视频资源不存在');
         }
 
         /// 优先顺序 设置中指定解码格式 -> 当前可选的首个解码格式

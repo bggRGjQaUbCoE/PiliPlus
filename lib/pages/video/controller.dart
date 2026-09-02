@@ -791,6 +791,15 @@ class VideoDetailController extends GetxController
 
   Volume? volume;
 
+  void _handleUnavailableVideo() {
+    SmartDialog.showToast('视频资源不存在');
+    _autoPlay.value = false;
+    videoState.value = false;
+    if (plPlayerController.isFullScreen.value) {
+      plPlayerController.triggerFullScreen(status: false);
+    }
+  }
+
   // 视频链接
   /// TODO: merge [DownloadHttp.getVideoUrl].
   Future<void> queryVideoUrl({
@@ -804,6 +813,20 @@ class VideoDetailController extends GetxController
       return;
     }
     isQuerying = true;
+    try {
+      await _queryVideoUrl(
+        fromReset: fromReset,
+        autoFullScreenFlag: autoFullScreenFlag,
+      );
+    } finally {
+      isQuerying = false;
+    }
+  }
+
+  Future<void> _queryVideoUrl({
+    required bool fromReset,
+    required bool autoFullScreenFlag,
+  }) async {
     if (plPlayerController.enableSponsorBlock && isBlock && !fromReset) {
       querySponsorBlock(bvid: bvid, cid: cid.value);
     }
@@ -822,6 +845,7 @@ class VideoDetailController extends GetxController
     final result = await VideoHttp.videoUrl(
       cid: cid.value,
       bvid: bvid,
+      qn: VideoQuality.hdrVivid.code,
       epid: epId,
       seasonId: seasonId,
       tryLook: plPlayerController.tryLook,
@@ -889,34 +913,20 @@ class VideoDetailController extends GetxController
           currentDecodeFormats = VideoDecodeFormatType.AVC;
           currentVideoQa.value = videoQuality;
           await _initPlayerIfNeeded(autoFullScreenFlag);
-          isQuerying = false;
           return;
         } else {
-          SmartDialog.showToast('视频资源不存在');
-          _autoPlay.value = false;
-          videoState.value = false;
-          if (plPlayerController.isFullScreen.value) {
-            plPlayerController.triggerFullScreen(status: false);
-          }
-          isQuerying = false;
+          _handleUnavailableVideo();
           return;
         }
       }
 
-      final List<VideoItem> videoList = data.dash!.video!;
+      final videoList = data.dash!.video;
       // if (kDebugMode) debugPrint("allVideosList:${allVideosList}");
-      // 当前可播放的最高质量视频
-      final curHighestVideoQa = videoList.first.quality.code;
-      // 预设的画质为null，则当前可用的最高质量
-      int targetVideoQa = curHighestVideoQa;
       final cacheVideoQa = plPlayerController.cacheVideoQa!;
-      if (data.acceptQuality?.isNotEmpty == true &&
-          cacheVideoQa <= curHighestVideoQa) {
-        // 如果预设的画质低于当前最高
-        targetVideoQa = data.acceptQuality!.findClosestTarget(
-          (e) => e <= cacheVideoQa,
-          (a, b) => a > b ? a : b,
-        );
+      final targetVideoQa = data.findAvailableVideoQuality(cacheVideoQa);
+      if (videoList == null || videoList.isEmpty || targetVideoQa == null) {
+        _handleUnavailableVideo();
+        return;
       }
       currentVideoQa.value = VideoQuality.fromCode(targetVideoQa);
 
@@ -981,7 +991,6 @@ class VideoDetailController extends GetxController
       }
       result.toast();
     }
-    isQuerying = false;
   }
 
   late final List<PostSegmentModel> postList = <PostSegmentModel>[];

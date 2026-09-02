@@ -71,6 +71,33 @@ class PlayUrlModel {
     );
   }
 
+  int? get missingVideoQualityBelowHighest {
+    final available = availableVideoQualities;
+    final highest = available.reduceOrNull((a, b) => a > b ? a : b);
+    if (highest == null) return null;
+    return supportFormats
+        ?.map((item) => item.quality)
+        .whereType<int>()
+        .where(
+          (quality) => quality < highest && !available.contains(quality),
+        )
+        .reduceOrNull((a, b) => a > b ? a : b);
+  }
+
+  void mergeVideoStreams(PlayUrlModel other) {
+    final videos = dash?.video;
+    final otherVideos = other.dash?.video;
+    if (videos == null || otherVideos == null) return;
+    final keys = {
+      for (final item in videos) (item.id, item.codecid, item.codecs),
+    };
+    for (final item in otherVideos) {
+      if (keys.add((item.id, item.codecid, item.codecs))) {
+        videos.add(item);
+      }
+    }
+  }
+
   PlayUrlModel.fromJson(Map<String, dynamic> json) {
     from = json['from'];
     result = json['result'];

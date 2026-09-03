@@ -159,7 +159,6 @@ class _AudioPageState extends State<AudioPage> {
                 children: [
                   Expanded(child: _buildInfo(colorScheme, isPortrait)),
                   const SizedBox(height: 25),
-                  _buildShutdownCountdown(colorScheme),
                   _buildProgressBar(colorScheme),
                   _buildDuration(colorScheme),
                   _buildControls(),
@@ -184,7 +183,6 @@ class _AudioPageState extends State<AudioPage> {
                           return const SizedBox.shrink();
                         }),
                         const SizedBox(height: 25),
-                        _buildShutdownCountdown(colorScheme),
                         _buildProgressBar(colorScheme),
                         _buildDuration(colorScheme),
                         _buildControls(),
@@ -194,45 +192,6 @@ class _AudioPageState extends State<AudioPage> {
                 ],
               ),
       ),
-    );
-  }
-
-  Widget _buildShutdownCountdown(ColorScheme colorScheme) {
-    return ValueListenableBuilder<String?>(
-      valueListenable: shutdownTimerService.countdownText,
-      builder: (context, countdownText, child) {
-        if (countdownText == null) {
-          return const SizedBox(height: 8);
-        }
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: colorScheme.secondaryContainer.withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.av_timer_outlined,
-                  size: 18,
-                  color: colorScheme.onSecondaryContainer,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '定时关闭剩余 $countdownText',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: colorScheme.onSecondaryContainer,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 

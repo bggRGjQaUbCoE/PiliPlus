@@ -39,7 +39,7 @@ import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart'
-    show shutdownTimerService;
+    show shutdownTimerService, ShutdownPanel;
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
@@ -144,23 +144,6 @@ mixin TimeBatteryMixin<T extends StatefulWidget> on State<T> {
   List<Widget>? get timeBatteryWidgets {
     if (_showCurrTime) {
       return [
-        ValueListenableBuilder<String?>(
-          valueListenable: shutdownTimerService.countdownText,
-          builder: (context, countdownText, child) {
-            if (countdownText == null) {
-              return const SizedBox.shrink();
-            }
-            return Row(
-              children: [
-                Text(
-                  countdownText,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
-                ),
-                const SizedBox(width: 10),
-              ],
-            );
-          },
-        ),
         if (_showBatteryLevel) ...[
           Obx(
             () {
@@ -390,6 +373,7 @@ class HeaderControlState extends State<HeaderControl>
     showBottomSheet(
       (context, setState) {
         final theme = Theme.of(context);
+
         return Padding(
           padding: const EdgeInsets.all(12),
           child: Material(
@@ -443,23 +427,29 @@ class HeaderControlState extends State<HeaderControl>
                     leading: const Icon(Icons.image_outlined, size: 20),
                     title: const Text('保存封面', style: titleStyle),
                   ),
-                ValueListenableBuilder<String?>(
-                  valueListenable: shutdownTimerService.countdownText,
-                  builder: (context, countdownText, child) => ListTile(
-                    dense: true,
-                    onTap: () {
-                      Get.back();
-                      shutdownTimerService.showScheduleExitDialog(
-                        this.context,
-                        isFullScreen: isFullScreen,
-                      );
-                    },
-                    leading: const Icon(Icons.hourglass_top_outlined, size: 20),
-                    title: const Text('定时关闭', style: titleStyle),
-                    subtitle: countdownText == null
-                        ? null
-                        : Text('剩余 $countdownText', style: subTitleStyle),
-                  ),
+                ListTile(
+                  dense: true,
+                  onTap: () {
+                    Get.back();
+                    shutdownTimerService.showScheduleExitDialog(
+                      this.context,
+                      isFullScreen: isFullScreen,
+                    );
+                  },
+                  leading: const Icon(Icons.hourglass_top_outlined, size: 20),
+                  title: const Text('定时关闭', style: titleStyle),
+                  subtitle: shutdownTimerService.isActive
+                      ? ShutdownPanel(
+                          buildCountdownText: (text) =>
+                              Text(text == null ? '已结束' : '剩余 $text'),
+                          builder: (
+                            context,
+                            countdown,
+                            onCountdown,
+                            setState,
+                          ) => countdown,
+                        )
+                      : null,
                 ),
                 if (!isFileSource) ...[
                   ListTile(

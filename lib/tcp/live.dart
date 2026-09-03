@@ -153,11 +153,13 @@ class LiveMessageStream {
     required this.servers,
   });
 
+  static final _zlib = ZLibDecoder();
+
   bool _active = true;
   WebSocketChannel? _channel;
   StreamSubscription? _socketSubscription;
   Timer? _timer;
-  final String logTag = "LiveStreamService";
+  static const String logTag = "LiveStreamService";
 
   Future<void> init() async {
     final authPackage = AuthPackage(
@@ -211,21 +213,26 @@ class LiveMessageStream {
   }
 
   @pragma('vm:notify-debugger-on-exception')
-  void _processingData(List<int> value) {
+  void _processingData(Uint8List data) {
     try {
-      final Uint8List data = value is Uint8List
-          ? value
-          : Uint8List.fromList(value);
       final subHeader = PackageHeaderRes.fromBytesData(data);
       if (subHeader != null) {
-        final msgBody = utf8.decode(
-          data.sublist(subHeader.headerSize, subHeader.totalSize),
-        );
-        for (final f in _eventListeners) {
-          f(jsonDecode(msgBody));
+        if (_eventListeners.isNotEmpty) {
+          final msgBody = jsonDecode(
+            utf8.decode(
+              Uint8List.sublistView(
+                data,
+                subHeader.headerSize,
+                subHeader.totalSize,
+              ),
+            ),
+          );
+          for (final f in _eventListeners) {
+            f(msgBody);
+          }
         }
         if (subHeader.totalSize < data.length) {
-          _processingData(data.sublist(subHeader.totalSize));
+          _processingData(Uint8List.sublistView(data, subHeader.totalSize));
         }
       }
     } catch (_) {}
@@ -271,12 +278,12 @@ class LiveMessageStream {
   void onData(dynamic data) {
     final header = PackageHeaderRes.fromBytesData(data as Uint8List);
     if (header != null) {
-      List<int> decompressedData = const [];
       //心跳包回复不用处理
       if (header.operationCode == 3) return;
       if (header.operationCode == 8) {
         _heartBeat();
       }
+      final List<int> decompressedData;
       try {
         switch (header.protocolVer) {
           case 0:
@@ -284,17 +291,21 @@ class LiveMessageStream {
             _processingData(data);
             return;
           case 2:
-            decompressedData = ZLibDecoder().convert(
-              Uint8List.sublistView(data, 0x10),
-            );
+            decompressedData = _zlib.convert(Uint8List.sublistView(data, 0x10));
             break;
           case 3:
             decompressedData = const BrotliDecoder().convert(
               Uint8List.sublistView(data, 0x10),
             );
           //debugPrint('Body: ${utf8.decode()}');
+          default:
+            return;
         }
-        _processingData(decompressedData);
+        _processingData(
+          decompressedData is Uint8List
+              ? decompressedData
+              : Uint8List.fromList(decompressedData),
+        );
       } catch (_) {}
     }
   }

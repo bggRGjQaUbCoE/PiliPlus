@@ -4,7 +4,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models_new/live/live_follow/item.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 // 视频卡片 - 垂直布局
 class LiveCardVFollow extends StatelessWidget {
@@ -22,11 +22,11 @@ class LiveCardVFollow extends StatelessWidget {
       cover: liveItem.roomCover,
     );
     return Card(
-      clipBehavior: Clip.hardEdge,
       child: InkWell(
         onTap: () => PageUtils.toLiveRoom(liveItem.roomid),
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
+        borderRadius: const .all(.circular(12)),
         child: Column(
           crossAxisAlignment: .start,
           children: [
@@ -43,7 +43,7 @@ class LiveCardVFollow extends StatelessWidget {
                         src: liveItem.roomCover!,
                         width: maxWidth,
                         height: maxHeight,
-                        type: .emote,
+                        borderRadius: const .vertical(top: .circular(12)),
                       ),
                       Positioned(
                         left: 0,

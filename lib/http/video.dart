@@ -23,7 +23,6 @@ import 'package:PiliPlus/models_new/triple/pgc_triple.dart';
 import 'package:PiliPlus/models_new/triple/ugc_triple.dart';
 import 'package:PiliPlus/models_new/video/video_ai_conclusion/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
-import 'package:PiliPlus/models_new/video/video_detail/video_detail_response.dart';
 import 'package:PiliPlus/models_new/video/video_note_list/data.dart';
 import 'package:PiliPlus/models_new/video/video_play_info/data.dart';
 import 'package:PiliPlus/models_new/video/video_relation/data.dart';
@@ -124,10 +123,8 @@ abstract final class VideoHttp {
       options: Options(
         headers: {
           'buvid': LoginHttp.buvid,
-          'fp_local':
-              '1111111111111111111111111111111111111111111111111111111111111111',
-          'fp_remote':
-              '1111111111111111111111111111111111111111111111111111111111111111',
+          'fp_local': '1111111111111111111111111111111111111111111111111111111111111111',
+          'fp_remote': '1111111111111111111111111111111111111111111111111111111111111111',
           'session_id': '11111111',
           'env': 'prod',
           'app-key': 'android_hd',
@@ -140,12 +137,13 @@ abstract final class VideoHttp {
       ),
     );
     if (res.data['code'] == 0) {
-      List<RcmdVideoItemAppModel> list = <RcmdVideoItemAppModel>[];
+      final list = <RcmdVideoItemAppModel>[];
       for (final i in res.data['data']['items']) {
         // 屏蔽推广和拉黑用户
         if (i['card_goto'] != 'ad_av' &&
             i['card_goto'] != 'ad_web_s' &&
             i['ad_info'] == null &&
+            i['can_play'] == 1 &&
             (i['args'] != null &&
                 !GlobalData().blackMids.contains(i['args']['up_id']))) {
           if (enableFilter &&
@@ -291,13 +289,12 @@ abstract final class VideoHttp {
   }) async {
     final res = await Request().get(
       Api.videoIntro,
-      queryParameters: {'bvid': bvid},
+      queryParameters: await WbiSign.makSign({'bvid': bvid}),
     );
-    VideoDetailResponse data = VideoDetailResponse.fromJson(res.data);
-    if (data.code == 0) {
-      return Success(data.data!);
+    if (res.data['code'] == 0) {
+      return Success(VideoDetailData.fromJson(res.data['data']));
     } else {
-      return Error(data.message);
+      return Error(res.data['message']);
     }
   }
 
@@ -835,7 +832,7 @@ abstract final class VideoHttp {
     }
   }
 
-  static Future<String?> vttSubtitles(
+  static Future<String?> getSubtitles(
     String subtitleUrl, {
     SubtitleFormat format = .vtt,
   }) async {

@@ -9,8 +9,8 @@ index 58ba68b7c..a6bb398ac 100644
 -import 'package:flutter/gestures.dart' show HorizontalDragGestureRecognizer;
 +import 'package:flutter/gestures.dart'
 +    show HorizontalDragGestureRecognizer, DeviceGestureSettings;
- import 'package:flutter/material.dart';
  import 'package:get/get.dart';
+ import 'package:material_ui/material_ui.dart';
  
 @@ -142,6 +143,10 @@ class SlideDragGestureRecognizer extends HorizontalDragGestureRecognizer {
    bool isPointerAllowed(PointerEvent event) {
@@ -23,3 +23,15 @@ index 58ba68b7c..a6bb398ac 100644
  }
  
  class TabBarDragGestureRecognizer
+diff --git a/lib/common/widgets/scaffold/mini_scaffold.dart b/lib/common/widgets/scaffold/mini_scaffold.dart
+index d1a0ca667..2b7760943 100644
+--- a/lib/common/widgets/scaffold/mini_scaffold.dart
++++ b/lib/common/widgets/scaffold/mini_scaffold.dart
+@@ -72,6 +72,7 @@ class MiniScaffoldState extends State<MiniScaffold>
+     }
+ 
+     final LocalHistoryEntry entry = LocalHistoryEntry(
++      popGestureEnabled: true,
+       onRemove: () {
+         if (!removedEntry &&
+             _currentBottomSheet?.widget == bottomSheet &&

@@ -5,8 +5,8 @@ import 'package:PiliPlus/models_new/space/space_archive/item.dart';
 import 'package:PiliPlus/pages/member_comic/controller.dart';
 import 'package:PiliPlus/pages/member_comic/widgets/item.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class MemberComic extends StatefulWidget {
   const MemberComic({

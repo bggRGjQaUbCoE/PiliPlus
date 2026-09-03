@@ -7,6 +7,7 @@ abstract final class HttpString {
   static const String passBaseUrl = 'https://passport.bilibili.com';
   static const String messageBaseUrl = 'https://message.bilibili.com';
   static const String dynamicShareBaseUrl = 'https://t.bilibili.com';
+  static const String opusBaseUrl = 'https://www.bilibili.com/opus';
   static const String spaceBaseUrl = 'https://space.bilibili.com';
   static const String accountBaseUrl = 'https://account.bilibili.com';
   static const String mallBaseUrl = 'https://mall.bilibili.com';

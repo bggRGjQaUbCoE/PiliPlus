@@ -15,9 +15,9 @@ import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 abstract final class ReplyUtils {
   static void onCheckReply({
@@ -98,49 +98,75 @@ abstract final class ReplyUtils {
       await Future.delayed(const Duration(seconds: 8));
     }
     void showReplyCheckResult(String message, {bool isBan = false}) {
-      final theme = ThemeUtils.theme;
-      final actions = [
-        if (isBan)
-          TextButton(
-            onPressed: () {
-              Get.back();
-              String? uri;
-              switch (type) {
-                case 1:
-                  uri = IdUtils.av2bv(oid);
-                case 17:
-                  uri = 'https://www.bilibili.com/opus/$oid';
-              }
-              if (uri != null) {
-                Utils.copyText(uri);
-              }
-              Get.toNamed(
-                '/webview',
-                parameters: {
-                  'url':
-                      'https://www.bilibili.com/h5/comment/appeal?${ThemeUtils.themeUrl(theme.isDark)}',
-                },
-              );
-            },
-            child: const Text('申诉'),
-          ),
-        if (!isManual)
-          TextButton(
-            onPressed: Get.back,
-            child: Text(
-              '关闭',
-              style: TextStyle(color: theme.colorScheme.outline),
-            ),
-          ),
-      ];
       showDialog(
         context: Get.context!,
         barrierDismissible: isManual,
-        builder: (context) => AlertDialog(
-          title: const Text('评论检查结果'),
-          content: SelectionText(message),
-          actions: actions.isEmpty ? null : actions,
-        ),
+        builder: (context) {
+          final colorScheme = ColorScheme.of(context);
+          final color = isBan ? colorScheme.error : colorScheme.primary;
+          final actions = [
+            if (isBan)
+              TextButton(
+                onPressed: () {
+                  Get.back();
+                  String? uri;
+                  switch (type) {
+                    case 1:
+                      uri = IdUtils.av2bv(oid);
+                    case 17:
+                      uri = 'https://www.bilibili.com/opus/$oid';
+                  }
+                  if (uri != null) {
+                    Utils.copyText(uri);
+                  }
+                  Get.toNamed(
+                    '/webview',
+                    parameters: {
+                      'url':
+                          'https://www.bilibili.com/h5/comment/appeal?${ThemeUtils.themeUrl(colorScheme.isDark)}',
+                    },
+                  );
+                },
+                child: const Text('申诉'),
+              ),
+            if (!isManual)
+              TextButton(
+                onPressed: Get.back,
+                child: Text(
+                  '关闭',
+                  style: TextStyle(color: colorScheme.outline),
+                ),
+              ),
+          ];
+          return AlertDialog(
+            title: Text.rich(
+              TextSpan(
+                children: [
+                  WidgetSpan(
+                    alignment: .middle,
+                    child: isBan
+                        ? Icon(
+                            size: 22,
+                            color: color,
+                            Icons.highlight_off_outlined,
+                          )
+                        : Icon(
+                            size: 22,
+                            color: color,
+                            Icons.check_circle_outline_rounded,
+                          ),
+                  ),
+                  TextSpan(
+                    text: ' 评论检查结果',
+                    style: TextStyle(color: color),
+                  ),
+                ],
+              ),
+            ),
+            content: SelectionText(message),
+            actions: actions.isEmpty ? null : actions,
+          );
+        },
       );
     }
 

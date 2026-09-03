@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/skeleton/video_card_v.dart';
+import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -9,8 +10,8 @@ import 'package:PiliPlus/pages/live/widgets/live_item_app.dart';
 import 'package:PiliPlus/pages/live_area_detail/child/controller.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class LiveAreaChildPage extends StatefulWidget {
   const LiveAreaChildPage({
@@ -80,10 +81,12 @@ class _LiveAreaChildPageState extends State<LiveAreaChildPage>
     LoadingState<List<CardLiveItem>?> loadingState,
   ) {
     return switch (loadingState) {
-      Loading() => SliverGrid.builder(
+      Loading() => SliverGrid(
         gridDelegate: gridDelegate,
-        itemBuilder: (context, index) => const VideoCardVSkeleton(),
-        itemCount: 10,
+        delegate: const SliverSingleChildDelegate(
+          count: 10,
+          child: VideoCardVSkeleton(),
+        ),
       ),
       Success(:final response) => SliverMainAxisGroup(
         slivers: [

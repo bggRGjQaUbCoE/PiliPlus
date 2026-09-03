@@ -4,7 +4,6 @@ import 'dart:math' as math;
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
-import 'package:PiliPlus/common/widgets/emote_span.dart';
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
@@ -13,7 +12,6 @@ import 'package:PiliPlus/grpc/bilibili/im/interfaces/v1.pb.dart'
     show EmotionInfo;
 import 'package:PiliPlus/grpc/bilibili/im/type.pb.dart' show Msg, MsgType;
 import 'package:PiliPlus/http/search.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
@@ -24,9 +22,9 @@ import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ChatItem extends StatelessWidget {
   static MsgType msgTypeFromValue(int value) {
@@ -66,7 +64,7 @@ class ChatItem extends StatelessWidget {
     late final ThemeData theme = Theme.of(context);
     late final Color textColor = isOwner
         ? theme.colorScheme.onSecondaryContainer
-        : theme.colorScheme.onSurfaceVariant;
+        : theme.colorScheme.onSurface;
     late final dynamic content = jsonDecode(item.content);
 
     Widget child = messageContent(
@@ -341,6 +339,7 @@ class ChatItem extends StatelessWidget {
                           cid: cid,
                           cover: i['cover_url'],
                           dimension: res!.dimension,
+                          title: res.title,
                         );
                       }
                     } catch (err) {
@@ -412,7 +411,6 @@ class ChatItem extends StatelessWidget {
 
     return Center(
       child: Container(
-        clipBehavior: Clip.hardEdge,
         constraints: const BoxConstraints(maxWidth: 400.0),
         decoration: BoxDecoration(
           borderRadius: Style.mdRadius,
@@ -426,9 +424,7 @@ class ChatItem extends StatelessWidget {
                 try {
                   SmartDialog.showLoading();
                   final bvid = content["bvid"];
-                  final res = await SearchHttp.ab2cWithDimension(
-                    bvid: bvid,
-                  );
+                  final res = await SearchHttp.ab2cWithDimension(bvid: bvid);
                   final cid = res?.cid;
                   SmartDialog.dismiss();
                   if (cid != null) {
@@ -437,6 +433,7 @@ class ChatItem extends StatelessWidget {
                       cid: cid,
                       cover: content['cover'],
                       dimension: res!.dimension,
+                      title: res.title,
                     );
                   }
                 } catch (err) {
@@ -451,15 +448,15 @@ class ChatItem extends StatelessWidget {
                     clipBehavior: Clip.none,
                     children: [
                       NetworkImgLayer(
-                        type: ImageType.emote,
                         width: constrains.maxWidth,
                         height: constrains.maxWidth / Style.aspectRatio16x9,
                         src: content['cover'],
+                        borderRadius: const .vertical(top: Style.imgRadius),
                       ),
                       PBadge(
                         left: 6,
                         bottom: 6,
-                        type: PBadgeType.gray,
+                        type: .gray,
                         text: content['times'] == 0
                             ? '--:--'
                             : DurationUtils.formatDuration(content['times']),
@@ -540,6 +537,7 @@ class ChatItem extends StatelessWidget {
               cid: cid,
               cover: content['thumb'],
               dimension: res!.dimension,
+              title: res.title,
             );
           }
         };
@@ -690,7 +688,7 @@ class ChatItem extends StatelessWidget {
           if (emoji != null) {
             final size = emoji['size'];
             children.add(
-              EmoteSpan(
+              WidgetSpan(
                 rawText: matchStr,
                 child: NetworkImgLayer(
                   width: size,
@@ -762,7 +760,7 @@ class ChatItem extends StatelessWidget {
             ),
             Divider(color: theme.colorScheme.primary.withValues(alpha: 0.05)),
             if ((content['text'] as String?)?.isNotEmpty == true)
-              SelectionText(content['text']),
+              Text(content['text']),
             if (modules != null && modules.isNotEmpty) ...[
               const SizedBox(height: 4),
               ...modules.map(

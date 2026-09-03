@@ -1,7 +1,7 @@
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_dynamic_header.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:flutter/foundation.dart' show clampDouble;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class VideoHeader extends SliverPinnedDynamicHeader {
   const VideoHeader({

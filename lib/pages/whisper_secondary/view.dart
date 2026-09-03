@@ -1,13 +1,15 @@
 import 'package:PiliPlus/common/skeleton/whisper_item.dart';
+import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/grpc/bilibili/app/im/v1.pb.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/whisper/widgets/item.dart';
 import 'package:PiliPlus/pages/whisper_secondary/controller.dart';
 import 'package:PiliPlus/utils/extension/three_dot_ext.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class WhisperSecPage extends StatefulWidget {
   const WhisperSecPage({
@@ -37,8 +39,7 @@ class _WhisperSecPageState extends State<WhisperSecPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return SimpleScaffold(
       appBar: AppBar(
         title: Text(widget.name),
         actions: [
@@ -89,43 +90,48 @@ class _WhisperSecPageState extends State<WhisperSecPage> {
   }
 
   Widget _buildBody(LoadingState<List<Session>?> loadingState) {
-    late final divider = Divider(
-      indent: 72,
-      endIndent: 20,
-      height: 1,
-      color: Colors.grey.withValues(alpha: 0.1),
-    );
-    return switch (loadingState) {
-      Loading() => SliverList.builder(
-        itemCount: 12,
-        itemBuilder: (context, index) => const WhisperItemSkeleton(),
-      ),
-      Success(:final response) =>
-        response != null && response.isNotEmpty
-            ? SliverList.separated(
-                itemCount: response.length,
-                itemBuilder: (context, index) {
-                  if (index == response.length - 1) {
-                    _controller.onLoadMore();
-                  }
-                  final item = response[index];
-                  return WhisperSessionItem(
-                    item: item,
-                    onSetTop: (isTop, talkerId) =>
-                        _controller.onSetTop(item, index, isTop, talkerId),
-                    onSetMute: (isMuted, talkerUid) =>
-                        _controller.onSetMute(item, isMuted, talkerUid),
-                    onRemove: (talkerId) =>
-                        _controller.onRemove(index, talkerId),
-                  );
-                },
-                separatorBuilder: (context, index) => divider,
-              )
-            : HttpError(onReload: _controller.onReload),
-      Error(:final errMsg) => HttpError(
-        errMsg: errMsg,
-        onReload: _controller.onReload,
-      ),
-    };
+    switch (loadingState) {
+      case Loading():
+        return const SliverPrototypeExtentList(
+          prototypeItem: WhisperItemSkeleton(),
+          delegate: SliverSingleChildDelegate(
+            count: 12,
+            child: WhisperItemSkeleton(),
+          ),
+        );
+      case Success(:final response):
+        if (response != null && response.isNotEmpty) {
+          final divider = Divider(
+            indent: 72,
+            endIndent: 20,
+            height: 0,
+            color: Colors.grey.withValues(alpha: 0.1),
+          );
+          return SliverList.separated(
+            itemCount: response.length,
+            itemBuilder: (context, index) {
+              if (index == response.length - 1) {
+                _controller.onLoadMore();
+              }
+              final item = response[index];
+              return WhisperSessionItem(
+                item: item,
+                onSetTop: (isTop, talkerId) =>
+                    _controller.onSetTop(item, index, isTop, talkerId),
+                onSetMute: (isMuted, talkerUid) =>
+                    _controller.onSetMute(item, isMuted, talkerUid),
+                onRemove: (talkerId) => _controller.onRemove(index, talkerId),
+              );
+            },
+            separatorBuilder: (context, index) => divider,
+          );
+        }
+        return HttpError(onReload: _controller.onReload);
+      case Error(:final errMsg):
+        return HttpError(
+          errMsg: errMsg,
+          onReload: _controller.onReload,
+        );
+    }
   }
 }

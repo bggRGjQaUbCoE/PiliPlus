@@ -4,7 +4,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models_new/live/live_search/room_item.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 // 视频卡片 - 垂直布局
 class LiveCardVSearch extends StatelessWidget {
@@ -22,11 +22,11 @@ class LiveCardVSearch extends StatelessWidget {
       cover: item.cover,
     );
     return Card(
-      clipBehavior: Clip.hardEdge,
       child: InkWell(
         onTap: () => PageUtils.toLiveRoom(item.roomid),
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
+        borderRadius: const .all(.circular(12)),
         child: Column(
           crossAxisAlignment: .start,
           children: [
@@ -43,7 +43,7 @@ class LiveCardVSearch extends StatelessWidget {
                         src: item.cover!,
                         width: maxWidth,
                         height: maxHeight,
-                        type: .emote,
+                        borderRadius: const .vertical(top: .circular(12)),
                       ),
                       Positioned(
                         left: 0,

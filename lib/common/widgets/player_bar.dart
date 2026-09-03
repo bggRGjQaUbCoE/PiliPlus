@@ -17,7 +17,6 @@
 
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart'
     show
         ContainerRenderObjectMixin,
@@ -25,6 +24,7 @@ import 'package:flutter/rendering.dart'
         RenderBoxContainerDefaultsMixin,
         BoxHitTestResult,
         TransformLayer;
+import 'package:material_ui/material_ui.dart';
 
 class PlayerBar extends MultiChildRenderObjectWidget {
   const PlayerBar({

@@ -5,9 +5,9 @@ import 'package:PiliPlus/models_new/sub/sub/data.dart';
 import 'package:PiliPlus/models_new/sub/sub/list.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class SubController extends CommonListController<SubData, SubItemModel> {
   late final account = Accounts.main;

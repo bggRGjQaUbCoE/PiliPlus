@@ -1,14 +1,14 @@
 name: Build
 
 on:
-    pull_request:
-        types:
-            - opened
-            - synchronize
-            - reopened
-            - ready_for_review
-        paths-ignore:
-            - "**.md"
+    # pull_request:
+    #     types:
+    #         - opened
+    #         - synchronize
+    #         - reopened
+    #         - ready_for_review
+    #     paths-ignore:
+    #         - "**.md"
     workflow_dispatch:
         inputs:
             build_android:
@@ -100,12 +100,12 @@ jobs:
 
             - name: Flutter Build Release Apk
               if: ${{ github.event_name == 'workflow_dispatch' }}
-              run: flutter build apk --release --split-per-abi --dart-define-from-file=pili_release.json --pub
+              run: flutter build apk --release --split-per-abi --dart-define-from-file=pili_release.json --no-pub
 
             - name: Flutter Build Dev Apk
               if: ${{ github.event_name == 'pull_request' }}
               run: |
-                  flutter build apk --release --split-per-abi --android-project-arg dev=1 --pub
+                  flutter build apk --release --split-per-abi --android-project-arg dev=1 --no-pub
 
             - name: Rename
               run: |

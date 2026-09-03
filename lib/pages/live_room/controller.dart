@@ -32,6 +32,7 @@ import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/danmaku_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
+import 'package:PiliPlus/utils/extension/rx_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -42,9 +43,13 @@ import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, kReleaseMode;
-import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
+
+const int _kMaxChatCount = 500;
+const int _kTrimCount = _kMaxChatCount + 50;
+const int _kSafeTrimIndex = 200;
 
 class LiveRoomController extends GetxController {
   LiveRoomController(this.heroTag);
@@ -148,6 +153,20 @@ class LiveRoomController extends GetxController {
     }
     return const SizedBox.shrink();
   });
+
+  int chatSimpleIndex = 0;
+  int _trimDmIndex = 0;
+  void _trimDm() {
+    final trimCount = messages.length - _trimDmIndex;
+    if (trimCount > _kTrimCount) {
+      final endIndex = messages.length - _kMaxChatCount;
+      final canTrim = (chatSimpleIndex - endIndex) > _kSafeTrimIndex;
+      if (canTrim) {
+        messages.fillRangeOnly(_trimDmIndex, endIndex);
+        _trimDmIndex = endIndex;
+      }
+    }
+  }
 
   StreamSubscription? _sizeSub;
 
@@ -507,6 +526,8 @@ class LiveRoomController extends GetxController {
   }
 
   void addDm(dynamic msg, [DanmakuContentItem<DanmakuExtra>? item]) {
+    _trimDm();
+
     if (plPlayerController.showDanmaku) {
       if (item != null && plPlayerController.enableShowLiveDanmaku.value) {
         danmakuController?.addDanmaku(item);
@@ -702,7 +723,9 @@ class LiveRoomController extends GetxController {
         },
         transitionDuration: fromEmote
             ? const Duration(milliseconds: 400)
-            : const Duration(milliseconds: 500),
+            : PlatformUtils.isDesktop
+            ? const Duration(milliseconds: 350)
+            : const Duration(milliseconds: 400),
       ),
     );
   }
@@ -716,6 +739,8 @@ class LiveRoomController extends GetxController {
       Get.context!,
       ban: false,
       ReportOptions.liveDanmakuReport,
+      withContent: ReportOptions.liveDanmakuReportCheck,
+      contentRequired: ReportOptions.liveDanmakuReportCheck,
       (reasonType, reasonDesc, banUid) {
         return LiveHttp.superChatReport(
           id: item.id,

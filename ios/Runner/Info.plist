@@ -14,7 +14,7 @@
 						<key>UISceneClassName</key>
 						<string>UIWindowScene</string>
 						<key>UISceneDelegateClassName</key>
-						<string>FlutterSceneDelegate</string>
+						<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
 						<key>UISceneConfigurationName</key>
 						<string>flutter</string>
 						<key>UISceneStoryboardFile</key>
@@ -139,5 +139,7 @@
 			<string>_upnp._tcp</string>
 			<string>_http._tcp</string>
 		</array>
+		<key>ITSAppUsesNonExemptEncryption</key>
+		<false/>
 	</dict>
 </plist>

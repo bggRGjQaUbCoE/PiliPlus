@@ -7,8 +7,8 @@ import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:flutter/material.dart';
 import 'package:get/get_rx/get_rx.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:media_kit/ffi/src/allocation.dart';
 import 'package:media_kit/ffi/src/utf8.dart';
 import 'package:media_kit/generated/libmpv/bindings.dart' as generated;
@@ -52,9 +52,7 @@ class MpvConvertWebp {
         'ofopts': 'loop=0',
         'ovcopts': 'preset=${preset.flag}',
         if (enableHA) 'vo': 'gpu',
-        if (enableHA)
-          'hwdec':
-              '${Pref.hardwareDecoding},auto-copy', // transcode only support copy
+        if (enableHA) 'hwdec': '${Pref.hardwareDecoding},auto-copy', // transcode only support copy
       },
     );
     NativePlayer.setHeader(

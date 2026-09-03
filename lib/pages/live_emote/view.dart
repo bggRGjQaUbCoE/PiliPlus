@@ -10,8 +10,8 @@ import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/live/live_emote/datum.dart';
 import 'package:PiliPlus/models_new/live/live_emote/emoticon.dart';
 import 'package:PiliPlus/pages/live_emote/controller.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class LiveEmotePanel extends StatefulWidget {
   final int roomId;
@@ -83,11 +83,7 @@ class _LiveEmotePanelState extends State<LiveEmotePanel>
                           final height = heightFac * 38;
                           return GridView.builder(
                             physics: platformClampingPhysics,
-                            padding: const EdgeInsets.only(
-                              left: 12,
-                              right: 12,
-                              bottom: 12,
-                            ),
+                            padding: const .all(12),
                             gridDelegate:
                                 SliverGridDelegateWithMaxCrossAxisExtent(
                                   maxCrossAxisExtent: widthFac * 40,

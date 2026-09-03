@@ -4,7 +4,7 @@
 
 // ignore_for_file: prefer_initializing_formals
 
-import 'package:flutter/material.dart' hide PopupMenuItem;
+import 'package:material_ui/material_ui.dart' hide PopupMenuItem;
 
 class CustomPopupMenuItem<T> extends PopupMenuEntry<T> {
   const CustomPopupMenuItem({
@@ -25,12 +25,10 @@ class CustomPopupMenuItem<T> extends PopupMenuEntry<T> {
   bool represents(T? value) => value == this.value;
 
   @override
-  CustomPopupMenuItemState<T, CustomPopupMenuItem<T>> createState() =>
-      CustomPopupMenuItemState<T, CustomPopupMenuItem<T>>();
+  CustomPopupMenuItemState<T> createState() => CustomPopupMenuItemState<T>();
 }
 
-class CustomPopupMenuItemState<T, W extends CustomPopupMenuItem<T>>
-    extends State<W> {
+class CustomPopupMenuItemState<T> extends State<CustomPopupMenuItem<T>> {
   @protected
   @override
   Widget build(BuildContext context) {

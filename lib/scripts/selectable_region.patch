@@ -1,37 +1,392 @@
+diff --git a/packages/flutter/lib/src/painting/inline_span.dart b/packages/flutter/lib/src/painting/inline_span.dart
+index 0c4a0be6177..77baa589699 100644
+--- a/packages/flutter/lib/src/painting/inline_span.dart
++++ b/packages/flutter/lib/src/painting/inline_span.dart
+@@ -315,6 +315,21 @@ abstract class InlineSpan extends DiagnosticableTree {
+     return buffer.toString();
+   }
+ 
++  (String, Map<int, String>) toPlainTextV2({
++    bool includeSemanticsLabels = true,
++    bool includePlaceholders = true,
++  }) {
++    final buffer = StringBuffer();
++    final map = <int, String>{};
++    computeToPlainTextV2(
++      buffer,
++      map,
++      includeSemanticsLabels: includeSemanticsLabels,
++      includePlaceholders: includePlaceholders,
++    );
++    return (buffer.toString(), map);
++  }
++
+   /// Flattens the [InlineSpan] tree to a list of
+   /// [InlineSpanSemanticsInformation] objects.
+   ///
+@@ -358,6 +373,14 @@ abstract class InlineSpan extends DiagnosticableTree {
+     bool includePlaceholders = true,
+   });
+ 
++  @protected
++  void computeToPlainTextV2(
++    StringBuffer buffer,
++    Map<int, String> map, {
++    bool includeSemanticsLabels = true,
++    bool includePlaceholders = true,
++  });
++
+   /// Returns the UTF-16 code unit at the given `index` in the flattened string.
+   ///
+   /// This only accounts for the [TextSpan.text] values and ignores [PlaceholderSpan]s.
+diff --git a/packages/flutter/lib/src/painting/placeholder_span.dart b/packages/flutter/lib/src/painting/placeholder_span.dart
+index 110ff860310..7ad808d05bc 100644
+--- a/packages/flutter/lib/src/painting/placeholder_span.dart
++++ b/packages/flutter/lib/src/painting/placeholder_span.dart
+@@ -45,6 +45,7 @@ abstract class PlaceholderSpan extends InlineSpan {
+     this.alignment = ui.PlaceholderAlignment.bottom,
+     this.baseline,
+     super.style,
++    this.rawText,
+   });
+ 
+   /// The unicode character to represent a placeholder.
+@@ -61,6 +62,8 @@ abstract class PlaceholderSpan extends InlineSpan {
+   /// This is ignored when using other alignment modes.
+   final TextBaseline? baseline;
+ 
++  final String? rawText;
++
+   /// [PlaceholderSpan]s are flattened to a `0xFFFC` object replacement character in the
+   /// plain text representation when `includePlaceholders` is true.
+   @override
+@@ -74,6 +77,21 @@ abstract class PlaceholderSpan extends InlineSpan {
+     }
+   }
+ 
++  @override
++  void computeToPlainTextV2(
++    StringBuffer buffer,
++    Map<int, String> map, {
++    bool includeSemanticsLabels = true,
++    bool includePlaceholders = true,
++  }) {
++    if (includePlaceholders) {
++      if (rawText != null) {
++        map[buffer.length] = rawText!;
++      }
++      buffer.writeCharCode(placeholderCodeUnit);
++    }
++  }
++
+   @override
+   void computeSemanticsInformation(List<InlineSpanSemanticsInformation> collector) {
+     collector.add(InlineSpanSemanticsInformation.placeholder);
+diff --git a/packages/flutter/lib/src/painting/text_span.dart b/packages/flutter/lib/src/painting/text_span.dart
+index 09fba7fc4fb..57ee469358e 100644
+--- a/packages/flutter/lib/src/painting/text_span.dart
++++ b/packages/flutter/lib/src/painting/text_span.dart
+@@ -398,6 +398,31 @@ class TextSpan extends InlineSpan implements HitTestTarget, MouseTrackerAnnotati
+     }
+   }
+ 
++  @override
++  void computeToPlainTextV2(
++    StringBuffer buffer,
++    Map<int, String> map, {
++    bool includeSemanticsLabels = true,
++    bool includePlaceholders = true,
++  }) {
++    assert(debugAssertIsValid());
++    if (semanticsLabel != null && includeSemanticsLabels) {
++      buffer.write(semanticsLabel);
++    } else if (text != null) {
++      buffer.write(text);
++    }
++    if (children != null) {
++      for (final InlineSpan child in children!) {
++        child.computeToPlainTextV2(
++          buffer,
++          map,
++          includeSemanticsLabels: includeSemanticsLabels,
++          includePlaceholders: includePlaceholders,
++        );
++      }
++    }
++  }
++
+   @override
+   void computeSemanticsInformation(
+     List<InlineSpanSemanticsInformation> collector, {
 diff --git a/packages/flutter/lib/src/rendering/paragraph.dart b/packages/flutter/lib/src/rendering/paragraph.dart
-index 97a41dafb8d..0be1766148e 100644
+index 5bcc4570209..057031f8dbb 100644
 --- a/packages/flutter/lib/src/rendering/paragraph.dart
 +++ b/packages/flutter/lib/src/rendering/paragraph.dart
-@@ -1925,9 +1925,9 @@ class _SelectableFragment
-     final Matrix4 transform = paragraph.getTransformTo(null);
-     transform.invert();
-     final Offset localPosition = MatrixUtils.transformPoint(transform, globalPosition);
--    if (_rect.isEmpty) {
--      return SelectionUtils.getResultBasedOnRect(_rect, localPosition);
+@@ -7,6 +7,7 @@
+ /// @docImport 'editable.dart';
+ library;
+ 
++import 'dart:io' show Platform;
+ import 'dart:math' as math;
+ import 'dart:ui'
+     as ui
+@@ -506,27 +507,20 @@ class RenderParagraph extends RenderBox
+   }
+ 
+   List<_SelectableFragment> _getSelectableFragments() {
+-    final String plainText = text.toPlainText(includeSemanticsLabels: false);
+-    final result = <_SelectableFragment>[];
+-    var start = 0;
+-    while (start < plainText.length) {
+-      int end = plainText.indexOf(_placeholderCharacter, start);
+-      if (start != end) {
+-        if (end == -1) {
+-          end = plainText.length;
+-        }
+-        result.add(
+-          _SelectableFragment(
+-            paragraph: this,
+-            range: TextRange(start: start, end: end),
+-            fullText: plainText,
+-          ),
+-        );
+-        start = end;
+-      }
+-      start += 1;
 -    }
-+    // if (_rect.isEmpty) {
-+    //   return SelectionUtils.getResultBasedOnRect(_rect, localPosition);
-+    // }
-     final Offset adjustedOffset = SelectionUtils.adjustDragOffset(
+-    return result;
++    final (String plainText, Map<int, String> placeHolder) = text.toPlainTextV2(
++      includeSemanticsLabels: false,
++    );
++    if (plainText.isEmpty) {
++      return <_SelectableFragment>[];
++    }
++    return [
++      _SelectableFragment(
++        paragraph: this,
++        range: TextRange(start: 0, end: plainText.length),
++        fullText: plainText,
++        placeholder: placeHolder,
++      ),
++    ];
+   }
+ 
+   /// Determines whether the given [Selectable] was created by this
+@@ -1512,7 +1506,7 @@ class RenderParagraph extends RenderBox
+ class _SelectableFragment
+     with Selectable, Diagnosticable, ChangeNotifier
+     implements TextLayoutMetrics {
+-  _SelectableFragment({required this.paragraph, required this.fullText, required this.range})
++  _SelectableFragment({required this.paragraph, required this.fullText, required this.range, required this.placeholder})
+     : assert(range.isValid && !range.isCollapsed && range.isNormalized) {
+     if (kFlutterMemoryAllocationsEnabled) {
+       ChangeNotifier.maybeDispatchObjectCreation(this);
+@@ -1523,6 +1517,7 @@ class _SelectableFragment
+   final TextRange range;
+   final RenderParagraph paragraph;
+   final String fullText;
++  final Map<int,String> placeholder;
+ 
+   TextPosition? _textSelectionStart;
+   TextPosition? _textSelectionEnd;
+@@ -1553,19 +1548,37 @@ class _SelectableFragment
+ 
+     final int selectionStart = _textSelectionStart!.offset;
+     final int selectionEnd = _textSelectionEnd!.offset;
++
+     final bool isReversed = selectionStart > selectionEnd;
+-    final Offset startOffsetInParagraphCoordinates = paragraph._getOffsetForPosition(
+-      _textSelectionStart!,
+-    );
+-    final Offset endOffsetInParagraphCoordinates = selectionStart == selectionEnd
+-        ? startOffsetInParagraphCoordinates
+-        : paragraph._getOffsetForPosition(_textSelectionEnd!);
+     final flipHandles = isReversed != (TextDirection.rtl == paragraph.textDirection);
+     final selection = TextSelection(baseOffset: selectionStart, extentOffset: selectionEnd);
++    final List<ui.TextBox> boxes = paragraph.getBoxesForSelection(selection, boxHeightStyle: .max);
+     final selectionRects = <Rect>[];
+-    for (final TextBox textBox in paragraph.getBoxesForSelection(selection)) {
++    for (final textBox in boxes) {
+       selectionRects.add(textBox.toRect());
+     }
++
++    final Offset startOffsetInParagraphCoordinates;
++    final Offset endOffsetInParagraphCoordinates;
++    if (boxes.isEmpty) {
++      final Offset offset =
++          paragraph._textPainter.getOffsetForCaret(selection.extent, Rect.zero) +
++          Offset(0, paragraph._textPainter.getFullHeightForCaret(selection.extent, Rect.zero));
++      startOffsetInParagraphCoordinates = endOffsetInParagraphCoordinates = Offset(
++        clampDouble(offset.dx, 0, paragraph._textPainter.width),
++        clampDouble(offset.dy, 0, paragraph._textPainter.height),
++      );
++    } else {
++      startOffsetInParagraphCoordinates = Offset(
++        clampDouble(boxes.first.start, 0, paragraph._textPainter.width),
++        clampDouble(boxes.first.bottom, 0, paragraph._textPainter.height),
++      );
++      endOffsetInParagraphCoordinates = Offset(
++        clampDouble(boxes.last.end, 0, paragraph._textPainter.width),
++        clampDouble(boxes.last.bottom, 0, paragraph._textPainter.height),
++      );
++    }
++
+     final selectionCollapsed = selectionStart == selectionEnd;
+     final (
+       TextSelectionHandleType startSelectionHandleType,
+@@ -1609,12 +1622,15 @@ class _SelectableFragment
+             result = _updateSelectionEdge(
+               edgeUpdate.globalPosition,
+               isEnd: edgeUpdate.type == SelectionEventType.endEdgeUpdate,
++              isSingle: edgeUpdate.isSingle,
++              fromDrag: edgeUpdate.fromDrag,
+             );
+           case TextGranularity.word:
+             result = _updateSelectionEdgeByTextBoundary(
+               edgeUpdate.globalPosition,
+               isEnd: edgeUpdate.type == SelectionEventType.endEdgeUpdate,
+               getTextBoundary: _getWordBoundaryAtPosition,
++              isSingle: edgeUpdate.isSingle,
+             );
+           case TextGranularity.paragraph:
+             result = _updateSelectionEdgeByMultiSelectableTextBoundary(
+@@ -1671,9 +1687,33 @@ class _SelectableFragment
+     if (_textSelectionStart == null || _textSelectionEnd == null) {
+       return null;
+     }
+-    final int start = math.min(_textSelectionStart!.offset, _textSelectionEnd!.offset);
++    int start = math.min(_textSelectionStart!.offset, _textSelectionEnd!.offset);
+     final int end = math.max(_textSelectionStart!.offset, _textSelectionEnd!.offset);
+-    return SelectedContent(plainText: fullText.substring(start, end));
++    final String selectedText;
++    if (placeholder.isEmpty) {
++      selectedText = fullText.substring(start, end);
++    } else {
++      final buffer = StringBuffer();
++      for (final e in placeholder.entries) {
++        final i = e.key;
++        if (i < start) {
++          continue;
++        }
++        if (i >= end) {
++          break;
++        }
++        if (i != start) {
++          buffer.write(fullText.substring(start, i));
++        }
++        buffer.write(e.value);
++        start = i + 1;
++      }
++      if (start != end) {
++        buffer.write(fullText.substring(start, end));
++      }
++      selectedText = buffer.toString();
++    }
++    return SelectedContent(plainText: selectedText);
+   }
+ 
+   @override
+@@ -1893,6 +1933,7 @@ class _SelectableFragment
+     Offset globalPosition, {
+     required bool isEnd,
+     required _TextBoundaryAtPosition getTextBoundary,
++    bool isSingle = false,
+   }) {
+     // When the start/end edges are swapped, i.e. the start is after the end, and
+     // the scrollable synthesizes an event for the opposite edge, this will potentially
+@@ -1918,6 +1959,7 @@ class _SelectableFragment
        _rect,
        localPosition,
-@@ -3568,7 +3568,10 @@ class _SelectableFragment
+       direction: paragraph.textDirection,
++      isSingle: isSingle,
+     );
+ 
+     final TextPosition position = paragraph.getPositionForOffset(adjustedOffset);
+@@ -1972,7 +2014,7 @@ class _SelectableFragment
+     return SelectionUtils.getResultBasedOnRect(_rect, localPosition);
+   }
+ 
+-  SelectionResult _updateSelectionEdge(Offset globalPosition, {required bool isEnd}) {
++  SelectionResult _updateSelectionEdge(Offset globalPosition, {required bool isEnd, bool isSingle = false, bool fromDrag = false}) {
+     _setSelectionPosition(null, isEnd: isEnd);
+     final Matrix4 transform = paragraph.getTransformTo(null);
+     transform.invert();
+@@ -1991,11 +2033,30 @@ class _SelectableFragment
+       _rect,
+       localPosition,
+       direction: paragraph.textDirection,
++      isSingle: isSingle,
+     );
+ 
+-    final TextPosition position = _clampTextPosition(
+-      paragraph.getPositionForOffset(adjustedOffset),
+-    );
++    TextPosition position = _clampTextPosition(paragraph.getPositionForOffset(adjustedOffset));
++    // if (rawText != null) {
++    //   position = _clampTextPosition(
++    //     adjustedOffset.dx * 2 > _rect.left + _rect.right
++    //         ? TextPosition(offset: range.end)
++    //         : TextPosition(offset: range.start),
++    //   );
++    // } else {
++    //   position = _clampTextPosition(paragraph.getPositionForOffset(adjustedOffset));
++    // }
++    if (fromDrag && isSingle && !Platform.isIOS) {
++      if (isEnd) {
++        if (position.offset <= _textSelectionStart!.offset) {
++          position = TextPosition(offset: _textSelectionStart!.offset + 1);
++        }
++      } else {
++        if (position.offset >= _textSelectionEnd!.offset) {
++          position = TextPosition(offset: _textSelectionEnd!.offset - 1);
++        }
++      }
++    }
+     _setSelectionPosition(position, isEnd: isEnd);
+     if (position.offset == range.end) {
+       return SelectionResult.next;
+@@ -3634,8 +3695,25 @@ class _SelectableFragment
        final selectionPaint = Paint()
          ..style = PaintingStyle.fill
          ..color = paragraph.selectionColor!;
 -      for (final TextBox textBox in paragraph.getBoxesForSelection(selection)) {
-+      for (final TextBox textBox in paragraph.getBoxesForSelection(
+-        context.canvas.drawRect(textBox.toRect().shift(offset), selectionPaint);
++
++      final List<ui.TextBox> boxes = paragraph.getBoxesForSelection(
 +        selection,
 +        boxHeightStyle: ui.BoxHeightStyle.max,
-+      )) {
-         context.canvas.drawRect(textBox.toRect().shift(offset), selectionPaint);
++        boxWidthStyle: ui.BoxWidthStyle.tight,
++      );
++      ui.TextBox? mergedBox;
++      for (final textBox in boxes) {
++        if (mergedBox == null) {
++          mergedBox = textBox;
++        } else if (mergedBox.top != textBox.top) {
++          context.canvas.drawRect(Rect.fromLTRB(mergedBox.left, mergedBox.top, paragraph.size.width, mergedBox.bottom).shift(offset), selectionPaint);
++          mergedBox = textBox;
++        } else {
++          mergedBox = TextBox.fromLTRBD(mergedBox.left, mergedBox.top, textBox.right, mergedBox.bottom, mergedBox.direction);
++        }
++      }
++      if (mergedBox != null) {
++        context.canvas.drawRect(mergedBox.toRect().shift(offset), selectionPaint);
        }
      }
+   }
 diff --git a/packages/flutter/lib/src/rendering/selection.dart b/packages/flutter/lib/src/rendering/selection.dart
-index a813e141dc4..78b9bb84c0e 100644
+index a813e141dc4..d045236d031 100644
 --- a/packages/flutter/lib/src/rendering/selection.dart
 +++ b/packages/flutter/lib/src/rendering/selection.dart
-@@ -114,6 +114,8 @@ abstract class SelectionHandler implements ValueListenable<SelectionGeometry> {
+@@ -6,6 +6,8 @@
+ /// @docImport 'package:flutter/material.dart';
+ library;
+ 
++import 'dart:math' as math;
++
+ import 'package:flutter/foundation.dart';
+ import 'package:vector_math/vector_math_64.dart';
+ 
+@@ -114,6 +116,8 @@ abstract class SelectionHandler implements ValueListenable<SelectionGeometry> {
  
    /// The length of the content in this object.
    int get contentLength;
@@ -40,7 +395,7 @@ index a813e141dc4..78b9bb84c0e 100644
  }
  
  /// This class stores the range information of the selection under a [Selectable]
-@@ -236,6 +238,8 @@ class SelectedContent with Diagnosticable {
+@@ -236,6 +240,8 @@ class SelectedContent with Diagnosticable {
  /// See also:
  ///  * [SelectableRegion], which provides an overview of selection system.
  mixin Selectable implements SelectionHandler {
@@ -49,11 +404,66 @@ index a813e141dc4..78b9bb84c0e 100644
    /// {@macro flutter.rendering.RenderObject.getTransformTo}
    Matrix4 getTransformTo(RenderObject? ancestor);
  
+@@ -356,10 +362,19 @@ abstract final class SelectionUtils {
+     Rect targetRect,
+     Offset point, {
+     TextDirection direction = TextDirection.ltr,
++    bool isSingle = false,
+   }) {
+     if (targetRect.contains(point)) {
+       return point;
+     }
++
++    if (isSingle || (point.dy >= targetRect.top && point.dy <= targetRect.bottom)) {
++      return Offset(
++        math.min(point.dx, targetRect.right),
++        math.min(point.dy, targetRect.bottom - .1),
++      );
++    }
++
+     if (point.dy <= targetRect.top ||
+         point.dy <= targetRect.bottom && point.dx <= targetRect.left) {
+       // Area 1
+@@ -520,9 +535,10 @@ class SelectionEdgeUpdateEvent extends SelectionEvent {
+   ///
+   /// The [granularity] contains the granularity which the selection edge should move by.
+   /// This value defaults to [TextGranularity.character].
+-  const SelectionEdgeUpdateEvent.forStart({
++  SelectionEdgeUpdateEvent.forStart({
+     required this.globalPosition,
+     TextGranularity? granularity,
++    this.fromDrag = false,
+   }) : granularity = granularity ?? TextGranularity.character,
+        super._(SelectionEventType.startEdgeUpdate);
+ 
+@@ -532,9 +548,10 @@ class SelectionEdgeUpdateEvent extends SelectionEvent {
+   ///
+   /// The [granularity] contains the granularity which the selection edge should move by.
+   /// This value defaults to [TextGranularity.character].
+-  const SelectionEdgeUpdateEvent.forEnd({
++  SelectionEdgeUpdateEvent.forEnd({
+     required this.globalPosition,
+     TextGranularity? granularity,
++    this.fromDrag = false,
+   }) : granularity = granularity ?? TextGranularity.character,
+        super._(SelectionEventType.endEdgeUpdate);
+ 
+@@ -547,6 +564,10 @@ class SelectionEdgeUpdateEvent extends SelectionEvent {
+   ///
+   /// Defaults to [TextGranularity.character].
+   final TextGranularity granularity;
++
++  bool isSingle = false;
++
++  final bool fromDrag;
+ }
+ 
+ /// Extends the start or end of the selection by a given [TextGranularity].
 diff --git a/packages/flutter/lib/src/widgets/scrollable.dart b/packages/flutter/lib/src/widgets/scrollable.dart
-index 9df2d633f16..54d30883245 100644
+index 05e5a7e5cf4..d9b1c2b27b7 100644
 --- a/packages/flutter/lib/src/widgets/scrollable.dart
 +++ b/packages/flutter/lib/src/widgets/scrollable.dart
-@@ -1177,6 +1177,9 @@ class _ScrollableSelectionContainerDelegate extends MultiSelectableSelectionCont
+@@ -1178,6 +1178,9 @@ class _ScrollableSelectionContainerDelegate extends MultiSelectableSelectionCont
      _position.addListener(_scheduleLayoutChange);
    }
  
@@ -63,11 +473,27 @@ index 9df2d633f16..54d30883245 100644
    // Pointer drag is a single point, it should not have a size.
    static const double _kDefaultDragTargetSize = 0;
  
+@@ -1277,6 +1280,7 @@ class _ScrollableSelectionContainerDelegate extends MultiSelectableSelectionCont
+       event = SelectionEdgeUpdateEvent.forEnd(
+         globalPosition: endOffset,
+         granularity: event.granularity,
++        fromDrag: event.fromDrag,
+       );
+     } else {
+       _currentDragStartRelatedToOrigin = _inferPositionRelatedToOrigin(event.globalPosition);
+@@ -1287,6 +1291,7 @@ class _ScrollableSelectionContainerDelegate extends MultiSelectableSelectionCont
+       event = SelectionEdgeUpdateEvent.forStart(
+         globalPosition: startOffset,
+         granularity: event.granularity,
++        fromDrag: event.fromDrag,
+       );
+     }
+     final SelectionResult result = super.handleSelectionEdgeUpdate(event);
 diff --git a/packages/flutter/lib/src/widgets/selectable_region.dart b/packages/flutter/lib/src/widgets/selectable_region.dart
-index 59de8bae20b..39bfeb2b4f0 100644
+index be97aa35189..b502af93f23 100644
 --- a/packages/flutter/lib/src/widgets/selectable_region.dart
 +++ b/packages/flutter/lib/src/widgets/selectable_region.dart
-@@ -401,9 +401,11 @@ class SelectableRegionState extends State<SelectableRegion>
+@@ -406,9 +406,11 @@ class SelectableRegionState extends State<SelectableRegion>
    final LayerLink _startHandleLayerLink = LayerLink();
    final LayerLink _endHandleLayerLink = LayerLink();
    final LayerLink _toolbarLayerLink = LayerLink();
@@ -80,7 +506,7 @@ index 59de8bae20b..39bfeb2b4f0 100644
  
    bool get _hasSelectionOverlayGeometry =>
        _selectionDelegate.value.startSelectionPoint != null ||
-@@ -599,48 +601,32 @@ class SelectableRegionState extends State<SelectableRegion>
+@@ -604,48 +606,32 @@ class SelectableRegionState extends State<SelectableRegion>
    //
    // This method should be used in all instances when details.consecutiveTapCount
    // would be used.
@@ -148,7 +574,7 @@ index 59de8bae20b..39bfeb2b4f0 100644
      }
    }
  
-@@ -782,22 +768,8 @@ class SelectableRegionState extends State<SelectableRegion>
+@@ -787,22 +773,8 @@ class SelectableRegionState extends State<SelectableRegion>
              _selectionStatusNotifier.value = SelectableRegionSelectionStatus.changing;
          }
        case 3:
@@ -173,7 +599,7 @@ index 59de8bae20b..39bfeb2b4f0 100644
      }
      _updateSelectedContentIfNeeded();
    }
-@@ -1049,10 +1021,10 @@ class SelectableRegionState extends State<SelectableRegion>
+@@ -1054,10 +1026,10 @@ class SelectableRegionState extends State<SelectableRegion>
        case TargetPlatform.windows:
          // If _lastSecondaryTapDownPosition is within the current selection then
          // keep the current selection, if not then collapse it.
@@ -188,7 +614,59 @@ index 59de8bae20b..39bfeb2b4f0 100644
            // Restore _lastSecondaryTapDownPosition since it may be cleared if a user
            // accesses contextMenuAnchors.
            _lastSecondaryTapDownPosition = details.globalPosition;
-@@ -1957,6 +1929,8 @@ class SelectableRegionState extends State<SelectableRegion>
+@@ -1110,7 +1082,7 @@ class SelectableRegionState extends State<SelectableRegion>
+   /// If the selectable subtree returns a [SelectionResult.pending], this method
+   /// continues to send [SelectionEdgeUpdateEvent]s every frame until the result
+   /// is not pending or users end their gestures.
+-  void _triggerSelectionEndEdgeUpdate({TextGranularity? textGranularity}) {
++  void _triggerSelectionEndEdgeUpdate({TextGranularity? textGranularity, bool fromDrag = false}) {
+     // This method can be called when the drag is not in progress. This can
+     // happen if the child scrollable returns SelectionResult.pending, and
+     // the selection area scheduled a selection update for the next frame, but
+@@ -1122,6 +1094,7 @@ class SelectableRegionState extends State<SelectableRegion>
+           SelectionEdgeUpdateEvent.forEnd(
+             globalPosition: _selectionEndPosition!,
+             granularity: textGranularity,
++            fromDrag: fromDrag,
+           ),
+         ) ==
+         SelectionResult.pending) {
+@@ -1164,7 +1137,7 @@ class SelectableRegionState extends State<SelectableRegion>
+   /// If the selectable subtree returns a [SelectionResult.pending], this method
+   /// continues to send [SelectionEdgeUpdateEvent]s every frame until the result
+   /// is not pending or users end their gestures.
+-  void _triggerSelectionStartEdgeUpdate({TextGranularity? textGranularity}) {
++  void _triggerSelectionStartEdgeUpdate({TextGranularity? textGranularity, bool fromDrag = false}) {
+     // This method can be called when the drag is not in progress. This can
+     // happen if the child scrollable returns SelectionResult.pending, and
+     // the selection area scheduled a selection update for the next frame, but
+@@ -1176,6 +1149,7 @@ class SelectableRegionState extends State<SelectableRegion>
+           SelectionEdgeUpdateEvent.forStart(
+             globalPosition: _selectionStartPosition!,
+             granularity: textGranularity,
++            fromDrag: fromDrag,
+           ),
+         ) ==
+         SelectionResult.pending) {
+@@ -1221,7 +1195,7 @@ class SelectableRegionState extends State<SelectableRegion>
+     _selectionStartPosition =
+         _selectionStartHandleDragPosition -
+         Offset(0, _selectionDelegate.value.startSelectionPoint!.lineHeight / 2);
+-    _triggerSelectionStartEdgeUpdate();
++    _triggerSelectionStartEdgeUpdate(fromDrag: true);
+ 
+     _selectionOverlay!.updateMagnifier(
+       _buildInfoForMagnifier(details.globalPosition, _selectionDelegate.value.startSelectionPoint!),
+@@ -1249,7 +1223,7 @@ class SelectableRegionState extends State<SelectableRegion>
+     _selectionEndPosition =
+         _selectionEndHandleDragPosition -
+         Offset(0, _selectionDelegate.value.endSelectionPoint!.lineHeight / 2);
+-    _triggerSelectionEndEdgeUpdate();
++    _triggerSelectionEndEdgeUpdate(fromDrag: true);
+ 
+     _selectionOverlay!.updateMagnifier(
+       _buildInfoForMagnifier(details.globalPosition, _selectionDelegate.value.endSelectionPoint!),
+@@ -1970,6 +1944,8 @@ class SelectableRegionState extends State<SelectableRegion>
          // the region on non-web platforms.
          if (kIsWeb) {
            _focusNode.unfocus();
@@ -197,7 +675,7 @@ index 59de8bae20b..39bfeb2b4f0 100644
          }
        },
        child: CompositedTransformTarget(
-@@ -2087,6 +2061,11 @@ class _DirectionallyExtendCaretSelectionAction<T extends DirectionalCaretMovemen
+@@ -2100,6 +2076,11 @@ class _DirectionallyExtendCaretSelectionAction<T extends DirectionalCaretMovemen
  ///  * [MultiSelectableSelectionContainerDelegate], for the class that provides
  ///  the main implementation details of this [SelectionContainerDelegate].
  class StaticSelectionContainerDelegate extends MultiSelectableSelectionContainerDelegate {
@@ -209,7 +687,16 @@ index 59de8bae20b..39bfeb2b4f0 100644
    /// The set of [Selectable]s that have received start events.
    final Set<Selectable> _hasReceivedStartEvent = <Selectable>{};
  
-@@ -2822,8 +2801,17 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
+@@ -2380,6 +2361,8 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
+   /// Gets the list of [Selectable]s this delegate is managing.
+   List<Selectable> selectables = <Selectable>[];
+ 
++  bool get isSingle => selectables.length == 1;
++
+   /// The number of additional pixels added to the selection handle drawable
+   /// area.
+   ///
+@@ -2835,8 +2818,17 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
        return null;
      }
      final buffer = StringBuffer();
@@ -229,6 +716,25 @@ index 59de8bae20b..39bfeb2b4f0 100644
      }
      return SelectedContent(plainText: buffer.toString());
    }
+@@ -3164,6 +3156,7 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
+   /// Updates the selection edges.
+   @protected
+   SelectionResult handleSelectionEdgeUpdate(SelectionEdgeUpdateEvent event) {
++    handleSelectionEdgeUpdateEvent(event);
+     if (event.type == SelectionEventType.endEdgeUpdate) {
+       return currentSelectionEndIndex == -1
+           ? _initSelection(event, isEnd: true)
+@@ -3174,6 +3167,10 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
+         : _adjustSelection(event, isEnd: false);
+   }
+ 
++  void handleSelectionEdgeUpdateEvent(SelectionEdgeUpdateEvent event) {
++    event.isSingle = isSingle;
++  }
++
+   @override
+   SelectionResult dispatchSelectionEvent(SelectionEvent event) {
+     final selectionWillBeInProgress = event is! ClearSelectionEvent;
 diff --git a/packages/flutter/lib/src/widgets/selection_container.dart b/packages/flutter/lib/src/widgets/selection_container.dart
 index 5d5a2386a7a..92e7d1eb70a 100644
 --- a/packages/flutter/lib/src/widgets/selection_container.dart
@@ -242,3 +748,30 @@ index 5d5a2386a7a..92e7d1eb70a 100644
    BuildContext? _selectionContainerContext;
  
    /// Gets the paint transform from the [Selectable] child to
+diff --git a/packages/flutter/lib/src/widgets/text.dart b/packages/flutter/lib/src/widgets/text.dart
+index a44b97eeb0b..334cbb7c7cc 100644
+--- a/packages/flutter/lib/src/widgets/text.dart
++++ b/packages/flutter/lib/src/widgets/text.dart
+@@ -992,6 +992,9 @@ class _SelectableTextContainerDelegate extends StaticSelectionContainerDelegate
+   final GlobalKey _textKey;
+   RenderParagraph get paragraph => _textKey.currentContext!.findRenderObject()! as RenderParagraph;
+ 
++  @override
++  void handleSelectionEdgeUpdateEvent(SelectionEdgeUpdateEvent event) {}
++
+   @override
+   SelectionResult handleSelectParagraph(SelectParagraphSelectionEvent event) {
+     final SelectionResult result = _handleSelectParagraph(event);
+diff --git a/packages/flutter/lib/src/widgets/widget_span.dart b/packages/flutter/lib/src/widgets/widget_span.dart
+index 09da3b76525..4a83efb0392 100644
+--- a/packages/flutter/lib/src/widgets/widget_span.dart
++++ b/packages/flutter/lib/src/widgets/widget_span.dart
+@@ -78,7 +78,7 @@ class WidgetSpan extends PlaceholderSpan {
+   ///
+   /// A [TextStyle] may be provided with the [style] property, but only the
+   /// decoration, foreground, background, and spacing options will be used.
+-  const WidgetSpan({required this.child, super.alignment, super.baseline, super.style})
++  const WidgetSpan({required this.child, super.alignment, super.baseline, super.style, super.rawText})
+     : assert(
+         baseline != null ||
+             !(identical(alignment, ui.PlaceholderAlignment.aboveBaseline) ||

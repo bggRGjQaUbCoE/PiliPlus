@@ -12,7 +12,6 @@ import 'package:PiliPlus/pages/common/dyn/common_dyn_controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -182,19 +181,17 @@ class ArticleController extends CommonDynController {
 
   Future<void> onFav() async {
     final favorite = stats.value?.favorite;
-    bool isFav = favorite?.status == true;
+    if (favorite == null) return;
+    final isFav = favorite.status ?? false;
     final res = type == 'read'
         ? isFav
               ? await FavHttp.delFavArticle(id: commentId)
               : await FavHttp.addFavArticle(id: commentId)
         : await FavHttp.communityAction(opusId: id, action: isFav ? 4 : 3);
     if (res.isSuccess) {
-      favorite?.status = !isFav;
-      if (isFav) {
-        favorite?.count--;
-      } else {
-        favorite?.count++;
-      }
+      favorite
+        ..status = !isFav
+        ..count = (favorite.count ?? 0) + (isFav ? -1 : 1);
       stats.refresh();
       SmartDialog.showToast('${isFav ? '取消' : ''}收藏成功');
     } else {
@@ -204,18 +201,16 @@ class ArticleController extends CommonDynController {
 
   Future<void> onLike() async {
     final like = stats.value?.like;
-    bool isLike = like?.status == true;
+    if (like == null) return;
+    final isLike = like.status ?? false;
     final res = await DynamicsHttp.thumbDynamic(
       dynamicId: opusData?.idStr ?? articleData?.dynIdStr,
       up: isLike ? 2 : 1,
     );
     if (res.isSuccess) {
-      like?.status = !isLike;
-      if (isLike) {
-        like?.count--;
-      } else {
-        like?.count++;
-      }
+      like
+        ..status = !isLike
+        ..count = (like.count ?? 0) + (isLike ? -1 : 1);
       stats.refresh();
       SmartDialog.showToast(!isLike ? '点赞成功' : '取消赞');
     } else {

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart'
+import 'package:material_ui/material_ui.dart'
     show BorderRadius, Radius, BoxConstraints, ButtonStyle, VisualDensity;
 
 abstract final class Style {

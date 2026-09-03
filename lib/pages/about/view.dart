@@ -9,11 +9,13 @@ import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/dialog/export_import.dart';
 import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/services/logger.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
+import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
@@ -24,10 +26,10 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/update.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:flutter/material.dart' hide ListTile;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:material_ui/material_ui.dart' hide ListTile;
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key, this.showAppBar = true});
@@ -74,7 +76,7 @@ class _AboutPageState extends State<AboutPage> {
         onSubmitted: (value) {
           Get.back();
           if (value.isNotEmpty) {
-            PageUtils.handleWebview(value, inApp: true);
+            PiliScheme.routePushFromUrl(value);
           }
         },
       ),
@@ -89,9 +91,8 @@ class _AboutPageState extends State<AboutPage> {
     final subTitleStyle = TextStyle(fontSize: 13, color: outline);
     final showAppBar = widget.showAppBar;
     final padding = MediaQuery.viewPaddingOf(context);
-    return Scaffold(
+    return SimpleScaffold(
       appBar: showAppBar ? AppBar(title: const Text('关于')) : null,
-      resizeToAvoidBottomInset: false,
       body: ListView(
         padding: EdgeInsets.only(
           left: showAppBar ? padding.left : 0,

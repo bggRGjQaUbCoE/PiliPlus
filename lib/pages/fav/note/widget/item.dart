@@ -5,7 +5,7 @@ import 'package:PiliPlus/models_new/fav/fav_note/list.dart';
 import 'package:PiliPlus/pages/fav/note/controller.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class FavNoteItem extends StatelessWidget {
   const FavNoteItem({
@@ -37,11 +37,8 @@ class FavNoteItem extends StatelessWidget {
             onSelect();
             return;
           }
-          if (item.webUrl?.isNotEmpty == true) {
-            PageUtils.handleWebview(
-              item.webUrl!,
-              inApp: true,
-            );
+          if (item.webUrl case final url? when url.isNotEmpty) {
+            PageUtils.handleWebview(url, inApp: true);
           }
         },
         onLongPress: onLongPress,

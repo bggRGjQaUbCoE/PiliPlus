@@ -28,17 +28,17 @@ import 'package:PiliPlus/common/widgets/flutter/text_field/text_selection.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart'
+import 'package:flutter/rendering.dart'
+    hide RenderEditable, VerticalCaretMovementRun;
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart'
     hide
         EditableText,
         EditableTextState,
         SpellCheckConfiguration,
         TextSelectionGestureDetectorBuilder,
         TextSelectionOverlay;
-import 'package:flutter/rendering.dart'
-    hide RenderEditable, VerticalCaretMovementRun;
-import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
 
 /// Signature for a widget builder that builds a context menu for the given
 /// [EditableTextState].
@@ -47,13 +47,18 @@ import 'package:flutter/services.dart';
 ///
 ///  * [SelectableRegionContextMenuBuilder], which performs the same role for
 ///    [SelectableRegion].
-typedef EditableTextContextMenuBuilder =
-    Widget Function(BuildContext context, EditableTextState editableTextState);
+typedef EditableTextContextMenuBuilder = Widget Function(
+  BuildContext context,
+  EditableTextState editableTextState,
+);
 
 // Signature for a function that determines the target location of the given
 // [TextPosition] after applying the given [TextBoundary].
-typedef _ApplyTextBoundary =
-    TextPosition Function(TextPosition, bool, TextBoundary);
+typedef _ApplyTextBoundary = TextPosition Function(
+  TextPosition,
+  bool,
+  TextBoundary,
+);
 
 // The time it takes for the cursor to fade from fully opaque to fully
 // transparent and vice versa. A full cursor blink, from transparent to opaque
@@ -1668,6 +1673,11 @@ class EditableText extends StatefulWidget {
   /// Specifies the [SpellCheckService] used to spell check text input and the
   /// [TextStyle] used to style text with misspelled words.
   ///
+  /// Spell check is disabled for password input, including when [obscureText]
+  /// is true, [keyboardType] is [TextInputType.visiblePassword], or
+  /// [autofillHints] contains [AutofillHints.password] or
+  /// [AutofillHints.newPassword].
+  ///
   /// If the [SpellCheckService] is left null, spell check is disabled by
   /// default unless the [DefaultSpellCheckService] is supported, in which case
   /// it is used. It is currently supported only on Android and iOS.
@@ -1717,7 +1727,7 @@ class EditableText extends StatefulWidget {
     //   }
     //   return ui.BoxWidthStyle.tight;
     // }
-    return ui.BoxWidthStyle.max;
+    return ui.BoxWidthStyle.tight;
   }
 
   /// The default value for [stylusHandwritingEnabled].
@@ -1759,15 +1769,15 @@ class EditableText extends StatefulWidget {
   /// * [AdaptiveTextSelectionToolbar.getAdaptiveButtons], which builds the button
   ///   Widgets for the current platform given [ContextMenuButtonItem]s.
   static List<ContextMenuButtonItem> getEditableButtonItems({
-    required final ClipboardStatus? clipboardStatus,
-    required final VoidCallback? onCopy,
-    required final VoidCallback? onCut,
-    required final VoidCallback? onPaste,
-    required final VoidCallback? onSelectAll,
-    required final VoidCallback? onLookUp,
-    required final VoidCallback? onSearchWeb,
-    required final VoidCallback? onShare,
-    required final VoidCallback? onLiveTextInput,
+    required ClipboardStatus? clipboardStatus,
+    required VoidCallback? onCopy,
+    required VoidCallback? onCut,
+    required VoidCallback? onPaste,
+    required VoidCallback? onSelectAll,
+    required VoidCallback? onLookUp,
+    required VoidCallback? onSearchWeb,
+    required VoidCallback? onShare,
+    required VoidCallback? onLiveTextInput,
   }) {
     final resultButtonItem = <ContextMenuButtonItem>[];
 
@@ -2829,11 +2839,19 @@ class EditableTextState extends State<EditableText>
   /// If spell check is enabled, this will try to infer a value for
   /// the [SpellCheckService] if left unspecified.
   static SpellCheckConfiguration _inferSpellCheckConfiguration(
-    SpellCheckConfiguration? configuration,
-  ) {
+    SpellCheckConfiguration? configuration, {
+    required bool obscureText,
+    required TextInputType keyboardType,
+    required Iterable<String>? autofillHints,
+  }) {
     final SpellCheckService? spellCheckService =
         configuration?.spellCheckService;
     final bool spellCheckAutomaticallyDisabled =
+        _isPasswordInput(
+          obscureText: obscureText,
+          keyboardType: keyboardType,
+          autofillHints: autofillHints,
+        ) ||
         configuration == null ||
         configuration == const SpellCheckConfiguration.disabled();
     final bool spellCheckServiceIsConfigured =
@@ -2844,8 +2862,8 @@ class EditableTextState extends State<EditableText>
             .nativeSpellCheckServiceDefined;
     if (spellCheckAutomaticallyDisabled || !spellCheckServiceIsConfigured) {
       // Only enable spell check if a non-disabled configuration is provided
-      // and if that configuration does not specify a spell check service,
-      // a native spell checker must be supported.
+      // for non-password input and, if that configuration does not specify a
+      // spell check service, a native spell checker must be supported.
       assert(() {
         if (!spellCheckAutomaticallyDisabled &&
             !spellCheckServiceIsConfigured) {
@@ -2871,6 +2889,21 @@ class EditableTextState extends State<EditableText>
     return configuration.copyWith(
       spellCheckService: spellCheckService ?? DefaultSpellCheckService(),
     );
+  }
+
+  static bool _isPasswordInput({
+    required bool obscureText,
+    required TextInputType keyboardType,
+    required Iterable<String>? autofillHints,
+  }) {
+    return obscureText ||
+        keyboardType == TextInputType.visiblePassword ||
+        (autofillHints?.any(
+              (String hint) =>
+                  hint == AutofillHints.password ||
+                  hint == AutofillHints.newPassword,
+            ) ??
+            false);
   }
 
   /// Returns the [ContextMenuButtonItem]s for the given [ToolbarOptions].
@@ -3099,6 +3132,9 @@ class EditableTextState extends State<EditableText>
     _cursorVisibilityNotifier.value = widget.showCursor;
     _spellCheckConfiguration = _inferSpellCheckConfiguration(
       widget.spellCheckConfiguration,
+      obscureText: widget.obscureText,
+      keyboardType: widget.keyboardType,
+      autofillHints: widget.autofillHints,
     );
     _appLifecycleListener = AppLifecycleListener(onResume: _onResume);
     _initProcessTextActions();
@@ -3230,8 +3266,31 @@ class EditableTextState extends State<EditableText>
       _updateRemoteEditingValueIfNeeded();
     }
 
+    // If only the identity of the context menu builder closure changed (e.g.
+    // an inline lambda on every rebuild), the [TextSelectionOverlay] does
+    // not need to be recreated.
+    //
+    // We just need to trigger a rebuild of the currently-shown toolbar so its
+    // overlay entry picks up the new closure.
+    final TextSelectionOverlay? selectionOverlay = _selectionOverlay;
+    if (selectionOverlay != null &&
+        selectionOverlay.toolbarIsVisible &&
+        widget.contextMenuBuilder != oldWidget.contextMenuBuilder &&
+        (widget.contextMenuBuilder == null) ==
+            (oldWidget.contextMenuBuilder == null)) {
+      // Deferred to the next frame because showToolbar() calls
+      // renderBox.localToGlobal(), which requires a fully laid-out render
+      // tree, and didUpdateWidget is called before layout.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && (_selectionOverlay?.toolbarIsVisible ?? false)) {
+          _selectionOverlay!.showToolbar();
+        }
+      });
+    }
+
     if (_selectionOverlay != null &&
-        (widget.contextMenuBuilder != oldWidget.contextMenuBuilder ||
+        ((widget.contextMenuBuilder == null) !=
+                (oldWidget.contextMenuBuilder == null) ||
             widget.selectionControls != oldWidget.selectionControls ||
             widget.onSelectionHandleTapped !=
                 oldWidget.onSelectionHandleTapped ||
@@ -3299,6 +3358,28 @@ class EditableTextState extends State<EditableText>
         _textInputConnection!.updateConfig(
           _effectiveAutofillClient.textInputConfiguration,
         );
+      }
+    }
+
+    if (oldWidget.spellCheckConfiguration != widget.spellCheckConfiguration ||
+        oldWidget.obscureText != widget.obscureText ||
+        oldWidget.keyboardType != widget.keyboardType ||
+        !listEquals<String>(
+          oldWidget.autofillHints?.toList(growable: false),
+          widget.autofillHints?.toList(growable: false),
+        )) {
+      _spellCheckConfiguration = _inferSpellCheckConfiguration(
+        widget.spellCheckConfiguration,
+        obscureText: widget.obscureText,
+        keyboardType: widget.keyboardType,
+        autofillHints: widget.autofillHints,
+      );
+      if (spellCheckEnabled) {
+        if (textEditingValue.text.isNotEmpty) {
+          _performSpellCheck(textEditingValue.text);
+        }
+      } else {
+        spellCheckResults = null;
       }
     }
 
@@ -4146,8 +4227,7 @@ class EditableTextState extends State<EditableText>
       _openInputConnection();
     } else {
       _flagInternalFocus();
-      widget.focusNode
-          .requestFocus(); // This eventually calls _openInputConnection also, see _handleFocusChanged.
+      widget.focusNode.requestFocus(); // This eventually calls _openInputConnection also, see _handleFocusChanged.
     }
   }
 
@@ -4374,9 +4454,17 @@ class EditableTextState extends State<EditableText>
     return true;
   }
 
+  // Stable method reference that dispatches to the current
+  // widget.contextMenuBuilder.
+  //
+  // The identity of this method is constant across rebuilds, so passing it to
+  // the TextSelectionOverlay means the overlay never has to be recreated when
+  // only the builder closure changes.
+  Widget _contextMenuBuilder(BuildContext context) {
+    return widget.contextMenuBuilder!(context, this);
+  }
+
   TextSelectionOverlay _createSelectionOverlay() {
-    final EditableTextContextMenuBuilder? contextMenuBuilder =
-        widget.contextMenuBuilder;
     final selectionOverlay = TextSelectionOverlay(
       controller: widget.controller,
       clipboardStatus: clipboardStatus,
@@ -4391,11 +4479,10 @@ class EditableTextState extends State<EditableText>
       selectionDelegate: this,
       dragStartBehavior: widget.dragStartBehavior,
       onSelectionHandleTapped: widget.onSelectionHandleTapped,
-      contextMenuBuilder: contextMenuBuilder == null || _webContextMenuEnabled
+      contextMenuBuilder:
+          widget.contextMenuBuilder == null || _webContextMenuEnabled
           ? null
-          : (BuildContext context) {
-              return contextMenuBuilder(context, this);
-            },
+          : _contextMenuBuilder,
       magnifierConfiguration: widget.magnifierConfiguration,
     );
 
@@ -4588,7 +4675,7 @@ class EditableTextState extends State<EditableText>
     _lastBottomViewInset = view.viewInsets.bottom;
   }
 
-  Future<void> _performSpellCheck(final String text) async {
+  Future<void> _performSpellCheck(String text) async {
     try {
       final Locale? localeForSpellChecking =
           widget.locale ?? Localizations.maybeLocaleOf(context);
@@ -4602,9 +4689,10 @@ class EditableTextState extends State<EditableText>
           .spellCheckService!
           .fetchSpellCheckSuggestions(localeForSpellChecking!, text);
 
-      if (suggestions == null || !mounted) {
+      if (suggestions == null || !mounted || !spellCheckEnabled) {
         // The request to fetch spell check suggestions was canceled due to ongoing request,
-        // or the widget was unmounted.
+        // the widget was unmounted, or spell check was disabled before the
+        // request completed.
         return;
       }
 
@@ -5229,9 +5317,7 @@ class EditableTextState extends State<EditableText>
   /// available for click-and-replace.
   bool showSpellCheckSuggestionsToolbar() {
     // Spell check suggestions toolbars are intended to be shown on non-web
-    // platforms. Additionally, the Cupertino style toolbar can't be drawn on
-    // the web with the HTML renderer due to
-    // https://github.com/flutter/flutter/issues/123560.
+    // platforms.
     if (!spellCheckEnabled ||
         _webContextMenuEnabled ||
         widget.readOnly ||
@@ -5996,103 +6082,100 @@ class EditableTextState extends State<EditableText>
                             scrollbars: _isMultiline,
                             overscroll: false,
                           ),
-                      viewportBuilder:
-                          (BuildContext context, ViewportOffset offset) {
-                            return CompositedTransformTarget(
-                              link: _toolbarLayerLink,
-                              child: Semantics(
-                                inputType: inputType,
-                                onCopy: _semanticsOnCopy(controls),
-                                onCut: _semanticsOnCut(controls),
-                                onPaste: _semanticsOnPaste(controls),
-                                child: _ScribbleFocusable(
-                                  editableKey: _editableKey,
-                                  enabled: _stylusHandwritingEnabled,
-                                  focusNode: widget.focusNode,
-                                  updateSelectionRects: () {
-                                    _openInputConnection();
-                                    _updateSelectionRects(force: true);
-                                  },
-                                  child: SizeChangedLayoutNotifier(
-                                    child: _Editable(
-                                      key: _editableKey,
-                                      controller: widget.controller,
-                                      startHandleLayerLink:
-                                          _startHandleLayerLink,
-                                      endHandleLayerLink: _endHandleLayerLink,
-                                      inlineSpan:
-                                          _OverridingTextStyleTextSpanUtils.applyTextSpacingOverrides(
-                                            lineHeightScaleFactor:
-                                                lineHeightScaleFactor,
-                                            letterSpacing: letterSpacing,
-                                            wordSpacing: wordSpacing,
-                                            textSpan: buildTextSpan(),
-                                          ),
-                                      value: _value,
-                                      cursorColor: _cursorColor,
-                                      backgroundCursorColor:
-                                          widget.backgroundCursorColor,
-                                      showCursor: _cursorVisibilityNotifier,
-                                      forceLine: widget.forceLine,
-                                      readOnly: widget.readOnly,
-                                      hasFocus: _hasFocus,
-                                      maxLines: widget.maxLines,
-                                      minLines: widget.minLines,
-                                      expands: widget.expands,
-                                      strutStyle: widget.strutStyle.merge(
-                                        StrutStyle(
-                                          height: lineHeightScaleFactor,
-                                        ),
+                      viewportBuilder: (BuildContext context, ViewportOffset offset) {
+                        return CompositedTransformTarget(
+                          link: _toolbarLayerLink,
+                          child: Semantics(
+                            inputType: inputType,
+                            onCopy: _semanticsOnCopy(controls),
+                            onCut: _semanticsOnCut(controls),
+                            onPaste: _semanticsOnPaste(controls),
+                            child: _ScribbleFocusable(
+                              editableKey: _editableKey,
+                              enabled: _stylusHandwritingEnabled,
+                              focusNode: widget.focusNode,
+                              updateSelectionRects: () {
+                                _openInputConnection();
+                                _updateSelectionRects(force: true);
+                              },
+                              child: SizeChangedLayoutNotifier(
+                                child: _Editable(
+                                  key: _editableKey,
+                                  controller: widget.controller,
+                                  startHandleLayerLink: _startHandleLayerLink,
+                                  endHandleLayerLink: _endHandleLayerLink,
+                                  inlineSpan:
+                                      _OverridingTextStyleTextSpanUtils.applyTextSpacingOverrides(
+                                        lineHeightScaleFactor:
+                                            lineHeightScaleFactor,
+                                        letterSpacing: letterSpacing,
+                                        wordSpacing: wordSpacing,
+                                        textSpan: buildTextSpan(),
                                       ),
-                                      selectionColor:
-                                          _selectionOverlay
-                                                  ?.spellCheckToolbarIsVisible ??
-                                              false
-                                          ? _spellCheckConfiguration
-                                                    .misspelledSelectionColor ??
-                                                widget.selectionColor
-                                          : widget.selectionColor,
-                                      textScaler: effectiveTextScaler,
-                                      textAlign: widget.textAlign,
-                                      textDirection: _textDirection,
-                                      locale: widget.locale,
-                                      textHeightBehavior:
-                                          widget.textHeightBehavior ??
-                                          DefaultTextHeightBehavior.maybeOf(
-                                            context,
-                                          ),
-                                      textWidthBasis: widget.textWidthBasis,
-                                      obscuringCharacter:
-                                          widget.obscuringCharacter,
-                                      obscureText: widget.obscureText,
-                                      offset: offset,
-                                      rendererIgnoresPointer:
-                                          widget.rendererIgnoresPointer,
-                                      cursorWidth: widget.cursorWidth,
-                                      cursorHeight: widget.cursorHeight,
-                                      cursorRadius: widget.cursorRadius,
-                                      cursorOffset:
-                                          widget.cursorOffset ?? Offset.zero,
-                                      selectionHeightStyle:
-                                          widget.selectionHeightStyle,
-                                      selectionWidthStyle:
-                                          widget.selectionWidthStyle,
-                                      paintCursorAboveText:
-                                          widget.paintCursorAboveText,
-                                      enableInteractiveSelection:
-                                          widget._userSelectionEnabled,
-                                      textSelectionDelegate: this,
-                                      devicePixelRatio: _devicePixelRatio,
-                                      promptRectRange: _currentPromptRectRange,
-                                      promptRectColor:
-                                          widget.autocorrectionTextRectColor,
-                                      clipBehavior: widget.clipBehavior,
+                                  value: _value,
+                                  cursorColor: _cursorColor,
+                                  backgroundCursorColor:
+                                      widget.backgroundCursorColor,
+                                  showCursor: _cursorVisibilityNotifier,
+                                  forceLine: widget.forceLine,
+                                  readOnly: widget.readOnly,
+                                  hasFocus: _hasFocus,
+                                  maxLines: widget.maxLines,
+                                  minLines: widget.minLines,
+                                  expands: widget.expands,
+                                  strutStyle: widget.strutStyle.merge(
+                                    StrutStyle(
+                                      height: lineHeightScaleFactor,
                                     ),
                                   ),
+                                  selectionColor:
+                                      _selectionOverlay
+                                              ?.spellCheckToolbarIsVisible ??
+                                          false
+                                      ? _spellCheckConfiguration
+                                                .misspelledSelectionColor ??
+                                            widget.selectionColor
+                                      : widget.selectionColor,
+                                  textScaler: effectiveTextScaler,
+                                  textAlign: widget.textAlign,
+                                  textDirection: _textDirection,
+                                  locale: widget.locale,
+                                  textHeightBehavior:
+                                      widget.textHeightBehavior ??
+                                      DefaultTextHeightBehavior.maybeOf(
+                                        context,
+                                      ),
+                                  textWidthBasis: widget.textWidthBasis,
+                                  obscuringCharacter: widget.obscuringCharacter,
+                                  obscureText: widget.obscureText,
+                                  offset: offset,
+                                  rendererIgnoresPointer:
+                                      widget.rendererIgnoresPointer,
+                                  cursorWidth: widget.cursorWidth,
+                                  cursorHeight: widget.cursorHeight,
+                                  cursorRadius: widget.cursorRadius,
+                                  cursorOffset:
+                                      widget.cursorOffset ?? Offset.zero,
+                                  selectionHeightStyle:
+                                      widget.selectionHeightStyle,
+                                  selectionWidthStyle:
+                                      widget.selectionWidthStyle,
+                                  paintCursorAboveText:
+                                      widget.paintCursorAboveText,
+                                  enableInteractiveSelection:
+                                      widget._userSelectionEnabled,
+                                  textSelectionDelegate: this,
+                                  devicePixelRatio: _devicePixelRatio,
+                                  promptRectRange: _currentPromptRectRange,
+                                  promptRectColor:
+                                      widget.autocorrectionTextRectColor,
+                                  clipBehavior: widget.clipBehavior,
                                 ),
                               ),
-                            );
-                          },
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),

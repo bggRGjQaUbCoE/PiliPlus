@@ -1,7 +1,10 @@
 import 'package:PiliPlus/common/skeleton/video_reply.dart';
+import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/scaffold/mini_scaffold.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
@@ -20,8 +23,8 @@ import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:easy_debounce/easy_throttle.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 enum DynType implements EnumWithLabel {
   reply('评论'),
@@ -117,7 +120,7 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
               icon: Icon(Icons.sort, size: 16, color: secondary),
               label: Obx(
                 () => Text(
-                  controller.sortType.value.label,
+                  controller.sortType.value.descShort,
                   style: TextStyle(fontSize: 13, color: secondary),
                 ),
               ),
@@ -131,9 +134,12 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
   Widget replyList(LoadingState<List<ReplyInfo>?> loadingState) {
     switch (loadingState) {
       case Loading():
-        return SliverList.builder(
-          itemCount: 12,
-          itemBuilder: (context, index) => const VideoReplySkeleton(),
+        return const SliverPrototypeExtentList(
+          prototypeItem: VideoReplySkeleton(),
+          delegate: SliverSingleChildDelegate(
+            count: 12,
+            child: VideoReplySkeleton(),
+          ),
         );
       case Success(:final response):
         if (response != null && response.isNotEmpty) {
@@ -171,15 +177,13 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
                 return ReplyItemGrpc(
                   replyItem: response[index],
                   replyLevel: 1,
-                  replyReply: (replyItem, id) =>
-                      replyReply(context, replyItem, id),
+                  replyReply: (item, id) => replyReply(context, item, id),
                   onReply: controller.onReply,
                   onDelete: (item, subIndex) =>
                       controller.onRemove(index, item, subIndex),
                   upMid: controller.upMid,
                   onViewImage: hideFab,
-                  onCheckReply: (item) =>
-                      controller.onCheckReply(item, isManual: true),
+                  onCheckReply: controller.onCheckReply,
                   onToggleTop: (item) => controller.onToggleTop(
                     item,
                     index,
@@ -235,8 +239,7 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
           ),
         );
         if (showBackBtn) {
-          return Scaffold(
-            resizeToAvoidBottomInset: false,
+          return SimpleScaffold(
             appBar: AppBar(
               title: const Text('评论详情'),
               shape: Border(
@@ -258,11 +261,11 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
           arguments: arguments,
         );
       } else {
-        final scaffoldState = Scaffold.maybeOf(context);
+        final scaffoldState = MiniScaffold.maybeOf(context);
         if (scaffoldState != null) {
           hideFab();
           scaffoldState.showBottomSheet(
-            backgroundColor: Colors.transparent,
+            constraints: const BoxConstraints(),
             (context) => replyReplyPage(showBackBtn: false),
           );
         } else {
@@ -320,7 +323,10 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
       : const NoBottomPaddingFabLocation();
 
   Widget get fabButton => Padding(
-    padding: .only(bottom: padding.bottom + kFloatingActionButtonMargin),
+    padding: .only(
+      right: kFloatingActionButtonMargin + padding.right,
+      bottom: kFloatingActionButtonMargin + padding.bottom,
+    ),
     child: replyButton,
   );
 

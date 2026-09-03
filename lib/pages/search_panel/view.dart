@@ -4,8 +4,8 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/search/search_type.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/pages/search_panel/controller.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 abstract class CommonSearchPanel extends StatefulWidget {
   const CommonSearchPanel({

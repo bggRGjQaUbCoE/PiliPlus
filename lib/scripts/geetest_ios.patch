@@ -12,9 +12,9 @@ index 000000000..2823c2188
 +import 'package:gt3_flutter_plugin/gt3_flutter_plugin.dart';
 +
 +abstract final class GeetestPlugin {
-+  static Future geetest(String gt, String challenge) {
-+    final completer = Completer();
-+    void complete([result]) {
++  static Future<Map<String, dynamic>?> geetest(String gt, String challenge) {
++    final completer = Completer<Map<String, dynamic>?>();
++    void complete([Map<String, dynamic>? result]) {
 +      if (!completer.isCompleted) {
 +        completer.complete(result);
 +      }
@@ -38,7 +38,7 @@ index 000000000..2823c2188
 +          final String code = message["code"];
 +          if (code == "1") {
 +            // 发送 message["result"] 中的数据向 B 端的业务服务接口进行查询
-+            complete(message['result']);
++            complete(Map<String, dynamic>.from(message['result']));
 +            return;
 +          } else {
 +            // 终端用户完成验证失败，自动重试 If the verification fails, it will be automatically retried.
@@ -127,9 +127,9 @@ index 7a0461170..da032af1a 100644
 @@ -22,6 +24,7 @@ class GeetestWebviewDialog extends StatefulWidget {
    State<GeetestWebviewDialog> createState() => _GeetestWebviewDialogState();
  
-   static Future geetest(String gt, String challenge) {
+   static Future<Map<String, dynamic>?> geetest(String gt, String challenge) {
 +    return GeetestPlugin.geetest(gt, challenge);
-     return showDialog(
+     return showDialog<Map<String, dynamic>>(
        context: Get.context!,
        builder: (context) => GeetestWebviewDialog(gt, challenge),
 diff --git a/pubspec.yaml b/pubspec.yaml

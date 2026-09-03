@@ -1,13 +1,15 @@
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:flutter/material.dart' hide ListTile;
+import 'package:material_ui/material_ui.dart' hide ListTile;
 
-typedef PopupMenuItemSelected<T> =
-    void Function(T value, VoidCallback setState);
+typedef PopupMenuItemSelected<T> = void Function(
+  T value,
+  VoidCallback setState,
+);
 
 List<PopupMenuEntry<T>> enumItemBuilder<T extends EnumWithLabel>(
-  List<T> items,
+  Iterable<T> items,
 ) => items.map((e) => PopupMenuItem(value: e, child: Text(e.label))).toList();
 
 enum DescPosType { subtitle, title, trailing }
@@ -24,7 +26,8 @@ class PopupListTile<T> extends StatefulWidget {
     required this.value,
     required this.itemBuilder,
     required this.onSelected,
-    this.descFontSize = 13,
+    this.titleStyle,
+    this.descStyle,
   });
 
   final bool? dense;
@@ -37,7 +40,8 @@ class PopupListTile<T> extends StatefulWidget {
   final ValueGetter<(T, String)> value;
   final PopupMenuItemBuilder<T> itemBuilder;
   final PopupMenuItemSelected<T> onSelected;
-  final double descFontSize;
+  final TextStyle? titleStyle;
+  final TextStyle? descStyle;
 
   @override
   State<PopupListTile<T>> createState() => _PopupListTileState<T>();
@@ -52,24 +56,20 @@ class _PopupListTileState<T> extends State<PopupListTile<T>> {
     if (PlatformUtils.isDesktop) {
       dx = details.globalPosition.dx + 1;
     } else {
-      final thisBox = context.findRenderObject() as RenderBox;
+      final thisBox = context.findRenderObject();
       final titleBox = _key!.currentContext!.findRenderObject() as RenderBox;
       final titleOffset = titleBox.localToGlobal(.zero, ancestor: thisBox);
       dx = thisOffset.dx + titleOffset.dx;
     }
-    showMenu<T?>(
+    showMenu<T>(
       context: context,
       position: RelativeRect.fromLTRB(dx, thisOffset.dy + 5, dx, 0),
       items: widget.itemBuilder(context),
       initialValue: value,
       requestFocus: false,
-    ).then<void>((T? newValue) {
-      if (!mounted) {
-        return;
-      }
-      if (newValue == null || newValue == value) {
-        return;
-      }
+    ).then<void>((newValue) {
+      if (!mounted) return;
+      if (newValue == null || newValue == value) return;
       widget.onSelected(newValue, _refresh);
     });
   }
@@ -89,8 +89,7 @@ class _PopupListTileState<T> extends State<PopupListTile<T>> {
     Widget? trailing;
     final desc = Text(
       descStr,
-      style: TextStyle(
-        fontSize: widget.descFontSize,
+      style: (widget.descStyle ?? theme.textTheme.labelMedium!).copyWith(
         color: widget.enabled
             ? theme.colorScheme.secondary
             : theme.disabledColor,
@@ -115,6 +114,7 @@ class _PopupListTileState<T> extends State<PopupListTile<T>> {
       onTapUp: (details) => _showButtonMenu(details, value),
       leading: widget.leading,
       title: title,
+      titleTextStyle: widget.titleStyle ?? theme.textTheme.titleMedium,
       subtitle: subtitle,
       trailing: trailing,
     );

@@ -8,9 +8,9 @@ import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 // 视频卡片 - 垂直布局
 class LiveCardVApp extends StatelessWidget {
@@ -33,11 +33,11 @@ class LiveCardVApp extends StatelessWidget {
     return Stack(
       children: [
         Card(
-          clipBehavior: Clip.hardEdge,
           child: InkWell(
             onTap: () => PageUtils.toLiveRoom(item.roomid),
             onLongPress: onLongPress,
             onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
+            borderRadius: const .all(.circular(12)),
             child: Column(
               crossAxisAlignment: .start,
               children: [
@@ -51,7 +51,7 @@ class LiveCardVApp extends StatelessWidget {
                           src: showFirstFrame ? item.systemCover : item.cover,
                           width: boxConstraints.maxWidth,
                           height: boxConstraints.maxHeight,
-                          type: .emote,
+                          borderRadius: const .vertical(top: .circular(12)),
                         ),
                         Positioned(
                           left: 0,

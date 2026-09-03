@@ -3,7 +3,8 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/avatars.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart'
+    show tabBarScrollPhysics;
 import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
@@ -39,9 +40,9 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class UserInfoCard extends StatelessWidget {
   const UserInfoCard({
@@ -635,7 +636,7 @@ class UserInfoCard extends StatelessWidget {
             child: PageView.builder(
               controller: controller,
               itemCount: imgUrls.length,
-              physics: clampingScrollPhysics,
+              physics: tabBarScrollPhysics,
               itemBuilder: (context, index) {
                 final img = imgUrls[index];
                 return fromHero(

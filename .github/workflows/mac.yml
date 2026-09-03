@@ -35,7 +35,7 @@ jobs:
         run: lib/scripts/patch.ps1 macOS
 
       - name: Build Mac
-        run: flutter build macos --release --dart-define-from-file=pili_release.json
+        run: flutter build macos --release --dart-define-from-file=pili_release.json --no-pub
 
       - name: Prepare Upload
         run: |

@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/skeleton/video_card_h.dart';
+import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/video_card/video_card_h.dart';
 import 'package:PiliPlus/models/search/result.dart';
@@ -9,8 +10,8 @@ import 'package:PiliPlus/pages/search_panel/user/widgets/item.dart';
 import 'package:PiliPlus/pages/search_panel/view.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/waterfall.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:waterfall_flow/waterfall_flow.dart'
     hide SliverWaterfallFlowDelegateWithMaxCrossAxisExtent;
 
@@ -103,9 +104,11 @@ class _SearchAllPanelState
   }
 
   @override
-  Widget get buildLoading => SliverGrid.builder(
+  Widget get buildLoading => SliverGrid(
     gridDelegate: Grid.videoCardHDelegate(),
-    itemBuilder: (context, index) => const VideoCardHSkeleton(),
-    itemCount: 10,
+    delegate: const SliverSingleChildDelegate(
+      count: 10,
+      child: VideoCardHSkeleton(),
+    ),
   );
 }

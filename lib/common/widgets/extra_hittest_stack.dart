@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart'
     show RenderStack, BoxHitTestResult, BoxHitTestEntry;
+import 'package:material_ui/material_ui.dart';
 
 class ExtraHitTestStack extends Stack {
   const ExtraHitTestStack({

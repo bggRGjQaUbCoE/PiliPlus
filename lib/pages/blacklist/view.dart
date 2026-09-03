@@ -1,7 +1,9 @@
 import 'package:PiliPlus/common/skeleton/msg_feed_top.dart';
+import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/blacklist/list.dart';
@@ -9,8 +11,8 @@ import 'package:PiliPlus/pages/blacklist/controller.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class BlackListPage extends StatefulWidget {
   const BlackListPage({super.key});
@@ -34,8 +36,7 @@ class _BlackListPageState extends State<BlackListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return SimpleScaffold(
       appBar: AppBar(
         title: Obx(
           () => Text(
@@ -66,9 +67,12 @@ class _BlackListPageState extends State<BlackListPage> {
   Widget _buildBody(LoadingState<List<BlackListItem>?> loadingState) {
     late final style = TextStyle(color: Theme.of(context).colorScheme.outline);
     return switch (loadingState) {
-      Loading() => SliverList.builder(
-        itemCount: 12,
-        itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
+      Loading() => const SliverPrototypeExtentList(
+        prototypeItem: MsgFeedTopSkeleton(),
+        delegate: SliverSingleChildDelegate(
+          count: 12,
+          child: MsgFeedTopSkeleton(),
+        ),
       ),
       Success(:final response) =>
         response != null && response.isNotEmpty

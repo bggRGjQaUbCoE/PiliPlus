@@ -5,9 +5,9 @@ import 'package:PiliPlus/models_new/fav/fav_pgc/data.dart';
 import 'package:PiliPlus/models_new/fav/fav_pgc/list.dart';
 import 'package:PiliPlus/pages/common/multi_select/multi_select_controller.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class FavPgcController
     extends MultiSelectController<FavPgcData, FavPgcItemModel> {

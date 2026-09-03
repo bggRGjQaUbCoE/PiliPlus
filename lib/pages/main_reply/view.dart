@@ -1,7 +1,9 @@
 import 'package:PiliPlus/common/skeleton/video_reply.dart';
+import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
@@ -16,8 +18,8 @@ import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:easy_debounce/easy_throttle.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class MainReplyPage extends StatefulWidget {
   const MainReplyPage({super.key});
@@ -57,8 +59,7 @@ class _MainReplyPageState extends State<MainReplyPage>
   @override
   Widget build(BuildContext context) {
     final colorScheme = ColorScheme.of(context);
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return SimpleScaffold(
       appBar: AppBar(title: const Text('查看评论')),
       body: fabAnimWrapper(
         child: refreshIndicator(
@@ -80,11 +81,13 @@ class _MainReplyPageState extends State<MainReplyPage>
           ),
         ).constraintWidth(),
       ),
-      floatingActionButtonLocation: const NoBottomPaddingFabLocation(),
-      floatingActionButton: SlideTransition(
+      fab: SlideTransition(
         position: fabAnimation,
         child: Padding(
-          padding: .only(bottom: padding.bottom + kFloatingActionButtonMargin),
+          padding: .only(
+            right: kFloatingActionButtonMargin + padding.right,
+            bottom: kFloatingActionButtonMargin + padding.bottom,
+          ),
           child: FloatingActionButton(
             heroTag: null,
             onPressed: () {
@@ -110,10 +113,12 @@ class _MainReplyPageState extends State<MainReplyPage>
     LoadingState<List<ReplyInfo>?> loadingState,
   ) {
     return switch (loadingState) {
-      Loading() => SliverPrototypeExtentList.builder(
-        itemCount: 10,
-        itemBuilder: (_, _) => const VideoReplySkeleton(),
-        prototypeItem: const VideoReplySkeleton(),
+      Loading() => const SliverPrototypeExtentList(
+        prototypeItem: VideoReplySkeleton(),
+        delegate: SliverSingleChildDelegate(
+          count: 10,
+          child: VideoReplySkeleton(),
+        ),
       ),
       Success(:final response) =>
         response != null && response.isNotEmpty
@@ -144,8 +149,7 @@ class _MainReplyPageState extends State<MainReplyPage>
                       onDelete: (item, subIndex) =>
                           _controller.onRemove(index, item, subIndex),
                       upMid: _controller.upMid,
-                      onCheckReply: (item) =>
-                          _controller.onCheckReply(item, isManual: true),
+                      onCheckReply: _controller.onCheckReply,
                       onToggleTop: (item) => _controller.onToggleTop(
                         item,
                         index,
@@ -190,7 +194,7 @@ class _MainReplyPageState extends State<MainReplyPage>
               icon: Icon(Icons.sort, size: 16, color: secondary),
               label: Obx(
                 () => Text(
-                  _controller.sortType.value.label,
+                  _controller.sortType.value.descShort,
                   style: TextStyle(fontSize: 13, color: secondary),
                 ),
               ),
@@ -211,8 +215,7 @@ class _MainReplyPageState extends State<MainReplyPage>
       int oid = replyItem.oid.toInt();
       int rpid = replyItem.id.toInt();
       Get.to(
-        Scaffold(
-          resizeToAvoidBottomInset: false,
+        SimpleScaffold(
           appBar: AppBar(
             title: const Text('评论详情'),
             shape: Border(

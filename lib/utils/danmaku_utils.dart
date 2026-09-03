@@ -13,4 +13,10 @@ abstract final class DmUtils {
     7 => DanmakuItemType.special,
     _ => DanmakuItemType.scroll,
   };
+
+  static const int segLength = 60 * 6 * 1000;
+
+  static int calcSegment(int progress) {
+    return progress ~/ segLength;
+  }
 }

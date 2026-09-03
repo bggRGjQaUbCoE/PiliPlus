@@ -6,8 +6,8 @@ import 'package:PiliPlus/models/model_hot_video_item.dart';
 import 'package:PiliPlus/pages/rank/zone/controller.dart';
 import 'package:PiliPlus/pages/rank/zone/widget/pgc_rank_item.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ZonePage extends StatefulWidget {
   const ZonePage({super.key, this.rid, this.seasonType});

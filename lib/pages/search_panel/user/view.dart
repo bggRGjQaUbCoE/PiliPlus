@@ -1,13 +1,14 @@
 import 'package:PiliPlus/common/skeleton/msg_feed_top.dart';
+import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/pages/search_panel/user/controller.dart';
 import 'package:PiliPlus/pages/search_panel/user/widgets/item.dart';
 import 'package:PiliPlus/pages/search_panel/view.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:flutter/material.dart'
-    hide SliverGridDelegateWithMaxCrossAxisExtent;
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart'
+    hide SliverGridDelegateWithMaxCrossAxisExtent;
 
 class SearchUserPanel extends CommonSearchPanel {
   const SearchUserPanel({
@@ -112,9 +113,11 @@ class _SearchUserPanelState
   }
 
   @override
-  Widget get buildLoading => SliverGrid.builder(
+  Widget get buildLoading => SliverGrid(
     gridDelegate: gridDelegate,
-    itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
-    itemCount: 10,
+    delegate: const SliverSingleChildDelegate(
+      count: 10,
+      child: MsgFeedTopSkeleton(),
+    ),
   );
 }

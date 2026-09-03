@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class MultiSelectDialog<T> extends StatefulWidget {
   final Iterable<T> initValues;
@@ -45,7 +45,6 @@ class _MultiSelectDialogState<T> extends State<MultiSelectDialog<T>> {
                   return CheckboxListTile(
                     dense: true,
                     value: isChecked,
-                    controlAffinity: ListTileControlAffinity.leading,
                     title: Text(
                       i.value,
                       style: theme.textTheme.titleMedium!,

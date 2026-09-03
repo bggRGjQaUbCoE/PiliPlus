@@ -6,8 +6,8 @@ import 'package:PiliPlus/models_new/msg/msgfeed_unread.dart';
 import 'package:PiliPlus/pages/common/common_whisper_controller.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:protobuf/protobuf.dart' show PbMap;
 
 class WhisperController extends CommonWhisperController<SessionMainReply> {

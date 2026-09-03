@@ -1,42 +1,29 @@
 import 'package:PiliPlus/common/skeleton/skeleton.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class VideoReplySkeleton extends StatelessWidget {
   const VideoReplySkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
-    Color bgColor = Theme.of(context).colorScheme.onInverseSurface;
+    Color bgColor = ColorScheme.of(context).onInverseSurface;
     return Skeleton(
       child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 8, 8, 2),
             child: Row(
+              spacing: 12,
               children: [
                 ClipOval(
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    color: bgColor,
-                  ),
+                  child: Container(width: 34, height: 34, color: bgColor),
                 ),
-                const SizedBox(width: 12),
-                Container(
-                  width: 80,
-                  height: 13,
-                  color: bgColor,
-                ),
+                Container(width: 80, height: 13, color: bgColor),
               ],
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(
-              top: 4,
-              left: 57,
-              right: 6,
-              bottom: 6,
-            ),
+            padding: const .only(top: 4, left: 57, right: 6, bottom: 6),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

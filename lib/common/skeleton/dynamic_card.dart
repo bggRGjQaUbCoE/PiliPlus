@@ -1,6 +1,6 @@
 import 'package:PiliPlus/common/skeleton/skeleton.dart';
 import 'package:PiliPlus/utils/global_data.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class DynamicCardSkeleton extends StatelessWidget {
   const DynamicCardSkeleton({super.key});
@@ -12,9 +12,7 @@ class DynamicCardSkeleton extends StatelessWidget {
     final buttonStyle = TextButton.styleFrom(
       tapTargetSize: .padded,
       padding: const .symmetric(horizontal: 15),
-      foregroundColor: theme.colorScheme.outline.withValues(
-        alpha: 0.2,
-      ),
+      foregroundColor: theme.colorScheme.outline.withValues(alpha: 0.2),
     );
     return Skeleton(
       child: Container(
@@ -50,11 +48,7 @@ class DynamicCardSkeleton extends StatelessWidget {
                       height: 13,
                       margin: const EdgeInsets.only(bottom: 5),
                     ),
-                    Container(
-                      color: color,
-                      width: 50,
-                      height: 11,
-                    ),
+                    Container(color: color, width: 50, height: 11),
                   ],
                 ),
               ],

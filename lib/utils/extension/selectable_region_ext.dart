@@ -1,38 +1,41 @@
+import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show Selectable;
+import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 extension SelectableRegionStateExt on SelectableRegionState {
+  static final _schemeRegex = RegExp(r'[\w\-]+://\S');
+
   void addLaunchMenuIfNeeded(
     List<ContextMenuButtonItem> buttonItems, {
     required int index,
   }) {
     if (isUncollapsed) {
+      final isScheme = selectedText?.startsWith(_schemeRegex) == true;
       buttonItems.insertOrAdd(
         index,
         ContextMenuButtonItem(
-          label: '打开',
-          onPressed: () {
-            onMenuPressed(
-              PageUtils.launchURL,
-              content: () => selectedText?.trim(),
-            );
-          },
+          label: isScheme ? '打开' : '站内搜索',
+          onPressed: () => onMenuPressed(
+            isScheme
+                ? PageUtils.handleWebview
+                : (text) => Get.offOrToNamed(
+                    '/searchResult',
+                    parameters: {'keyword': text},
+                    off: Get.routing.route is! PageRoute,
+                  ),
+          ),
         ),
       );
     }
   }
 
-  String? get selectedText => ((this as dynamic).selectable as Selectable?)
-      ?.getSelectedContent()
-      ?.plainText;
+  /// apply `lib/scripts/selectable_region.patch`
+  String? get selectedText => selectable?.getSelectedContent()?.plainText;
 
-  bool get isUncollapsed =>
-      ((this as dynamic).selectionDelegate as StaticSelectionContainerDelegate)
-          .value
-          .status ==
-      .uncollapsed;
+  /// apply `lib/scripts/selectable_region.patch`
+  bool get isUncollapsed => selectionDelegate.value.status == .uncollapsed;
 
   void onMenuPressed(
     ValueChanged<String> callback, {

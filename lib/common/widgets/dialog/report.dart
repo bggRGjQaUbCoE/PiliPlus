@@ -1,26 +1,70 @@
+import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/radio_widget.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:material_ui/material_ui.dart';
+
+typedef ReasonCheck = bool Function(int? reasonType);
+
+bool _kReportCheck(int? reasonType) => reasonType == 0;
+
+typedef OnReport = Future<LoadingState> Function(
+  int reasonType,
+  String? reasonDesc,
+  bool banUid,
+);
 
 Future<void> autoWrapReportDialog(
   BuildContext context,
   Map<String, Map<int, String>> options,
-  Future<LoadingState> Function(int reasonType, String? reasonDesc, bool banUid)
-  onSuccess, {
+  OnReport onReport, {
   bool ban = true,
+  String? reportUrl,
+  ReasonCheck withContent = _kReportCheck,
+  ReasonCheck contentRequired = _kReportCheck,
 }) {
   int? reasonType;
   String? reasonDesc;
   bool banUid = false;
   late final key = GlobalKey<FormFieldState<String>>();
+
+  bool isWithContent = withContent(reasonType);
+  bool isContentRequired = contentRequired(reasonType);
+
+  void updateReasonType(int? value) {
+    reasonType = value;
+    isWithContent = withContent(reasonType);
+    isContentRequired = contentRequired(reasonType);
+    if (isWithContent) {
+      key.currentState?.clearError();
+    }
+  }
+
+  Widget title = const Text('举报');
+  if (reportUrl != null) {
+    title = Row(
+      mainAxisAlignment: .spaceBetween,
+      children: [
+        title,
+        iconButton(
+          iconSize: 21,
+          tooltip: '网页举报',
+          onPressed: () =>
+              Get.toNamed('/webview', parameters: {'url': reportUrl}),
+          icon: const Icon(MdiIcons.web, size: 22),
+        ),
+      ],
+    );
+  }
+
   return showDialog(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('举报'),
+      title: title,
       titlePadding: const .only(left: 22, top: 16, right: 22),
       contentPadding: const .symmetric(vertical: 5),
       actionsPadding: const .only(left: 16, right: 16, bottom: 10),
@@ -42,7 +86,7 @@ Future<void> autoWrapReportDialog(
                       ),
                       RadioGroup(
                         onChanged: (value) {
-                          reasonType = value;
+                          updateReasonType(value);
                           (context as Element).markNeedsBuild();
                         },
                         groupValue: reasonType,
@@ -56,15 +100,15 @@ Future<void> autoWrapReportDialog(
                           }).toList(),
                         ),
                       ),
-                      if (reasonType == 0)
+                      if (isWithContent)
                         Padding(
                           padding: const .only(left: 22, top: 5, right: 22),
                           child: TextFormField(
                             key: key,
-                            autofocus: true,
                             minLines: 2,
                             maxLines: 4,
                             initialValue: reasonDesc,
+                            autofocus: isContentRequired,
                             decoration: const InputDecoration(
                               labelText: '为帮助审核人员更快处理，请补充问题类型和出现位置等详细信息',
                               border: OutlineInputBorder(),
@@ -74,7 +118,9 @@ Future<void> autoWrapReportDialog(
                             ),
                             onChanged: (value) => reasonDesc = value,
                             validator: (value) =>
-                                value.isNullOrEmpty ? '理由不能为空' : null,
+                                isContentRequired && value.isNullOrEmpty
+                                ? '理由不能为空'
+                                : null,
                           ),
                         ),
                     ],
@@ -104,12 +150,16 @@ Future<void> autoWrapReportDialog(
         TextButton(
           onPressed: () async {
             if (reasonType == null ||
-                (reasonType == 0 && key.currentState?.validate() != true)) {
+                (isContentRequired && key.currentState?.validate() != true)) {
               return;
             }
             SmartDialog.showLoading();
             try {
-              final res = await onSuccess(reasonType!, reasonDesc, banUid);
+              final res = await onReport(
+                reasonType!,
+                isWithContent ? reasonDesc : null,
+                banUid,
+              );
               SmartDialog.dismiss();
               if (res.isSuccess) {
                 Get.back();
@@ -194,7 +244,7 @@ abstract final class ReportOptions {
   // from https://s1.hdslb.com/bfs/seed/jinkela/comment-h5/static/js/605.chunks.js
   static Map<String, Map<int, String>> get commentReport => const {
     '违反法律法规': {9: '违法违规', 2: '色情', 10: '低俗', 12: '赌博诈骗', 23: '违法信息外链'},
-    '谣言类不实信息': {19: '涉政谣言', 22: '虚假不实信息', 20: '涉社会事件谣言'},
+    '谣言类不实信息': {19: '涉政谣言', 22: '虚假不实信息*', 20: '涉社会事件谣言'},
     '侵犯个人权益': {7: '人身攻击', 15: '侵犯隐私'},
     '有害社区环境': {
       1: '垃圾广告',
@@ -205,8 +255,11 @@ abstract final class ReportOptions {
       18: '违规抽奖',
       17: '青少年不良信息',
     },
-    '其他': {0: '其他'},
+    '其他': {0: '其他*'},
   };
+  static bool withContentReply(int? reasonType) => reasonType != null;
+  static bool contentRequiredReply(int? reasonType) =>
+      reasonType == 0 || reasonType == 22;
 
   static Map<String, Map<int, String>> get dynamicReport => const {
     '': {
@@ -219,7 +272,7 @@ abstract final class ReportOptions {
       10: '涉社会事件谣言',
       12: '虚假不实信息',
       13: '违法信息外链',
-      0: '其他',
+      0: '其他*',
     },
   };
 
@@ -237,9 +290,10 @@ abstract final class ReportOptions {
       10: '视频无关',
       12: '青少年不良信息',
       13: '违法信息外链',
-      0: '其它', // 11
+      11: '其它*',
     },
   };
+  static bool danmakuReportCheck(int? reasonType) => reasonType == 11;
 
   static Map<String, Map<int, String>> get liveDanmakuReport => const {
     '': {
@@ -249,9 +303,10 @@ abstract final class ReportOptions {
       4: '辱骂引战',
       5: '政治敏感',
       6: '青少年不良信息',
-      7: '其他', // avoid show form
+      0: '其他',
     },
   };
+  static bool liveDanmakuReportCheck(int? _) => false;
 
   static Map<String, Map<int, String>> get imMsgReport => const {
     '': {
@@ -261,7 +316,7 @@ abstract final class ReportOptions {
       4: '广告骚扰',
       5: '人身攻击',
       6: '诈骗',
-      0: '其他问题',
+      0: '其他问题*',
     },
   };
 }

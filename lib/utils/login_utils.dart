@@ -3,7 +3,7 @@ import 'dart:io' show Platform;
 
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/user.dart';
-import 'package:PiliPlus/main.dart';
+import 'package:PiliPlus/main.dart' show webViewEnvironment;
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
@@ -19,19 +19,16 @@ import 'package:get/get.dart';
 
 abstract final class LoginUtils {
   static FutureOr setWebCookie([Account? account]) {
-    if (Platform.isLinux) {
-      return null;
-    }
+    if (Platform.isLinux) return null;
     final cookies = (account ?? Accounts.main).cookieJar.toList();
     final webManager = web.CookieManager.instance(
       webViewEnvironment: webViewEnvironment,
     );
-    final isWindows = Platform.isWindows;
     return Future.wait(
       cookies.map(
         (cookie) => webManager.setCookie(
           url: web.WebUri(
-            '${isWindows ? 'https://' : ''} ${cookie.domain}',
+            '${Platform.isWindows ? 'https://' : ''}${cookie.domain}',
           ),
           name: cookie.name,
           value: cookie.value,

@@ -1,5 +1,6 @@
 package com.example.piliplus;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.PictureInPictureParams;
@@ -15,6 +16,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.graphics.drawable.Icon;
 import android.media.session.PlaybackState;
 import android.net.Uri;
@@ -31,7 +33,10 @@ import androidx.annotation.RequiresApi;
 
 import com.github.dart_lang.jni_flutter.JniFlutterPlugin;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Objects;
 
 @Keep
@@ -259,6 +264,35 @@ public final class AndroidHelper {
                 shortcutManager.requestPinShortcut(shortcut, pendingIntent.getIntentSender());
             }
         }
+    }
+
+    @SuppressLint("BlockedPrivateApi")
+    public static String[] fontFamilies() {
+        Map<String, Typeface> systemFontMap = null;
+        try {
+            Method method = Typeface.class.getDeclaredMethod("getSystemFontMap");
+            method.setAccessible(true);
+            systemFontMap = (Map<String, Typeface>) method.invoke(null);
+        } catch (Exception ignored) {
+            try {
+                @SuppressLint("DiscouragedPrivateApi") Field field = Typeface.class.getDeclaredField("sSystemFontMap");
+                field.setAccessible(true);
+                systemFontMap = (Map<String, Typeface>) field.get(null);
+            } catch (Exception ignored0) {
+            }
+        }
+        if (null != systemFontMap) {
+            return systemFontMap.keySet().toArray(new String[0]);
+        }
+        return null;
+    }
+
+    public static void updateDocProvider(boolean enabled) {
+        Context context = getContext();
+        final ComponentName componentName = new ComponentName(context, BiliDocumentsProvider.class);
+        final int state = enabled ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                : PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
+        context.getPackageManager().setComponentEnabledSetting(componentName, state, PackageManager.DONT_KILL_APP);
     }
 
     @Keep

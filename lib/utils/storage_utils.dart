@@ -24,7 +24,7 @@ abstract final class StorageUtils {
         return;
       }
       if (PlatformUtils.isDesktop) {
-        await File(path).writeAsBytes(bytes);
+        await File(path.toFilePath()).writeAsBytes(bytes);
       }
       SmartDialog.showToast("已保存");
     } catch (e) {

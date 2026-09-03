@@ -332,6 +332,7 @@ class VideoDetailController extends GetxController
   void initFileSource(BiliDownloadEntryInfo entry, {bool isInit = true}) {
     this.entry = entry;
     firstVideo = VideoItem(
+      id: entry.preferedVideoQuality,
       quality: VideoQuality.fromCode(entry.preferedVideoQuality),
       width: entry.ep?.width ?? entry.pageData?.width ?? 1,
       height: entry.ep?.height ?? entry.pageData?.height ?? 1,
@@ -789,17 +790,6 @@ class VideoDetailController extends GetxController
     queryVideoUrl(fromReset: true);
   }
 
-  Volume? volume;
-
-  void _handleUnavailableVideo() {
-    SmartDialog.showToast('视频资源不存在');
-    _autoPlay.value = false;
-    videoState.value = false;
-    if (plPlayerController.isFullScreen.value) {
-      plPlayerController.triggerFullScreen(status: false);
-    }
-  }
-
   Future<LoadingState<PlayUrlModel>> _getVideoUrl(int quality) {
     return VideoHttp.videoUrl(
       cid: cid.value,
@@ -816,12 +806,14 @@ class VideoDetailController extends GetxController
 
   Future<void> _supplementVideoQualities() async {
     final quality = data.missingVideoQualityBelowHighest;
-    if (quality == null) return;
+    if (quality == -1) return;
     final result = await _getVideoUrl(quality);
     if (result case Success(:final response)) {
-      data.mergeVideoStreams(response);
+      data.dash!.video!.merge(response.dash?.video);
     }
   }
+
+  Volume? volume;
 
   // 视频链接
   /// TODO: merge [DownloadHttp.getVideoUrl].
@@ -837,19 +829,14 @@ class VideoDetailController extends GetxController
     }
     isQuerying = true;
     try {
-      await _queryVideoUrl(
-        fromReset: fromReset,
-        autoFullScreenFlag: autoFullScreenFlag,
-      );
+      await _queryVideoUrl(fromReset, autoFullScreenFlag);
     } finally {
       isQuerying = false;
     }
   }
 
-  Future<void> _queryVideoUrl({
-    required bool fromReset,
-    required bool autoFullScreenFlag,
-  }) async {
+  @pragma('vm:prefer-inline')
+  Future<void> _queryVideoUrl(bool fromReset, bool autoFullScreenFlag) async {
     if (plPlayerController.enableSponsorBlock && isBlock && !fromReset) {
       querySponsorBlock(bvid: bvid, cid: cid.value);
     }
@@ -929,19 +916,19 @@ class VideoDetailController extends GetxController
           await _initPlayerIfNeeded(autoFullScreenFlag);
           return;
         } else {
-          _handleUnavailableVideo();
+          SmartDialog.showToast('视频资源不存在');
+          _autoPlay.value = false;
+          videoState.value = false;
+          if (plPlayerController.isFullScreen.value) {
+            plPlayerController.triggerFullScreen(status: false);
+          }
           return;
         }
       }
 
-      final videoList = data.dash!.video;
       // if (kDebugMode) debugPrint("allVideosList:${allVideosList}");
       final cacheVideoQa = plPlayerController.cacheVideoQa!;
       final targetVideoQa = data.findAvailableVideoQuality(cacheVideoQa);
-      if (videoList == null || videoList.isEmpty || targetVideoQa == null) {
-        _handleUnavailableVideo();
-        return;
-      }
       currentVideoQa.value = VideoQuality.fromCode(targetVideoQa);
 
       /// 优先顺序 设置中指定解码格式 -> 当前可选的首个解码格式
@@ -959,7 +946,7 @@ class VideoDetailController extends GetxController
       );
 
       /// 取出符合当前画质的videoList
-      final videosList = videoList
+      final videosList = data.dash!.video!
           .where((e) => e.quality.code == targetVideoQa)
           .toList();
 
@@ -976,7 +963,7 @@ class VideoDetailController extends GetxController
       AudioItem? firstAudio;
       final audioList = data.dash?.audio;
       if (audioList != null && audioList.isNotEmpty) {
-        final List<int> audioIds = audioList.map((map) => map.id!).toList();
+        final audioIds = audioList.map((map) => map.id).toList();
         int closestNumber = audioIds.findClosestTarget(
           (e) => e <= plPlayerController.cacheAudioQa,
           (a, b) => a > b ? a : b,
@@ -990,9 +977,7 @@ class VideoDetailController extends GetxController
           orElse: () => audioList.first,
         );
         audioUrl = VideoUtils.getCdnUrl(firstAudio.playUrls, isAudio: true);
-        if (firstAudio.id case final int id?) {
-          currentAudioQa = AudioQuality.fromCode(id);
-        }
+        currentAudioQa = AudioQuality.fromCode(firstAudio.id);
       } else {
         audioUrl = '';
       }

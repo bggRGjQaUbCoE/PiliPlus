@@ -58,44 +58,32 @@ class PlayUrlModel {
   Language? language;
   List<SegmentItemModel>? clipInfoList;
 
-  Set<int> get availableVideoQualities => {
-    for (final item in dash?.video ?? const <VideoItem>[]) ?item.id,
-  };
-
-  int? findAvailableVideoQuality(int preferredQuality) {
-    final qualities = availableVideoQualities.toList();
-    if (qualities.isEmpty) return null;
-    return qualities.findClosestTarget(
-      (quality) => quality <= preferredQuality,
-      (a, b) => a > b ? a : b,
-    );
+  int findAvailableVideoQuality(int preferredQuality) {
+    final curHighestVideoQa = dash!.video!.first.quality.code;
+    if (acceptQuality case final qualitys?
+        when preferredQuality <= curHighestVideoQa) {
+      return qualitys.findClosestTarget((e) => e <= preferredQuality, max);
+    } else {
+      return curHighestVideoQa;
+    }
   }
 
-  int? get missingVideoQualityBelowHighest {
-    final available = availableVideoQualities;
-    final highest = available.reduceOrNull((a, b) => a > b ? a : b);
-    if (highest == null) return null;
-    return supportFormats
-        ?.map((item) => item.quality)
-        .whereType<int>()
-        .where(
-          (quality) => quality < highest && !available.contains(quality),
-        )
-        .reduceOrNull((a, b) => a > b ? a : b);
-  }
+  int get missingVideoQualityBelowHighest {
+    final video = dash!.video!;
+    final available = video.availableVideoQualities;
+    final highest = video.first.id;
 
-  void mergeVideoStreams(PlayUrlModel other) {
-    final videos = dash?.video;
-    final otherVideos = other.dash?.video;
-    if (videos == null || otherVideos == null) return;
-    final keys = {
-      for (final item in videos) (item.id, item.codecid, item.codecs),
-    };
-    for (final item in otherVideos) {
-      if (keys.add((item.id, item.codecid, item.codecs))) {
-        videos.add(item);
+    int best = -1;
+    for (final item in supportFormats!) {
+      final quality = item.quality;
+      if (quality != null &&
+          best < quality &&
+          quality < highest &&
+          !available.contains(quality)) {
+        best = quality;
       }
     }
+    return best;
   }
 
   PlayUrlModel.fromJson(Map<String, dynamic> json) {
@@ -263,7 +251,7 @@ class Durl {
 }
 
 abstract class BaseItem {
-  int? id;
+  late int id;
   String? baseUrl;
   List<String>? backupUrl;
   int? bandWidth;
@@ -278,7 +266,7 @@ abstract class BaseItem {
   int? codecid;
 
   BaseItem({
-    this.id,
+    required this.id,
     this.baseUrl,
     this.backupUrl,
     this.bandWidth,
@@ -320,7 +308,7 @@ class VideoItem extends BaseItem {
   late VideoQuality quality;
 
   VideoItem({
-    super.id,
+    required super.id,
     super.baseUrl,
     super.backupUrl,
     super.bandWidth,
@@ -344,11 +332,24 @@ class VideoItem extends BaseItem {
 class AudioItem extends BaseItem {
   late String quality;
 
-  AudioItem();
-
   AudioItem.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
     quality = AudioQuality.fromCode(json['id']).desc;
   }
+}
+
+extension BaseItemExt<T extends BaseItem> on List<T> {
+  void merge(List<T>? other) {
+    if (other == null) return;
+    final keys = {for (final item in this) (item.id, item.codecid)};
+    for (final item in other) {
+      if (keys.add((item.id, item.codecid))) {
+        add(item);
+      }
+    }
+    sort((a, b) => b.id.compareTo(a.id));
+  }
+
+  Set<int> get availableVideoQualities => map((i) => i.id).toSet();
 }
 
 class FormatItem {

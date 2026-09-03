@@ -5,7 +5,7 @@ import 'dart:math' show max;
 import 'package:PiliPlus/common/widgets/button/toolbar_icon_button.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart'
-    show RichTextEditingDeltaReplacement, RichTextType;
+    show RichTextType, RichTextEditingDeltaReplacement;
 import 'package:PiliPlus/common/widgets/flutter/text_field/text_field.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show platformClampingPhysics;
@@ -64,6 +64,8 @@ class ReplyPage extends CommonRichTextPubPage {
 class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
   final RxBool _syncToDynamic = false.obs;
   final heroTag = Get.arguments?['heroTag'];
+
+  final RxBool _latexOn = false.obs;
 
   @override
   void dispose() {
@@ -393,18 +395,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
         atNameToMid[e.rawText] ??= int.parse(e.id!);
       }
     }
-    // Send what is shown: Unicode blocks plus original emote placeholders.
-    // (plainText would emit the emote's display placeholder '\n' instead;
-    // at is sent as '@name ' so atNameToMid keys stay correct.)
-    String message = _latexOn
-        ? editController.items
-              .map(
-                (e) => e.id == 'latex' || e.type == RichTextType.at
-                    ? e.text
-                    : e.rawText,
-              )
-              .join()
-        : editController.rawText;
+    final message = editController.rawText;
     final res = await VideoHttp.replyAdd(
       type: widget.replyType,
       oid: widget.oid,
@@ -426,14 +417,15 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
     }
   }
 
-  Widget get latexBtn => ToolbarIconButton(
-    onPressed: _latexOn ? _unlatexify : _latexify,
-    icon: const Icon(Icons.functions, size: 22),
-    tooltip: '公式',
-    selected: _latexOn,
-  );
-
-  bool _latexOn = false;
+  Widget get latexBtn => Obx(() {
+    final latexOn = _latexOn.value;
+    return ToolbarIconButton(
+      onPressed: latexOn ? _unlatexify : _latexify,
+      icon: const Icon(Icons.functions, size: 22),
+      tooltip: '公式',
+      selected: latexOn,
+    );
+  });
 
   Future<void> _latexify() async {
     // value.text is the display space (\uFFFC per emote), the same space
@@ -453,23 +445,21 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
     }
 
     _replaceBlocks(spans, rawText);
-    _latexOn = true;
+    _latexOn.value = true;
     if (warnings.isNotEmpty) {
       SmartDialog.showToast(
         '无法识别：${warnings.join('、')}（已保留原文）',
       );
     }
-    setState(() {});
   }
 
   void _unlatexify() {
     // id 'latex' marks blocks created by _latexify.
     final blocks = editController.items
-        .where((e) => e.id == 'latex')
+        .where((e) => e.type == .latex)
         .toList(growable: false);
     if (blocks.isEmpty) {
-      _latexOn = false;
-      setState(() {});
+      _latexOn.value = false;
       return;
     }
     for (final item in blocks.reversed) {
@@ -493,9 +483,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
         ..syncRichText(delta)
         ..value = newValue;
     }
-    _latexOn = false;
-    key.currentState?.scheduleShowCaretOnScreen(withAnimation: true);
-    setState(() {});
+    _latexOn.value = false;
   }
 
   /// Replaces each formula span with a locked common-type block: the
@@ -516,9 +504,8 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
           offset: span.start + span.converted.length,
         ),
         composing: TextRange.empty,
-        type: RichTextType.common,
+        type: RichTextType.latex,
         rawText: source,
-        id: 'latex',
       );
       final newValue = delta.apply(oldValue);
       if (oldValue == newValue) continue;
@@ -526,6 +513,5 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
         ..syncRichText(delta)
         ..value = newValue;
     }
-    key.currentState?.scheduleShowCaretOnScreen(withAnimation: true);
   }
 }

@@ -27,7 +27,7 @@ import 'package:material_ui/material_ui.dart';
 /// created by bggRGjQaUbCoE on 2025/6/27
 ///
 
-enum RichTextType { text, composing, at, emoji, vote, common }
+enum RichTextType { text, composing, at, emoji, vote, common, latex }
 
 class Emote {
   late String url;
@@ -576,7 +576,7 @@ class RichTextEditingController extends TextEditingController {
     }
     final buffer = StringBuffer();
     for (final e in items) {
-      if (e.type == RichTextType.at) {
+      if (e.type == RichTextType.at || e.type == RichTextType.latex) {
         buffer.write(e.text);
       } else {
         buffer.write(e.rawText);
@@ -749,7 +749,7 @@ class RichTextEditingController extends TextEditingController {
               text: e.text,
               style: composingRegionOutOfRange ? null : composingStyle,
             );
-          case RichTextType.at || RichTextType.common:
+          case RichTextType.at || RichTextType.common || RichTextType.latex:
             richStyle ??= (style ?? const TextStyle()).copyWith(
               color: Theme.of(context).colorScheme.primary,
             );

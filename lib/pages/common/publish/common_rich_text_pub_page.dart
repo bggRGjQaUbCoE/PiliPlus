@@ -283,7 +283,7 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
     final list = <Map<String, dynamic>>[];
     for (final e in editController.items) {
       switch (e.type) {
-        case .text || .composing || .common:
+        case .text || .composing || .common || .latex:
           list.add({
             "raw_text": e.text,
             "type": 1,

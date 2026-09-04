@@ -291,34 +291,51 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   }
 
   /// 未开启自动播放时触发播放
-  Future<void>? handlePlay() {
-    if (!videoDetailController.isFileSource) {
-      if (videoDetailController.isQuerying) {
-        if (kDebugMode) debugPrint('handlePlay: querying');
-        return null;
-      }
-      if (videoDetailController.videoUrl == null ||
-          videoDetailController.audioUrl == null) {
-        if (kDebugMode) {
-          debugPrint('handlePlay: videoUrl/audioUrl not initialized');
-        }
-        videoDetailController.queryVideoUrl();
-        return null;
-      }
-    }
+  Future<void> handlePlay() async {
     final plPlayerController = this.plPlayerController =
         videoDetailController.plPlayerController;
     videoDetailController.autoPlay = true;
     plPlayerController
       ..addStatusLister(playerListener)
       ..addPositionListener(positionListener);
+
+    if (!videoDetailController.isFileSource) {
+      if (videoDetailController.isQuerying) {
+        if (kDebugMode) debugPrint('handlePlay: querying');
+        plPlayerController.requestPlayback();
+        return;
+      }
+      if (videoDetailController.videoUrl == null ||
+          videoDetailController.audioUrl == null) {
+        if (kDebugMode) {
+          debugPrint('handlePlay: videoUrl/audioUrl not initialized');
+        }
+        videoDetailController.queryVideoUrl(autoplay: true);
+        return;
+      }
+    }
+    final playIntent = plPlayerController.playIntent;
+    final refreshResult = await videoDetailController.refreshExpiredPlayUrl();
+    if (refreshResult != null) {
+      if (refreshResult &&
+          mounted &&
+          playIntent == plPlayerController.playIntent) {
+        if ((!PlatformUtils.isMobile ||
+                WidgetsBinding.instance.lifecycleState == .resumed) &&
+            plPlayerController.autoEnterFullScreen) {
+          plPlayerController.triggerFullScreen();
+        }
+        await plPlayerController.autoplayIfAllowed();
+      }
+      return;
+    }
     if (plPlayerController.preInitPlayer) {
       if (plPlayerController.autoEnterFullScreen) {
         plPlayerController.triggerFullScreen();
       }
-      return plPlayerController.play();
+      await plPlayerController.play();
     } else {
-      return videoDetailController.playerInit(
+      await videoDetailController.playerInit(
         autoplay: true,
         autoFullScreenFlag: true,
       );
@@ -1216,6 +1233,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
               maxWidth: width,
               maxHeight: height,
               plPlayerController: plPlayerController!,
+              sourceOwner: videoDetailController,
               videoDetailController: videoDetailController,
               introController: introController,
               headerControl: HeaderControl(

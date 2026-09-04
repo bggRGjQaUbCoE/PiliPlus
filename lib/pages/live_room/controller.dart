@@ -210,28 +210,36 @@ class LiveRoomController extends GetxController {
   Future<void>? playerInit({
     bool autoplay = true,
     bool autoFullScreenFlag = false,
+    int? sourceRevision,
+    int? playIntent,
   }) {
-    if (videoUrl == null) {
-      return null;
-    }
+    if (videoUrl == null) return null;
+    playIntent ??= plPlayerController.playIntent;
+    sourceRevision ??= plPlayerController.claimSource(this);
     return plPlayerController.setDataSource(
       NetworkSource(videoSource: videoUrl!, audioSource: null),
       isLive: true,
       autoplay: autoplay,
       isVertical: isPortrait.value,
       autoFullScreenFlag: autoFullScreenFlag,
+      sourceRevision: sourceRevision,
+      autoplayIntent: playIntent,
     );
   }
 
   Future<void> queryLiveUrl({bool autoFullScreenFlag = false}) async {
+    final playIntent = plPlayerController.playIntent;
+    final sourceRevision = plPlayerController.claimSource(this);
     currentQn ??= await ConnectivityUtils.isWiFi
         ? Pref.liveQuality
         : Pref.liveQualityCellular;
+    if (!plPlayerController.ownsSource(this, sourceRevision)) return;
     final res = await LiveHttp.liveRoomInfo(
       roomId: roomId,
       qn: currentQn,
       onlyAudio: plPlayerController.onlyPlayAudio.value,
     );
+    if (!plPlayerController.ownsSource(this, sourceRevision)) return;
     if (res case Success(:final response)) {
       if (response.liveStatus != 1) {
         _showDialog('当前直播间未开播');
@@ -256,7 +264,10 @@ class LiveRoomController extends GetxController {
         formatIndex: formatIndex,
         codecIndex: codecIndex,
         liveUrlIndex: liveUrlIndex,
+        sourceRevision: sourceRevision,
+        playIntent: playIntent,
       );
+      if (!plPlayerController.ownsSource(this, sourceRevision)) return;
       isLoaded.value = true;
     } else {
       _showDialog(res.toString());
@@ -296,12 +307,16 @@ class LiveRoomController extends GetxController {
     }
   }
 
-  Future<void>? initLiveUrl({
+  Future<void> initLiveUrl({
     int streamIndex = 0,
     int formatIndex = 0,
     int codecIndex = 0,
     int liveUrlIndex = 0,
-  }) {
+    int? sourceRevision,
+    int? playIntent,
+  }) async {
+    playIntent ??= plPlayerController.playIntent;
+    sourceRevision ??= plPlayerController.claimSource(this);
     this.streamIndex = streamIndex;
     this.formatIndex = formatIndex;
     this.codecIndex = codecIndex;
@@ -324,7 +339,13 @@ class LiveRoomController extends GetxController {
     currentQnDesc.value =
         LiveQuality.fromCode(currentQn)?.desc ?? currentQn.toString();
     videoUrl = VideoUtils.getLiveCdnUrl(item, index: liveUrlIndex);
-    return playerInit()?.whenComplete(_startSizeSub);
+    final init = playerInit(
+      sourceRevision: sourceRevision,
+      playIntent: playIntent,
+    );
+    if (init == null) return;
+    await init;
+    if (plPlayerController.ownsSource(this, sourceRevision)) _startSizeSub();
   }
 
   Future<void> queryLiveInfoH5() async {

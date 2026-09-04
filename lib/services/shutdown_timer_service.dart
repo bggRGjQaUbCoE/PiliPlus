@@ -83,6 +83,9 @@ class ShutdownTimerService {
         late final player = PlPlayerController.instance;
         final isPlaying =
             this.isPlaying?.call() ?? player?.playerStatus.isPlaying ?? false;
+        if (!_waitUntilCompleted && !isPlaying && onPause == null) {
+          player?.cancelAutoResume();
+        }
         if (isPlaying) {
           if (_waitUntilCompleted) {
             _isWaiting = true;

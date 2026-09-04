@@ -265,6 +265,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
             fill: fill,
             alignment: alignment,
             plPlayerController: plPlayerController,
+            sourceOwner: _liveRoomController,
             headerControl: LiveHeaderControl(
               key: _liveRoomController.headerKey,
               title: roomInfoH5?.roomInfo?.title,

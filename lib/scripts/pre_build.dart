@@ -671,7 +671,7 @@ Future<void> applyPatches(Map<String, String> opts) async {
   await applyPubPatches(platform, matrix, sdk, cache: pubCache);
 
   if (copyRoot != null) {
-    final tag = copyRoot.split(Platform.pathSeparator).last;
+    final copyVersion = copyRoot.split(Platform.pathSeparator).last;
     // Point the project at the patched copy.
     await _r.run(projectRoot, [
       'fvm',
@@ -679,7 +679,7 @@ Future<void> applyPatches(Map<String, String> opts) async {
       '--skip-pub-get',
       '--skip-setup',
       '--force',
-      tag,
+      copyVersion,
     ]);
 
     // Warm up the copy: renew excluded bin/cache + record the copy as SDK in
@@ -698,8 +698,8 @@ Future<void> applyPatches(Map<String, String> opts) async {
     }
 
     File('$copyRoot/.sdk-copy-ok').createSync(recursive: true);
-    _r.info('SDK copy prepared: $tag');
-    stdout.writeln(tag);
+    _r.info('SDK copy prepared: $copyVersion');
+    stdout.writeln(copyVersion);
   }
 
   final keys = matrix.allKeysFor(platform);
@@ -968,35 +968,123 @@ Future<String> _patchesHeadHash() async {
   return (r.stdout as String).trim();
 }
 
-/// Resolve the pristine FVM-managed SDK (source for the copy) from `.fvmrc`.
-/// `fvm use` rewrites `.fvmrc.flutter` to a tagged copy name (e.g.
-/// `3.47.2-piliplus-linux-p19ff2f8d487d`); strip that suffix to recover the
-/// original base version, which never changes.
-String? _resolveBaseSdk() {
-  final fvmrc = File('$projectRoot/.fvmrc');
-  if (!fvmrc.existsSync()) return null;
-  final m = RegExp(
-    r'^\s*"flutter"\s*:\s*"([^"]+)"',
-    multiLine: true,
-  ).firstMatch(fvmrc.readAsStringSync());
-  if (m == null) return null;
-  final re = RegExp(r'(^.*)-piliplus-[^-]+-p[0-9a-f]+$');
-  final pinned = re.firstMatch(m.group(1)!)?.group(1) ?? m.group(1)!;
-  // On Windows, prefer USERPROFILE (always a native path) over HOME which
-  // may be a POSIX path (e.g. /c/Users/...) when invoked from Git Bash or
-  // MSYS2.
-  String? fvmHome;
-  final explicit = Platform.environment['FVM_HOME'];
-  if (explicit != null && explicit.isNotEmpty) {
-    fvmHome = explicit;
-  } else if (Platform.isWindows) {
-    final up = Platform.environment['USERPROFILE'];
-    if (up != null && up.isNotEmpty) fvmHome = '$up/fvm';
-  } else {
-    final home = Platform.environment['HOME'];
-    if (home != null && home.isNotEmpty) fvmHome = '$home/fvm';
+/// Extract the `flutter` version field from `.fvmrc` JSON text, or null when
+/// the text is not valid JSON or lacks a string `flutter` field.
+String? _fvmrcFlutter(String text) {
+  final dynamic decoded;
+  try {
+    decoded = jsonDecode(text);
+  } on FormatException {
+    return null;
   }
-  return '$fvmHome/versions/$pinned';
+  if (decoded is! Map<String, dynamic>) return null;
+  final f = decoded['flutter'];
+  return f is String && f.isNotEmpty ? f : null;
+}
+
+/// True when a `.fvmrc` flutter value is a patched-SDK-copy version name
+/// written by `fvm use` (e.g. `3.47.2-piliplus-linux-p19ff2f8d487d`) rather
+/// than a clean base version. Such copy names must never be committed; their
+/// presence in the index or repository signals `fvm use` output was
+/// staged/committed by mistake. (Distinct from git's release `tag`.)
+bool _isSdkCopyVersion(String value) =>
+    RegExp(r'-piliplus-[^-]+-p[0-9a-f]+$').hasMatch(value);
+
+/// Resolve the pristine FVM-managed SDK (source for the copy) and return its
+/// absolute path, or null when it cannot be determined/installed.
+///
+/// The base version is read from the git **index** (staging area) rather than
+/// the working tree, because `fvm use` rewrites the working-tree `.fvmrc` to a
+/// patched-copy version name and we must ignore that side effect. The index
+/// reflects the developer's *staged* declaration, so a `git add`ed base upgrade
+/// is honoured while uncommitted `fvm use` pollution is ignored. `.fvmrc` is
+/// assumed to be git-tracked; if it is absent from the index the function fails
+/// fast asking for it to be staged and committed.
+///
+/// Pollution is probed on all three layers. A `fvm use` copy version in the
+/// working tree is a normal side effect (reading the index already ignores it),
+/// so it only prompts. But a *clean, unstaged base* in the working tree — a base
+/// version upgraded but not `git add`ed — fails fast with a prompt to stage it,
+/// otherwise the stale staged base would silently be patched instead. A copy
+/// version in the index (`git add`ed) or the repository HEAD (committed) is a
+/// repo-hygiene error and fails fast so the base declaration can be restored
+/// before sdk-copy proceeds.
+///
+/// The absolute install path is resolved from `fvm api list` (machine-readable
+/// JSON) instead of hand-deriving `$FVM_HOME/versions/...`, which also
+/// sidesteps the Windows USERPROFILE vs HOME disambiguation handled by fvm.
+Future<String?> _resolveBaseSdk() async {
+  final sr = await _r.run(projectRoot, ['git', 'show', ':./.fvmrc']);
+  if (sr.exitCode != 0) {
+    _r.error(
+      '`.fvmrc` is not in the git index. `fvm use` writes it only to the '
+      'working tree; `git add .fvmrc` and commit it so the pristine base '
+      'version can be resolved.',
+    );
+  }
+  final fvmrc = sr.stdout as String;
+  final declared = _fvmrcFlutter(fvmrc);
+  if (declared == null) return null;
+  final sniffedFromIndex = _isSdkCopyVersion(declared);
+
+  // Fail fast on repo-hygiene pollution: an unstaged clean base, or a copy
+  // version in the index/HEAD. A `fvm use` copy version in the working tree
+  // is expected and handled below.
+  final rawWork = File('$projectRoot/.fvmrc');
+  if (rawWork.existsSync()) {
+    final workVal = _fvmrcFlutter(rawWork.readAsStringSync());
+    if (workVal != null) {
+      if (_isSdkCopyVersion(workVal)) {
+        _r.warnLine(
+          '.fvmrc working tree holds a `fvm use` copy version; ignoring it '
+          'and using the staged base. Expected for sdk-copy — no action '
+          'needed.',
+        );
+      } else if (workVal != declared) {
+        _r.error(
+          'working tree .fvmrc declares base `$workVal` but only `$declared` is '
+          'staged; the new base is unstaged. Stage it first: `git add '
+          '.fvmrc`.',
+        );
+      }
+    }
+  }
+  if (sniffedFromIndex) {
+    _r.error(
+      'staged .fvmrc is a `fvm use` copy version ($declared); it was '
+      '`git add`ed. Stage the clean base first: `git restore --staged '
+      '.fvmrc` then `git add .fvmrc`.',
+    );
+  }
+  final hr = await _r.run(projectRoot, ['git', 'show', 'HEAD:.fvmrc']);
+  if (hr.exitCode == 0) {
+    final headFlutter = _fvmrcFlutter(hr.stdout as String) ?? '';
+    if (_isSdkCopyVersion(headFlutter)) {
+      _r.error(
+        'committed .fvmrc is a `fvm use` copy version ($headFlutter); it '
+        'reached the repository. Re-commit a clean base version.',
+      );
+    }
+  }
+
+  final lr = await _r.run(projectRoot, ['fvm', 'api', 'list', '-c']);
+  if (lr.exitCode != 0) return null;
+  final dynamic list;
+  try {
+    list = jsonDecode(lr.stdout as String);
+  } on FormatException {
+    return null;
+  }
+  final versions = list is Map<String, dynamic> ? list['versions'] : null;
+  if (versions is! List<dynamic>) return null;
+  for (final v in versions) {
+    if (v is! Map<String, dynamic>) continue;
+    if (v['name'] == declared) {
+      final dir = v['directory'] as String?;
+      if (dir != null && dir.isNotEmpty) return dir;
+    }
+  }
+  return null;
 }
 
 /// Recursively delete a directory tree using Dart's FileSystemEntity, replacing
@@ -1045,32 +1133,33 @@ void _copyTree(Directory src, Directory dest) {
 /// use` without re-patching. Patching itself happens in the shared
 /// `applyPatches` flow so both modes reuse one code path.
 Future<String?> _prepareSdkCopy(String platform, bool force) async {
-  final src = _resolveBaseSdk();
+  final src = await _resolveBaseSdk();
   if (src == null || !Directory(src).existsSync()) {
     _r.error(
-      'cannot resolve pristine SDK from .fvmrc (run `fvm install <ver>` first)',
+      'cannot resolve pristine SDK from .fvmrc (staged/committed base version '
+      'not installed: run `fvm install <ver>` first)',
     );
   }
   final srcName = src.split(Platform.pathSeparator).last;
   final fvmVersions = src.substring(0, src.length - srcName.length - 1);
 
   final patchHash = await _patchesHeadHash();
-  final tag = '$srcName-piliplus-$platform-p${patchHash.substring(0, 12)}';
-  final dest = '$fvmVersions/$tag';
+  final copyVersion = '$srcName-piliplus-$platform-p${patchHash.substring(0, 12)}';
+  final dest = '$fvmVersions/$copyVersion';
   final marker = File('$dest/.sdk-copy-ok');
 
   // Reuse an already-prepared copy.
   if (!force && Directory(dest).existsSync() && marker.existsSync()) {
-    _r.info('SDK copy already prepared: $tag');
+    _r.info('SDK copy already prepared: $copyVersion');
     await _r.run(projectRoot, [
       'fvm',
       'use',
       '--skip-pub-get',
       '--skip-setup',
       '--force',
-      tag,
+      copyVersion,
     ]);
-    stdout.writeln(tag);
+    stdout.writeln(copyVersion);
     return dest;
   }
 

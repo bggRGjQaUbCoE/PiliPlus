@@ -75,12 +75,6 @@ class _LiveDmBlockPageState extends State<LiveDmBlockPage> {
     );
   }
 
-  @override
-  void dispose() {
-    _controller.updateLiveRoomRules();
-    super.dispose();
-  }
-
   Widget _buildKeyword(List list) {
     if (list.isEmpty) {
       return scrollableError;
@@ -98,7 +92,7 @@ class _LiveDmBlockPageState extends State<LiveDmBlockPage> {
         children: list.mapIndexed(
           (i, e) {
             return SearchText(
-              text: e is ShieldUserList ? e.uname! : e as String,
+              text: e is ShieldUserList ? e.uname : e as String,
               onTap: (value) => showConfirmDialog(
                 context: context,
                 title: const Text('确定删除该规则？'),

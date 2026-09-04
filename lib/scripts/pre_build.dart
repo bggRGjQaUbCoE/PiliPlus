@@ -1189,18 +1189,6 @@ Future<String?> _resolveBaseSdk() async {
   return null;
 }
 
-/// Recursively delete a directory tree using Dart's FileSystemEntity, replacing
-/// the platform-specific `rm -rf` (absent on default Windows shells).
-void _rmTree(String path) {
-  final dir = Directory(path);
-  if (!dir.existsSync()) return;
-  try {
-    dir.deleteSync(recursive: true);
-  } catch (e) {
-    _r.error('failed to remove $path: $e');
-  }
-}
-
 /// Recursively copy `src` into `dest` with Dart's FileSystemEntity, skipping
 /// the `bin/cache` subtree (rebuilt on first run). Replaces the
 /// platform-specific `rsync -a --exclude bin/cache`, keeping sdk-copy usable
@@ -1270,7 +1258,16 @@ Future<String?> _prepareSdkCopy(String platform, bool force) async {
   // patches, no fvm switch).
   if (force || !Directory(dest).existsSync() || !marker.existsSync()) {
     _r.info('Creating SDK copy: $dest (from $src)');
-    if (Directory(dest).existsSync()) _rmTree(dest);
+    if (Directory(dest).existsSync()) {
+      // Reuse `fvm remove` (which also purges any FVM cache index entries) as
+      // the deletion primitive instead of hand-rolling a cross-platform tree
+      // wipe; it resolves copy versions under versions/ exactly like real SDKs.
+      final rr = await _r.run(projectRoot, ['fvm', 'remove', copyVersion]);
+      if (Directory(dest).existsSync()) {
+        _r.error(
+            'failed to remove stale SDK copy $dest (fvm remove exit ${rr.exitCode}): ${rr.stderr}');
+      }
+    }
     _copyTree(Directory(src), Directory(dest));
     _r.info('SDK copied: $dest');
   }

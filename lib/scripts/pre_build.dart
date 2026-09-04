@@ -947,25 +947,72 @@ void _patchPubspecVersion(String p, String ver, String code) {
 // SDK-copy helper (isolated, disposable SDK for local debugging)
 // ---------------------------------------------------------------------------
 
-/// Deterministic short hash over every patch input, mirroring the bash version:
-/// `git log -1 --format=%H -- <patch paths>`. Any patch/patches.json change
-/// yields a fresh copy tag (the tag then embeds this 12-char prefix).
+/// Deterministic short hash over every patch input, derived from the *staged*
+/// (git index) content: `git ls-files -s -- <patch paths>` yields sorted
+/// `<blobHash> <path>` lines; those are merged and hashed via
+/// `git hash-object <file>`. Any `git add`ed patch/patches.json change yields
+/// a fresh copy version (it then embeds this 12-char prefix). Unstaged or
+/// untracked working-tree changes are rejected: the index alone defines the
+/// intended patch set, so a dirty tree can silently reuse a stale copy.
 Future<String> _patchesHeadHash() async {
-  final r = await _r.run(projectRoot, [
+  // Reject any unstaged (` M`/`MM`) or untracked (`??`) change under the patch
+  // inputs — only the index reflects the intended patch set. Staged edits
+  // (`M `) are fine: they are captured in `git ls-files -s` below.
+  final soft = await _r.run(projectRoot, [
     'git',
-    'log',
-    '-1',
-    '--format=%H',
+    'status',
+    '--porcelain',
     '--',
     'lib/scripts/patches.json',
-    'lib/scripts/*.patch',
-    'lib/scripts/material/*.patch',
-    'lib/scripts/cupertino/*.patch',
+    ':(glob)lib/scripts/**/*.patch',
   ]);
-  if (r.exitCode != 0 || (r.stdout as String).trim().isEmpty) {
-    _r.error('cannot compute patches head hash');
+  final dirty = (soft.stdout as String)
+      .split('\n')
+      .where((l) {
+        if (l.startsWith('??')) return true;
+        // Second status column (` M` / `MM`) marks a worktree-vs-index change.
+        return l.length > 1 && l[1].trim().isNotEmpty;
+      })
+      .join('\n')
+      .trim();
+  if (dirty.isNotEmpty) {
+    _r.error(
+      'patch inputs have unstaged or untracked changes; `git add` them so the '
+      'SDK copy version reflects the intended patch set:\n$dirty',
+    );
   }
-  return (r.stdout as String).trim();
+
+  final r = await _r.run(projectRoot, [
+    'git',
+    'ls-files',
+    '-s',
+    '--',
+    'lib/scripts/patches.json',
+    ':(glob)lib/scripts/**/*.patch',
+  ]);
+  final lines = (r.stdout as String);
+  if (r.exitCode != 0 || lines.trim().isEmpty) {
+    _r.error('cannot compute patches content hash');
+  }
+  // Merge every `<blobHash> <path>` line and hash once so the copy version
+  // reflects the whole patch set, not just the first file. Pure git, no
+  // external package —
+  // `git hash-object <file>` hashes a file's bytes, so a temp file is used
+  // instead of stdin (which `Process.runSync` cannot pipe).
+  final merged = lines.replaceAll('\n', ' ').trim();
+  final tmp = File(
+      '${Directory.systemTemp.path}/pili_patch_hash_${DateTime.now().microsecondsSinceEpoch}')
+    ..writeAsStringSync(merged);
+  try {
+    final h = Process.runSync('git', ['hash-object', tmp.path],
+        workingDirectory: projectRoot);
+    if (h.exitCode != 0 || (h.stdout as String).trim().isEmpty) {
+      _r.error('cannot compute patches content hash');
+    }
+    return (h.stdout as String).trim();
+  } finally {
+    if (tmp.existsSync()) tmp.deleteSync();
+  }
 }
 
 /// Extract the `flutter` version field from `.fvmrc` JSON text, or null when

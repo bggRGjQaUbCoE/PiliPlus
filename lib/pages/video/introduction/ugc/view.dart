@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/skeleton/skeleton.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/animated_height.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
@@ -114,12 +115,13 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                 crossAxisAlignment: .start,
                 children: [
                   NoTranslucentArea(
-                    child: _buildOwnerInfo(
-                      isLoading,
-                      isPortrait,
-                      isHorizontal,
-                      videoDetail,
-                    ),
+                    child: isLoading
+                        ? _buildOwnerSkeleton(isHorizontal)
+                        : _buildOwnerInfo(
+                            isPortrait,
+                            isHorizontal,
+                            videoDetail,
+                          ),
                   ),
                   const SizedBox(height: 8),
                   _buildTitle(isLoading, isHorizontal, videoDetail),
@@ -127,7 +129,9 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                   Stack(
                     clipBehavior: .none,
                     children: [
-                      _buildInfo(videoDetail.stat, videoDetail.pubdate),
+                      isLoading
+                          ? _buildInfoSkeleton()
+                          : _buildInfo(videoDetail.stat, videoDetail.pubdate),
                       if (introController.enableAi) _aiBtn,
                     ],
                   ),
@@ -173,12 +177,15 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                   // 点赞收藏转发 布局样式2
                   if (!isHorizontal) ...[
                     const SizedBox(height: 8),
-                    actionGrid(
-                      context,
-                      isLoading,
-                      introController,
-                      videoDetail.stat,
-                    ),
+                    if (isLoading)
+                      _buildActionSkeleton()
+                    else
+                      actionGrid(
+                        context,
+                        false,
+                        introController,
+                        videoDetail.stat,
+                      ),
                   ],
                   // 合集
                   if (!isLoading &&
@@ -700,7 +707,6 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
   }
 
   Widget _buildOwnerInfo(
-    bool isLoading,
     bool isPortrait,
     bool isHorizontal,
     VideoDetailData videoDetail,
@@ -749,13 +755,105 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
           Expanded(
             child: actionGrid(
               context,
-              isLoading,
+              false,
               introController,
               videoDetail.stat,
             ),
           ),
         ],
       ],
+    );
+  }
+
+  Widget _buildOwnerSkeleton(bool isHorizontal) {
+    final color = colorScheme.onInverseSurface;
+    return Skeleton(
+      child: SizedBox(
+        height: isHorizontal ? 48 : 35,
+        child: Row(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  ClipOval(
+                    child: Container(width: 35, height: 35, color: color),
+                  ),
+                  const SizedBox(width: 10),
+                  Column(
+                    mainAxisSize: .min,
+                    crossAxisAlignment: .start,
+                    children: [
+                      Container(width: 76, height: 13, color: color),
+                      const SizedBox(height: 6),
+                      Container(width: 116, height: 12, color: color),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: 64,
+              height: 28,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: const BorderRadius.all(Radius.circular(16)),
+              ),
+            ),
+            if (isHorizontal) ...[
+              const SizedBox(width: 10),
+              Expanded(child: _buildActionSkeletonContent(color)),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoSkeleton() {
+    final color = colorScheme.onInverseSurface;
+    return Skeleton(
+      child: SizedBox(
+        height: 18,
+        child: Row(
+          children: [
+            Container(width: 36, height: 12, color: color),
+            const SizedBox(width: 10),
+            Container(width: 36, height: 12, color: color),
+            const SizedBox(width: 10),
+            Container(width: 86, height: 12, color: color),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionSkeleton() {
+    final color = colorScheme.onInverseSurface;
+    return Skeleton(child: _buildActionSkeletonContent(color));
+  }
+
+  Widget _buildActionSkeletonContent(Color color) {
+    return SizedBox(
+      height: 48,
+      child: Row(
+        children: List.generate(
+          6,
+          (_) => Expanded(
+            child: Column(
+              mainAxisAlignment: .center,
+              children: [
+                Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(color: color, shape: .circle),
+                ),
+                const SizedBox(height: 5),
+                Container(width: 22, height: 10, color: color),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 

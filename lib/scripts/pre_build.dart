@@ -1189,39 +1189,12 @@ Future<String?> _resolveBaseSdk() async {
   return null;
 }
 
-/// Recursively copy `src` into `dest` with Dart's FileSystemEntity, skipping
-/// the `bin/cache` subtree (rebuilt on first run). Replaces the
-/// platform-specific `rsync -a --exclude bin/cache`, keeping sdk-copy usable
-/// on Windows where neither rsync nor rm are guaranteed on the default shell.
-void _copyTree(Directory src, Directory dest) {
-  if (!src.existsSync()) return;
-  dest.createSync(recursive: true);
-  for (final entry in src.listSync(followLinks: false)) {
-    final name = entry.path.split(Platform.pathSeparator).last;
-    if (name.isEmpty) continue;
-    if (name == 'cache' && entry is Directory) {
-      final parentName = entry.parent.path.split(Platform.pathSeparator).last;
-      if (parentName == 'bin') continue;
-    }
-    final target = Directory('${dest.path}${Platform.pathSeparator}$name');
-    if (entry is Directory) {
-      _copyTree(entry, target);
-    } else if (entry is File) {
-      if (!target.parent.existsSync()) {
-        target.parent.createSync(recursive: true);
-      }
-      entry.copySync(target.path);
-    } else if (entry is Link) {
-      if (!target.existsSync()) target.createSync(recursive: true);
-    }
-  }
-}
-
 /// Prepare (or reuse) a disposable SDK copy and return its root, or null when
-/// `--sdk-copy` was not requested. Mirrors the bash `sdk-copy.sh`: copies the
-/// pristine FVM SDK minus `bin/cache`; a ready marker short-circuits to `fvm
-/// use` without re-patching. Patching itself happens in the shared
-/// `applyPatches` flow so both modes reuse one code path.
+/// `--sdk-copy` was not requested.  The pristine SDK is cloned via
+/// `git clone --local` (hardlinks, ~50% disk savings, automatic `bin/cache`
+/// exclusion via `.gitignore`).  A ready marker short-circuits to `fvm use`
+/// without re-patching.  Patching itself happens in the shared `applyPatches`
+/// flow so both modes reuse one code path.
 Future<String?> _prepareSdkCopy(String platform, bool force) async {
   final src = await _resolveBaseSdk();
   if (src == null || !Directory(src).existsSync()) {
@@ -1257,7 +1230,7 @@ Future<String?> _prepareSdkCopy(String platform, bool force) async {
   // the copy is a broken/interrupted prior run (exists but no marker → partial
   // patches, no fvm switch).
   if (force || !Directory(dest).existsSync() || !marker.existsSync()) {
-    _r.info('Creating SDK copy: $dest (from $src)');
+    _r.info('Cloning SDK copy: $dest (from $src)');
     if (Directory(dest).existsSync()) {
       // Reuse `fvm remove` (which also purges any FVM cache index entries) as
       // the deletion primitive instead of hand-rolling a cross-platform tree
@@ -1268,8 +1241,15 @@ Future<String?> _prepareSdkCopy(String platform, bool force) async {
             'failed to remove stale SDK copy $dest (fvm remove exit ${rr.exitCode}): ${rr.stderr}');
       }
     }
-    _copyTree(Directory(src), Directory(dest));
-    _r.info('SDK copied: $dest');
+    // `git clone --local` hardlinks unchanged files from the pristine SDK,
+    // saving ~50% disk vs a full copy.  `bin/cache` is .gitignored so it is
+    // automatically excluded — no manual filtering needed.  Symlinks are
+    // preserved natively by git.
+    final cr = await _r.run(projectRoot, ['git', 'clone', '--local', src, dest]);
+    if (cr.exitCode != 0) {
+      _r.error('git clone --local failed: ${cr.stderr}');
+    }
+    _r.info('SDK cloned: $dest');
   }
 
   return dest;

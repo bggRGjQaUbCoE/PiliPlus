@@ -30,7 +30,7 @@ jobs:
         run: dart run lib/scripts/pre_build.dart gen-build-info --platform ios --ci --tag '${{ inputs.tag }}'
 
       - name: Apply Patch
-        run: dart run lib/scripts/pre_build.dart apply-patches --platform ios
+        run: dart run lib/scripts/pre_build.dart apply-patches --platform ios --ci
 
       - name: Build iOS
         run: |

@@ -40,7 +40,7 @@ jobs:
         run: dart run lib/scripts/pre_build.dart gen-build-info --platform windows --ci --tag '${{ inputs.tag }}'
 
       - name: Apply Patch
-        run: dart run lib/scripts/pre_build.dart apply-patches --platform windows
+        run: dart run lib/scripts/pre_build.dart apply-patches --platform windows --ci
 
       - name: Build Windows
         run: |

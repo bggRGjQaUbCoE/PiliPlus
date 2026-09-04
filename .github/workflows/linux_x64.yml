@@ -37,7 +37,7 @@ jobs:
         run: dart run lib/scripts/pre_build.dart gen-build-info --platform linux --ci --tag '${{ inputs.tag }}'
 
       - name: Apply Patch
-        run: dart run lib/scripts/pre_build.dart apply-patches --platform linux
+        run: dart run lib/scripts/pre_build.dart apply-patches --platform linux --ci
 
         #TODO: deb and rpm packages need to be build
       - name: Build Linux

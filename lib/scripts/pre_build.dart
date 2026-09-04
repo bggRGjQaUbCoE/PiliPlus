@@ -26,7 +26,12 @@
 //   dart run lib/scripts/pre_build.dart apply-patches  --platform linux
 //   dart run lib/scripts/pre_build.dart apply-patches  --platform linux --sdk-copy [--force]
 //   dart run lib/scripts/pre_build.dart apply-patches  --device-id <id> --sdk-copy
+//   dart run lib/scripts/pre_build.dart apply-patches  --platform linux --ci   # scripted/CI: skip confirm
 //   dart run lib/scripts/pre_build.dart gen-build-info --platform linux [--tag vX] [--ci]
+//
+// Direct-mode apply-patches (no --sdk-copy) prompts for confirmation before
+// mutating the resolved SDK in place; pass `--ci` to bypass, or refuse when
+// stdin is closed (scripted calls must opt in explicitly).
 //
 // Patch matrix: lib/scripts/patches.json (declarative source of truth).
 
@@ -80,6 +85,24 @@ class Runner {
   Never error(String msg) {
     _out.writeln('Error: $msg');
     exit(1);
+  }
+
+  /// Prompt for a `y`/`n` decision on [msg], returning true when the user
+  /// agrees (y) and false when they decline (n).  Loop until a valid answer.
+  /// When stdin is closed/unavailable (piped/CI), default to [whenNoStdin] so
+  /// automation never hangs.
+  bool confirm(String msg, {bool whenNoStdin = false}) {
+    while (true) {
+      _out.write('$msg [y/n] ');
+      final line = stdin.readLineSync();
+      if (line == null) {
+        _out.writeln(whenNoStdin ? 'y' : 'n');
+        return whenNoStdin;
+      }
+      final a = line.trim().toLowerCase();
+      if (a == 'y' || a == 'yes') return true;
+      if (a == 'n' || a == 'no') return false;
+    }
   }
 
   /// Env for subprocesses that run with a custom `PUB_CACHE`: git checkouts of
@@ -155,7 +178,9 @@ class FlutterSdk {
     final env = Platform.environment['FLUTTER_ROOT'];
     if (env != null && env.isNotEmpty) return FlutterSdk._(env);
     // Resolve `flutter` from PATH (covers FVM via `.fvm/flutter_sdk/bin` and
-    // bare global installs alike).
+    // bare global installs alike). The launcher often sits behind a symlink
+    // (`.fvm/flutter_sdk`), so realpath the SDK root — callers rely on the
+    // real `versions/<v>` path for FVM detection.
     final which = Process.runSync(
       Platform.isWindows ? 'where.exe' : 'which',
       ['flutter'],
@@ -163,10 +188,11 @@ class FlutterSdk {
     if (which.exitCode == 0) {
       final line = (which.stdout as String).trim().split('\n').first.trim();
       if (line.isNotEmpty) {
-        final flutterBin = File(line);
         // flutter binary lives at <sdk>/bin/flutter — resolve SDK root.
-        final sdkRoot = flutterBin.parent.parent.path;
-        if (Directory(sdkRoot).existsSync()) return FlutterSdk._(sdkRoot);
+        final sdkRoot = File(line).parent.parent.path;
+        final real = _realpath(sdkRoot);
+        if (real == null) throw StateError('cannot locate Flutter SDK');
+        return FlutterSdk._(real);
       }
     }
     throw StateError(
@@ -715,6 +741,20 @@ Future<void> applyPatches(Map<String, String> opts) async {
   final pubCache = copyRoot != null
       ? PubCache.prepareIsolated(platform, '$copyRoot/pub-cache')
       : PubCache.resolve(platform);
+
+  if (copyRoot == null) {
+    // Direct mode patches the resolved SDK in place.  Always warn (including
+    // under `--ci`) that this mutates the real SDK / public pub cache; only
+    // non-CI interactive runs then prompt y/n for confirmation.
+    _r.warnLine(
+      'You are launching direct-mode, all patches will be applied to the SDK '
+      'in your FLUTTER_ROOT or PATH, and the public pub cache.',
+    );
+    if (!ci) {
+      final ok = _r.confirm('Continue?');
+      if (!ok) _r.error('aborted');
+    }
+  }
 
   // project-level patches (applied before entering Flutter SDK)
   applyProjectPatches(platform, matrix);

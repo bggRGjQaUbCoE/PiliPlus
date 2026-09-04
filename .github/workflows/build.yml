@@ -79,7 +79,7 @@ jobs:
                   cache: true
 
             - name: Apply Patch
-              run: dart run lib/scripts/pre_build.dart apply-patches --platform android
+              run: dart run lib/scripts/pre_build.dart apply-patches --platform android --ci
 
             - name: Write key
               if: github.event_name == 'workflow_dispatch'

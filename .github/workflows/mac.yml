@@ -30,7 +30,7 @@ jobs:
         run: dart run lib/scripts/pre_build.dart gen-build-info --platform macos --ci --tag '${{ inputs.tag }}'
 
       - name: Apply Patch
-        run: dart run lib/scripts/pre_build.dart apply-patches --platform macos
+        run: dart run lib/scripts/pre_build.dart apply-patches --platform macos --ci
 
       - name: Build Mac
         run: flutter build macos --release --dart-define-from-file=pili_release.json --no-pub

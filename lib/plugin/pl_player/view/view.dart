@@ -90,6 +90,7 @@ class PLVideoPlayer extends StatefulWidget {
     required this.maxWidth,
     required this.maxHeight,
     required this.plPlayerController,
+    required this.sourceOwner,
     this.videoDetailController,
     this.introController,
     required this.headerControl,
@@ -105,6 +106,7 @@ class PLVideoPlayer extends StatefulWidget {
   final double maxWidth;
   final double maxHeight;
   final PlPlayerController plPlayerController;
+  final Object sourceOwner;
   final VideoDetailController? videoDetailController;
   final CommonIntroController? introController;
   final Widget headerControl;
@@ -149,7 +151,18 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   GestureType? _gestureType;
   Offset? _initialFocalPoint;
 
-  bool _pauseDueToPauseUponEnteringBackgroundMode = false;
+  bool _resumeOnForeground = false;
+  Future<void>? _backgroundPause;
+  Future<void>? _backgroundResume;
+  int? _backgroundPlayIntent;
+
+  bool get _ownsCurrentPlayer =>
+      plPlayerController.isSourceOwner(widget.sourceOwner);
+
+  bool get _canResumePlayback =>
+      _ownsCurrentPlayer &&
+      (plPlayerController.continuePlayInBackground.value ||
+          WidgetsBinding.instance.lifecycleState == .resumed);
 
   StreamSubscription? _brightnessListener;
   void _onBrightnessChanged(double value) {
@@ -253,6 +266,13 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   void initState() {
     super.initState();
     addObserverMobile(this);
+    if (WidgetsBinding.instance.lifecycleState == .resumed) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_ownsCurrentPlayer) return;
+        _consumePendingAutoplay();
+        _resumeIfNeeded();
+      });
+    }
 
     _controlsListener = plPlayerController.showControls.listen(
       _onControlChanged,
@@ -329,19 +349,107 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (!plPlayerController.continuePlayInBackground.value) {
-      late final player = plPlayerController.videoPlayerController;
-      if (const <AppLifecycleState>[.paused, .detached].contains(state)) {
-        if (player != null && player.state.playing) {
-          _pauseDueToPauseUponEnteringBackgroundMode = true;
-          player.pause();
-        }
-      } else {
-        if (_pauseDueToPauseUponEnteringBackgroundMode) {
-          _pauseDueToPauseUponEnteringBackgroundMode = false;
-          player?.play();
-        }
+    if (!_ownsCurrentPlayer) return;
+    if (state == .resumed) _consumePendingAutoplay();
+    if (plPlayerController.continuePlayInBackground.value &&
+        state != .resumed) {
+      _resumeOnForeground = false;
+      _backgroundPlayIntent = null;
+      return;
+    }
+
+    final player = plPlayerController.videoPlayerController;
+    if (const <AppLifecycleState>[
+      .paused,
+      .detached,
+    ].contains(state)) {
+      if (player != null &&
+          player.state.playing &&
+          plPlayerController.wantsPlayback) {
+        _resumeOnForeground = true;
+        _backgroundPlayIntent = plPlayerController.playIntent;
+        _backgroundPause = player.pause();
+      } else if (_backgroundResume != null &&
+          _backgroundPlayIntent == plPlayerController.playIntent) {
+        _resumeOnForeground = true;
       }
+    } else if (state == .resumed) {
+      _resumeIfNeeded();
+    }
+  }
+
+  void _consumePendingAutoplay() {
+    if (plPlayerController.takePendingAutoplay(widget.sourceOwner)) {
+      _resumeOnForeground = true;
+      _backgroundPlayIntent = plPlayerController.playIntent;
+    }
+  }
+
+  void _resumeIfNeeded() {
+    if (!_resumeOnForeground ||
+        _backgroundResume != null ||
+        !mounted ||
+        !_canResumePlayback) {
+      return;
+    }
+
+    _resumeOnForeground = false;
+    final pause = _backgroundPause;
+    final playIntent =
+        _backgroundPlayIntent ?? plPlayerController.playIntent;
+    _backgroundPause = null;
+    final resume = _resumeAfterBackground(pause, playIntent);
+    _backgroundResume = resume;
+    unawaited(
+      resume.whenComplete(() {
+        _backgroundResume = null;
+        if (!_resumeOnForeground) _backgroundPlayIntent = null;
+        _resumeIfNeeded();
+      }),
+    );
+  }
+
+  Future<void> _resumeAfterBackground(
+    Future<void>? pause,
+    int playIntent,
+  ) async {
+    try {
+      if (pause != null) await pause;
+      if (!mounted ||
+          playIntent != plPlayerController.playIntent ||
+          !_canResumePlayback) {
+        return;
+      }
+
+      final refreshResult =
+          await widget.videoDetailController?.refreshExpiredPlayUrl();
+      if (!mounted ||
+          playIntent != plPlayerController.playIntent ||
+          !_ownsCurrentPlayer) {
+        return;
+      }
+      if (refreshResult == false) {
+        plPlayerController.deferAutoplay();
+        return;
+      }
+      if (!_canResumePlayback) return;
+
+      await plPlayerController.videoPlayerController?.play();
+      if (!mounted || !_ownsCurrentPlayer) return;
+      if (playIntent != plPlayerController.playIntent) {
+        if (!plPlayerController.wantsPlayback) {
+          await plPlayerController.videoPlayerController?.pause();
+        }
+        return;
+      }
+      if (!plPlayerController.continuePlayInBackground.value &&
+          WidgetsBinding.instance.lifecycleState != .resumed) {
+        await plPlayerController.videoPlayerController?.pause();
+      } else if (_backgroundPause == null) {
+        _resumeOnForeground = false;
+      }
+    } catch (e, s) {
+      if (kDebugMode) debugPrint('resume after background failed: $e\n$s');
     }
   }
 

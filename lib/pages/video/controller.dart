@@ -78,6 +78,18 @@ import 'package:hive_ce/hive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:media_kit/media_kit.dart' hide Subtitle;
 
+typedef _VideoUrlQuery = ({
+  bool fromReset,
+  bool autoFullScreenFlag,
+  bool? autoplay,
+  String? language,
+  _VideoUrlSource source,
+  int playIntent,
+  int sourceRevision,
+});
+
+typedef _VideoUrlSource = ({String bvid, int cid, int? epId, int? seasonId});
+
 class VideoDetailController extends GetxController
     with GetTickerProviderStateMixin, BlockMixin {
   /// 路由传参
@@ -552,10 +564,7 @@ class VideoDetailController extends GetxController
       alignment: Alignment.centerLeft,
       child: SlideTransition(
         position: animation.drive(
-          Tween<Offset>(
-            begin: const Offset(-1.0, 0.0),
-            end: Offset.zero,
-          ),
+          Tween<Offset>(begin: const Offset(-1.0, 0.0), end: Offset.zero),
         ),
         child: Padding(
           padding: const EdgeInsets.only(top: 5),
@@ -702,13 +711,21 @@ class VideoDetailController extends GetxController
     playerInit();
   }
 
-  Future<void>? _initPlayerIfNeeded(bool autoFullScreenFlag) {
+  Future<void>? _initPlayerIfNeeded(
+    bool autoFullScreenFlag, {
+    bool? autoplay,
+    int? sourceRevision,
+    int? playIntent,
+  }) {
     if (_autoPlay.value ||
-        (plPlayerController.preInitPlayer && !plPlayerController.processing) &&
+        plPlayerController.preInitPlayer &&
             (isFileSource
                 ? true
                 : videoPlayerKey.currentState?.mounted == true)) {
       return playerInit(
+        autoplay: autoplay,
+        sourceRevision: sourceRevision,
+        playIntent: playIntent,
         autoFullScreenFlag: autoFullScreenFlag && _autoPlay.value,
       );
     }
@@ -718,7 +735,11 @@ class VideoDetailController extends GetxController
   Future<void> playerInit({
     bool? autoplay,
     bool autoFullScreenFlag = false,
+    int? sourceRevision,
+    int? playIntent,
   }) async {
+    playIntent ??= plPlayerController.playIntent;
+    sourceRevision ??= plPlayerController.claimSource(this);
     Duration? seek = defaultST ?? playedTime;
     if (seek == .zero) seek = null;
     seek ??= getFirstSegment();
@@ -730,10 +751,7 @@ class VideoDetailController extends GetxController
               isMp4: entry.mediaType == 1,
               hasDashAudio: entry.hasDashAudio,
             )
-          : NetworkSource(
-              videoSource: videoUrl!,
-              audioSource: audioUrl,
-            ),
+          : NetworkSource(videoSource: videoUrl!, audioSource: audioUrl),
       seekTo: seek,
       duration: data.timeLength == null
           ? null
@@ -755,9 +773,13 @@ class VideoDetailController extends GetxController
       height: firstVideo.height,
       volume: volume,
       autoFullScreenFlag: autoFullScreenFlag,
+      sourceRevision: sourceRevision,
+      autoplayIntent: playIntent,
     );
 
-    if (isClosed) return;
+    if (isClosed || !plPlayerController.ownsSource(this, sourceRevision)) {
+      return;
+    }
 
     if (!isFileSource) {
       if (plPlayerController.enableBlock) {
@@ -776,7 +798,13 @@ class VideoDetailController extends GetxController
     defaultST = null;
   }
 
-  bool isQuerying = false;
+  Future<bool>? _videoUrlQuery;
+  _VideoUrlQuery? _pendingVideoUrlQuery;
+
+  bool get isQuerying => _videoUrlQuery != null;
+
+  _VideoUrlSource get _videoUrlSource =>
+      (bvid: bvid, cid: cid.value, epId: epId, seasonId: seasonId);
 
   final languages = Rxn<List<LanguageItem>>();
   final currLang = Rxn<String>();
@@ -786,28 +814,35 @@ class VideoDetailController extends GetxController
       SmartDialog.showToast('账号未登录');
       return;
     }
-    currLang.value = language;
-    queryVideoUrl(fromReset: true);
+    queryVideoUrl(fromReset: true, language: language);
   }
 
-  Future<LoadingState<PlayUrlModel>> _getVideoUrl(int quality) {
+  Future<LoadingState<PlayUrlModel>> _getVideoUrl(
+    _VideoUrlSource source,
+    int quality,
+    String? language,
+  ) {
     return VideoHttp.videoUrl(
-      cid: cid.value,
-      bvid: bvid,
+      cid: source.cid,
+      bvid: source.bvid,
       qn: quality,
-      epid: epId,
-      seasonId: seasonId,
+      epid: source.epId,
+      seasonId: source.seasonId,
       tryLook: plPlayerController.tryLook,
       videoType: _actualVideoType ?? videoType,
-      language: currLang.value,
+      language: language,
       voiceBalance: plPlayerController.enableAudioNormalization,
     );
   }
 
-  Future<void> _supplementVideoQualities() async {
+  Future<void> _supplementVideoQualities(
+    PlayUrlModel data,
+    _VideoUrlSource source,
+    String? language,
+  ) async {
     final quality = data.missingVideoQualityBelowHighest;
     if (quality == -1) return;
-    final result = await _getVideoUrl(quality);
+    final result = await _getVideoUrl(source, quality, language);
     if (result case Success(:final response)) {
       data.dash!.video!.merge(response.dash?.video);
     }
@@ -815,33 +850,159 @@ class VideoDetailController extends GetxController
 
   Volume? volume;
 
+  static final _urlDeadlinePattern = RegExp(
+    r'(?:(?:^|[?&]|%3f|%26)deadline|'
+    r'(?:^|[?&]|%3f|%26)hdnts(?:=|%3d)exp|'
+    r'(?:~|%7e)exp)'
+    r'(?:=|%3d)(\d+)(?=$|[&#~;]|%26|%3b|%7e)',
+    caseSensitive: false,
+  );
+
+  static Iterable<int> _urlDeadlines(String? url) => _urlDeadlinePattern
+      .allMatches(url ?? '')
+      .map((match) => int.tryParse(match.group(1)!))
+      .whereType<int>()
+      .where((deadline) => deadline > 0);
+
+  bool get playUrlExpired {
+    final deadlines = [..._urlDeadlines(videoUrl), ..._urlDeadlines(audioUrl)];
+    if (deadlines.isEmpty) return false;
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    return deadlines.reduce(min) <= now + 60;
+  }
+
+  bool get _playUrlReady =>
+      videoUrl != null &&
+      audioUrl != null &&
+      plPlayerController.dataStatus.value == .loaded &&
+      !playUrlExpired;
+
+  /// Returns null when no refresh is needed and false when refresh failed.
+  Future<bool?> refreshExpiredPlayUrl() async {
+    if (isFileSource) return null;
+    if (isClosed) return false;
+    if (_videoUrlQuery case final query?) {
+      try {
+        await query;
+      } catch (_) {}
+      return _playUrlReady;
+    }
+    if (!playUrlExpired) return null;
+
+    playedTime =
+        plPlayerController.videoPlayerController?.state.position ?? playedTime;
+    _autoPlay.value = true;
+    try {
+      await queryVideoUrl(fromReset: true, autoplay: false);
+    } catch (_) {}
+    return _playUrlReady;
+  }
+
   // 视频链接
   /// TODO: merge [DownloadHttp.getVideoUrl].
-  Future<void> queryVideoUrl({
+  Future<bool> queryVideoUrl({
     bool fromReset = false,
     bool autoFullScreenFlag = false,
+    bool? autoplay,
+    String? language,
   }) async {
     if (isFileSource) {
-      return _initPlayerIfNeeded(autoFullScreenFlag);
+      final init = _initPlayerIfNeeded(autoFullScreenFlag, autoplay: autoplay);
+      if (init != null) await init;
+      return init == null || plPlayerController.dataStatus.value == .loaded;
     }
-    if (isQuerying) {
-      return;
+
+    final sourceRevision = plPlayerController.claimSource(this);
+
+    final query = (
+      fromReset: fromReset,
+      autoFullScreenFlag: autoFullScreenFlag,
+      autoplay: autoplay,
+      language: language ?? currLang.value,
+      source: _videoUrlSource,
+      playIntent: plPlayerController.playIntent,
+      sourceRevision: sourceRevision,
+    );
+    if (_videoUrlQuery case final active?) {
+      _pendingVideoUrlQuery = query;
+      return active;
     }
-    isQuerying = true;
-    try {
-      await _queryVideoUrl(fromReset, autoFullScreenFlag);
-    } finally {
-      isQuerying = false;
+
+    late final Future<bool> active;
+    active = _drainVideoUrlQueries(query).whenComplete(() {
+      if (identical(_videoUrlQuery, active)) _videoUrlQuery = null;
+    });
+    _videoUrlQuery = active;
+    return active;
+  }
+
+  Future<bool> _drainVideoUrlQueries(_VideoUrlQuery current) async {
+    while (true) {
+      _pendingVideoUrlQuery = null;
+      late final bool success;
+      try {
+        success = await _queryVideoUrl(current);
+      } catch (_) {
+        if (_pendingVideoUrlQuery == null) rethrow;
+        success = false;
+      }
+      final pending = _pendingVideoUrlQuery;
+      if (pending == null) return success;
+      current = pending;
     }
   }
 
-  @pragma('vm:prefer-inline')
-  Future<void> _queryVideoUrl(bool fromReset, bool autoFullScreenFlag) async {
+  Future<bool> _queryVideoUrl(_VideoUrlQuery query) async {
+    final fromReset = query.fromReset;
+    final autoFullScreenFlag = query.autoFullScreenFlag;
+    final autoplay = query.autoplay;
+    final language = query.language;
+    final source = query.source;
+
+    bool isStale() =>
+        isClosed ||
+        !plPlayerController.ownsSource(this, query.sourceRevision) ||
+        source != _videoUrlSource;
+
+    Future<bool> initPlayer() async {
+      final init = _initPlayerIfNeeded(
+        autoFullScreenFlag,
+        autoplay: false,
+        sourceRevision: query.sourceRevision,
+        playIntent: query.playIntent,
+      );
+      if (init == null) return !isStale();
+      await init;
+      if (isStale() || plPlayerController.dataStatus.value != .loaded) {
+        if (plPlayerController.ownsSource(this, query.sourceRevision)) {
+          await plPlayerController.pause(notify: false);
+        }
+        return false;
+      }
+      final shouldAutoplay = query.playIntent == plPlayerController.playIntent
+          ? autoplay ?? _autoPlay.value
+          : plPlayerController.wantsPlayback;
+      if (shouldAutoplay) {
+        await plPlayerController.autoplayIfAllowed(
+          sourceRevision: query.sourceRevision,
+        );
+        if (isStale()) {
+          if (plPlayerController.ownsSource(this, query.sourceRevision)) {
+            await plPlayerController.pause(notify: false);
+          }
+          return false;
+        }
+      }
+      return true;
+    }
+
+    if (isStale()) return false;
     if (plPlayerController.enableSponsorBlock && isBlock && !fromReset) {
-      querySponsorBlock(bvid: bvid, cid: cid.value);
+      querySponsorBlock(bvid: source.bvid, cid: source.cid);
     }
     if (plPlayerController.cacheVideoQa == null) {
       final isWiFi = await ConnectivityUtils.isWiFi;
+      if (isStale()) return false;
       plPlayerController
         ..cacheVideoQa = isWiFi
             ? Pref.defaultVideoQa
@@ -852,11 +1013,31 @@ class VideoDetailController extends GetxController
       preferCodecs = isWiFi ? Pref.preferCodecs : Pref.preferCodecsCellular;
     }
 
-    final result = await _getVideoUrl(VideoQuality.hdrVivid.code);
+    final result = await _getVideoUrl(
+      source,
+      VideoQuality.hdrVivid.code,
+      language,
+    );
+    if (isStale()) return false;
 
     if (result case Success(:final response)) {
+      if (response.dash == null && response.durl?.isNotEmpty != true) {
+        SmartDialog.showToast('视频资源不存在');
+        if (!fromReset) {
+          _autoPlay.value = false;
+          videoState.value = false;
+          if (plPlayerController.isFullScreen.value) {
+            plPlayerController.triggerFullScreen(status: false);
+          }
+        }
+        return false;
+      }
+
+      if (response.dash != null) {
+        await _supplementVideoQualities(response, source, language);
+        if (isStale()) return false;
+      }
       data = response;
-      await _supplementVideoQualities();
 
       languages.value = data.language?.items;
       currLang.value = data.curLanguage;
@@ -886,44 +1067,34 @@ class VideoDetailController extends GetxController
         );
       }
       if (data.dash == null) {
-        if (data.durl case final durl?) {
-          // it will cause all files to be opened simultaneously
-          if (durl.length > 1) {
-            // TODO: refa
-            final sb = StringBuffer('edl://!no_chapters;');
-            for (var i in durl) {
-              final video = VideoUtils.getCdnUrl(i.playUrls);
-              sb.write('%${video.length}%$video,length=${i.length! / 1000};');
-            }
-            videoUrl = sb.toString();
-          } else {
-            videoUrl = VideoUtils.getCdnUrl(durl.single.playUrls);
+        final durl = data.durl!;
+        // it will cause all files to be opened simultaneously
+        if (durl.length > 1) {
+          // TODO: refa
+          final sb = StringBuffer('edl://!no_chapters;');
+          for (var i in durl) {
+            final video = VideoUtils.getCdnUrl(i.playUrls);
+            sb.write('%${video.length}%$video,length=${i.length! / 1000};');
           }
-
-          audioUrl = '';
-
-          // 实际为FLV/MP4格式，但已被淘汰，这里仅做兜底处理
-          final videoQuality = VideoQuality.fromCode(data.quality!);
-          firstVideo = VideoItem(
-            id: data.quality!,
-            baseUrl: videoUrl,
-            codecs: 'avc1',
-            quality: videoQuality,
-          );
-          _setVideoHeight();
-          currentDecodeFormats = VideoDecodeFormatType.AVC;
-          currentVideoQa.value = videoQuality;
-          await _initPlayerIfNeeded(autoFullScreenFlag);
-          return;
+          videoUrl = sb.toString();
         } else {
-          SmartDialog.showToast('视频资源不存在');
-          _autoPlay.value = false;
-          videoState.value = false;
-          if (plPlayerController.isFullScreen.value) {
-            plPlayerController.triggerFullScreen(status: false);
-          }
-          return;
+          videoUrl = VideoUtils.getCdnUrl(durl.single.playUrls);
         }
+
+        audioUrl = '';
+
+        // 实际为FLV/MP4格式，但已被淘汰，这里仅做兜底处理
+        final videoQuality = VideoQuality.fromCode(data.quality!);
+        firstVideo = VideoItem(
+          id: data.quality!,
+          baseUrl: videoUrl,
+          codecs: 'avc1',
+          quality: videoQuality,
+        );
+        _setVideoHeight();
+        currentDecodeFormats = VideoDecodeFormatType.AVC;
+        currentVideoQa.value = videoQuality;
+        return initPlayer();
       }
 
       // if (kDebugMode) debugPrint("allVideosList:${allVideosList}");
@@ -981,14 +1152,17 @@ class VideoDetailController extends GetxController
       } else {
         audioUrl = '';
       }
-      await _initPlayerIfNeeded(autoFullScreenFlag);
+      return initPlayer();
     } else {
-      _autoPlay.value = false;
-      videoState.value = false;
-      if (plPlayerController.isFullScreen.value) {
-        plPlayerController.triggerFullScreen(status: false);
+      if (!fromReset) {
+        _autoPlay.value = false;
+        videoState.value = false;
+        if (plPlayerController.isFullScreen.value) {
+          plPlayerController.triggerFullScreen(status: false);
+        }
       }
       result.toast();
+      return false;
     }
   }
 
@@ -1600,13 +1774,7 @@ class VideoDetailController extends GetxController
       if (kDebugMode) {
         debugPrint(title);
       }
-      Get.toNamed(
-        '/dlna',
-        parameters: {
-          'url': url,
-          'title': ?title,
-        },
-      );
+      Get.toNamed('/dlna', parameters: {'url': url, 'title': ?title});
     } else {
       res.toast();
     }

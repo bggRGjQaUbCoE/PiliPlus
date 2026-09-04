@@ -1,4 +1,4 @@
-import 'dart:async' show StreamSubscription, Timer;
+import 'dart:async' show StreamSubscription, Timer, unawaited;
 import 'dart:convert' show ascii, utf8;
 import 'dart:io' show Platform;
 import 'dart:math' show max, min;
@@ -63,6 +63,7 @@ import 'package:media_kit_video/media_kit_video.dart';
 import 'package:native_device_orientation/native_device_orientation.dart';
 import 'package:path/path.dart' as path;
 import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
+import 'package:synchronized/synchronized.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -130,6 +131,12 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       Pref.continuePlayInBackground.obs;
 
   bool _autoPlay = false;
+  int? _pendingAutoplayRevision;
+  bool _wantsPlayback = false;
+  int _playIntent = 0;
+  Object? _sourceOwner;
+  Object? _sourceRequestOwner;
+  int _sourceRevision = 0;
 
   // 记录历史记录
   int? _aid;
@@ -155,6 +162,81 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   // final Durations durations;
 
   String get bvid => _bvid!;
+
+  int claimSource(Object owner) {
+    _sourceRequestOwner = owner;
+    return ++_sourceRevision;
+  }
+
+  bool isSourceOwner(Object owner) => identical(_sourceOwner, owner);
+
+  bool ownsSource(Object owner, int revision) =>
+      revision == _sourceRevision &&
+      identical(_sourceRequestOwner, owner);
+
+  int get playIntent => _playIntent;
+  bool get wantsPlayback => _wantsPlayback;
+
+  bool takePendingAutoplay(Object owner) {
+    if (!isSourceOwner(owner) ||
+        _pendingAutoplayRevision != _sourceRevision) {
+      return false;
+    }
+    _pendingAutoplayRevision = null;
+    return true;
+  }
+
+  void requestPlayback() {
+    _pendingAutoplayRevision = null;
+    _wantsPlayback = true;
+    _playIntent++;
+  }
+
+  void cancelAutoResume() {
+    _pendingAutoplayRevision = null;
+    _wantsPlayback = false;
+    _playIntent++;
+  }
+
+  void deferAutoplay() => _pendingAutoplayRevision = _sourceRevision;
+
+  Future<void> autoplayIfAllowed({int? sourceRevision}) async {
+    sourceRevision ??= _sourceRevision;
+    if (sourceRevision != _sourceRevision) return;
+
+    _wantsPlayback = true;
+    if (PlatformUtils.isMobile &&
+        !continuePlayInBackground.value &&
+        WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
+      _pendingAutoplayRevision = sourceRevision;
+      return;
+    }
+
+    _pendingAutoplayRevision = null;
+    final play = playIfExists();
+    if (play == null) {
+      _pendingAutoplayRevision = sourceRevision;
+      return;
+    }
+
+    final playIntent = _playIntent;
+    await play;
+    if (sourceRevision != _sourceRevision) return;
+    if (playIntent != _playIntent) {
+      if (!_wantsPlayback) await pause(notify: false);
+      return;
+    }
+    if (PlatformUtils.isMobile &&
+        !continuePlayInBackground.value &&
+        WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
+      await pause(notify: false);
+      if (sourceRevision == _sourceRevision &&
+          playIntent == _playIntent &&
+          _wantsPlayback) {
+        _pendingAutoplayRevision = sourceRevision;
+      }
+    }
+  }
 
   /// 视频播放速度
   double get playbackSpeed => _playbackSpeed.value;
@@ -449,8 +531,11 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     bool notify = true,
     bool isInterrupt = false,
   }) async {
-    if (_instance?.playerStatus.isPlaying ?? false) {
-      await _instance?.pause(notify: notify, isInterrupt: isInterrupt);
+    final instance = _instance;
+    if (instance?.playerStatus.isPlaying ?? false) {
+      await instance?.pause(notify: notify, isInterrupt: isInterrupt);
+    } else if (notify) {
+      instance?.cancelAutoResume();
     }
   }
 
@@ -567,8 +652,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       .._playerCount += 1;
   }
 
-  bool _processing = false;
-  bool get processing => _processing;
+  final _sourceLock = Lock();
 
   // offline
   bool get isFileSource => dataSource is FileSource;
@@ -598,70 +682,84 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     VoidCallback? onInit,
     Volume? volume,
     bool autoFullScreenFlag = false,
+    required int sourceRevision,
+    required int autoplayIntent,
   }) async {
     try {
-      _processing = true;
-      this.isLive = isLive;
-      _videoType = videoType ?? VideoType.ugc;
-      this.width = width;
-      this.height = height;
-      this.dataSource = dataSource;
-      _autoPlay = autoplay;
-      // 初始化视频倍速
-      // _playbackSpeed.value = speed;
-      // 初始化数据加载状态
-      dataStatus.value = DataStatus.loading;
-      // 初始化全屏方向
-      _isVertical = isVertical ?? false;
-      _aid = aid;
-      _bvid = bvid;
-      this.cid = cid;
-      _epid = epid;
-      _seasonId = seasonId;
-      _pgcType = pgcType;
+      await _sourceLock.synchronized(() async {
+        if (sourceRevision != _sourceRevision) return;
+        _sourceOwner = _sourceRequestOwner;
+        this.isLive = isLive;
+        _videoType = videoType ?? VideoType.ugc;
+        this.width = width;
+        this.height = height;
+        this.dataSource = dataSource;
+        _autoPlay = autoplay;
+        _pendingAutoplayRevision = null;
+        // 初始化视频倍速
+        // _playbackSpeed.value = speed;
+        // 初始化数据加载状态
+        dataStatus.value = DataStatus.loading;
+        // 初始化全屏方向
+        _isVertical = isVertical ?? false;
+        _aid = aid;
+        _bvid = bvid;
+        this.cid = cid;
+        _epid = epid;
+        _seasonId = seasonId;
+        _pgcType = pgcType;
 
-      if (showSeekPreview) {
-        _clearPreview();
-      }
-      cancelLongPressTimer();
-      if (_videoPlayerController != null &&
-          _videoPlayerController!.state.playing) {
-        await pause(notify: false);
-      }
+        if (showSeekPreview) {
+          _clearPreview();
+        }
+        cancelLongPressTimer();
+        if (_videoPlayerController != null &&
+            _videoPlayerController!.state.playing) {
+          await pause(notify: false);
+        }
+        if (sourceRevision != _sourceRevision) return;
 
-      if (_playerCount == 0) {
-        return;
-      }
-      // 配置Player 音轨、字幕等等
-      await _createVideoController(dataSource, seekTo, volume);
+        if (_playerCount == 0) {
+          return;
+        }
+        // 配置Player 音轨、字幕等等
+        await _createVideoController(
+          dataSource,
+          seekTo,
+          volume,
+          sourceRevision,
+        );
 
-      if (_playerCount == 0) {
-        _removeListeners();
-        _videoPlayerController?.dispose();
-        _videoPlayerController = null;
-        _videoController = null;
-        return;
-      }
+        if (sourceRevision != _sourceRevision) return;
 
-      updateDuration(duration ?? _videoPlayerController!.state.duration);
-      position.value = buffered.value = seekTo?.inSeconds ?? 0;
+        if (_playerCount == 0) {
+          _removeListeners();
+          _videoPlayerController?.dispose();
+          _videoPlayerController = null;
+          _videoController = null;
+          return;
+        }
 
-      dataStatus.value = .loaded;
+        updateDuration(duration ?? _videoPlayerController!.state.duration);
+        position.value = buffered.value = seekTo?.inSeconds ?? 0;
 
-      if (autoFullScreenFlag && autoEnterFullScreen) {
-        triggerFullScreen(status: true);
-      }
+        dataStatus.value = .loaded;
 
-      await _initializePlayer();
-      onInit?.call();
+        if (autoFullScreenFlag && autoEnterFullScreen) {
+          triggerFullScreen(status: true);
+        }
+
+        await _initializePlayer(autoplayIntent, sourceRevision);
+        if (sourceRevision == _sourceRevision) onInit?.call();
+      });
     } catch (err, stackTrace) {
-      dataStatus.value = DataStatus.error;
+      if (sourceRevision == _sourceRevision) {
+        dataStatus.value = DataStatus.error;
+      }
       if (kDebugMode) {
         debugPrint(stackTrace.toString());
         debugPrint('plPlayer err:  $err');
       }
-    } finally {
-      _processing = false;
     }
   }
 
@@ -722,6 +820,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     final opt = {
       'video-sync': Pref.videoSync,
       if (Platform.isAndroid) 'ao': Pref.audioOutput,
+      'stream-lavf-o':
+          'reconnect=1,reconnect_on_network_error=1,reconnect_streamed=1',
       'volume':
           (PlatformUtils.isMobile ? Pref.playerVolume : volume.value * 100)
               .toString(),
@@ -765,6 +865,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     DataSource dataSource,
     Duration? seekTo,
     Volume? volume,
+    int sourceRevision,
   ) async {
     isBuffering.value = false;
     _heartDuration = 0;
@@ -786,6 +887,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
         await setShader();
       }
     }
+    if (sourceRevision != _sourceRevision) return;
 
     final Map<String, String> extras = {
       if (dataSource is FileSource)
@@ -838,8 +940,11 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   // 开始播放
-  Future<void> _initializePlayer() async {
-    if (_instance == null) return;
+  Future<void> _initializePlayer(
+    int autoplayIntent,
+    int sourceRevision,
+  ) async {
+    if (_instance == null || sourceRevision != _sourceRevision) return;
     // 设置倍速
     if (isLive) {
       await setPlaybackSpeed(1.0);
@@ -848,6 +953,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
         await setPlaybackSpeed(_playbackSpeed.value);
       }
     }
+    if (sourceRevision != _sourceRevision) return;
     _initVideoFit();
     // if (_looping) {
     //   await setLooping(_looping);
@@ -859,8 +965,10 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     // }
 
     // 自动播放
-    if (_autoPlay) {
-      playIfExists();
+    if (sourceRevision == _sourceRevision &&
+        ((_autoPlay && autoplayIntent == _playIntent) ||
+            (autoplayIntent != _playIntent && _wantsPlayback))) {
+      unawaited(autoplayIfAllowed(sourceRevision: sourceRevision));
       // await play(duration: duration);
     }
   }
@@ -1101,6 +1209,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   /// 播放视频
   Future<void> play({bool repeat = false, bool hideControls = true}) async {
+    requestPlayback();
     if (_playerCount == 0) return;
     // 播放时自动隐藏控制条
     controls = !hideControls;
@@ -1120,6 +1229,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   /// 暂停播放
   Future<void> pause({bool notify = true, bool isInterrupt = false}) async {
+    if (notify) cancelAutoResume();
     await _videoPlayerController?.pause();
     playerStatus.value = PlayerStatus.paused;
 
@@ -1524,6 +1634,11 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     }
 
     _playerCount = 0;
+    _pendingAutoplayRevision = null;
+    _wantsPlayback = false;
+    _sourceOwner = null;
+    _sourceRequestOwner = null;
+    _sourceRevision++;
     if (removeSafeArea) {
       showSystemBar();
     }
@@ -1583,6 +1698,10 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   void setContinuePlayInBackground() {
     continuePlayInBackground.toggle();
+    if (continuePlayInBackground.value &&
+        _pendingAutoplayRevision == _sourceRevision) {
+      unawaited(autoplayIfAllowed());
+    }
     if (!tempPlayerConf) {
       setting.put(
         SettingBoxKey.continuePlayInBackground,

@@ -1,7 +1,11 @@
+import 'dart:io' show Platform;
+
+import 'package:desktop_webview_window/desktop_webview_window.dart' as dww;
 import 'package:PiliPlus/common/skeleton/video_reply.dart';
 import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/mini_scaffold.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -37,6 +41,8 @@ class NoteListPage extends CommonSlidePage {
 
 class _NoteListPageState extends State<NoteListPage>
     with SingleTickerProviderStateMixin, CommonSlideMixin {
+  static dww.Webview? _activeNoteWebview;
+  static bool _isOpeningNote = false;
   late final NoteListPageCtr _controller;
 
   @override
@@ -155,14 +161,38 @@ class _NoteListPageState extends State<NoteListPage>
                   borderRadius: BorderRadius.all(Radius.circular(6)),
                 ),
               ),
-              onPressed: () {
+              onPressed: () async {
+                final url =
+                    'https://www.bilibili.com/h5/note-app?oid=${widget.oid}&pagefrom=ugcvideo&is_stein_gate=${widget.isStein ? 1 : 0}';
+                if (Platform.isLinux) {
+                  if (_activeNoteWebview != null) {
+                    await _activeNoteWebview?.bringToForeground();
+                    SmartDialog.showToast('已置顶笔记窗口');
+                    return;
+                  }
+                  if (_isOpeningNote) return;
+                  _isOpeningNote = true;
+                  SmartDialog.showToast('已在新窗口打开');
+                  try {
+                    _activeNoteWebview = await WebviewPage.openLinux(
+                      oid: widget.oid,
+                      title: widget.title,
+                      url: url,
+                      onClose: () {
+                        _activeNoteWebview = null;
+                      },
+                    );
+                  } finally {
+                    _isOpeningNote = false;
+                  }
+                  return;
+                }
                 MiniScaffold.of(context).showBottomSheet(
                   constraints: const BoxConstraints(),
                   (context) => WebviewPage(
                     oid: widget.oid,
                     title: widget.title,
-                    url:
-                        'https://www.bilibili.com/h5/note-app?oid=${widget.oid}&pagefrom=ugcvideo&is_stein_gate=${widget.isStein ? 1 : 0}',
+                    url: url,
                   ),
                 );
               },

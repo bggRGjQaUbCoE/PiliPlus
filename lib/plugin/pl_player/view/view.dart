@@ -360,6 +360,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
     final player = plPlayerController.videoPlayerController;
     if (const <AppLifecycleState>[
+      .hidden,
       .paused,
       .detached,
     ].contains(state)) {

@@ -5,6 +5,7 @@ import 'dart:math' show max;
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show tabBarScrollPhysics;
+import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
@@ -67,6 +68,7 @@ class _PayCoinsPageState extends State<PayCoinsPage>
   PageController? _controller;
   late final RxBool _coinWithLike = Pref.coinWithLike.obs;
   late final RxInt _pageIndex = 0.obs;
+  late final Rxn<int> _todayCoinExp = Rxn<int>();
 
   late final AnimationController _slide22Controller;
   late final Animation<Offset> _slide22Anim;
@@ -84,6 +86,11 @@ class _PayCoinsPageState extends State<PayCoinsPage>
     Assets.thunder2,
     Assets.thunder3,
   ];
+  static const TextStyle _infoTextStyle = TextStyle(
+    color: Colors.white,
+    fontSize: 13,
+  );
+
   void _cancelTimer() {
     _timer?.cancel();
     _timer = null;
@@ -161,6 +168,7 @@ class _PayCoinsPageState extends State<PayCoinsPage>
       ),
     );
 
+    _queryTodayCoinExp();
     WidgetsBinding.instance.addPostFrameCallback(_scale);
   }
 
@@ -177,6 +185,25 @@ class _PayCoinsPageState extends State<PayCoinsPage>
 
   void _scale([_]) {
     _scale22Controller.forward().whenComplete(_scale22Controller.reverse);
+  }
+
+  Future<void> _queryTodayCoinExp() async {
+    final res = await UserHttp.coinTodayExp();
+    if (mounted) {
+      _todayCoinExp.value = res.dataOrNull;
+    }
+  }
+
+  String _getCoinExpText() {
+    final todayCoinExp = _todayCoinExp.value;
+    final exp = (_pageIndex.value + 1) * 10;
+    if (todayCoinExp == null) {
+      return '经验值+$exp';
+    }
+    if (todayCoinExp == 50) {
+      return '今日投币+50经验成就 get ✓ 赞！';
+    }
+    return '经验值+$exp（今日$todayCoinExp/50）';
   }
 
   void _onScroll(int index) {
@@ -409,15 +436,19 @@ class _PayCoinsPageState extends State<PayCoinsPage>
                 )
               else
                 Center(child: _build22()),
-              if (_coins != null || widget.hasCoin) ...[
-                const SizedBox(height: 10),
+              const SizedBox(height: 10),
+              if (_coins != null || widget.hasCoin)
                 Center(
                   child: Text(
                     '${_coins != null ? '硬币余额：${max(0.0, _coins.toDouble().toPrecision(1))}' : ''}${widget.hasCoin ? '${_coins != null ? '，' : ''}已投1枚硬币' : ''}',
-                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                    style: _infoTextStyle,
                   ),
                 ),
-              ],
+              Center(
+                child: Obx(
+                  () => Text(_getCoinExpText(), style: _infoTextStyle),
+                ),
+              ),
               const SizedBox(height: 10),
               Stack(
                 clipBehavior: Clip.none,

@@ -1,5 +1,5 @@
 diff --git a/lib/src/route.dart b/lib/src/route.dart
-index 586afe6..007919a 100644
+index 2645b62..20e5cf3 100644
 --- a/lib/src/route.dart
 +++ b/lib/src/route.dart
 @@ -201,7 +201,7 @@ mixin CupertinoRouteTransitionMixin<T> on PageRoute<T> {
@@ -19,15 +19,15 @@ index 586afe6..007919a 100644
            onStartPopGesture: () => _startPopGesture<T>(route),
            child: child,
          ),
-@@ -698,6 +699,7 @@ class _CupertinoBackGestureDetector<T> extends StatefulWidget {
+@@ -697,6 +698,7 @@ class _CupertinoFullscreenDialogTransitionState extends State<CupertinoFullscree
+ class _CupertinoBackGestureDetector<T> extends StatefulWidget {
    const _CupertinoBackGestureDetector({
-     super.key,
      required this.enabledCallback,
 +    required this.popGestureEnabled_,
      required this.onStartPopGesture,
      required this.child,
    });
-@@ -706,6 +708,8 @@ class _CupertinoBackGestureDetector<T> extends StatefulWidget {
+@@ -705,6 +707,8 @@ class _CupertinoBackGestureDetector<T> extends StatefulWidget {
  
    final ValueGetter<bool> enabledCallback;
  
@@ -36,7 +36,7 @@ index 586afe6..007919a 100644
    final ValueGetter<_CupertinoBackGestureController<T>> onStartPopGesture;
  
    @override
-@@ -720,7 +724,7 @@ class _CupertinoBackGestureDetectorState<T> extends State<_CupertinoBackGestureD
+@@ -719,7 +723,7 @@ class _CupertinoBackGestureDetectorState<T> extends State<_CupertinoBackGestureD
    @override
    void initState() {
      super.initState();
@@ -45,12 +45,11 @@ index 586afe6..007919a 100644
        ..onStart = _handleDragStart
        ..onUpdate = _handleDragUpdate
        ..onEnd = _handleDragEnd
-@@ -776,8 +780,14 @@ class _CupertinoBackGestureDetectorState<T> extends State<_CupertinoBackGestureD
+@@ -775,7 +779,13 @@ class _CupertinoBackGestureDetectorState<T> extends State<_CupertinoBackGestureD
  
    void _handlePointerDown(PointerDownEvent event) {
      if (widget.enabledCallback()) {
 -      _recognizer.addPointer(event);
--    }
 +      _recognizer
 +        ..gestureSettings = null
 +        ..addPointer(event);
@@ -58,11 +57,10 @@ index 586afe6..007919a 100644
 +      _recognizer
 +        ..gestureSettings = const DeviceGestureSettings(touchSlop: 28)
 +        ..addPointer(event);
-+     }
+     }
    }
  
-   double _convertToLogical(double value) {
-@@ -883,7 +893,7 @@ class _CupertinoBackGestureController<T> {
+@@ -882,7 +892,7 @@ class _CupertinoBackGestureController<T> {
      } else {
        if (isCurrent) {
          // This route is destined to pop at this point. Reuse navigator's pop.
@@ -71,7 +69,7 @@ index 586afe6..007919a 100644
        }
  
        // The popping may have finished inline if already at the target destination.
-@@ -1563,6 +1573,20 @@ class CupertinoDialogRoute<T> extends RawDialogRoute<T> {
+@@ -1562,6 +1572,20 @@ class CupertinoDialogRoute<T> extends RawDialogRoute<T> {
    static final Tween<double> _dialogScaleTween = Tween<double>(begin: 1.3, end: 1.0);
  }
  

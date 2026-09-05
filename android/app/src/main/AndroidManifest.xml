@@ -212,7 +212,7 @@
             android:permission="android.permission.MANAGE_DOCUMENTS"
             android:enabled="false"
             android:exported="true"
-            android:authorities="com.example.piliplus.MTDataFilesProvider"
+            android:authorities="${applicationId}.MTDataFilesProvider"
             android:grantUriPermissions="true">
             <intent-filter>
                 <action android:name="android.content.action.DOCUMENTS_PROVIDER" />

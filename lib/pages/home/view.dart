@@ -279,17 +279,17 @@ Widget msgBadge(MainController mainController) {
           tooltip: '消息',
           onPressed: () {
             mainController
-              ..msgUnReadCount.value = ''
+              ..clearUnreadMsg()
               ..lastCheckUnreadAt = DateTime.now().millisecondsSinceEpoch;
             Get.toNamed('/whisper');
           },
           icon: Badge(
             isLabelVisible:
-                mainController.msgBadgeMode != .hidden && count.isNotEmpty,
+                mainController.msgBadgeMode != .hidden && count != null,
             alignment: isNumBadge
                 ? const Alignment(0.0, -0.85)
                 : const Alignment(1.0, -0.85),
-            label: isNumBadge && count.isNotEmpty ? Text(count) : null,
+            label: isNumBadge && count != null ? Text(count) : null,
             child: const Icon(Icons.notifications_none),
           ),
         );

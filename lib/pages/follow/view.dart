@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/member/tags.dart';
+import 'package:PiliPlus/pages/common/fab_mixin.dart';
 import 'package:PiliPlus/pages/follow/child/child_controller.dart';
 import 'package:PiliPlus/pages/follow/child/child_view.dart';
 import 'package:PiliPlus/pages/follow/controller.dart';
@@ -37,23 +38,53 @@ class FollowPage extends StatefulWidget {
   }
 }
 
-class _FollowPageState extends State<FollowPage> {
+class _FollowPageState extends State<FollowPage>
+    with SingleTickerProviderStateMixin, BaseFabMixin, LazyFabMixin {
   final _tag = Utils.generateRandomString(8);
   late final FollowController _followController;
 
   @override
   void initState() {
     super.initState();
-    _followController = Get.put(FollowController(), tag: _tag);
+    _followController = Get.put(FollowController(_tag), tag: _tag);
+  }
+
+  @override
+  bool onNotification(UserScrollNotification notification) {
+    if (notification.metrics.axisDirection == .down) {
+      return super.onNotification(notification);
+    }
+    return false;
   }
 
   @override
   Widget build(BuildContext context) {
+    final padding = MediaQuery.viewPaddingOf(context);
     return SimpleScaffold(
       appBar: _buildAppBar,
       body: _followController.isOwner
-          ? Obx(() => _buildBody(_followController.followState.value))
+          ? fabAnimWrapper(
+              child: Obx(() => _buildBody(_followController.followState.value)),
+            )
           : _childPage(),
+      fab: _followController.isOwner
+          ? SlideTransition(
+              position: fabAnimation,
+              child: Padding(
+                padding: .only(
+                  right: kFloatingActionButtonMargin + padding.right,
+                  bottom: kFloatingActionButtonMargin + padding.bottom,
+                ),
+                child: FloatingActionButton.extended(
+                  onPressed: _followController.toggleOrderType,
+                  icon: const Icon(Icons.format_list_bulleted, size: 20),
+                  label: Obx(
+                    () => Text(_followController.orderType.value.title),
+                  ),
+                ),
+              ),
+            )
+          : null,
     );
   }
 

@@ -83,11 +83,7 @@ class _LiveEmotePanelState extends State<LiveEmotePanel>
                           final height = heightFac * 38;
                           return GridView.builder(
                             physics: platformClampingPhysics,
-                            padding: const EdgeInsets.only(
-                              left: 12,
-                              right: 12,
-                              bottom: 12,
-                            ),
+                            padding: const .all(12),
                             gridDelegate:
                                 SliverGridDelegateWithMaxCrossAxisExtent(
                                   maxCrossAxisExtent: widthFac * 40,

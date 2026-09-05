@@ -97,7 +97,7 @@ class _LaterViewChildPageState extends State<LaterViewChildPage>
                                 'desc': _laterController.asc.value,
                                 'isContinuePlaying': index != 0,
                               }
-                            : null,
+                            : const {'viewLater': true},
                       );
                     },
                   );

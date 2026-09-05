@@ -457,13 +457,12 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
 class _ExpansionTile extends ExpansionTile {
   const _ExpansionTile({
     required super.title,
-    // ignore: unused_element_parameter
-    super.dense = true,
-    // ignore: unused_element_parameter
-    super.childrenPadding = const .only(left: 20),
     super.initiallyExpanded,
     super.iconColor,
     super.collapsedIconColor,
     super.children,
-  });
+  }) : super(
+         dense: true,
+         childrenPadding: const .only(left: 20),
+       );
 }

@@ -2,14 +2,10 @@ import 'package:PiliPlus/http/follow.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/member.dart';
 import 'package:PiliPlus/http/user.dart';
-import 'package:PiliPlus/models/common/follow_order_type.dart';
 import 'package:PiliPlus/models_new/follow/data.dart';
 import 'package:PiliPlus/models_new/follow/list.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/pages/follow/controller.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:get/get.dart';
 
 class FollowChildController
@@ -23,13 +19,6 @@ class FollowChildController
   late final loadSameFollow = controller?.isOwner == false;
   late final Rx<LoadingState<List<FollowItemModel>?>> sameState =
       LoadingState<List<FollowItemModel>?>.loading().obs;
-
-  late final Rx<FollowOrderType> orderType = Pref.followOrderType.obs;
-
-  void setOrderType(FollowOrderType type) {
-    orderType.value = type;
-    GStorage.setting.put(SettingBoxKey.followOrderType, type.index);
-  }
 
   @override
   void onInit() {
@@ -73,13 +62,18 @@ class FollowChildController
   @override
   Future<LoadingState<FollowData>> customGetData() {
     if (tagid != null) {
-      return MemberHttp.followUpGroup(mid: mid, tagid: tagid, pn: page);
+      return MemberHttp.followUpGroup(
+        mid: mid,
+        tagid: tagid,
+        pn: page,
+        orderType: controller?.orderType.value.type ?? '',
+      );
     }
 
     return FollowHttp.followings(
       vmid: mid,
       pn: page,
-      orderType: orderType.value.type,
+      orderType: controller?.orderType.value.type ?? '',
     );
   }
 

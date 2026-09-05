@@ -698,7 +698,7 @@ Future<void> _setMsgBadge(DynamicBadgeMode value, VoidCallback setState) async {
   if (value != DynamicBadgeMode.hidden) {
     mainController.queryUnreadMsg(true);
   } else {
-    mainController.msgUnReadCount.value = '';
+    mainController.clearUnreadMsg();
   }
   GStorage.setting
       .put(SettingBoxKey.msgBadgeMode, value.index)

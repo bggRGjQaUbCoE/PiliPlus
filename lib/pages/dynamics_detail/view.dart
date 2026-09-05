@@ -497,21 +497,22 @@ class _DynamicDetailPageState
       required ValueChanged<Color> onPressed,
       IconData? activatedIcon,
     }) {
-      final status = stat?.status == true;
+      final bool status;
+      final String count;
+      if (stat != null) {
+        status = stat.status ?? false;
+        count = stat.count != null ? NumUtils.numFormat(stat.count) : text;
+      } else {
+        status = false;
+        count = text;
+      }
       final color = status ? primary : outline;
-      final iconWidget = Icon(
-        status ? activatedIcon : icon,
-        size: 16,
-        color: color,
-      );
+      final child = Icon(status ? activatedIcon : icon, size: 16, color: color);
       return TextButton.icon(
-        onPressed: () => onPressed(iconWidget.color!),
-        icon: iconWidget,
+        icon: child,
         style: btnStyle,
-        label: Text(
-          stat?.count != null ? NumUtils.numFormat(stat!.count) : text,
-          style: TextStyle(color: color),
-        ),
+        onPressed: () => onPressed(child.color!),
+        label: Text(count, style: TextStyle(color: color)),
       );
     }
 

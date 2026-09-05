@@ -1818,7 +1818,7 @@ class HeaderControlState extends State<HeaderControl>
                   width: btnWidth,
                   height: btnHeight,
                   child: IconButton(
-                    tooltip: '投屏',
+                    tooltip: 'DLNA 投屏',
                     style: btnStyle,
                     onPressed: videoDetailCtr.onCast,
                     icon: const Icon(
@@ -1828,6 +1828,21 @@ class HeaderControlState extends State<HeaderControl>
                     ),
                   ),
                 ),
+                if (!PlatformUtils.isDesktop)
+                  SizedBox(
+                    width: btnWidth,
+                    height: btnHeight,
+                    child: IconButton(
+                      tooltip: 'Chromecast 投屏',
+                      style: btnStyle,
+                      onPressed: videoDetailCtr.onChromecast,
+                      icon: const Icon(
+                        Icons.cast_connected,
+                        size: 19,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
               ],
               if (plPlayerController.enableSponsorBlock)
                 SizedBox(

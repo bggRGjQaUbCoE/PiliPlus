@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/route_aware_mixin.dart'
 import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/main.dart' show webViewEnvironment;
+import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/models/common/webview_menu_type.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
@@ -20,6 +21,20 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
+final _prefixRegex = RegExp(r'^(?!(https?://))\S+://', caseSensitive: false);
+
+enum _DWWState implements EnumWithLabel {
+  active('已在新窗口中打开'),
+  loading('正在启动窗口'),
+  closed('窗口已关闭'),
+  none(''),
+  ;
+
+  @override
+  final String label;
+  const _DWWState(this.label);
+}
+
 class WebviewPage extends StatefulWidget {
   const WebviewPage({
     super.key,
@@ -33,11 +48,6 @@ class WebviewPage extends StatefulWidget {
   // note
   final int? oid;
   final String? title;
-
-  static final _prefixRegex = RegExp(
-    r'^(?!(https?://))\S+://',
-    caseSensitive: false,
-  );
 
   static Future<dww.Webview?> openLinux({
     required String url,
@@ -181,14 +191,9 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
   bool _off = false;
 
   InAppWebViewController? _webViewController;
-  dww.Webview? _linuxWebview;
-  final RxBool _linuxWebviewLoading = false.obs;
-  final RxBool _linuxWebviewActive = false.obs;
 
-  static final _prefixRegex = RegExp(
-    r'^(?!(https?://))\S+://',
-    caseSensitive: false,
-  );
+  dww.Webview? _linuxWebview;
+  late final Rx<_DWWState> _dwwState = Rx(.none);
 
   @override
   void initState() {
@@ -210,9 +215,7 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
       routeObserver.subscribe(this, Get.routing.route as GetPageRoute);
     }
 
-    if (Platform.isLinux) {
-      _initLinuxWebview();
-    }
+    if (Platform.isLinux) _initLinuxWebview();
   }
 
   @override
@@ -228,23 +231,21 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
   void didPop() {
     setState(() {
       _webViewController = null;
-      if (Platform.isLinux) _closeLinuxWebview();
       _isPop = true;
     });
     super.didPop();
   }
 
-  void _closeLinuxWebview() {
-    _linuxWebview?.close();
+  void _closeLinuxWebview({bool close = true}) {
+    if (close) _linuxWebview?.close();
     _linuxWebview = null;
-    _linuxWebviewActive.value = false;
+    _dwwState.value = .closed;
   }
 
   Future<void> _initLinuxWebview() async {
-    _linuxWebviewLoading.value = true;
-    _linuxWebviewActive.value = false;
+    _dwwState.value = .loading;
 
-    final webview = await WebviewPage.openLinux(
+    var webview = await WebviewPage.openLinux(
       url: _url,
       title: widget.title ?? _title.value,
       oid: widget.oid,
@@ -254,20 +255,47 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
         if (mounted) Get.back();
       },
       onClose: () {
-        _linuxWebview = null;
-        _linuxWebviewActive.value = false;
+        _closeLinuxWebview(close: false);
         if (mounted) Get.back();
       },
     );
 
     if (!mounted) {
       webview?.close();
+      webview = null;
       return;
     }
 
     _linuxWebview = webview;
-    _linuxWebviewLoading.value = false;
-    _linuxWebviewActive.value = webview != null;
+    _dwwState.value = webview != null ? .active : .closed;
+  }
+
+  List<Widget> get _actions {
+    return [
+      PopupMenuButton<WebviewMenuItem>(
+        onSelected: _handleMenuItem,
+        itemBuilder: (context) => <PopupMenuEntry<WebviewMenuItem>>[
+          ...WebviewMenuItem.values
+              .take(WebviewMenuItem.values.length - 1)
+              .map(
+                (item) => PopupMenuItem(
+                  value: item,
+                  child: Text(item.title),
+                ),
+              ),
+          const PopupMenuDivider(),
+          PopupMenuItem(
+            value: WebviewMenuItem.goBack,
+            child: Text(
+              WebviewMenuItem.goBack.title,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.error,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ];
   }
 
   Future<void> _handleMenuItem(WebviewMenuItem item) async {
@@ -361,38 +389,12 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        actions: [
-          PopupMenuButton<WebviewMenuItem>(
-            onSelected: _handleMenuItem,
-            itemBuilder: (context) => <PopupMenuEntry<WebviewMenuItem>>[
-              ...WebviewMenuItem.values
-                  .take(WebviewMenuItem.values.length - 1)
-                  .map(
-                    (item) => PopupMenuItem(
-                      value: item,
-                      child: Text(item.title),
-                    ),
-                  ),
-              const PopupMenuDivider(),
-              PopupMenuItem(
-                value: WebviewMenuItem.goBack,
-                child: Text(
-                  WebviewMenuItem.goBack.title,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
+        actions: _actions,
       ),
       body: Center(
         child: Obx(
           () => Text(
-            _linuxWebviewActive.value
-                ? '已在新窗口中打开'
-                : (_linuxWebviewLoading.value ? '正在启动窗口' : '窗口已关闭'),
+            _dwwState.value.label,
             style: TextStyle(
               fontSize: 13,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -427,34 +429,7 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
                       : const SizedBox.shrink(),
                 ),
               ),
-              actions: _isPop
-                  ? null
-                  : [
-                      PopupMenuButton(
-                        onSelected: _handleMenuItem,
-                        itemBuilder: (context) =>
-                            <PopupMenuEntry<WebviewMenuItem>>[
-                              ...WebviewMenuItem.values
-                                  .take(WebviewMenuItem.values.length - 1)
-                                  .map(
-                                    (item) => PopupMenuItem(
-                                      value: item,
-                                      child: Text(item.title),
-                                    ),
-                                  ),
-                              const PopupMenuDivider(),
-                              PopupMenuItem(
-                                value: WebviewMenuItem.goBack,
-                                child: Text(
-                                  WebviewMenuItem.goBack.title,
-                                  style: TextStyle(
-                                    color: Theme.of(context).colorScheme.error,
-                                  ),
-                                ),
-                              ),
-                            ],
-                      ),
-                    ],
+              actions: _isPop ? null : _actions,
             ),
       body: _isPop
           ? null

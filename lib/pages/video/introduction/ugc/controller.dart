@@ -24,6 +24,7 @@ import 'package:PiliPlus/models_new/video/video_detail/stat_detail.dart';
 import 'package:PiliPlus/models_new/video/video_detail/ugc_season.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
+import 'package:PiliPlus/pages/dlna/dlna_service.dart';
 import 'package:PiliPlus/pages/video/related/controller.dart';
 import 'package:PiliPlus/pages/video/reply/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
@@ -282,6 +283,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   // 分享视频
   @override
   void actionShareVideo(BuildContext context) {
+    initDlnaDeviceCache();
     final videoDetail = this.videoDetail.value;
     final playedTimePos = videoDetailCtr.playedTimePos;
     String videoUrl = '${HttpString.baseUrl}/video/$bvid';
@@ -386,6 +388,33 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
                   );
                 } catch (e) {
                   SmartDialog.showToast(e.toString());
+                }
+              },
+            ),
+          for (final device in dlnaDeviceCache.values)
+            ListTile(
+              dense: true,
+              title: Text(
+                '分享至${device.info.friendlyName}',
+                style: const TextStyle(fontSize: 14),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              onTap: () {
+                Get.back();
+                final cid = videoDetailCtr.cid.value;
+                final aid = videoDetail.aid;
+                if (cid != 0 && aid != null) {
+                  castToCachedDevice(
+                    device: device,
+                    cid: cid,
+                    objectId: aid,
+                    playurlType: 1,
+                    title: videoDetail.title,
+                    qn: videoDetailCtr.currentVideoQa.value?.code,
+                  );
+                } else {
+                  SmartDialog.showToast('无法获取视频信息');
                 }
               },
             ),

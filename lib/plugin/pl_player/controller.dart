@@ -1330,6 +1330,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   bool isManualFS = true;
   late final FullScreenMode mode = Pref.fullScreenMode;
   late final horizontalScreen = Pref.horizontalScreen;
+  late final autoFullScreenOnLandscape = Pref.autoFullScreenOnLandscape;
   late final removeSafeArea = Pref.removeSafeArea;
 
   Future<void>? changeOrientation({

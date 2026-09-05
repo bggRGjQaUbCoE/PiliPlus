@@ -14,6 +14,7 @@ import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/common/widgets/text_ellipsis/text_ellipsis.dart';
 import 'package:PiliPlus/common/widgets/text_more/text_more.dart';
 import 'package:PiliPlus/common/widgets/translucent_row.dart';
+import 'package:PiliPlus/common/widgets/word_select_bar.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo, ReplyControl, Content, Url, ReplyControl_VoteOption, Emote;
 import 'package:PiliPlus/grpc/reply.dart';
@@ -1071,6 +1072,21 @@ class ReplyItemGrpc extends StatelessWidget {
               ),
             ),
           ],
+          if (ownerMid != Int64.ZERO && item.mid != ownerMid)
+            ListTile(
+              onTap: () {
+                Get.back();
+                _showBlockReplyDialog(
+                  context: context,
+                  message: message,
+                  mid: item.mid,
+                  onDelete: onDelete,
+                );
+              },
+              minLeadingWidth: 0,
+              leading: Icon(Icons.block, color: errorColor, size: 19),
+              title: Text('拉黑', style: style.copyWith(color: errorColor)),
+            ),
           if (ownerMid == upMid || ownerMid == item.member.mid)
             ListTile(
               onTap: () async {
@@ -1224,5 +1240,114 @@ class ReplyItemGrpc extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// 长按评论弹出的「拉黑」确认框：可独立勾选「拉黑该用户」和「新增评论区屏蔽词」，
+/// 屏蔽词用滑动选词从评论文字里划选，确认后拉黑并移除这条评论。
+Future<void> _showBlockReplyDialog({
+  required BuildContext context,
+  required String message,
+  required Int64 mid,
+  required VoidCallback onDelete,
+}) async {
+  bool banUser = false;
+  bool addWord = false;
+  final selectedWords = <String>[];
+
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setState) => AlertDialog(
+        title: const Text('拉黑'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CheckBoxText(
+                text: '拉黑该用户',
+                onChanged: (v) => banUser = v,
+              ),
+              CheckBoxText(
+                text: '新增评论区屏蔽词',
+                onChanged: (v) {
+                  addWord = v;
+                  setState(() {});
+                },
+              ),
+              if (addWord) ...[
+                const SizedBox(height: 4),
+                Text(
+                  '在评论上滑动选择要屏蔽的词：',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: ColorScheme.of(context).outline,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                WordSelectBar(
+                  text: message,
+                  onWordsChanged: (words) {
+                    selectedWords
+                      ..clear()
+                      ..addAll(words);
+                  },
+                ),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: Text(
+              '取消',
+              style: TextStyle(color: ColorScheme.of(context).outline),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text('确认'),
+          ),
+        ],
+      ),
+    ),
+  );
+
+  if (confirmed != true) return;
+
+  // 追加评论区屏蔽词
+  if (addWord && selectedWords.isNotEmpty) {
+    var pattern = ReplyGrpc.replyRegExp.pattern;
+    for (final w in selectedWords) {
+      final esc = RegExp.escape(w);
+      pattern = pattern.isEmpty ? esc : '$pattern|$esc';
+    }
+    ReplyGrpc.replyRegExp = RegExp(pattern, caseSensitive: false);
+    ReplyGrpc.enableFilter = pattern.isNotEmpty;
+    GStorage.setting.put(SettingBoxKey.banWordForReply, pattern);
+  }
+
+  // 只加屏蔽词不拉黑时，评论已命中屏蔽词，直接移除
+  if (!banUser) {
+    if (addWord && selectedWords.isNotEmpty) {
+      onDelete();
+    }
+    return;
+  }
+
+  SmartDialog.showLoading(msg: '拉黑中...');
+  final res = await VideoHttp.relationMod(
+    mid: mid.toInt(),
+    act: 5,
+    reSrc: 11,
+  );
+  SmartDialog.dismiss();
+  if (res.isSuccess) {
+    SmartDialog.showToast('拉黑成功');
+    onDelete();
+  } else {
+    res.toast();
   }
 }

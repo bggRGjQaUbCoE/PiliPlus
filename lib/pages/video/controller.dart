@@ -47,6 +47,7 @@ import 'package:PiliPlus/pages/video/note/view.dart';
 import 'package:PiliPlus/pages/video/post_panel/view.dart';
 import 'package:PiliPlus/pages/video/send_danmaku/view.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
+import 'package:PiliPlus/services/chromecast_service.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
@@ -1607,6 +1608,41 @@ class VideoDetailController extends GetxController
           'title': ?title,
         },
       );
+    } else {
+      res.toast();
+    }
+  }
+
+  @pragma('vm:notify-debugger-on-exception')
+  Future<void> onChromecast() async {
+    if (!ChromecastService.supported) {
+      SmartDialog.showToast('当前平台不支持 Chromecast');
+      return;
+    }
+    SmartDialog.showLoading();
+    final res = await VideoHttp.tvPlayUrl(
+      cid: cid.value,
+      objectId: epId ?? aid,
+      playurlType: epId != null ? 2 : 1,
+      qn: currentVideoQa.value?.code,
+    );
+    SmartDialog.dismiss();
+    if (res case Success(:final response)) {
+      final first = response.durl?.firstOrNull;
+      if (first == null || first.playUrls.isEmpty) {
+        SmartDialog.showToast('不支持 Chromecast 投屏');
+        return;
+      }
+      String? title;
+      try {
+        title = isUgc
+            ? Get.find<UgcIntroController>(tag: heroTag).videoDetail.value.title
+            : Get.find<PgcIntroController>(tag: heroTag).videoDetail.value.title;
+      } catch (_) {}
+      Get.toNamed('/chromecast', parameters: {
+        'url': VideoUtils.getCdnUrl(first.playUrls),
+        'title': ?title,
+      });
     } else {
       res.toast();
     }

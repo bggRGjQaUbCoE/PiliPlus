@@ -137,6 +137,8 @@
 		<array>
 			<string>_ssdp._udp</string>
 			<string>_upnp._tcp</string>
+			<string>_googlecast._tcp</string>
+			<string>_CC1AD845._googlecast._tcp</string>
 			<string>_http._tcp</string>
 		</array>
 		<key>ITSAppUsesNonExemptEncryption</key>

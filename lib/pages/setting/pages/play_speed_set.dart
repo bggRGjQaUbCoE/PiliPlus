@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/pages/setting/widgets/switch_item.dart';
+import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/filtering_text.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -99,6 +100,7 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
                     ..add(val)
                     ..sort();
                   video.put(VideoBoxKey.speedsList, speedList);
+                  syncMprisRateRange();
                   setState(() {});
                 }
               } catch (e) {
@@ -175,6 +177,7 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
       }
       speedList.removeAt(index);
       video.put(VideoBoxKey.speedsList, speedList);
+      syncMprisRateRange();
     }
     setState(() {});
   }
@@ -189,6 +192,7 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
           TextButton(
             onPressed: () async {
               await video.delete(VideoBoxKey.speedsList);
+              syncMprisRateRange();
               speedList = Pref.speedList;
               setState(() {});
             },

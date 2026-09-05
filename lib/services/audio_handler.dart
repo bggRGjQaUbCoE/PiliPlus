@@ -1,3 +1,4 @@
+import 'dart:async' show FutureOr;
 import 'dart:io' show File, Platform;
 import 'dart:ui' show PlatformDispatcher;
 
@@ -15,10 +16,34 @@ import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:audio_service/audio_service.dart';
+import 'package:audio_service_mpris/audio_service_mpris.dart';
 import 'package:collection/collection.dart';
 import 'package:path/path.dart' as path;
+import 'package:window_manager/window_manager.dart';
 
 Future<VideoPlayerServiceHandler> initAudioService() {
+  if (Platform.isLinux) {
+    final speeds = Pref.speedList;
+    AudioServiceMpris.init(
+      dBusName: 'piliplus',
+      identity: 'Audio Service ${Constants.appName}',
+      desktopEntry: 'com.example.piliplus',
+      canControl: true,
+      canPlay: true,
+      canPause: true,
+      canSeek: true,
+      canGoNext: true,
+      canGoPrevious: true,
+      minimumRate: speeds.isEmpty ? 1.0 : speeds.first,
+      maximumRate: speeds.isEmpty ? 1.0 : speeds.last,
+      onRaiseRequest: () {
+        windowManager
+          ..show()
+          ..focus();
+      },
+    );
+    Mpris().volume = Pref.desktopVolume.clamp(0.0, 1.0);
+  }
   return AudioService.init(
     builder: VideoPlayerServiceHandler.new,
     config: const AudioServiceConfig(
@@ -37,13 +62,40 @@ Future<VideoPlayerServiceHandler> initAudioService() {
 class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   static final List<MediaItem> _item = [];
   bool enableBackgroundPlay = Pref.enableBackgroundPlay;
+  bool _stopped = false;
 
   Future<void>? Function()? onPlay;
   Future<void>? Function()? onPause;
   Future<void>? Function(Duration position)? onSeek;
+  FutureOr<void> Function()? onSkipToNext;
+  FutureOr<void> Function()? onSkipToPrevious;
+  Object? _skipOwner;
+  Future<void>? Function(double speed)? onSetSpeed;
+  Future<void>? Function(double volume)? onSetVolume;
+  double? Function()? onGetSpeed;
+
+  // bind Mpris skip owner
+  void bindSkip(
+    Object owner,
+    FutureOr<void> Function()? next,
+    FutureOr<void> Function()? previous,
+  ) {
+    _skipOwner = owner;
+    onSkipToNext = next;
+    onSkipToPrevious = previous;
+  }
+
+  // unbind Mpris skip owner
+  void unbindSkip(Object owner) {
+    if (_skipOwner != owner) return;
+    _skipOwner = null;
+    onSkipToNext = null;
+    onSkipToPrevious = null;
+  }
 
   @override
   Future<void> play() {
+    _stopped = false;
     return onPlay?.call() ??
         PlPlayerController.playIfExists() ??
         Future.syncValue(null);
@@ -57,7 +109,30 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   }
 
   @override
+  Future<void> stop() async {
+    if (!Platform.isLinux) {
+      await super.stop();
+      return;
+    }
+    if (_stopped) return;
+    _stopped = true;
+    await (onPause?.call() ?? PlPlayerController.pauseIfExists());
+    await (onSeek?.call(Duration.zero) ??
+        PlPlayerController.seekToIfExists(Duration.zero, isSeek: false));
+    if (_item.isNotEmpty) {
+      playbackState.add(
+        playbackState.value.copyWith(
+          processingState: AudioProcessingState.completed,
+          playing: false,
+          updatePosition: Duration.zero,
+        ),
+      );
+    }
+  }
+
+  @override
   Future<void> seek(Duration position) {
+    _stopped = false;
     playbackState.add(
       playbackState.value.copyWith(
         updatePosition: position,
@@ -68,8 +143,61 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     // await player.seekTo(position);
   }
 
+  @override
+  Future<void> skipToNext() async {
+    _stopped = false;
+    await onSkipToNext?.call();
+  }
+
+  @override
+  Future<void> skipToPrevious() async {
+    _stopped = false;
+    await onSkipToPrevious?.call();
+  }
+
+  // Mpris Volume
+  @override
+  Future<dynamic> customAction(String name, [Map<String, dynamic>? extras]) {
+    if (name == 'dbusVolume') {
+      final value = extras?['value'];
+      if (value is num) {
+        final volume = value.toDouble().clamp(0.0, 1.0);
+        return onSetVolume?.call(volume) ??
+            PlPlayerController.setVolumeIfExists(
+              volume,
+              showIndicator: false,
+            ) ??
+            Future.value();
+      }
+    }
+    return Future.value();
+  }
+
+  // Mpris Rate
+  @override
+  Future<void> setSpeed(double speed) async {
+    final steps = Pref.speedList;
+    if (steps.isEmpty) return;
+    final snapped = steps.reduce(
+      (a, b) => (speed - a).abs() <= (speed - b).abs() ? a : b, // 自动吸附
+    );
+    await (onSetSpeed?.call(snapped) ??
+        PlPlayerController.instance?.setPlaybackSpeed(snapped));
+    playbackState.add(playbackState.value.copyWith(speed: snapped));
+  }
+
+  double get _currentSpeed {
+    if (Platform.isLinux) {
+      return onGetSpeed?.call() ??
+          PlPlayerController.instance?.playbackSpeed ??
+          1.0;
+    }
+    return PlPlayerController.instance?.playbackSpeed ?? 1.0;
+  }
+
   void setMediaItem(MediaItem newMediaItem) {
     if (!enableBackgroundPlay) return;
+    _stopped = false;
     // if (kDebugMode) {
     //   debugPrint("此时调用栈为：");
     //   debugPrint(newMediaItem);
@@ -100,11 +228,15 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     }
 
     final playing = status.isPlaying;
+    if (playing) {
+      _stopped = false;
+    }
     playbackState.add(
       playbackState.value.copyWith(
         processingState: isBuffering
             ? AudioProcessingState.buffering
             : processingState,
+        speed: _currentSpeed,
         controls: [
           if (!isLive)
             const MediaControl(
@@ -169,6 +301,15 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     // }
     if (!PlPlayerController.instanceExists()) return;
     if (data == null) return;
+
+    // 直播间不可 Seek/GoNext/GoPrevious
+    if (Platform.isLinux) {
+      final isLive = data is RoomInfoH5Data;
+      Mpris()
+        ..canSeek = !isLive
+        ..canGoNext = !isLive
+        ..canGoPrevious = !isLive;
+    }
 
     Uri getUri(String? cover) => Uri.parse(ImageUtils.safeThumbnailUrl(cover));
 
@@ -258,21 +399,26 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
       _item.removeWhere((item) => item.id.endsWith(herotag));
     }
     if (_item.isNotEmpty) {
-      playbackState.add(
-        playbackState.value.copyWith(
-          processingState: AudioProcessingState.idle,
-          playing: false,
-        ),
-      );
+      if (!Platform.isLinux) {
+        playbackState.add(
+          playbackState.value.copyWith(
+            processingState: AudioProcessingState.idle,
+            playing: false,
+          ),
+        );
+      }
       setMediaItem(_item.last);
-      stop();
     }
   }
 
   void clear() {
     if (!enableBackgroundPlay) return;
+    _stopped = false;
     mediaItem.add(null);
     _item.clear();
+    _skipOwner = null;
+    onSkipToNext = null;
+    onSkipToPrevious = null;
     /**
      * if (playbackState.processingState == AudioProcessingState.idle &&
             previousState?.processingState != AudioProcessingState.idle) {
@@ -305,6 +451,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     playbackState.add(
       playbackState.value.copyWith(
         updatePosition: position,
+        speed: _currentSpeed,
       ),
     );
   }

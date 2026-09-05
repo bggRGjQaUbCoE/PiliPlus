@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/models_new/video/video_detail/stat_detail.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
@@ -65,7 +67,7 @@ class LocalIntroController extends CommonIntroController {
     final currCid = videoDetailCtr.cid.value;
     final index = list.indexWhere((e) => e.cid == currCid);
     this.index.value = index;
-    if (PlatformUtils.isMobile) {
+    if (PlatformUtils.isMobile || Platform.isLinux) {
       onVideoDetailChange(list[index]);
     }
     if (index != 0) {
@@ -141,7 +143,7 @@ class LocalIntroController extends CommonIntroController {
       ..value.title = entry.showTitle
       ..refresh();
     this.index.value = index;
-    if (PlatformUtils.isMobile) {
+    if (PlatformUtils.isMobile || Platform.isLinux) {
       onVideoDetailChange(entry);
     }
   }

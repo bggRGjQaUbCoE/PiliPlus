@@ -270,15 +270,16 @@ List<SettingsModel> get playSettings => [
         .put(SettingBoxKey.btmProgressBehavior, value.index)
         .whenComplete(setState),
   ),
-  if (PlatformUtils.isMobile)
+  if (PlatformUtils.isMobile || Platform.isLinux)
     SwitchModel(
-      title: '后台音频服务',
-      subtitle: '避免画中画没有播放暂停功能',
+      title: Platform.isLinux ? 'MPRIS 集成' : '后台音频服务',
+      subtitle: Platform.isLinux
+          ? '允许桌面环境通过 MPRIS 控制播放'
+          : '避免画中画没有播放暂停功能',
       leading: const Icon(Icons.volume_up_outlined),
       setKey: SettingBoxKey.enableBackgroundPlay,
       defaultVal: true,
-      onChanged: (value) =>
-          videoPlayerServiceHandler!.enableBackgroundPlay = value,
+      onChanged: setEnableBackgroundPlay,
     ),
   PopupModel(
     title: '播放顺序',

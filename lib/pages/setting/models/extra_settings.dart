@@ -590,6 +590,13 @@ List<SettingsModel> get extraSettings => [
     defaultVal: true,
     onChanged: (val) => ItemModulesModel.showDynInteraction = val,
   ),
+  const SwitchModel(
+    title: '长按动态评论直接回复',
+    subtitle: '在动态列表中长按评论按钮直接呼出回复框，无需进入详情页',
+    leading: Icon(Icons.mode_comment_outlined),
+    setKey: SettingBoxKey.enableQuickReplyDyn,
+    defaultVal: true,
+  ),
   NormalModel(
     title: '用户页默认展示TAB',
     leading: const Icon(Icons.tab),

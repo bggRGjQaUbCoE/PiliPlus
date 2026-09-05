@@ -1,0 +1,295 @@
+{
+  "commits": {
+    "new_overscroll_indicator": {
+      "hash": "362b1de29974ffc1ed6faa826e1df870d7bec75f",
+      "issue_link": "https://github.com/flutter/flutter/issues/182281",
+      "todo": "remove"
+    }
+  },
+  "patches": {
+    "bottom_sheet_android": {
+      "file": "bottom_sheet_android.patch",
+      "target": "sdk"
+    },
+    "bottom_sheet_ios_flutter": {
+      "file": "bottom_sheet_ios_flutter.patch",
+      "target": "sdk",
+      "issue_link": "https://github.com/bggRGjQaUbCoE/PiliPlus/issues/1906"
+    },
+    "bottom_sheet_ios_piliplus": {
+      "file": "bottom_sheet_ios_piliplus.patch",
+      "target": "project",
+      "issue_link": "https://github.com/bggRGjQaUbCoE/PiliPlus/issues/1906"
+    },
+    "scroll_view": {
+      "file": "scroll_view.patch",
+      "target": "sdk",
+      "issue_link": "https://github.com/bggRGjQaUbCoE/PiliPlus/issues/1662"
+    },
+    "text_selection": {
+      "file": "text_selection.patch",
+      "target": "sdk",
+      "issue_link": "https://github.com/bggRGjQaUbCoE/PiliPlus/issues/2106"
+    },
+    "navigator": {
+      "file": "navigator.patch",
+      "target": "sdk",
+      "issue_link": "https://github.com/bggRGjQaUbCoE/PiliPlus/issues/1947"
+    },
+    "image_anim": {
+      "file": "image_anim.patch",
+      "target": "sdk",
+      "issue_link": "https://github.com/bggRGjQaUbCoE/PiliPlus/issues/2107"
+    },
+    "layout_builder": {
+      "file": "layout_builder.patch",
+      "target": "sdk"
+    },
+    "navigation_drawer": {
+      "file": "navigation_drawer.patch",
+      "target": "sdk",
+      "issue_link": "https://github.com/bggRGjQaUbCoE/PiliPlus/issues/2308"
+    },
+    "popup_menu": {
+      "file": "popup_menu.patch",
+      "target": "sdk"
+    },
+    "fab": {
+      "file": "fab.patch",
+      "target": "sdk"
+    },
+    "selectable_region": {
+      "file": "selectable_region.patch",
+      "target": "sdk",
+      "issue_link": "https://github.com/flutter/flutter/issues/174689"
+    },
+    "editable_text": {
+      "file": "editable_text.patch",
+      "target": "sdk",
+      "issue_link": "https://github.com/flutter/flutter/issues/174689"
+    },
+    "text_field": {
+      "file": "text_field.patch",
+      "target": "sdk"
+    },
+    "scroll_position": {
+      "file": "scroll_position.patch",
+      "target": "sdk"
+    },
+    "scrollable": {
+      "file": "scrollable.patch",
+      "target": "sdk"
+    },
+    "scaffold": {
+      "file": "scaffold.patch",
+      "target": "sdk"
+    },
+    "scrollable_gesture": {
+      "file": "scrollable_gesture.patch",
+      "target": "sdk"
+    },
+    "draggable_scrollable_sheet": {
+      "file": "draggable_scrollable_sheet.patch",
+      "target": "sdk"
+    },
+    "text": {
+      "file": "text.patch",
+      "target": "sdk"
+    },
+    "text_painter": {
+      "file": "text_painter.patch",
+      "target": "sdk"
+    },
+    "sliver": {
+      "file": "sliver.patch",
+      "target": "sdk"
+    },
+    "refresh_indicator": {
+      "file": "refresh_indicator.patch",
+      "target": "sdk"
+    },
+    "null_safety_for_selectable_region": {
+      "file": "null_safety_for_selectable_region.patch",
+      "target": "sdk",
+      "issue_link": "https://github.com/flutter/flutter/pull/183261",
+      "todo": "remove"
+    },
+    "modal_barrier": {
+      "file": "modal_barrier.patch",
+      "target": "sdk",
+      "issue_link": "https://github.com/flutter/flutter/issues/90223",
+      "todo": "remove"
+    },
+    "mouse_cursor": {
+      "file": "mouse_cursor.patch",
+      "target": "sdk",
+      "issue_link": "https://github.com/flutter/flutter/issues/182466",
+      "todo": "remove"
+    },
+    "geetest_ios": {
+      "file": "geetest_ios.patch",
+      "target": "project"
+    },
+    "material_bottom_sheet_android": {
+      "file": "material/bottom_sheet_android.patch",
+      "target": "pub",
+      "package": "material_ui"
+    },
+    "material_bottom_sheet_ios_flutter_material": {
+      "file": "material/bottom_sheet_ios_flutter_material.patch",
+      "target": "pub",
+      "package": "material_ui"
+    },
+    "material_modal_barrier_material": {
+      "file": "material/modal_barrier_material.patch",
+      "target": "pub",
+      "package": "material_ui"
+    },
+    "material_navigation_drawer": {
+      "file": "material/navigation_drawer.patch",
+      "target": "pub",
+      "package": "material_ui"
+    },
+    "material_popup_menu": {
+      "file": "material/popup_menu.patch",
+      "target": "pub",
+      "package": "material_ui"
+    },
+    "material_fab": {
+      "file": "material/fab.patch",
+      "target": "pub",
+      "package": "material_ui"
+    },
+    "material_text_field": {
+      "file": "material/text_field.patch",
+      "target": "pub",
+      "package": "material_ui"
+    },
+    "material_scaffold": {
+      "file": "material/scaffold.patch",
+      "target": "pub",
+      "package": "material_ui"
+    },
+    "material_refresh_indicator": {
+      "file": "material/refresh_indicator.patch",
+      "target": "pub",
+      "package": "material_ui"
+    },
+    "material_tabs": {
+      "file": "material/tabs.patch",
+      "target": "pub",
+      "package": "material_ui"
+    },
+    "cupertino_bottom_sheet_ios_flutter": {
+      "file": "cupertino/bottom_sheet_ios_flutter.patch",
+      "target": "pub",
+      "package": "cupertino_ui"
+    }
+  },
+  "platform": {
+    "common": {
+      "patches": [
+        "modal_barrier",
+        "text_selection",
+        "mouse_cursor",
+        "image_anim",
+        "layout_builder",
+        "navigation_drawer",
+        "popup_menu",
+        "fab",
+        "null_safety_for_selectable_region",
+        "selectable_region",
+        "editable_text",
+        "text_field",
+        "scroll_position",
+        "scrollable",
+        "scrollable_gesture",
+        "draggable_scrollable_sheet",
+        "scaffold",
+        "text",
+        "text_painter",
+        "sliver",
+        "refresh_indicator"
+      ]
+    },
+    "android": {
+      "patches": [
+        "bottom_sheet_android",
+        "scroll_view",
+        "navigator"
+      ],
+      "material_patches": [
+        "material_modal_barrier_material",
+        "material_navigation_drawer",
+        "material_popup_menu",
+        "material_fab",
+        "material_text_field",
+        "material_scaffold",
+        "material_refresh_indicator",
+        "material_tabs",
+        "material_bottom_sheet_android"
+      ]
+    },
+    "ios": {
+      "patches": [
+        "scroll_view",
+        "bottom_sheet_ios_flutter",
+        "navigator"
+      ],
+      "material_patches": [
+        "material_modal_barrier_material",
+        "material_navigation_drawer",
+        "material_popup_menu",
+        "material_fab",
+        "material_text_field",
+        "material_scaffold",
+        "material_refresh_indicator",
+        "material_tabs",
+        "material_bottom_sheet_ios_flutter_material"
+      ],
+      "cupertino_patches": [
+        "cupertino_bottom_sheet_ios_flutter"
+      ],
+      "project_patches": [
+        "bottom_sheet_ios_piliplus",
+        "geetest_ios"
+      ]
+    },
+    "linux": {
+      "material_patches": [
+        "material_modal_barrier_material",
+        "material_navigation_drawer",
+        "material_popup_menu",
+        "material_fab",
+        "material_text_field",
+        "material_scaffold",
+        "material_refresh_indicator",
+        "material_tabs"
+      ]
+    },
+    "macos": {
+      "material_patches": [
+        "material_modal_barrier_material",
+        "material_navigation_drawer",
+        "material_popup_menu",
+        "material_fab",
+        "material_text_field",
+        "material_scaffold",
+        "material_refresh_indicator",
+        "material_tabs"
+      ]
+    },
+    "windows": {
+      "material_patches": [
+        "material_modal_barrier_material",
+        "material_navigation_drawer",
+        "material_popup_menu",
+        "material_fab",
+        "material_text_field",
+        "material_scaffold",
+        "material_refresh_indicator",
+        "material_tabs"
+      ]
+    }
+  }
+}

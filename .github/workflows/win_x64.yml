@@ -37,12 +37,12 @@ jobs:
         shell: pwsh
 
       - name: Set and Extract version
-        shell: pwsh
-        run: lib/scripts/build.ps1
+        shell: bash
+        run: lib/scripts/pre-build.sh gen-build-info --ci --platform windows --tag "${{ inputs.tag }}"
 
-      - name: Apply Patch
-        shell: pwsh
-        run: lib/scripts/patch.ps1 windows
+      - name: Apply Patches
+        shell: bash
+        run: lib/scripts/pre-build.sh apply-patches --platform windows
 
       - name: Build Windows
         run: |

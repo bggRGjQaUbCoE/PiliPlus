@@ -54,6 +54,14 @@ String? _realpath(String p) {
   return null;
 }
 
+/// True when [path] is a symbolic link itself (rather than its target), i.e.
+/// the entry resolves to a link. Used to refuse publishing patches *through* a
+/// symlink, which would silently write into the shared global pub cache.
+bool _isSymlink(String path) {
+  return FileSystemEntity.typeSync(path, followLinks: false) ==
+      FileSystemEntityType.link;
+}
+
 // ---------------------------------------------------------------------------
 // Runner: subprocess execution with uniform diagnostics
 // ---------------------------------------------------------------------------
@@ -73,21 +81,49 @@ class Runner {
     exit(1);
   }
 
-  Future<ProcessResult> run(String cwd, List<String> cmd) {
+  /// Env for subprocesses that run with a custom `PUB_CACHE`: git checkouts of
+  /// deep package trees (e.g. flutter_inappwebview) blow past the 260-char
+  /// MAX_PATH under long isolated pub-cache paths (Windows) unless
+  /// `core.longpaths` is set. Injected per-process via GIT_CONFIG_* so the
+  /// user's global git config and registry flags stay untouched. Harmless on
+  /// other platforms where the limit does not apply.
+  Map<String, String> _flutterEnv(Map<String, String>? environment) {
+    if (environment == null || !environment.containsKey('PUB_CACHE')) {
+      return environment ?? const {};
+    }
+    return {
+      ...environment,
+      'GIT_CONFIG_COUNT': '1',
+      'GIT_CONFIG_KEY_0': 'core.longpaths',
+      'GIT_CONFIG_VALUE_0': 'true',
+    };
+  }
+
+  Future<ProcessResult> run(
+    String cwd,
+    List<String> cmd, {
+    Map<String, String>? environment,
+  }) {
     return Process.run(
       cmd.first,
       cmd.sublist(1),
       workingDirectory: cwd,
+      environment: _flutterEnv(environment),
       stdoutEncoding: utf8,
       stderrEncoding: utf8,
     );
   }
 
-  ProcessResult runSync(String cwd, List<String> cmd) {
+  ProcessResult runSync(
+    String cwd,
+    List<String> cmd, {
+    Map<String, String>? environment,
+  }) {
     return Process.runSync(
       cmd.first,
       cmd.sublist(1),
       workingDirectory: cwd,
+      environment: _flutterEnv(environment),
       stdoutEncoding: utf8,
       stderrEncoding: utf8,
     );
@@ -205,18 +241,24 @@ class PubCache {
   final String root;
   PubCache._(this.root);
 
-  static PubCache resolve(String platform) {
+  /// The active pub cache root, honoring an explicit `PUB_CACHE` override.
+  static PubCache resolve(String platform) =>
+      PubCache._(_defaultRoot(platform));
+
+  static String _defaultRoot(String platform) {
     final env = Platform.environment['PUB_CACHE'];
-    if (env != null && env.isNotEmpty) return PubCache._(env);
+    if (env != null && env.isNotEmpty) return env;
     if (platform == 'windows') {
       final la = Platform.environment['LOCALAPPDATA'];
-      if (la != null && la.isNotEmpty) return PubCache._('$la/Pub/Cache');
-      return PubCache._(
-        '${Platform.environment['HOME'] ?? ''}/AppData/Local/Pub/Cache',
-      );
+      if (la != null && la.isNotEmpty) return '$la/Pub/Cache';
+      return '${Platform.environment['HOME'] ?? ''}/AppData/Local/Pub/Cache';
     }
-    return PubCache._('${Platform.environment['HOME'] ?? ''}/.pub-cache');
+    return '${Platform.environment['HOME'] ?? ''}/.pub-cache';
   }
+
+  /// The global (shared) pub cache this process would otherwise use. Public so
+  /// sdk-copy mode can mirror it into an isolated cache without re-downloading.
+  static PubCache global(String platform) => PubCache._(_defaultRoot(platform));
 
   Directory _hosted() => Directory('$root/hosted');
 
@@ -226,18 +268,104 @@ class PubCache {
     return hosted.listSync(followLinks: false).whereType<Directory>();
   }
 
+  Map<String, String> env() => {'PUB_CACHE': root};
+
+  /// Host of the single registry `flutter pub get` will actually fetch from:
+  /// the `PUB_HOSTED_URL` mirror if set, else pub's default `pub.dev`. The
+  /// isolated cache is mirror-only for this registry so we never stage copies
+  /// from a source pub will not consult (which would also blur the
+  /// double-registry lookup in [findPackage]).
+  static String activeRegistry() {
+    final raw = Platform.environment['PUB_HOSTED_URL'];
+    if (raw == null || raw.trim().isEmpty) return 'pub.dev';
+    try {
+      return Uri.parse(raw.trim()).host;
+    } on FormatException {
+      return 'pub.dev';
+    }
+  }
+
+  /// Prepare a disposable per-copy pub cache rooted at [isolatedRoot] that
+  /// mirrors the global shared cache with zero-copy symlinks: every global
+  /// hosted package becomes a symlink here, so `flutter pub get` resolves
+  /// offline without re-downloading. Only the registry named by [activeRegistry]
+  /// (the one `pub get` will read) is mirrored, keeping the isolated cache
+  /// free of copies from other registries. Patched packages are re-fetched as
+  /// real directories into this cache by [applyPubPatches] (which deletes the
+  /// symlink first, leaving the global package untouched).
+  static PubCache prepareIsolated(
+    String platform,
+    String isolatedRoot,
+  ) {
+    final global = PubCache.global(platform);
+    final iso = PubCache._(isolatedRoot);
+    final want = activeRegistry();
+    for (final reg in global._registries()) {
+      final regName = reg.path.split(Platform.pathSeparator).last;
+      // Only stage the registry that pub will actually consult for downloads.
+      if (regName != want) continue;
+      final isoReg = Directory('$isolatedRoot/hosted/$regName')
+        ..createSync(recursive: true);
+      for (final d in reg.listSync(followLinks: false).whereType<Directory>()) {
+        final name = d.path.split(Platform.pathSeparator).last;
+        final linkPath = '${isoReg.path}/$name';
+        // Idempotent reuse: the entry may already be a symlink or a real
+        // directory (materialized by an earlier applyPubPatches); mirror
+        // only what is missing.
+        if (FileSystemEntity.typeSync(linkPath, followLinks: false) ==
+            FileSystemEntityType.notFound) {
+          try {
+            Link(linkPath).createSync(d.path);
+          } on FileSystemException catch (e) {
+            // The mimicked cache is a hard requirement for sdk-copy (its
+            // whole point is zero-copy reuse of the shared cache), so fail
+            // fast with a fixable message instead of silently degrading to a
+            // network re-download. $e already carries the concrete cause:
+            // ERROR_PRIVILEGE_NOT_HELD (1314) when the user lacks symlink
+            // privilege, ERROR_ALREADY_EXISTS (183) when a stale entry occupies
+            // the path, ERROR_PATH_NOT_FOUND (3) when the source vanished, etc.
+            // Only the privilege case gets the Developer Mode hint; the rest
+            // keep the raw OS error rather than a misleading single-cause hint.
+            if (Platform.isWindows && e.osError?.errorCode == 1314) {
+              _r.error(
+                'sdk-copy needs symlinks; on Windows enable Developer Mode '
+                '(Settings > For developers) or run as Administrator.\n$e',
+              );
+            }
+            _r.error('sdk-copy cannot create a symbolic link in the isolated '
+                'pub cache:\n$e');
+          }
+        }
+      }
+      break;
+    }
+    return iso;
+  }
+
   /// Latest matching directory under the pub cache, searching every
   /// `hosted/<registry>/` subdir (e.g. `pub.dev` or China mirror
   /// `pub.flutter-io.cn`). Returns null when absent.
+  ///
+  /// "Latest" is compared by [comparePubVersions] on the semver suffix after
+  /// [prefix] (e.g. `1.10.0` beats `1.2.0`), not by raw path lexicographic
+  /// order which would misrank across the `1.9 → 1.10` boundary.
   Directory? findPackage(String prefix) {
     Directory? best;
     for (final reg in _registries()) {
       for (final d in reg.listSync(followLinks: false).whereType<Directory>()) {
-        final name = d.path.split('/').last;
-        if (name.startsWith(prefix) &&
-            (best == null || d.path.compareTo(best.path) > 0)) {
-          if (d.existsSync()) best = d;
+        final name = d.path.split(Platform.pathSeparator).last;
+        if (!name.startsWith(prefix)) continue;
+        final version = name.substring(prefix.length);
+        if (!d.existsSync()) continue;
+        if (best == null) {
+          best = d;
+          continue;
         }
+        final bestVersion = best.path
+            .split(Platform.pathSeparator)
+            .last
+            .substring(prefix.length);
+        if (comparePubVersions(version, bestVersion) > 0) best = d;
       }
     }
     return best;
@@ -248,7 +376,7 @@ class PubCache {
   void deletePackages(List<String> prefixes) {
     for (final reg in _registries()) {
       for (final d in reg.listSync(followLinks: false).whereType<Directory>()) {
-        final name = d.path.split('/').last;
+        final name = d.path.split(Platform.pathSeparator).last;
         if (prefixes.any(name.startsWith)) {
           d.deleteSync(recursive: true);
           _r.info('Removed cached $name: ${d.path}');
@@ -256,6 +384,75 @@ class PubCache {
       }
     }
   }
+}
+
+// ---------------------------------------------------------------------------
+// misc top-level helpers (continued)
+// ---------------------------------------------------------------------------
+
+/// Compare two pub package version suffixes (e.g. `1.10.0` vs `1.2.0`)
+/// semver-wise: numeric dot-segments dominate, so crossing the `1.9 → 1.10`
+/// boundary ranks correctly instead of lexicographically (`"1.2.0" > "1.10.0"`
+/// under path ordering). A pre-release marker (`1.1.0-beta.1`) ranks below the
+/// same version without it; build metadata (`1.1.0+9`) is compared numerically
+/// after an identical core+pre-release, matching pub's resolution rather than
+/// the byte order of `+9` vs `+10`. Returns <0, 0, >0.
+int comparePubVersions(String a, String b) {
+  final av = _parsePubSemver(a);
+  final bv = _parsePubSemver(b);
+  // Core numeric dot-segments dominate (1.10.0 > 1.2.0).
+  final c = _compareVersionSegments(av.core, bv.core);
+  if (c != 0) return c;
+  // Release beats the same version carrying a pre-release marker.
+  final aPre = av.pre.isNotEmpty;
+  final bPre = bv.pre.isNotEmpty;
+  if (aPre != bPre) return aPre ? -1 : 1;
+  final p = _compareVersionSegments(av.pre, bv.pre);
+  if (p != 0) return p;
+  return _compareVersionSegments(av.build, bv.build);
+}
+
+/// Parse a pub version suffix (`1.2.0`, `1.1.0-beta.1`, `1.1.0+9`) into its
+/// core, pre-release, and build dot-separated identifier lists.
+({
+  List<String> core,
+  List<String> pre,
+  List<String> build,
+})
+_parsePubSemver(String v) {
+  var rest = v;
+  var build = const <String>[];
+  final plus = rest.indexOf('+');
+  if (plus >= 0) {
+    build = rest.substring(plus + 1).split('.');
+    rest = rest.substring(0, plus);
+  }
+  var pre = const <String>[];
+  final dash = rest.indexOf('-');
+  if (dash >= 0) {
+    pre = rest.substring(dash + 1).split('.');
+    rest = rest.substring(0, dash);
+  }
+  return (core: rest.split('.'), pre: pre, build: build);
+}
+
+/// Compare two dot-separated identifier lists: all-digit identifiers compare
+/// numerically, anything else byte-wise; a shorter list ranks below an
+/// otherwise-identical longer one.
+int _compareVersionSegments(List<String> a, List<String> b) {
+  final n = a.length < b.length ? a.length : b.length;
+  for (var i = 0; i < n; i++) {
+    final an = int.tryParse(a[i]);
+    final bn = int.tryParse(b[i]);
+    final int c;
+    if (an != null && bn != null) {
+      c = an.compareTo(bn);
+    } else {
+      c = a[i].compareTo(b[i]);
+    }
+    if (c != 0) return c;
+  }
+  return a.length.compareTo(b.length);
 }
 
 // ---------------------------------------------------------------------------
@@ -445,8 +642,13 @@ Future<void> applyPatches(Map<String, String> opts) async {
 
   // Optionally route the whole apply onto a disposable SDK copy instead of the
   // resolved SDK (CI builds patch in place; local debugging isolates via copy).
+  // The copy also carries its own pub cache (mirrored from the shared one via
+  // symlinks) so pub patches never write to the user's real PUB_CACHE.
   final copyRoot = sdkCopyMode ? await _prepareSdkCopy(platform, force) : null;
   final sdk = copyRoot != null ? FlutterSdk._(copyRoot) : FlutterSdk.resolve();
+  final pubCache = copyRoot != null
+      ? PubCache.prepareIsolated(platform, '$copyRoot/pub-cache')
+      : PubCache.resolve(platform);
 
   // project-level patches (applied before entering Flutter SDK)
   applyProjectPatches(platform, matrix);
@@ -455,7 +657,7 @@ Future<void> applyPatches(Map<String, String> opts) async {
   await sdk.configureIdentity();
   await sdk.resetHard();
   await applySdkPatches(platform, matrix, sdk);
-  await applyPubPatches(platform, matrix);
+  await applyPubPatches(platform, matrix, cache: pubCache);
 
   if (copyRoot != null) {
     final tag = copyRoot.split(Platform.pathSeparator).last;
@@ -472,11 +674,12 @@ Future<void> applyPatches(Map<String, String> opts) async {
     // Warm up the copy: renew excluded bin/cache + record the copy as SDK in
     // the *project's* package_config.json (run from project root using the
     // copy's flutter binary) so the analysis server / launch are self-consistent.
+    // PUB_CACHE points at the copy's isolated cache for the same reason.
     final w = await _r.run(projectRoot, [
       '$copyRoot/bin/flutter',
       'pub',
       'get',
-    ]);
+    ], environment: pubCache.env());
     if (w.exitCode != 0) {
       _r.warnLine('flutter pub get on SDK copy failed (retry on first run)');
     }
@@ -508,8 +711,9 @@ Future<void> applyPatches(Map<String, String> opts) async {
 /// the distinct packages patched, one per entry.
 Future<List<String>> applyPubPatches(
   String platform,
-  PatchesMatrix matrix,
-) async {
+  PatchesMatrix matrix, {
+  PubCache? cache,
+}) async {
   // Group patch keys by package, preserving first-seen order; skip anything
   // whose target is not "pub" (so adding a new group needs no script change).
   final keysByPackage = <String, List<String>>{};
@@ -527,29 +731,56 @@ Future<List<String>> applyPubPatches(
   }
   if (packageOrder.isEmpty) return const [];
 
-  final cache = PubCache.resolve(platform);
+  final cd = cache ?? PubCache.resolve(platform);
   final applied = <String>[];
 
   for (final pkg in packageOrder) {
-    // Re-download a pristine copy of the package before patching.
-    final existing = cache.findPackage('$pkg-');
+    // Re-download a pristine copy of the package before patching. In isolated
+    // mode the existing entry is a symlink to the global cache; deleting it
+    // only drops the link, so the global package stays untouched and the
+    // re-fetched copy lands as a real directory in the isolated cache.
+    final existing = cd.findPackage('$pkg-');
     if (existing != null) {
       existing.deleteSync(recursive: true);
       _r.info('Removed cached $pkg: ${existing.path}');
     }
-    final rc = await _r.run(projectRoot, ['flutter', 'pub', 'get']);
-    if (rc.exitCode != 0 && rc.exitCode != 1) {
+    final rc = await _r.run(
+      projectRoot,
+      ['flutter', 'pub', 'get'],
+      environment: cd.env(),
+    );
+    if (rc.exitCode != 0) {
+      // A non-zero exit means the package may not have been (re)downloaded at
+      // all: in isolated mode the leftover entry would still be a symlink into
+      // the shared cache, and git-applying through it would patch the *global*
+      // package. Refuse instead of risking a silent cross-cache write.
       _r.error('flutter pub get failed\n${rc.stderr}');
     }
-    final pkgDir = cache.findPackage('$pkg-');
+    final pkgDir = cd.findPackage('$pkg-');
     if (pkgDir == null) {
       _r.error('$pkg package not found in pub cache');
+    }
+    if (_isSymlink(pkgDir.path)) {
+      _r.error(
+        '$pkg resolved to a symlink (${pkgDir.path}); pub get did not '
+        'materialize it in ${cd.root}. Refusing to patch through into the '
+        'shared cache.',
+      );
     }
     for (final id in keysByPackage[pkg]!) {
       final file = matrix.fileFor(id);
       final abs = '$projectRoot/lib/scripts/$file';
       await normalizePatch(File(abs));
-      await _r.run(pkgDir.path, ['git', 'apply', abs]);
+      // In SDK-copy mode the pub-cache lives inside the copy's .git tree.
+      // GIT_CEILING_DIRECTORIES tells git not to ascend past the pub-cache
+      // root when looking for a repo, so patch paths resolve relative to cwd
+      // (the package dir) instead of the SDK copy root.
+      final ar = await _r.run(pkgDir.path, ['git', 'apply', abs], environment: {
+        'GIT_CEILING_DIRECTORIES': cd.root,
+      });
+      if (ar.exitCode != 0) {
+        _r.error('failed to apply $file -> $pkg\n${ar.stderr}');
+      }
       _r.success('$file -> $pkg');
     }
     applied.add(pkg);

@@ -25,6 +25,7 @@
 //
 //   dart run lib/scripts/pre_build.dart apply-patches  --platform linux
 //   dart run lib/scripts/pre_build.dart apply-patches  --platform linux --sdk-copy [--force]
+//   dart run lib/scripts/pre_build.dart apply-patches  --device-id <id> --sdk-copy
 //   dart run lib/scripts/pre_build.dart gen-build-info --platform linux [--tag vX] [--ci]
 //
 // Patch matrix: lib/scripts/patches.json (declarative source of truth).
@@ -635,12 +636,66 @@ Future<void> applySdkPatches(
 // Task: apply-patches
 // ---------------------------------------------------------------------------
 
+/// Map a Flutter device `targetPlatform` (from `flutter devices --machine`) to
+/// the patch-matrix platform key (`android` / `ios` / `linux` / `macos` /
+/// `windows`). Retains the old jq+sed rule — drop everything after the first
+/// `-`, then remap `darwin` -> `macos`. Targets with no SDK patch set (web,
+/// tester) are rejected.
+String _platformFromTarget(String targetPlatform) {
+  final base = targetPlatform.split('-').first;
+  if (base == 'darwin') return 'macos';
+  const supported = {'android', 'ios', 'linux', 'macos', 'windows'};
+  if (!supported.contains(base)) {
+    _r.error('device targetPlatform $targetPlatform has no SDK patch set');
+  }
+  return base;
+}
+
+/// Resolve the patch platform from a selected device id by calling
+/// `flutter devices --machine` (JSON, parsed with `dart:convert`) and matching
+/// `id`. Removes the VSCode task's dependency on `jq` and `sed` for this step.
+String _platformFromDeviceId(String deviceId) {
+  final sdk = FlutterSdk.resolve();
+  final bin = sdk.flutterBin();
+  if (bin == null) _r.error('cannot locate flutter binary in ${sdk.root}');
+  final r = Process.runSync(bin, ['devices', '--machine'],
+      workingDirectory: projectRoot);
+  if (r.exitCode != 0) {
+    _r.error('flutter devices --machine failed\n${r.stderr}');
+  }
+  final dynamic list;
+  try {
+    list = jsonDecode(r.stdout as String);
+  } on FormatException {
+    _r.error('cannot parse flutter devices --machine output');
+  }
+  if (list is! List) _r.error('unexpected flutter devices --machine output');
+  for (final d in list) {
+    if (d is Map && d['id'] == deviceId) {
+      final tp = d['targetPlatform'];
+      if (tp is! String || tp.isEmpty) {
+        _r.error('device $deviceId has no targetPlatform');
+      }
+      return _platformFromTarget(tp);
+    }
+  }
+  _r.error('no flutter device found with id: $deviceId');
+}
+
 Future<void> applyPatches(Map<String, String> opts) async {
-  final platform = opts['platform'] ?? (opts['--platform'] ?? '');
-  if (platform.isEmpty) _r.error('--platform is required');
-  final sdkCopyMode =
-      opts.containsKey('sdk-copy') || opts.containsKey('--sdk-copy');
-  final force = opts.containsKey('force') || opts.containsKey('--force');
+  var platform = opts['platform'] ?? '';
+  final deviceId = opts['device-id'] ?? '';
+  if (platform.isEmpty && deviceId.isNotEmpty) {
+    // Derive the patch platform from the selected device instead of requiring
+    // the caller to map it (the old VSCode task shell-piped `flutter devices
+    // --machine` through jq+sed for this).
+    platform = _platformFromDeviceId(deviceId);
+  }
+  if (platform.isEmpty) {
+    _r.error('--platform (or --device-id) is required');
+  }
+  final sdkCopyMode = opts.containsKey('sdk-copy');
+  final force = opts.containsKey('force');
   final ci = opts.containsKey('ci');
 
   final matrix = PatchesMatrix.load();
@@ -1243,7 +1298,8 @@ Usage: dart run lib/scripts/pre_build.dart apply-patches [options]
 
 Options:
   --platform <android|ios|linux|macos|windows>
-                         Target SDK to patch.
+                         Target SDK to patch (required unless --device-id).
+  --device-id <id>       Derive the platform from a connected Flutter device.
   --sdk-copy             Patch a disposable SDK copy (default: patch in place).
   --force                Rebuild the SDK copy even if it already exists.
   --ci                   Non-interactive mode (confirmations auto-approve).
@@ -1260,12 +1316,12 @@ Options:
   --help, -h             Show this help.''';
 
 const Map<String, Set<String>> _flagSpec = {
-  'apply-patches': {'platform', 'sdk-copy', 'force', 'ci'},
+  'apply-patches': {'platform', 'device-id', 'sdk-copy', 'force', 'ci'},
   'gen-build-info': {'platform', 'tag', 'ci'},
 };
 
 const Map<String, Set<String>> _valueFlags = {
-  'apply-patches': {'platform'},
+  'apply-patches': {'platform', 'device-id'},
   'gen-build-info': {'platform', 'tag'},
 };
 

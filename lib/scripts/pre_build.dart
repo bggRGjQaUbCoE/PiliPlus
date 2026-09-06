@@ -140,6 +140,16 @@ class FlutterSdk {
   final String root;
   FlutterSdk._(this.root);
 
+  /// The SDK's `flutter` launcher path. On Windows `Process.run` cannot spawn
+  /// the `.bat` by bare name, so callers use this explicit path (with `fvm`,
+  /// which also needs an absolute target, kept as-is). Returns null when the
+  /// binary does not exist.
+  String? flutterBin() {
+    final bin = Platform.isWindows ? 'flutter.bat' : 'flutter';
+    final p = '$root/bin/$bin';
+    return File(p).existsSync() ? p : null;
+  }
+
   static FlutterSdk resolve() {
     final env = Platform.environment['FLUTTER_ROOT'];
     if (env != null && env.isNotEmpty) return FlutterSdk._(env);
@@ -616,7 +626,8 @@ Future<void> applySdkPatches(
     final ev = File('${sdk.root}/bin/internal/engine.version');
     if (ev.existsSync()) ev.writeAsStringSync(engineKey.toString());
     Directory('${sdk.root}/bin/cache').deleteSync(recursive: true);
-    await _r.run(sdk.root, ['flutter', '--version']);
+    final fb = sdk.flutterBin();
+    if (fb != null) await _r.run(sdk.root, [fb, '--version']);
   }
 }
 
@@ -657,7 +668,7 @@ Future<void> applyPatches(Map<String, String> opts) async {
   await sdk.configureIdentity();
   await sdk.resetHard();
   await applySdkPatches(platform, matrix, sdk);
-  await applyPubPatches(platform, matrix, cache: pubCache);
+  await applyPubPatches(platform, matrix, sdk, cache: pubCache);
 
   if (copyRoot != null) {
     final tag = copyRoot.split(Platform.pathSeparator).last;
@@ -675,8 +686,10 @@ Future<void> applyPatches(Map<String, String> opts) async {
     // the *project's* package_config.json (run from project root using the
     // copy's flutter binary) so the analysis server / launch are self-consistent.
     // PUB_CACHE points at the copy's isolated cache for the same reason.
+    final cfb = sdk.flutterBin();
+    if (cfb == null) _r.error('cannot locate flutter binary in ${sdk.root}');
     final w = await _r.run(projectRoot, [
-      '$copyRoot/bin/flutter',
+      cfb,
       'pub',
       'get',
     ], environment: pubCache.env());
@@ -711,7 +724,8 @@ Future<void> applyPatches(Map<String, String> opts) async {
 /// the distinct packages patched, one per entry.
 Future<List<String>> applyPubPatches(
   String platform,
-  PatchesMatrix matrix, {
+  PatchesMatrix matrix,
+  FlutterSdk sdk, {
   PubCache? cache,
 }) async {
   // Group patch keys by package, preserving first-seen order; skip anything
@@ -744,9 +758,11 @@ Future<List<String>> applyPubPatches(
       existing.deleteSync(recursive: true);
       _r.info('Removed cached $pkg: ${existing.path}');
     }
+    final fb = sdk.flutterBin();
+    if (fb == null) _r.error('cannot locate flutter binary in ${sdk.root}');
     final rc = await _r.run(
       projectRoot,
-      ['flutter', 'pub', 'get'],
+      [fb, 'pub', 'get'],
       environment: cd.env(),
     );
     if (rc.exitCode != 0) {

@@ -74,7 +74,10 @@ Future<void> _initDownPath() async {
   } else if (Platform.isAndroid) {
     final externalStorageDirPath = (await getExternalStorageDirectory())?.path;
     downloadPath = externalStorageDirPath != null
-        ? path.join(externalStorageDirPath, PathUtils.downloadDir)
+        ? path.join(
+            PathUtils.withDataSuffix(externalStorageDirPath),
+            PathUtils.downloadDir,
+          )
         : defDownloadPath;
   } else {
     downloadPath = defDownloadPath;
@@ -82,11 +85,17 @@ Future<void> _initDownPath() async {
 }
 
 Future<void> _initTmpPath() async {
-  tmpDirPath = (await getTemporaryDirectory()).path;
+  tmpDirPath = PathUtils.withDataSuffix(
+    (await getTemporaryDirectory()).path,
+  );
+  await Directory(tmpDirPath).create(recursive: true);
 }
 
 Future<void> _initAppPath() async {
-  appSupportDirPath = (await getApplicationSupportDirectory()).path;
+  appSupportDirPath = PathUtils.withDataSuffix(
+    (await getApplicationSupportDirectory()).path,
+  );
+  await Directory(appSupportDirPath).create(recursive: true);
 }
 
 void main() async {

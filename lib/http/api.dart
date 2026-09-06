@@ -532,6 +532,10 @@ abstract final class Api {
   // features=itemOpusStyle
   static const String dynamicDetail = '/x/polymer/web-dynamic/v1/detail';
 
+  // 获取动态转发列表
+  static const String dynamicForward =
+      '/x/polymer/web-dynamic/v1/detail/forward';
+
   // AI总结
   /// https://api.bilibili.com/x/web-interface/view/conclusion/get?
   /// bvid=BV1ju4y1s7kn&

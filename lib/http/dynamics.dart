@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/http/api.dart';
+import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/error_msg.dart';
 import 'package:PiliPlus/http/init.dart';
@@ -19,6 +20,7 @@ import 'package:PiliPlus/models_new/article/article_view/data.dart';
 import 'package:PiliPlus/models_new/bubble/data.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_mention/data.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_mention/group.dart';
+import 'package:PiliPlus/models_new/dynamic/dyn_forward/data.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_reaction/data.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_reserve/data.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_reserve_info/data.dart';
@@ -869,6 +871,44 @@ abstract final class DynamicsHttp {
       return Success(DynReactionData.fromJson(res.data['data']));
     } else {
       return Error(res.data['message']);
+    }
+  }
+
+  /// 获取动态的转发列表。
+  static Future<LoadingState<DynForwardData>> dynForward({
+    required Object id,
+    String? offset,
+  }) async {
+    final res = await Request().get(
+      Api.dynamicForward,
+      queryParameters: {
+        'timezone_offset': -480,
+        'id': id,
+        'offset': ?offset,
+        'web_location': 333.1330,
+      },
+      options: Options(
+        headers: {
+          'origin': HttpString.dynamicShareBaseUrl,
+          'referer': '${HttpString.dynamicShareBaseUrl}/$id',
+          'user-agent': BrowserUa.pc,
+        },
+      ),
+    );
+    if (res.data['code'] == 0) {
+      try {
+        return Success(
+          DynForwardData.fromJson(
+            (res.data['data'] as Map?) == null
+                ? const <String, dynamic>{}
+                : Map<String, dynamic>.from(res.data['data'] as Map),
+          ),
+        );
+      } catch (e, s) {
+        return Error('$e\n\n$s');
+      }
+    } else {
+      return Error(res.data['message'], code: res.data['code']);
     }
   }
 }

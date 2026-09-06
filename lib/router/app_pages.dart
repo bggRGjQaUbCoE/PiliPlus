@@ -9,6 +9,7 @@ import 'package:PiliPlus/pages/download/view.dart';
 import 'package:PiliPlus/pages/dynamics/view.dart';
 import 'package:PiliPlus/pages/dynamics_create_vote/view.dart';
 import 'package:PiliPlus/pages/dynamics_detail/view.dart';
+import 'package:PiliPlus/pages/dynamics_forward/view.dart';
 import 'package:PiliPlus/pages/dynamics_topic/view.dart';
 import 'package:PiliPlus/pages/dynamics_topic_rcmd/view.dart';
 import 'package:PiliPlus/pages/fan/view.dart';
@@ -99,6 +100,8 @@ class Routes {
     GetPage(name: '/dynamics', page: () => const DynamicsPage()),
     // 动态详情
     GetPage(name: '/dynamicDetail', page: () => const DynamicDetailPage()),
+    // 动态转发详情
+    GetPage(name: '/dynamicForward', page: () => const DynForwardPage()),
     // 关注
     GetPage(name: '/follow', page: () => const FollowPage()),
     // 粉丝

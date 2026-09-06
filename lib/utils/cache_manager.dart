@@ -1,5 +1,6 @@
 import 'dart:io' show Directory, File;
 
+import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
@@ -9,8 +10,14 @@ import 'package:path_provider/path_provider.dart';
 abstract final class CacheManager {
   static late final DefaultCacheManager manager;
 
+  static Future<Directory> _cacheDirectoryProvider() async {
+    final tempDirectory = await getTemporaryDirectory();
+    return Directory(PathUtils.withDataSuffix(tempDirectory.path));
+  }
+
   static Future<void> ensureInitialized() => DefaultCacheManager.init(
     maxNrOfCacheLength: Pref.maxCacheSize.toInt(),
+    cacheDirectoryProvider: _cacheDirectoryProvider,
   ).then((i) => manager = i);
 
   // 获取缓存目录
@@ -21,7 +28,7 @@ abstract final class CacheManager {
         return manager.getTotalLength();
       }
 
-      final Directory tempDirectory = await getTemporaryDirectory();
+      final tempDirectory = Directory(tmpDirPath);
       if (tempDirectory.existsSync()) {
         return await getTotalSizeOfFilesInDir(tempDirectory);
       }
@@ -70,7 +77,7 @@ abstract final class CacheManager {
       await manager.emptyCache();
       if (PlatformUtils.isDesktop) return;
 
-      final tempDirectory = await getTemporaryDirectory();
+      final tempDirectory = Directory(tmpDirPath);
       if (tempDirectory.existsSync()) {
         await for (final file in tempDirectory.list(recursive: false)) {
           if (file is Directory && path.equals(file.path, manager.cacheDir)) {

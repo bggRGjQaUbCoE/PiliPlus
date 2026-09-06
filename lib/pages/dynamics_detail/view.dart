@@ -27,6 +27,8 @@ import 'package:PiliPlus/pages/dynamics/widgets/author_panel.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/dynamic_panel.dart';
 import 'package:PiliPlus/pages/dynamics_create/view.dart';
 import 'package:PiliPlus/pages/dynamics_detail/controller.dart';
+import 'package:PiliPlus/pages/dynamics_forward/controller.dart';
+import 'package:PiliPlus/pages/dynamics_forward/view.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
@@ -58,6 +60,7 @@ class _DynamicDetailPageState
   @override
   late final DynamicDetailController controller;
   late final DynReactController _reactController;
+  late final DynForwardController _forwardController;
 
   late final RxBool _isRefreshing = false.obs;
 
@@ -92,6 +95,13 @@ class _DynamicDetailPageState
         count: (stat?.like?.count ?? -1) + (stat?.forward?.count ?? -1),
       ),
       tag: id,
+    );
+    _forwardController = Get.putOrFind(
+      () => DynForwardController(
+        id,
+        count: stat?.forward?.count ?? -1,
+      ),
+      tag: 'dynamicForward-$id',
     );
   }
 
@@ -288,49 +298,66 @@ class _DynamicDetailPageState
   Widget _buildTabBar() {
     return SizedBox(
       height: 40,
-      child: TabBar(
-        padding: .zero,
-        isScrollable: true,
-        indicatorSize: .tab,
-        tabAlignment: .start,
-        controller: tabController,
-        labelPadding: const .symmetric(horizontal: 12),
-        dividerColor: theme.colorScheme.outline.withValues(alpha: 0.1),
-        onTap: (value) {
-          if (!tabController.indexIsChanging) {
-            final positions = PrimaryScrollController.of(context).positions;
-            if (positions.length == 1) {
-              final postion = positions.single;
-              if (postion.pixels >= postion.maxScrollExtent) {
-                postion.jumpTo(postion.pixels);
-              }
-              switch (value) {
-                case 0:
-                  _onRefresh(controller.onRefresh());
-                case 1:
-                  _onRefresh(_reactController.onRefresh());
-              }
-            } else if (positions.length > 1) {
-              positions.elementAt(1).jumpTo(0);
-            }
-          }
-        },
-        tabs: [
-          Tab(
-            child: Obx(() {
-              final count = controller.count.value;
-              return Text(
-                '${DynType.reply.label}${count < 0 ? '' : ' ${NumUtils.numFormat(count)}'}',
-              );
-            }),
-          ),
-          Tab(
-            child: Obx(() {
-              final count = _reactController.count.value;
-              return Text(
-                '${DynType.reaction.label}${count < 0 ? '' : ' ${NumUtils.numFormat(count)}'}',
-              );
-            }),
+      child: Row(
+        children: [
+          Expanded(
+            child: TabBar(
+              padding: .zero,
+              isScrollable: true,
+              indicatorSize: .tab,
+              tabAlignment: .start,
+              controller: tabController,
+              labelPadding: const .symmetric(horizontal: 12),
+              dividerColor: theme.colorScheme.outline.withValues(alpha: 0.1),
+              onTap: (value) {
+                if (!tabController.indexIsChanging) {
+                  final positions = PrimaryScrollController.of(context)
+                      .positions;
+                  if (positions.length == 1) {
+                    final postion = positions.single;
+                    if (postion.pixels >= postion.maxScrollExtent) {
+                      postion.jumpTo(postion.pixels);
+                    }
+                    switch (value) {
+                      case 0:
+                        _onRefresh(controller.onRefresh());
+                      case 1:
+                        _onRefresh(_reactController.onRefresh());
+                      case 2:
+                        _onRefresh(_forwardController.onRefresh());
+                    }
+                  } else if (positions.length > 1) {
+                    positions.elementAt(1).jumpTo(0);
+                  }
+                }
+              },
+              tabs: [
+                Tab(
+                  child: Obx(() {
+                    final count = controller.count.value;
+                    return Text(
+                      '${DynType.reply.label}${count < 0 ? '' : ' ${NumUtils.numFormat(count)}'}',
+                    );
+                  }),
+                ),
+                Tab(
+                  child: Obx(() {
+                    final count = _reactController.count.value;
+                    return Text(
+                      '${DynType.reaction.label}${count < 0 ? '' : ' ${NumUtils.numFormat(count)}'}',
+                    );
+                  }),
+                ),
+                Tab(
+                  child: Obx(() {
+                    final count = _forwardController.count.value;
+                    return Text(
+                      '${DynType.forward.label}${count < 0 ? '' : ' ${NumUtils.numFormat(count)}'}',
+                    );
+                  }),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -360,6 +387,10 @@ class _DynamicDetailPageState
           isPortrait: isPortrait,
           id: controller.dynItem.idStr,
           controller: _reactController,
+        ),
+        DynForwardPage(
+          controller: _forwardController,
+          embedded: true,
         ),
       ],
     );

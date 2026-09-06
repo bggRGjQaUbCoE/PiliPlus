@@ -65,7 +65,8 @@ dependencies:
       path: packages/chat_bottom_container
       ref: dev
   collection: ^1.19.1
-  connectivity_plus: ^7.1.1
+  # 7.x requires the macOS 26 SDK; keep 6.x for macOS 15/Xcode 16 builds.
+  connectivity_plus: 6.1.5
   cookie_jar: ^4.0.8
   crypto: ^3.0.6
   cupertino_ui: ^1.0.0

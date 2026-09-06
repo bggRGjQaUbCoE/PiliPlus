@@ -28,7 +28,8 @@ import 'package:material_ui/material_ui.dart';
 
 enum DynType implements EnumWithLabel {
   reply('评论'),
-  reaction('赞与转发');
+  reaction('赞与转发'),
+  forward('转发详情');
 
   @override
   final String label;

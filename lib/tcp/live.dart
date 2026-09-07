@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:PiliPlus/services/logger.dart';
-import 'package:brotli/brotli.dart';
+import 'package:PiliPlus/tcp/live_frame_decoder.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -48,7 +47,7 @@ class PackageHeaderRes extends PackageHeader {
   final int headerSize;
 
   static PackageHeaderRes? fromBytesData(Uint8List data) {
-    if (data.length < 10) {
+    if (data.length < 16) {
       logger.w('数据不足以解析PackageHeader');
       return null;
     }
@@ -59,6 +58,11 @@ class PackageHeaderRes extends PackageHeader {
     final protocolVer = byteData.getUint16(6, Endian.big);
     final operationCode = byteData.getUint32(8, Endian.big);
     final seq = byteData.getUint32(12, Endian.big);
+
+    if (headerSize < 16 || totalSize < headerSize || totalSize > data.length) {
+      logger.w('PackageHeader尺寸无效');
+      return null;
+    }
 
     return PackageHeaderRes(
       totalSize: totalSize,
@@ -157,6 +161,7 @@ class LiveMessageStream {
   WebSocketChannel? _channel;
   StreamSubscription? _socketSubscription;
   Timer? _timer;
+  final LiveFrameDecoderWorker _decoder = LiveFrameDecoderWorker();
   final String logTag = "LiveStreamService";
 
   Future<void> init() async {
@@ -210,27 +215,6 @@ class LiveMessageStream {
     }
   }
 
-  @pragma('vm:notify-debugger-on-exception')
-  void _processingData(List<int> value) {
-    try {
-      final Uint8List data = value is Uint8List
-          ? value
-          : Uint8List.fromList(value);
-      final subHeader = PackageHeaderRes.fromBytesData(data);
-      if (subHeader != null) {
-        final msgBody = utf8.decode(
-          data.sublist(subHeader.headerSize, subHeader.totalSize),
-        );
-        for (final f in _eventListeners) {
-          f(jsonDecode(msgBody));
-        }
-        if (subHeader.totalSize < data.length) {
-          _processingData(data.sublist(subHeader.totalSize));
-        }
-      }
-    } catch (_) {}
-  }
-
   Future<void> _heartBeat() async {
     if (!_active) {
       if (kDebugMode) logger.i("$logTag init heartBeat inactive $hashCode");
@@ -269,33 +253,30 @@ class LiveMessageStream {
 
   @pragma('vm:notify-debugger-on-exception')
   void onData(dynamic data) {
-    final header = PackageHeaderRes.fromBytesData(data as Uint8List);
-    if (header != null) {
-      List<int> decompressedData = const [];
-      //心跳包回复不用处理
-      if (header.operationCode == 3) return;
-      if (header.operationCode == 8) {
-        _heartBeat();
+    if (data is! List<int>) return;
+    final bytes = data is Uint8List ? data : Uint8List.fromList(data);
+    _socketSubscription?.pause();
+    _decodeFrame(bytes).whenComplete(() {
+      if (_active) _socketSubscription?.resume();
+    });
+  }
+
+  Future<void> _decodeFrame(Uint8List data) async {
+    try {
+      final result = await _decoder.decode(data);
+      if (!_active) return;
+      if (result.authenticated) {
+        unawaited(_heartBeat());
       }
-      try {
-        switch (header.protocolVer) {
-          case 0:
-          case 1:
-            _processingData(data);
-            return;
-          case 2:
-            decompressedData = ZLibDecoder().convert(
-              Uint8List.sublistView(data, 0x10),
-            );
-            break;
-          case 3:
-            decompressedData = const BrotliDecoder().convert(
-              Uint8List.sublistView(data, 0x10),
-            );
-          //debugPrint('Body: ${utf8.decode()}');
+      for (final message in result.messages) {
+        for (final listener in List.of(_eventListeners)) {
+          listener(message);
         }
-        _processingData(decompressedData);
-      } catch (_) {}
+      }
+    } catch (error, stackTrace) {
+      if (kDebugMode) {
+        logger.w('$logTag frame decode failed: $error\n$stackTrace');
+      }
     }
   }
 
@@ -304,6 +285,7 @@ class LiveMessageStream {
     if (kDebugMode) logger.i("$logTag close $hashCode");
     _timer?.cancel();
     _timer = null;
+    _decoder.close();
     _eventListeners.clear();
     _socketSubscription?.cancel();
     _socketSubscription = null;

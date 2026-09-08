@@ -41,7 +41,6 @@ class MpvConvertWebp {
   Future<void> _init() async {
     final enableHA = Pref.enableHA;
     _ctx = await Initializer.create(
-      _mpv,
       _onEvent,
       options: {
         'idle': 'once',
@@ -51,8 +50,8 @@ class MpvConvertWebp {
         'of': 'webp',
         'ovc': 'libwebp_anim',
         'ofopts': 'loop=0',
-        'ovcopts': 'preset=${preset.flag}',
-        if (enableHA) 'vo': 'gpu',
+        'ovcopts': 'preset=${preset.flag},compression_level=6',
+        'vf': 'fps=12',
         if (enableHA) 'hwdec': '${Pref.hardwareDecoding},auto-copy', // transcode only support copy
       },
     );
@@ -61,12 +60,7 @@ class MpvConvertWebp {
       generated.mpv_event_id.MPV_EVENT_VIDEO_RECONFIG,
       0,
     );
-    NativePlayer.setHeader(
-      _mpv,
-      _ctx,
-      userAgent: BrowserUa.pc,
-      referer: HttpString.baseUrl,
-    );
+    _mpv.setHeader(_ctx, userAgent: BrowserUa.pc, referer: HttpString.baseUrl);
     if (progress != null) {
       _observeProperty('time-pos');
     }

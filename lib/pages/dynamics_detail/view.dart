@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
+import 'package:PiliPlus/common/widgets/flutter/dyn_tab_bar.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart';
 import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart';
@@ -11,7 +12,7 @@ import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_behavior.dart'
     show NoOverscrollIndicator;
 import 'package:PiliPlus/common/widgets/scroll_physics.dart'
-    show ReloadScrollPhysics;
+    show ReloadScrollPhysics, platformAlwaysClampingPhysics;
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_to_box_adapter.dart';
 import 'package:PiliPlus/common/widgets/tap_region_surface.dart';
@@ -21,8 +22,10 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/reply/reply_option_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_page.dart';
-import 'package:PiliPlus/pages/common/dyn/reaction/controller.dart';
-import 'package:PiliPlus/pages/common/dyn/reaction/view.dart';
+import 'package:PiliPlus/pages/common/dyn/like_list/controller.dart';
+import 'package:PiliPlus/pages/common/dyn/like_list/view.dart';
+import 'package:PiliPlus/pages/common/dyn/repost_list/controller.dart';
+import 'package:PiliPlus/pages/common/dyn/repost_list/view.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/author_panel.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/dynamic_panel.dart';
 import 'package:PiliPlus/pages/dynamics_create/view.dart';
@@ -57,7 +60,8 @@ class _DynamicDetailPageState
     extends CommonDynPageMultiState<DynamicDetailPage> {
   @override
   late final DynamicDetailController controller;
-  late final DynReactController _reactController;
+  late final DynRepostController _repostController;
+  late final DynLikeController _likeController;
 
   late final RxBool _isRefreshing = false.obs;
 
@@ -83,14 +87,17 @@ class _DynamicDetailPageState
     if (args['viewComment'] ?? false) {
       WidgetsBinding.instance.addPostFrameCallback(_jumpToComment);
     }
-    controller = Get.putOrFind(DynamicDetailController.new, tag: id);
     final stat = item.modules.moduleStat;
-    controller.count.value = stat?.comment?.count ?? -1;
-    _reactController = Get.put(
-      DynReactController(
-        id,
-        count: (stat?.like?.count ?? -1) + (stat?.forward?.count ?? -1),
-      ),
+    controller = Get.putOrFind<DynamicDetailController>(
+      () => DynamicDetailController(count: stat?.comment?.count ?? -1),
+      tag: id,
+    );
+    _repostController = Get.putOrFind<DynRepostController>(
+      () => DynRepostController(id, count: stat?.forward?.count ?? -1),
+      tag: id,
+    );
+    _likeController = Get.putOrFind<DynLikeController>(
+      () => DynLikeController(id, count: stat?.like?.count ?? -1),
       tag: id,
     );
   }
@@ -288,9 +295,9 @@ class _DynamicDetailPageState
   Widget _buildTabBar() {
     return SizedBox(
       height: 40,
-      child: TabBar(
+      child: DynTabBar(
         padding: .zero,
-        isScrollable: true,
+        // isScrollable: true,
         indicatorSize: .tab,
         tabAlignment: .start,
         controller: tabController,
@@ -306,62 +313,76 @@ class _DynamicDetailPageState
               }
               switch (value) {
                 case 0:
-                  _onRefresh(controller.onRefresh());
+                  _onRefresh(_repostController.onRefresh());
                 case 1:
-                  _onRefresh(_reactController.onRefresh());
+                  _onRefresh(controller.onRefresh());
+                case 2:
+                  _onRefresh(_likeController.onRefresh());
               }
             } else if (positions.length > 1) {
               positions.elementAt(1).jumpTo(0);
             }
           }
         },
-        tabs: [
-          Tab(
-            child: Obx(() {
-              final count = controller.count.value;
-              return Text(
-                '${DynType.reply.label}${count < 0 ? '' : ' ${NumUtils.numFormat(count)}'}',
-              );
-            }),
-          ),
-          Tab(
-            child: Obx(() {
-              final count = _reactController.count.value;
-              return Text(
-                '${DynType.reaction.label}${count < 0 ? '' : ' ${NumUtils.numFormat(count)}'}',
-              );
-            }),
-          ),
-        ],
+        tabs: DynType.values
+            .map(
+              (e) => Tab(
+                child: Obx(() {
+                  final count = switch (e) {
+                    .repost => _repostController.count.value,
+                    .reply => controller.count.value,
+                    .like => _likeController.count.value,
+                  };
+                  return Text(
+                    '${e.label}${count < 0 ? '' : ' ${NumUtils.numFormat(count)}'}',
+                  );
+                }),
+              ),
+            )
+            .toList(),
       ),
     );
   }
 
   Widget _buildTabBody([bool isPortrait = true]) {
-    final reply = CustomScrollView(
+    Widget reply = CustomScrollView(
       key: const PageStorageKey(DynType.reply),
-      physics: ReloadScrollPhysics(controller: controller),
+      physics: ReloadScrollPhysics(
+        controller: controller,
+        parent: isPortrait ? platformAlwaysClampingPhysics : null,
+      ),
       slivers: [
         buildReplyHeader(isPortrait),
         Obx(() => replyList(controller.loadingState.value)),
       ],
     );
+    if (!isPortrait) {
+      reply = refreshIndicator(onRefresh: controller.onRefresh, child: reply);
+    }
+
     final child = TabBarView(
       controller: tabController,
       hitTestBehavior: .translucent,
       physics: const NeverScrollableScrollPhysics(),
       horizontalDragGestureRecognizer:
           CustomHorizontalDragGestureRecognizer.new,
-      children: [
-        isPortrait
-            ? reply
-            : refreshIndicator(onRefresh: controller.onRefresh, child: reply),
-        DynReactPage(
-          isPortrait: isPortrait,
-          id: controller.dynItem.idStr,
-          controller: _reactController,
-        ),
-      ],
+      children: DynType.values
+          .map(
+            (e) => switch (e) {
+              .repost => DynRepostPage(
+                isPortrait: isPortrait,
+                id: controller.dynItem.idStr,
+                controller: _repostController,
+              ),
+              .reply => reply,
+              .like => DynLikePage(
+                isPortrait: isPortrait,
+                id: controller.dynItem.idStr,
+                controller: _likeController,
+              ),
+            },
+          )
+          .toList(),
     );
     if (isPortrait) {
       return Stack(

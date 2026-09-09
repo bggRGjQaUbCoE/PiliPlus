@@ -67,6 +67,7 @@ dependencies:
   collection: ^1.19.1
   connectivity_plus: ^7.1.1
   cookie_jar: ^4.0.8
+  flutter_chrome_cast: ^1.4.8
   crypto: ^3.0.6
   cupertino_ui: ^1.0.0
   desktop_webview_window:

@@ -1310,7 +1310,7 @@ packages:
     source: hosted
     version: "3.0.0"
   package_info_plus:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: package_info_plus
       sha256: "127e1751e37ffb2ff4658beeaca77bad0c27bf5f932bd3a501c2296926d4b481"

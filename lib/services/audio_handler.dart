@@ -79,11 +79,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     if (!mediaItem.isClosed) mediaItem.add(newMediaItem);
   }
 
-  void setPlaybackState(
-    PlayerStatus status,
-    bool isBuffering,
-    bool isLive,
-  ) {
+  void setPlaybackState(PlayerStatus status, bool isBuffering, bool isLive) {
     if (!enableBackgroundPlay ||
         _item.isEmpty ||
         !PlPlayerController.instanceExists()) {
@@ -132,14 +128,12 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
             ),
         ],
         playing: playing,
-        systemActions: const {
-          MediaAction.seek,
-        },
+        systemActions: const {MediaAction.seek},
       ),
     );
     if (Platform.isAndroid &&
         (AndroidHelper.isPipMode ||
-            PlPlayerController.instance?.isAutoEnterPip == true)) {
+            PlPlayerController.instance!.isAutoEnterPip)) {
       AndroidHelper.updatePipActions(
         PlatformDispatcher.instance.engineId!,
         isLive,

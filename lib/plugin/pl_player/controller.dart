@@ -871,6 +871,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   final Set<ValueChanged<Duration>> _positionListeners = {};
   final Set<ValueChanged<PlayerStatus>> _statusListeners = {};
 
+  Timer? _wakeLockTimer;
+
   /// 播放事件监听
   void _startListeners(NativePlayer player) {
     assert(_subscriptions == null);
@@ -878,8 +880,11 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     _subscriptions = [
       /// playing
       stream.playing.listen((bool playing) {
-        WakelockPlus.toggle(enable: playing);
         if (playing) {
+          _wakeLockTimer?.cancel();
+          _wakeLockTimer = null;
+          WakelockPlus.enable();
+
           if (_isAutoEnterPip) {
             if (_isCurrVideoPage) {
               enterPip(autoEnter: true);
@@ -889,6 +894,12 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
           }
           playerStatus.value = .playing;
         } else {
+          _wakeLockTimer?.cancel();
+          _wakeLockTimer = Timer(
+            const Duration(milliseconds: 500),
+            WakelockPlus.disable,
+          );
+
           _disableAutoEnterPip();
           playerStatus.value = .paused;
         }
@@ -1545,6 +1556,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       AndroidHelper$ToDart.onUserLeaveHint = null;
     }
     _timer?.cancel();
+    _wakeLockTimer?.cancel();
     // _position.close();
     // _playerEventSubs?.cancel();
     // _sliderPosition.close();

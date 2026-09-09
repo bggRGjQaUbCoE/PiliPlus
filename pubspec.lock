@@ -1169,27 +1169,27 @@ packages:
     dependency: "direct main"
     description:
       path: media_kit
-      ref: "version_1.2.5"
-      resolved-ref: "08b7b9410968fa39ae2fc814d57f9f889079afc9"
-      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
+      ref: native
+      resolved-ref: "73771ec38176be2d984a3049c28177bce23b54a0"
+      url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.1.11"
   media_kit_libs_android_video:
     dependency: "direct overridden"
     description:
       path: "libs/android/media_kit_libs_android_video"
-      ref: "version_1.2.5"
-      resolved-ref: "08b7b9410968fa39ae2fc814d57f9f889079afc9"
-      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
+      ref: native
+      resolved-ref: "73771ec38176be2d984a3049c28177bce23b54a0"
+      url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.3.7"
   media_kit_libs_ios_video:
     dependency: "direct overridden"
     description:
       path: "libs/ios/media_kit_libs_ios_video"
-      ref: "version_1.2.5"
-      resolved-ref: "08b7b9410968fa39ae2fc814d57f9f889079afc9"
-      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
+      ref: native
+      resolved-ref: "73771ec38176be2d984a3049c28177bce23b54a0"
+      url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.1.4"
   media_kit_libs_linux:
@@ -1212,36 +1212,36 @@ packages:
     dependency: "direct main"
     description:
       path: "libs/universal/media_kit_libs_video"
-      ref: "version_1.2.5"
-      resolved-ref: "08b7b9410968fa39ae2fc814d57f9f889079afc9"
-      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
+      ref: native
+      resolved-ref: "73771ec38176be2d984a3049c28177bce23b54a0"
+      url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.0.5"
   media_kit_libs_windows_video:
     dependency: "direct overridden"
     description:
       path: "libs/windows/media_kit_libs_windows_video"
-      ref: "version_1.2.5"
-      resolved-ref: "08b7b9410968fa39ae2fc814d57f9f889079afc9"
-      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
+      ref: native
+      resolved-ref: "73771ec38176be2d984a3049c28177bce23b54a0"
+      url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.0.10"
   media_kit_native_event_loop:
     dependency: "direct overridden"
     description:
       path: media_kit_native_event_loop
-      ref: "version_1.2.5"
-      resolved-ref: "08b7b9410968fa39ae2fc814d57f9f889079afc9"
-      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
+      ref: native
+      resolved-ref: "73771ec38176be2d984a3049c28177bce23b54a0"
+      url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.0.9"
   media_kit_video:
     dependency: "direct main"
     description:
       path: media_kit_video
-      ref: "version_1.2.5"
-      resolved-ref: "08b7b9410968fa39ae2fc814d57f9f889079afc9"
-      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
+      ref: native
+      resolved-ref: "73771ec38176be2d984a3049c28177bce23b54a0"
+      url: "https://github.com/My-Responsitories/media-kit.git"
     source: git
     version: "1.2.5"
   menu_base:

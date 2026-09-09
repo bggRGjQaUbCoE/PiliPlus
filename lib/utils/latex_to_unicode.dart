@@ -192,8 +192,8 @@ abstract final class LatexToUnicode {
       return _alphaNumericRegex.hasMatch(value) ? '_($value)' : value;
     }
     final buffer = StringBuffer();
-    for (final ch in value.split('')) {
-      final glyph = LatexData.subMap[ch];
+    for (var i = 0; i < value.length; i++) {
+      final glyph = LatexData.subMap[value[i]];
       if (glyph == null) return '_($value)';
       buffer.write(glyph);
     }
@@ -210,17 +210,23 @@ class Lexer {
   List<Token> run() {
     final List<Token> tokens = [];
     while (pos < source.length) {
-      final char = source[pos];
-      if (char == '\\') {
-        tokens.add(_readCommand());
-      } else if (char == '&') {
-        tokens.add(const Token(TokenKind.amp, '&'));
-        pos++;
-      } else if ('{}[]^_'.contains(char)) {
-        tokens.add(Token(_punctKinds[char] ?? TokenKind.script, char));
-        pos++;
-      } else {
-        tokens.add(_readText());
+      switch (source.codeUnitAt(pos)) {
+        case 0x5c:
+          tokens.add(_readCommand());
+        case 0x26:
+          tokens.add(const Token(TokenKind.amp, '&'));
+          pos++;
+        case 0x7b || 0x7d:
+          tokens.add(Token(TokenKind.brace, source[pos]));
+          pos++;
+        case 0x5b || 0x5d:
+          tokens.add(Token(TokenKind.brack, source[pos]));
+          pos++;
+        case 0x5e || 0x5f:
+          tokens.add(Token(TokenKind.script, source[pos]));
+          pos++;
+        default:
+          tokens.add(_readText());
       }
     }
     return tokens;
@@ -256,9 +262,9 @@ class Lexer {
     }
     if (_alphaRegex.hasMatch(char)) {
       final start = pos;
-      while (pos < source.length && _alphaRegex.hasMatch(source[pos])) {
+      do {
         pos++;
-      }
+      } while (pos < source.length && _alphaRegex.hasMatch(source[pos]));
       final name = source.substring(start, pos);
       // The first space after a command name is a TeX separator, swallowed
       // for alphabetic names; symbol macros keep it for readability (∩ ∈).
@@ -296,10 +302,7 @@ final class Parser {
       if (endToken != null && token.value == endToken) {
         // Only raw paired braces/brackets count; escaped literals like \{ are
         // text tokens and must not close a group.
-        if ((token.kind == TokenKind.brace &&
-                (endToken == '{' || endToken == '}')) ||
-            (token.kind == TokenKind.brack &&
-                (endToken == '[' || endToken == ']'))) {
+        if (token.kind == .brace || token.kind == .brack) {
           pos++;
           return items;
         }
@@ -369,33 +372,23 @@ final class Parser {
     if (token == null) {
       throw ParseError('意外的输入结束');
     }
-    if (token.kind == TokenKind.text) {
-      pos++;
-      return TextNode(token.value);
+    pos++;
+    switch (token.kind) {
+      case TokenKind.text:
+        return TextNode(token.value);
+      case TokenKind.cmd:
+        return _parseCommand(token);
+      case TokenKind.brace:
+        return GroupNode(_sequence(endToken: _pairs[token.value]));
+      case TokenKind.brack:
+        // Bare brackets outside optional-arg context are literals.
+        return TextNode(token.value);
+      case TokenKind.script:
+        // Scripts are bound at the sequence level; nothing binds here.
+        return TextNode(token.value);
+      case TokenKind.amp:
+        return const TextNode('&');
     }
-    if (token.kind == TokenKind.brace) {
-      pos++;
-      return GroupNode(_sequence(endToken: _pairs[token.value]));
-    }
-    if (token.kind == TokenKind.brack) {
-      // Bare brackets outside optional-arg context are literals.
-      pos++;
-      return TextNode(token.value);
-    }
-    if (token.kind == TokenKind.script) {
-      // Scripts are bound at the sequence level; nothing binds here.
-      pos++;
-      return TextNode(token.value);
-    }
-    if (token.kind == TokenKind.amp) {
-      pos++;
-      return const TextNode('&');
-    }
-    if (token.kind == TokenKind.cmd) {
-      pos++;
-      return _parseCommand(token);
-    }
-    throw ParseError('无法识别的 token: ${token.value}');
   }
 
   TexNode _parseCommand(Token token) {
@@ -524,16 +517,16 @@ final class Parser {
 }
 
 int _styleCharCode(int code, String style) {
-  final char = String.fromCharCode(code);
-  final exception = LatexData.styleExceptions[style]?[char];
-  if (exception != null) return exception.codeUnitAt(0);
+  final exception =
+      LatexData.styleExceptions[style]?[String.fromCharCode(code)];
+  if (exception != null) return exception;
   final (offsetUp, offsetLo) = LatexData.styleOffsets[style]!;
   if (code >= 0x41 && code <= 0x5A) return offsetUp + code - 0x41;
   if (code >= 0x61 && code <= 0x7A) return offsetLo + code - 0x61;
-  if (code >= 0x30 &&
-      code <= 0x39 &&
-      LatexData.digitOffsets.containsKey(style)) {
-    return LatexData.digitOffsets[style]! + code - 0x30;
+  if (code >= 0x30 && code <= 0x39) {
+    if (LatexData.digitOffsets[style] case final styleCode?) {
+      return styleCode + code - 0x30;
+    }
   }
   return code;
 }
@@ -551,16 +544,17 @@ String _styleCharToAscii(String char) {
   }
   for (final exceptions in LatexData.styleExceptions.values) {
     for (final entry in exceptions.entries) {
-      if (entry.value.codeUnitAt(0) == code) return entry.key;
+      if (entry.value == code) return entry.key;
     }
   }
   return char;
 }
 
+final _parenReg = RegExp(r'[+\-= /]');
 bool _needsParen(String value) {
   // Top-level un-paired composite like n(n+1) gets one extra paren layer.
   return value.runes.length > 1 &&
-      value.contains(RegExp(r'[+\-= /]')) &&
+      _parenReg.hasMatch(value) &&
       !_isParenWrapped(value);
 }
 
@@ -571,10 +565,10 @@ bool _isParenWrapped(String value) {
   if (!value.startsWith('(') || !value.endsWith(')')) return false;
   var depth = 0;
   for (var i = 0; i < value.length; i++) {
-    final char = value[i];
-    if (char == '(') {
+    final char = value.codeUnitAt(i);
+    if (char == 0x28) {
       depth++;
-    } else if (char == ')') {
+    } else if (char == 0x29) {
       depth--;
       if (depth == 0 && i != value.length - 1) return false;
       if (depth < 0) return false;
@@ -587,11 +581,7 @@ class Renderer {
   final List<String> warnings = [];
 
   String render(List<TexNode> nodes) {
-    final buffer = StringBuffer();
-    for (final node in nodes) {
-      buffer.write(_emit(node));
-    }
-    return buffer.toString();
+    return nodes.map(_emit).join();
   }
 
   String _emit(TexNode node) {
@@ -611,10 +601,10 @@ class Renderer {
 
   /// First-written script renders first (x_i^2 -> xᵢ², x^2_1 -> x²₁).
   String _emitScript(TexNode base, TexNode? sup, TexNode? sub) {
-    final parts = <String>[_emit(base)];
-    if (sub != null) parts.add(LatexToUnicode._subscript(_flat(sub)));
-    if (sup != null) parts.add(LatexToUnicode._superscript(_flat(sup)));
-    return parts.join();
+    final sb = StringBuffer(_emit(base));
+    if (sub != null) sb.write(LatexToUnicode._subscript(_flat(sub)));
+    if (sup != null) sb.write(LatexToUnicode._superscript(_flat(sup)));
+    return sb.toString();
   }
 
   String _emitCommand(
@@ -622,24 +612,23 @@ class Renderer {
     GroupNode? optional,
     List<GroupNode> args,
   ) {
-    final argText = args.map((g) => render(g.items)).toList();
     final symbol = LatexData.sym[name];
     if (symbol != null) return symbol;
     final voidCmd = LatexData.voidCmds[name];
     if (voidCmd != null) return voidCmd;
     final styleCmd = LatexData.styleCmds[name];
+    final argText = args.map((g) => render(g.items)).toList();
     if (styleCmd != null) {
-      return LatexToUnicode.fmtMathText(
-        argText.isEmpty ? '' : argText.first,
-        styleCmd,
-      );
+      return argText.isEmpty
+          ? ''
+          : LatexToUnicode.fmtMathText(argText.first, styleCmd);
     }
     if (LatexData.plainCmds.contains(name)) {
       return argText.isEmpty ? '' : argText.first;
     }
     final accent = LatexData.accents[name];
     if (accent != null) {
-      return (argText.isEmpty ? '' : argText.first) + accent;
+      return argText.isEmpty ? accent : argText.first + accent;
     }
     return _emitMathOp(name, optional, argText);
   }
@@ -647,10 +636,10 @@ class Renderer {
   String _emitMathOp(String name, GroupNode? optional, List<String> argText) {
     final first = argText.isEmpty ? '' : argText.first;
     if (name == 'sqrt') {
-      return _sqrt(optional, argText);
+      return _sqrt(optional, first);
     }
     if (name == 'color') {
-      return argText.length > 1 ? argText.sublist(1).join() : '';
+      return argText.length > 1 ? argText.skip(1).join() : '';
     }
     if (name == 'frac' || name == 'dfrac') {
       return _frac(argText);
@@ -687,8 +676,7 @@ class Renderer {
   }
 
   /// Root: `\sqrt{x}` -> √x, `\sqrt[3]{x}` -> ³√x.
-  String _sqrt(GroupNode? optional, List<String> argText) {
-    final body = argText.isEmpty ? '' : argText.first;
+  String _sqrt(GroupNode? optional, String body) {
     final isDigit =
         body.isNotEmpty && body.codeUnits.every((c) => c >= 0x30 && c <= 0x39);
     final core = (body.runes.length == 1 || isDigit) ? body : '($body)';
@@ -719,23 +707,26 @@ class Renderer {
     }
     final List<List<String>> rows = [];
     var cells = <String>[];
-    var cell = StringBuffer();
+    final cell = StringBuffer();
     void flushRow() {
       if (cell.isNotEmpty) cells.add(cell.toString());
-      rows.add(List.of(cells));
+      rows.add(cells);
       cells = [];
-      cell = StringBuffer();
+      cell.clear();
     }
 
     for (final item in items) {
-      if (item is TextNode && item.content == '&') {
-        cells.add(cell.toString());
-        cell = StringBuffer();
-      } else if (item is TextNode && item.content == '\\') {
-        flushRow();
-      } else {
-        cell.write(_emit(item));
+      if (item is TextNode) {
+        if (item.content == '&') {
+          cells.add(cell.toString());
+          cell.clear();
+          continue;
+        } else if (item.content == '\\') {
+          flushRow();
+          continue;
+        }
       }
+      cell.write(_emit(item));
     }
     flushRow();
     final kept = rows.where((r) => r.any((c) => c.trim().isNotEmpty)).toList();
@@ -751,7 +742,7 @@ class Renderer {
     return switch (node) {
       GroupNode(:final items) => render(items),
       TextNode(:final content) => content,
-      _ => render([node]),
+      _ => _emit(node),
     };
   }
 }
@@ -760,48 +751,58 @@ class Renderer {
 /// (figure space: half-width monospace, flattening-proof). Column width is
 /// measured on the rendered cells, so nested formulas align too.
 String _frameMatrix(List<List<String>> sourceRows, {int pad = 2}) {
-  final rows = sourceRows.map((r) => r.map((c) => c.trim()).toList()).toList();
-  final cols = rows.map((r) => r.length).reduce((a, b) => a > b ? a : b);
+  int cols = 0;
+  for (final row in sourceRows) {
+    if (row.length > cols) cols = row.length;
+  }
+
+  final rows = <List<String>>[];
   final widths = List<int>.filled(cols, 0);
-  for (final r in rows) {
-    for (var i = 0; i < r.length; i++) {
-      if (r[i].length > widths[i]) widths[i] = r[i].length;
+  for (final srcRow in sourceRows) {
+    final trimmed = srcRow.map((c) => c.trim()).toList();
+    rows.add(trimmed);
+    for (int i = 0; i < trimmed.length; i++) {
+      if (trimmed[i].length > widths[i]) {
+        widths[i] = trimmed[i].length;
+      }
     }
   }
-  String center(String s, int w) {
-    final rest = w - s.length;
-    final l = rest ~/ 2;
-    return LatexData.padChar * l + s + LatexData.padChar * (rest - l);
+
+  const padWidth = LatexData.padChar.length;
+  int lineWidth = 0;
+  for (var i = 0; i < cols; i++) {
+    lineWidth += widths[i] + 2 * padWidth * pad;
+    if (i < cols - 1) lineWidth += padWidth;
   }
 
-  List<String> content(List<String> row) => [
-    for (var i = 0; i < cols; i++)
-      i < row.length
-          ? center(row[i], widths[i] + 2 * pad)
-          : LatexData.padChar * (widths[i] + 2 * pad),
-  ];
-  final lines = rows.map((r) => content(r).join(LatexData.padChar)).toList();
-  final maxw = lines.map((s) => s.length).reduce((a, b) => a > b ? a : b);
-  final buffer = StringBuffer('┌${LatexData.padChar * maxw}┐');
-  for (final line in lines) {
-    buffer.write('\n│$line│');
+  final buffer = StringBuffer('┌${LatexData.padChar * lineWidth}┐');
+
+  for (final row in rows) {
+    buffer.write('\n│');
+    for (var i = 0; i < cols; i++) {
+      if (i > 0) buffer.write(LatexData.padChar);
+      final cell = i < row.length ? row[i] : '';
+      final cellWidth = widths[i] + 2 * pad;
+      final left = (cellWidth - cell.length) ~/ 2;
+      final right = cellWidth - cell.length - left;
+      buffer
+        ..write(LatexData.padChar * left)
+        ..write(cell)
+        ..write(LatexData.padChar * right);
+    }
+    buffer.write('│');
   }
-  buffer.write('\n└${LatexData.padChar * maxw}┘');
+
+  buffer.write('\n└${LatexData.padChar * lineWidth}┘');
   return buffer.toString();
 }
-
-const Map<String, TokenKind> _punctKinds = {
-  '{': TokenKind.brace,
-  '}': TokenKind.brace,
-  '[': TokenKind.brack,
-  ']': TokenKind.brack,
-};
 
 const Map<String, String> _pairs = {'{': '}', '}': '{', '[': ']', ']': '['};
 
 final RegExp _alphaRegex = RegExp(r'^[\p{L}]$', unicode: true);
 final RegExp _alphaNumericRegex = RegExp(r'^[\p{L}\p{N}]$', unicode: true);
+final RegExp _spaceRegex = RegExp(r' +');
 
 String _normalizeSpaces(String text) {
-  return text.replaceAll(RegExp(r' +'), ' ');
+  return text.replaceAll(_spaceRegex, ' ');
 }

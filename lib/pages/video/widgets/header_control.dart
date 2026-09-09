@@ -260,15 +260,9 @@ class HeaderControl extends StatefulWidget {
             final filter = ctr.filters;
             if (filter.dmUid.add(extra.mid)) {
               filter.count++;
-              GStorage.localCache.put(
-                LocalCacheKey.danmakuFilterRules,
-                filter,
-              );
+              GStorage.localCache.put(LocalCacheKey.danmakuFilterRules, filter);
             }
-            DanmakuFilterHttp.danmakuFilterAdd(
-              filter: extra.mid,
-              type: 2,
-            );
+            DanmakuFilterHttp.danmakuFilterAdd(filter: extra.mid, type: 2);
           }
           return DanmakuHttp.danmakuReport(
             reason: reasonType,

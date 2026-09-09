@@ -1347,7 +1347,7 @@ class DynamicStat {
   bool? status;
 
   DynamicStat.fromJson(Map<String, dynamic> json) {
-    if (safeToInt(json['count']) case final count? when count > 0) {
+    if (safeToInt(json['count']) case final count? when count >= 0) {
       this.count = count;
     }
     status = safeToBool(json['status'], () => 'STATE_LIKE');

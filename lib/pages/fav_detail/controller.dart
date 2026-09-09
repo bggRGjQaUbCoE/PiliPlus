@@ -9,6 +9,7 @@ import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/pages/common/multi_select/multi_select_controller.dart';
+import 'package:PiliPlus/pages/common/page_order_mixin.dart';
 import 'package:PiliPlus/pages/fav_sort/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
@@ -75,7 +76,7 @@ mixin BaseFavController
 
 class FavDetailController
     extends MultiSelectController<FavDetailData, FavDetailItemModel>
-    with BaseFavController {
+    with BaseFavController, PageOrderMixin {
   @override
   late int mediaId;
   late String heroTag;
@@ -98,6 +99,14 @@ class FavDetailController
   }
 
   @override
+  int get count => folderInfo.value.mediaCount;
+
+  @override
+  int get ps => _ps;
+
+  static const _ps = 20;
+
+  @override
   void onInit() {
     super.onInit();
 
@@ -112,7 +121,11 @@ class FavDetailController
 
   @override
   List<FavDetailItemModel>? getDataList(FavDetailData response) {
-    if (response.hasMore == false) {
+    if (pageDesc) {
+      if (page == 1) {
+        isEnd = true;
+      }
+    } else if (response.hasMore == false) {
       isEnd = true;
     }
     return response.medias;
@@ -145,7 +158,7 @@ class FavDetailController
   Future<LoadingState<FavDetailData>> customGetData() =>
       FavHttp.userFavFolderDetail(
         pn: page,
-        ps: 20,
+        ps: _ps,
         mediaId: mediaId,
         order: order.value,
       );

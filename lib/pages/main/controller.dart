@@ -234,7 +234,7 @@ class MainController extends GetxController
       navigationBars = NavigationBarType.values;
     } else {
       navigationBars = navBarSort
-          .map((i) => NavigationBarType.values[i])
+          .map(NavigationBarType.values.elementAt)
           .toList();
     }
     this.navigationBars = navigationBars;

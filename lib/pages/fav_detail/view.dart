@@ -20,6 +20,7 @@ import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
 class FavDetailPage extends StatefulWidget {
@@ -204,6 +205,23 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                 icon: const Icon(Icons.share),
               );
       }),
+      Builder(
+        builder: (context) => PopupMenuButton<bool>(
+          icon: _favDetailController.pageDesc
+              ? const Icon(MdiIcons.sortNumericDescending)
+              : const Icon(MdiIcons.sortNumericAscending),
+          initialValue: _favDetailController.pageDesc,
+          tooltip: '页码顺序',
+          onSelected: (value) {
+            _favDetailController.updatePageOrder(value);
+            (context as Element).markNeedsBuild();
+          },
+          itemBuilder: (context) => const [
+            PopupMenuItem(value: false, child: Text('正序')),
+            PopupMenuItem(value: true, child: Text('倒序')),
+          ],
+        ),
+      ),
       Obx(
         () {
           return PopupMenuButton<FavOrderType>(

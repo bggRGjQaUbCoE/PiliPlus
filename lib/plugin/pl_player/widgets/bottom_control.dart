@@ -27,20 +27,19 @@ class BottomControl extends StatelessWidget {
 
   void onDragStart(ThumbDragDetails duration) {
     feedBack();
-    controller
-      ..position.value = duration.seconds
-      ..isSeeking.value = true;
+    controller.onSeekStart(duration.seconds);
   }
 
   void onDragUpdate(ThumbDragDetails duration) {
     if (!controller.isFileSource && controller.showSeekPreview) {
       controller.updatePreviewIndex(duration.seconds);
     }
-    controller.position.value = duration.seconds;
+    controller.seekPosition.value = duration.seconds;
   }
 
   void onSeek(int milliseconds) {
     controller
+      ..position.value = milliseconds ~/ 1000
       ..onSeekEnd()
       ..seekTo(Duration(milliseconds: milliseconds), isSeek: false);
   }
@@ -70,7 +69,7 @@ class BottomControl extends StatelessWidget {
                   children: [
                     Obx(
                       () => ProgressBar(
-                        progress: controller.position.value,
+                        progress: controller.progress,
                         buffered: controller.buffered.value,
                         total: controller.duration.value,
                         progressBarColor: primary,

@@ -1,17 +1,18 @@
-import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart'
+    show platformAlwaysClampingPhysics;
+import 'package:PiliPlus/grpc/bilibili/app/dynamic/v2.pb.dart' show DynamicItem;
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models_new/dynamic/dyn_reaction/item.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_page.dart';
-import 'package:PiliPlus/pages/common/dyn/reaction/controller.dart';
+import 'package:PiliPlus/pages/common/dyn/repost_list/controller.dart';
+import 'package:PiliPlus/pages/common/dyn/repost_list/widgets/item.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart' hide ListTile;
 
-class DynReactPage extends StatelessWidget {
-  const DynReactPage({
+class DynRepostPage extends StatelessWidget {
+  const DynRepostPage({
     super.key,
     required this.id,
     this.isPortrait = true,
@@ -20,18 +21,14 @@ class DynReactPage extends StatelessWidget {
 
   final Object id;
   final bool isPortrait;
-  final DynReactController controller;
+  final DynRepostController controller;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     if (controller.loadingState.value == .loading()) {
       controller.queryData();
     }
-    Widget buildBody(
-      ThemeData theme,
-      LoadingState<List<DynReactionItem>?> state,
-    ) {
+    Widget buildBody(LoadingState<List<DynamicItem>?> state) {
       return switch (state) {
         Loading() => const SliverFillRemaining(child: m3eLoading),
         Success(:final response) =>
@@ -43,29 +40,7 @@ class DynReactPage extends StatelessWidget {
                       controller.onLoadMore();
                     }
 
-                    final item = response[index];
-                    return ListTile(
-                      dense: true,
-                      safeArea: false,
-                      visualDensity: .standard,
-                      onTap: () => Get.toNamed('/member?mid=${item.mid}'),
-                      leading: PendantAvatar(item.face!, size: 36),
-                      title: Text.rich(
-                        TextSpan(
-                          text: item.name,
-                          style: const TextStyle(fontSize: 14),
-                          children: [
-                            TextSpan(
-                              text: ' ${item.action}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: theme.colorScheme.outline,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
+                    return DynRepostItem(item: response[index]);
                   },
                 )
               : HttpError(onReload: controller.onReload),
@@ -77,13 +52,16 @@ class DynReactPage extends StatelessWidget {
     }
 
     final child = CustomScrollView(
-      key: const PageStorageKey(DynType.reaction),
+      key: const PageStorageKey(DynType.repost),
+      physics: isPortrait
+          ? platformAlwaysClampingPhysics
+          : const AlwaysScrollableScrollPhysics(),
       slivers: [
         SliverPadding(
           padding: .only(
             bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
           ),
-          sliver: Obx(() => buildBody(theme, controller.loadingState.value)),
+          sliver: Obx(() => buildBody(controller.loadingState.value)),
         ),
       ],
     );

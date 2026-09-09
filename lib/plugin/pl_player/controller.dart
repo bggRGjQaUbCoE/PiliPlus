@@ -83,6 +83,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   final RxBool isSeeking = false.obs;
 
   final RxInt position = RxInt(0);
+  final RxInt seekPosition = RxInt(0);
+  int get progress => isSeeking.value ? seekPosition.value : position.value;
 
   int get positionInMilliseconds =>
       videoPlayerController?.state.position.inMilliseconds ?? 0;
@@ -814,6 +816,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       audioFilterExtras(volume, map: extras);
     }
 
+    assert(!isLive || seekTo == null);
     await player.open(
       Media(
         video,
@@ -829,10 +832,9 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       return null;
     }
     if (_videoPlayerController case final ctr? when (ctr.current.isNotEmpty)) {
-      return ctr.open(
-        ctr.current.last.copyWith(start: ctr.state.position),
-        play: true,
-      );
+      var media = ctr.current.last;
+      if (!isLive) media = media.copyWith(start: ctr.state.position);
+      return ctr.open(media, play: true);
     }
     return null;
   }
@@ -925,9 +927,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
         final posInSeconds = position.inSeconds;
 
         if (posInSeconds != this.position.value) {
-          if (!isSeeking.value) {
-            this.position.value = posInSeconds;
-          }
+          this.position.value = posInSeconds;
 
           videoPlayerServiceHandler?.onPositionChange(position);
 
@@ -1140,6 +1140,11 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       }
       _timer = null;
     });
+  }
+
+  void onSeekStart(int seekFrom) {
+    seekPosition.value = seekFrom;
+    isSeeking.value = true;
   }
 
   void onSeekEnd() {
@@ -1628,9 +1633,6 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   Future<void> takeScreenshot() async {
     SmartDialog.showToast('截图中');
-    final time = DurationUtils.formatDuration(
-      positionInMilliseconds / 1000,
-    ).replaceAll(':', '-');
     final image = await videoPlayerController?.screenshot();
     if (image != null) {
       SmartDialog.showToast('点击弹窗保存截图');
@@ -1640,6 +1642,9 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
           onTap: () async {
             final bytes = await image.toByteData(format: .png);
             if (bytes != null) {
+              final time = DurationUtils.formatDuration(
+                positionInMilliseconds / 1000,
+              ).replaceAll(':', '-');
               ImageUtils.saveByteImg(
                 bytes: bytes.buffer.asUint8List(),
                 fileName: 'screenshot_${cid}_$time',

@@ -782,6 +782,9 @@ abstract final class Pref {
   static bool get enableSponsorBlock =>
       _setting.get(SettingBoxKey.enableSponsorBlock, defaultValue: false);
 
+  static bool get cacheSponsorBlock =>
+      _setting.get(SettingBoxKey.cacheSponsorBlock, defaultValue: true);
+
   static bool get enableHA =>
       _setting.get(SettingBoxKey.enableHA, defaultValue: true);
 

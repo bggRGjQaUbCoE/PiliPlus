@@ -8,6 +8,7 @@ import 'package:PiliPlus/http/sponsor_block_api.dart';
 import 'package:PiliPlus/models/common/sponsor_block/post_segment_model.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models_new/sponsor_block/segment_item.dart';
+import 'package:PiliPlus/models_new/sponsor_block/snapshot.dart';
 import 'package:PiliPlus/models_new/sponsor_block/user_info.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -53,17 +54,51 @@ abstract final class SponsorBlock {
 
   static String _api(String url) => '$blockServer/api/$url';
 
+  static Future<Response> _getSegments({
+    required String bvid,
+    required int cid,
+    required String server,
+    CancelToken? cancelToken,
+  }) => Request().get(
+    '$server/api/${SponsorBlockApi.skipSegments}',
+    queryParameters: {'videoID': bvid, 'cid': cid},
+    cancelToken: cancelToken,
+    options: options,
+  );
+
+  static Future<List<SegmentItemModel>> getCachedSegments(
+    SponsorBlockTarget target,
+    String server,
+    CancelToken cancelToken,
+  ) async {
+    final response = await _getSegments(
+      bvid: target.bvid,
+      cid: target.cid,
+      server: normalizeSponsorServer(server),
+      cancelToken: cancelToken,
+    );
+    return parseCachedResponse(response);
+  }
+
+  static List<SegmentItemModel> parseCachedResponse(Response response) {
+    if (response.statusCode == 200) {
+      return SponsorBlockSnapshot.parseSegments(response.data);
+    }
+    // 仅接受明确的空数据响应，代理返回的HTML错误页保留为请求失败。
+    if (response case Response(statusCode: 404, data: [])) {
+      return [];
+    }
+    throw SponsorBlockFetchException('获取空降信息失败', code: response.statusCode);
+  }
+
   static Future<LoadingState<List<SegmentItemModel>>> getSkipSegments({
     required String bvid,
     required int cid,
   }) async {
-    final res = await Request().get(
-      _api(SponsorBlockApi.skipSegments),
-      queryParameters: {
-        'videoID': bvid,
-        'cid': cid,
-      },
-      options: options,
+    final res = await _getSegments(
+      bvid: bvid,
+      cid: cid,
+      server: blockServer,
     );
 
     if (res.statusCode == 200) {

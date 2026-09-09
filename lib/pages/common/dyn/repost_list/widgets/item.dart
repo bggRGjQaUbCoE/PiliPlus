@@ -57,6 +57,8 @@ class DynRepostItem extends StatelessWidget {
 
     // print(moduleOpusSummary.runtimeType);
 
+    void pushMember() => Get.toNamed('/member?mid=${author.mid}');
+
     return Material(
       type: .transparency,
       child: InkWell(
@@ -85,36 +87,41 @@ class DynRepostItem extends StatelessWidget {
                     officialType: author.hasOfficial()
                         ? author.official.type
                         : null,
-                    onTap: () => Get.toNamed('/member?mid=${author.mid}'),
+                    onTap: pushMember,
                   ),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: .start,
                       children: [
-                        Row(
-                          spacing: 6,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                author.name,
-                                maxLines: 1,
-                                overflow: .ellipsis,
-                                style: TextStyle(
-                                  color:
-                                      (author.vip.status > 0 &&
-                                          author.vip.type == 2)
-                                      ? colorScheme.vipColor
-                                      : colorScheme.outline,
-                                  fontSize: 13,
+                        GestureDetector(
+                          behavior: .translucent,
+                          onTap: pushMember,
+                          child: Row(
+                            mainAxisSize: .min,
+                            spacing: 6,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  author.name,
+                                  maxLines: 1,
+                                  overflow: .ellipsis,
+                                  style: TextStyle(
+                                    color:
+                                        (author.vip.status > 0 &&
+                                            author.vip.type == 2)
+                                        ? colorScheme.vipColor
+                                        : colorScheme.outline,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ),
-                            ),
-                            BiliUtils.levelPicture(
-                              author.level.toInt(),
-                              isSeniorMember: author.isSeniorMember == 1,
-                              height: 11,
-                            ),
-                          ],
+                              BiliUtils.levelPicture(
+                                author.level.toInt(),
+                                isSeniorMember: author.isSeniorMember == 1,
+                                height: 11,
+                              ),
+                            ],
+                          ),
                         ),
                         Text(
                           moduleAuthor.ptimeLabelText,
@@ -174,7 +181,7 @@ List<InlineSpan> _parseSummary(
   final children = <InlineSpan>[];
   for (final e in nodes) {
     switch (e.nodeType) {
-      case .EMOTE:
+      case .EMOTE when e.hasEmote():
         final emote = e.emote;
         final emoteSize = emote.emoteWidth;
         final size =
@@ -189,9 +196,10 @@ List<InlineSpan> _parseSummary(
             ),
           ),
         );
+
       default:
-        final link = e.hasLink() ? e.link : null;
-        if (link != null) {
+        if (e.hasLink()) {
+          final link = e.link;
           switch (link.linkTypeEnum) {
             case .REPOST_PIC_DYN_URL || .REPOST_PIC_URL when link.hasLinkPics():
               final pics = link.linkPics;
@@ -212,34 +220,71 @@ List<InlineSpan> _parseSummary(
                     ),
                   ),
                 );
-              continue;
+
             case .VOTE when link.hasBizId():
+              children
+                ..add(
+                  WidgetSpan(
+                    alignment: .middle,
+                    child: Icon(
+                      size: 20,
+                      Icons.bar_chart_rounded,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                )
+                ..add(
+                  TextSpan(
+                    text: '投票：${e.rawText}',
+                    style: TextStyle(color: colorScheme.primary),
+                    recognizer: (NoDeadlineTapGestureRecognizer()
+                      ..onTap = () => showVoteDialog(
+                        context,
+                        int.tryParse(link.bizId) ?? -1,
+                      )),
+                  ),
+                );
+
+            default:
+              switch (link.linkTypeEnum) {
+                case .URL:
+                  children.add(
+                    WidgetSpan(
+                      alignment: .middle,
+                      child: Icon(
+                        Icons.link,
+                        size: 20,
+                        color: colorScheme.primary,
+                      ),
+                    ),
+                  );
+
+                case .OGV_SS || .OGV_EP:
+                  children.add(
+                    WidgetSpan(
+                      alignment: .middle,
+                      child: Icon(
+                        Icons.play_circle_outline_outlined,
+                        size: 16,
+                        color: colorScheme.primary,
+                      ),
+                    ),
+                  );
+
+                default:
+              }
               children.add(
                 TextSpan(
-                  text: e.rawText,
+                  text: link.hasShowText() ? link.showText.words : e.rawText,
                   style: TextStyle(color: colorScheme.primary),
                   recognizer: (NoDeadlineTapGestureRecognizer()
-                    ..onTap = () => showVoteDialog(
-                      context,
-                      int.tryParse(link.bizId) ?? -1,
-                    )),
+                    ..onTap = () => PiliScheme.routePushFromUrl(link.link)),
                 ),
               );
-              continue;
-            default:
           }
+        } else {
+          children.add(TextSpan(text: e.rawText));
         }
-        final hasUri = link?.hasLink() ?? false;
-        children.add(
-          TextSpan(
-            text: e.rawText,
-            style: hasUri ? TextStyle(color: colorScheme.primary) : null,
-            recognizer: hasUri
-                ? (NoDeadlineTapGestureRecognizer()
-                    ..onTap = () => PiliScheme.routePushFromUrl(link!.link))
-                : null,
-          ),
-        );
     }
   }
   return children;

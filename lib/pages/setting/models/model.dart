@@ -210,11 +210,13 @@ SettingsModel getBanWordModel({
   required String title,
   required String key,
   required ValueChanged<RegExp> onChanged,
+  String? subtitle,
 }) {
   String banWord = GStorage.setting.get(key, defaultValue: '');
   return NormalModel(
     leading: const Icon(Icons.filter_alt_outlined),
     title: title,
+    subtitle: subtitle,
     getSubtitle: () => banWord.isEmpty ? "点击添加" : banWord,
     onTap: (context, setState) {
       String editValue = banWord;

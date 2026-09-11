@@ -180,7 +180,8 @@ abstract final class VideoHttp {
             !RecommendFilter.filterLikeRatio(
               i['stat']['like'],
               i['stat']['view'],
-            )) {
+            ) &&
+            !RecommendFilter.filterTag(i['tag'])) {
           if (enableFilter &&
               i['tname'] != null &&
               zoneRegExp.hasMatch(i['tname'])) {
@@ -856,7 +857,8 @@ abstract final class VideoHttp {
         !RecommendFilter.filterLikeRatio(
           i['stat']['like'],
           i['stat']['view'],
-        )) {
+        ) &&
+        !RecommendFilter.filterTag(i['tag'])) {
       if (enableFilter &&
           i['tname'] != null &&
           zoneRegExp.hasMatch(i['tname'])) {

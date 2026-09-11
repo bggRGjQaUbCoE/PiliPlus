@@ -49,6 +49,8 @@ class RcmdVideoItemAppModel extends BaseRcmdVideoItemModel {
         ? ThreePoint.fromJson(json['three_point_v2'])
         : null;
     desc = json['desc'];
+    // App推荐 args.tname 即视频标签/频道名（如"恐怖"、"家常菜"）
+    tag = json['args']?['tname'];
   }
 }
 

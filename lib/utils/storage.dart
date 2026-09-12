@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:PiliPlus/models/model_owner.dart';
@@ -10,8 +9,8 @@ import 'package:PiliPlus/utils/accounts/account_type_adapter.dart';
 import 'package:PiliPlus/utils/accounts/cookie_jar_adapter.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/set_int_adapter.dart';
+import 'package:PiliPlus/utils/settings_sync.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/utils.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:path/path.dart' as path;
 
@@ -77,24 +76,14 @@ abstract final class GStorage {
     }
   }
 
-  static String exportAllSettings() {
-    return Utils.jsonEncoder.convert({
-      setting.name: setting.toMap(),
-      video.name: video.toMap(),
-    });
-  }
+  static String exportAllSettings() => SettingsSync.export(setting, video);
 
   static Future<void> importAllSettings(String data) =>
-      importAllJsonSettings(jsonDecode(data));
+      SettingsSync.import(data, setting, video);
 
   static Future<List<void>> importAllJsonSettings(
     Map<String, dynamic> map,
-  ) {
-    return Future.wait([
-      setting.clear().then((_) => setting.putAll(map[setting.name])),
-      video.clear().then((_) => video.putAll(map[video.name])),
-    ]);
-  }
+  ) => SettingsSync.importMap(map, setting, video);
 
   static void regAdapter() {
     Hive

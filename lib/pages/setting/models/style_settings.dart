@@ -11,6 +11,7 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart'
 import 'package:PiliPlus/common/widgets/stateful_builder.dart';
 import 'package:PiliPlus/models/common/bar_hide_type.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
+import 'package:PiliPlus/models/common/dynamic/dynamic_up_list_mode.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
 import 'package:PiliPlus/models/common/home_tab_type.dart';
 import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
@@ -163,12 +164,12 @@ List<SettingsModel> get styleSettings => [
       SmartDialog.showToast('重启生效');
     },
   ),
-  const SwitchModel(
-    title: '动态页显示所有已关注UP主',
-    leading: Icon(Icons.people_alt_outlined),
-    setKey: SettingBoxKey.dynamicsShowAllFollowedUp,
-    defaultVal: false,
-    needReboot: true,
+  PopupModel(
+    title: '动态页UP主与更新红点',
+    leading: const Icon(Icons.people_alt_outlined),
+    value: () => Pref.dynamicUpListMode,
+    items: DynamicUpListMode.values,
+    onSelected: _setDynamicUpListMode,
   ),
   const SwitchModel(
     title: '动态页展开正在直播UP列表',
@@ -691,6 +692,19 @@ void _setDynBadge(DynamicBadgeMode value, VoidCallback setState) {
   GStorage.setting
       .put(SettingBoxKey.dynamicBadgeMode, value.index)
       .whenComplete(setState);
+}
+
+/// 保存动态页 UP 主范围；页面控制器在重启后会按新模式建立独立更新基线。
+void _setDynamicUpListMode(
+  DynamicUpListMode value,
+  VoidCallback setState,
+) {
+  GStorage.setting
+      .put(SettingBoxKey.dynamicUpListMode, value.index)
+      .whenComplete(() {
+        setState();
+        SmartDialog.showToast('重启生效');
+      });
 }
 
 Future<void> _setMsgBadge(DynamicBadgeMode value, VoidCallback setState) async {

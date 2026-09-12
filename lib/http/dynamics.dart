@@ -101,6 +101,78 @@ abstract final class DynamicsHttp {
     }
   }
 
+  /// 按 B 站动态流的更新基线收集新增动态作者。
+  ///
+  /// 首次调用没有基线时只返回服务端当前基线，避免把历史动态全部标为未读；
+  /// 后续调用会按 `update_num` 翻页，确保低频访问 UP 的更新也能进入红点列表。
+  static Future<LoadingState<DynamicUpUpdateResult>> followDynamicUpdates({
+    required String? updateBaseline,
+    required DynamicsTabType type,
+  }) async {
+    String? offset;
+    String? nextBaseline;
+    int remaining = 0;
+    bool firstPage = true;
+    final updatedUps = <int, UpItem>{};
+
+    while (true) {
+      final res = await Request().get(
+        Api.followDynamic,
+        queryParameters: {
+          if (updateBaseline?.isNotEmpty == true)
+            'update_baseline': updateBaseline,
+          if (offset?.isNotEmpty == true) 'offset': offset,
+          'type': type.name,
+          'features': Constants.dynFeatures,
+        },
+      );
+      if (res.data['code'] != 0) {
+        return Error(res.data['message']);
+      }
+
+      final page = DynamicUpUpdatePage.fromJson(res.data['data']);
+      if (firstPage) {
+        nextBaseline = page.updateBaseline;
+        // 首次启用只建立基线，不展示此前积累的历史更新。
+        if (updateBaseline?.isNotEmpty != true) {
+          return Success(
+            DynamicUpUpdateResult(
+              updateBaseline: nextBaseline,
+              updatedUps: const [],
+            ),
+          );
+        }
+        // 服务端正常值为非负数；异常负值按无更新处理，避免分页截取越界。
+        remaining = page.updateNum > 0 ? page.updateNum : 0;
+        firstPage = false;
+      }
+
+      remaining = DynamicUpUpdateResult.collectPage(
+        updatedUps,
+        page,
+        remaining,
+      );
+
+      final nextOffset = page.offset;
+      if (remaining <= 0 ||
+          !page.hasMore ||
+          page.itemCount == 0 ||
+          nextOffset == null ||
+          nextOffset.isEmpty ||
+          nextOffset == offset) {
+        break;
+      }
+      offset = nextOffset;
+    }
+
+    return Success(
+      DynamicUpUpdateResult(
+        updateBaseline: nextBaseline,
+        updatedUps: updatedUps.values.toList(),
+      ),
+    );
+  }
+
   static Future<LoadingState<FollowUpModel>> followings({
     int? vmid,
     int? pn,

@@ -266,6 +266,123 @@ SettingsModel getBanWordModel({
   );
 }
 
+SettingsModel getBanWordListModel({
+  required String title,
+  required String key,
+  required ValueChanged<List<String>> onChanged,
+  String? subtitle,
+}) {
+  List<String> banWords = _readBanWordList(key);
+  return NormalModel(
+    leading: const Icon(Icons.filter_alt_outlined),
+    title: title,
+    subtitle: subtitle,
+    getSubtitle: () => banWords.isEmpty
+        ? '点击添加'
+        : '已屏蔽 ${banWords.length} 个：${banWords.join('、')}',
+    onTap: (context, setState) {
+      final TextEditingController controller = TextEditingController();
+      void save() {
+        GStorage.setting.put(key, banWords);
+        onChanged(List<String>.from(banWords));
+      }
+
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          constraints: Style.dialogFixedConstraints,
+          title: Text(title),
+          content: StatefulBuilder(
+            builder: (context, setDialogState) {
+              void add() {
+                final word = controller.text.trim();
+                if (word.isEmpty) return;
+                if (!banWords.contains(word)) {
+                  banWords.add(word);
+                  save();
+                }
+                controller.clear();
+                setDialogState(() {});
+              }
+
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: controller,
+                          autofocus: true,
+                          textInputAction: TextInputAction.done,
+                          onFieldSubmitted: (_) => add(),
+                          decoration: const InputDecoration(
+                            hintText: '输入单个关键词，点击添加',
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: add,
+                        child: const Text('添加'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  if (banWords.isNotEmpty)
+                    Flexible(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            for (final word in banWords)
+                              ListTile(
+                                dense: true,
+                                contentPadding: EdgeInsets.zero,
+                                title: Text(word),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.close),
+                                  tooltip: '移除',
+                                  onPressed: () {
+                                    banWords.remove(word);
+                                    save();
+                                    setDialogState(() {});
+                                  },
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    const Text('暂无屏蔽词', style: TextStyle(fontSize: 13)),
+                ],
+              );
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: Get.back,
+              child: Text(
+                '取消',
+                style: TextStyle(color: ColorScheme.of(context).outline),
+              ),
+            ),
+            TextButton(
+              child: const Text('完成'),
+              onPressed: () {
+                Get.back();
+                setState();
+                SmartDialog.showToast('已保存');
+              },
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
 SettingsModel getVideoFilterSelectModel({
   required String title,
   String? subtitle,
@@ -348,4 +465,13 @@ SettingsModel getVideoFilterSelectModel({
       }
     },
   );
+}
+
+/// 读取屏蔽词列表，兼容旧版使用`|`分隔的字符串存储
+List<String> _readBanWordList(String key) {
+  final value = GStorage.setting.get(key, defaultValue: <String>[]);
+  if (value is String) {
+    return value.isEmpty ? <String>[] : value.split('|');
+  }
+  return List<String>.from(value);
 }

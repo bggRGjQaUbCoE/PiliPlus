@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' show min;
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
@@ -8,11 +9,13 @@ import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/login.dart';
+import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/home/rcmd/result.dart';
 import 'package:PiliPlus/models/model_hot_video_item.dart';
 import 'package:PiliPlus/models/model_rec_video_item.dart';
+import 'package:PiliPlus/models/model_video.dart';
 import 'package:PiliPlus/models/pgc_lcf.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_rank/pgc_rank_item_model.dart';
@@ -27,6 +30,7 @@ import 'package:PiliPlus/models_new/video/video_note_list/data.dart';
 import 'package:PiliPlus/models_new/video/video_play_info/data.dart';
 import 'package:PiliPlus/models_new/video/video_relation/data.dart';
 import 'package:PiliPlus/models_new/video/video_shot/data.dart';
+import 'package:PiliPlus/models_new/video/video_tag/data.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/app_sign.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
@@ -45,8 +49,53 @@ import 'package:protobuf/protobuf.dart';
 
 /// view层根据 status 判断渲染逻辑
 abstract final class VideoHttp {
-  static RegExp zoneRegExp = RegExp(Pref.banWordForZone, caseSensitive: false);
+  static RegExp zoneRegExp = RegExp(
+    Pref.banWordForZone.map(RegExp.escape).join('|'),
+    caseSensitive: false,
+  );
   static bool enableFilter = zoneRegExp.pattern.isNotEmpty;
+
+  /// 视频真实标签缓存（按 bvid）
+  static final Map<String, List<String>> _tagCache = {};
+
+  /// 查询视频真实标签
+  static Future<List<String>> getVideoTags(String bvid) async {
+    if (bvid.isEmpty) return const [];
+    final cached = _tagCache[bvid];
+    if (cached != null) return cached;
+    final res = await UserHttp.videoTags(bvid: bvid);
+    final tags = switch (res) {
+      Success(:final response) => (response ?? <VideoTagItem>[])
+          .map((e) => e.tagName ?? '')
+          .where((e) => e.isNotEmpty)
+          .toList(),
+      Error() => <String>[],
+      Loading() => <String>[],
+    };
+    _tagCache[bvid] = tags;
+    return tags;
+  }
+
+  /// 按视频真实标签过滤（开启标签过滤时，并发查询真实标签并移除命中项）
+  static Future<List<T>> filterByRealTags<T extends BaseVideoItemModel>(
+    List<T> list,
+  ) async {
+    if (!RecommendFilter.enableTagFilter || list.isEmpty) return list;
+    final result = <T>[];
+    const batch = 6;
+    for (var i = 0; i < list.length; i += batch) {
+      final chunk = list.sublist(i, min(i + batch, list.length));
+      final tags = await Future.wait(
+        chunk.map((e) => getVideoTags(e.bvid ?? '')),
+      );
+      for (var j = 0; j < chunk.length; j++) {
+        if (!RecommendFilter.filterTagList(tags[j])) {
+          result.add(chunk[j]);
+        }
+      }
+    }
+    return result;
+  }
 
   // 首页推荐视频
   static Future<LoadingState<List<RcmdVideoItemModel>>> rcmdVideoList({
@@ -78,7 +127,7 @@ abstract final class VideoHttp {
           }
         }
       }
-      return Success(list);
+      return Success(await filterByRealTags(list));
     } else {
       return Error(res.data['message']);
     }
@@ -157,7 +206,7 @@ abstract final class VideoHttp {
           }
         }
       }
-      return Success(list);
+      return Success(await filterByRealTags(list));
     } else {
       return Error(res.data['message']);
     }
@@ -328,6 +377,9 @@ abstract final class VideoHttp {
       final list = RecommendFilter.applyFilterToRelatedVideos
           ? items?.where((i) => !RecommendFilter.filterAll(i)).toList()
           : items?.toList();
+      if (list != null && RecommendFilter.applyFilterToRelatedVideos) {
+        return Success(await filterByRealTags(list));
+      }
       return Success(list);
     } else {
       return Error(res.data['message']);

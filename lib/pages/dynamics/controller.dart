@@ -290,17 +290,14 @@ class DynamicsController
   }
 
   /// 点开 UP 后仅清除此人的本地红点，其他未读更新保持不变。
+  ///
+  /// 这里刻意不立刻重排列表：点了哪个 UP 就让哪个 UP 原地消掉红点，位置统一留到下一次
+  /// 刷新时由 [applyUnreadUps] 调整。否则刚点过的 UP 会从指下跳到「有更新」与
+  /// 「无更新」的分界线上，和「常看」模式的表现也不一致。
   void markUpRead(UpItem item) {
     item.hasUpdate = false;
     if (_showAllUp && _unreadUps.remove(item.mid) != null) {
       unawaited(_saveUnreadUps());
-      if (loadingState.value case Success(:final response)) {
-        final upList = response.upList;
-        if (upList != null) {
-          DynamicUpUpdateResult.sortUnreadFirst(upList);
-          loadingState.refresh();
-        }
-      }
     }
   }
 

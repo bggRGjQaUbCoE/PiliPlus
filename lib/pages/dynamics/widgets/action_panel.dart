@@ -1,9 +1,19 @@
+import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
+    show ReplyInfo;
+import 'package:PiliPlus/http/dynamics.dart';
+import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
+import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
+import 'package:PiliPlus/pages/video/reply_new/view.dart';
+import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 class ActionPanel extends StatelessWidget {
@@ -12,6 +22,67 @@ class ActionPanel extends StatelessWidget {
     required this.item,
   });
   final DynamicItemModel item;
+
+  void _onQuickReply(VoidCallback onUpdateUi) {
+    feedBack();
+    final commentType = item.basic?.commentType;
+    final commentIdStr = item.basic?.commentIdStr;
+    if (commentType != null &&
+        commentType != 0 &&
+        commentIdStr != null &&
+        commentIdStr.isNotEmpty) {
+      _showReplyPage(int.parse(commentIdStr), commentType, onUpdateUi);
+    } else {
+      SmartDialog.showLoading(msg: '加载中...');
+      DynamicsHttp.dynamicDetail(id: item.idStr)
+          .then((res) {
+            SmartDialog.dismiss(status: SmartStatus.loading);
+            if (res case Success(:final response)) {
+              final bCommentId = response.basic?.commentIdStr;
+              final bCommentType = response.basic?.commentType;
+              if (bCommentId != null &&
+                  bCommentId.isNotEmpty &&
+                  bCommentType != null &&
+                  bCommentType != 0) {
+                _showReplyPage(int.parse(bCommentId), bCommentType, onUpdateUi);
+              } else {
+                SmartDialog.showToast('该动态不支持快速评论');
+              }
+            } else {
+              res.toast();
+            }
+          })
+          .catchError((e) {
+            SmartDialog.dismiss(status: SmartStatus.loading);
+            SmartDialog.showToast(e.toString());
+          });
+    }
+  }
+
+  void _showReplyPage(int oid, int replyType, VoidCallback onUpdateUi) {
+    Get.key.currentState!
+        .push(
+          PublishRoute(
+            pageBuilder: (buildContext, animation, secondaryAnimation) {
+              return ReplyPage(
+                oid: oid,
+                root: 0,
+                parent: 0,
+                replyType: replyType,
+              );
+            },
+          ),
+        )
+        .then((replyInfo) {
+          if (replyInfo is ReplyInfo) {
+            final comment = item.modules.moduleStat?.comment;
+            if (comment != null) {
+              comment.count = (comment.count ?? 0) + 1;
+              onUpdateUi();
+            }
+          }
+        });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,22 +137,35 @@ class ActionPanel extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: TextButton.icon(
-            onPressed: () => PageUtils.pushDynDetail(
-              item,
-              isPush: true,
-              viewComment: true,
-            ),
-            icon: Icon(
-              FontAwesomeIcons.comment,
-              size: 16,
-              color: outline,
-              semanticLabel: "评论",
-            ),
-            style: btnStyle,
-            label: Text(
-              comment.count != null ? NumUtils.numFormat(comment.count) : '评论',
-            ),
+          child: Builder(
+            builder: (context) {
+              return TextButton.icon(
+                onPressed: () => PageUtils.pushDynDetail(
+                  item,
+                  isPush: true,
+                  viewComment: true,
+                ),
+                onLongPress: Pref.enableQuickReplyDyn
+                    ? () => _onQuickReply(() {
+                        if (context.mounted) {
+                          (context as Element?)?.markNeedsBuild();
+                        }
+                      })
+                    : null,
+                icon: Icon(
+                  FontAwesomeIcons.comment,
+                  size: 16,
+                  color: outline,
+                  semanticLabel: "评论",
+                ),
+                style: btnStyle,
+                label: Text(
+                  comment.count != null
+                      ? NumUtils.numFormat(comment.count)
+                      : '评论',
+                ),
+              );
+            },
           ),
         ),
         Expanded(

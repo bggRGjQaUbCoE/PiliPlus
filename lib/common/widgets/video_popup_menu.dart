@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
+import 'package:PiliPlus/common/widgets/word_select_bar.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/home/rcmd/result.dart';
@@ -9,6 +10,9 @@ import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/pages/video/ai_conclusion/view.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/recommend_filter.dart';
+import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -264,44 +268,10 @@ class VideoPopupMenu extends StatelessWidget {
                   _VideoCustomAction(
                     '拉黑：${videoItem.owner.name}',
                     const Icon(MdiIcons.cancel, size: 16),
-                    () => showDialog(
+                    () => _showBlockVideoDialog(
                       context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: const Text('提示'),
-                          content: Text(
-                            '确定拉黑:${videoItem.owner.name}(${videoItem.owner.mid})?'
-                            '\n\n注：被拉黑的Up可以在隐私设置-黑名单管理中解除',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: Get.back,
-                              child: Text(
-                                '点错了',
-                                style: TextStyle(
-                                  color: ColorScheme.of(context).outline,
-                                ),
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () async {
-                                Get.back();
-                                final res = await VideoHttp.relationMod(
-                                  mid: videoItem.owner.mid!,
-                                  act: 5,
-                                  reSrc: 11,
-                                );
-                                if (res.isSuccess) {
-                                  onRemove?.call();
-                                } else {
-                                  res.toast();
-                                }
-                              },
-                              child: const Text('确认'),
-                            ),
-                          ],
-                        );
-                      },
+                      videoItem: videoItem,
+                      onRemove: onRemove,
                     ),
                   ),
                 ],
@@ -329,4 +299,97 @@ class VideoPopupMenu extends StatelessWidget {
               .toList(),
     );
   }
+}
+
+/// 视频卡片「拉黑」确认框：保留拉黑，同时提供标题关键词过滤，
+/// 滑动选择标题中的连续词加入标题过滤词库，选词后立即移除该视频。
+Future<void> _showBlockVideoDialog({
+  required BuildContext context,
+  required BaseSimpleVideoItemModel videoItem,
+  required VoidCallback? onRemove,
+}) async {
+  final selectedWords = <String>[];
+  await showDialog(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setState) => AlertDialog(
+        title: const Text('提示'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '确定拉黑:${videoItem.owner.name}(${videoItem.owner.mid})?'
+                '\n\n注：被拉黑的Up可以在隐私设置-黑名单管理中解除',
+              ),
+              const SizedBox(height: 12),
+              Text(
+                '标题关键词过滤（在标题上滑动选词加入屏蔽）：',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: ColorScheme.of(context).outline,
+                ),
+              ),
+              const SizedBox(height: 8),
+              WordSelectBar(
+                text: videoItem.title,
+                onWordsChanged: (words) {
+                  selectedWords
+                    ..clear()
+                    ..addAll(words);
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: Get.back,
+            child: Text(
+              '点错了',
+              style: TextStyle(color: ColorScheme.of(context).outline),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Get.back();
+              bool removed = false;
+              // 选词即入标题过滤词库，并立即移除该视频
+              if (selectedWords.isNotEmpty) {
+                var pattern = RecommendFilter.rcmdRegExp.pattern;
+                for (final w in selectedWords) {
+                  final esc = RegExp.escape(w);
+                  pattern = pattern.isEmpty ? esc : '$pattern|$esc';
+                }
+                RecommendFilter.rcmdRegExp = RegExp(
+                  pattern,
+                  caseSensitive: false,
+                );
+                RecommendFilter.enableFilter = pattern.isNotEmpty;
+                GStorage.setting.put(
+                  SettingBoxKey.banWordForRecommend,
+                  pattern,
+                );
+                onRemove?.call();
+                removed = true;
+              }
+              // 拉黑
+              final res = await VideoHttp.relationMod(
+                mid: videoItem.owner.mid!,
+                act: 5,
+                reSrc: 11,
+              );
+              if (res.isSuccess) {
+                if (!removed) onRemove?.call();
+              } else {
+                res.toast();
+              }
+            },
+            child: const Text('确认'),
+          ),
+        ],
+      ),
+    ),
+  );
 }

@@ -16,6 +16,7 @@ import 'package:PiliPlus/pages/download/controller.dart';
 import 'package:PiliPlus/pages/download/detail/view.dart';
 import 'package:PiliPlus/pages/download/detail/widgets/item.dart';
 import 'package:PiliPlus/pages/download/search/view.dart';
+import 'package:PiliPlus/pages/download/widgets/sponsor_block_update.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/grid.dart';
@@ -62,6 +63,17 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
           appBar: MultiSelectAppBarWidget(
             ctr: _controller,
             actions: [
+              IconButton(
+                tooltip: '空降信息',
+                icon: const Icon(Icons.shield_outlined),
+                onPressed: () {
+                  final entries = _controller.allChecked
+                      .expand((page) => page.entries)
+                      .toList();
+                  _controller.handleSelect();
+                  showSponsorBlockUpdate(context, _downloadService, entries);
+                },
+              ),
               TextButton(
                 style: TextButton.styleFrom(
                   visualDensity: VisualDensity.compact,
@@ -84,7 +96,7 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                   }
                 },
                 child: Text(
-                  '更新',
+                  '更新弹幕',
                   style: TextStyle(color: theme.colorScheme.onSurface),
                 ),
               ),
@@ -268,6 +280,17 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                     }
                   },
                   child: const Text('更新弹幕', style: TextStyle(fontSize: 14)),
+                ),
+                DialogOption(
+                  onPressed: () {
+                    Get.back();
+                    showSponsorBlockUpdate(
+                      this.context,
+                      _downloadService,
+                      pageInfo.entries,
+                    );
+                  },
+                  child: const Text('更新空降信息', style: TextStyle(fontSize: 14)),
                 ),
               ],
             ),

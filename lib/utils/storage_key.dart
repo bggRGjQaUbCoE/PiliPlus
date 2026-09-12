@@ -183,6 +183,7 @@ abstract final class SettingBoxKey {
       webdavDirectory = 'webdavDirectory';
 
   static const String enableSponsorBlock = 'enableSponsorBlock',
+      cacheSponsorBlock = 'cacheSponsorBlock',
       blockSettings = 'blockSettings',
       blockLimit = 'blockLimit',
       blockColor = 'blockColor',

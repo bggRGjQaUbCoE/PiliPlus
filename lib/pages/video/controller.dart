@@ -29,6 +29,7 @@ import 'package:PiliPlus/models/video/play/url.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/models_new/media_list/media_list.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
+import 'package:PiliPlus/models_new/sponsor_block/snapshot.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
@@ -77,6 +78,7 @@ import 'package:get/get.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:media_kit/media_kit.dart' hide Subtitle;
+import 'package:synchronized/synchronized.dart';
 
 class VideoDetailController extends GetxController
     with GetTickerProviderStateMixin, BlockMixin {
@@ -102,6 +104,39 @@ class VideoDetailController extends GetxController
   late SourceType sourceType;
   late BiliDownloadEntryInfo entry;
   late bool isFileSource;
+  int _fileGeneration = 0;
+  int _fileBlocksGeneration = -1;
+  Future<SponsorBlockCacheResult>? _fileBlockRead;
+  SponsorBlockCacheResult? _fileBlockResult;
+  final _filePlayerLock = Lock();
+  StreamSubscription<Duration>? _fileDurationSubscription;
+
+  @override
+  bool get allowCommunityRequests => !isFileSource;
+
+  @override
+  bool get isBlock => isFileSource
+      ? entry.ep == null || !blockConfig.enablePgcSkip
+      : super.isBlock;
+
+  @override
+  String? get blockDetailDescription {
+    if (!isFileSource) return null;
+    final result = _fileBlockResult;
+    final snapshot = result?.snapshot;
+    return [
+      result?.description ?? '正在读取空降信息',
+      if (isBlock && !blockConfig.enableSponsorBlock) '空降助手已关闭，启用后重新打开视频生效',
+      if (snapshot != null) ...[
+        '保存时间：${snapshot.fetchedAt.toLocal()}',
+        '来源：${snapshot.source == .pgc ? 'B站片头片尾信息' : snapshot.server}',
+        if (snapshot.segments.isNotEmpty && segmentProgressList.isEmpty)
+          '当前设置或视频时长下没有可用片段',
+      ],
+      '可在离线缓存列表更新；重新打开视频后加载更新的信息。',
+    ].join('\n');
+  }
+
   late bool _mediaDesc = false;
   late final RxList<MediaListItemModel> mediaList = <MediaListItemModel>[].obs;
   late String watchLaterTitle;
@@ -331,6 +366,15 @@ class VideoDetailController extends GetxController
 
   void initFileSource(BiliDownloadEntryInfo entry, {bool isInit = true}) {
     this.entry = entry;
+    _fileGeneration++;
+    _fileBlockResult = null;
+    final target = DownloadService.sponsorTarget(
+      entry,
+      enablePgcSkip: blockConfig.enablePgcSkip,
+    );
+    _fileBlockRead = target == null
+        ? null
+        : Get.find<DownloadService>().sponsorBlockCache.read(target);
     firstVideo = VideoItem(
       id: entry.preferedVideoQuality,
       quality: VideoQuality.fromCode(entry.preferedVideoQuality),
@@ -718,10 +762,77 @@ class VideoDetailController extends GetxController
   Future<void> playerInit({
     bool? autoplay,
     bool autoFullScreenFlag = false,
+  }) {
+    final generation = _fileGeneration;
+    if (!isFileSource) {
+      return _playerInit(
+        autoplay: autoplay,
+        autoFullScreenFlag: autoFullScreenFlag,
+      );
+    }
+    return _filePlayerLock.synchronized(() async {
+      if (isClosed || generation != _fileGeneration) return;
+      await _playerInit(
+        autoplay: autoplay,
+        autoFullScreenFlag: autoFullScreenFlag,
+      );
+    });
+  }
+
+  Future<void> _applyFileBlocks(int generation, int duration) async {
+    if (isClosed ||
+        generation != _fileGeneration ||
+        duration <= 0 ||
+        _fileBlocksGeneration == generation) {
+      return;
+    }
+    _fileBlocksGeneration = generation;
+    resetBlock();
+    if (isBlock && !blockConfig.enableSponsorBlock) return;
+    if (_fileBlockResult?.snapshot case final snapshot?) {
+      await handleSBData(
+        snapshot.playableSegments(duration),
+        deferPlayback: true,
+        durationMs: duration,
+      );
+    }
+  }
+
+  Future<void> _initFileSkip(
+    int generation,
+    int duration, {
+    bool skipCurrent = false,
   }) async {
+    await _applyFileBlocks(generation, duration);
+    if (isClosed || generation != _fileGeneration) return;
+    if (skipCurrent) {
+      final seek = getFirstSegment(currPosInMilliseconds);
+      if (seek != null) await seekTo(seek, isSeek: false);
+      if (isClosed || generation != _fileGeneration) return;
+    }
+    initSkip();
+    showCurrentManualSegment();
+  }
+
+  Future<void> _playerInit({
+    bool? autoplay,
+    bool autoFullScreenFlag = false,
+  }) async {
+    final generation = _fileGeneration;
+    if (isFileSource) {
+      final result = await _fileBlockRead;
+      if (isClosed || generation != _fileGeneration) return;
+      _fileBlockResult = result;
+      await _applyFileBlocks(generation, data.timeLength ?? 0);
+      if (isClosed || generation != _fileGeneration) return;
+    }
     Duration? seek = defaultST ?? playedTime;
     if (seek == .zero) seek = null;
-    seek ??= getFirstSegment();
+    if (isFileSource) {
+      seek = getFirstSegment(seek?.inMilliseconds ?? 0) ?? seek;
+    } else {
+      seek ??= getFirstSegment();
+    }
     await plPlayerController.setDataSource(
       isFileSource
           ? FileSource(
@@ -748,6 +859,7 @@ class VideoDetailController extends GetxController
       pgcType: isUgc ? null : pgcType,
       videoType: videoType,
       onInit: () {
+        if (isClosed || (isFileSource && generation != _fileGeneration)) return;
         videoState.value = true;
         setSubtitle(vttSubtitlesIndex.value);
       },
@@ -757,9 +869,34 @@ class VideoDetailController extends GetxController
       autoFullScreenFlag: autoFullScreenFlag,
     );
 
-    if (isClosed) return;
+    if (isClosed || (isFileSource && generation != _fileGeneration)) return;
 
-    if (!isFileSource) {
+    if (isFileSource) {
+      await _initFileSkip(
+        generation,
+        player?.state.duration.inMilliseconds ?? 0,
+      );
+      if (isClosed || generation != _fileGeneration) return;
+      if (_fileBlocksGeneration != generation) {
+        _fileDurationSubscription?.cancel();
+        _fileDurationSubscription = player?.stream.duration.listen(
+          (duration) async {
+            if (duration.inMilliseconds <= 0 ||
+                isClosed ||
+                generation != _fileGeneration) {
+              return;
+            }
+            _fileDurationSubscription?.cancel();
+            _fileDurationSubscription = null;
+            await _initFileSkip(
+              generation,
+              duration.inMilliseconds,
+              skipCurrent: true,
+            );
+          },
+        );
+      }
+    } else {
       if (plPlayerController.enableBlock) {
         initSkip();
       }
@@ -994,6 +1131,7 @@ class VideoDetailController extends GetxController
 
   late final List<PostSegmentModel> postList = <PostSegmentModel>[];
   void onBlock(BuildContext context) {
+    if (!allowCommunityRequests) return;
     if (postList.isEmpty) {
       postList.add(
         PostSegmentModel(
@@ -1243,6 +1381,8 @@ class VideoDetailController extends GetxController
 
   @override
   void onClose() {
+    _fileGeneration++;
+    _fileDurationSubscription?.cancel();
     cid.close();
     if (isFileSource) {
       cacheLocalProgress();
@@ -1260,6 +1400,10 @@ class VideoDetailController extends GetxController
   }
 
   void onReset({bool isStein = false}) {
+    _fileGeneration++;
+    _fileDurationSubscription?.cancel();
+    _fileDurationSubscription = null;
+    resetBlock();
     if (isFileSource) {
       cacheLocalProgress();
     }
@@ -1290,11 +1434,6 @@ class VideoDetailController extends GetxController
       // view point
       if (plPlayerController.showViewPoints) {
         viewPointList.clear();
-      }
-
-      // sponsor block
-      if (blockConfig.enableBlock) {
-        resetBlock();
       }
 
       // interactive video

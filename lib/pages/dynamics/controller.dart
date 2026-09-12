@@ -40,8 +40,18 @@ class DynamicsController
   /// 标记当前已载入缓存的账号，避免账号切换后串用未读状态。
   int? _badgeAccountMid;
 
-  /// 仅在首次建立“所有动态”基线时接收一次官方已有红点。
+  /// 仅在首次建立更新基线时接收一次官方已有红点，避免切换到全量模式后红点先变少。
   bool _preserveOfficialBadges = false;
+
+  /// 首次启用某模式时回补的页数：基线刚建立时增量必然为空，回补可避免「红点全没了」的观感。
+  static const _initialBackfillPages = 2;
+
+  /// 本地红点缓存键版本。
+  ///
+  /// v1 按模式分桶，且基线是配合服务端 `update_num` 推进的，而该字段实测恒为 `'0'`，
+  /// 那份基线已不能代表「已读到哪一条」；v3 起红点集合不再按模式分桶（两种模式共用
+  /// 一份增量，只按视频与否筛选），因此升级键名强制丢弃旧状态、重新建立基线。
+  static const _badgeCacheVersion = 'v3';
 
   final upPanelPosition = Pref.upPanelPosition;
 
@@ -159,9 +169,9 @@ class DynamicsController
   }
 
   String _badgeCacheKey(String prefix) =>
-      '$prefix:${Accounts.main.mid}:${_upListMode.name}';
+      '$prefix.$_badgeCacheVersion:${Accounts.main.mid}';
 
-  /// 从账号与模式隔离的缓存恢复尚未点开的 UP 更新。
+  /// 从账号隔离的缓存恢复尚未点开的 UP 更新。
   void _loadUnreadUps() {
     final accountMid = Accounts.main.mid;
     if (_badgeAccountMid == accountMid) return;
@@ -195,6 +205,7 @@ class DynamicsController
             'uname': up.uname,
             'has_update': true,
             'latest_update_at': up.latestUpdateAt,
+            'is_video': up.isVideo,
           },
         )
         .toList(),
@@ -205,15 +216,12 @@ class DynamicsController
     try {
       _loadUnreadUps();
       final accountMid = Accounts.main.mid;
-      final baselineKey =
-          '${LocalCacheKey.dynamicUpBaseline}:$accountMid:${_upListMode.name}';
+      final baselineKey = _badgeCacheKey(LocalCacheKey.dynamicUpBaseline);
       final baseline = GStorage.localCache.get(baselineKey);
       final isInitialBaseline = baseline is! String || baseline.isEmpty;
       final res = await DynamicsHttp.followDynamicUpdates(
         updateBaseline: baseline is String ? baseline : null,
-        type: _upListMode == DynamicUpListMode.video
-            ? DynamicsTabType.video
-            : DynamicsTabType.all,
+        backfillPages: isInitialBaseline ? _initialBackfillPages : 0,
       );
       // 账号在请求期间发生切换时丢弃旧结果，避免污染新账号缓存。
       if (Accounts.main.mid != accountMid) return;
@@ -221,6 +229,8 @@ class DynamicsController
         _preserveOfficialBadges = isInitialBaseline;
         for (final up in response.updatedUps) {
           final old = _unreadUps[up.mid];
+          // 动态流条目带发布时间（pub_ts），官方常看带入的红点没有时间戳，
+          // 于是任何一次真实更新都能覆盖掉「类型未知」的旧条目，补上视频标记。
           if (old == null ||
               (up.latestUpdateAt ?? 0) > (old.latestUpdateAt ?? 0)) {
             _unreadUps[up.mid] = up;
@@ -237,6 +247,12 @@ class DynamicsController
     }
   }
 
+  /// 「仅视频」模式下只有确知最新动态是视频投稿的 UP 才展示红点。
+  ///
+  /// 由官方常看列表带入的红点没有动态类型信息（[UpItem.isVideo] 为 null），
+  /// 因此不会被该模式展示，避免把只发了图文的 UP 也标红。
+  bool _matchesBadgeMode(UpItem up) => _upListMode.showsBadge(up.isVideo);
+
   /// 将本地未读状态覆盖到列表，并把新更新但不常看的 UP 提到列表前方。
   void _applyUnreadUps(FollowUpModel data, {required bool includeMissing}) {
     if (!_showAllUp) return;
@@ -244,8 +260,9 @@ class DynamicsController
 
     final upList = data.upList ??= <UpItem>[];
     bool shouldSave = false;
-    if (_upListMode == DynamicUpListMode.all && _preserveOfficialBadges) {
-      // 首次切换到“所有动态”时保留官方已经判定的常看 UP 红点。
+    if (_preserveOfficialBadges) {
+      // 首次建立更新基线时先继承官方已经判定的常看 UP 红点，避免切换模式后红点先变少；
+      // 这些条目没有动态类型，只会出现在「所有动态」模式里。
       for (final up in upList.where((up) => up.hasUpdate == true)) {
         if (!_unreadUps.containsKey(up.mid)) {
           _unreadUps[up.mid] = up;
@@ -257,12 +274,14 @@ class DynamicsController
     final currentUps = <int, UpItem>{for (final up in upList) up.mid: up};
     for (final up in upList) {
       final unread = _unreadUps[up.mid];
-      up.hasUpdate = unread != null;
-      if (unread != null) up.latestUpdateAt = unread.latestUpdateAt;
+      final visible = unread != null && _matchesBadgeMode(unread);
+      up.hasUpdate = visible;
+      if (visible) up.latestUpdateAt = unread.latestUpdateAt;
     }
     if (includeMissing) {
       final missing = _unreadUps.values
           .where((up) => !currentUps.containsKey(up.mid))
+          .where(_matchesBadgeMode)
           .toList();
       upList.insertAll(0, missing);
       DynamicUpUpdateResult.sortUnreadFirst(upList);

@@ -13,3 +13,12 @@ enum DynamicUpListMode implements EnumWithLabel {
   final String label;
   const DynamicUpListMode(this.label);
 }
+
+extension DynamicUpListModeBadge on DynamicUpListMode {
+  /// 该模式是否展示某个红点。
+  ///
+  /// 「仅视频」只展示确知最新动态是视频投稿的红点；由官方常看列表带入的红点没有动态
+  /// 类型信息（[isVideo] 为 null），因此不会被该模式展示，避免把只发图文的 UP 标红。
+  bool showsBadge(bool? isVideo) =>
+      this != DynamicUpListMode.video || isVideo == true;
+}

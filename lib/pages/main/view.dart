@@ -68,7 +68,9 @@ class _MainAppState extends PopScopeState<MainApp>
         _handleTray();
       }
     }
-    PiliScheme.init();
+    if (PlatformUtils.isMobile || Platform.isLinux) {
+      PiliScheme.init();
+    }
   }
 
   @override

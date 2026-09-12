@@ -239,7 +239,7 @@ abstract final class VideoHttp {
           list.add(HotVideoItemModel.fromJson(i));
         }
       }
-      return Success(list);
+      return Success(await filterByRealTags(list));
     } else {
       return Error(res.data['message']);
     }
@@ -944,7 +944,7 @@ abstract final class VideoHttp {
           // }
         }
       }
-      return Success(list);
+      return Success(await filterByRealTags(list));
     } else {
       return Error(res.data['message']);
     }

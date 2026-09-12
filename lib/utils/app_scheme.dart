@@ -57,6 +57,27 @@ abstract final class PiliScheme {
     return null;
   }
 
+  static final _biliUriReg = RegExp(
+    '^(https?|bilibili)://',
+    caseSensitive: false,
+  );
+  static Future<Uri?> validateUri(String url) async {
+    if (url.startsWith(_biliUriReg)) {
+      var uri = Uri.parse(url);
+      final host = uri.host;
+      if (host.contains(b23_tv)) {
+        final url = await UrlUtils.parseRedirectUrl(uri.toString());
+        if (url != null) {
+          uri = Uri.parse(url);
+        }
+      }
+      if (host.contains(bilibili)) {
+        return uri;
+      }
+    }
+    return null;
+  }
+
   static Future<bool> routePushFromUrl(
     String url, {
     bool selfHandle = false,
@@ -418,8 +439,8 @@ abstract final class PiliScheme {
           parameters: parameters,
         );
       default:
-        String? aid = IdUtils.avRegexExact.matchAsPrefix(path)?.group(1);
-        String? bvid = IdUtils.bvRegexExact.matchAsPrefix(path)?.group(0);
+        final aid = IdUtils.avRegexExact.matchAsPrefix(path)?.group(1);
+        final bvid = IdUtils.bvRegexExact.matchAsPrefix(path)?.group(0);
         if (aid != null || bvid != null) {
           videoPush(
             aid != null ? int.parse(aid) : null,
@@ -474,13 +495,14 @@ abstract final class PiliScheme {
         uri = Uri.parse(redirectUrl);
         host = uri.host;
       }
-      if (!host.contains(bilibili)) {
-        launchURL();
-        return false;
-      }
     }
 
-    final String path = uri.path;
+    if (!host.contains(bilibili)) {
+      launchURL();
+      return false;
+    }
+
+    final path = uri.path;
     late final queryParameters = uri.queryParameters;
 
     if (host.contains(bilibili_t)) {

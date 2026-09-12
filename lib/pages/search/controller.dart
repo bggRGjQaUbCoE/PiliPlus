@@ -6,6 +6,7 @@ import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/search/suggest.dart';
 import 'package:PiliPlus/models_new/search/search_rcmd/data.dart';
 import 'package:PiliPlus/models_new/search/search_trending/data.dart';
+import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
@@ -161,18 +162,24 @@ class SSearchController extends GetxController
   }
 
   // 搜索
-  void submit() {
+  Future<void> submit() async {
     if (controller.text.isEmpty) {
       if (hintText.isNullOrEmpty) return;
       controller.text = hintText!;
       validateUid();
     }
 
+    final text = controller.text;
+
+    if (await PiliScheme.routePush(Uri.parse(text), selfHandle: true)) {
+      return;
+    }
+
     if (recordSearchHistory.value) {
-      final index = historyList.indexOf(controller.text);
+      final index = historyList.indexOf(text);
       if (index != 0) {
         if (index != -1) historyList.removeAt(index);
-        historyList.insert(0, controller.text);
+        historyList.insert(0, text);
         GStorage.historyWord.put('cacheList', historyList);
       }
     }
@@ -180,14 +187,8 @@ class SSearchController extends GetxController
     searchFocusNode.unfocus();
     Get.toNamed(
       '/searchResult',
-      parameters: {
-        'tag': tag,
-        'keyword': controller.text,
-      },
-      arguments: {
-        'initIndex': initIndex,
-        'fromSearch': true,
-      },
+      parameters: {'tag': tag, 'keyword': text},
+      arguments: {'initIndex': initIndex, 'fromSearch': true},
     )?.whenComplete(searchFocusNode.requestFocus);
   }
 

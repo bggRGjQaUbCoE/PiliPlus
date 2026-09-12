@@ -10,7 +10,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
 import android.content.pm.verify.domain.DomainVerificationManager;
@@ -299,7 +298,7 @@ public final class AndroidHelper {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.S)
-    public static boolean isDomainVerified(String domain) {
+    public static boolean isDomainVerified(@NonNull String domain) {
         try {
             Context context = getContext();
             DomainVerificationManager manager =
@@ -317,27 +316,26 @@ public final class AndroidHelper {
         return false;
     }
 
-    public static String openUrl(String url) {
+    public static String openUrl(@NonNull String url) {
         Context context = getContext();
-        String pkg = context.getPackageName();
-        PackageManager pm = context.getPackageManager();
 
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            intent = Intent.createChooser(intent, null);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.putExtra(
+                    Intent.EXTRA_EXCLUDE_COMPONENTS,
+                    new ComponentName[]{new ComponentName(context, MainActivity.class)}
+            );
+        }
         try {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-            for (ResolveInfo info : pm.queryIntentActivities(intent, 0)) {
-                String packageName = info.activityInfo.packageName;
-                if (!packageName.equals(pkg)) {
-                    intent.setPackage(packageName);
-                    context.startActivity(intent);
-                    return null;
-                }
-            }
-            return "package not found";
+            context.startActivity(intent);
         } catch (Exception e) {
             return e.toString();
         }
+        return null;
     }
 
     @Keep

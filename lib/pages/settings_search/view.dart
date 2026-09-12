@@ -9,6 +9,7 @@ import 'package:PiliPlus/pages/setting/models/play_settings.dart';
 import 'package:PiliPlus/pages/setting/models/privacy_settings.dart';
 import 'package:PiliPlus/pages/setting/models/recommend_settings.dart';
 import 'package:PiliPlus/pages/setting/models/style_settings.dart';
+import 'package:PiliPlus/pages/setting/models/translate_settings.dart';
 import 'package:PiliPlus/pages/setting/models/video_settings.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/waterfall.dart';
@@ -32,6 +33,7 @@ class _SettingsSearchPageState
     ...extraSettings,
     ...privacySettings,
     ...recommendSettings,
+    ...translateSettings,
     ...videoSettings,
     ...playSettings,
     ...styleSettings,

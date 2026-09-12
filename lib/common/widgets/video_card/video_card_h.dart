@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/video_progress_indicator.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
+import 'package:PiliPlus/common/widgets/translate_text.dart';
 import 'package:PiliPlus/common/widgets/video_popup_menu.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/horizontal_video_model.dart';
@@ -12,6 +13,7 @@ import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:material_ui/material_ui.dart';
 
 // 视频卡片 - 水平布局
@@ -212,7 +214,7 @@ class VideoCardH extends StatelessWidget {
             )
           else
             Expanded(
-              child: Text(
+              child: TranslateText(
                 videoItem.title,
                 textAlign: .start,
                 style: TextStyle(
@@ -222,6 +224,7 @@ class VideoCardH extends StatelessWidget {
                 ),
                 maxLines: 2,
                 overflow: .ellipsis,
+                enabled: Pref.translateFeed,
               ),
             ),
           Text(

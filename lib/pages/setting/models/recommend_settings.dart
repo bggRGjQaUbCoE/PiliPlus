@@ -66,7 +66,6 @@ List<SettingsModel> get recommendSettings => [
   ),
   getBanWordListModel(
     title: '视频标签过滤',
-    subtitle: '按视频真实标签屏蔽，如：三角洲行动',
     key: SettingBoxKey.banTagForRecommend,
     onChanged: (List<String> words) {
       final pattern = words.map(RegExp.escape).join('|');

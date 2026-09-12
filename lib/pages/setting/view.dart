@@ -54,6 +54,11 @@ class _SettingPageState extends State<SettingPage> {
       icon: Icon(Icons.explore_outlined),
     ),
     _SettingsModel(
+      type: SettingType.translateSetting,
+      subtitle: '将国外视频的英文标题/标签翻译为中文',
+      icon: Icon(Icons.translate),
+    ),
+    _SettingsModel(
       type: SettingType.videoSetting,
       subtitle: '画质、音质、解码、缓冲、音频输出等',
       icon: Icon(Icons.video_settings_outlined),
@@ -123,6 +128,10 @@ class _SettingPageState extends State<SettingPage> {
                         settingType: _type,
                         showAppBar: false,
                       ),
+                      .translateSetting => CommonSetting(
+                        settingType: _type,
+                        showAppBar: false,
+                      ),
                       .webdavSetting => const WebDavSettingPage(
                         showAppBar: false,
                       ),
@@ -151,6 +160,7 @@ class _SettingPageState extends State<SettingPage> {
           .playSetting ||
           .styleSetting ||
           .extraSetting => CommonSetting(settingType: type),
+          .translateSetting => CommonSetting(settingType: type),
           .webdavSetting => const WebDavSettingPage(),
           .about => const AboutPage(),
         },

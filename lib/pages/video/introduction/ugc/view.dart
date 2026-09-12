@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/animated_height.dart';
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/expandable.dart';
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
@@ -40,6 +41,8 @@ import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/translate_service.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -268,10 +271,160 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
     return GestureDetector(
       onLongPress: () {
         Feedback.forLongPress(context);
-        Utils.copyText(videoDetail.title ?? '');
+        _showTitleMenu(videoDetail.title ?? '');
       },
       child: _buildVideoTitle(videoDetail, isExpand: isExpand),
     );
+  }
+
+  /// 长按标题弹出的操作菜单
+  void _showTitleMenu(String title) {
+    // 只要翻译已配置即可手动翻译。
+    // 手动模式下固定出现；自动模式下命中了「不用翻译的语言」而被跳过的文本
+    // 也可通过长按手动翻译。
+    final manual = TranslateService.configured();
+    // 自动模式下若标题已被自动翻译，则额外提供「显示原文」。
+    final autoTranslated = Pref.translateDetailTitleMode == 'auto' &&
+        TranslateService.translatedIfAny(title) != null;
+    showDialog(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text('标题操作'),
+        children: [
+          DialogOption(
+            onPressed: () {
+              Get.back();
+              Utils.copyText(title);
+              SmartDialog.showToast('已复制标题');
+            },
+            child: const Text('全部复制'),
+          ),
+          DialogOption(
+            onPressed: () {
+              Get.back();
+              _showSelectTitle(title);
+            },
+            child: const Text('自由复制'),
+          ),
+          if (autoTranslated)
+            DialogOption(
+              onPressed: () {
+                Get.back();
+                _showOriginalTitle(title);
+              },
+              child: const Text('显示原文'),
+            ),
+          if (manual)
+            DialogOption(
+              onPressed: () {
+                Get.back();
+                _manualTranslate(title);
+              },
+              child: const Text('翻译'),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// 显示原文（自动翻译模式下查看未翻译的原始标题，可框选复制）
+  void _showOriginalTitle(String title) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('标题原文'),
+        content: SingleChildScrollView(
+          child: SelectionArea(
+            child: Text(
+              title,
+              style: const TextStyle(fontSize: 16, height: 1.4),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: Get.back,
+            child: Text(
+              '关闭',
+              style: TextStyle(color: ColorScheme.of(context).outline),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 自由复制：弹出标题，手动框选
+  void _showSelectTitle(String title) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('框选复制'),
+        content: SingleChildScrollView(
+          child: SelectionArea(
+            child: Text(
+              title,
+              style: const TextStyle(fontSize: 16, height: 1.4),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: Get.back,
+            child: Text(
+              '关闭',
+              style: TextStyle(color: ColorScheme.of(context).outline),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 手动翻译：调用接口并把结果以可复制文本显示
+  Future<void> _manualTranslate(String title) async {
+    SmartDialog.showLoading(msg: '翻译中...');
+    try {
+      final translated = await TranslateService.translateOne(title);
+      SmartDialog.dismiss();
+      if (!mounted) return;
+      if (translated.isEmpty) {
+        SmartDialog.showToast('翻译失败，请检查配置');
+        return;
+      }
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('翻译结果'),
+          content: SingleChildScrollView(
+            child: Text(
+              translated,
+              style: const TextStyle(fontSize: 16, height: 1.4),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Utils.copyText(translated);
+                Get.back();
+                SmartDialog.showToast('已复制译文');
+              },
+              child: const Text('复制'),
+            ),
+            TextButton(
+              onPressed: Get.back,
+              child: Text(
+                '关闭',
+                style: TextStyle(color: ColorScheme.of(context).outline),
+              ),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      SmartDialog.dismiss();
+      SmartDialog.showToast('翻译失败：$e');
+    }
   }
 
   List<Widget> _infos(VideoDetailData videoDetail) => [
@@ -336,6 +489,10 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
   }) {
     Widget child() {
       final videoLabel = videoDetailCtr.videoLabel.value;
+      final title = videoDetail.title ?? '';
+      final displayedTitle = Pref.translateDetailTitleMode == 'auto'
+          ? TranslateService.display(title)
+          : title;
       final textSpan = TextSpan(
         children: [
           if (videoLabel.isNotEmpty) ...[
@@ -405,7 +562,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
             ),
             const TextSpan(text: ' '),
           ],
-          TextSpan(text: videoDetail.title),
+          TextSpan(text: displayedTitle),
         ],
       );
       if (isSelectable) {
@@ -422,10 +579,15 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
       );
     }
 
+    final content = ValueListenableBuilder<int>(
+      valueListenable: TranslateService.version,
+      builder: (context, _, _) => child(),
+    );
+
     if (videoDetailCtr.plPlayerController.enableSponsorBlock) {
-      return Obx(child);
+      return Obx(() => content);
     }
-    return child();
+    return content;
   }
 
   Widget followButton(BuildContext context) {
@@ -1009,33 +1171,44 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
       child: Wrap(
         spacing: 8,
         runSpacing: 8,
-        children: tags
-            .map(
-              (item) => SearchText(
+        children: [
+          for (final item in tags)
+            switch (item.tagType) {
+              'bgm' => SearchText(
                 fontSize: 13,
-                text: switch (item.tagType) {
-                  'bgm' => item.tagName!.replaceFirst('发现', '♫ BGM：'),
-                  'topic' => '#${item.tagName}',
-                  _ => item.tagName!,
-                },
-                onTap: switch (item.tagType) {
-                  'bgm' => (_) => Get.toNamed(
-                    '/musicDetail',
-                    parameters: {'musicId': item.musicId!},
+                text: item.tagName!.replaceFirst('发现', '♫ BGM：'),
+                onTap: (_) => Get.toNamed(
+                  '/musicDetail',
+                  parameters: {'musicId': item.musicId!},
+                ),
+                onLongPress: Utils.copyText,
+              ),
+              'topic' => SearchText(
+                fontSize: 13,
+                text: '#${item.tagName}',
+                onTap: (_) => Get.toNamed(
+                  '/dynTopic',
+                  parameters: {'id': item.tagId!.toString()},
+                ),
+                onLongPress: Utils.copyText,
+              ),
+              _ => ValueListenableBuilder<int>(
+                valueListenable: TranslateService.version,
+                builder: (context, _, _) => SearchText(
+                  fontSize: 13,
+                  text: TranslateService.display(
+                    item.tagName ?? '',
+                    enabled: Pref.translateTag,
                   ),
-                  'topic' => (_) => Get.toNamed(
-                    '/dynTopic',
-                    parameters: {'id': item.tagId!.toString()},
-                  ),
-                  _ => (tagName) => Get.toNamed(
+                  onTap: (tagName) => Get.toNamed(
                     '/searchResult',
                     parameters: {'keyword': tagName},
                   ),
-                },
-                onLongPress: Utils.copyText,
+                  onLongPress: Utils.copyText,
+                ),
               ),
-            )
-            .toList(),
+            },
+        ],
       ),
     );
   }

@@ -153,11 +153,24 @@ abstract final class SettingBoxKey {
       showDynDispute = 'showDynDispute',
       touchSlopH = 'touchSlopH',
       floatingNavBar = 'floatingNavBar',
+      showDynamicHint = 'showDynamicHint',
       removeSafeArea = 'removeSafeArea',
       angleDegrees = 'angleDegrees',
       liveStream = 'liveStream',
       enableDocProvider = 'enableDocProvider',
       enableEmoteTooltip = 'enableEmoteTooltip';
+
+  static const String translateEnable = 'translateEnable',
+      translateProvider = 'translateProvider',
+      translateApiBase = 'translateApiBase',
+      translateApiKey = 'translateApiKey',
+      translateModel = 'translateModel',
+      translateSystemPrompt = 'translateSystemPrompt',
+      translateTargetLang = 'translateTargetLang',
+      translateFeed = 'translateFeed',
+      translateDetailTitleMode = 'translateDetailTitleMode',
+      translateTag = 'translateTag',
+      translateSkipLangs = 'translateSkipLangs';
 
   static const String minimizeOnExit = 'minimizeOnExit',
       windowSize = 'windowSize',

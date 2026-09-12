@@ -23,6 +23,7 @@ import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:restart_app/restart_app.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/update.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -266,6 +267,34 @@ Commit Hash: ${BuildConfig.commitHash}''',
               localFileName: () => 'setting_${DeviceUtils.platformName}',
               onExport: GStorage.exportAllSettings,
               onImport: GStorage.importAllJsonSettings,
+            ),
+          ),
+          ListTile(
+            title: const Text('重启应用'),
+            dense: false,
+            subtitle: const Text('部分设置在导入备份后需重启应用才能生效'),
+            leading: const Icon(Icons.restart_alt_outlined),
+            onTap: () => showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: const Text('重启应用'),
+                  content: const Text('是否立即重启应用？重启后部分未生效的设置将会生效。'),
+                  actions: [
+                    TextButton(
+                      onPressed: Get.back,
+                      child: Text(
+                        '取消',
+                        style: TextStyle(color: ColorScheme.of(context).outline),
+                      ),
+                    ),
+                    const TextButton(
+                      onPressed: Restart.restartApp,
+                      child: Text('重启'),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
           ListTile(

@@ -674,6 +674,61 @@ abstract final class Pref {
     defaultValue: true,
   );
 
+  static bool get translateEnable =>
+      _setting.get(SettingBoxKey.translateEnable, defaultValue: false);
+
+  static String get translateProvider => _setting.get(
+    SettingBoxKey.translateProvider,
+    defaultValue: 'openai',
+  );
+
+  static String get translateApiBase => _setting.get(
+    SettingBoxKey.translateApiBase,
+    defaultValue: '',
+  );
+
+  static String get translateApiKey => _setting.get(
+    SettingBoxKey.translateApiKey,
+    defaultValue: '',
+  );
+
+  static String get translateModel => _setting.get(
+    SettingBoxKey.translateModel,
+    defaultValue: 'deepseek-chat',
+  );
+
+  static String get translateSystemPrompt => _setting.get(
+    SettingBoxKey.translateSystemPrompt,
+    defaultValue: '',
+  );
+
+  static String get translateTargetLang => _setting.get(
+    SettingBoxKey.translateTargetLang,
+    defaultValue: 'zh',
+  );
+
+  static bool get translateFeed => _setting.get(
+    SettingBoxKey.translateFeed,
+    defaultValue: true,
+  );
+
+  static String get translateDetailTitleMode => _setting.get(
+    SettingBoxKey.translateDetailTitleMode,
+    defaultValue: 'auto',
+  );
+
+  static bool get translateTag => _setting.get(
+    SettingBoxKey.translateTag,
+    defaultValue: true,
+  );
+
+  static List<String> get translateSkipLangs => List<String>.from(
+    _setting.get(
+      SettingBoxKey.translateSkipLangs,
+      defaultValue: ['zh'],
+    ),
+  );
+
   static bool get enableBackgroundPlay =>
       _setting.get(SettingBoxKey.enableBackgroundPlay, defaultValue: true);
 

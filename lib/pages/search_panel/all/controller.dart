@@ -1,5 +1,6 @@
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/search/result.dart';
+import 'package:PiliPlus/models/search/search_esports.dart';
 import 'package:PiliPlus/pages/search_panel/video/controller.dart';
 
 class SearchAllController extends SearchVideoController with SearchVideoMixin {
@@ -12,15 +13,17 @@ class SearchAllController extends SearchVideoController with SearchVideoMixin {
   List<SearchUser>? searchUser;
   List<SearchPgcItemModel>? searchMedia;
   List<SearchActivity>? searchActivity;
+  List<SearchEsports>? searchEsports;
 
   @override
   bool customHandleResponse(bool isRefresh, Success<SearchVideoData> response) {
     final res = response.response;
     if (isRefresh) {
+      searchType_ = .video;
       searchUser = res.searchUser;
       searchMedia = res.searchMedia;
       searchActivity = res.searchActivity;
-      searchType_ = .video;
+      searchEsports = res.searchEsports;
     }
     return super.customHandleResponse(isRefresh, response);
   }
@@ -46,6 +49,7 @@ class SearchAllController extends SearchVideoController with SearchVideoMixin {
     searchUser = null;
     searchMedia = null;
     searchActivity = null;
+    searchEsports = null;
     return super.onRefresh();
   }
 }

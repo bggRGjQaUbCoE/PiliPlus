@@ -1,6 +1,8 @@
 import 'package:PiliPlus/models/search/result.dart';
+import 'package:PiliPlus/models/search/search_esports.dart';
 import 'package:PiliPlus/pages/search_panel/all/controller.dart';
 import 'package:PiliPlus/pages/search_panel/all/widgets/activity.dart';
+import 'package:PiliPlus/pages/search_panel/all/widgets/esports.dart';
 import 'package:PiliPlus/pages/search_panel/all/widgets/user.dart';
 import 'package:PiliPlus/pages/search_panel/pgc/widgets/item.dart';
 import 'package:PiliPlus/pages/search_panel/video/view.dart';
@@ -50,6 +52,15 @@ class _SearchAllPanelState
   Widget buildList(List<SearchVideoItemModel> list) {
     return SliverMainAxisGroup(
       slivers: [
+        if (controller.searchEsports != null) ...[
+          _buildEsports(controller.searchEsports!),
+          SliverToBoxAdapter(
+            child: Divider(
+              height: 14,
+              color: colorScheme.outline.withValues(alpha: 0.1),
+            ),
+          ),
+        ],
         ...?controller.searchActivity?.map((e) {
           return SliverToBoxAdapter(
             child: SearchActivityItem(item: e),
@@ -72,6 +83,10 @@ class _SearchAllPanelState
         super.buildList(list),
       ],
     );
+  }
+
+  static Widget _buildEsports(List<SearchEsports> list) {
+    return SliverToBoxAdapter(child: SearchEsportsItem(item: list.first));
   }
 
   static Widget _buildPgc(List<SearchPgcItemModel> list) {

@@ -3,11 +3,13 @@ import 'package:PiliPlus/models/horizontal_video_model.dart';
 import 'package:PiliPlus/models/model_avatar.dart';
 import 'package:PiliPlus/models/model_owner.dart';
 import 'package:PiliPlus/models/model_video.dart';
+import 'package:PiliPlus/models/search/search_esports.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/em.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/parse_int.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 
 abstract class SearchNumData<T> {
   SearchNumData({
@@ -35,6 +37,7 @@ class SearchVideoData extends SearchNumData<SearchVideoItemModel> {
   List<SearchUser>? searchUser;
   List<SearchPgcItemModel>? searchMedia;
   List<SearchActivity>? searchActivity;
+  List<SearchEsports>? searchEsports;
 
   SearchVideoData.fromSearchAll(Map<String, dynamic> json) {
     numResults = (json['numResults'] as num?)?.toInt();
@@ -63,6 +66,18 @@ class SearchVideoData extends SearchNumData<SearchVideoItemModel> {
                   (searchActivity ??= <SearchActivity>[]).add(
                     SearchActivity.fromJson(e, url),
                   );
+                }
+              }
+            }
+          case 'esports':
+            if (item['data'] case List esports when esports.isNotEmpty) {
+              for (final e in esports) {
+                try {
+                  (searchEsports ??= <SearchEsports>[]).add(
+                    SearchEsports.fromJson(e),
+                  );
+                } catch (_) {
+                  if (kDebugMode) rethrow;
                 }
               }
             }

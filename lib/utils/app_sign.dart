@@ -36,7 +36,9 @@ abstract final class AppSign {
       result.write(separator);
       separator = '&';
       result.write(Uri.encodeComponent(key));
-      if (value != null && value.isNotEmpty) {
+      // 空字符串同样参与签名，必须编码为 key= （等号不能省略），
+      // 否则 web/qrcode/confirm 等接口会返回「签名错误」
+      if (value != null) {
         result
           ..write('=')
           ..write(Uri.encodeComponent(value));

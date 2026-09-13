@@ -134,6 +134,7 @@ dependencies:
   media_kit_libs_video: 1.0.5
   media_kit_video: 1.2.5
   mime: ^2.0.0
+  mobile_scanner: ^7.4.1
   native_device_orientation:
     git:
       url: https://github.com/bggRGjQaUbCoE/flutter_native_device_orientation.git

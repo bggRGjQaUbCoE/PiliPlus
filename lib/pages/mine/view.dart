@@ -15,6 +15,7 @@ import 'package:PiliPlus/pages/login/controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/mine/widgets/item.dart';
+import 'package:PiliPlus/pages/scan_login/controller.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
@@ -22,6 +23,7 @@ import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -164,6 +166,20 @@ class _MediaPageState extends CommonPageState<MinePage>
               ),
               msgBadge(_mainController),
             ],
+            IconButton(
+              iconSize: iconSize,
+              padding: padding,
+              style: style,
+              tooltip: '扫码授权',
+              onPressed: () {
+                if (ScanLoginController.canScan) {
+                  Get.toNamed('/scanLogin');
+                } else {
+                  SmartDialog.showToast('请先登录后再使用扫码授权');
+                }
+              },
+              icon: const Icon(Icons.qr_code_scanner),
+            ),
             if (GStorage.reply != null)
               IconButton(
                 iconSize: iconSize,

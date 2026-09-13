@@ -614,6 +614,20 @@ abstract final class Api {
   /// local_id
   static const getWebKey = '${HttpString.passBaseUrl}/x/passport-login/web/key';
 
+  // ===== Web 端扫码确认（用主账号凭证授权 Web 登录）=====
+
+  /// HD 端检查 Web 二维码
+  static const webQrcodeCheck =
+      '${HttpString.passBaseUrl}/x/passport-login/web/qrcode/check';
+
+  /// HD 端获取 Web 二维码场景
+  static const webQrcodeScene =
+      '${HttpString.passBaseUrl}/x/passport-login/web/qrcode/scene';
+
+  /// HD 端确认 Web 二维码
+  static const webQrcodeConfirm =
+      '${HttpString.passBaseUrl}/x/passport-login/web/qrcode/confirm';
+
   /// cookie转access_key
   static const qrcodeConfirm =
       '${HttpString.passBaseUrl}/x/passport-tv-login/h5/qrcode/confirm';

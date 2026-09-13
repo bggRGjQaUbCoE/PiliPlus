@@ -79,6 +79,9 @@ abstract final class Api {
   // 改用app端投币接口
   static const String coinVideo = '${HttpString.appBaseUrl}/x/v2/view/coin/add';
 
+  // 获取今日投币经验（web端）GET
+  static const String coinTodayExp = '/x/web-interface/coin/today/exp';
+
   // 判断视频是否被投币（双端）GET
   // access_key	str	APP登录Token	APP方式必要
   /// aid	num	稿件avid	必要（可选）	avid与bvid任选一个

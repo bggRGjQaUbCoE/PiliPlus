@@ -29,7 +29,7 @@ import 'package:material_ui/material_ui.dart';
 class PlayerBar extends MultiChildRenderObjectWidget {
   const PlayerBar({
     super.key,
-    super.children,
+    required super.children,
   });
 
   @override

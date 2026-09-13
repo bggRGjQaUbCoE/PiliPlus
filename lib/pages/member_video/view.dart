@@ -74,6 +74,7 @@ class _MemberVideoState extends State<MemberVideo>
     super.initState();
     _controller = Get.put(
       MemberVideoCtr(
+        heroTag: widget.heroTag,
         type: widget.type,
         mid: widget.mid,
         seasonId: widget.seasonId,
@@ -118,7 +119,7 @@ class _MemberVideoState extends State<MemberVideo>
     if (notification is UserScrollNotification) {
       return super.onNotification(notification);
     }
-    if (_controller.isLocating.value) {
+    if (_controller.isLocating) {
       if (notification is ScrollEndNotification &&
           notification.metrics.pixels == 0) {
         if (_controller.hasPrev == true && !_controller.isLoading) {
@@ -152,7 +153,7 @@ class _MemberVideoState extends State<MemberVideo>
       child = ScaffoldLayout(
         body: fabAnimWrapper(child: child),
         fab: Obx(
-          () => !_controller.isLocating.value
+          () => !_controller.isLocating
               ? SlideTransition(
                   position: fabAnimation,
                   child: Padding(
@@ -163,7 +164,6 @@ class _MemberVideoState extends State<MemberVideo>
                     child: FloatingActionButton.extended(
                       onPressed: () {
                         final fromViewAid = _controller.fromViewAid;
-                        _controller.isLocating.value = true;
                         final locatedIndex =
                             _controller.loadingState.value.dataOrNull
                                 ?.indexWhere(
@@ -172,12 +172,17 @@ class _MemberVideoState extends State<MemberVideo>
                             -1;
                         if (locatedIndex == -1) {
                           _controller
+                            ..setIsLocating(true)
                             ..lastAid = fromViewAid
                             ..reload = true
                             ..page = 0
                             ..loadingState.value = LoadingState.loading()
                             ..queryData();
                         } else {
+                          _controller.setIsLocating(
+                            true,
+                            isOnlyInnerScroll: false,
+                          );
                           _jumpToIndex(locatedIndex);
                         }
                       },

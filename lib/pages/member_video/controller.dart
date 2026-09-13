@@ -12,6 +12,7 @@ import 'package:PiliPlus/models_new/space/space_archive/data.dart';
 import 'package:PiliPlus/models_new/space/space_archive/episodic_button.dart';
 import 'package:PiliPlus/models_new/space/space_archive/item.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
+import 'package:PiliPlus/pages/member/controller.dart';
 import 'package:PiliPlus/utils/extension/dimension_ext.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
@@ -23,6 +24,7 @@ class MemberVideoCtr
     extends CommonListController<SpaceArchiveData, SpaceArchiveItem>
     with ReloadMixin {
   MemberVideoCtr({
+    required this.heroTag,
     required this.type,
     required this.mid,
     required this.seasonId,
@@ -31,6 +33,7 @@ class MemberVideoCtr
     this.title,
   }) : isVideo = type == .video;
 
+  final String? heroTag;
   final ContributeType type;
   final bool isVideo;
   int? seasonId;
@@ -47,7 +50,24 @@ class MemberVideoCtr
   String? firstAid;
   String? lastAid;
   String? fromViewAid;
-  RxBool isLocating = false.obs;
+  final RxBool _isLocating = false.obs;
+  bool get isLocating => _isLocating.value;
+  void setIsLocating(bool value, {bool isOnlyInnerScroll = true}) {
+    _isLocating.value = value;
+    if (isOnlyInnerScroll) {
+      onlyInnerScroll = value;
+    }
+  }
+
+  set onlyInnerScroll(bool value) {
+    final state = Get.find<MemberController>(tag: heroTag)
+        .scrollKey
+        .currentState;
+    if (state != null && state.mounted) {
+      state.onlyInnerScroll = value;
+    }
+  }
+
   bool isLoadPrevious = false;
   bool? hasPrev;
 
@@ -87,6 +107,9 @@ class MemberVideoCtr
     next = data.next;
     if (page == 0 || isLoadPrevious) {
       hasPrev = data.hasPrev;
+      if (isLoadPrevious && hasPrev != true) {
+        onlyInnerScroll = false;
+      }
     }
     if (page == 0 || !isLoadPrevious) {
       if ((isVideo ? data.hasNext == false : data.next == 0) ||
@@ -132,13 +155,13 @@ class MemberVideoCtr
         next: next,
         seasonId: seasonId,
         seriesId: seriesId,
-        includeCursor: isLocating.value && page == 0,
+        includeCursor: isLocating && page == 0,
       );
 
   void queryBySort() {
     if (isLoading) return;
     if (isVideo) {
-      isLocating.value = false;
+      setIsLocating(false);
       order = order == .pubdate ? .click : .pubdate;
     } else {
       sort = sort == .desc ? .asc : .desc;
@@ -229,7 +252,7 @@ class MemberVideoCtr
   @override
   Future<void> onReload() {
     reload = true;
-    isLocating.value = false;
+    setIsLocating(false);
     return super.onReload();
   }
 }

@@ -36,13 +36,16 @@ abstract final class PiliScheme {
   static final uriDigitRegExp = RegExp(r'/(\d+)');
   static final _prefixRegex = RegExp(r'^\S+://');
 
-  static void init() {
+  static void init({Future<void> Function()? beforeRoute}) {
     // Register our protocol only on Windows platform
     // registerProtocolHandler('bilibili');
     appLinks = AppLinks();
 
     listener?.cancel();
-    listener = appLinks.uriLinkStream.listen(routePush);
+    listener = appLinks.uriLinkStream.listen((uri) async {
+      if (beforeRoute != null) await beforeRoute();
+      await routePush(uri);
+    });
   }
 
   static int? _videoProgress(Map<String, String> queryParameters) {

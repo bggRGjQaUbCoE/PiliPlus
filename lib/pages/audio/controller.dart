@@ -13,7 +13,10 @@ import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart'
         ThumbUpReq_ThumbType,
         ListOrder,
         DashItem,
-        ResponseUrl;
+        ResponseUrl,
+        BKArchive,
+        Author,
+        BKStat;
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -72,6 +75,9 @@ class AudioController extends GetxController
   late final bool isUgc = itemType == 1;
 
   final audioItem = Rxn<DetailItem>();
+
+  /// 本地缓存音频播放模式（离线缓存进入，不联网）。
+  bool isLocal = false;
 
   bool _hasInit = false;
   @override
@@ -154,25 +160,30 @@ class AudioController extends GetxController
       } catch (_) {}
     }
 
-    _queryPlayList(isInit: true);
-
+    isLocal = args['isLocal'] == true;
     final String? audioUrl = args['audioUrl'];
     final hasAudioUrl = audioUrl != null;
-    if (hasAudioUrl) {
-      _querySponsorBlock();
-      _onOpenMedia(
-        audioUrl,
-        ua: BrowserUa.pc,
-        referer: HttpString.baseUrl,
-        volume: _videoDetailController?.volume,
-      );
-    }
-    ConnectivityUtils.isWiFi.then((isWiFi) {
-      cacheAudioQa = isWiFi ? Pref.defaultAudioQa : Pref.defaultAudioQaCellular;
-      if (!hasAudioUrl) {
-        _queryPlayUrl();
+    if (isLocal) {
+      _initLocalItem(args);
+      _onOpenMedia(audioUrl!, volume: _videoDetailController?.volume);
+    } else {
+      _queryPlayList(isInit: true);
+      if (hasAudioUrl) {
+        _querySponsorBlock();
+        _onOpenMedia(
+          audioUrl,
+          ua: BrowserUa.pc,
+          referer: HttpString.baseUrl,
+          volume: _videoDetailController?.volume,
+        );
       }
-    });
+      ConnectivityUtils.isWiFi.then((isWiFi) {
+        cacheAudioQa = isWiFi ? Pref.defaultAudioQa : Pref.defaultAudioQaCellular;
+        if (!hasAudioUrl) {
+          _queryPlayUrl();
+        }
+      });
+    }
     videoPlayerServiceHandler
       ?..onPlay = onPlay
       ..onPause = onPause
@@ -215,6 +226,29 @@ class AudioController extends GetxController
       item,
       (subId.firstOrNull ?? oid).toInt(),
       hashCode.toString(),
+    );
+  }
+
+  /// 本地缓存模式：根据 arguments 构造最小 DetailItem 并填充界面，不联网。
+  void _initLocalItem(Map args) {
+    final Object? localOid = args['localOid'];
+    if (localOid is int) {
+      oid = Int64(localOid);
+    }
+    final Object? localDuration = args['localDuration'];
+    audioItem.value = DetailItem(
+      arc: BKArchive(
+        oid: oid,
+        title: (args['localTitle'] as String? ?? ''),
+        cover: (args['localCover'] as String? ?? ''),
+        duration: localDuration is int ? Int64(localDuration) : null,
+        displayedOid: oid.toString(),
+      ),
+      owner: Author(
+        name: args['localOwnerName'] as String?,
+        mid: localOid is int ? oid : null,
+      ),
+      stat: BKStat(),
     );
   }
 

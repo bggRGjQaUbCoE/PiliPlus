@@ -67,6 +67,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
 
   late final cidSet = widget.cidSet;
   VideoQuality _quality = VideoQuality.fromCode(Pref.defaultVideoQa);
+  bool _audioOnly = false;
 
   @override
   void initState() {
@@ -146,6 +147,30 @@ class _DownloadPanelState extends State<DownloadPanel> {
                     ),
                   ],
                 ),
+              ),
+            ),
+          ),
+          TextButton.icon(
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            onPressed: () => setState(() => _audioOnly = !_audioOnly),
+            icon: Icon(
+              _audioOnly ? Icons.check_box : Icons.check_box_outline_blank,
+              size: 16,
+              color: _audioOnly
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurfaceVariant,
+            ),
+            label: Text(
+              '仅下载音频',
+              style: TextStyle(
+                fontSize: 13,
+                color: _audioOnly
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurfaceVariant,
               ),
             ),
           ),
@@ -292,6 +317,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
             parent == null ? widget.videoDetail : null,
             parent,
             _quality,
+            audioOnly: _audioOnly,
           );
           break;
         case ugc.EpisodeItem episode:
@@ -300,6 +326,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
             null,
             episode,
             _quality,
+            audioOnly: _audioOnly,
           );
           break;
         case pgc.EpisodeItem episode:
@@ -308,6 +335,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
             widget.pgcItem!,
             episode,
             _quality,
+            audioOnly: _audioOnly,
           );
           break;
       }

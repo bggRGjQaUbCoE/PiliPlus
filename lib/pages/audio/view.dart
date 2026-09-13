@@ -1,3 +1,4 @@
+import 'dart:io' show File;
 import 'dart:math' show min;
 
 import 'package:PiliPlus/common/assets.dart';
@@ -60,6 +61,13 @@ class AudioPage extends StatefulWidget {
     Duration? start,
     String? audioUrl,
     int? extraId,
+    bool isLocal = false,
+    String? localTitle,
+    String? localCover,
+    int? localOid,
+    int? localCid,
+    int? localDuration,
+    String? localOwnerName,
   }) => Get.toNamed(
     '/audio',
     arguments: {
@@ -72,6 +80,13 @@ class AudioPage extends StatefulWidget {
       'start': ?start,
       'audioUrl': ?audioUrl,
       'extraId': ?extraId,
+      'isLocal': isLocal,
+      'localTitle': ?localTitle,
+      'localCover': ?localCover,
+      'localOid': ?localOid,
+      'localCid': ?localCid,
+      'localDuration': ?localDuration,
+      'localOwnerName': ?localOwnerName,
     },
   );
 }
@@ -111,11 +126,12 @@ class _AudioPageState extends State<AudioPage> {
               }
               return const SizedBox.shrink();
             }),
-          Builder(
-            builder: (context) {
-              return PopupMenuButton<ListOrder>(
-                tooltip: '排序',
-                icon: const Icon(Icons.sort, size: 22),
+          if (!_controller.isLocal)
+            Builder(
+              builder: (context) {
+                return PopupMenuButton<ListOrder>(
+                  tooltip: '排序',
+                  icon: const Icon(Icons.sort, size: 22),
                 initialValue: _controller.order,
                 onSelected: (value) {
                   _controller.onChangeOrder(value);
@@ -138,7 +154,7 @@ class _AudioPageState extends State<AudioPage> {
               ),
             icon: const Icon(Icons.schedule, size: 22),
           ),
-          if (_controller.isUgc)
+          if (_controller.isUgc && !_controller.isLocal)
             IconButton(
               tooltip: '更多',
               onPressed: _showMore,
@@ -177,7 +193,7 @@ class _AudioPageState extends State<AudioPage> {
                       children: [
                         Obx(() {
                           final audioItem = _controller.audioItem.value;
-                          if (audioItem != null) {
+                          if (audioItem != null && !_controller.isLocal) {
                             return _buildActions(audioItem);
                           }
                           return const SizedBox.shrink();
@@ -907,7 +923,31 @@ class _AudioPageState extends State<AudioPage> {
     return Obx(() {
       final audioItem = _controller.audioItem.value;
       if (audioItem != null) {
+        final isLocal = _controller.isLocal;
         final cover = audioItem.arc.cover.http2https;
+        final coverWidget = isLocal && cover.startsWith('http')
+            ? NetworkImgLayer(
+                src: cover,
+                width: 170,
+                height: 170,
+                cacheWidth: false,
+              )
+            : isLocal
+            ? Image.file(
+                File(cover),
+                width: 170,
+                height: 170,
+                fit: BoxFit.cover,
+              )
+            : fromHero(
+                tag: cover,
+                child: NetworkImgLayer(
+                  src: cover,
+                  width: 170,
+                  height: 170,
+                  cacheWidth: false,
+                ),
+              );
         return Column(
           children: [
             Expanded(
@@ -923,15 +963,7 @@ class _AudioPageState extends State<AudioPage> {
                         onTap: () => PageUtils.imageView(
                           imgList: [SourceModel(url: cover)],
                         ),
-                        child: fromHero(
-                          tag: cover,
-                          child: NetworkImgLayer(
-                            src: cover,
-                            width: 170,
-                            height: 170,
-                            cacheWidth: false,
-                          ),
-                        ),
+                        child: coverWidget,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -940,7 +972,33 @@ class _AudioPageState extends State<AudioPage> {
                       style: const TextStyle(height: 1.7, fontSize: 16),
                     ),
                     const SizedBox(height: 12),
-                    if (audioItem.owner.hasName()) ...[
+                    if (isLocal) ...[
+                      if (audioItem.owner.hasName())
+                        Text(
+                          audioItem.owner.name,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: colorScheme.outline,
+                          ),
+                        ),
+                      if (audioItem.arc.hasDuration())
+                        Row(
+                          children: [
+                            Icon(
+                              size: 14,
+                              Icons.headphones_outlined,
+                              color: colorScheme.outline,
+                            ),
+                            Text(
+                              ' ${DurationUtils.formatDuration(audioItem.arc.duration.toInt() ~/ 1000)}',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: colorScheme.outline,
+                              ),
+                            ),
+                          ],
+                        ),
+                    ] else if (audioItem.owner.hasName()) ...[
                       GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTap: () {
@@ -966,39 +1024,42 @@ class _AudioPageState extends State<AudioPage> {
                       ),
                       const SizedBox(height: 10),
                     ],
-                    Row(
-                      children: [
-                        Icon(
-                          size: 14,
-                          Icons.headphones_outlined,
-                          color: colorScheme.outline,
-                        ),
-                        Text.rich(
-                          TextSpan(
-                            children: [
-                              TextSpan(
-                                text:
-                                    ' ${NumUtils.numFormat(audioItem.stat.view)}   '
-                                    '${DateFormatUtils.dateFormat(audioItem.arc.publish.toInt(), long: DateFormatUtils.longFormatD)}   ',
-                              ),
-                              TextSpan(
-                                text: audioItem.arc.displayedOid,
-                                style: TextStyle(color: colorScheme.secondary),
-                                recognizer: NoDeadlineTapGestureRecognizer()
-                                  ..onTap = () => Utils.copyText(
-                                    audioItem.arc.displayedOid,
-                                  ),
-                              ),
-                            ],
-                          ),
-                          style: TextStyle(
-                            fontSize: 13,
+                    if (!isLocal)
+                      Row(
+                        children: [
+                          Icon(
+                            size: 14,
+                            Icons.headphones_outlined,
                             color: colorScheme.outline,
                           ),
-                        ),
-                      ],
-                    ),
-                    if (audioItem.arc.hasDesc()) ...[
+                          Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(
+                                  text:
+                                      ' ${NumUtils.numFormat(audioItem.stat.view)}   '
+                                      '${DateFormatUtils.dateFormat(audioItem.arc.publish.toInt(), long: DateFormatUtils.longFormatD)}   ',
+                                ),
+                                TextSpan(
+                                  text: audioItem.arc.displayedOid,
+                                  style: TextStyle(
+                                    color: colorScheme.secondary,
+                                  ),
+                                  recognizer: NoDeadlineTapGestureRecognizer()
+                                    ..onTap = () => Utils.copyText(
+                                      audioItem.arc.displayedOid,
+                                    ),
+                                ),
+                              ],
+                            ),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: colorScheme.outline,
+                            ),
+                          ),
+                        ],
+                      ),
+                    if (!isLocal && audioItem.arc.hasDesc()) ...[
                       const SizedBox(height: 10),
                       SelectionText(audioItem.arc.desc),
                     ],
@@ -1006,7 +1067,7 @@ class _AudioPageState extends State<AudioPage> {
                 ),
               ),
             ),
-            if (isPortrait) ...[
+            if (isPortrait && !isLocal) ...[
               const SizedBox(height: 10),
               _buildActions(audioItem),
             ],

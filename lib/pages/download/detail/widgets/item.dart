@@ -7,10 +7,13 @@ import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/video_progress_indicator.dart';
 import 'package:PiliPlus/common/widgets/select_mask.dart';
+import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart'
+    show PlaylistSource;
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
+import 'package:PiliPlus/pages/audio/view.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/pages/download/downloading/view.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
@@ -21,6 +24,7 @@ import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -110,25 +114,52 @@ class DetailItem extends StatelessWidget {
             return;
           }
           if (entry.isCompleted) {
-            await PageUtils.toVideoPage(
-              aid: entry.avid,
-              cid: cid!,
-              cover: entry.cover,
-              title: entry.showTitle,
-              isVertical: entry.pageData?.isVertical ?? false,
-              extraArguments: {
-                'sourceType': SourceType.file,
-                'entry': entry,
-                'dirPath': entry.entryDirPath,
-              },
-            );
-            if (context.mounted) {
-              Future.delayed(const Duration(milliseconds: 400), () {
-                if (context.mounted) {
-                  // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-                  progress?.notifyListeners();
-                }
-              });
+            final inAudioPlayer = entry.audioOnly &&
+                GStorage.setting.get(
+                  SettingBoxKey.cacheAudioEnterAudioPlayer,
+                  defaultValue: false,
+                );
+            if (inAudioPlayer) {
+              final audioFile = path.join(
+                entry.entryDirPath,
+                entry.typeTag!,
+                PathUtils.audioNameType2,
+              );
+              AudioPage.toAudioPage(
+                isLocal: true,
+                itemType: 1,
+                oid: entry.avid,
+                subId: [cid!],
+                from: PlaylistSource.UP_ARCHIVE,
+                audioUrl: Uri.file(audioFile).toString(),
+                localTitle: entry.showTitle,
+                localCover: entry.cover,
+                localOid: entry.avid,
+                localCid: cid!,
+                localDuration: entry.totalTimeMilli,
+                localOwnerName: entry.ownerName,
+              );
+            } else {
+              await PageUtils.toVideoPage(
+                aid: entry.avid,
+                cid: cid!,
+                cover: entry.cover,
+                title: entry.showTitle,
+                isVertical: entry.pageData?.isVertical ?? false,
+                extraArguments: {
+                  'sourceType': SourceType.file,
+                  'entry': entry,
+                  'dirPath': entry.entryDirPath,
+                },
+              );
+              if (context.mounted) {
+                Future.delayed(const Duration(milliseconds: 400), () {
+                  if (context.mounted) {
+                    // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+                    progress?.notifyListeners();
+                  }
+                });
+              }
             }
           } else {
             final curDownload = downloadService.curDownload.value;

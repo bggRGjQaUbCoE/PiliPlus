@@ -1858,6 +1858,22 @@ class HeaderControlState extends State<HeaderControl>
                       : const SizedBox.shrink(),
                 ),
               ],
+              if (isFileSource && !isFSOrPip) ...[
+                SizedBox(
+                  width: btnWidth,
+                  height: btnHeight,
+                  child: IconButton(
+                    tooltip: '听音频',
+                    style: btnStyle,
+                    onPressed: videoDetailCtr.toAudioPage,
+                    icon: const Icon(
+                      Icons.headphones_outlined,
+                      size: 19,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
               if (!isPortrait || isFullScreen || PlatformUtils.isDesktop) ...[
                 SizedBox(
                   width: btnWidth,

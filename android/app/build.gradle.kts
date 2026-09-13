@@ -28,7 +28,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "test.piliplus.com"
+        applicationId = "com.example.piliplus"
         minSdk = flutter.minSdkVersion
         targetSdk = 37
         versionCode = flutter.versionCode

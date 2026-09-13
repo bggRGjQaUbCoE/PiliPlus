@@ -21,6 +21,8 @@ import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/audio_normalization.dart';
+import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart'
+    show BiliDownloadEntryInfo;
 import 'package:PiliPlus/models/video/play/url.dart' as http_model show Volume;
 import 'package:PiliPlus/pages/common/common_intro_controller.dart'
     show FavMixin;
@@ -34,6 +36,8 @@ import 'package:PiliPlus/pages/video/introduction/ugc/widgets/triple_mixin.dart'
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
+import 'package:PiliPlus/services/download/download_service.dart'
+    show DownloadService;
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -44,6 +48,7 @@ import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -56,6 +61,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:media_kit/media_kit.dart';
+import 'package:path/path.dart' as path;
 
 class AudioController extends GetxController
     with
@@ -78,6 +84,10 @@ class AudioController extends GetxController
 
   /// 本地缓存音频播放模式（离线缓存进入，不联网）。
   bool isLocal = false;
+
+  /// 本地播放列表对应的下载条目与本地音频 URL（与 [playlist] 一一对应）。
+  List<BiliDownloadEntryInfo>? _localEntries;
+  List<String>? _localFileUrls;
 
   bool _hasInit = false;
   @override
@@ -164,7 +174,7 @@ class AudioController extends GetxController
     final String? audioUrl = args['audioUrl'];
     final hasAudioUrl = audioUrl != null;
     if (isLocal) {
-      _initLocalItem(args);
+      _initLocalPlaylist(args);
       _onOpenMedia(audioUrl!, volume: _videoDetailController?.volume);
     } else {
       _queryPlayList(isInit: true);
@@ -226,6 +236,73 @@ class AudioController extends GetxController
       item,
       (subId.firstOrNull ?? oid).toInt(),
       hashCode.toString(),
+    );
+  }
+
+  /// 本地缓存模式：把所有已完成的「仅音频」缓存项组成播放列表，
+  /// 使播放列表、切换上一首/下一首可用；若无其它仅音频缓存则退化为单曲。
+  void _initLocalPlaylist(Map args) {
+    List<BiliDownloadEntryInfo> entries;
+    try {
+      entries = Get
+              .find<DownloadService>()
+              .downloadList
+              .where((e) => e.audioOnly && e.isCompleted)
+              .toList();
+    } catch (_) {
+      entries = [];
+    }
+    if (entries.isEmpty) {
+      _initLocalItem(args);
+      return;
+    }
+    playlist = <DetailItem>[];
+    _localEntries = <BiliDownloadEntryInfo>[];
+    _localFileUrls = <String>[];
+    for (final e in entries) {
+      _localEntries!.add(e);
+      _localFileUrls!.add(
+        Uri.file(
+          path.join(e.entryDirPath, e.typeTag!, PathUtils.audioNameType2),
+        ).toString(),
+      );
+      playlist!.add(_buildLocalItem(e));
+    }
+    final Object? localCid = args['localCid'];
+    int start = 0;
+    if (localCid is int) {
+      final i = entries.indexWhere((e) => e.cid == localCid);
+      if (i != -1) {
+        start = i;
+      }
+    }
+    index = start;
+    final Object? localOid = args['localOid'];
+    if (localOid is int) {
+      oid = Int64(localOid);
+    }
+    subId = [Int64(entries[start].cid)];
+    _updateCurrItem(playlist![start]);
+    // 本地播放列表无远程分页
+    _prev = null;
+    _next = null;
+  }
+
+  DetailItem _buildLocalItem(BiliDownloadEntryInfo e) {
+    final oid = Int64(e.avid);
+    return DetailItem(
+      arc: BKArchive(
+        oid: oid,
+        title: e.showTitle,
+        cover: e.cover,
+        duration: e.totalTimeMilli > 0 ? Int64(e.totalTimeMilli) : null,
+        displayedOid: oid.toString(),
+      ),
+      owner: Author(
+        name: e.ownerName,
+        mid: e.ownerId != null ? Int64(e.ownerId!) : null,
+      ),
+      stat: BKStat(),
     );
   }
 
@@ -741,6 +818,14 @@ class AudioController extends GetxController
     if (index == this.index && subId == null) return;
     this.index = index;
     final audioItem = playlist![index];
+    if (isLocal && _localFileUrls != null) {
+      final entry = _localEntries![index];
+      oid = Int64(entry.avid);
+      this.subId = [Int64(entry.cid)];
+      _updateCurrItem(audioItem);
+      _onOpenMedia(_localFileUrls![index]);
+      return;
+    }
     final item = audioItem.item;
     oid = item.oid;
     this.subId =

@@ -27,6 +27,7 @@ import 'package:PiliPlus/models_new/dynamic/dyn_topic_top/top_details.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_top/topic_item.dart';
 import 'package:PiliPlus/models_new/followee_votes/vote.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/parse_int.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
@@ -99,6 +100,56 @@ abstract final class DynamicsHttp {
     } else {
       return Error(res.data['message']);
     }
+  }
+
+  /// 按本地动态 id 基线收集新增动态的作者。
+  ///
+  /// 动态流接口虽然接受 `update_baseline` 参数并返回 `update_num`，但实测该字段在
+  /// 传入基线后恒为字符串 `'0'`、与基线深浅无关，因此「哪些动态算新」改由客户端判定：
+  /// 把服务端返回的 `update_baseline`（代表「此刻」的截止线）存下来，下次只取回动态 id
+  /// 严格大于该截止线的记录即可，无需再向接口传参。
+  ///
+  /// 这里固定读综合动态流（`type=all`）而不是按模式切换流：实测同一时间窗内，综合流中
+  /// `DYNAMIC_TYPE_AV` 的集合与视频流（`type=video`）返回的集合完全一致，所以一次请求
+  /// 就能同时支撑「所有动态」与「仅视频」两种展示，且后者天然是前者的子集。
+  ///
+  /// 翻页与截断规则本身位于 [DynamicUpUpdateResult.scan]，此处只负责取页，
+  /// 使同一套规则可以用真实抓包数据离线回归。
+  ///
+  /// [backfillPages] 只在首次启用（本地还没有基线）时生效：先取若干页作为回补，
+  /// 避免刚开启功能后红点长时间为空；基线仍推进到「此刻」，回补内容不会被重复计入。
+  /// [maxPages] 是已有基线时的翻页上限，防止长时间未检查导致请求无限翻页。
+  static Future<LoadingState<DynamicUpUpdateResult>> followDynamicUpdates({
+    required String? updateBaseline,
+    int backfillPages = 0,
+    int maxPages = 8,
+  }) async {
+    // 取页失败时暂存服务端返回的错误信息，供上层提示用户。
+    dynamic errorMessage;
+    final result = await DynamicUpUpdateResult.scan(
+      baselineId: safeToInt(updateBaseline) ?? 0,
+      backfillPages: backfillPages,
+      maxPages: maxPages,
+      loadPage: (offset) async {
+        final res = await Request().get(
+          Api.followDynamic,
+          queryParameters: {
+            if (offset?.isNotEmpty == true) 'offset': offset,
+            'type': DynamicsTabType.all.name,
+            'features': Constants.dynFeatures,
+          },
+        );
+        if (res.data['code'] != 0) {
+          errorMessage = res.data['message'];
+          return null;
+        }
+        return DynamicUpUpdatePage.fromJson(res.data['data']);
+      },
+    );
+    if (result == null) {
+      return Error(errorMessage ?? '获取更新动态失败');
+    }
+    return Success(result);
   }
 
   static Future<LoadingState<FollowUpModel>> followings({

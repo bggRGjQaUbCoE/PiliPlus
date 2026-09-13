@@ -64,11 +64,12 @@ abstract final class PiliScheme {
   static Future<Uri?> validateUri(String url) async {
     if (url.startsWith(_biliUriReg)) {
       var uri = Uri.parse(url);
-      final host = uri.host;
+      var host = uri.host;
       if (host.contains(b23_tv)) {
         final url = await UrlUtils.parseRedirectUrl(uri.toString());
         if (url != null) {
           uri = Uri.parse(url);
+          host = uri.host;
         }
       }
       if (host.contains(bilibili)) {
@@ -459,12 +460,12 @@ abstract final class PiliScheme {
 
   static const b23_tv = 'b23.tv';
   static const bilibili = 'bilibili.com';
-  static const bilibili_m = 'm.bilibili.com';
-  static const bilibili_t = 't.bilibili.com';
-  static const bilibili_live = 'live.bilibili.com';
-  static const bilibili_space = 'space.bilibili.com';
-  static const bilibili_search = 'search.bilibili.com';
-  static const bilibili_music = 'music.bilibili.com';
+  static const bilibili_m = 'm.$bilibili';
+  static const bilibili_t = 't.$bilibili';
+  static const bilibili_live = 'live.$bilibili';
+  static const bilibili_space = 'space.$bilibili';
+  static const bilibili_search = 'search.$bilibili';
+  static const bilibili_music = 'music.$bilibili';
 
   static Future<bool> _fullPathPush(
     Uri uri, {

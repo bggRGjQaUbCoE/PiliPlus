@@ -77,10 +77,12 @@ jobs:
                   channel: stable
                   flutter-version-file: pubspec.yaml
                   cache: true
+                  cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:-${{ hashFiles('lib/scripts/*.patch') }}"
+                  pub-cache-key: "flutter-pub-:os:-:channel:-:version:-:arch:-:hash:-${{ hashFiles('lib/scripts/material/*.patch', 'lib/scripts/cupertino/*.patch') }}"
 
             - name: Apply Patch
-              shell: pwsh
-              run: lib/scripts/patch.ps1 android
+              if: steps.flutter-action.outputs.CACHE-HIT != 'true' || steps.flutter-action.outputs.PUB-CACHE-HIT != 'true'
+              run: dart run lib/scripts/patch.dart android "${{ steps.flutter-action.outputs.CACHE-HIT }}" "${{ steps.flutter-action.outputs.PUB-CACHE-HIT }}"
 
             - name: Write key
               if: github.event_name == 'workflow_dispatch'
@@ -100,12 +102,21 @@ jobs:
 
             - name: Flutter Build Release Apk
               if: ${{ github.event_name == 'workflow_dispatch' }}
-              run: flutter build apk --release --split-per-abi --dart-define-from-file=pili_release.json --no-pub
+              run: |
+                if [ "${{ steps.flutter-action.outputs.PUB-CACHE-HIT }}" == 'true' ]; then
+                    flutter build apk --release --split-per-abi --dart-define-from-file=pili_release.json
+                else
+                    flutter build apk --release --split-per-abi --dart-define-from-file=pili_release.json --no-pub
+                fi
 
             - name: Flutter Build Dev Apk
               if: ${{ github.event_name == 'pull_request' }}
               run: |
-                  flutter build apk --release --split-per-abi --android-project-arg dev=1 --no-pub
+                if [ "${{ steps.flutter-action.outputs.PUB-CACHE-HIT }}" == 'true' ]; then
+                    flutter build apk --release --split-per-abi --android-project-arg dev=1
+                else
+                    flutter build apk --release --split-per-abi --android-project-arg dev=1 --no-pub
+                fi
 
             - name: Rename
               run: |

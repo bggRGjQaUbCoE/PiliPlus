@@ -7,19 +7,22 @@
         {
             "name": "PiliPlus",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
+            "preLaunchTask": "pre-build: apply patches"
         },
         {
             "name": "PiliPlus (profile mode)",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "profile"
+            "flutterMode": "profile",
+            "preLaunchTask": "pre-build: apply patches"
         },
         {
             "name": "PiliPlus (release mode)",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "release"
+            "flutterMode": "release",
+            "preLaunchTask": "pre-build: apply patches"
         }
     ]
 }

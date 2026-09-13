@@ -41,6 +41,8 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   Future<void>? Function()? onPlay;
   Future<void>? Function()? onPause;
   Future<void>? Function(Duration position)? onSeek;
+  Future<void>? Function()? onSkipToNext;
+  Future<void>? Function()? onSkipToPrevious;
 
   @override
   Future<void> play() {
@@ -54,6 +56,16 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   Future<void> pause() {
     return onPause?.call() ?? PlPlayerController.pauseIfExists();
     // player.pause();
+  }
+
+  @override
+  Future<void> skipToNext() {
+    return onSkipToNext?.call() ?? Future.syncValue(null);
+  }
+
+  @override
+  Future<void> skipToPrevious() {
+    return onSkipToPrevious?.call() ?? Future.syncValue(null);
   }
 
   @override
@@ -84,9 +96,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     bool isBuffering,
     bool isLive,
   ) {
-    if (!enableBackgroundPlay ||
-        _item.isEmpty ||
-        !PlPlayerController.instanceExists()) {
+    if (!enableBackgroundPlay || _item.isEmpty) {
       return;
     }
 
@@ -167,7 +177,6 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     //   debugPrint('当前调用栈为：');
     //   debugPrint(StackTrace.current);
     // }
-    if (!PlPlayerController.instanceExists()) return;
     if (data == null) return;
 
     Uri getUri(String? cover) => Uri.parse(ImageUtils.safeThumbnailUrl(cover));
@@ -246,7 +255,6 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
         return;
     }
     // if (kDebugMode) debugPrint("exist: ${PlPlayerController.instanceExists()}");
-    if (!PlPlayerController.instanceExists()) return;
     _item.add(mediaItem);
     setMediaItem(mediaItem);
   }
@@ -296,9 +304,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   }
 
   void onPositionChange(Duration position) {
-    if (!enableBackgroundPlay ||
-        _item.isEmpty ||
-        !PlPlayerController.instanceExists()) {
+    if (!enableBackgroundPlay || _item.isEmpty) {
       return;
     }
 

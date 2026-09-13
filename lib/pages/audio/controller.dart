@@ -176,7 +176,9 @@ class AudioController extends GetxController
     videoPlayerServiceHandler
       ?..onPlay = onPlay
       ..onPause = onPause
-      ..onSeek = onSeek;
+      ..onSeek = onSeek
+      ..onSkipToNext = onHeadsetNext
+      ..onSkipToPrevious = onHeadsetPrevious;
 
     animController = AnimationController(
       vsync: this,
@@ -205,6 +207,11 @@ class AudioController extends GetxController
   Future<void>? onSeek(Duration duration) {
     return player?.seek(duration);
   }
+
+  /// 耳机/媒体会话「下一曲」「上一曲」回调，行为与界面按钮一致。
+  Future<void> onHeadsetNext() async => playNext();
+
+  Future<void> onHeadsetPrevious() async => playPrev();
 
   void _updateCurrItem(DetailItem item) {
     audioItem.value = item;
@@ -795,6 +802,8 @@ class AudioController extends GetxController
       ?..onPlay = null
       ..onPause = null
       ..onSeek = null
+      ..onSkipToNext = null
+      ..onSkipToPrevious = null
       ..onVideoDetailDispose(hashCode.toString());
     _subscriptions?.forEach((e) => e.cancel());
     _subscriptions?.clear();

@@ -13,6 +13,10 @@ abstract class BaseVideoItemModel extends BaseSimpleVideoItemModel {
   String? desc;
   int? pubdate;
   bool isFollowed = false;
+
+  /// 视频标签，不同来源含义略有差异：
+  /// App推荐为频道/标签名（args.tname），网页推荐/相关视频为逗号分隔的标签字符串
+  String? tag;
 }
 
 abstract class BaseOwner {

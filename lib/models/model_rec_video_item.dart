@@ -25,6 +25,8 @@ class RcmdVideoItemModel extends BaseRcmdVideoItemModel {
     owner = Owner.fromJson(json["owner"]);
     stat = Stat.fromJson(json["stat"]);
     isFollowed = json["is_followed"] == 1;
+    // 网页推荐接口早期版本返回逗号分隔的标签字符串，做防御性解析
+    tag = json["tag"];
     // rcmdReason = json["rcmd_reason"] != null
     //     ? RcmdReason.fromJson(json["rcmd_reason"])
     //     : RcmdReason(content: '');

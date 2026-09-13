@@ -7,11 +7,18 @@ abstract final class RecommendFilter {
   static int minLikeRatioForRecommend = Pref.minLikeRatioForRecommend;
   static bool exemptFilterForFollowed = Pref.exemptFilterForFollowed;
   static bool applyFilterToRelatedVideos = Pref.applyFilterToRelatedVideos;
+  static final List<String> rcmdBanWords = Pref.banWordForRecommend;
   static RegExp rcmdRegExp = RegExp(
-    Pref.banWordForRecommend,
+    rcmdBanWords.map(RegExp.escape).join('|'),
     caseSensitive: false,
   );
-  static bool enableFilter = rcmdRegExp.pattern.isNotEmpty;
+  static bool enableFilter = rcmdBanWords.isNotEmpty;
+  static final List<String> tagBanWords = Pref.banTagForRecommend;
+  static RegExp tagRegExp = RegExp(
+    tagBanWords.map(RegExp.escape).join('|'),
+    caseSensitive: false,
+  );
+  static bool enableTagFilter = tagBanWords.isNotEmpty;
 
   static bool filter(BaseVideoItemModel videoItem) {
     //由于相关视频中没有已关注标签，只能视为非关注视频
@@ -35,10 +42,20 @@ abstract final class RecommendFilter {
     return (enableFilter && rcmdRegExp.hasMatch(title));
   }
 
+  static bool filterTag(String? tag) {
+    return enableTagFilter && tag != null && tagRegExp.hasMatch(tag);
+  }
+
+  static bool filterTagList(List<String> tags) {
+    if (!enableTagFilter) return false;
+    return tags.any(tagRegExp.hasMatch);
+  }
+
   static bool filterAll(BaseVideoItemModel videoItem) {
     return (videoItem.duration > 0 &&
             videoItem.duration < minDurationForRcmd) ||
         filterLikeRatio(videoItem.stat.like, videoItem.stat.view) ||
-        filterTitle(videoItem.title);
+        filterTitle(videoItem.title) ||
+        filterTag(videoItem.tag);
   }
 }

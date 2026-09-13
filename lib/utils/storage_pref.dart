@@ -283,14 +283,29 @@ abstract final class Pref {
     return CDNService.backupUrl;
   }
 
-  static String get banWordForRecommend =>
-      _setting.get(SettingBoxKey.banWordForRecommend, defaultValue: '');
+  static List<String> get banWordForRecommend => _banWordList(
+    SettingBoxKey.banWordForRecommend,
+  );
+
+  static List<String> get banTagForRecommend => _banWordList(
+    SettingBoxKey.banTagForRecommend,
+  );
 
   static String get banWordForReply =>
       _setting.get(SettingBoxKey.banWordForReply, defaultValue: '');
 
-  static String get banWordForZone =>
-      _setting.get(SettingBoxKey.banWordForZone, defaultValue: '');
+  static List<String> get banWordForZone => _banWordList(
+    SettingBoxKey.banWordForZone,
+  );
+
+  /// 读取屏蔽词列表，兼容旧版使用`|`分隔的字符串存储
+  static List<String> _banWordList(String key) {
+    final value = _setting.get(key, defaultValue: <String>[]);
+    if (value is String) {
+      return value.isEmpty ? <String>[] : value.split('|');
+    }
+    return List<String>.from(value);
+  }
 
   static bool get appRcmd =>
       _setting.get(SettingBoxKey.appRcmd, defaultValue: true);

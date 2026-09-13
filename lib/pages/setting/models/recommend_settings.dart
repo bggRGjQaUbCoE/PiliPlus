@@ -55,20 +55,31 @@ List<SettingsModel> get recommendSettings => [
     values: [0, 1, 2, 3, 4],
     onChanged: (value) => RecommendFilter.minLikeRatioForRecommend = value,
   ),
-  getBanWordModel(
+  getBanWordListModel(
     title: '标题关键词过滤',
     key: SettingBoxKey.banWordForRecommend,
-    onChanged: (value) {
-      RecommendFilter.rcmdRegExp = value;
-      RecommendFilter.enableFilter = value.pattern.isNotEmpty;
+    onChanged: (List<String> words) {
+      final pattern = words.map(RegExp.escape).join('|');
+      RecommendFilter.rcmdRegExp = RegExp(pattern, caseSensitive: false);
+      RecommendFilter.enableFilter = words.isNotEmpty;
     },
   ),
-  getBanWordModel(
+  getBanWordListModel(
+    title: '视频标签过滤',
+    key: SettingBoxKey.banTagForRecommend,
+    onChanged: (List<String> words) {
+      final pattern = words.map(RegExp.escape).join('|');
+      RecommendFilter.tagRegExp = RegExp(pattern, caseSensitive: false);
+      RecommendFilter.enableTagFilter = words.isNotEmpty;
+    },
+  ),
+  getBanWordListModel(
     title: 'App推荐/热门/排行榜: 视频分区关键词过滤',
     key: SettingBoxKey.banWordForZone,
-    onChanged: (value) {
-      VideoHttp.zoneRegExp = value;
-      VideoHttp.enableFilter = value.pattern.isNotEmpty;
+    onChanged: (List<String> words) {
+      final pattern = words.map(RegExp.escape).join('|');
+      VideoHttp.zoneRegExp = RegExp(pattern, caseSensitive: false);
+      VideoHttp.enableFilter = words.isNotEmpty;
     },
   ),
   getVideoFilterSelectModel(

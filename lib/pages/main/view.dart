@@ -67,8 +67,8 @@ class _MainAppState extends PopScopeState<MainApp>
         trayManager.addListener(this);
         _handleTray();
       }
-    } else {
-      // FlutterSmartDialog throws
+    }
+    if (PlatformUtils.isMobile || Platform.isLinux) {
       PiliScheme.init();
     }
   }

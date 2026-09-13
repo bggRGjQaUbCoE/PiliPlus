@@ -14,6 +14,7 @@ class BiliDownloadEntryInfo with MultiSelectData {
   int mediaType;
   bool hasDashAudio;
   bool audioOnly;
+  int? audioQuality;
   bool isCompleted;
   int totalBytes;
   int downloadedBytes;
@@ -146,6 +147,7 @@ class BiliDownloadEntryInfo with MultiSelectData {
     this.mediaType = 1,
     this.hasDashAudio = false,
     this.audioOnly = false,
+    this.audioQuality,
     required this.isCompleted,
     required this.totalBytes,
     required this.downloadedBytes,
@@ -178,6 +180,7 @@ class BiliDownloadEntryInfo with MultiSelectData {
         mediaType: json['media_type'] as int,
         hasDashAudio: json['has_dash_audio'] as bool,
         audioOnly: json['audio_only'] as bool? ?? false,
+        audioQuality: json['audio_quality'] as int?,
         isCompleted: json['is_completed'] as bool,
         totalBytes: json['total_bytes'] as int,
         downloadedBytes: json['downloaded_bytes'] as int,
@@ -216,6 +219,7 @@ class BiliDownloadEntryInfo with MultiSelectData {
     'media_type': mediaType,
     'has_dash_audio': hasDashAudio,
     'audio_only': audioOnly,
+    'audio_quality': ?audioQuality,
     'is_completed': isCompleted,
     'total_bytes': totalBytes,
     'downloaded_bytes': downloadedBytes,

@@ -126,18 +126,20 @@ class _AudioPageState extends State<AudioPage> {
               }
               return const SizedBox.shrink();
             }),
-          if (!_controller.isLocal)
-            Builder(
-              builder: (context) {
-                return PopupMenuButton<ListOrder>(
-                  tooltip: '排序',
-                  icon: const Icon(Icons.sort, size: 22),
+          Builder(
+            builder: (context) {
+              final orders = _controller.isLocal
+                  ? const [ListOrder.ORDER_NORMAL, ListOrder.ORDER_REVERSE]
+                  : ListOrder.values;
+              return PopupMenuButton<ListOrder>(
+                tooltip: '排序',
+                icon: const Icon(Icons.sort, size: 22),
                 initialValue: _controller.order,
                 onSelected: (value) {
                   _controller.onChangeOrder(value);
                   (context as Element).markNeedsBuild();
                 },
-                itemBuilder: (context) => ListOrder.values
+                itemBuilder: (context) => orders
                     .map((e) => PopupMenuItem(value: e, child: Text(e.title)))
                     .toList(),
               );

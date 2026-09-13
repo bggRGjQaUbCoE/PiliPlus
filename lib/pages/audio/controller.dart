@@ -881,8 +881,22 @@ class AudioController extends GetxController
   void onChangeOrder(ListOrder value) {
     if (order != value) {
       order = value;
-      _queryPlayList(isInit: true);
+      if (isLocal && _localEntries != null) {
+        _reverseLocalPlaylist();
+      } else {
+        _queryPlayList(isInit: true);
+      }
     }
+  }
+
+  /// 本地模式下正序/倒序切换：直接反转本地播放列表及其对应的条目/文件。
+  void _reverseLocalPlaylist() {
+    final curIndex = index ?? 0;
+    final curCid = _localEntries![curIndex].cid;
+    _localEntries = _localEntries!.reversed.toList();
+    _localFileUrls = _localFileUrls!.reversed.toList();
+    playlist = playlist!.reversed.toList();
+    index = _localEntries!.indexWhere((e) => e.cid == curCid);
   }
 
   @override

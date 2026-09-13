@@ -10,6 +10,7 @@ import 'package:PiliPlus/common/widgets/select_mask.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart'
     show PlaylistSource;
 import 'package:PiliPlus/models/common/badge_type.dart';
+import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
@@ -60,6 +61,17 @@ class DetailItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final outline = theme.colorScheme.outline;
+    String audioQualityLabel(int? code) {
+      if (code != null) {
+        for (final e in AudioQuality.values) {
+          if (e.code == code) {
+            return e.desc;
+          }
+        }
+      }
+      return '音频';
+    }
+
     final cid = entry.source?.cid ?? entry.pageData?.cid;
     final canDel = onDelete != null;
     final enableMultiSelect = controller.enableMultiSelect.value;
@@ -230,7 +242,14 @@ class DetailItem extends StatelessWidget {
                       },
                     ),
                   ),
-                  if (entry.videoQuality case final videoQuality?)
+                  if (entry.audioOnly)
+                    PBadge(
+                      text: audioQualityLabel(entry.audioQuality),
+                      right: 6.0,
+                      top: 6.0,
+                      type: PBadgeType.gray,
+                    )
+                  else if (entry.videoQuality case final videoQuality?)
                     PBadge(
                       text: VideoQuality.fromCode(videoQuality).shortDesc,
                       right: 6.0,

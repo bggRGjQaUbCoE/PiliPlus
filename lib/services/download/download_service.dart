@@ -5,6 +5,7 @@ import 'dart:io' show Directory, File;
 import 'package:PiliPlus/grpc/dm.dart';
 import 'package:PiliPlus/http/download.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/models_new/download/bili_download_media_file_info.dart';
@@ -114,6 +115,7 @@ class DownloadService extends GetxService {
     ugc.EpisodeItem? videoArc,
     VideoQuality videoQuality, {
     bool audioOnly = false,
+    AudioQuality? audioQuality,
   }) {
     final cid = page.cid!;
     if (downloadList.indexWhere((e) => e.cid == cid) != -1) {
@@ -141,6 +143,7 @@ class DownloadService extends GetxService {
       mediaType: 2,
       hasDashAudio: false,
       audioOnly: audioOnly,
+      audioQuality: audioOnly ? audioQuality?.code : null,
       isCompleted: false,
       totalBytes: 0,
       downloadedBytes: 0,
@@ -176,6 +179,7 @@ class DownloadService extends GetxService {
     pgc.EpisodeItem episode,
     VideoQuality quality, {
     bool audioOnly = false,
+    AudioQuality? audioQuality,
   }) {
     final cid = episode.cid!;
     if (downloadList.indexWhere((e) => e.cid == cid) != -1) {
@@ -211,6 +215,7 @@ class DownloadService extends GetxService {
       mediaType: 2,
       hasDashAudio: false,
       audioOnly: audioOnly,
+      audioQuality: audioOnly ? audioQuality?.code : null,
       isCompleted: false,
       totalBytes: 0,
       downloadedBytes: 0,

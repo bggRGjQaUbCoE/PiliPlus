@@ -71,7 +71,7 @@ class MpvConvertWebp {
 
   void dispose() {
     Initializer.dispose(_ctx);
-    _mpv.mpv_terminate_destroy(_ctx);
+    Timer(const Duration(seconds: 5), () => _mpv.mpv_terminate_destroy(_ctx));
     if (!_completer.isCompleted) _completer.complete(false);
   }
 

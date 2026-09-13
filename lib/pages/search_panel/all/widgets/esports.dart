@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models/search/search_esports.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
@@ -107,17 +108,25 @@ class SearchEsportsItem extends StatelessWidget {
                 configInfo.esportTitle,
                 style: const TextStyle(fontWeight: .bold, fontSize: 16),
               ),
-              if (contest.gameStage?.isNotEmpty ?? false)
-                Padding(
-                  padding: const .only(top: 4),
-                  child: Text(
-                    contest.gameStage!,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: colorScheme.outline,
-                    ),
+              Padding(
+                padding: const .only(top: 4),
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      if (contest.gameStage != null)
+                        TextSpan(text: contest.gameStage),
+                      if (contest.contestStatus == 1 && contest.stime != null)
+                        TextSpan(
+                          text: '  ${DateFormatUtils.format(contest.stime)}',
+                        ),
+                    ],
+                  ),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: colorScheme.outline,
                   ),
                 ),
+              ),
               Row(
                 spacing: 20,
                 mainAxisSize: .min,
@@ -125,8 +134,14 @@ class SearchEsportsItem extends StatelessWidget {
                 children: [
                   buildTeamWidget(contest.homeTeam),
                   Text(
-                    '${contest.homeScore} : ${contest.awayScore}',
-                    style: const TextStyle(fontSize: 25, fontWeight: .bold),
+                    contest.contestStatus == 1
+                        ? 'VS'
+                        : '${contest.homeScore} : ${contest.awayScore}',
+                    style: const TextStyle(
+                      fontSize: 25,
+                      fontWeight: .bold,
+                      letterSpacing: 1.5,
+                    ),
                   ),
                   buildTeamWidget(contest.awayTeam),
                 ],

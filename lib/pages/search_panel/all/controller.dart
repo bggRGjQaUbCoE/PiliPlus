@@ -13,7 +13,7 @@ class SearchAllController extends SearchVideoController with SearchVideoMixin {
   List<SearchUser>? searchUser;
   List<SearchPgcItemModel>? searchMedia;
   List<SearchActivity>? searchActivity;
-  List<SearchEsports>? searchEsports;
+  SearchEsports? searchEsports;
 
   @override
   bool customHandleResponse(bool isRefresh, Success<SearchVideoData> response) {

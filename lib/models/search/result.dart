@@ -37,7 +37,7 @@ class SearchVideoData extends SearchNumData<SearchVideoItemModel> {
   List<SearchUser>? searchUser;
   List<SearchPgcItemModel>? searchMedia;
   List<SearchActivity>? searchActivity;
-  List<SearchEsports>? searchEsports;
+  SearchEsports? searchEsports;
 
   SearchVideoData.fromSearchAll(Map<String, dynamic> json) {
     numResults = (json['numResults'] as num?)?.toInt();
@@ -63,22 +63,17 @@ class SearchVideoData extends SearchNumData<SearchVideoItemModel> {
               for (final e in activities) {
                 if (e['url'] case final String url
                     when url.startsWith(HttpString.liveUrl)) {
-                  (searchActivity ??= <SearchActivity>[]).add(
-                    SearchActivity.fromJson(e, url),
-                  );
+                  final model = SearchActivity.fromJson(e, url);
+                  (searchActivity ??= <SearchActivity>[]).add(model);
                 }
               }
             }
           case 'esports':
             if (item['data'] case List esports when esports.isNotEmpty) {
-              for (final e in esports) {
-                try {
-                  (searchEsports ??= <SearchEsports>[]).add(
-                    SearchEsports.fromJson(e),
-                  );
-                } catch (_) {
-                  if (kDebugMode) rethrow;
-                }
+              try {
+                searchEsports = SearchEsports.fromJson(esports.first);
+              } catch (_) {
+                if (kDebugMode) rethrow;
               }
             }
         }

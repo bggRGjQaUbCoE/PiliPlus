@@ -1,3 +1,5 @@
+import 'package:PiliPlus/utils/parse_string.dart';
+
 class SearchEsports {
   EsportsConfigInfo configInfo;
   List<EsportsContest> contest;
@@ -17,36 +19,39 @@ class SearchEsports {
 class EsportsContest {
   int id;
   String? gameStage;
-  int homeScore;
-  int awayScore;
+  int? homeScore;
+  int? awayScore;
   EsportsTeam homeTeam;
   EsportsTeam awayTeam;
   int liveRoom;
   String? playback;
   int? contestStatus;
+  int? stime;
 
   EsportsContest({
     required this.id,
     this.gameStage,
-    required this.homeScore,
-    required this.awayScore,
+    this.homeScore,
+    this.awayScore,
     required this.homeTeam,
     required this.awayTeam,
     required this.liveRoom,
     this.playback,
     this.contestStatus,
+    this.stime,
   });
 
   factory EsportsContest.fromJson(Map<String, dynamic> json) => EsportsContest(
     id: json['ID'] as int,
-    gameStage: json['gameStage'] as String?,
-    homeScore: json['homeScore'] as int,
-    awayScore: json['awayScore'] as int,
+    gameStage: nonNullOrEmptyString(json['gameStage'] as String?),
+    homeScore: json['homeScore'] as int?,
+    awayScore: json['awayScore'] as int?,
     homeTeam: EsportsTeam.fromJson(json['homeTeam'] as Map<String, dynamic>),
     awayTeam: EsportsTeam.fromJson(json['awayTeam'] as Map<String, dynamic>),
     liveRoom: json['liveRoom'] as int,
     playback: json['playback'] as String?,
     contestStatus: json['contestStatus'] as int?,
+    stime: json['stime'] as int?,
   );
 }
 

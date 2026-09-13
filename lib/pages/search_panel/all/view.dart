@@ -85,8 +85,8 @@ class _SearchAllPanelState
     );
   }
 
-  static Widget _buildEsports(List<SearchEsports> list) {
-    return SliverToBoxAdapter(child: SearchEsportsItem(item: list.first));
+  static Widget _buildEsports(SearchEsports item) {
+    return SliverToBoxAdapter(child: SearchEsportsItem(item: item));
   }
 
   static Widget _buildPgc(List<SearchPgcItemModel> list) {

@@ -263,6 +263,22 @@ class AudioController extends GetxController
         bucket.sort((a, b) => a.sortKey.compareTo(b.sortKey));
         entries.addAll(bucket);
       }
+      // 从缓存视频点击耳机进入时，当前视频是完整缓存（非「仅音频」），
+      // 不在上方列表中；把它也加入播放列表首位，保证标题/封面与播放的音频一致。
+      final Object? localCid = args['localCid'];
+      if (localCid is int &&
+          entries.indexWhere((e) => e.cid == localCid) == -1) {
+        BiliDownloadEntryInfo? cur;
+        for (final e in downloadService.downloadList) {
+          if (e.isCompleted && e.cid == localCid) {
+            cur = e;
+            break;
+          }
+        }
+        if (cur != null) {
+          entries.insert(0, cur);
+        }
+      }
     } catch (_) {
       entries = [];
     }

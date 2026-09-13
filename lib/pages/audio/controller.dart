@@ -240,15 +240,29 @@ class AudioController extends GetxController
   }
 
   /// 本地缓存模式：把所有已完成的「仅音频」缓存项组成播放列表，
+  /// 排序与缓存列表一致：按 pageId 分组（保持下载顺序），组内按 sortKey 升序。
   /// 使播放列表、切换上一首/下一首可用；若无其它仅音频缓存则退化为单曲。
   void _initLocalPlaylist(Map args) {
     List<BiliDownloadEntryInfo> entries;
     try {
-      entries = Get
-              .find<DownloadService>()
-              .downloadList
-              .where((e) => e.audioOnly && e.isCompleted)
-              .toList();
+      final downloadService = Get.find<DownloadService>();
+      final pageOrder = <String>[];
+      final pageMap = <String, List<BiliDownloadEntryInfo>>{};
+      for (final e in downloadService.downloadList) {
+        if (!e.audioOnly || !e.isCompleted) continue;
+        final pid = e.pageId;
+        final bucket = pageMap.putIfAbsent(pid, () {
+          pageOrder.add(pid);
+          return <BiliDownloadEntryInfo>[];
+        });
+        bucket.add(e);
+      }
+      entries = <BiliDownloadEntryInfo>[];
+      for (final pid in pageOrder) {
+        final bucket = List.of(pageMap[pid]!);
+        bucket.sort((a, b) => a.sortKey.compareTo(b.sortKey));
+        entries.addAll(bucket);
+      }
     } catch (_) {
       entries = [];
     }

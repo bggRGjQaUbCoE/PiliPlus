@@ -192,6 +192,14 @@ List<SettingsModel> get playSettings => [
     setKey: SettingBoxKey.enableAutoEnter,
     defaultVal: false,
   ),
+  if (PlatformUtils.isMobile)
+    const SwitchModel(
+      title: '旋转至横屏时自动全屏',
+      subtitle: '仅在播放页内由竖屏旋转至横屏时进入全屏，横屏进入播放页时保持横屏布局',
+      leading: Icon(Icons.screen_rotation_outlined),
+      setKey: SettingBoxKey.autoFullScreenOnLandscape,
+      defaultVal: false,
+    ),
   const SwitchModel(
     title: '自动退出全屏',
     subtitle: '视频结束播放时退出全屏',

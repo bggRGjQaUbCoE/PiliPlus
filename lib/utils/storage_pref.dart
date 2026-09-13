@@ -207,6 +207,11 @@ abstract final class Pref {
     return FullScreenMode.values[index];
   }
 
+  static bool get autoFullScreenOnLandscape => _setting.get(
+    SettingBoxKey.autoFullScreenOnLandscape,
+    defaultValue: false,
+  );
+
   static BtmProgressBehavior get btmProgressBehavior =>
       BtmProgressBehavior.values[_setting.get(
         SettingBoxKey.btmProgressBehavior,

@@ -10,6 +10,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
 import android.content.pm.verify.domain.DomainVerificationManager;
@@ -318,24 +319,34 @@ public final class AndroidHelper {
 
     public static String openUrl(@NonNull String url) {
         Context context = getContext();
+        String pkg = context.getPackageName();
+        PackageManager pm = context.getPackageManager();
 
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            intent = Intent.createChooser(intent, null);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.putExtra(
-                    Intent.EXTRA_EXCLUDE_COMPONENTS,
-                    new ComponentName[]{new ComponentName(context, MainActivity.class)}
-            );
-        }
         try {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            ArrayList<Intent> external = new ArrayList<>();
+            for (ResolveInfo info : pm.queryIntentActivities(intent, 0)) {
+                String packageName = info.activityInfo.packageName;
+                if (!packageName.equals(pkg)) {
+                    external.add(new Intent(intent).setComponent(new ComponentName(packageName, info.activityInfo.name)));
+                }
+            }
+            if (external.isEmpty()) {
+                return "package not found";
+            } else if (external.size() == 1) {
+                intent = external.get(0);
+            } else {
+                intent = Intent.createChooser(external.remove(0), null);
+                intent.putExtra(Intent.EXTRA_INITIAL_INTENTS, external.toArray(new Intent[0]));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            }
             context.startActivity(intent);
+            return null;
         } catch (Exception e) {
             return e.toString();
         }
-        return null;
     }
 
     @Keep

@@ -74,14 +74,14 @@ class MemberVideoCtr
   GlobalKey<RefreshIndicatorState>? refreshKey;
 
   @override
-  Future<void> onRefresh() async {
+  Future<void> onRefresh() {
     isLoadPrevious = false;
     firstAid = null;
     lastAid = null;
     next = null;
     isEnd = false;
     page = 0;
-    await queryData();
+    return queryData();
   }
 
   @override

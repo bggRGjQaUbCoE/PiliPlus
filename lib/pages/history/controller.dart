@@ -7,7 +7,6 @@ import 'package:PiliPlus/models_new/history/tab.dart';
 import 'package:PiliPlus/pages/common/multi_select/multi_select_controller.dart';
 import 'package:PiliPlus/pages/history/base_controller.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -58,18 +57,22 @@ class HistoryController
 
   @override
   bool customHandleResponse(bool isRefresh, Success<HistoryData> response) {
-    HistoryData data = response.response;
-    isEnd = data.list.isNullOrEmpty;
-    max = data.list?.lastOrNull?.history.oid;
-    viewAt = data.list?.lastOrNull?.viewAt;
+    final data = response.response;
+    final last = data.list?.lastOrNull;
+    if (last == null) {
+      isEnd = true;
+      max = viewAt = null;
+    } else {
+      isEnd = false;
+      max = last.history.oid;
+      viewAt = last.viewAt;
+    }
 
     if (isRefresh && type == null) {
-      if (tabs.isEmpty && data.tab?.isNotEmpty == true) {
-        tabs.value = data.tab!;
-        tabController = TabController(
-          length: data.tab!.length + 1,
-          vsync: this,
-        );
+      final tab = data.tab;
+      if (tabs.isEmpty && tab != null && tab.isNotEmpty) {
+        tabs.value = tab;
+        tabController = TabController(length: tab.length + 1, vsync: this);
       }
     }
 

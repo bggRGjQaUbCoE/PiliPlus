@@ -68,6 +68,7 @@ class ReplyItemGrpc extends StatelessWidget {
     required this.replyLevel,
     this.replyReply,
     this.needDivider = true,
+    this.enableViewDialogue = true,
     this.onReply,
     this.onDelete,
     this.upMid,
@@ -82,6 +83,7 @@ class ReplyItemGrpc extends StatelessWidget {
   final int replyLevel;
   final Function(ReplyInfo replyItem, int? rpid)? replyReply;
   final bool needDivider;
+  final bool enableViewDialogue;
   final ValueChanged<ReplyInfo>? onReply;
   final Function(ReplyInfo replyItem, int? subIndex)? onDelete;
   final Int64? upMid;
@@ -489,7 +491,10 @@ class ReplyItemGrpc extends StatelessWidget {
     );
 
     Widget? dialogBtn;
-    if (replyLevel == 2 && needDivider && replyItem.id != replyItem.dialog) {
+    if (replyLevel == 2 &&
+        needDivider &&
+        enableViewDialogue &&
+        replyItem.id != replyItem.dialog) {
       dialogBtn = SizedBox(
         height: 32,
         child: TextButton(

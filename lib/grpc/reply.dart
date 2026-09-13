@@ -89,6 +89,7 @@ abstract final class ReplyGrpc {
     required int rpid,
     required Mode mode,
     required String? offset,
+    Map<Int64, ReplyInfo>? removedOut, // 收集被屏蔽评论（树模式保留其数据）
   }) async {
     final res = await GrpcReq.request(
       GrpcUrl.detailList,
@@ -103,7 +104,11 @@ abstract final class ReplyGrpc {
       ),
       DetailListReply.fromBuffer,
     );
-    return res..dataOrNull?.root.replies.removeWhere(needRemoveGrpc);
+    return res..dataOrNull?.root.replies.removeWhere((reply) {
+      final removed = needRemoveGrpc(reply);
+      if (removed) removedOut?[reply.id] = reply;
+      return removed;
+    });
   }
 
   static Future<LoadingState<DialogListReply>> dialogList({

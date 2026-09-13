@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:PiliPlus/pages/video/pay_coins/view.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -92,13 +93,20 @@ mixin TripleMixin on GetxController, TickerProvider {
 
   void onStartTriple() {
     _timer ??= Timer(_duration, () {
+      if (Pref.disableTriple) {
+        SmartDialog.showToast('已禁用');
+        _cancelTimer();
+        return;
+      }
       HapticFeedback.lightImpact();
       if (hasTriple) {
         SmartDialog.showToast('已完成三连');
       } else {
         tripleAnimCtr.forward().whenComplete(() {
           tripleAnimCtr.reset();
-          actionTriple();
+          if (!Pref.disableTriple) {
+            actionTriple();
+          }
         });
       }
       _cancelTimer();
@@ -106,6 +114,17 @@ mixin TripleMixin on GetxController, TickerProvider {
   }
 
   void onCancelTriple([bool isTapUp = false]) {
+    if (Pref.disableTriple) {
+      if (_tripleAnimCtr?.status == .forward) {
+        _tripleAnimCtr!.reverse();
+      } else if (_timer != null && _timer!.tick == 0) {
+        _cancelTimer();
+        if (isTapUp) {
+          actionLikeVideo();
+        }
+      }
+      return;
+    }
     if (tripleAnimCtr.status == .forward) {
       tripleAnimCtr.reverse();
     } else if (_timer != null && _timer!.tick == 0) {

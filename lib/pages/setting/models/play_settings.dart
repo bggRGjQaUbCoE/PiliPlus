@@ -84,6 +84,13 @@ List<SettingsModel> get playSettings => [
     defaultVal: true,
   ),
   const SwitchModel(
+    title: '禁用一键三连',
+    subtitle: '禁止长按点赞或使用快捷键触发一键三连',
+    leading: Icon(Icons.thumb_up_off_alt),
+    setKey: SettingBoxKey.disableTriple,
+    defaultVal: false,
+  ),
+  const SwitchModel(
     title: '左右侧滑动调节亮度/音量',
     leading: Icon(MdiIcons.tuneVerticalVariant),
     setKey: SettingBoxKey.enableSlideVolumeBrightness,

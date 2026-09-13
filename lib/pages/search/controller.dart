@@ -171,8 +171,7 @@ class SSearchController extends GetxController
 
     final text = controller.text;
 
-    final uri = await PiliScheme.validateUri(text);
-    if (uri != null && await PiliScheme.routePush(uri, selfHandle: true)) {
+    if (await PiliScheme.routePushFromUrl(text, selfHandle: true)) {
       return;
     }
 

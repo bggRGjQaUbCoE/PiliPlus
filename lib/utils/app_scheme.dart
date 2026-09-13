@@ -57,28 +57,6 @@ abstract final class PiliScheme {
     return null;
   }
 
-  static final _biliUriReg = RegExp(
-    '^(https?|bilibili)://',
-    caseSensitive: false,
-  );
-  static Future<Uri?> validateUri(String url) async {
-    if (url.startsWith(_biliUriReg)) {
-      var uri = Uri.parse(url);
-      var host = uri.host;
-      if (host.contains(b23_tv)) {
-        final url = await UrlUtils.parseRedirectUrl(uri.toString());
-        if (url != null) {
-          uri = Uri.parse(url);
-          host = uri.host;
-        }
-      }
-      if (host.contains(bilibili)) {
-        return uri;
-      }
-    }
-    return null;
-  }
-
   static Future<bool> routePushFromUrl(
     String url, {
     bool selfHandle = false,

@@ -41,6 +41,8 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   Future<void>? Function()? onPlay;
   Future<void>? Function()? onPause;
   Future<void>? Function(Duration position)? onSeek;
+  Future<void>? Function()? onSkipToNext;
+  Future<void>? Function()? onSkipToPrevious;
 
   @override
   Future<void> play() {
@@ -54,6 +56,16 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   Future<void> pause() {
     return onPause?.call() ?? PlPlayerController.pauseIfExists();
     // player.pause();
+  }
+
+  @override
+  Future<void> skipToNext() {
+    return onSkipToNext?.call() ?? Future.syncValue(null);
+  }
+
+  @override
+  Future<void> skipToPrevious() {
+    return onSkipToPrevious?.call() ?? Future.syncValue(null);
   }
 
   @override

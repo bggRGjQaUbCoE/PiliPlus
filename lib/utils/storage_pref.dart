@@ -724,6 +724,9 @@ abstract final class Pref {
   static bool get enableShowLiveDanmaku =>
       _setting.get(SettingBoxKey.enableShowLiveDanmaku, defaultValue: true);
 
+  static bool get enableDanmakuMask =>
+      _setting.get(SettingBoxKey.enableDanmakuMask, defaultValue: false);
+
   static bool get enableQuickFav =>
       _setting.get(SettingBoxKey.enableQuickFav, defaultValue: false);
 

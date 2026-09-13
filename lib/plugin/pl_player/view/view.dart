@@ -28,6 +28,7 @@ import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:PiliPlus/models_new/video/video_detail/ugc_season.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/danmaku/danmaku_model.dart';
+import 'package:PiliPlus/pages/danmaku/mask/view.dart';
 import 'package:PiliPlus/pages/live_room/widgets/bottom_control.dart'
     as live_bottom;
 import 'package:PiliPlus/pages/video/controller.dart';
@@ -1162,6 +1163,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     final ctr = plPlayerController.danmakuController;
     if (ctr != null) {
       final pos = details.localPosition;
+      if (!_isDanmakuPointVisible(pos)) {
+        _suspendedDm?.suspend = false;
+        _dmOffset.value = null;
+        return;
+      }
       final res = ctr.findSingleDanmaku(pos);
       if (res != null) {
         final (dy, item) = res;
@@ -1322,6 +1328,51 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     }
   }
 
+  Widget _withDanmakuMask(Widget child) {
+    final controller = widget.videoDetailController?.danmakuMaskController;
+    if (controller == null) return child;
+    return Obx(() {
+      final videoFit = plPlayerController.videoFit.value;
+      return DanmakuMaskView(
+        controller: controller,
+        videoRect: videoController.rect,
+        transformationController: _transformationController,
+        devicePixelRatio: MediaQuery.devicePixelRatioOf(context),
+        viewportSize: Size(maxWidth, maxHeight),
+        overlayOffset: const Offset(0, 4),
+        fit: videoFit.boxFit,
+        alignment: widget.alignment,
+        flipX: plPlayerController.flipX.value,
+        flipY: plPlayerController.flipY.value,
+        forcedAspectRatio: videoFit.aspectRatio,
+        child: child,
+      );
+    });
+  }
+
+  bool _isDanmakuPointVisible(Offset position) {
+    final controller = widget.videoDetailController?.danmakuMaskController;
+    final rect = videoController.rect.value;
+    if (controller == null || rect == null || rect.isEmpty) return true;
+    final videoFit = plPlayerController.videoFit.value;
+    final devicePixelRatio = MediaQuery.devicePixelRatioOf(context);
+    return DanmakuMaskGeometry.contains(
+      position: position,
+      frame: controller.frame.value,
+      videoSize: Size(
+        rect.width / devicePixelRatio,
+        rect.height / devicePixelRatio,
+      ),
+      viewportSize: Size(maxWidth, maxHeight),
+      fit: videoFit.boxFit,
+      alignment: widget.alignment,
+      flipX: plPlayerController.flipX.value,
+      flipY: plPlayerController.flipY.value,
+      forcedAspectRatio: videoFit.aspectRatio,
+      interactiveTransform: _transformationController.value.storage,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     maxWidth = widget.maxWidth;
@@ -1345,7 +1396,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         _videoWidget,
 
         if (widget.danmuWidget case final danmaku?)
-          Positioned.fill(top: 4, child: danmaku),
+          Positioned.fill(top: 4, child: _withDanmakuMask(danmaku)),
 
         if (!isLive)
           Positioned.fill(

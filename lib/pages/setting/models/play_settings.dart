@@ -30,6 +30,13 @@ List<SettingsModel> get playSettings => [
     setKey: SettingBoxKey.enableShowDanmaku,
     defaultVal: true,
   ),
+  const SwitchModel(
+    title: '智能防挡',
+    subtitle: '让弹幕避开画面中的人物（部分视频支持）',
+    leading: Icon(Icons.person_off_outlined),
+    setKey: SettingBoxKey.enableDanmakuMask,
+    defaultVal: false,
+  ),
   if (PlatformUtils.isMobile)
     const SwitchModel(
       title: '启用点击弹幕',

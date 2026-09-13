@@ -95,7 +95,9 @@ abstract final class DownloadHttp {
         List<Type2File>? audioFileList;
         final List<AudioItem>? audioDashList = dash.audio;
         if (audioDashList != null && audioDashList.isNotEmpty) {
-          final preferAudioQa = Pref.defaultAudioQa;
+          final preferAudioQa = entry.audioOnly && entry.audioQuality != null
+              ? entry.audioQuality!
+              : Pref.defaultAudioQa;
           final List<int> audioIds = audioDashList
               .map((map) => map.id)
               .toList();

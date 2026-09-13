@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
+import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart' as pgc;
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
@@ -67,6 +68,11 @@ class _DownloadPanelState extends State<DownloadPanel> {
 
   late final cidSet = widget.cidSet;
   VideoQuality _quality = VideoQuality.fromCode(Pref.defaultVideoQa);
+  bool _audioOnly = false;
+  AudioQuality _audioQuality = AudioQuality.values.firstWhere(
+    (e) => e.code == Pref.defaultAudioQa,
+    orElse: () => AudioQuality.k132,
+  );
 
   @override
   void initState() {
@@ -111,31 +117,18 @@ class _DownloadPanelState extends State<DownloadPanel> {
         spacing: 16,
         children: [
           Text(
-            '最高画质',
+            _audioOnly ? '音质' : '最高画质',
             style: textStyle,
           ),
           Builder(
-            builder: (context) => PopupMenuButton<VideoQuality>(
-              initialValue: _quality,
-              onSelected: (value) {
-                _quality = value;
-                (context as Element).markNeedsBuild();
-              },
-              itemBuilder: (context) => VideoQuality.values
-                  .map(
-                    (e) => PopupMenuItem(
-                      value: e,
-                      child: Text(e.desc),
-                    ),
-                  )
-                  .toList(),
-              child: Padding(
+            builder: (context) {
+              final Widget child = Padding(
                 padding: const EdgeInsets.symmetric(vertical: 3),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      _quality.desc,
+                      _audioOnly ? _audioQuality.desc : _quality.desc,
                       style: const TextStyle(height: 1),
                       strutStyle: const StrutStyle(height: 1, leading: 0),
                     ),
@@ -146,6 +139,64 @@ class _DownloadPanelState extends State<DownloadPanel> {
                     ),
                   ],
                 ),
+              );
+              if (_audioOnly) {
+                return PopupMenuButton<AudioQuality>(
+                  initialValue: _audioQuality,
+                  onSelected: (value) {
+                    _audioQuality = value;
+                    (context as Element).markNeedsBuild();
+                  },
+                  itemBuilder: (context) => AudioQuality.values
+                      .map(
+                        (e) => PopupMenuItem(
+                          value: e,
+                          child: Text(e.desc),
+                        ),
+                      )
+                      .toList(),
+                  child: child,
+                );
+              }
+              return PopupMenuButton<VideoQuality>(
+                initialValue: _quality,
+                onSelected: (value) {
+                  _quality = value;
+                  (context as Element).markNeedsBuild();
+                },
+                itemBuilder: (context) => VideoQuality.values
+                    .map(
+                      (e) => PopupMenuItem(
+                        value: e,
+                        child: Text(e.desc),
+                      ),
+                    )
+                    .toList(),
+                child: child,
+              );
+            },
+          ),
+          TextButton.icon(
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            onPressed: () => setState(() => _audioOnly = !_audioOnly),
+            icon: Icon(
+              _audioOnly ? Icons.check_box : Icons.check_box_outline_blank,
+              size: 16,
+              color: _audioOnly
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurfaceVariant,
+            ),
+            label: Text(
+              '仅下载音频',
+              style: TextStyle(
+                fontSize: 13,
+                color: _audioOnly
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurfaceVariant,
               ),
             ),
           ),
@@ -292,6 +343,8 @@ class _DownloadPanelState extends State<DownloadPanel> {
             parent == null ? widget.videoDetail : null,
             parent,
             _quality,
+            audioOnly: _audioOnly,
+            audioQuality: _audioQuality,
           );
           break;
         case ugc.EpisodeItem episode:
@@ -300,6 +353,8 @@ class _DownloadPanelState extends State<DownloadPanel> {
             null,
             episode,
             _quality,
+            audioOnly: _audioOnly,
+            audioQuality: _audioQuality,
           );
           break;
         case pgc.EpisodeItem episode:
@@ -308,6 +363,8 @@ class _DownloadPanelState extends State<DownloadPanel> {
             widget.pgcItem!,
             episode,
             _quality,
+            audioOnly: _audioOnly,
+            audioQuality: _audioQuality,
           );
           break;
       }

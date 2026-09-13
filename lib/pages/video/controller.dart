@@ -60,7 +60,9 @@ import 'package:PiliPlus/utils/extension/nested_scroll_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:path/path.dart' as path;
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
@@ -729,6 +731,7 @@ class VideoDetailController extends GetxController
               typeTag: entry.typeTag!,
               isMp4: entry.mediaType == 1,
               hasDashAudio: entry.hasDashAudio,
+              audioOnly: entry.audioOnly,
             )
           : NetworkSource(
               videoSource: videoUrl!,
@@ -1402,6 +1405,28 @@ class VideoDetailController extends GetxController
     int? id;
     int? extraId;
     PlaylistSource from = PlaylistSource.UP_ARCHIVE;
+    if (isFileSource) {
+      final audioFile = path.join(
+        entry.entryDirPath,
+        entry.typeTag!,
+        PathUtils.audioNameType2,
+      );
+      AudioPage.toAudioPage(
+        isLocal: true,
+        itemType: 1,
+        oid: aid,
+        subId: [cid.value],
+        from: from,
+        audioUrl: Uri.file(audioFile).toString(),
+        localTitle: entry.showTitle,
+        localCover: entry.cover,
+        localOid: aid,
+        localCid: cid.value,
+        localDuration: entry.totalTimeMilli,
+        localOwnerName: entry.ownerName,
+      );
+      return;
+    }
     if (isPlayAll) {
       id = args['mediaId'];
       extraId = sourceType.extraId;

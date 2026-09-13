@@ -5,6 +5,7 @@ import 'dart:io' show Directory, File;
 import 'package:PiliPlus/grpc/dm.dart';
 import 'package:PiliPlus/http/download.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/models_new/download/bili_download_media_file_info.dart';
@@ -112,8 +113,10 @@ class DownloadService extends GetxService {
     Part page,
     VideoDetailData? videoDetail,
     ugc.EpisodeItem? videoArc,
-    VideoQuality videoQuality,
-  ) {
+    VideoQuality videoQuality, {
+    bool audioOnly = false,
+    AudioQuality? audioQuality,
+  }) {
     final cid = page.cid!;
     if (downloadList.indexWhere((e) => e.cid == cid) != -1) {
       return;
@@ -139,6 +142,8 @@ class DownloadService extends GetxService {
     final entry = BiliDownloadEntryInfo(
       mediaType: 2,
       hasDashAudio: false,
+      audioOnly: audioOnly,
+      audioQuality: audioOnly ? audioQuality?.code : null,
       isCompleted: false,
       totalBytes: 0,
       downloadedBytes: 0,
@@ -172,8 +177,10 @@ class DownloadService extends GetxService {
     int index,
     PgcInfoModel pgcItem,
     pgc.EpisodeItem episode,
-    VideoQuality quality,
-  ) {
+    VideoQuality quality, {
+    bool audioOnly = false,
+    AudioQuality? audioQuality,
+  }) {
     final cid = episode.cid!;
     if (downloadList.indexWhere((e) => e.cid == cid) != -1) {
       return;
@@ -207,6 +214,8 @@ class DownloadService extends GetxService {
     final entry = BiliDownloadEntryInfo(
       mediaType: 2,
       hasDashAudio: false,
+      audioOnly: audioOnly,
+      audioQuality: audioOnly ? audioQuality?.code : null,
       isCompleted: false,
       totalBytes: 0,
       downloadedBytes: 0,
@@ -401,6 +410,11 @@ class DownloadService extends GetxService {
 
       switch (mediaFileInfo) {
         case Type1 mediaFileInfo:
+          // 单文件格式无法单独抽取音频，忽略仅音频选项
+          if (entry.audioOnly) {
+            entry.audioOnly = false;
+            await _updateBiliDownloadEntryJson(entry);
+          }
           final first = mediaFileInfo.segmentList.first;
           _downloadManager = DownloadManager(
             url: first.url,
@@ -410,20 +424,33 @@ class DownloadService extends GetxService {
           );
           break;
         case Type2 mediaFileInfo:
-          _downloadManager = DownloadManager(
-            url: mediaFileInfo.video.first.baseUrl,
-            path: path.join(videoDir.path, PathUtils.videoNameType2),
-            onReceiveProgress: _onReceive,
-            onDone: _onDone,
-          );
           final audio = mediaFileInfo.audio;
-          if (audio != null && audio.isNotEmpty) {
-            _audioDownloadManager = DownloadManager(
+          if (entry.audioOnly) {
+            if (audio == null || audio.isEmpty) {
+              throw StateError('没有可用的音频流');
+            }
+            // 仅下载音频：把音频流交给主下载管理器，复用进度/完成逻辑
+            _downloadManager = DownloadManager(
               url: audio.first.baseUrl,
               path: path.join(videoDir.path, PathUtils.audioNameType2),
-              onReceiveProgress: null,
-              onDone: _onAudioDone,
+              onReceiveProgress: _onReceive,
+              onDone: _onDone,
             );
+          } else {
+            _downloadManager = DownloadManager(
+              url: mediaFileInfo.video.first.baseUrl,
+              path: path.join(videoDir.path, PathUtils.videoNameType2),
+              onReceiveProgress: _onReceive,
+              onDone: _onDone,
+            );
+            if (audio != null && audio.isNotEmpty) {
+              _audioDownloadManager = DownloadManager(
+                url: audio.first.baseUrl,
+                path: path.join(videoDir.path, PathUtils.audioNameType2),
+                onReceiveProgress: null,
+                onDone: _onAudioDone,
+              );
+            }
           }
           late final first = mediaFileInfo.video.first;
           entry.pageData

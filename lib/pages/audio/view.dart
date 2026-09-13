@@ -35,8 +35,6 @@ import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -548,8 +546,7 @@ class _AudioPageState extends State<AudioPage> {
       onTap: () {
         Get.back();
         if (!isCurr) {
-          _controller.playMode.value = playMode;
-          GStorage.setting.put(SettingBoxKey.audioPlayMode, playMode.index);
+          _controller.setAudioPlayMode(playMode);
         }
       },
       child: Column(
@@ -765,7 +762,7 @@ class _AudioPageState extends State<AudioPage> {
   void _onSeek(int milliseconds) {
     _controller
       ..isDragging = false
-      ..player?.seek(Duration(milliseconds: milliseconds));
+      ..onSeek(Duration(milliseconds: milliseconds));
   }
 
   Widget _buildProgressBar(ColorScheme colorScheme) {

@@ -442,6 +442,20 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     return _playCallBack?.call();
   }
 
+  static Future<void>? triggerFullScreenIfExists({bool? status}) {
+    return _instance?.triggerFullScreen(
+      status: status ?? !(_instance?.isFullScreen.value ?? false),
+    );
+  }
+
+  static PlayRepeat? getPlayRepeatIfExists() {
+    return _instance?.playRepeat;
+  }
+
+  static void setPlayRepeatIfExists(PlayRepeat type) {
+    _instance?.setPlayRepeat(type);
+  }
+
   // try to get PlayerStatus
   static PlayerStatus? getPlayerStatusIfExists() {
     return _instance?.playerStatus.value;
@@ -1050,13 +1064,14 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       danmakuController?.clear();
       try {
         await _videoPlayerController?.seek(position);
+        videoPlayerServiceHandler?.onSeeked(position);
       } catch (e) {
         if (kDebugMode) debugPrint('seek failed: $e');
       }
     }
 
     if (duration.value != 0) {
-      seek();
+      await seek();
     } else {
       // if (kDebugMode) debugPrint('seek duration else');
       _subForSeek?.cancel();
@@ -1077,6 +1092,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
     await _videoPlayerController?.setRate(speed);
     _playbackSpeed.value = speed;
+    videoPlayerServiceHandler?.onSpeedChange(speed);
     if (danmakuController != null) {
       try {
         DanmakuOption currentOption = danmakuController!.option;
@@ -1167,6 +1183,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   Future<void> setVolume(double volume, {bool showIndicator = true}) async {
     if (this.volume.value != volume) {
       this.volume.value = volume;
+      videoPlayerServiceHandler?.onVolumeChange(volume);
       try {
         if (PlatformUtils.isDesktop) {
           await _videoPlayerController!.setVolume(volume * 100);
@@ -1210,7 +1227,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   /// 设置后台播放
   void setBackgroundPlay(bool val) {
-    videoPlayerServiceHandler?.enableBackgroundPlay = val;
+    setEnableBackgroundPlay(val);
     if (!tempPlayerConf) {
       setting.put(SettingBoxKey.enableBackgroundPlay, val);
     }
@@ -1329,6 +1346,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   void _setFullScreen(bool val) {
     isFullScreen.value = val;
     updateSubtitleStyle();
+    videoPlayerServiceHandler?.onFullscreenChange(val);
   }
 
   double screenRatio = 0.0;
@@ -1485,6 +1503,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   void setPlayRepeat(PlayRepeat type) {
     playRepeat = type;
     if (!tempPlayerConf) video.put(VideoBoxKey.playRepeat, type.index);
+    videoPlayerServiceHandler?.onRepeatModeChange(type);
   }
 
   void putSubtitleSettings() {

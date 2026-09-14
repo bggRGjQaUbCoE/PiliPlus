@@ -55,7 +55,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:material_ui/material_ui.dart' hide RefreshIndicator;
 
 List<SettingsModel> get extraSettings => [
-  if (PlatformUtils.isDesktop) ...[
+  if (PlatformUtils.isDesktop)
     SwitchModel(
       title: '退出时最小化',
       leading: const Icon(Icons.exit_to_app),
@@ -67,11 +67,19 @@ List<SettingsModel> get extraSettings => [
         } catch (_) {}
       },
     ),
+  if (Platform.isAndroid || PlatformUtils.isDesktop) ...[
     NormalModel(
       title: '缓存路径',
       getSubtitle: () => downloadPath,
       leading: const Icon(Icons.storage),
       onTap: _showDownPathDialog,
+    ),
+    SwitchModel(
+      title: '合并缓存',
+      subtitle: '缓存时把音频和画面合并为一个视频文件(mp4)；关闭则音画分离缓存(DASH)',
+      leading: const Icon(Icons.merge_type),
+      setKey: SettingBoxKey.mergeDownload,
+      defaultVal: Pref.mergeDownload,
     ),
   ] else if (Platform.isAndroid)
     SwitchModel(

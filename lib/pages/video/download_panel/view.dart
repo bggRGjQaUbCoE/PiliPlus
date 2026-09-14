@@ -67,6 +67,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
 
   late final cidSet = widget.cidSet;
   VideoQuality _quality = VideoQuality.fromCode(Pref.defaultVideoQa);
+  bool _merge = Pref.mergeDownload;
 
   @override
   void initState() {
@@ -148,6 +149,40 @@ class _DownloadPanelState extends State<DownloadPanel> {
                 ),
               ),
             ),
+          ),
+          Builder(
+            builder: (context) {
+              final mergedDesc = _merge ? '合并缓存' : '分离缓存';
+              return PopupMenuButton<bool>(
+                initialValue: _merge,
+                onSelected: (value) {
+                  _merge = value;
+                  (context as Element).markNeedsBuild();
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(value: false, child: Text('分离缓存')),
+                  const PopupMenuItem(value: true, child: Text('合并缓存')),
+                ],
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 3),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        mergedDesc,
+                        style: const TextStyle(height: 1),
+                        strutStyle: const StrutStyle(height: 1, leading: 0),
+                      ),
+                      Icon(
+                        size: 18,
+                        Icons.keyboard_arrow_down,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
           if (kDebugMode || PlatformUtils.isMobile) ...[
             const Spacer(),
@@ -292,6 +327,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
             parent == null ? widget.videoDetail : null,
             parent,
             _quality,
+            merge: _merge,
           );
           break;
         case ugc.EpisodeItem episode:
@@ -300,6 +336,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
             null,
             episode,
             _quality,
+            merge: _merge,
           );
           break;
         case pgc.EpisodeItem episode:
@@ -308,6 +345,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
             widget.pgcItem!,
             episode,
             _quality,
+            merge: _merge,
           );
           break;
       }

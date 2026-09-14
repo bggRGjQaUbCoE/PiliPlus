@@ -21,6 +21,10 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.Icon;
+import android.media.MediaCodec;
+import android.media.MediaExtractor;
+import android.media.MediaFormat;
+import android.media.MediaMuxer;
 import android.media.session.PlaybackState;
 import android.net.Uri;
 import android.os.Build;
@@ -38,6 +42,7 @@ import com.github.dart_lang.jni_flutter.JniFlutterPlugin;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
@@ -346,6 +351,96 @@ public final class AndroidHelper {
             return null;
         } catch (Exception e) {
             return e.toString();
+        }
+    }
+
+    /**
+     * 用 MediaExtractor + MediaMuxer 把分离的 video/audio(DASH) 封装成单个 mp4。
+     * 仅复制编码流、不重编码。成功返回 null，失败返回错误信息。
+     */
+    public static String mergeM4sToMp4(@NonNull String videoPath, @NonNull String audioPath, @NonNull String outputPath) {
+        MediaExtractor videoExtractor = null;
+        MediaExtractor audioExtractor = null;
+        MediaMuxer muxer = null;
+        try {
+            videoExtractor = new MediaExtractor();
+            videoExtractor.setDataSource(videoPath);
+            audioExtractor = new MediaExtractor();
+            audioExtractor.setDataSource(audioPath);
+
+            int videoTrackIndex = -1;
+            for (int i = 0; i < videoExtractor.getTrackCount(); i++) {
+                String mime = videoExtractor.getTrackFormat(i).getString(MediaFormat.KEY_MIME);
+                if (mime != null && mime.startsWith("video/")) {
+                    videoTrackIndex = i;
+                    break;
+                }
+            }
+            int audioTrackIndex = -1;
+            for (int i = 0; i < audioExtractor.getTrackCount(); i++) {
+                String mime = audioExtractor.getTrackFormat(i).getString(MediaFormat.KEY_MIME);
+                if (mime != null && mime.startsWith("audio/")) {
+                    audioTrackIndex = i;
+                    break;
+                }
+            }
+            if (videoTrackIndex == -1) return "no video track";
+            if (audioTrackIndex == -1) return "no audio track";
+
+            muxer = new MediaMuxer(outputPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+            int muxedVideo = muxer.addTrack(videoExtractor.getTrackFormat(videoTrackIndex));
+            int muxedAudio = muxer.addTrack(audioExtractor.getTrackFormat(audioTrackIndex));
+
+            try {
+                MediaFormat vf = videoExtractor.getTrackFormat(videoTrackIndex);
+                if (vf.containsKey("rotation-degrees")) {
+                    muxer.setOrientationHint(vf.getInteger("rotation-degrees"));
+                }
+            } catch (Exception ignored) {
+            }
+
+            muxer.start();
+
+            MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
+            ByteBuffer buffer = ByteBuffer.allocate(4 * 1024 * 1024);
+
+            videoExtractor.selectTrack(videoTrackIndex);
+            while (true) {
+                int size = videoExtractor.readSampleData(buffer, 0);
+                if (size < 0) break;
+                info.offset = 0;
+                info.size = size;
+                info.presentationTimeUs = videoExtractor.getSampleTime();
+                info.flags = videoExtractor.getSampleFlags();
+                muxer.writeSampleData(muxedVideo, buffer, info);
+                videoExtractor.advance();
+            }
+
+            audioExtractor.selectTrack(audioTrackIndex);
+            while (true) {
+                int size = audioExtractor.readSampleData(buffer, 0);
+                if (size < 0) break;
+                info.offset = 0;
+                info.size = size;
+                info.presentationTimeUs = audioExtractor.getSampleTime();
+                info.flags = audioExtractor.getSampleFlags();
+                muxer.writeSampleData(muxedAudio, buffer, info);
+                audioExtractor.advance();
+            }
+
+            muxer.stop();
+            return null;
+        } catch (Exception e) {
+            return e.toString();
+        } finally {
+            if (videoExtractor != null) videoExtractor.release();
+            if (audioExtractor != null) audioExtractor.release();
+            if (muxer != null) {
+                try {
+                    muxer.release();
+                } catch (Exception ignored) {
+                }
+            }
         }
     }
 

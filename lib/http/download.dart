@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
@@ -24,7 +26,12 @@ abstract final class DownloadHttp {
     EpInfo? ep,
   }) async {
     final isLogin = Accounts.get(AccountType.video).isLogin;
-    final res = await VideoHttp.videoUrl(
+    // 合并缓存：Android 用「本地封装」方案(下载 DASH 后动态封装)；
+    // 其它平台用「服务器 mp4(durl)」方案。用 forceMerged 区分请求与分支走向。
+    final onAndroid = Platform.isAndroid;
+    var forceMerged = entry.preferMerged && !onAndroid;
+
+    Future<LoadingState<PlayUrlModel>> request() => VideoHttp.videoUrl(
       avid: entry.avid,
       bvid: entry.bvid,
       cid: entry.cid,
@@ -37,10 +44,19 @@ abstract final class DownloadHttp {
         != null when isLogin => VideoType.pgc,
         _ => VideoType.ugc,
       },
+      forceMerged: forceMerged,
     );
+
+    var res = await request();
+    // 服务器 mp4(非 Android 合并) 无 durl 时，回退为 DASH(分离缓存)
+    if (forceMerged && res case Success(:final r) when r.durl == null) {
+      forceMerged = false;
+      res = await request();
+    }
+
     if (res case Success(:final response)) {
       final dash = response.dash;
-      if (dash != null) {
+      if (!forceMerged && dash != null) {
         final targetVideoQa = response.findAvailableVideoQuality(
           entry.preferedVideoQuality,
         );

@@ -63,6 +63,30 @@ abstract final class PiliAndroidHelper {
   static void openLinkVerifySettings() =>
       AndroidHelper.openLinkVerifySettings();
 
+  /// 用 Android MediaMuxer 把分离的 video/audio 封装成单个 mp4。
+  /// 成功返回 null，失败返回错误信息。
+  static String? mergeM4sToMp4(
+    String videoPath,
+    String audioPath,
+    String outputPath,
+  ) {
+    final jVideoPath = videoPath.toJString();
+    final jAudioPath = audioPath.toJString();
+    final jOutputPath = outputPath.toJString();
+    try {
+      final ret = AndroidHelper.mergeM4sToMp4(
+        jVideoPath,
+        jAudioPath,
+        jOutputPath,
+      );
+      return ret?.toDartString(releaseOriginal: true);
+    } finally {
+      jVideoPath.release();
+      jAudioPath.release();
+      jOutputPath.release();
+    }
+  }
+
   static bool openMusic(String title, String? artist, String? album) {
     final jTitle = title.toJString();
     final jArtist = artist?.toJString();

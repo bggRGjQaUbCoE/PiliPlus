@@ -208,6 +208,7 @@ abstract final class VideoHttp {
     required VideoType videoType,
     String? language,
     bool voiceBalance = false,
+    bool forceMerged = false,
   }) async {
     final dmImgStr = Utils.base64EncodeRandomString(16, 64);
     final dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
@@ -218,8 +219,8 @@ abstract final class VideoHttp {
       'season_id': ?seasonId,
       'cid': cid,
       'qn': qn,
-      // 获取所有格式的视频
-      'fnval': 4048,
+      // 获取所有格式的视频（4032 = 去掉 bit4(DASH)，合并缓存仅取 mp4/durl）
+      'fnval': forceMerged ? 4032 : 4048,
       'fourk': 1,
       'fnver': 0,
       'voice_balance': voiceBalance ? 1 : 0,

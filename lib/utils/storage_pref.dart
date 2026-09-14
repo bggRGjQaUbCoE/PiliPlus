@@ -1047,4 +1047,8 @@ abstract final class Pref {
 
   static bool get enableEmoteTooltip =>
       _setting.get(SettingBoxKey.enableEmoteTooltip, defaultValue: false);
+
+  /// 缓存时默认是否「合并缓存（mp4）」，false 表示分离缓存(DASH)
+  static bool get mergeDownload =>
+      _setting.get(SettingBoxKey.mergeDownload, defaultValue: false);
 }

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert' show jsonDecode, jsonEncode;
-import 'dart:io' show Directory, File;
+import 'dart:io' show Directory, File, Platform;
 
 import 'package:PiliPlus/grpc/dm.dart';
 import 'package:PiliPlus/http/download.dart';
@@ -20,6 +20,7 @@ import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
+import 'package:PiliPlus/utils/android/android_helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -112,8 +113,9 @@ class DownloadService extends GetxService {
     Part page,
     VideoDetailData? videoDetail,
     ugc.EpisodeItem? videoArc,
-    VideoQuality videoQuality,
-  ) {
+    VideoQuality videoQuality, {
+    bool merge = false,
+  }) {
     final cid = page.cid!;
     if (downloadList.indexWhere((e) => e.cid == cid) != -1) {
       return;
@@ -139,6 +141,7 @@ class DownloadService extends GetxService {
     final entry = BiliDownloadEntryInfo(
       mediaType: 2,
       hasDashAudio: false,
+      preferMerged: merge,
       isCompleted: false,
       totalBytes: 0,
       downloadedBytes: 0,
@@ -172,8 +175,9 @@ class DownloadService extends GetxService {
     int index,
     PgcInfoModel pgcItem,
     pgc.EpisodeItem episode,
-    VideoQuality quality,
-  ) {
+    VideoQuality quality, {
+    bool merge = false,
+  }) {
     final cid = episode.cid!;
     if (downloadList.indexWhere((e) => e.cid == cid) != -1) {
       return;
@@ -207,6 +211,7 @@ class DownloadService extends GetxService {
     final entry = BiliDownloadEntryInfo(
       mediaType: 2,
       hasDashAudio: false,
+      preferMerged: merge,
       isCompleted: false,
       totalBytes: 0,
       downloadedBytes: 0,
@@ -384,6 +389,21 @@ class DownloadService extends GetxService {
         pageData: entry.pageData,
       );
 
+      // 合并缓存时的质量/格式反馈
+      if (entry.preferMerged) {
+        if (mediaFileInfo case Type1(:final quality)) {
+          final requested = entry.preferedVideoQuality;
+          if (quality < requested) {
+            SmartDialog.showToast(
+              '该画质无合并mp4，已降为${entry.qualityPithyDescription}',
+            );
+          }
+        } else if (!Platform.isAndroid) {
+          // Android 合并为「本地封装」，拿到 DASH(Type2) 属预期，等待下载后封装即可
+          SmartDialog.showToast('该视频无合并mp4，已改为分离缓存');
+        }
+      }
+
       final videoDir = Directory(path.join(entry.entryDirPath, entry.typeTag));
       if (!videoDir.existsSync()) {
         await videoDir.create(recursive: true);
@@ -505,6 +525,13 @@ class DownloadService extends GetxService {
     if (entry == null) {
       return;
     }
+    // Android 合并缓存：把 DASH 的 video/audio 封装成单个 mp4
+    if (entry.preferMerged && Platform.isAndroid && entry.mediaType != 1) {
+      final ok = await _mergeToMp4(entry);
+      if (!ok) {
+        SmartDialog.showToast('合并缓存失败，已保留分离缓存');
+      }
+    }
     entry
       ..downloadedBytes = entry.totalBytes
       ..isCompleted = true;
@@ -517,6 +544,37 @@ class DownloadService extends GetxService {
     _downloadManager = null;
     _audioDownloadManager = null;
     nextDownload();
+  }
+
+  /// Android 本地封装：用 MediaMuxer 把 DASH 的 video.m4s + audio.m4s
+  /// 合并为单个 0.mp4，成功后清理分离文件并把条目标记为 mp4(mediaType=1)。
+  Future<bool> _mergeToMp4(BiliDownloadEntryInfo entry) async {
+    try {
+      final videoDir = Directory(path.join(entry.entryDirPath, entry.typeTag));
+      final video = path.join(videoDir.path, PathUtils.videoNameType2);
+      final audio = path.join(videoDir.path, PathUtils.audioNameType2);
+      final out = path.join(videoDir.path, PathUtils.videoNameType1);
+      if (!File(video).existsSync() || !File(audio).existsSync()) {
+        return false;
+      }
+      final error = PiliAndroidHelper.mergeM4sToMp4(video, audio, out);
+      if (error != null) {
+        if (kDebugMode) debugPrint('merge mp4 error: $error');
+        return false;
+      }
+      if (!File(out).existsSync()) {
+        return false;
+      }
+      entry.mediaType = 1;
+      try {
+        File(video).deleteSync();
+        File(audio).deleteSync();
+      } catch (_) {}
+      return true;
+    } catch (e) {
+      if (kDebugMode) debugPrint('merge mp4 error: $e');
+      return false;
+    }
   }
 
   void nextDownload() {

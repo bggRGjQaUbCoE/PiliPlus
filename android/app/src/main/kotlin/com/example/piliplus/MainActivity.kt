@@ -39,22 +39,28 @@ class MainActivity : AudioServiceActivity() {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         AndroidHelper.isPipMode = isInPictureInPictureMode
     }
+
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        if (event.keyCode == KeyEvent.KEYCODE_BUTTON_B || event.keyCode == KeyEvent.KEYCODE_BUTTON_C) {
+        val keyCode = event.keyCode
+
+        if (keyCode == KeyEvent.KEYCODE_BUTTON_B || keyCode == KeyEvent.KEYCODE_BUTTON_C) {
             val backEvent = KeyEvent(
-                event.downTime,
-                event.eventTime,
-                event.action,
-                KeyEvent.KEYCODE_BACK,
-                event.repeatCount,
-                event.metaState,
-                event.deviceId,
-                event.scanCode,
-                event.flags,
-                event.source
+                event.downTime, event.eventTime, event.action,
+                KeyEvent.KEYCODE_BACK, event.repeatCount, event.metaState,
+                event.deviceId, event.scanCode, event.flags, event.source
             )
             return super.dispatchKeyEvent(backEvent)
         }
+
+        if (keyCode == KeyEvent.KEYCODE_BUTTON_START || keyCode == KeyEvent.KEYCODE_BUTTON_MODE) {
+            val homeEvent = KeyEvent(
+                event.downTime, event.eventTime, event.action,
+                KeyEvent.KEYCODE_HOME, event.repeatCount, event.metaState,
+                event.deviceId, event.scanCode, event.flags, event.source
+            )
+            return super.dispatchKeyEvent(homeEvent)
+        }
+
         return super.dispatchKeyEvent(event)
     }
 }

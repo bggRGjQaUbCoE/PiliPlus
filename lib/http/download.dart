@@ -49,7 +49,7 @@ abstract final class DownloadHttp {
 
     var res = await request();
     // 服务器 mp4(非 Android 合并) 无 durl 时，回退为 DASH(分离缓存)
-    if (forceMerged && res case Success(:final r) when r.durl == null) {
+    if (forceMerged && res case Success(:final r) && r.durl == null) {
       forceMerged = false;
       res = await request();
     }

@@ -52,13 +52,11 @@ class MainActivity : AudioServiceActivity() {
             return super.dispatchKeyEvent(backEvent)
         }
 
-        if (keyCode == KeyEvent.KEYCODE_BUTTON_START || keyCode == KeyEvent.KEYCODE_BUTTON_MODE) {
-            val homeEvent = KeyEvent(
-                event.downTime, event.eventTime, event.action,
-                KeyEvent.KEYCODE_HOME, event.repeatCount, event.metaState,
-                event.deviceId, event.scanCode, event.flags, event.source
-            )
-            return super.dispatchKeyEvent(homeEvent)
+        if (keyCode == KeyEvent.KEYCODE_BUTTON_MODE || keyCode == KeyEvent.KEYCODE_BUTTON_START) {
+            if (event.action == KeyEvent.ACTION_DOWN) {
+                moveTaskToBack(true) 
+            }
+            return true 
         }
 
         return super.dispatchKeyEvent(event)

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show File;
 
 import 'package:PiliPlus/common/constants.dart';
@@ -530,7 +531,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               .then((res) {
                 if (res.data['code'] == 0) {
                   SmartDialog.showToast('修改成功');
-                  Future.delayed(const Duration(milliseconds: 500), () {
+                  Timer(const Duration(milliseconds: 500), () {
                     if (mounted) {
                       _getInfo();
                     }

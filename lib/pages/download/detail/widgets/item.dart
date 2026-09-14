@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:PiliPlus/common/style.dart';
@@ -123,7 +124,7 @@ class DetailItem extends StatelessWidget {
               },
             );
             if (context.mounted) {
-              Future.delayed(const Duration(milliseconds: 400), () {
+              Timer(const Duration(milliseconds: 400), () {
                 if (context.mounted) {
                   // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
                   progress?.notifyListeners();

@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/dialog/report.dart';
+import 'package:PiliPlus/common/widgets/emote_tooltip.dart';
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart';
@@ -20,7 +21,6 @@ import 'package:PiliPlus/grpc/reply.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/reply.dart';
 import 'package:PiliPlus/http/video.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/pages/member/widget/medal_widget.dart';
 import 'package:PiliPlus/pages/save_panel/view.dart';
@@ -37,6 +37,7 @@ import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/selectable_region_ext.dart';
+import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/global_data.dart';
@@ -46,6 +47,7 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
@@ -820,22 +822,30 @@ class ReplyItemGrpc extends StatelessWidget {
       onMatch: (Match match) {
         String matchStr = match[0]!;
         late final name = matchStr.substring(1);
-        late final topic = matchStr.substring(1, matchStr.length - 1);
+        late final topic = matchStr.substring1;
         if (content.emotes.containsKey(matchStr)) {
           // 处理表情
           final emote = content.emotes[matchStr]!;
           final size = emote.size.toInt() * 20.0;
+          final url = emote.hasWebpUrl()
+              ? emote.webpUrl
+              : emote.hasGifUrl()
+              ? emote.gifUrl
+              : emote.url;
           spanChildren.add(
             WidgetSpan(
-              child: NetworkImgLayer(
-                src: emote.hasWebpUrl()
-                    ? emote.webpUrl
-                    : emote.hasGifUrl()
-                    ? emote.gifUrl
-                    : emote.url,
-                type: ImageType.emote,
-                width: size,
-                height: size,
+              child: emoteTooltipBuilder(
+                url: url,
+                emote: matchStr,
+                triggerMode: .tap,
+                jumpUrl: emote.hasJumpUrl() ? emote.jumpUrl : null,
+                colorScheme: colorScheme,
+                child: NetworkImgLayer(
+                  src: url,
+                  type: .emote,
+                  width: size,
+                  height: size,
+                ),
               ),
             ),
           );
@@ -1140,13 +1150,21 @@ class ReplyItemGrpc extends StatelessWidget {
             ListTile(
               onTap: () {
                 Get.back();
+
+                final oid = item.oid;
+                final rpid = item.id;
+
                 autoWrapReportDialog(
                   context,
                   ReportOptions.commentReport,
+                  withContent: ReportOptions.withContentReply,
+                  contentRequired: ReportOptions.contentRequiredReply,
+                  reportUrl:
+                      'https://www.bilibili.com/h5/comment/report?oid=$oid&pageType=${item.type}&rpid=$rpid&platform=android&build=8430300&${ThemeUtils.themeUrl(colorScheme.isDark)}',
                   (reasonType, reasonDesc, banUid) async {
                     final res = await ReplyHttp.report(
-                      rpid: item.id,
-                      oid: item.oid,
+                      rpid: rpid,
+                      oid: oid,
                       reasonType: reasonType,
                       reasonDesc: reasonDesc,
                       banUid: banUid,

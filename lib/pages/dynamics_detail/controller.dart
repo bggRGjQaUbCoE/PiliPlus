@@ -9,6 +9,8 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 class DynamicDetailController extends CommonDynController with ReloadMixin {
+  DynamicDetailController({super.count});
+
   @override
   late int oid;
   @override

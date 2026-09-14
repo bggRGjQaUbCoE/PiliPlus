@@ -30,7 +30,7 @@ class PlayerArgs extends $pb.GeneratedMessage {
     $fixnum.Int64? voiceBalance,
     QnPolicy? qnPolicy,
   }) {
-    final result = create();
+    final result = PlayerArgs._();
     if (qn != null) result.qn = qn;
     if (fnver != null) result.fnver = fnver;
     if (fnval != null) result.fnval = fnval;
@@ -44,16 +44,16 @@ class PlayerArgs extends $pb.GeneratedMessage {
 
   factory PlayerArgs.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      PlayerArgs()..mergeFromBuffer(data, registry);
   factory PlayerArgs.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      PlayerArgs()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'PlayerArgs',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.archive.middleware.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: PlayerArgs.$_createMessage)
     ..aInt64(1, _omitFieldNames ? '' : 'qn')
     ..aInt64(2, _omitFieldNames ? '' : 'fnver')
     ..aInt64(3, _omitFieldNames ? '' : 'fnval')
@@ -73,12 +73,14 @@ class PlayerArgs extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use PlayerArgs() / PlayerArgs.new instead')
   static PlayerArgs create() => PlayerArgs._();
+  static $pb.GeneratedMessage $_createMessage() => PlayerArgs._();
   @$core.override
-  PlayerArgs createEmptyInstance() => create();
+  PlayerArgs createEmptyInstance() => PlayerArgs._();
   @$core.pragma('dart2js:noInline')
   static PlayerArgs getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<PlayerArgs>(create);
+      $pb.GeneratedMessage.$_defaultFor<PlayerArgs>(PlayerArgs.$_createMessage);
   static PlayerArgs? _defaultInstance;
 
   @$pb.TagNumber(1)

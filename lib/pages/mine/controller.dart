@@ -16,10 +16,10 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:material_ui/material_ui.dart';
 
 class MineController extends CommonDataController<FavFolderData, FavFolderData>
     with AccountMixin {
@@ -191,6 +191,7 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
                     '不产生查询或播放记录\n'
                     '点赞等其它操作不受影响\n'
                     '播放进度信息跟随视频取流\n'
+                    '上次观看分p信息跟随主账号\n'
                     '(前往隐私设置了解详情)',
                     style: theme.textTheme.bodySmall,
                   ),

@@ -24,7 +24,7 @@ class FanNumColorFormat extends $pb.GeneratedMessage {
     $core.Iterable<$core.String>? colors,
     $core.Iterable<$fixnum.Int64>? gradients,
   }) {
-    final result = create();
+    final result = FanNumColorFormat._();
     if (startPoint != null) result.startPoint = startPoint;
     if (endPoint != null) result.endPoint = endPoint;
     if (colors != null) result.colors.addAll(colors);
@@ -36,16 +36,16 @@ class FanNumColorFormat extends $pb.GeneratedMessage {
 
   factory FanNumColorFormat.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      FanNumColorFormat()..mergeFromBuffer(data, registry);
   factory FanNumColorFormat.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      FanNumColorFormat()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'FanNumColorFormat',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.vas.garb.model'),
-      createEmptyInstance: create)
+      createEmptyInstance: FanNumColorFormat.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'startPoint')
     ..aOS(2, _omitFieldNames ? '' : 'endPoint')
     ..pPS(3, _omitFieldNames ? '' : 'colors')
@@ -64,12 +64,15 @@ class FanNumColorFormat extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use FanNumColorFormat() / FanNumColorFormat.new instead')
   static FanNumColorFormat create() => FanNumColorFormat._();
+  static $pb.GeneratedMessage $_createMessage() => FanNumColorFormat._();
   @$core.override
-  FanNumColorFormat createEmptyInstance() => create();
+  FanNumColorFormat createEmptyInstance() => FanNumColorFormat._();
   @$core.pragma('dart2js:noInline')
-  static FanNumColorFormat getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<FanNumColorFormat>(create);
+  static FanNumColorFormat getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<FanNumColorFormat>(
+          FanNumColorFormat.$_createMessage);
   static FanNumColorFormat? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -102,7 +105,7 @@ class ImageGroup_VisualEffect extends $pb.GeneratedMessage {
     $core.String? medalImage,
     $core.String? colorTheme,
   }) {
-    final result = create();
+    final result = ImageGroup_VisualEffect._();
     if (medalImage != null) result.medalImage = medalImage;
     if (colorTheme != null) result.colorTheme = colorTheme;
     return result;
@@ -112,16 +115,16 @@ class ImageGroup_VisualEffect extends $pb.GeneratedMessage {
 
   factory ImageGroup_VisualEffect.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      ImageGroup_VisualEffect()..mergeFromBuffer(data, registry);
   factory ImageGroup_VisualEffect.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      ImageGroup_VisualEffect()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'ImageGroup.VisualEffect',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.vas.garb.model'),
-      createEmptyInstance: create)
+      createEmptyInstance: ImageGroup_VisualEffect.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'medalImage')
     ..aOS(2, _omitFieldNames ? '' : 'colorTheme')
     ..hasRequiredFields = false;
@@ -138,12 +141,16 @@ class ImageGroup_VisualEffect extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated(
+      'Use ImageGroup_VisualEffect() / ImageGroup_VisualEffect.new instead')
   static ImageGroup_VisualEffect create() => ImageGroup_VisualEffect._();
+  static $pb.GeneratedMessage $_createMessage() => ImageGroup_VisualEffect._();
   @$core.override
-  ImageGroup_VisualEffect createEmptyInstance() => create();
+  ImageGroup_VisualEffect createEmptyInstance() => ImageGroup_VisualEffect._();
   @$core.pragma('dart2js:noInline')
   static ImageGroup_VisualEffect getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<ImageGroup_VisualEffect>(create);
+      $pb.GeneratedMessage.$_defaultFor<ImageGroup_VisualEffect>(
+          ImageGroup_VisualEffect.$_createMessage);
   static ImageGroup_VisualEffect? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -170,7 +177,7 @@ class ImageGroup extends $pb.GeneratedMessage {
     $fixnum.Int64? type,
     ImageGroup_VisualEffect? effectVisual,
   }) {
-    final result = create();
+    final result = ImageGroup._();
     if (type != null) result.type = type;
     if (effectVisual != null) result.effectVisual = effectVisual;
     return result;
@@ -180,19 +187,19 @@ class ImageGroup extends $pb.GeneratedMessage {
 
   factory ImageGroup.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      ImageGroup()..mergeFromBuffer(data, registry);
   factory ImageGroup.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      ImageGroup()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'ImageGroup',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.vas.garb.model'),
-      createEmptyInstance: create)
+      createEmptyInstance: ImageGroup.$_createMessage)
     ..aInt64(1, _omitFieldNames ? '' : 'type')
     ..aOM<ImageGroup_VisualEffect>(2, _omitFieldNames ? '' : 'effectVisual',
-        subBuilder: ImageGroup_VisualEffect.create)
+        subBuilder: ImageGroup_VisualEffect.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -205,12 +212,14 @@ class ImageGroup extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use ImageGroup() / ImageGroup.new instead')
   static ImageGroup create() => ImageGroup._();
+  static $pb.GeneratedMessage $_createMessage() => ImageGroup._();
   @$core.override
-  ImageGroup createEmptyInstance() => create();
+  ImageGroup createEmptyInstance() => ImageGroup._();
   @$core.pragma('dart2js:noInline')
   static ImageGroup getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<ImageGroup>(create);
+      $pb.GeneratedMessage.$_defaultFor<ImageGroup>(ImageGroup.$_createMessage);
   static ImageGroup? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -244,7 +253,7 @@ class UserCardBG extends $pb.GeneratedMessage {
     $core.String? type,
     ImageGroup? imageGroup,
   }) {
-    final result = create();
+    final result = UserCardBG._();
     if (id != null) result.id = id;
     if (name != null) result.name = name;
     if (image != null) result.image = image;
@@ -259,25 +268,25 @@ class UserCardBG extends $pb.GeneratedMessage {
 
   factory UserCardBG.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      UserCardBG()..mergeFromBuffer(data, registry);
   factory UserCardBG.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      UserCardBG()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'UserCardBG',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.vas.garb.model'),
-      createEmptyInstance: create)
+      createEmptyInstance: UserCardBG.$_createMessage)
     ..aInt64(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'name')
     ..aOS(3, _omitFieldNames ? '' : 'image')
     ..aOS(4, _omitFieldNames ? '' : 'jumpUrl')
     ..aOM<UserFanShow>(5, _omitFieldNames ? '' : 'fan',
-        subBuilder: UserFanShow.create)
+        subBuilder: UserFanShow.$_createMessage)
     ..aOS(6, _omitFieldNames ? '' : 'type')
     ..aOM<ImageGroup>(7, _omitFieldNames ? '' : 'imageGroup',
-        subBuilder: ImageGroup.create)
+        subBuilder: ImageGroup.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -290,12 +299,14 @@ class UserCardBG extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use UserCardBG() / UserCardBG.new instead')
   static UserCardBG create() => UserCardBG._();
+  static $pb.GeneratedMessage $_createMessage() => UserCardBG._();
   @$core.override
-  UserCardBG createEmptyInstance() => create();
+  UserCardBG createEmptyInstance() => UserCardBG._();
   @$core.pragma('dart2js:noInline')
   static UserCardBG getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<UserCardBG>(create);
+      $pb.GeneratedMessage.$_defaultFor<UserCardBG>(UserCardBG.$_createMessage);
   static UserCardBG? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -376,7 +387,7 @@ class UserFanShow extends $pb.GeneratedMessage {
     $core.String? numPrefix,
     FanNumColorFormat? colorFormat,
   }) {
-    final result = create();
+    final result = UserFanShow._();
     if (isFan != null) result.isFan = isFan;
     if (number != null) result.number = number;
     if (color != null) result.color = color;
@@ -391,16 +402,16 @@ class UserFanShow extends $pb.GeneratedMessage {
 
   factory UserFanShow.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      UserFanShow()..mergeFromBuffer(data, registry);
   factory UserFanShow.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      UserFanShow()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'UserFanShow',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.vas.garb.model'),
-      createEmptyInstance: create)
+      createEmptyInstance: UserFanShow.$_createMessage)
     ..aInt64(1, _omitFieldNames ? '' : 'isFan')
     ..aInt64(2, _omitFieldNames ? '' : 'number')
     ..aOS(3, _omitFieldNames ? '' : 'color')
@@ -408,7 +419,7 @@ class UserFanShow extends $pb.GeneratedMessage {
     ..aOS(5, _omitFieldNames ? '' : 'numDesc')
     ..aOS(6, _omitFieldNames ? '' : 'numPrefix')
     ..aOM<FanNumColorFormat>(7, _omitFieldNames ? '' : 'colorFormat',
-        subBuilder: FanNumColorFormat.create)
+        subBuilder: FanNumColorFormat.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -422,12 +433,15 @@ class UserFanShow extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use UserFanShow() / UserFanShow.new instead')
   static UserFanShow create() => UserFanShow._();
+  static $pb.GeneratedMessage $_createMessage() => UserFanShow._();
   @$core.override
-  UserFanShow createEmptyInstance() => create();
+  UserFanShow createEmptyInstance() => UserFanShow._();
   @$core.pragma('dart2js:noInline')
-  static UserFanShow getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<UserFanShow>(create);
+  static UserFanShow getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UserFanShow>(
+          UserFanShow.$_createMessage);
   static UserFanShow? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -506,7 +520,7 @@ class UserPendant extends $pb.GeneratedMessage {
     $core.String? imageEnhance,
     $core.String? imageEnhanceFrame,
   }) {
-    final result = create();
+    final result = UserPendant._();
     if (id != null) result.id = id;
     if (name != null) result.name = name;
     if (image != null) result.image = image;
@@ -521,16 +535,16 @@ class UserPendant extends $pb.GeneratedMessage {
 
   factory UserPendant.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      UserPendant()..mergeFromBuffer(data, registry);
   factory UserPendant.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      UserPendant()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'UserPendant',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.vas.garb.model'),
-      createEmptyInstance: create)
+      createEmptyInstance: UserPendant.$_createMessage)
     ..aInt64(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'name')
     ..aOS(3, _omitFieldNames ? '' : 'image')
@@ -551,12 +565,15 @@ class UserPendant extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use UserPendant() / UserPendant.new instead')
   static UserPendant create() => UserPendant._();
+  static $pb.GeneratedMessage $_createMessage() => UserPendant._();
   @$core.override
-  UserPendant createEmptyInstance() => create();
+  UserPendant createEmptyInstance() => UserPendant._();
   @$core.pragma('dart2js:noInline')
-  static UserPendant getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<UserPendant>(create);
+  static UserPendant getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UserPendant>(
+          UserPendant.$_createMessage);
   static UserPendant? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -629,7 +646,7 @@ class UserSailing extends $pb.GeneratedMessage {
     UserCardBG? cardBg,
     UserCardBG? cardBgWithFocus,
   }) {
-    final result = create();
+    final result = UserSailing._();
     if (pendant != null) result.pendant = pendant;
     if (cardBg != null) result.cardBg = cardBg;
     if (cardBgWithFocus != null) result.cardBgWithFocus = cardBgWithFocus;
@@ -640,22 +657,22 @@ class UserSailing extends $pb.GeneratedMessage {
 
   factory UserSailing.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      UserSailing()..mergeFromBuffer(data, registry);
   factory UserSailing.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      UserSailing()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'UserSailing',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.vas.garb.model'),
-      createEmptyInstance: create)
+      createEmptyInstance: UserSailing.$_createMessage)
     ..aOM<UserPendant>(1, _omitFieldNames ? '' : 'pendant',
-        subBuilder: UserPendant.create)
+        subBuilder: UserPendant.$_createMessage)
     ..aOM<UserCardBG>(2, _omitFieldNames ? '' : 'cardBg',
-        subBuilder: UserCardBG.create)
+        subBuilder: UserCardBG.$_createMessage)
     ..aOM<UserCardBG>(3, _omitFieldNames ? '' : 'cardBgWithFocus',
-        subBuilder: UserCardBG.create)
+        subBuilder: UserCardBG.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -669,12 +686,15 @@ class UserSailing extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use UserSailing() / UserSailing.new instead')
   static UserSailing create() => UserSailing._();
+  static $pb.GeneratedMessage $_createMessage() => UserSailing._();
   @$core.override
-  UserSailing createEmptyInstance() => create();
+  UserSailing createEmptyInstance() => UserSailing._();
   @$core.pragma('dart2js:noInline')
-  static UserSailing getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<UserSailing>(create);
+  static UserSailing getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UserSailing>(
+          UserSailing.$_createMessage);
   static UserSailing? _defaultInstance;
 
   @$pb.TagNumber(1)

@@ -26,7 +26,7 @@ class Color extends $pb.GeneratedMessage {
     $core.String? colorDay,
     $core.String? colorNight,
   }) {
-    final result = create();
+    final result = Color._();
     if (colorDay != null) result.colorDay = colorDay;
     if (colorNight != null) result.colorNight = colorNight;
     return result;
@@ -36,16 +36,16 @@ class Color extends $pb.GeneratedMessage {
 
   factory Color.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      Color()..mergeFromBuffer(data, registry);
   factory Color.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      Color()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Color',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.account.service.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: Color.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'colorDay')
     ..aOS(2, _omitFieldNames ? '' : 'colorNight')
     ..hasRequiredFields = false;
@@ -60,12 +60,14 @@ class Color extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Color() / Color.new instead')
   static Color create() => Color._();
+  static $pb.GeneratedMessage $_createMessage() => Color._();
   @$core.override
-  Color createEmptyInstance() => create();
+  Color createEmptyInstance() => Color._();
   @$core.pragma('dart2js:noInline')
-  static Color getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Color>(create);
+  static Color getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Color>(Color.$_createMessage);
   static Color? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -92,7 +94,7 @@ class ColorsInfo extends $pb.GeneratedMessage {
     $core.Iterable<$fixnum.Int64>? colorIds,
     $core.Iterable<Color>? color,
   }) {
-    final result = create();
+    final result = ColorsInfo._();
     if (colorIds != null) result.colorIds.addAll(colorIds);
     if (color != null) result.color.addAll(color);
     return result;
@@ -102,18 +104,19 @@ class ColorsInfo extends $pb.GeneratedMessage {
 
   factory ColorsInfo.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      ColorsInfo()..mergeFromBuffer(data, registry);
   factory ColorsInfo.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      ColorsInfo()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'ColorsInfo',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.account.service.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: ColorsInfo.$_createMessage)
     ..p<$fixnum.Int64>(1, _omitFieldNames ? '' : 'colorIds', $pb.PbFieldType.K6)
-    ..pPM<Color>(2, _omitFieldNames ? '' : 'color', subBuilder: Color.create)
+    ..pPM<Color>(2, _omitFieldNames ? '' : 'color',
+        subBuilder: Color.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -126,12 +129,14 @@ class ColorsInfo extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use ColorsInfo() / ColorsInfo.new instead')
   static ColorsInfo create() => ColorsInfo._();
+  static $pb.GeneratedMessage $_createMessage() => ColorsInfo._();
   @$core.override
-  ColorsInfo createEmptyInstance() => create();
+  ColorsInfo createEmptyInstance() => ColorsInfo._();
   @$core.pragma('dart2js:noInline')
   static ColorsInfo getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<ColorsInfo>(create);
+      $pb.GeneratedMessage.$_defaultFor<ColorsInfo>(ColorsInfo.$_createMessage);
   static ColorsInfo? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -146,7 +151,7 @@ class NameRender extends $pb.GeneratedMessage {
     RenderSchemeEnum? renderScheme,
     ColorsInfo? colorsInfo,
   }) {
-    final result = create();
+    final result = NameRender._();
     if (renderScheme != null) result.renderScheme = renderScheme;
     if (colorsInfo != null) result.colorsInfo = colorsInfo;
     return result;
@@ -156,20 +161,20 @@ class NameRender extends $pb.GeneratedMessage {
 
   factory NameRender.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      NameRender()..mergeFromBuffer(data, registry);
   factory NameRender.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      NameRender()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'NameRender',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.account.service.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: NameRender.$_createMessage)
     ..aE<RenderSchemeEnum>(1, _omitFieldNames ? '' : 'renderScheme',
         enumValues: RenderSchemeEnum.values)
     ..aOM<ColorsInfo>(2, _omitFieldNames ? '' : 'colorsInfo',
-        subBuilder: ColorsInfo.create)
+        subBuilder: ColorsInfo.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -182,12 +187,14 @@ class NameRender extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use NameRender() / NameRender.new instead')
   static NameRender create() => NameRender._();
+  static $pb.GeneratedMessage $_createMessage() => NameRender._();
   @$core.override
-  NameRender createEmptyInstance() => create();
+  NameRender createEmptyInstance() => NameRender._();
   @$core.pragma('dart2js:noInline')
   static NameRender getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<NameRender>(create);
+      $pb.GeneratedMessage.$_defaultFor<NameRender>(NameRender.$_createMessage);
   static NameRender? _defaultInstance;
 
   @$pb.TagNumber(1)

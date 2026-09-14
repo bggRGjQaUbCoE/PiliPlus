@@ -406,7 +406,7 @@ abstract final class UserHttp {
         "accused_uid": mid,
         "dynamic_id": dynId,
         "reason_type": reasonType,
-        "reason_desc": reasonType == 0 ? reasonDesc : null,
+        "reason_desc": reasonDesc,
       },
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );

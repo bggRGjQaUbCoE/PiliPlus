@@ -1,3 +1,4 @@
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
 class PublishRoute<T> extends PopupRoute<T> {
@@ -6,10 +7,14 @@ class PublishRoute<T> extends PopupRoute<T> {
     this.barrierDismissible = true,
     this.barrierLabel,
     this.barrierColor = const Color(0x80000000),
-    this.transitionDuration = const Duration(milliseconds: 500),
+    Duration? transitionDuration,
     this._transitionBuilder,
     super.settings,
-  });
+  }) : transitionDuration =
+           transitionDuration ??
+           (PlatformUtils.isDesktop
+               ? const Duration(milliseconds: 400)
+               : const Duration(milliseconds: 500));
 
   final RoutePageBuilder pageBuilder;
 

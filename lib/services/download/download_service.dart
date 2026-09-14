@@ -5,7 +5,6 @@ import 'dart:io' show Directory, File;
 import 'package:PiliPlus/grpc/dm.dart';
 import 'package:PiliPlus/http/download.dart';
 import 'package:PiliPlus/http/init.dart';
-import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/models_new/download/bili_download_media_file_info.dart';
@@ -14,9 +13,9 @@ import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
-import 'package:PiliPlus/pages/danmaku/controller.dart';
 import 'package:PiliPlus/services/download/download_manager.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
+import 'package:PiliPlus/utils/danmaku_utils.dart';
 import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
@@ -32,6 +31,7 @@ import 'package:synchronized/synchronized.dart';
 class DownloadService extends GetxService {
   static const _entryFile = 'entry.json';
   static const _indexFile = 'index.json';
+  static const _maxDanmakuConcurrency = 4;
 
   final _lock = Lock();
 
@@ -313,21 +313,26 @@ class DownloadService extends GetxService {
         if (!isUpdate) {
           _updateCurStatus(DownloadStatus.getDanmaku);
         }
-        final seg = (entry.totalTimeMilli / PlDanmakuController.segmentLength)
-            .ceil();
-
-        final res = await Future.wait([
-          for (var i = 1; i <= seg; i++)
-            DmGrpc.dmSegMobile(cid: cid, segmentIndex: i),
-        ]);
-
-        final danmaku = res.removeAt(0).data;
-        for (final i in res) {
-          if (i case Success(:final response)) {
-            danmaku.elems.addAll(response.elems);
-          }
+        final seg = (entry.totalTimeMilli / DmUtils.segLength).ceil();
+        if (seg <= 0) {
+          throw StateError('Invalid danmaku segment count: $seg');
         }
-        res.clear();
+
+        final danmaku = (await DmGrpc.dmSegMobile(
+          cid: cid,
+          segmentIndex: 1,
+        )).data;
+        for (var start = 2; start <= seg; start += _maxDanmakuConcurrency) {
+          final end = start + _maxDanmakuConcurrency - 1;
+          final responses = await Future.wait([
+            for (var index = start; index <= seg && index <= end; index++)
+              DmGrpc.dmSegMobile(cid: cid, segmentIndex: index),
+          ]);
+          for (final response in responses) {
+            danmaku.elems.addAll(response.data.elems);
+          }
+          responses.clear();
+        }
         await danmakuFile.writeAsBytes(danmaku.writeToBuffer());
 
         return true;

@@ -19,21 +19,19 @@ static void first_frame_cb(MyApplication *self, FlView *view) {
   gtk_widget_show(gtk_widget_get_toplevel(GTK_WIDGET(view)));
 }
 
-// Called when window is requested to be closed.
-static gboolean window_delete_event_cb(GtkWidget *widget, GdkEvent *event,
-                                       gpointer data) {
-  // Get the application and quit it.
-  GtkApplication *app = gtk_window_get_application(GTK_WINDOW(widget));
-  if (app != nullptr) {
-    g_application_quit(G_APPLICATION(app));
-  }
-  // Return TRUE to prevent further processing of the delete event.
-  return TRUE;
-}
-
 // Implements GApplication::activate.
 static void my_application_activate(GApplication *application) {
   MyApplication *self = MY_APPLICATION(application);
+
+  // A repeated launch is forwarded to this unique application instance.
+  GList *windows = gtk_application_get_windows(GTK_APPLICATION(application));
+  if (windows != nullptr) {
+    GtkWindow *window = GTK_WINDOW(windows->data);
+    gtk_widget_show(GTK_WIDGET(window));
+    gtk_window_present(window);
+    return;
+  }
+
   GtkWindow *window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
 
@@ -96,10 +94,6 @@ static void my_application_activate(GApplication *application) {
                            self);
   gtk_widget_realize(GTK_WIDGET(view));
 
-  // Connect the delete-event signal to handle window close.
-  g_signal_connect(window, "delete-event", G_CALLBACK(window_delete_event_cb),
-                   NULL);
-
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
 
   gtk_widget_grab_focus(GTK_WIDGET(view));
@@ -123,7 +117,7 @@ static gboolean my_application_local_command_line(GApplication *application,
   g_application_activate(application);
   *exit_status = 0;
 
-  return TRUE;
+  return FALSE;
 }
 
 // Implements GApplication::startup.
@@ -170,5 +164,8 @@ MyApplication *my_application_new() {
   g_set_prgname(APPLICATION_ID);
 
   return MY_APPLICATION(g_object_new(
-      my_application_get_type(), "application-id", APPLICATION_ID, nullptr));
+      my_application_get_type(), "application-id", APPLICATION_ID, "flags",
+      static_cast<GApplicationFlags>(G_APPLICATION_HANDLES_COMMAND_LINE |
+                                     G_APPLICATION_HANDLES_OPEN),
+      nullptr));
 }

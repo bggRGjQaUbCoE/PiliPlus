@@ -30,7 +30,7 @@ abstract class CommonIntroController extends GetxController
   late String bvid;
 
   // 是否稍后再看
-  final RxBool hasLater = false.obs;
+  late final RxBool hasLater;
 
   final Rx<List<VideoTagItem>?> videoTags = Rx<List<VideoTagItem>?>(null);
 
@@ -78,7 +78,9 @@ abstract class CommonIntroController extends GetxController
     heroTag = args['heroTag'];
     bvid = args['bvid'];
     cid = RxInt(args['cid']);
-    hasLater.value = args['sourceType'] == SourceType.watchLater;
+    hasLater = RxBool(
+      args['viewLater'] ?? args['sourceType'] == SourceType.watchLater,
+    );
 
     queryVideoIntro();
     startTimer();

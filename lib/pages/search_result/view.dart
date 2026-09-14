@@ -3,6 +3,7 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/models/common/search/search_type.dart';
 import 'package:PiliPlus/pages/search/controller.dart';
+import 'package:PiliPlus/pages/search_panel/all/view.dart';
 import 'package:PiliPlus/pages/search_panel/article/view.dart';
 import 'package:PiliPlus/pages/search_panel/live/view.dart';
 import 'package:PiliPlus/pages/search_panel/pgc/view.dart';
@@ -155,33 +156,32 @@ class _SearchResultPageState extends State<SearchResultPage>
                 children: SearchType.values
                     .map(
                       (item) => switch (item) {
-                        // SearchType.all => SearchAllPanel(
-                        //   tag: _tag,
-                        //   searchType: item,
-                        //   keyword: _searchResultController.keyword,
-                        // ),
-                        SearchType.video => SearchVideoPanel(
+                        .all => SearchAllPanel(
                           tag: _tag,
                           searchType: item,
                           keyword: _searchResultController.keyword,
                         ),
-                        SearchType.media_bangumi ||
-                        SearchType.media_ft => SearchPgcPanel(
+                        .video => SearchVideoPanel(
                           tag: _tag,
                           searchType: item,
                           keyword: _searchResultController.keyword,
                         ),
-                        SearchType.live_room => SearchLivePanel(
+                        .media_bangumi || .media_ft => SearchPgcPanel(
                           tag: _tag,
                           searchType: item,
                           keyword: _searchResultController.keyword,
                         ),
-                        SearchType.bili_user => SearchUserPanel(
+                        .live_room => SearchLivePanel(
                           tag: _tag,
                           searchType: item,
                           keyword: _searchResultController.keyword,
                         ),
-                        SearchType.article => SearchArticlePanel(
+                        .bili_user => SearchUserPanel(
+                          tag: _tag,
+                          searchType: item,
+                          keyword: _searchResultController.keyword,
+                        ),
+                        .article => SearchArticlePanel(
                           tag: _tag,
                           searchType: item,
                           keyword: _searchResultController.keyword,

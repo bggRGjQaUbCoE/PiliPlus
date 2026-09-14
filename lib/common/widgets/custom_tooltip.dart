@@ -1,23 +1,37 @@
-import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:flutter/gestures.dart';
+import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:flutter/gestures.dart'
+    show
+        TapGestureRecognizer,
+        HitTestTarget,
+        LongPressGestureRecognizer,
+        HitTestEntry;
 import 'package:flutter/rendering.dart'
     show
         ContainerRenderObjectMixin,
         RenderBoxContainerDefaultsMixin,
-        MultiChildLayoutParentData;
+        MultiChildLayoutParentData,
+        BoxHitTestResult,
+        BoxHitTestEntry;
 import 'package:flutter/widgets.dart';
+
+// ignore: camel_case_types
+enum TriggerMode_ { longPress, tap, mouse }
 
 class CustomTooltip extends StatefulWidget {
   const CustomTooltip({
     super.key,
-    required this.overlayWidget,
+    this.jumpUrl,
     required this.child,
     required this.indicator,
+    required this.triggerMode,
+    required this.overlayWidget,
   });
 
   final Widget child;
+  final String? jumpUrl;
   final ValueGetter<Widget> overlayWidget;
-  final ValueGetter<Widget> indicator;
+  final ValueGetter<Triangle> indicator;
+  final TriggerMode_ triggerMode;
 
   @override
   State<CustomTooltip> createState() => _CustomTooltipState();
@@ -31,17 +45,29 @@ class _CustomTooltipState extends State<CustomTooltip> {
       _longPressRecognizer ??= LongPressGestureRecognizer()
         ..onLongPress = _scheduleShowTooltip;
 
-  void _scheduleShowTooltip() {
+  TapGestureRecognizer? _tapGestureRecognizer;
+  TapGestureRecognizer get tapGestureRecognizer =>
+      _tapGestureRecognizer ??= TapGestureRecognizer()
+        ..onTap = _scheduleShowTooltip;
+
+  void _scheduleShowTooltip([_]) {
     _overlayController.show();
   }
 
-  void _scheduleDismissTooltip() {
+  void _scheduleDismissTooltip([_]) {
     _overlayController.hide();
   }
 
   void _handlePointerDown(PointerDownEvent event) {
     assert(mounted);
-    longPressRecognizer.addPointer(event);
+    switch (widget.triggerMode) {
+      case .longPress:
+        longPressRecognizer.addPointer(event);
+      case .tap:
+        tapGestureRecognizer.addPointer(event);
+      case .mouse:
+        throw UnimplementedError();
+    }
   }
 
   Widget _buildCustomTooltipOverlay(
@@ -50,11 +76,16 @@ class _CustomTooltipState extends State<CustomTooltip> {
   ) {
     final target = MatrixUtils.transformPoint(
       layoutInfo.childPaintTransform,
-      layoutInfo.childSize.topCenter(Offset.zero),
+      layoutInfo.childSize.topCenter(const Offset(0, -3)),
     );
     final _CustomTooltipOverlay overlayChild = _CustomTooltipOverlay(
+      jumpUrl: widget.jumpUrl,
       target: target,
-      onDismiss: _scheduleDismissTooltip,
+      childSize: layoutInfo.childSize,
+      onDismiss: switch (widget.triggerMode) {
+        .longPress || .tap => _scheduleDismissTooltip,
+        .mouse => null,
+      },
       overlayWidget: widget.overlayWidget,
       indicator: widget.indicator,
     );
@@ -70,27 +101,29 @@ class _CustomTooltipState extends State<CustomTooltip> {
       ?..onLongPress = null
       ..dispose();
     _longPressRecognizer = null;
+    _tapGestureRecognizer
+      ?..onTap = null
+      ..dispose();
+    _tapGestureRecognizer = null;
     super.dispose();
   }
 
   @protected
   @override
   Widget build(BuildContext context) {
-    Widget result;
-    if (PlatformUtils.isMobile) {
-      result = Listener(
+    final result = switch (widget.triggerMode) {
+      .longPress || .tap => Listener(
         onPointerDown: _handlePointerDown,
         behavior: HitTestBehavior.opaque,
         child: widget.child,
-      );
-    } else {
-      result = MouseRegion(
+      ),
+      .mouse => MouseRegion(
         cursor: MouseCursor.defer,
-        onEnter: (_) => _scheduleShowTooltip(),
-        onExit: (_) => _scheduleDismissTooltip(),
+        onEnter: _scheduleShowTooltip,
+        onExit: _scheduleDismissTooltip,
         child: widget.child,
-      );
-    }
+      ),
+    };
     return OverlayPortal.overlayChildLayoutBuilder(
       controller: _overlayController,
       overlayChildBuilder: _buildCustomTooltipOverlay,
@@ -101,26 +134,32 @@ class _CustomTooltipState extends State<CustomTooltip> {
 
 class _CustomTooltipOverlay extends StatelessWidget {
   const _CustomTooltipOverlay({
+    this.jumpUrl,
     required this.target,
+    required this.childSize,
     required this.onDismiss,
     required this.overlayWidget,
     required this.indicator,
   });
 
+  final String? jumpUrl;
   final Offset target;
-  final VoidCallback onDismiss;
+  final Size childSize;
+  final VoidCallback? onDismiss;
   final ValueGetter<Widget> overlayWidget;
-  final ValueGetter<Widget> indicator;
+  final ValueGetter<Triangle> indicator;
 
   @override
   Widget build(BuildContext context) {
     return _ToolTip(
+      jumpUrl: jumpUrl,
       target: target,
+      childSize: childSize,
       preferBelow: false,
-      onTap: PlatformUtils.isMobile ? onDismiss : null,
+      onDismiss: onDismiss,
       children: [
-        indicator(),
         overlayWidget(),
+        indicator(),
       ],
     );
   }
@@ -129,20 +168,26 @@ class _CustomTooltipOverlay extends StatelessWidget {
 class _ToolTip extends MultiChildRenderObjectWidget {
   const _ToolTip({
     super.children,
-    this.onTap,
+    this.jumpUrl,
+    this.onDismiss,
     required this.target,
+    required this.childSize,
     required this.preferBelow,
   });
 
-  final VoidCallback? onTap;
+  final String? jumpUrl;
+  final VoidCallback? onDismiss;
   final Offset target;
+  final Size childSize;
   final bool preferBelow;
 
   @override
   RenderObject createRenderObject(BuildContext context) {
     return _RenderToolTip(
-      onTap: onTap,
+      jumpUrl: jumpUrl,
+      onDismiss: onDismiss,
       target: target,
+      childSize: childSize,
       preferBelow: preferBelow,
     );
   }
@@ -150,7 +195,6 @@ class _ToolTip extends MultiChildRenderObjectWidget {
   @override
   void updateRenderObject(BuildContext context, _RenderToolTip renderObject) {
     renderObject
-      ..onTap = onTap
       ..target = target
       ..preferBelow = preferBelow;
   }
@@ -161,19 +205,48 @@ class _RenderToolTip extends RenderBox
         ContainerRenderObjectMixin<RenderBox, MultiChildLayoutParentData>,
         RenderBoxContainerDefaultsMixin<RenderBox, MultiChildLayoutParentData> {
   _RenderToolTip({
-    VoidCallback? onTap,
+    String? jumpUrl,
+    this._onDismiss,
     required this._target,
+    required this._childSize,
     required this._preferBelow,
-  }) : _hitTestSelf = onTap != null {
-    if (onTap != null) {
-      _tapGestureRecognizer = TapGestureRecognizer()..onTap = onTap;
+  }) : _hitTestSelf = _onDismiss != null {
+    if (jumpUrl != null && jumpUrl.isNotEmpty) {
+      _tapGestureRecognizer = TapGestureRecognizer()
+        ..onTap = () {
+          _onDismiss?.call();
+          PageUtils.handleWebview(jumpUrl);
+        };
     }
   }
 
+  final VoidCallback? _onDismiss;
+  late bool _isChildHit = false;
   TapGestureRecognizer? _tapGestureRecognizer;
 
-  set onTap(VoidCallback? value) {
-    _tapGestureRecognizer?.onTap = value;
+  final bool _hitTestSelf;
+  @override
+  bool hitTestSelf(Offset position) => _hitTestSelf;
+
+  @override
+  void handleEvent(PointerEvent event, HitTestEntry<HitTestTarget> entry) {
+    if (event is PointerDownEvent) {
+      if (_isChildHit) {
+        _tapGestureRecognizer?.addPointer(event);
+      } else {
+        _onDismiss?.call();
+      }
+    }
+  }
+
+  @override
+  bool hitTest(BoxHitTestResult result, {required Offset position}) {
+    if (_hitTestSelf) {
+      _isChildHit = defaultHitTestChildren(result, position: position);
+      result.add(BoxHitTestEntry(this, position));
+      return true;
+    }
+    return false;
   }
 
   @override
@@ -185,16 +258,7 @@ class _RenderToolTip extends RenderBox
     super.dispose();
   }
 
-  final bool _hitTestSelf;
-  @override
-  bool hitTestSelf(Offset position) => _hitTestSelf;
-
-  @override
-  void handleEvent(PointerEvent event, HitTestEntry<HitTestTarget> entry) {
-    if (event is PointerDownEvent) {
-      _tapGestureRecognizer?.addPointer(event);
-    }
-  }
+  final Size _childSize;
 
   Offset _target;
   Offset get target => _target;
@@ -224,8 +288,9 @@ class _RenderToolTip extends RenderBox
     size = constraints.constrain(constraints.biggest);
 
     final c = BoxConstraints.loose(size);
-    RenderBox indicator = firstChild!..layout(c, parentUsesSize: true);
-    RenderBox overlay = lastChild!..layout(c, parentUsesSize: true);
+    RenderTriangle indicator = (lastChild! as RenderTriangle)
+      ..layout(c, parentUsesSize: true);
+    RenderBox overlay = firstChild!..layout(c, parentUsesSize: true);
 
     final indicatorSize = indicator.size;
     final overlaySize = overlay.size;
@@ -234,18 +299,43 @@ class _RenderToolTip extends RenderBox
         indicator.parentData as MultiChildLayoutParentData;
     final overlayParentData = overlay.parentData as MultiChildLayoutParentData;
 
-    Offset offset = positionDependentBox(
-      size: size,
-      childSize: overlaySize,
-      target: target,
-      preferBelow: preferBelow,
-    );
-    offset = Offset(offset.dx, offset.dy - indicatorSize.height + 1);
-    overlayParentData.offset = offset;
-    indicatorParentData.offset = Offset(
-      target.dx - indicatorSize.width / 2,
-      offset.dy + overlaySize.height - 1,
-    );
+    const margin = 10.0;
+    if (target.dy < indicatorSize.height + overlaySize.height + margin) {
+      indicator._invert = true;
+      final target_ = target.translate(0, _childSize.height + 6);
+      final offset = positionDependentBox(
+        size: size,
+        childSize: overlaySize,
+        target: target_,
+        preferBelow: true,
+        margin: margin,
+      );
+      overlayParentData.offset = Offset(
+        offset.dx,
+        offset.dy + indicatorSize.height - 1,
+      );
+      indicatorParentData.offset = Offset(
+        target.dx - indicatorSize.width / 2,
+        offset.dy,
+      );
+    } else {
+      indicator._invert = false;
+      final offset = positionDependentBox(
+        size: size,
+        childSize: overlaySize,
+        target: target,
+        preferBelow: preferBelow,
+        margin: margin,
+      );
+      overlayParentData.offset = Offset(
+        offset.dx,
+        offset.dy - indicatorSize.height + 1,
+      );
+      indicatorParentData.offset = Offset(
+        target.dx - indicatorSize.width / 2,
+        offset.dy + overlaySize.height - indicatorSize.height,
+      );
+    }
   }
 
   @override
@@ -289,6 +379,8 @@ class RenderTriangle extends RenderBox {
     required this._preferredSize,
   });
 
+  bool _invert = false;
+
   Color _color;
   Color get color => _color;
   set color(Color value) {
@@ -316,12 +408,29 @@ class RenderTriangle extends RenderBox {
       ..color = color
       ..style = PaintingStyle.fill;
 
-    final path = Path()
-      ..moveTo(offset.dx, offset.dy)
-      ..lineTo(offset.dx + size.width, offset.dy)
-      ..lineTo(offset.dx + size.width / 2, size.height + offset.dy)
-      ..close();
+    final Path path;
+    if (_invert) {
+      path = Path()
+        ..moveTo(offset.dx, offset.dy + size.height)
+        ..lineTo(offset.dx + size.width / 2, offset.dy)
+        ..lineTo(offset.dx + size.width, offset.dy + size.height);
+    } else {
+      path = Path()
+        ..moveTo(offset.dx, offset.dy)
+        ..lineTo(offset.dx + size.width / 2, offset.dy + size.height)
+        ..lineTo(offset.dx + size.width, offset.dy);
+    }
 
-    context.canvas.drawPath(path, paint);
+    context.canvas
+      ..drawPath(path, paint)
+      ..drawPath(
+        path,
+        paint
+          ..color = borderColor
+          ..style = .stroke
+          ..strokeWidth = 1.2,
+      );
   }
 }
+
+const borderColor = Color(0x1F9E9E9E);

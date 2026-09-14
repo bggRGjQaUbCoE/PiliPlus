@@ -4,8 +4,8 @@ import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/log_table/controller.dart';
 import 'package:PiliPlus/utils/extension/widget_ext.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class LogPage<T> extends StatefulWidget {
   const LogPage({super.key});

@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -80,6 +81,16 @@ void imageSaveDialog({
                               ImageUtils.onShareImg(cover);
                             },
                             icon: const Icon(Icons.share),
+                          )
+                        else
+                          iconButton(
+                            iconSize: 18,
+                            tooltip: '复制链接',
+                            onPressed: () {
+                              SmartDialog.dismiss();
+                              Utils.copyText(cover);
+                            },
+                            icon: const Icon(Icons.copy),
                           ),
                         iconButton(
                           iconSize: _iconSize,

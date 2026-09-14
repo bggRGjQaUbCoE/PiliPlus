@@ -6,16 +6,23 @@ import 'package:PiliPlus/models_new/msg/msgfeed_unread.dart';
 import 'package:PiliPlus/pages/common/common_whisper_controller.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/foundation.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:protobuf/protobuf.dart' show PbMap;
+
+typedef MsgFeedTopItem = ({
+  bool enabled,
+  IconData icon,
+  String name,
+  String route,
+});
 
 class WhisperController extends CommonWhisperController<SessionMainReply> {
   @override
   SessionPageType sessionPageType = SessionPageType.SESSION_PAGE_TYPE_HOME;
 
-  late final List<({bool enabled, IconData icon, String name, String route})>
-  msgFeedTopItems;
+  late final List<MsgFeedTopItem> msgFeedTopItems;
+  final disableLikeMsg = Pref.disableLikeMsg;
   late final RxList<int> unreadCounts;
 
   PbMap<int, Offset>? offset;
@@ -43,7 +50,7 @@ class WhisperController extends CommonWhisperController<SessionMainReply> {
         name: "收到的赞",
         icon: Icons.favorite_border_outlined,
         route: "/likeMe",
-        enabled: !Pref.disableLikeMsg,
+        enabled: !disableLikeMsg,
       ),
       const (
         name: "系统通知",
@@ -61,7 +68,12 @@ class WhisperController extends CommonWhisperController<SessionMainReply> {
     final res = await ImGrpc.getTotalUnread(unreadType: 2);
     if (res case Success(:final response)) {
       final data = MsgFeedUnread.fromJson(response.msgFeedUnread.unread);
-      final unreadCounts = [data.reply, data.at, data.like, data.sysMsg];
+      final unreadCounts = [
+        data.reply,
+        data.at,
+        disableLikeMsg ? 0 : data.like,
+        data.sysMsg,
+      ];
       if (!listEquals(this.unreadCounts, unreadCounts)) {
         this.unreadCounts.value = unreadCounts;
       }

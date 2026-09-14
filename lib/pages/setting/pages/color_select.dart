@@ -20,9 +20,9 @@ import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:collection/collection.dart';
 import 'package:flex_seed_scheme/flex_seed_scheme.dart';
 import 'package:flutter/foundation.dart' show kReleaseMode;
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ColorSelectPage extends StatefulWidget {
   const ColorSelectPage({super.key});
@@ -85,7 +85,7 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
                 builder: (context) => SelectDialog<ThemeType>(
                   title: '主题模式',
                   value: ctr.themeType.value,
-                  values: ThemeType.values.map((e) => (e, e.desc)).toList(),
+                  values: ThemeType.values.map((e) => (e, e.label)).toList(),
                 ),
               );
               if (result != null) {
@@ -101,7 +101,7 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
             title: Text('主题模式', style: titleStyle),
             subtitle: Obx(
               () => Text(
-                '当前模式：${ctr.themeType.value.desc}',
+                '当前模式：${ctr.themeType.value.label}',
                 style: subTitleStyle,
               ),
             ),

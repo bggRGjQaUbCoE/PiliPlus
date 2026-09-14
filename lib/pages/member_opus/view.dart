@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/skeleton/space_opus.dart';
+import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -57,6 +58,7 @@ class _MemberOpusState extends State<MemberOpus>
     final bottom = MediaQuery.viewPaddingOf(context).bottom;
     return ScaffoldLayout(
       body: refreshIndicator(
+        isClampingScrollPhysics: true,
         onRefresh: _controller.onRefresh,
         child: fabAnimWrapper(
           child: CustomScrollView(
@@ -140,9 +142,9 @@ class _MemberOpusState extends State<MemberOpus>
     return switch (loadingState) {
       Loading() => SliverWaterfallFlow(
         gridDelegate: gridDelegate,
-        delegate: SliverChildBuilderDelegate(
-          (context, index) => const SpaceOpusSkeleton(),
-          childCount: 10,
+        delegate: const SliverSingleChildDelegate(
+          count: 10,
+          child: SpaceOpusSkeleton(),
         ),
       ),
       Success(:final response) =>

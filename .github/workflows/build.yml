@@ -1,14 +1,14 @@
 name: Build
 
 on:
-    pull_request:
-        types:
-            - opened
-            - synchronize
-            - reopened
-            - ready_for_review
-        paths-ignore:
-            - "**.md"
+    # pull_request:
+    #     types:
+    #         - opened
+    #         - synchronize
+    #         - reopened
+    #         - ready_for_review
+    #     paths-ignore:
+    #         - "**.md"
     workflow_dispatch:
         inputs:
             build_android:

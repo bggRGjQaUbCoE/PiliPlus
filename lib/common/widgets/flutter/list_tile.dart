@@ -20,8 +20,8 @@ library;
 
 import 'dart:math' as math;
 
-import 'package:material_ui/material_ui.dart' hide ListTile;
 import 'package:flutter/rendering.dart';
+import 'package:material_ui/material_ui.dart' hide ListTile;
 
 // Examples can assume:
 // int _act = 1;

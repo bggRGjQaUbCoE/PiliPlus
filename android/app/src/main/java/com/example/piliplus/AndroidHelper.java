@@ -1,5 +1,6 @@
 package com.example.piliplus;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.PictureInPictureParams;
@@ -9,12 +10,16 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
+import android.content.pm.verify.domain.DomainVerificationManager;
+import android.content.pm.verify.domain.DomainVerificationUserState;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.graphics.drawable.Icon;
 import android.media.session.PlaybackState;
 import android.net.Uri;
@@ -31,7 +36,10 @@ import androidx.annotation.RequiresApi;
 
 import com.github.dart_lang.jni_flutter.JniFlutterPlugin;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Objects;
 
 @Keep
@@ -258,6 +266,86 @@ public final class AndroidHelper {
                 );
                 shortcutManager.requestPinShortcut(shortcut, pendingIntent.getIntentSender());
             }
+        }
+    }
+
+    @SuppressLint("BlockedPrivateApi")
+    public static String[] fontFamilies() {
+        Map<String, Typeface> systemFontMap = null;
+        try {
+            Method method = Typeface.class.getDeclaredMethod("getSystemFontMap");
+            method.setAccessible(true);
+            systemFontMap = (Map<String, Typeface>) method.invoke(null);
+        } catch (Exception ignored) {
+            try {
+                @SuppressLint("DiscouragedPrivateApi") Field field = Typeface.class.getDeclaredField("sSystemFontMap");
+                field.setAccessible(true);
+                systemFontMap = (Map<String, Typeface>) field.get(null);
+            } catch (Exception ignored0) {
+            }
+        }
+        if (null != systemFontMap) {
+            return systemFontMap.keySet().toArray(new String[0]);
+        }
+        return null;
+    }
+
+    public static void updateDocProvider(boolean enabled) {
+        Context context = getContext();
+        final ComponentName componentName = new ComponentName(context, BiliDocumentsProvider.class);
+        final int state = enabled ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                : PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
+        context.getPackageManager().setComponentEnabledSetting(componentName, state, PackageManager.DONT_KILL_APP);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.S)
+    public static boolean isDomainVerified(@NonNull String domain) {
+        try {
+            Context context = getContext();
+            DomainVerificationManager manager =
+                    context.getSystemService(DomainVerificationManager.class);
+            DomainVerificationUserState userState =
+                    manager.getDomainVerificationUserState(context.getPackageName());
+            if (userState == null) return false;
+            Map<String, Integer> hostToStateMap = userState.getHostToStateMap();
+            Integer stateValue = hostToStateMap.get(domain);
+            if (stateValue == null) return false;
+            return stateValue == DomainVerificationUserState.DOMAIN_STATE_VERIFIED ||
+                    stateValue == DomainVerificationUserState.DOMAIN_STATE_SELECTED;
+        } catch (Exception ignored) {
+        }
+        return false;
+    }
+
+    public static String openUrl(@NonNull String url) {
+        Context context = getContext();
+        String pkg = context.getPackageName();
+        PackageManager pm = context.getPackageManager();
+
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            ArrayList<Intent> external = new ArrayList<>();
+            for (ResolveInfo info : pm.queryIntentActivities(intent, 0)) {
+                String packageName = info.activityInfo.packageName;
+                if (!packageName.equals(pkg)) {
+                    external.add(new Intent(intent).setComponent(new ComponentName(packageName, info.activityInfo.name)));
+                }
+            }
+            if (external.isEmpty()) {
+                return "package not found";
+            } else if (external.size() == 1) {
+                intent = external.get(0);
+            } else {
+                intent = Intent.createChooser(external.remove(0), null);
+                intent.putExtra(Intent.EXTRA_INITIAL_INTENTS, external.toArray(new Intent[0]));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            }
+            context.startActivity(intent);
+            return null;
+        } catch (Exception e) {
+            return e.toString();
         }
     }
 

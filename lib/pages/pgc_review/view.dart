@@ -6,8 +6,8 @@ import 'package:PiliPlus/pages/pgc_review/child/view.dart';
 import 'package:PiliPlus/pages/pgc_review/post/view.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart';
 
 class PgcReviewPage extends StatefulWidget {
   const PgcReviewPage({

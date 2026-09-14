@@ -1,4 +1,7 @@
+import 'dart:io' show Platform;
+
 import 'package:PiliPlus/common/skeleton/video_reply.dart';
+import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -12,6 +15,7 @@ import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
+import 'package:desktop_webview_window/desktop_webview_window.dart' as dww;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -37,6 +41,17 @@ class NoteListPage extends CommonSlidePage {
 
 class _NoteListPageState extends State<NoteListPage>
     with SingleTickerProviderStateMixin, CommonSlideMixin {
+  static dww.Webview? _activeNoteWebview;
+  static bool _isOpeningNote = false;
+  static Object? _dwwOwner;
+
+  void _closeLinuxWebview({bool close = false}) {
+    if (close) _activeNoteWebview?.close();
+    _activeNoteWebview = null;
+    _isOpeningNote = false;
+    _dwwOwner = null;
+  }
+
   late final NoteListPageCtr _controller;
 
   @override
@@ -51,6 +66,9 @@ class _NoteListPageState extends State<NoteListPage>
   @override
   void dispose() {
     Get.delete<NoteListPageCtr>(tag: widget.heroTag);
+    if (_dwwOwner == this) {
+      _closeLinuxWebview(close: true);
+    }
     super.dispose();
   }
 
@@ -108,26 +126,28 @@ class _NoteListPageState extends State<NoteListPage>
 
   @override
   Widget buildList(ThemeData theme) {
+    final child = refreshIndicator(
+      onRefresh: _controller.onRefresh,
+      child: CustomScrollView(
+        key: _key,
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          SliverPadding(
+            padding: const .only(bottom: 100),
+            sliver: Obx(
+              () => _buildBody(theme, _controller.loadingState.value),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (!Accounts.main.isLogin) {
+      return child;
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(
-          child: refreshIndicator(
-            onRefresh: _controller.onRefresh,
-            child: CustomScrollView(
-              key: _key,
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                SliverPadding(
-                  padding: const .only(bottom: 100),
-                  sliver: Obx(
-                    () => _buildBody(theme, _controller.loadingState.value),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        Expanded(child: child),
         Container(
           padding: EdgeInsets.only(
             left: 12,
@@ -153,21 +173,7 @@ class _NoteListPageState extends State<NoteListPage>
                   borderRadius: BorderRadius.all(Radius.circular(6)),
                 ),
               ),
-              onPressed: () {
-                if (!Accounts.main.isLogin) {
-                  SmartDialog.showToast('账号未登录');
-                  return;
-                }
-                MiniScaffold.of(context).showBottomSheet(
-                  constraints: const BoxConstraints(),
-                  (context) => WebviewPage(
-                    oid: widget.oid,
-                    title: widget.title,
-                    url:
-                        'https://www.bilibili.com/h5/note-app?oid=${widget.oid}&pagefrom=ugcvideo&is_stein_gate=${widget.isStein ? 1 : 0}',
-                  ),
-                );
-              },
+              onPressed: _onTakeNote,
               child: const Text('开始记笔记'),
             ),
           ),
@@ -182,10 +188,12 @@ class _NoteListPageState extends State<NoteListPage>
   ) {
     switch (loadingState) {
       case Loading():
-        return SliverPrototypeExtentList.builder(
-          prototypeItem: const VideoReplySkeleton(),
-          itemBuilder: (_, _) => const VideoReplySkeleton(),
-          itemCount: 8,
+        return const SliverPrototypeExtentList(
+          prototypeItem: VideoReplySkeleton(),
+          delegate: SliverSingleChildDelegate(
+            count: 8,
+            child: VideoReplySkeleton(),
+          ),
         );
       case Success(:final response):
         if (response != null && response.isNotEmpty) {
@@ -304,6 +312,47 @@ class _NoteListPageState extends State<NoteListPage>
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _onTakeNoteLinux(String url) async {
+    if (_activeNoteWebview != null) {
+      await _activeNoteWebview?.bringToForeground();
+      SmartDialog.showToast('已置顶笔记窗口');
+      return;
+    }
+    if (_isOpeningNote) return;
+    _isOpeningNote = true;
+    SmartDialog.showToast('已在新窗口打开');
+    try {
+      var webview = await WebviewPage.openLinux(
+        oid: widget.oid,
+        title: widget.title,
+        url: url,
+        onClose: _closeLinuxWebview,
+      );
+      if (mounted) {
+        _activeNoteWebview = webview;
+        _dwwOwner = this;
+      } else {
+        webview?.close();
+        webview = null;
+      }
+    } finally {
+      _isOpeningNote = false;
+    }
+  }
+
+  void _onTakeNote() {
+    final url =
+        'https://www.bilibili.com/h5/note-app?oid=${widget.oid}&pagefrom=ugcvideo&is_stein_gate=${widget.isStein ? 1 : 0}';
+    if (Platform.isLinux) {
+      _onTakeNoteLinux(url);
+      return;
+    }
+    MiniScaffold.of(context).showBottomSheet(
+      constraints: const BoxConstraints(),
+      (context) => WebviewPage(oid: widget.oid, title: widget.title, url: url),
     );
   }
 }

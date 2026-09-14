@@ -1,7 +1,15 @@
 import 'package:PiliPlus/grpc/bilibili/app/dynamic/v1.pb.dart'
     show DynRedReq, TabOffset, DynRedReply;
 import 'package:PiliPlus/grpc/bilibili/app/dynamic/v2.pb.dart'
-    show OpusType, OpusDetailReq, OpusDetailResp;
+    show
+        OpusType,
+        OpusDetailReq,
+        OpusDetailResp,
+        LikeListReq,
+        LikeListReply,
+        RepostListReq,
+        RepostListRsp,
+        RepostType;
 import 'package:PiliPlus/grpc/grpc_req.dart';
 import 'package:PiliPlus/grpc/url.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -44,6 +52,47 @@ abstract final class DynGrpc {
         oid: Int64(oid),
       ),
       OpusDetailResp.fromBuffer,
+    );
+  }
+
+  static Future<LoadingState<LikeListReply>> likeList({
+    required String dynamicId,
+    Int64? dynType,
+    Int64? rid,
+    Int64? uidOffset,
+    required int page,
+  }) {
+    return GrpcReq.request(
+      GrpcUrl.likeList,
+      LikeListReq(
+        dynamicId: dynamicId,
+        dynType: dynType,
+        rid: rid,
+        uidOffset: uidOffset,
+        page: page,
+      ),
+      LikeListReply.fromBuffer,
+    );
+  }
+
+  static Future<LoadingState<RepostListRsp>> repostList({
+    required String dynamicId,
+    Int64? dynType,
+    Int64? rid,
+    String? offset,
+    String? from,
+    RepostType repostType = .repost_general,
+  }) {
+    return GrpcReq.request(
+      GrpcUrl.repostList,
+      RepostListReq(
+        dynamicId: dynamicId,
+        dynType: dynType,
+        rid: rid,
+        offset: offset,
+        repostType: repostType,
+      ),
+      RepostListRsp.fromBuffer,
     );
   }
 }

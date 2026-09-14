@@ -1,14 +1,12 @@
 import 'dart:math';
 
 import 'package:PiliPlus/common/skeleton/msg_feed_top.dart';
+import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/widgets/button/more_btn.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/follow_order_type.dart';
 import 'package:PiliPlus/models_new/follow/list.dart';
-import 'package:PiliPlus/pages/common/fab_mixin.dart';
 import 'package:PiliPlus/pages/follow/child/child_controller.dart';
 import 'package:PiliPlus/pages/follow/controller.dart';
 import 'package:PiliPlus/pages/follow/widgets/follow_item.dart';
@@ -39,11 +37,7 @@ class FollowChildPage extends StatefulWidget {
 }
 
 class _FollowChildPageState extends State<FollowChildPage>
-    with
-        AutomaticKeepAliveClientMixin,
-        SingleTickerProviderStateMixin,
-        BaseFabMixin,
-        LazyFabMixin {
+    with AutomaticKeepAliveClientMixin {
   late String _tag;
   late FollowChildController _followController;
 
@@ -83,7 +77,7 @@ class _FollowChildPageState extends State<FollowChildPage>
     super.build(context);
     final colorScheme = ColorScheme.of(context);
     final padding = MediaQuery.viewPaddingOf(context);
-    Widget child = Padding(
+    return Padding(
       padding: EdgeInsets.only(left: padding.left, right: padding.right),
       child: refreshIndicator(
         onRefresh: _followController.onRefresh,
@@ -108,42 +102,16 @@ class _FollowChildPageState extends State<FollowChildPage>
         ),
       ),
     );
-    if (widget.onSelect != null ||
-        (widget.controller?.isOwner == true && widget.tagid == null)) {
-      return ScaffoldLayout(
-        body: fabAnimWrapper(child: child),
-        fab: SlideTransition(
-          position: fabAnimation,
-          child: Padding(
-            padding: .only(
-              right: kFloatingActionButtonMargin + padding.right,
-              bottom: kFloatingActionButtonMargin + padding.bottom,
-            ),
-            child: FloatingActionButton.extended(
-              onPressed: () => _followController
-                ..setOrderType(
-                  _followController.orderType.value == FollowOrderType.def
-                      ? FollowOrderType.attention
-                      : FollowOrderType.def,
-                )
-                ..onReload(),
-              icon: const Icon(Icons.format_list_bulleted, size: 20),
-              label: Obx(
-                () => Text(_followController.orderType.value.title),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-    return child;
   }
 
   Widget _buildBody(LoadingState<List<FollowItemModel>?> loadingState) {
     return switch (loadingState) {
-      Loading() => SliverList.builder(
-        itemCount: 12,
-        itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
+      Loading() => const SliverPrototypeExtentList(
+        prototypeItem: MsgFeedTopSkeleton(),
+        delegate: SliverSingleChildDelegate(
+          count: 12,
+          child: MsgFeedTopSkeleton(),
+        ),
       ),
       Success(:final response) =>
         response != null && response.isNotEmpty

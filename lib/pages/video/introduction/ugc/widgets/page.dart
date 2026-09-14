@@ -186,54 +186,89 @@ class _PagesPanelState extends State<PagesPanel> {
                         _videoDetailController.seasonCid = pages.first.cid;
                       }
                     },
-                    child: Padding(
-                      padding: const .symmetric(horizontal: 8),
-                      child: Align(
-                        alignment: .centerLeft,
-                        child: Text.rich(
-                          maxLines: 2,
-                          overflow: .ellipsis,
-                          style: TextStyle(
-                            height: 1.1,
-                            fontSize: 13,
-                            color: isCurrentIndex
-                                ? colorScheme.primary
-                                : colorScheme.onSurface,
-                          ),
-                          strutStyle: const .new(height: 1.1, fontSize: 13),
-                          TextSpan(
-                            children: [
-                              if (isCurrentIndex)
-                                WidgetSpan(
-                                  alignment: .middle,
-                                  child: Padding(
-                                    padding: const .only(right: 6),
-                                    child: Image.asset(
-                                      Assets.livingStatic,
-                                      color: colorScheme.primary,
-                                      height: 12,
-                                      cacheHeight: 12.cacheSize(context),
-                                      semanticLabel: "正在播放：",
-                                    ),
-                                  ),
-                                )
-                              else if (widget.cidSet?.contains(item.cid) ??
-                                  false)
-                                WidgetSpan(
-                                  alignment: .middle,
-                                  child: Icon(
-                                    size: 13,
-                                    color: colorScheme.secondary.withValues(
-                                      alpha: .8,
-                                    ),
-                                    FontAwesomeIcons.circleDown,
-                                  ),
-                                ),
-                              TextSpan(text: item.part),
-                            ],
+                    child: Stack(
+                      clipBehavior: .none,
+                      children: [
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: Container(
+                            padding: const .symmetric(horizontal: 4),
+                            decoration: BoxDecoration(
+                              color: colorScheme.secondaryContainer.withValues(
+                                alpha: .7,
+                              ),
+                              borderRadius: const .only(
+                                topLeft: .circular(2),
+                                bottomRight: .circular(6),
+                              ),
+                            ),
+                            child: Text(
+                              (index + 1).toString(),
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                color: colorScheme.onSecondaryContainer,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        Padding(
+                          padding: const .symmetric(horizontal: 8),
+                          child: Align(
+                            alignment: .centerLeft,
+                            child: Text.rich(
+                              maxLines: 2,
+                              overflow: .ellipsis,
+                              style: TextStyle(
+                                height: 1.1,
+                                fontSize: 13,
+                                color: isCurrentIndex
+                                    ? colorScheme.primary
+                                    : colorScheme.onSurface,
+                              ),
+                              strutStyle: const .new(
+                                height: 1.1,
+                                fontSize: 13,
+                              ),
+                              TextSpan(
+                                children: [
+                                  if (isCurrentIndex)
+                                    WidgetSpan(
+                                      alignment: .middle,
+                                      child: Padding(
+                                        padding: const .only(right: 6),
+                                        child: Image.asset(
+                                          Assets.livingStatic,
+                                          color: colorScheme.primary,
+                                          height: 12,
+                                          cacheHeight: 12.cacheSize(
+                                            context,
+                                          ),
+                                          semanticLabel: "正在播放：",
+                                        ),
+                                      ),
+                                    )
+                                  else if (widget.cidSet?.contains(
+                                        item.cid,
+                                      ) ??
+                                      false)
+                                    WidgetSpan(
+                                      alignment: .middle,
+                                      child: Icon(
+                                        size: 13,
+                                        color: colorScheme.secondary.withValues(
+                                          alpha: .8,
+                                        ),
+                                        FontAwesomeIcons.circleDown,
+                                      ),
+                                    ),
+                                  TextSpan(text: item.part),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

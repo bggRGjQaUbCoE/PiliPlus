@@ -34,7 +34,7 @@ abstract final class Api {
   // 视频详情
   // 竖屏 https://api.bilibili.com/x/web-interface/view?aid=527403921
   // https://api.bilibili.com/x/web-interface/view/detail  获取视频超详细信息(web端)
-  static const String videoIntro = '/x/web-interface/view';
+  static const String videoIntro = '/x/web-interface/wbi/view';
   // 视频详情 超详细
   // https://api.bilibili.com/x/web-interface/view/detail?aid=527403921
 

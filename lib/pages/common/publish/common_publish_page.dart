@@ -28,7 +28,7 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
     extends State<T>
     with WidgetsBindingObserver {
   late bool _paused = false;
-  final FocusNode focusNode = FocusNode();
+  late final FocusNode focusNode;
   late final controller = ChatBottomPanelContainerController<PanelType>(
     uiScale: Pref.uiScale,
   );
@@ -45,9 +45,13 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
 
   bool get handleKeyboard => Platform.isAndroid && widget.autofocus;
 
+  late ThemeData theme;
+
   @override
   void initState() {
     super.initState();
+    focusNode = FocusNode()..addListener(_onFocusChanged);
+
     if (handleKeyboard) {
       WidgetsBinding.instance.addObserver(this);
     }
@@ -60,7 +64,24 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    initTheme();
+  }
+
+  void initTheme() {
+    theme = Theme.of(context);
+  }
+
+  void _onFocusChanged() {
+    if (focusNode.hasFocus && readOnly.value) {
+      updatePanelType(.keyboard);
+    }
+  }
+
+  @override
   void dispose() {
+    focusNode.removeListener(_onFocusChanged);
     if (!hasPub) {
       onSave();
     }
@@ -176,9 +197,9 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
     );
   }
 
-  Widget buildMorePanel(ThemeData theme) => throw UnimplementedError();
+  Widget buildMorePanel() => throw UnimplementedError();
 
-  Widget buildPanelContainer(ThemeData theme, [Color? panelBgColor]) {
+  Widget buildPanelContainer([Color? panelBgColor]) {
     return ChatBottomPanelContainer<PanelType>(
       controller: controller,
       inputFocusNode: focusNode,
@@ -188,7 +209,7 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
           case PanelType.emoji:
             return buildEmojiPickerPanel();
           case PanelType.more:
-            return buildMorePanel(theme);
+            return buildMorePanel();
           default:
             return const SizedBox.shrink();
         }
@@ -207,7 +228,7 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
             break;
         }
       },
-      panelBgColor: panelBgColor ?? Theme.of(context).colorScheme.surface,
+      panelBgColor: panelBgColor ?? theme.colorScheme.surface,
     );
   }
 

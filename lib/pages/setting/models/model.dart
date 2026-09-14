@@ -5,10 +5,10 @@ import 'package:PiliPlus/pages/setting/widgets/popup_item.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/switch_item.dart';
 import 'package:PiliPlus/utils/storage.dart';
-import 'package:material_ui/material_ui.dart' hide PopupMenuItemSelected;
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart' hide PopupMenuItemSelected;
 
 @immutable
 sealed class SettingsModel {
@@ -88,7 +88,7 @@ class PopupModel<T extends EnumWithLabel> extends SettingsModel {
   final String title;
 
   final ValueGetter<T> value;
-  final List<T> items;
+  final Iterable<T> items;
   final PopupMenuItemSelected<T> onSelected;
 
   @override

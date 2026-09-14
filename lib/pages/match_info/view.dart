@@ -16,9 +16,9 @@ import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/widget_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:easy_debounce/easy_throttle.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 
 class MatchInfoPage extends StatefulWidget {
   const MatchInfoPage({super.key});
@@ -117,7 +117,8 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
                                 : '${response.homeScore} : ${response.awayScore}',
                             style: const TextStyle(
                               fontSize: 25,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: .bold,
+                              letterSpacing: 1.5,
                             ),
                           )
                         else if (response.season?.logo != null)

@@ -8,6 +8,8 @@ import 'package:get/get.dart';
 
 abstract class CommonDynController extends ReplyController<MainListReply>
     with ReplyVoteMixin {
+  CommonDynController({super.count});
+
   int get oid;
   int get replyType;
 

@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/skeleton/space_opus.dart';
+import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -44,6 +45,7 @@ class _MemberShopState extends State<MemberShop>
   Widget build(BuildContext context) {
     super.build(context);
     return refreshIndicator(
+      isClampingScrollPhysics: true,
       onRefresh: _controller.onRefresh,
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -76,9 +78,9 @@ class _MemberShopState extends State<MemberShop>
       case Loading():
         return SliverWaterfallFlow(
           gridDelegate: gridDelegate,
-          delegate: SliverChildBuilderDelegate(
-            (context, index) => const SpaceOpusSkeleton(),
-            childCount: 10,
+          delegate: const SliverSingleChildDelegate(
+            count: 10,
+            child: SpaceOpusSkeleton(),
           ),
         );
       case Success(:final response):

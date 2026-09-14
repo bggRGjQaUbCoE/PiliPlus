@@ -28,13 +28,14 @@ class VideoCardH extends StatelessWidget {
   final ValueChanged<int>? onViewLater;
   final VoidCallback? onRemove;
 
+  void onLongPress() => imageSaveDialog(
+    bvid: videoItem.bvid,
+    title: videoItem.title,
+    cover: videoItem.cover,
+  );
+
   @override
   Widget build(BuildContext context) {
-    void onLongPress() => imageSaveDialog(
-      bvid: videoItem.bvid,
-      title: videoItem.title,
-      cover: videoItem.cover,
-    );
     final theme = Theme.of(context);
     return Material(
       type: .transparency,
@@ -44,48 +45,7 @@ class VideoCardH extends StatelessWidget {
           InkWell(
             onLongPress: onLongPress,
             onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-            onTap:
-                onTap ??
-                () async {
-                  if (videoItem.isPugv ?? false) {
-                    PageUtils.viewPugv(seasonId: videoItem.seasonId);
-                    return;
-                  }
-
-                  if (videoItem.isLive ?? false) {
-                    if (videoItem.roomId case final roomId?) {
-                      PageUtils.toLiveRoom(roomId);
-                    }
-                    return;
-                  }
-
-                  if (videoItem.redirectUrl?.isNotEmpty == true &&
-                      PageUtils.viewPgcFromUri(videoItem.redirectUrl!)) {
-                    return;
-                  }
-
-                  int? cid = videoItem.cid;
-                  Dimension? dimension = videoItem.dimension;
-                  if (cid == null) {
-                    if (await SearchHttp.ab2cWithDimension(
-                          aid: videoItem.aid,
-                          bvid: videoItem.bvid,
-                        )
-                        case final res?) {
-                      cid = res.cid;
-                      dimension = res.dimension;
-                    }
-                  }
-                  if (cid != null) {
-                    PageUtils.toVideoPage(
-                      bvid: videoItem.bvid,
-                      cid: cid,
-                      cover: videoItem.cover,
-                      title: videoItem.title,
-                      dimension: dimension,
-                    );
-                  }
-                },
+            onTap: onTap ?? () => pushVideoH(videoItem),
             child: Padding(
               padding: const .symmetric(
                 horizontal: Style.safeSpace,
@@ -234,22 +194,65 @@ class VideoCardH extends StatelessWidget {
               overflow: .clip,
             ),
           ),
-          const SizedBox(height: 3),
-          Row(
-            spacing: 8,
-            children: [
-              StatWidget(
-                type: .play,
-                value: videoItem.stat.view,
-              ),
-              StatWidget(
-                type: .danmaku,
-                value: videoItem.stat.danmu,
-              ),
-            ],
-          ),
+          if (videoItem.isLive != true) ...[
+            const SizedBox(height: 3),
+            Row(
+              spacing: 8,
+              children: [
+                StatWidget(
+                  type: .play,
+                  value: videoItem.stat.view,
+                ),
+                StatWidget(
+                  type: .danmaku,
+                  value: videoItem.stat.danmu,
+                ),
+              ],
+            ),
+          ],
         ],
       ),
+    );
+  }
+}
+
+Future<void> pushVideoH(HorizontalVideoModel videoItem) async {
+  if (videoItem.isPugv ?? false) {
+    PageUtils.viewPugv(seasonId: videoItem.seasonId);
+    return;
+  }
+
+  if (videoItem.isLive ?? false) {
+    if (videoItem.roomId case final roomId?) {
+      PageUtils.toLiveRoom(roomId);
+    }
+    return;
+  }
+
+  if (videoItem.redirectUrl?.isNotEmpty == true &&
+      PageUtils.viewPgcFromUri(videoItem.redirectUrl!)) {
+    return;
+  }
+
+  int? cid = videoItem.cid;
+  Dimension? dimension = videoItem.dimension;
+  if (cid == null) {
+    if (await SearchHttp.ab2cWithDimension(
+          aid: videoItem.aid,
+          bvid: videoItem.bvid,
+        )
+        case final res?) {
+      cid = res.cid;
+      dimension = res.dimension;
+    }
+  }
+  if (cid != null) {
+    PageUtils.toVideoPage(
+      bvid: videoItem.bvid,
+      cid: cid,
+      cover: videoItem.cover,
+      title: videoItem.title,
+      dimension: dimension,
     );
   }
 }

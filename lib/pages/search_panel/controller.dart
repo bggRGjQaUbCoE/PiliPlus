@@ -23,6 +23,7 @@ class SearchPanelController<R extends SearchNumData<T>, T>
   final String tag;
   final String keyword;
   final SearchType searchType;
+  SearchType get searchType_ => searchType;
 
   // sort
   // common
@@ -94,7 +95,7 @@ class SearchPanelController<R extends SearchNumData<T>, T>
 
   @override
   Future<LoadingState<R>> customGetData() => SearchHttp.searchByType<R>(
-    searchType: searchType,
+    searchType: searchType_,
     keyword: keyword,
     page: page,
     order: order,

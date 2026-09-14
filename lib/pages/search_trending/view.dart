@@ -16,9 +16,9 @@ import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
-import 'package:material_ui/material_ui.dart' hide ListTile;
 import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:get/get.dart';
+import 'package:material_ui/material_ui.dart' hide ListTile;
 
 class SearchTrendingPage extends StatefulWidget {
   const SearchTrendingPage({super.key});
@@ -147,9 +147,7 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
                 dense: true,
                 onTap: () => Get.toNamed(
                   '/searchResult',
-                  parameters: {
-                    'keyword': item.keyword!,
-                  },
+                  parameters: {'keyword': item.keyword},
                 ),
                 leading: index < _controller.topCount
                     ? const Icon(
@@ -173,7 +171,7 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
                   children: [
                     Flexible(
                       child: Text(
-                        item.keyword!,
+                        item.showName,
                         maxLines: 1,
                         overflow: .ellipsis,
                         strutStyle: const StrutStyle(height: 1, leading: 0),

@@ -113,11 +113,7 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
     const btnHeight = 30.0;
 
     return Padding(
-      padding: const .only(
-        left: 14,
-        right: 14,
-        top: (kToolbarHeight - btnHeight) / 2,
-      ),
+      padding: const .symmetric(horizontal: 14, vertical: 13),
       child: Row(
         children: [
           if (isFullScreen || plPlayerController.isDesktopPip)
@@ -457,13 +453,12 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
 class _ExpansionTile extends ExpansionTile {
   const _ExpansionTile({
     required super.title,
-    // ignore: unused_element_parameter
-    super.dense = true,
-    // ignore: unused_element_parameter
-    super.childrenPadding = const .only(left: 20),
     super.initiallyExpanded,
     super.iconColor,
     super.collapsedIconColor,
     super.children,
-  });
+  }) : super(
+         dense: true,
+         childrenPadding: const .only(left: 20),
+       );
 }

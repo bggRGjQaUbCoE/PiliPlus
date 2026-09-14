@@ -845,6 +845,8 @@ abstract final class VideoHttp {
           return compute<List, String>(SubtitleUtils.json2Vtt, list);
         case .srt:
           return compute<List, String>(SubtitleUtils.json2Srt, list);
+        case .txt:
+          return compute<List, String>(SubtitleUtils.json2Txt, list);
       }
     }
     return null;

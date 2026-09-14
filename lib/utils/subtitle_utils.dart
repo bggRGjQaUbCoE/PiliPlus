@@ -4,7 +4,8 @@ import 'package:collection/collection.dart' show IterableExtension;
 enum SubtitleFormat implements EnumWithLabel {
   json('JSON'),
   vtt('WEBVTT'),
-  srt('SRT');
+  srt('SRT'),
+  txt('TXT');
 
   @override
   final String label;
@@ -52,6 +53,27 @@ abstract final class SubtitleUtils {
         ),
         '\n\n',
       );
+    return sb.toString();
+  }
+
+  static String _txtTimecode(num seconds) {
+    final h = (seconds ~/ 3600).toString().padLeft(2, '0');
+    seconds %= 3600;
+    final m = (seconds ~/ 60).toString().padLeft(2, '0');
+    seconds %= 60;
+    return '$h:$m:${seconds.toInt().toString().padLeft(2, '0')}';
+  }
+
+  /// 纯文本字幕：一条字幕一行，行首 `[hh:mm:ss]`，行内换行折叠为空格
+  static String json2Txt(List list) {
+    final sb = StringBuffer();
+    for (final e in list) {
+      final content = (e['content'] as String? ?? '')
+          .trim()
+          .replaceAll(RegExp(r'\s*\n\s*'), ' ');
+      if (content.isEmpty) continue;
+      sb.writeln('[${_txtTimecode(e['from'])}] $content');
+    }
     return sb.toString();
   }
 }

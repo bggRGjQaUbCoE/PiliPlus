@@ -170,6 +170,12 @@ abstract final class Api {
   // https://api.bilibili.com/x/v2/reply/main?csrf=6e22efc1a47225ea25f901f922b5cfdd&mode=3&oid=254175381&pagination_str=%7B%22offset%22:%22%22%7D&plat=1&seek_rpid=0&type=11
   static const String replyList = '/x/v2/reply';
 
+  // 评论列表 主楼游标翻页
+  static const String replyMain = '/x/v2/reply/main';
+
+  // 评论列表 主楼游标翻页(需 wbi 签名)
+  static const String replyWbiMain = '/x/v2/reply/wbi/main';
+
   // 楼中楼
   static const String replyReplyList = '/x/v2/reply/reply';
 

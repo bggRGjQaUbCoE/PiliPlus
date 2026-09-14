@@ -20,6 +20,7 @@ import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/models/common/video/cdn_type.dart';
 import 'package:PiliPlus/models/common/video/video_decode_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
+import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
 import 'package:PiliPlus/models_new/video/video_play_info/subtitle.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
@@ -34,6 +35,7 @@ import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/action_item.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/menu_row.dart';
+import 'package:PiliPlus/pages/video/widgets/comment_export.dart';
 import 'package:PiliPlus/pages/video/widgets/header_mixin.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
@@ -772,9 +774,18 @@ class HeaderControlState extends State<HeaderControl>
                       Get.back();
                       onExportSubtitle();
                     },
-                    leading: const Icon(Icons.download_outlined, size: 20),
-                    title: const Text('保存字幕', style: titleStyle),
-                  ),
+                  leading: const Icon(Icons.download_outlined, size: 20),
+                  title: const Text('保存字幕', style: titleStyle),
+                ),
+                ListTile(
+                  dense: true,
+                  onTap: () {
+                    Get.back();
+                    onExportComments();
+                  },
+                  leading: const Icon(Icons.forum_outlined, size: 20),
+                  title: const Text('导出评论', style: titleStyle),
+                ),
                 if (plPlayerController.videoPlayerController case final player?)
                   ListTile(
                     dense: true,
@@ -1219,7 +1230,7 @@ class HeaderControlState extends State<HeaderControl>
                 try {
                   final Uint8List bytes;
                   switch (format) {
-                    case .vtt || .srt:
+                    case .vtt || .srt || .txt:
                       var subtitle = format == .vtt
                           ? videoDetailCtr.vttSubtitles[i]?.id
                           : null;
@@ -1278,6 +1289,31 @@ class HeaderControlState extends State<HeaderControl>
           }),
         );
       },
+    );
+  }
+
+  /// 导出当前评论对象的全部评论（含楼中楼）
+  void onExportComments() {
+    final videoType = videoDetailCtr.videoType;
+    // 课程(pugv)的评论挂在 epId 上，UGC/番剧都挂在 aid 上
+    final oid = videoType == VideoType.pugv
+        ? videoDetailCtr.epId
+        : videoDetailCtr.aid;
+    if (oid == null) {
+      SmartDialog.showToast('无法获取评论对象 id');
+      return;
+    }
+    final videoDetail = introController.videoDetail.value;
+    showCommentExportDialog(
+      context,
+      oid: oid,
+      type: videoType.replyType,
+      fileName:
+          '${videoDetail.title}-${videoDetail.owner?.name}(${videoDetail.owner?.mid})-${videoDetailCtr.bvid}-评论'
+              .replaceAll(
+                Platform.isWindows ? RegExp(r'[<>:/\\|?*"]') : '/',
+                '_',
+              ),
     );
   }
 

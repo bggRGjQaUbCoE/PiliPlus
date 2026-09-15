@@ -167,8 +167,7 @@ class ImageGridView extends StatelessWidget {
             onTap: () => PageUtils.launchURL(item.url),
             child: const Text('网页打开', style: TextStyle(fontSize: 14)),
           ),
-        if (picArr.length > 1 &&
-            (PlatformUtils.isMobile || ImageUtils.imageSavePath != null))
+        if (picArr.length > 1)
           PopupMenuItem(
             height: 42,
             onTap: () =>

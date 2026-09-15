@@ -573,8 +573,7 @@ class _GalleryViewerState extends State<GalleryViewer>
               },
               child: const Text('网页打开', style: TextStyle(fontSize: 14)),
             ),
-          if (widget.sources.length > 1 &&
-              (PlatformUtils.isMobile || ImageUtils.imageSavePath != null))
+          if (widget.sources.length > 1)
             DialogOption(
               onPressed: () {
                 Get.back();
@@ -627,7 +626,7 @@ class _GalleryViewerState extends State<GalleryViewer>
           onTap: () => PageUtils.launchURL(item.url),
           child: const Text('网页打开', style: TextStyle(fontSize: 14)),
         ),
-        if (widget.sources.length > 1 && ImageUtils.imageSavePath != null)
+        if (widget.sources.length > 1)
           PopupMenuItem(
             height: 42,
             onTap: () => ImageUtils.downloadImg(

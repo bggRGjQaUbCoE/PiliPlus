@@ -73,12 +73,6 @@ List<SettingsModel> get extraSettings => [
       leading: const Icon(Icons.storage),
       onTap: _showDownPathDialog,
     ),
-    NormalModel(
-      title: '图片保存路径',
-      getSubtitle: () => ImageUtils.imageSavePath ?? '未设置',
-      leading: const Icon(Icons.image_outlined),
-      onTap: _showImageSavePathDialog,
-    ),
   ] else if (Platform.isAndroid)
     SwitchModel(
       title: '允许三方APP访问私有存储',
@@ -779,7 +773,9 @@ void _showDownPathDialog(BuildContext context, VoidCallback setState) {
         DialogOption(
           onPressed: () async {
             Get.back();
-            final path = await FilePicker.getDirectoryPath();
+            final path = await FilePicker.getDirectoryPath(
+              initialDirectory: downloadPath,
+            );
             if (path == null || path == downloadPath) return;
             downloadPath = path;
             setState();
@@ -787,55 +783,6 @@ void _showDownPathDialog(BuildContext context, VoidCallback setState) {
             GStorage.setting.put(SettingBoxKey.downloadPath, path);
           },
           child: const Text('设置新路径', style: TextStyle(fontSize: 14)),
-        ),
-      ],
-    ),
-  );
-}
-
-void _showImageSavePathDialog(BuildContext context, VoidCallback setState) {
-  final imageSavePath = ImageUtils.imageSavePath;
-  showDialog(
-    context: context,
-    builder: (context) => SimpleDialog(
-      clipBehavior: .hardEdge,
-      contentPadding: const .symmetric(vertical: 12),
-      children: [
-        if (imageSavePath != null) ...[
-          DialogOption(
-            onPressed: () {
-              Get.back();
-              PathUtils.openDir(imageSavePath);
-            },
-            child: const Text('打开'),
-          ),
-          DialogOption(
-            onPressed: () {
-              Get.back();
-              Utils.copyText(imageSavePath);
-            },
-            child: const Text('复制'),
-          ),
-          DialogOption(
-            onPressed: () {
-              Get.back();
-              ImageUtils.imageSavePath = null;
-              setState();
-              GStorage.setting.delete(SettingBoxKey.imageSavePath);
-            },
-            child: const Text('重置'),
-          ),
-        ],
-        DialogOption(
-          onPressed: () async {
-            Get.back();
-            final path = await FilePicker.getDirectoryPath();
-            if (path == null || path == imageSavePath) return;
-            ImageUtils.imageSavePath = path;
-            setState();
-            GStorage.setting.put(SettingBoxKey.imageSavePath, path);
-          },
-          child: const Text('设置新路径'),
         ),
       ],
     ),

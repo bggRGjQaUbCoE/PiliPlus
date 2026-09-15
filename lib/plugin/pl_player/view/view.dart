@@ -1849,6 +1849,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                           onLongPress: !PlatformUtils.isDarwin && !isLive
                               ? _screenshotWebp
                               : null,
+                          onSecondaryTap: !PlatformUtils.isDarwin && !isLive
+                              ? _screenshotWebp
+                              : null,
                           onTap: plPlayerController.takeScreenshot,
                         ),
                       ),
@@ -2048,9 +2051,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     final ids = videoInfo.dash!.video!.availableVideoQualities;
     final video = videoDetailController.findVideoByQa(ids.min);
 
-    VideoQuality qa = video.quality;
     String? url = video.baseUrl;
     if (url == null) return;
+    VideoQuality qa = video.quality;
 
     final ctr = plPlayerController;
     final theme = Theme.of(context);

@@ -20,7 +20,6 @@ import 'package:PiliPlus/pages/pgc/widgets/pgc_card_v_timeline.dart';
 import 'package:PiliPlus/pages/pgc_index/controller.dart';
 import 'package:PiliPlus/pages/pgc_index/view.dart';
 import 'package:PiliPlus/pages/pgc_index/widgets/pgc_card_v_pgc_index.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -159,25 +158,26 @@ class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
                         child: TabBarView(
                           physics: const NeverScrollableScrollPhysics(),
                           children: response.map((item) {
-                            if (item.episodes.isNullOrEmpty) {
+                            final episodes = item.episodes;
+                            if (episodes == null || episodes.isEmpty) {
                               return const SizedBox.shrink();
                             }
                             return ListView.builder(
                               physics: const AlwaysScrollableScrollPhysics(),
                               scrollDirection: Axis.horizontal,
-                              itemCount: item.episodes!.length,
+                              itemCount: episodes.length,
                               padding: EdgeInsets.zero,
                               itemBuilder: (context, index) {
                                 return Container(
                                   width: Grid.smallCardWidth / 2,
                                   margin: EdgeInsets.only(
                                     left: Style.safeSpace,
-                                    right: index == item.episodes!.length - 1
+                                    right: index == episodes.length - 1
                                         ? Style.safeSpace
                                         : 0,
                                   ),
                                   child: PgcCardVTimeline(
-                                    item: item.episodes![index],
+                                    item: episodes[index],
                                   ),
                                 );
                               },

@@ -30,7 +30,7 @@ class AvatarItem extends $pb.GeneratedMessage {
     LayerGroup? fallbackLayers,
     $fixnum.Int64? mid,
   }) {
-    final result = create();
+    final result = AvatarItem._();
     if (containerSize != null) result.containerSize = containerSize;
     if (layers != null) result.layers.addAll(layers);
     if (fallbackLayers != null) result.fallbackLayers = fallbackLayers;
@@ -42,22 +42,22 @@ class AvatarItem extends $pb.GeneratedMessage {
 
   factory AvatarItem.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      AvatarItem()..mergeFromBuffer(data, registry);
   factory AvatarItem.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      AvatarItem()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'AvatarItem',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.dagw.component.avatar.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: AvatarItem.$_createMessage)
     ..aOM<$0.SizeSpec>(1, _omitFieldNames ? '' : 'containerSize',
-        subBuilder: $0.SizeSpec.create)
+        subBuilder: $0.SizeSpec.$_createMessage)
     ..pPM<LayerGroup>(2, _omitFieldNames ? '' : 'layers',
-        subBuilder: LayerGroup.create)
+        subBuilder: LayerGroup.$_createMessage)
     ..aOM<LayerGroup>(3, _omitFieldNames ? '' : 'fallbackLayers',
-        subBuilder: LayerGroup.create)
+        subBuilder: LayerGroup.$_createMessage)
     ..aInt64(4, _omitFieldNames ? '' : 'mid')
     ..hasRequiredFields = false;
 
@@ -71,12 +71,14 @@ class AvatarItem extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use AvatarItem() / AvatarItem.new instead')
   static AvatarItem create() => AvatarItem._();
+  static $pb.GeneratedMessage $_createMessage() => AvatarItem._();
   @$core.override
-  AvatarItem createEmptyInstance() => create();
+  AvatarItem createEmptyInstance() => AvatarItem._();
   @$core.pragma('dart2js:noInline')
   static AvatarItem getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<AvatarItem>(create);
+      $pb.GeneratedMessage.$_defaultFor<AvatarItem>(AvatarItem.$_createMessage);
   static AvatarItem? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -128,7 +130,7 @@ class BasicLayerResource extends $pb.GeneratedMessage {
     ResAnimation? resAnimation,
     ResNativeDraw? resNativeDraw,
   }) {
-    final result = create();
+    final result = BasicLayerResource._();
     if (resType != null) result.resType = resType;
     if (resImage != null) result.resImage = resImage;
     if (resAnimation != null) result.resAnimation = resAnimation;
@@ -140,10 +142,10 @@ class BasicLayerResource extends $pb.GeneratedMessage {
 
   factory BasicLayerResource.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      BasicLayerResource()..mergeFromBuffer(data, registry);
   factory BasicLayerResource.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      BasicLayerResource()..mergeFromJson(json, registry);
 
   static const $core.Map<$core.int, BasicLayerResource_Payload>
       _BasicLayerResource_PayloadByTag = {
@@ -156,16 +158,16 @@ class BasicLayerResource extends $pb.GeneratedMessage {
       _omitMessageNames ? '' : 'BasicLayerResource',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.dagw.component.avatar.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: BasicLayerResource.$_createMessage)
     ..oo(0, [2, 3, 4])
     ..aE<BasicLayerResource_ResType>(1, _omitFieldNames ? '' : 'resType',
         enumValues: BasicLayerResource_ResType.values)
     ..aOM<ResImage>(2, _omitFieldNames ? '' : 'resImage',
-        subBuilder: ResImage.create)
+        subBuilder: ResImage.$_createMessage)
     ..aOM<ResAnimation>(3, _omitFieldNames ? '' : 'resAnimation',
-        subBuilder: ResAnimation.create)
+        subBuilder: ResAnimation.$_createMessage)
     ..aOM<ResNativeDraw>(4, _omitFieldNames ? '' : 'resNativeDraw',
-        subBuilder: ResNativeDraw.create)
+        subBuilder: ResNativeDraw.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -179,12 +181,15 @@ class BasicLayerResource extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use BasicLayerResource() / BasicLayerResource.new instead')
   static BasicLayerResource create() => BasicLayerResource._();
+  static $pb.GeneratedMessage $_createMessage() => BasicLayerResource._();
   @$core.override
-  BasicLayerResource createEmptyInstance() => create();
+  BasicLayerResource createEmptyInstance() => BasicLayerResource._();
   @$core.pragma('dart2js:noInline')
   static BasicLayerResource getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<BasicLayerResource>(create);
+      $pb.GeneratedMessage.$_defaultFor<BasicLayerResource>(
+          BasicLayerResource.$_createMessage);
   static BasicLayerResource? _defaultInstance;
 
   @$pb.TagNumber(2)
@@ -244,7 +249,7 @@ class GeneralConfig extends $pb.GeneratedMessage {
   factory GeneralConfig({
     $core.Iterable<$core.MapEntry<$core.String, $core.String>>? webCssStyle,
   }) {
-    final result = create();
+    final result = GeneralConfig._();
     if (webCssStyle != null) result.webCssStyle.addEntries(webCssStyle);
     return result;
   }
@@ -253,16 +258,16 @@ class GeneralConfig extends $pb.GeneratedMessage {
 
   factory GeneralConfig.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      GeneralConfig()..mergeFromBuffer(data, registry);
   factory GeneralConfig.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      GeneralConfig()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'GeneralConfig',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.dagw.component.avatar.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: GeneralConfig.$_createMessage)
     ..m<$core.String, $core.String>(1, _omitFieldNames ? '' : 'webCssStyle',
         entryClassName: 'GeneralConfig.WebCssStyleEntry',
         keyFieldType: $pb.PbFieldType.OS,
@@ -281,12 +286,15 @@ class GeneralConfig extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use GeneralConfig() / GeneralConfig.new instead')
   static GeneralConfig create() => GeneralConfig._();
+  static $pb.GeneratedMessage $_createMessage() => GeneralConfig._();
   @$core.override
-  GeneralConfig createEmptyInstance() => create();
+  GeneralConfig createEmptyInstance() => GeneralConfig._();
   @$core.pragma('dart2js:noInline')
-  static GeneralConfig getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<GeneralConfig>(create);
+  static GeneralConfig getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GeneralConfig>(
+          GeneralConfig.$_createMessage);
   static GeneralConfig? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -301,7 +309,7 @@ class Layer extends $pb.GeneratedMessage {
     LayerConfig? layerConfig,
     BasicLayerResource? resource,
   }) {
-    final result = create();
+    final result = Layer._();
     if (layerId != null) result.layerId = layerId;
     if (visible != null) result.visible = visible;
     if (generalSpec != null) result.generalSpec = generalSpec;
@@ -314,24 +322,24 @@ class Layer extends $pb.GeneratedMessage {
 
   factory Layer.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      Layer()..mergeFromBuffer(data, registry);
   factory Layer.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      Layer()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Layer',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.dagw.component.avatar.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: Layer.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'layerId')
     ..aOB(2, _omitFieldNames ? '' : 'visible')
     ..aOM<$0.LayerGeneralSpec>(3, _omitFieldNames ? '' : 'generalSpec',
-        subBuilder: $0.LayerGeneralSpec.create)
+        subBuilder: $0.LayerGeneralSpec.$_createMessage)
     ..aOM<LayerConfig>(4, _omitFieldNames ? '' : 'layerConfig',
-        subBuilder: LayerConfig.create)
+        subBuilder: LayerConfig.$_createMessage)
     ..aOM<BasicLayerResource>(5, _omitFieldNames ? '' : 'resource',
-        subBuilder: BasicLayerResource.create)
+        subBuilder: BasicLayerResource.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -344,12 +352,14 @@ class Layer extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Layer() / Layer.new instead')
   static Layer create() => Layer._();
+  static $pb.GeneratedMessage $_createMessage() => Layer._();
   @$core.override
-  Layer createEmptyInstance() => create();
+  Layer createEmptyInstance() => Layer._();
   @$core.pragma('dart2js:noInline')
-  static Layer getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Layer>(create);
+  static Layer getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Layer>(Layer.$_createMessage);
   static Layer? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -411,7 +421,7 @@ class LayerConfig extends $pb.GeneratedMessage {
     $core.bool? allowOverPaint,
     $0.MaskProperty? layerMask,
   }) {
-    final result = create();
+    final result = LayerConfig._();
     if (tags != null) result.tags.addEntries(tags);
     if (isCritical != null) result.isCritical = isCritical;
     if (allowOverPaint != null) result.allowOverPaint = allowOverPaint;
@@ -423,27 +433,27 @@ class LayerConfig extends $pb.GeneratedMessage {
 
   factory LayerConfig.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      LayerConfig()..mergeFromBuffer(data, registry);
   factory LayerConfig.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      LayerConfig()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'LayerConfig',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.dagw.component.avatar.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: LayerConfig.$_createMessage)
     ..m<$core.String, LayerTagConfig>(1, _omitFieldNames ? '' : 'tags',
         entryClassName: 'LayerConfig.TagsEntry',
         keyFieldType: $pb.PbFieldType.OS,
         valueFieldType: $pb.PbFieldType.OM,
-        valueCreator: LayerTagConfig.create,
+        valueCreator: LayerTagConfig.$_createMessage,
         valueDefaultOrMaker: LayerTagConfig.getDefault,
         packageName: const $pb.PackageName('bilibili.dagw.component.avatar.v1'))
     ..aOB(2, _omitFieldNames ? '' : 'isCritical')
     ..aOB(3, _omitFieldNames ? '' : 'allowOverPaint')
     ..aOM<$0.MaskProperty>(4, _omitFieldNames ? '' : 'layerMask',
-        subBuilder: $0.MaskProperty.create)
+        subBuilder: $0.MaskProperty.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -457,12 +467,15 @@ class LayerConfig extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use LayerConfig() / LayerConfig.new instead')
   static LayerConfig create() => LayerConfig._();
+  static $pb.GeneratedMessage $_createMessage() => LayerConfig._();
   @$core.override
-  LayerConfig createEmptyInstance() => create();
+  LayerConfig createEmptyInstance() => LayerConfig._();
   @$core.pragma('dart2js:noInline')
-  static LayerConfig getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<LayerConfig>(create);
+  static LayerConfig getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<LayerConfig>(
+          LayerConfig.$_createMessage);
   static LayerConfig? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -505,7 +518,7 @@ class LayerGroup extends $pb.GeneratedMessage {
     $0.MaskProperty? groupMask,
     $core.bool? isCriticalGroup,
   }) {
-    final result = create();
+    final result = LayerGroup._();
     if (groupId != null) result.groupId = groupId;
     if (layers != null) result.layers.addAll(layers);
     if (groupMask != null) result.groupMask = groupMask;
@@ -517,20 +530,21 @@ class LayerGroup extends $pb.GeneratedMessage {
 
   factory LayerGroup.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      LayerGroup()..mergeFromBuffer(data, registry);
   factory LayerGroup.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      LayerGroup()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'LayerGroup',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.dagw.component.avatar.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: LayerGroup.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'groupId')
-    ..pPM<Layer>(2, _omitFieldNames ? '' : 'layers', subBuilder: Layer.create)
+    ..pPM<Layer>(2, _omitFieldNames ? '' : 'layers',
+        subBuilder: Layer.$_createMessage)
     ..aOM<$0.MaskProperty>(3, _omitFieldNames ? '' : 'groupMask',
-        subBuilder: $0.MaskProperty.create)
+        subBuilder: $0.MaskProperty.$_createMessage)
     ..aOB(4, _omitFieldNames ? '' : 'isCriticalGroup')
     ..hasRequiredFields = false;
 
@@ -544,12 +558,14 @@ class LayerGroup extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use LayerGroup() / LayerGroup.new instead')
   static LayerGroup create() => LayerGroup._();
+  static $pb.GeneratedMessage $_createMessage() => LayerGroup._();
   @$core.override
-  LayerGroup createEmptyInstance() => create();
+  LayerGroup createEmptyInstance() => LayerGroup._();
   @$core.pragma('dart2js:noInline')
   static LayerGroup getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<LayerGroup>(create);
+      $pb.GeneratedMessage.$_defaultFor<LayerGroup>(LayerGroup.$_createMessage);
   static LayerGroup? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -607,7 +623,7 @@ class LayerTagConfig extends $pb.GeneratedMessage {
     $1.FollowIconConfig? followIconConfig,
     $1.FollowActionConfig? followActionConfig,
   }) {
-    final result = create();
+    final result = LayerTagConfig._();
     if (configType != null) result.configType = configType;
     if (generalConfig != null) result.generalConfig = generalConfig;
     if (gyroConfig != null) result.gyroConfig = gyroConfig;
@@ -626,10 +642,10 @@ class LayerTagConfig extends $pb.GeneratedMessage {
 
   factory LayerTagConfig.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      LayerTagConfig()..mergeFromBuffer(data, registry);
   factory LayerTagConfig.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      LayerTagConfig()..mergeFromJson(json, registry);
 
   static const $core.Map<$core.int, LayerTagConfig_Config>
       _LayerTagConfig_ConfigByTag = {
@@ -646,25 +662,25 @@ class LayerTagConfig extends $pb.GeneratedMessage {
       _omitMessageNames ? '' : 'LayerTagConfig',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.dagw.component.avatar.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: LayerTagConfig.$_createMessage)
     ..oo(0, [2, 3, 4, 5, 6, 7, 8])
     ..aE<LayerTagConfig_TagConfigType>(1, _omitFieldNames ? '' : 'configType',
         enumValues: LayerTagConfig_TagConfigType.values)
     ..aOM<GeneralConfig>(2, _omitFieldNames ? '' : 'generalConfig',
-        subBuilder: GeneralConfig.create)
+        subBuilder: GeneralConfig.$_createMessage)
     ..aOM<$1.GyroConfig>(3, _omitFieldNames ? '' : 'gyroConfig',
-        subBuilder: $1.GyroConfig.create)
+        subBuilder: $1.GyroConfig.$_createMessage)
     ..aOM<$1.CommentDoubleClickConfig>(
         4, _omitFieldNames ? '' : 'commentDoubleClickConfig',
-        subBuilder: $1.CommentDoubleClickConfig.create)
+        subBuilder: $1.CommentDoubleClickConfig.$_createMessage)
     ..aOM<$1.LiveAnimeConfig>(5, _omitFieldNames ? '' : 'liveAnimeConfig',
-        subBuilder: $1.LiveAnimeConfig.create)
+        subBuilder: $1.LiveAnimeConfig.$_createMessage)
     ..aOM<$1.WebLiveAnimeConfig>(6, _omitFieldNames ? '' : 'webLiveAnimeConfig',
-        subBuilder: $1.WebLiveAnimeConfig.create)
+        subBuilder: $1.WebLiveAnimeConfig.$_createMessage)
     ..aOM<$1.FollowIconConfig>(7, _omitFieldNames ? '' : 'followIconConfig',
-        subBuilder: $1.FollowIconConfig.create)
+        subBuilder: $1.FollowIconConfig.$_createMessage)
     ..aOM<$1.FollowActionConfig>(8, _omitFieldNames ? '' : 'followActionConfig',
-        subBuilder: $1.FollowActionConfig.create)
+        subBuilder: $1.FollowActionConfig.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -678,12 +694,15 @@ class LayerTagConfig extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use LayerTagConfig() / LayerTagConfig.new instead')
   static LayerTagConfig create() => LayerTagConfig._();
+  static $pb.GeneratedMessage $_createMessage() => LayerTagConfig._();
   @$core.override
-  LayerTagConfig createEmptyInstance() => create();
+  LayerTagConfig createEmptyInstance() => LayerTagConfig._();
   @$core.pragma('dart2js:noInline')
-  static LayerTagConfig getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<LayerTagConfig>(create);
+  static LayerTagConfig getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<LayerTagConfig>(
+          LayerTagConfig.$_createMessage);
   static LayerTagConfig? _defaultInstance;
 
   @$pb.TagNumber(2)
@@ -796,7 +815,7 @@ class ResAnimation extends $pb.GeneratedMessage {
   factory ResAnimation({
     $0.ResourceSource? webpSrc,
   }) {
-    final result = create();
+    final result = ResAnimation._();
     if (webpSrc != null) result.webpSrc = webpSrc;
     return result;
   }
@@ -805,18 +824,18 @@ class ResAnimation extends $pb.GeneratedMessage {
 
   factory ResAnimation.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      ResAnimation()..mergeFromBuffer(data, registry);
   factory ResAnimation.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      ResAnimation()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'ResAnimation',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.dagw.component.avatar.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: ResAnimation.$_createMessage)
     ..aOM<$0.ResourceSource>(1, _omitFieldNames ? '' : 'webpSrc',
-        subBuilder: $0.ResourceSource.create)
+        subBuilder: $0.ResourceSource.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -830,12 +849,15 @@ class ResAnimation extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use ResAnimation() / ResAnimation.new instead')
   static ResAnimation create() => ResAnimation._();
+  static $pb.GeneratedMessage $_createMessage() => ResAnimation._();
   @$core.override
-  ResAnimation createEmptyInstance() => create();
+  ResAnimation createEmptyInstance() => ResAnimation._();
   @$core.pragma('dart2js:noInline')
-  static ResAnimation getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<ResAnimation>(create);
+  static ResAnimation getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ResAnimation>(
+          ResAnimation.$_createMessage);
   static ResAnimation? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -854,7 +876,7 @@ class ResImage extends $pb.GeneratedMessage {
   factory ResImage({
     $0.ResourceSource? imageSrc,
   }) {
-    final result = create();
+    final result = ResImage._();
     if (imageSrc != null) result.imageSrc = imageSrc;
     return result;
   }
@@ -863,18 +885,18 @@ class ResImage extends $pb.GeneratedMessage {
 
   factory ResImage.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      ResImage()..mergeFromBuffer(data, registry);
   factory ResImage.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      ResImage()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'ResImage',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.dagw.component.avatar.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: ResImage.$_createMessage)
     ..aOM<$0.ResourceSource>(1, _omitFieldNames ? '' : 'imageSrc',
-        subBuilder: $0.ResourceSource.create)
+        subBuilder: $0.ResourceSource.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -887,12 +909,14 @@ class ResImage extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use ResImage() / ResImage.new instead')
   static ResImage create() => ResImage._();
+  static $pb.GeneratedMessage $_createMessage() => ResImage._();
   @$core.override
-  ResImage createEmptyInstance() => create();
+  ResImage createEmptyInstance() => ResImage._();
   @$core.pragma('dart2js:noInline')
-  static ResImage getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ResImage>(create);
+  static ResImage getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ResImage>(ResImage.$_createMessage);
   static ResImage? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -911,7 +935,7 @@ class ResNativeDraw extends $pb.GeneratedMessage {
   factory ResNativeDraw({
     $0.ResourceSource? drawSrc,
   }) {
-    final result = create();
+    final result = ResNativeDraw._();
     if (drawSrc != null) result.drawSrc = drawSrc;
     return result;
   }
@@ -920,18 +944,18 @@ class ResNativeDraw extends $pb.GeneratedMessage {
 
   factory ResNativeDraw.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      ResNativeDraw()..mergeFromBuffer(data, registry);
   factory ResNativeDraw.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      ResNativeDraw()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'ResNativeDraw',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.dagw.component.avatar.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: ResNativeDraw.$_createMessage)
     ..aOM<$0.ResourceSource>(1, _omitFieldNames ? '' : 'drawSrc',
-        subBuilder: $0.ResourceSource.create)
+        subBuilder: $0.ResourceSource.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -945,12 +969,15 @@ class ResNativeDraw extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use ResNativeDraw() / ResNativeDraw.new instead')
   static ResNativeDraw create() => ResNativeDraw._();
+  static $pb.GeneratedMessage $_createMessage() => ResNativeDraw._();
   @$core.override
-  ResNativeDraw createEmptyInstance() => create();
+  ResNativeDraw createEmptyInstance() => ResNativeDraw._();
   @$core.pragma('dart2js:noInline')
-  static ResNativeDraw getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<ResNativeDraw>(create);
+  static ResNativeDraw getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ResNativeDraw>(
+          ResNativeDraw.$_createMessage);
   static ResNativeDraw? _defaultInstance;
 
   @$pb.TagNumber(1)

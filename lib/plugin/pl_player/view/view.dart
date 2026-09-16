@@ -56,6 +56,7 @@ import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
+import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/mobile_observer.dart';
@@ -970,6 +971,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   void _onHorizontalDragEnd() {
     if (plPlayerController.seekToPos case final seekToPos?) {
+      feedBack();
       plPlayerController
         ..position.value = seekToPos.inSeconds
         ..seekTo(seekToPos, isSeek: false)
@@ -1219,21 +1221,17 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     return true;
   }
 
+  /// 鼠标中键/右键全屏切换的挂起项：(进入全屏, 应用内全屏)。
+  /// 在鼠标按下时启动原生全屏过渡会与本次点击重叠，窗口可能卡在半过渡状态
+  /// 导致鼠标事件失效，因此延后到抬起后执行。
+  (bool, bool)? _pendingFullScreenToggle;
+
   void _onPointerDown(PointerDownEvent event) {
     if (PlatformUtils.isDesktop) {
       final buttons = event.buttons;
       final isSecondaryBtn = buttons == kSecondaryMouseButton;
       if (isSecondaryBtn || buttons == kMiddleMouseButton) {
-        final isFullScreen = this.isFullScreen;
-        if (isFullScreen && plPlayerController.controlsLock.value) {
-          plPlayerController
-            ..controlsLock.value = false
-            ..showControls.value = false;
-        }
-        plPlayerController.triggerFullScreen(
-          status: !isFullScreen,
-          inAppFullScreen: isSecondaryBtn,
-        );
+        _pendingFullScreenToggle = (!isFullScreen, isSecondaryBtn);
         return;
       }
     }
@@ -1260,6 +1258,27 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       }
       _scaleGestureRecognizer.addPointer(event);
     }
+  }
+
+  void _onPointerUp(PointerUpEvent event) {
+    final pending = _pendingFullScreenToggle;
+    if (pending == null || event.buttons != 0) {
+      return;
+    }
+    _pendingFullScreenToggle = null;
+    if (isFullScreen && plPlayerController.controlsLock.value) {
+      plPlayerController
+        ..controlsLock.value = false
+        ..showControls.value = false;
+    }
+    plPlayerController.triggerFullScreen(
+      status: pending.$1,
+      inAppFullScreen: pending.$2,
+    );
+  }
+
+  void _onPointerCancel(PointerCancelEvent event) {
+    _pendingFullScreenToggle = null;
   }
 
   void _onPointerPanZoomUpdate(PointerPanZoomUpdateEvent event) {
@@ -1846,9 +1865,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                             size: 20,
                             color: Colors.white,
                           ),
-                          onLongPress:
-                              (Platform.isAndroid || kDebugMode) && !isLive
-                              ? screenshotWebp
+                          onLongPress: !PlatformUtils.isDarwin && !isLive
+                              ? _screenshotWebp
+                              : null,
+                          onSecondaryTap: !PlatformUtils.isDarwin && !isLive
+                              ? _screenshotWebp
                               : null,
                           onTap: plPlayerController.takeScreenshot,
                         ),
@@ -2004,6 +2025,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           onPointerPanZoomUpdate: _onPointerPanZoomUpdate,
           onPointerPanZoomEnd: _onPointerPanZoomEnd,
           onPointerDown: _onPointerDown,
+          onPointerUp: _onPointerUp,
+          onPointerCancel: _onPointerCancel,
           onPanStart: _onPanStart,
           onPanUpdate: _onPanUpdate,
           onPanEnd: _onPanEnd,
@@ -2044,14 +2067,14 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     );
   }
 
-  Future<void> screenshotWebp() async {
+  Future<void> _screenshotWebp() async {
     final videoInfo = videoDetailController.data;
     final ids = videoInfo.dash!.video!.availableVideoQualities;
     final video = videoDetailController.findVideoByQa(ids.min);
 
-    VideoQuality qa = video.quality;
     String? url = video.baseUrl;
     if (url == null) return;
+    VideoQuality qa = video.quality;
 
     final ctr = plPlayerController;
     final theme = Theme.of(context);

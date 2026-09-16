@@ -38,7 +38,7 @@ class Arc extends $pb.GeneratedMessage {
     $core.Iterable<$core.String>? badges,
     $core.bool? isOneself,
   }) {
-    final result = create();
+    final result = Arc._();
     if (archive != null) result.archive = archive;
     if (uri != null) result.uri = uri;
     if (viewContent != null) result.viewContent = viewContent;
@@ -56,18 +56,18 @@ class Arc extends $pb.GeneratedMessage {
 
   factory Arc.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      Arc()..mergeFromBuffer(data, registry);
   factory Arc.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      Arc()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Arc',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: Arc.$_createMessage)
     ..aOM<$1.Arc>(1, _omitFieldNames ? '' : 'archive',
-        subBuilder: $1.Arc.create)
+        subBuilder: $1.Arc.$_createMessage)
     ..aOS(2, _omitFieldNames ? '' : 'uri')
     ..aOS(3, _omitFieldNames ? '' : 'viewContent')
     ..aInt64(4, _omitFieldNames ? '' : 'iconType')
@@ -89,12 +89,14 @@ class Arc extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Arc() / Arc.new instead')
   static Arc create() => Arc._();
+  static $pb.GeneratedMessage $_createMessage() => Arc._();
   @$core.override
-  Arc createEmptyInstance() => create();
+  Arc createEmptyInstance() => Arc._();
   @$core.pragma('dart2js:noInline')
-  static Arc getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Arc>(create);
+  static Arc getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Arc>(Arc.$_createMessage);
   static Arc? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -189,7 +191,7 @@ class Badge extends $pb.GeneratedMessage {
     $core.String? text,
     $core.String? icon,
   }) {
-    final result = create();
+    final result = Badge._();
     if (text != null) result.text = text;
     if (icon != null) result.icon = icon;
     return result;
@@ -199,16 +201,16 @@ class Badge extends $pb.GeneratedMessage {
 
   factory Badge.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      Badge()..mergeFromBuffer(data, registry);
   factory Badge.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      Badge()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Badge',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: Badge.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'text')
     ..aOS(2, _omitFieldNames ? '' : 'icon')
     ..hasRequiredFields = false;
@@ -223,12 +225,14 @@ class Badge extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Badge() / Badge.new instead')
   static Badge create() => Badge._();
+  static $pb.GeneratedMessage $_createMessage() => Badge._();
   @$core.override
-  Badge createEmptyInstance() => create();
+  Badge createEmptyInstance() => Badge._();
   @$core.pragma('dart2js:noInline')
-  static Badge getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Badge>(create);
+  static Badge getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Badge>(Badge.$_createMessage);
   static Badge? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -270,7 +274,7 @@ class BigItem extends $pb.GeneratedMessage {
     $3.PlayerArgs? playerArgs,
     $core.bool? isFav,
   }) {
-    final result = create();
+    final result = BigItem._();
     if (title != null) result.title = title;
     if (coverImageUri != null) result.coverImageUri = coverImageUri;
     if (uri != null) result.uri = uri;
@@ -295,16 +299,16 @@ class BigItem extends $pb.GeneratedMessage {
 
   factory BigItem.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      BigItem()..mergeFromBuffer(data, registry);
   factory BigItem.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      BigItem()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'BigItem',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: BigItem.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'title')
     ..aOS(2, _omitFieldNames ? '' : 'coverImageUri')
     ..aOS(3, _omitFieldNames ? '' : 'uri')
@@ -314,19 +318,19 @@ class BigItem extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'coverLeftText2')
     ..aInt64(8, _omitFieldNames ? '' : 'coverLeftIcon2')
     ..aOM<UserCard>(9, _omitFieldNames ? '' : 'userCard',
-        subBuilder: UserCard.create)
+        subBuilder: UserCard.$_createMessage)
     ..aOM<LikeButton>(10, _omitFieldNames ? '' : 'likeButton',
-        subBuilder: LikeButton.create)
+        subBuilder: LikeButton.$_createMessage)
     ..aInt64(11, _omitFieldNames ? '' : 'param')
     ..aOM<$2.SharePlane>(12, _omitFieldNames ? '' : 'sharePlane',
-        subBuilder: $2.SharePlane.create)
+        subBuilder: $2.SharePlane.$_createMessage)
     ..aOM<$2.PanelMeta>(13, _omitFieldNames ? '' : 'threePointMeta',
-        subBuilder: $2.PanelMeta.create)
+        subBuilder: $2.PanelMeta.$_createMessage)
     ..aOM<$2.InlineProgressBar>(14, _omitFieldNames ? '' : 'inlineProgressBar',
-        subBuilder: $2.InlineProgressBar.create)
+        subBuilder: $2.InlineProgressBar.$_createMessage)
     ..aI(15, _omitFieldNames ? '' : 'canPlay')
     ..aOM<$3.PlayerArgs>(16, _omitFieldNames ? '' : 'playerArgs',
-        subBuilder: $3.PlayerArgs.create)
+        subBuilder: $3.PlayerArgs.$_createMessage)
     ..aOB(17, _omitFieldNames ? '' : 'isFav')
     ..hasRequiredFields = false;
 
@@ -340,12 +344,14 @@ class BigItem extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use BigItem() / BigItem.new instead')
   static BigItem create() => BigItem._();
+  static $pb.GeneratedMessage $_createMessage() => BigItem._();
   @$core.override
-  BigItem createEmptyInstance() => create();
+  BigItem createEmptyInstance() => BigItem._();
   @$core.pragma('dart2js:noInline')
-  static BigItem getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BigItem>(create);
+  static BigItem getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<BigItem>(BigItem.$_createMessage);
   static BigItem? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -524,7 +530,7 @@ class Button extends $pb.GeneratedMessage {
     $core.int? followState,
     $core.String? hasTitle_7,
   }) {
-    final result = create();
+    final result = Button._();
     if (title != null) result.title = title;
     if (link != null) result.link = link;
     if (id != null) result.id = id;
@@ -539,16 +545,16 @@ class Button extends $pb.GeneratedMessage {
 
   factory Button.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      Button()..mergeFromBuffer(data, registry);
   factory Button.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      Button()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Button',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: Button.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'title')
     ..aOS(2, _omitFieldNames ? '' : 'link')
     ..aOS(3, _omitFieldNames ? '' : 'id')
@@ -569,12 +575,14 @@ class Button extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Button() / Button.new instead')
   static Button create() => Button._();
+  static $pb.GeneratedMessage $_createMessage() => Button._();
   @$core.override
-  Button createEmptyInstance() => create();
+  Button createEmptyInstance() => Button._();
   @$core.pragma('dart2js:noInline')
-  static Button getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Button>(create);
+  static Button getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Button>(Button.$_createMessage);
   static Button? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -651,7 +659,7 @@ class CardArticle extends $pb.GeneratedMessage {
     $core.String? badge,
     Relation? relation,
   }) {
-    final result = create();
+    final result = CardArticle._();
     if (covers != null) result.covers.addAll(covers);
     if (name != null) result.name = name;
     if (mid != null) result.mid = mid;
@@ -665,23 +673,23 @@ class CardArticle extends $pb.GeneratedMessage {
 
   factory CardArticle.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      CardArticle()..mergeFromBuffer(data, registry);
   factory CardArticle.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      CardArticle()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'CardArticle',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: CardArticle.$_createMessage)
     ..pPS(1, _omitFieldNames ? '' : 'covers')
     ..aOS(2, _omitFieldNames ? '' : 'name')
     ..aInt64(3, _omitFieldNames ? '' : 'mid')
     ..aOB(4, _omitFieldNames ? '' : 'displayAttention')
     ..aOS(5, _omitFieldNames ? '' : 'badge')
     ..aOM<Relation>(6, _omitFieldNames ? '' : 'relation',
-        subBuilder: Relation.create)
+        subBuilder: Relation.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -695,12 +703,15 @@ class CardArticle extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use CardArticle() / CardArticle.new instead')
   static CardArticle create() => CardArticle._();
+  static $pb.GeneratedMessage $_createMessage() => CardArticle._();
   @$core.override
-  CardArticle createEmptyInstance() => create();
+  CardArticle createEmptyInstance() => CardArticle._();
   @$core.pragma('dart2js:noInline')
-  static CardArticle getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<CardArticle>(create);
+  static CardArticle getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CardArticle>(
+          CardArticle.$_createMessage);
   static CardArticle? _defaultInstance;
 
   /// 封面
@@ -769,7 +780,7 @@ class CardCheese extends $pb.GeneratedMessage {
     $core.String? subtitle,
     $fixnum.Int64? state,
   }) {
-    final result = create();
+    final result = CardCheese._();
     if (cover != null) result.cover = cover;
     if (progress != null) result.progress = progress;
     if (duration != null) result.duration = duration;
@@ -782,16 +793,16 @@ class CardCheese extends $pb.GeneratedMessage {
 
   factory CardCheese.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      CardCheese()..mergeFromBuffer(data, registry);
   factory CardCheese.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      CardCheese()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'CardCheese',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: CardCheese.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'cover')
     ..aInt64(2, _omitFieldNames ? '' : 'progress')
     ..aInt64(3, _omitFieldNames ? '' : 'duration')
@@ -809,12 +820,14 @@ class CardCheese extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use CardCheese() / CardCheese.new instead')
   static CardCheese create() => CardCheese._();
+  static $pb.GeneratedMessage $_createMessage() => CardCheese._();
   @$core.override
-  CardCheese createEmptyInstance() => create();
+  CardCheese createEmptyInstance() => CardCheese._();
   @$core.pragma('dart2js:noInline')
   static CardCheese getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<CardCheese>(create);
+      $pb.GeneratedMessage.$_defaultFor<CardCheese>(CardCheese.$_createMessage);
   static CardCheese? _defaultInstance;
 
   /// 封面
@@ -878,7 +891,7 @@ class CardLive extends $pb.GeneratedMessage {
     $core.bool? displayAttention,
     Relation? relation,
   }) {
-    final result = create();
+    final result = CardLive._();
     if (cover != null) result.cover = cover;
     if (name != null) result.name = name;
     if (mid != null) result.mid = mid;
@@ -893,16 +906,16 @@ class CardLive extends $pb.GeneratedMessage {
 
   factory CardLive.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      CardLive()..mergeFromBuffer(data, registry);
   factory CardLive.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      CardLive()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'CardLive',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: CardLive.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'cover')
     ..aOS(2, _omitFieldNames ? '' : 'name')
     ..aInt64(3, _omitFieldNames ? '' : 'mid')
@@ -910,7 +923,7 @@ class CardLive extends $pb.GeneratedMessage {
     ..aI(5, _omitFieldNames ? '' : 'status')
     ..aOB(6, _omitFieldNames ? '' : 'displayAttention')
     ..aOM<Relation>(7, _omitFieldNames ? '' : 'relation',
-        subBuilder: Relation.create)
+        subBuilder: Relation.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -923,12 +936,14 @@ class CardLive extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use CardLive() / CardLive.new instead')
   static CardLive create() => CardLive._();
+  static $pb.GeneratedMessage $_createMessage() => CardLive._();
   @$core.override
-  CardLive createEmptyInstance() => create();
+  CardLive createEmptyInstance() => CardLive._();
   @$core.pragma('dart2js:noInline')
-  static CardLive getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CardLive>(create);
+  static CardLive getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CardLive>(CardLive.$_createMessage);
   static CardLive? _defaultInstance;
 
   /// 封面
@@ -1014,7 +1029,7 @@ class CardOGV extends $pb.GeneratedMessage {
     $core.String? badge,
     $fixnum.Int64? state,
   }) {
-    final result = create();
+    final result = CardOGV._();
     if (cover != null) result.cover = cover;
     if (progress != null) result.progress = progress;
     if (duration != null) result.duration = duration;
@@ -1028,16 +1043,16 @@ class CardOGV extends $pb.GeneratedMessage {
 
   factory CardOGV.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      CardOGV()..mergeFromBuffer(data, registry);
   factory CardOGV.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      CardOGV()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'CardOGV',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: CardOGV.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'cover')
     ..aInt64(2, _omitFieldNames ? '' : 'progress')
     ..aInt64(3, _omitFieldNames ? '' : 'duration')
@@ -1056,12 +1071,14 @@ class CardOGV extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use CardOGV() / CardOGV.new instead')
   static CardOGV create() => CardOGV._();
+  static $pb.GeneratedMessage $_createMessage() => CardOGV._();
   @$core.override
-  CardOGV createEmptyInstance() => create();
+  CardOGV createEmptyInstance() => CardOGV._();
   @$core.pragma('dart2js:noInline')
-  static CardOGV getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CardOGV>(create);
+  static CardOGV getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CardOGV>(CardOGV.$_createMessage);
   static CardOGV? _defaultInstance;
 
   /// 封面
@@ -1146,7 +1163,7 @@ class CardUGC extends $pb.GeneratedMessage {
     $core.String? badge,
     Badge? badgeV2,
   }) {
-    final result = create();
+    final result = CardUGC._();
     if (cover != null) result.cover = cover;
     if (progress != null) result.progress = progress;
     if (duration != null) result.duration = duration;
@@ -1172,16 +1189,16 @@ class CardUGC extends $pb.GeneratedMessage {
 
   factory CardUGC.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      CardUGC()..mergeFromBuffer(data, registry);
   factory CardUGC.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      CardUGC()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'CardUGC',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: CardUGC.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'cover')
     ..aInt64(2, _omitFieldNames ? '' : 'progress')
     ..aInt64(3, _omitFieldNames ? '' : 'duration')
@@ -1192,7 +1209,7 @@ class CardUGC extends $pb.GeneratedMessage {
     ..aI(8, _omitFieldNames ? '' : 'page')
     ..aOS(9, _omitFieldNames ? '' : 'subtitle')
     ..aOM<Relation>(10, _omitFieldNames ? '' : 'relation',
-        subBuilder: Relation.create)
+        subBuilder: Relation.$_createMessage)
     ..aOS(11, _omitFieldNames ? '' : 'bvid')
     ..aInt64(12, _omitFieldNames ? '' : 'videos')
     ..aOS(13, _omitFieldNames ? '' : 'shortLink')
@@ -1200,7 +1217,8 @@ class CardUGC extends $pb.GeneratedMessage {
     ..aInt64(15, _omitFieldNames ? '' : 'view')
     ..aInt64(16, _omitFieldNames ? '' : 'state')
     ..aOS(17, _omitFieldNames ? '' : 'badge')
-    ..aOM<Badge>(18, _omitFieldNames ? '' : 'badgeV2', subBuilder: Badge.create)
+    ..aOM<Badge>(18, _omitFieldNames ? '' : 'badgeV2',
+        subBuilder: Badge.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1213,12 +1231,14 @@ class CardUGC extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use CardUGC() / CardUGC.new instead')
   static CardUGC create() => CardUGC._();
+  static $pb.GeneratedMessage $_createMessage() => CardUGC._();
   @$core.override
-  CardUGC createEmptyInstance() => create();
+  CardUGC createEmptyInstance() => CardUGC._();
   @$core.pragma('dart2js:noInline')
-  static CardUGC getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CardUGC>(create);
+  static CardUGC getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CardUGC>(CardUGC.$_createMessage);
   static CardUGC? _defaultInstance;
 
   /// 封面
@@ -1410,7 +1430,7 @@ class Cast extends $pb.GeneratedMessage {
     $core.Iterable<MediaPerson>? person,
     $core.String? title,
   }) {
-    final result = create();
+    final result = Cast._();
     if (person != null) result.person.addAll(person);
     if (title != null) result.title = title;
     return result;
@@ -1420,18 +1440,18 @@ class Cast extends $pb.GeneratedMessage {
 
   factory Cast.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      Cast()..mergeFromBuffer(data, registry);
   factory Cast.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      Cast()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Cast',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: Cast.$_createMessage)
     ..pPM<MediaPerson>(1, _omitFieldNames ? '' : 'person',
-        subBuilder: MediaPerson.create)
+        subBuilder: MediaPerson.$_createMessage)
     ..aOS(2, _omitFieldNames ? '' : 'title')
     ..hasRequiredFields = false;
 
@@ -1445,12 +1465,14 @@ class Cast extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Cast() / Cast.new instead')
   static Cast create() => Cast._();
+  static $pb.GeneratedMessage $_createMessage() => Cast._();
   @$core.override
-  Cast createEmptyInstance() => create();
+  Cast createEmptyInstance() => Cast._();
   @$core.pragma('dart2js:noInline')
-  static Cast getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Cast>(create);
+  static Cast getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Cast>(Cast.$_createMessage);
   static Cast? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -1471,7 +1493,7 @@ class ChannelInfo extends $pb.GeneratedMessage {
     $fixnum.Int64? channelId,
     $core.bool? subscribed,
   }) {
-    final result = create();
+    final result = ChannelInfo._();
     if (channelId != null) result.channelId = channelId;
     if (subscribed != null) result.subscribed = subscribed;
     return result;
@@ -1481,16 +1503,16 @@ class ChannelInfo extends $pb.GeneratedMessage {
 
   factory ChannelInfo.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      ChannelInfo()..mergeFromBuffer(data, registry);
   factory ChannelInfo.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      ChannelInfo()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'ChannelInfo',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: ChannelInfo.$_createMessage)
     ..aInt64(1, _omitFieldNames ? '' : 'channelId')
     ..aOB(2, _omitFieldNames ? '' : 'subscribed')
     ..hasRequiredFields = false;
@@ -1506,12 +1528,15 @@ class ChannelInfo extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use ChannelInfo() / ChannelInfo.new instead')
   static ChannelInfo create() => ChannelInfo._();
+  static $pb.GeneratedMessage $_createMessage() => ChannelInfo._();
   @$core.override
-  ChannelInfo createEmptyInstance() => create();
+  ChannelInfo createEmptyInstance() => ChannelInfo._();
   @$core.pragma('dart2js:noInline')
-  static ChannelInfo getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<ChannelInfo>(create);
+  static ChannelInfo getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ChannelInfo>(
+          ChannelInfo.$_createMessage);
   static ChannelInfo? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -1537,7 +1562,7 @@ class ClearReq extends $pb.GeneratedMessage {
   factory ClearReq({
     $core.String? business,
   }) {
-    final result = create();
+    final result = ClearReq._();
     if (business != null) result.business = business;
     return result;
   }
@@ -1546,16 +1571,16 @@ class ClearReq extends $pb.GeneratedMessage {
 
   factory ClearReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      ClearReq()..mergeFromBuffer(data, registry);
   factory ClearReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      ClearReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'ClearReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: ClearReq.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'business')
     ..hasRequiredFields = false;
 
@@ -1569,12 +1594,14 @@ class ClearReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use ClearReq() / ClearReq.new instead')
   static ClearReq create() => ClearReq._();
+  static $pb.GeneratedMessage $_createMessage() => ClearReq._();
   @$core.override
-  ClearReq createEmptyInstance() => create();
+  ClearReq createEmptyInstance() => ClearReq._();
   @$core.pragma('dart2js:noInline')
-  static ClearReq getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ClearReq>(create);
+  static ClearReq getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ClearReq>(ClearReq.$_createMessage);
   static ClearReq? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -1596,7 +1623,7 @@ class CommentItem extends $pb.GeneratedMessage {
     $core.String? actionType,
     $core.String? id,
   }) {
-    final result = create();
+    final result = CommentItem._();
     if (icon != null) result.icon = icon;
     if (url != null) result.url = url;
     if (title != null) result.title = title;
@@ -1610,16 +1637,16 @@ class CommentItem extends $pb.GeneratedMessage {
 
   factory CommentItem.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      CommentItem()..mergeFromBuffer(data, registry);
   factory CommentItem.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      CommentItem()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'CommentItem',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: CommentItem.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'icon')
     ..aOS(2, _omitFieldNames ? '' : 'url')
     ..aOS(3, _omitFieldNames ? '' : 'title')
@@ -1640,12 +1667,15 @@ class CommentItem extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use CommentItem() / CommentItem.new instead')
   static CommentItem create() => CommentItem._();
+  static $pb.GeneratedMessage $_createMessage() => CommentItem._();
   @$core.override
-  CommentItem createEmptyInstance() => create();
+  CommentItem createEmptyInstance() => CommentItem._();
   @$core.pragma('dart2js:noInline')
-  static CommentItem getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<CommentItem>(create);
+  static CommentItem getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CommentItem>(
+          CommentItem.$_createMessage);
   static CommentItem? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -1709,7 +1739,7 @@ class Cursor extends $pb.GeneratedMessage {
     $fixnum.Int64? max,
     $core.int? maxTp,
   }) {
-    final result = create();
+    final result = Cursor._();
     if (max != null) result.max = max;
     if (maxTp != null) result.maxTp = maxTp;
     return result;
@@ -1719,16 +1749,16 @@ class Cursor extends $pb.GeneratedMessage {
 
   factory Cursor.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      Cursor()..mergeFromBuffer(data, registry);
   factory Cursor.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      Cursor()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Cursor',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: Cursor.$_createMessage)
     ..aInt64(1, _omitFieldNames ? '' : 'max')
     ..aI(2, _omitFieldNames ? '' : 'maxTp')
     ..hasRequiredFields = false;
@@ -1743,12 +1773,14 @@ class Cursor extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Cursor() / Cursor.new instead')
   static Cursor create() => Cursor._();
+  static $pb.GeneratedMessage $_createMessage() => Cursor._();
   @$core.override
-  Cursor createEmptyInstance() => create();
+  Cursor createEmptyInstance() => Cursor._();
   @$core.pragma('dart2js:noInline')
-  static Cursor getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Cursor>(create);
+  static Cursor getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Cursor>(Cursor.$_createMessage);
   static Cursor? _defaultInstance;
 
   /// 本页最大值游标值
@@ -1800,7 +1832,7 @@ class CursorItem extends $pb.GeneratedMessage {
     $core.bool? hasShare,
     $core.String? report,
   }) {
-    final result = create();
+    final result = CursorItem._();
     if (cardUgc != null) result.cardUgc = cardUgc;
     if (cardOgv != null) result.cardOgv = cardOgv;
     if (cardArticle != null) result.cardArticle = cardArticle;
@@ -1823,10 +1855,10 @@ class CursorItem extends $pb.GeneratedMessage {
 
   factory CursorItem.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      CursorItem()..mergeFromBuffer(data, registry);
   factory CursorItem.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      CursorItem()..mergeFromJson(json, registry);
 
   static const $core.Map<$core.int, CursorItem_CardItem>
       _CursorItem_CardItemByTag = {
@@ -1841,18 +1873,18 @@ class CursorItem extends $pb.GeneratedMessage {
       _omitMessageNames ? '' : 'CursorItem',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: CursorItem.$_createMessage)
     ..oo(0, [1, 2, 3, 4, 5])
     ..aOM<CardUGC>(1, _omitFieldNames ? '' : 'cardUgc',
-        subBuilder: CardUGC.create)
+        subBuilder: CardUGC.$_createMessage)
     ..aOM<CardOGV>(2, _omitFieldNames ? '' : 'cardOgv',
-        subBuilder: CardOGV.create)
+        subBuilder: CardOGV.$_createMessage)
     ..aOM<CardArticle>(3, _omitFieldNames ? '' : 'cardArticle',
-        subBuilder: CardArticle.create)
+        subBuilder: CardArticle.$_createMessage)
     ..aOM<CardLive>(4, _omitFieldNames ? '' : 'cardLive',
-        subBuilder: CardLive.create)
+        subBuilder: CardLive.$_createMessage)
     ..aOM<CardCheese>(5, _omitFieldNames ? '' : 'cardCheese',
-        subBuilder: CardCheese.create)
+        subBuilder: CardCheese.$_createMessage)
     ..aOS(6, _omitFieldNames ? '' : 'title')
     ..aOS(7, _omitFieldNames ? '' : 'uri')
     ..aInt64(8, _omitFieldNames ? '' : 'viewAt')
@@ -1861,7 +1893,7 @@ class CursorItem extends $pb.GeneratedMessage {
     ..aOS(11, _omitFieldNames ? '' : 'business')
     ..aI(12, _omitFieldNames ? '' : 'tp')
     ..aOM<DeviceType>(13, _omitFieldNames ? '' : 'dt',
-        subBuilder: DeviceType.create)
+        subBuilder: DeviceType.$_createMessage)
     ..aOB(14, _omitFieldNames ? '' : 'hasShare')
     ..aOS(15, _omitFieldNames ? '' : 'report')
     ..hasRequiredFields = false;
@@ -1876,12 +1908,14 @@ class CursorItem extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use CursorItem() / CursorItem.new instead')
   static CursorItem create() => CursorItem._();
+  static $pb.GeneratedMessage $_createMessage() => CursorItem._();
   @$core.override
-  CursorItem createEmptyInstance() => create();
+  CursorItem createEmptyInstance() => CursorItem._();
   @$core.pragma('dart2js:noInline')
   static CursorItem getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<CursorItem>(create);
+      $pb.GeneratedMessage.$_defaultFor<CursorItem>(CursorItem.$_createMessage);
   static CursorItem? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -2069,7 +2103,7 @@ class CursorReply extends $pb.GeneratedMessage {
     Cursor? cursor,
     $core.bool? hasMore,
   }) {
-    final result = create();
+    final result = CursorReply._();
     if (items != null) result.items.addAll(items);
     if (tab != null) result.tab.addAll(tab);
     if (cursor != null) result.cursor = cursor;
@@ -2081,21 +2115,22 @@ class CursorReply extends $pb.GeneratedMessage {
 
   factory CursorReply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      CursorReply()..mergeFromBuffer(data, registry);
   factory CursorReply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      CursorReply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'CursorReply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: CursorReply.$_createMessage)
     ..pPM<CursorItem>(1, _omitFieldNames ? '' : 'items',
-        subBuilder: CursorItem.create)
+        subBuilder: CursorItem.$_createMessage)
     ..pPM<CursorTab>(2, _omitFieldNames ? '' : 'tab',
-        subBuilder: CursorTab.create)
-    ..aOM<Cursor>(3, _omitFieldNames ? '' : 'cursor', subBuilder: Cursor.create)
+        subBuilder: CursorTab.$_createMessage)
+    ..aOM<Cursor>(3, _omitFieldNames ? '' : 'cursor',
+        subBuilder: Cursor.$_createMessage)
     ..aOB(4, _omitFieldNames ? '' : 'hasMore')
     ..hasRequiredFields = false;
 
@@ -2110,12 +2145,15 @@ class CursorReply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use CursorReply() / CursorReply.new instead')
   static CursorReply create() => CursorReply._();
+  static $pb.GeneratedMessage $_createMessage() => CursorReply._();
   @$core.override
-  CursorReply createEmptyInstance() => create();
+  CursorReply createEmptyInstance() => CursorReply._();
   @$core.pragma('dart2js:noInline')
-  static CursorReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<CursorReply>(create);
+  static CursorReply getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CursorReply>(
+          CursorReply.$_createMessage);
   static CursorReply? _defaultInstance;
 
   /// 参见 [`CursorItem`]
@@ -2157,7 +2195,7 @@ class CursorReq extends $pb.GeneratedMessage {
     PlayerPreloadParams? playerPreload,
     $3.PlayerArgs? playerArgs,
   }) {
-    final result = create();
+    final result = CursorReq._();
     if (cursor != null) result.cursor = cursor;
     if (business != null) result.business = business;
     if (playerPreload != null) result.playerPreload = playerPreload;
@@ -2169,22 +2207,23 @@ class CursorReq extends $pb.GeneratedMessage {
 
   factory CursorReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      CursorReq()..mergeFromBuffer(data, registry);
   factory CursorReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      CursorReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'CursorReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
-    ..aOM<Cursor>(1, _omitFieldNames ? '' : 'cursor', subBuilder: Cursor.create)
+      createEmptyInstance: CursorReq.$_createMessage)
+    ..aOM<Cursor>(1, _omitFieldNames ? '' : 'cursor',
+        subBuilder: Cursor.$_createMessage)
     ..aOS(2, _omitFieldNames ? '' : 'business')
     ..aOM<PlayerPreloadParams>(3, _omitFieldNames ? '' : 'playerPreload',
-        subBuilder: PlayerPreloadParams.create)
+        subBuilder: PlayerPreloadParams.$_createMessage)
     ..aOM<$3.PlayerArgs>(4, _omitFieldNames ? '' : 'playerArgs',
-        subBuilder: $3.PlayerArgs.create)
+        subBuilder: $3.PlayerArgs.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -2197,12 +2236,14 @@ class CursorReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use CursorReq() / CursorReq.new instead')
   static CursorReq create() => CursorReq._();
+  static $pb.GeneratedMessage $_createMessage() => CursorReq._();
   @$core.override
-  CursorReq createEmptyInstance() => create();
+  CursorReq createEmptyInstance() => CursorReq._();
   @$core.pragma('dart2js:noInline')
-  static CursorReq getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CursorReq>(create);
+  static CursorReq getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CursorReq>(CursorReq.$_createMessage);
   static CursorReq? _defaultInstance;
 
   /// 翻页游标 (透传上一页的游标)
@@ -2265,7 +2306,7 @@ class CursorTab extends $pb.GeneratedMessage {
     $core.String? router,
     $core.bool? focus,
   }) {
-    final result = create();
+    final result = CursorTab._();
     if (business != null) result.business = business;
     if (name != null) result.name = name;
     if (router != null) result.router = router;
@@ -2277,16 +2318,16 @@ class CursorTab extends $pb.GeneratedMessage {
 
   factory CursorTab.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      CursorTab()..mergeFromBuffer(data, registry);
   factory CursorTab.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      CursorTab()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'CursorTab',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: CursorTab.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'business')
     ..aOS(2, _omitFieldNames ? '' : 'name')
     ..aOS(3, _omitFieldNames ? '' : 'router')
@@ -2303,12 +2344,14 @@ class CursorTab extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use CursorTab() / CursorTab.new instead')
   static CursorTab create() => CursorTab._();
+  static $pb.GeneratedMessage $_createMessage() => CursorTab._();
   @$core.override
-  CursorTab createEmptyInstance() => create();
+  CursorTab createEmptyInstance() => CursorTab._();
   @$core.pragma('dart2js:noInline')
-  static CursorTab getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CursorTab>(create);
+  static CursorTab getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CursorTab>(CursorTab.$_createMessage);
   static CursorTab? _defaultInstance;
 
   /// 业务类型
@@ -2360,7 +2403,7 @@ class CursorV2Reply extends $pb.GeneratedMessage {
     $core.bool? hasMore,
     $core.String? emptyLink,
   }) {
-    final result = create();
+    final result = CursorV2Reply._();
     if (items != null) result.items.addAll(items);
     if (cursor != null) result.cursor = cursor;
     if (hasMore != null) result.hasMore = hasMore;
@@ -2372,19 +2415,20 @@ class CursorV2Reply extends $pb.GeneratedMessage {
 
   factory CursorV2Reply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      CursorV2Reply()..mergeFromBuffer(data, registry);
   factory CursorV2Reply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      CursorV2Reply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'CursorV2Reply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: CursorV2Reply.$_createMessage)
     ..pPM<CursorItem>(1, _omitFieldNames ? '' : 'items',
-        subBuilder: CursorItem.create)
-    ..aOM<Cursor>(2, _omitFieldNames ? '' : 'cursor', subBuilder: Cursor.create)
+        subBuilder: CursorItem.$_createMessage)
+    ..aOM<Cursor>(2, _omitFieldNames ? '' : 'cursor',
+        subBuilder: Cursor.$_createMessage)
     ..aOB(3, _omitFieldNames ? '' : 'hasMore')
     ..aOS(4, _omitFieldNames ? '' : 'emptyLink')
     ..hasRequiredFields = false;
@@ -2400,12 +2444,15 @@ class CursorV2Reply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use CursorV2Reply() / CursorV2Reply.new instead')
   static CursorV2Reply create() => CursorV2Reply._();
+  static $pb.GeneratedMessage $_createMessage() => CursorV2Reply._();
   @$core.override
-  CursorV2Reply createEmptyInstance() => create();
+  CursorV2Reply createEmptyInstance() => CursorV2Reply._();
   @$core.pragma('dart2js:noInline')
-  static CursorV2Reply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<CursorV2Reply>(create);
+  static CursorV2Reply getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CursorV2Reply>(
+          CursorV2Reply.$_createMessage);
   static CursorV2Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -2450,7 +2497,7 @@ class CursorV2Req extends $pb.GeneratedMessage {
     $3.PlayerArgs? playerArgs,
     $core.bool? isLocal,
   }) {
-    final result = create();
+    final result = CursorV2Req._();
     if (cursor != null) result.cursor = cursor;
     if (business != null) result.business = business;
     if (playerPreload != null) result.playerPreload = playerPreload;
@@ -2463,22 +2510,23 @@ class CursorV2Req extends $pb.GeneratedMessage {
 
   factory CursorV2Req.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      CursorV2Req()..mergeFromBuffer(data, registry);
   factory CursorV2Req.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      CursorV2Req()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'CursorV2Req',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
-    ..aOM<Cursor>(1, _omitFieldNames ? '' : 'cursor', subBuilder: Cursor.create)
+      createEmptyInstance: CursorV2Req.$_createMessage)
+    ..aOM<Cursor>(1, _omitFieldNames ? '' : 'cursor',
+        subBuilder: Cursor.$_createMessage)
     ..aOS(2, _omitFieldNames ? '' : 'business')
     ..aOM<PlayerPreloadParams>(3, _omitFieldNames ? '' : 'playerPreload',
-        subBuilder: PlayerPreloadParams.create)
+        subBuilder: PlayerPreloadParams.$_createMessage)
     ..aOM<$3.PlayerArgs>(4, _omitFieldNames ? '' : 'playerArgs',
-        subBuilder: $3.PlayerArgs.create)
+        subBuilder: $3.PlayerArgs.$_createMessage)
     ..aOB(5, _omitFieldNames ? '' : 'isLocal')
     ..hasRequiredFields = false;
 
@@ -2493,12 +2541,15 @@ class CursorV2Req extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use CursorV2Req() / CursorV2Req.new instead')
   static CursorV2Req create() => CursorV2Req._();
+  static $pb.GeneratedMessage $_createMessage() => CursorV2Req._();
   @$core.override
-  CursorV2Req createEmptyInstance() => create();
+  CursorV2Req createEmptyInstance() => CursorV2Req._();
   @$core.pragma('dart2js:noInline')
-  static CursorV2Req getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<CursorV2Req>(create);
+  static CursorV2Req getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CursorV2Req>(
+          CursorV2Req.$_createMessage);
   static CursorV2Req? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -2569,7 +2620,7 @@ class DefaultWordsReply extends $pb.GeneratedMessage {
     $fixnum.Int64? enableAnimation,
     $fixnum.Int64? animationTimeMilli,
   }) {
-    final result = create();
+    final result = DefaultWordsReply._();
     if (trackid != null) result.trackid = trackid;
     if (param != null) result.param = param;
     if (show != null) result.show = show;
@@ -2592,16 +2643,16 @@ class DefaultWordsReply extends $pb.GeneratedMessage {
 
   factory DefaultWordsReply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      DefaultWordsReply()..mergeFromBuffer(data, registry);
   factory DefaultWordsReply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      DefaultWordsReply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'DefaultWordsReply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: DefaultWordsReply.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'trackid')
     ..aOS(2, _omitFieldNames ? '' : 'param')
     ..aOS(3, _omitFieldNames ? '' : 'show')
@@ -2628,12 +2679,15 @@ class DefaultWordsReply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use DefaultWordsReply() / DefaultWordsReply.new instead')
   static DefaultWordsReply create() => DefaultWordsReply._();
+  static $pb.GeneratedMessage $_createMessage() => DefaultWordsReply._();
   @$core.override
-  DefaultWordsReply createEmptyInstance() => create();
+  DefaultWordsReply createEmptyInstance() => DefaultWordsReply._();
   @$core.pragma('dart2js:noInline')
-  static DefaultWordsReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<DefaultWordsReply>(create);
+  static DefaultWordsReply getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DefaultWordsReply>(
+          DefaultWordsReply.$_createMessage);
   static DefaultWordsReply? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -2772,7 +2826,7 @@ class DefaultWordsReq extends $pb.GeneratedMessage {
     $core.String? userAct,
     $core.int? searchPageReturn,
   }) {
-    final result = create();
+    final result = DefaultWordsReq._();
     if (from != null) result.from = from;
     if (loginEvent != null) result.loginEvent = loginEvent;
     if (teenagersMode != null) result.teenagersMode = teenagersMode;
@@ -2795,16 +2849,16 @@ class DefaultWordsReq extends $pb.GeneratedMessage {
 
   factory DefaultWordsReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      DefaultWordsReq()..mergeFromBuffer(data, registry);
   factory DefaultWordsReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      DefaultWordsReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'DefaultWordsReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: DefaultWordsReq.$_createMessage)
     ..aInt64(1, _omitFieldNames ? '' : 'from')
     ..aInt64(2, _omitFieldNames ? '' : 'loginEvent')
     ..aI(3, _omitFieldNames ? '' : 'teenagersMode')
@@ -2833,12 +2887,15 @@ class DefaultWordsReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use DefaultWordsReq() / DefaultWordsReq.new instead')
   static DefaultWordsReq create() => DefaultWordsReq._();
+  static $pb.GeneratedMessage $_createMessage() => DefaultWordsReq._();
   @$core.override
-  DefaultWordsReq createEmptyInstance() => create();
+  DefaultWordsReq createEmptyInstance() => DefaultWordsReq._();
   @$core.pragma('dart2js:noInline')
-  static DefaultWordsReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<DefaultWordsReq>(create);
+  static DefaultWordsReq getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DefaultWordsReq>(
+          DefaultWordsReq.$_createMessage);
   static DefaultWordsReq? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -2983,7 +3040,7 @@ class DeleteReq extends $pb.GeneratedMessage {
     $core.Iterable<HisInfo>? hisInfo,
     $core.String? tab,
   }) {
-    final result = create();
+    final result = DeleteReq._();
     if (hisInfo != null) result.hisInfo.addAll(hisInfo);
     if (tab != null) result.tab = tab;
     return result;
@@ -2993,18 +3050,18 @@ class DeleteReq extends $pb.GeneratedMessage {
 
   factory DeleteReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      DeleteReq()..mergeFromBuffer(data, registry);
   factory DeleteReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      DeleteReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'DeleteReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: DeleteReq.$_createMessage)
     ..pPM<HisInfo>(1, _omitFieldNames ? '' : 'hisInfo',
-        subBuilder: HisInfo.create)
+        subBuilder: HisInfo.$_createMessage)
     ..aOS(2, _omitFieldNames ? '' : 'tab')
     ..hasRequiredFields = false;
 
@@ -3018,12 +3075,14 @@ class DeleteReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use DeleteReq() / DeleteReq.new instead')
   static DeleteReq create() => DeleteReq._();
+  static $pb.GeneratedMessage $_createMessage() => DeleteReq._();
   @$core.override
-  DeleteReq createEmptyInstance() => create();
+  DeleteReq createEmptyInstance() => DeleteReq._();
   @$core.pragma('dart2js:noInline')
-  static DeleteReq getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeleteReq>(create);
+  static DeleteReq getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<DeleteReq>(DeleteReq.$_createMessage);
   static DeleteReq? _defaultInstance;
 
   /// 要删除的历史信息
@@ -3046,7 +3105,7 @@ class DeviceType extends $pb.GeneratedMessage {
     DT? type,
     $core.String? icon,
   }) {
-    final result = create();
+    final result = DeviceType._();
     if (type != null) result.type = type;
     if (icon != null) result.icon = icon;
     return result;
@@ -3056,16 +3115,16 @@ class DeviceType extends $pb.GeneratedMessage {
 
   factory DeviceType.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      DeviceType()..mergeFromBuffer(data, registry);
   factory DeviceType.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      DeviceType()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'DeviceType',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: DeviceType.$_createMessage)
     ..aE<DT>(1, _omitFieldNames ? '' : 'type', enumValues: DT.values)
     ..aOS(2, _omitFieldNames ? '' : 'icon')
     ..hasRequiredFields = false;
@@ -3080,12 +3139,14 @@ class DeviceType extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use DeviceType() / DeviceType.new instead')
   static DeviceType create() => DeviceType._();
+  static $pb.GeneratedMessage $_createMessage() => DeviceType._();
   @$core.override
-  DeviceType createEmptyInstance() => create();
+  DeviceType createEmptyInstance() => DeviceType._();
   @$core.pragma('dart2js:noInline')
   static DeviceType getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<DeviceType>(create);
+      $pb.GeneratedMessage.$_defaultFor<DeviceType>(DeviceType.$_createMessage);
   static DeviceType? _defaultInstance;
 
   /// 设备类型
@@ -3113,7 +3174,7 @@ class Dynamic extends $pb.GeneratedMessage {
   factory Dynamic({
     $4.DynamicItem? dynamic,
   }) {
-    final result = create();
+    final result = Dynamic._();
     if (dynamic != null) result.dynamic = dynamic;
     return result;
   }
@@ -3122,18 +3183,18 @@ class Dynamic extends $pb.GeneratedMessage {
 
   factory Dynamic.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      Dynamic()..mergeFromBuffer(data, registry);
   factory Dynamic.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      Dynamic()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Dynamic',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: Dynamic.$_createMessage)
     ..aOM<$4.DynamicItem>(1, _omitFieldNames ? '' : 'dynamic',
-        subBuilder: $4.DynamicItem.create)
+        subBuilder: $4.DynamicItem.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -3146,12 +3207,14 @@ class Dynamic extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Dynamic() / Dynamic.new instead')
   static Dynamic create() => Dynamic._();
+  static $pb.GeneratedMessage $_createMessage() => Dynamic._();
   @$core.override
-  Dynamic createEmptyInstance() => create();
+  Dynamic createEmptyInstance() => Dynamic._();
   @$core.pragma('dart2js:noInline')
-  static Dynamic getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Dynamic>(create);
+  static Dynamic getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Dynamic>(Dynamic.$_createMessage);
   static Dynamic? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -3167,22 +3230,22 @@ class Dynamic extends $pb.GeneratedMessage {
 }
 
 class FacialRecognitionVerifyReply extends $pb.GeneratedMessage {
-  factory FacialRecognitionVerifyReply() => create();
+  factory FacialRecognitionVerifyReply() => FacialRecognitionVerifyReply._();
 
   FacialRecognitionVerifyReply._();
 
   factory FacialRecognitionVerifyReply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      FacialRecognitionVerifyReply()..mergeFromBuffer(data, registry);
   factory FacialRecognitionVerifyReply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      FacialRecognitionVerifyReply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'FacialRecognitionVerifyReply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: FacialRecognitionVerifyReply.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -3198,13 +3261,19 @@ class FacialRecognitionVerifyReply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated(
+      'Use FacialRecognitionVerifyReply() / FacialRecognitionVerifyReply.new instead')
   static FacialRecognitionVerifyReply create() =>
       FacialRecognitionVerifyReply._();
+  static $pb.GeneratedMessage $_createMessage() =>
+      FacialRecognitionVerifyReply._();
   @$core.override
-  FacialRecognitionVerifyReply createEmptyInstance() => create();
+  FacialRecognitionVerifyReply createEmptyInstance() =>
+      FacialRecognitionVerifyReply._();
   @$core.pragma('dart2js:noInline')
   static FacialRecognitionVerifyReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<FacialRecognitionVerifyReply>(create);
+      $pb.GeneratedMessage.$_defaultFor<FacialRecognitionVerifyReply>(
+          FacialRecognitionVerifyReply.$_createMessage);
   static FacialRecognitionVerifyReply? _defaultInstance;
 }
 
@@ -3213,7 +3282,7 @@ class FacialRecognitionVerifyReq extends $pb.GeneratedMessage {
     FacialRecognitionVerifyFrom? from,
     $core.String? deviceToken,
   }) {
-    final result = create();
+    final result = FacialRecognitionVerifyReq._();
     if (from != null) result.from = from;
     if (deviceToken != null) result.deviceToken = deviceToken;
     return result;
@@ -3223,16 +3292,16 @@ class FacialRecognitionVerifyReq extends $pb.GeneratedMessage {
 
   factory FacialRecognitionVerifyReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      FacialRecognitionVerifyReq()..mergeFromBuffer(data, registry);
   factory FacialRecognitionVerifyReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      FacialRecognitionVerifyReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'FacialRecognitionVerifyReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: FacialRecognitionVerifyReq.$_createMessage)
     ..aE<FacialRecognitionVerifyFrom>(1, _omitFieldNames ? '' : 'from',
         enumValues: FacialRecognitionVerifyFrom.values)
     ..aOS(2, _omitFieldNames ? '' : 'deviceToken')
@@ -3251,12 +3320,18 @@ class FacialRecognitionVerifyReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated(
+      'Use FacialRecognitionVerifyReq() / FacialRecognitionVerifyReq.new instead')
   static FacialRecognitionVerifyReq create() => FacialRecognitionVerifyReq._();
+  static $pb.GeneratedMessage $_createMessage() =>
+      FacialRecognitionVerifyReq._();
   @$core.override
-  FacialRecognitionVerifyReq createEmptyInstance() => create();
+  FacialRecognitionVerifyReq createEmptyInstance() =>
+      FacialRecognitionVerifyReq._();
   @$core.pragma('dart2js:noInline')
   static FacialRecognitionVerifyReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<FacialRecognitionVerifyReq>(create);
+      $pb.GeneratedMessage.$_defaultFor<FacialRecognitionVerifyReq>(
+          FacialRecognitionVerifyReq.$_createMessage);
   static FacialRecognitionVerifyReq? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -3283,7 +3358,7 @@ class HisInfo extends $pb.GeneratedMessage {
     $core.String? business,
     $fixnum.Int64? kid,
   }) {
-    final result = create();
+    final result = HisInfo._();
     if (business != null) result.business = business;
     if (kid != null) result.kid = kid;
     return result;
@@ -3293,16 +3368,16 @@ class HisInfo extends $pb.GeneratedMessage {
 
   factory HisInfo.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      HisInfo()..mergeFromBuffer(data, registry);
   factory HisInfo.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      HisInfo()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'HisInfo',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: HisInfo.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'business')
     ..aInt64(2, _omitFieldNames ? '' : 'kid')
     ..hasRequiredFields = false;
@@ -3317,12 +3392,14 @@ class HisInfo extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use HisInfo() / HisInfo.new instead')
   static HisInfo create() => HisInfo._();
+  static $pb.GeneratedMessage $_createMessage() => HisInfo._();
   @$core.override
-  HisInfo createEmptyInstance() => create();
+  HisInfo createEmptyInstance() => HisInfo._();
   @$core.pragma('dart2js:noInline')
-  static HisInfo getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<HisInfo>(create);
+  static HisInfo getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<HisInfo>(HisInfo.$_createMessage);
   static HisInfo? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -3348,7 +3425,7 @@ class HistoryTabReply extends $pb.GeneratedMessage {
   factory HistoryTabReply({
     $core.Iterable<CursorTab>? tab,
   }) {
-    final result = create();
+    final result = HistoryTabReply._();
     if (tab != null) result.tab.addAll(tab);
     return result;
   }
@@ -3357,18 +3434,18 @@ class HistoryTabReply extends $pb.GeneratedMessage {
 
   factory HistoryTabReply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      HistoryTabReply()..mergeFromBuffer(data, registry);
   factory HistoryTabReply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      HistoryTabReply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'HistoryTabReply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: HistoryTabReply.$_createMessage)
     ..pPM<CursorTab>(1, _omitFieldNames ? '' : 'tab',
-        subBuilder: CursorTab.create)
+        subBuilder: CursorTab.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -3382,12 +3459,15 @@ class HistoryTabReply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use HistoryTabReply() / HistoryTabReply.new instead')
   static HistoryTabReply create() => HistoryTabReply._();
+  static $pb.GeneratedMessage $_createMessage() => HistoryTabReply._();
   @$core.override
-  HistoryTabReply createEmptyInstance() => create();
+  HistoryTabReply createEmptyInstance() => HistoryTabReply._();
   @$core.pragma('dart2js:noInline')
-  static HistoryTabReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<HistoryTabReply>(create);
+  static HistoryTabReply getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<HistoryTabReply>(
+          HistoryTabReply.$_createMessage);
   static HistoryTabReply? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -3400,7 +3480,7 @@ class HistoryTabReq extends $pb.GeneratedMessage {
     HistorySource? source,
     $core.String? keyword,
   }) {
-    final result = create();
+    final result = HistoryTabReq._();
     if (business != null) result.business = business;
     if (source != null) result.source = source;
     if (keyword != null) result.keyword = keyword;
@@ -3411,16 +3491,16 @@ class HistoryTabReq extends $pb.GeneratedMessage {
 
   factory HistoryTabReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      HistoryTabReq()..mergeFromBuffer(data, registry);
   factory HistoryTabReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      HistoryTabReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'HistoryTabReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: HistoryTabReq.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'business')
     ..aE<HistorySource>(2, _omitFieldNames ? '' : 'source',
         enumValues: HistorySource.values)
@@ -3438,12 +3518,15 @@ class HistoryTabReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use HistoryTabReq() / HistoryTabReq.new instead')
   static HistoryTabReq create() => HistoryTabReq._();
+  static $pb.GeneratedMessage $_createMessage() => HistoryTabReq._();
   @$core.override
-  HistoryTabReq createEmptyInstance() => create();
+  HistoryTabReq createEmptyInstance() => HistoryTabReq._();
   @$core.pragma('dart2js:noInline')
-  static HistoryTabReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<HistoryTabReq>(create);
+  static HistoryTabReq getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<HistoryTabReq>(
+          HistoryTabReq.$_createMessage);
   static HistoryTabReq? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -3481,7 +3564,7 @@ class LatestHistoryReply extends $pb.GeneratedMessage {
     $fixnum.Int64? rtime,
     $core.String? flag,
   }) {
-    final result = create();
+    final result = LatestHistoryReply._();
     if (items != null) result.items = items;
     if (scene != null) result.scene = scene;
     if (rtime != null) result.rtime = rtime;
@@ -3493,18 +3576,18 @@ class LatestHistoryReply extends $pb.GeneratedMessage {
 
   factory LatestHistoryReply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      LatestHistoryReply()..mergeFromBuffer(data, registry);
   factory LatestHistoryReply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      LatestHistoryReply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'LatestHistoryReply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: LatestHistoryReply.$_createMessage)
     ..aOM<CursorItem>(1, _omitFieldNames ? '' : 'items',
-        subBuilder: CursorItem.create)
+        subBuilder: CursorItem.$_createMessage)
     ..aOS(2, _omitFieldNames ? '' : 'scene')
     ..aInt64(3, _omitFieldNames ? '' : 'rtime')
     ..aOS(4, _omitFieldNames ? '' : 'flag')
@@ -3521,12 +3604,15 @@ class LatestHistoryReply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use LatestHistoryReply() / LatestHistoryReply.new instead')
   static LatestHistoryReply create() => LatestHistoryReply._();
+  static $pb.GeneratedMessage $_createMessage() => LatestHistoryReply._();
   @$core.override
-  LatestHistoryReply createEmptyInstance() => create();
+  LatestHistoryReply createEmptyInstance() => LatestHistoryReply._();
   @$core.pragma('dart2js:noInline')
   static LatestHistoryReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<LatestHistoryReply>(create);
+      $pb.GeneratedMessage.$_defaultFor<LatestHistoryReply>(
+          LatestHistoryReply.$_createMessage);
   static LatestHistoryReply? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -3573,7 +3659,7 @@ class LatestHistoryReq extends $pb.GeneratedMessage {
     $core.String? business,
     PlayerPreloadParams? playerPreload,
   }) {
-    final result = create();
+    final result = LatestHistoryReq._();
     if (business != null) result.business = business;
     if (playerPreload != null) result.playerPreload = playerPreload;
     return result;
@@ -3583,19 +3669,19 @@ class LatestHistoryReq extends $pb.GeneratedMessage {
 
   factory LatestHistoryReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      LatestHistoryReq()..mergeFromBuffer(data, registry);
   factory LatestHistoryReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      LatestHistoryReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'LatestHistoryReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: LatestHistoryReq.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'business')
     ..aOM<PlayerPreloadParams>(2, _omitFieldNames ? '' : 'playerPreload',
-        subBuilder: PlayerPreloadParams.create)
+        subBuilder: PlayerPreloadParams.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -3609,12 +3695,15 @@ class LatestHistoryReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use LatestHistoryReq() / LatestHistoryReq.new instead')
   static LatestHistoryReq create() => LatestHistoryReq._();
+  static $pb.GeneratedMessage $_createMessage() => LatestHistoryReq._();
   @$core.override
-  LatestHistoryReq createEmptyInstance() => create();
+  LatestHistoryReq createEmptyInstance() => LatestHistoryReq._();
   @$core.pragma('dart2js:noInline')
-  static LatestHistoryReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<LatestHistoryReq>(create);
+  static LatestHistoryReq getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<LatestHistoryReq>(
+          LatestHistoryReq.$_createMessage);
   static LatestHistoryReq? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -3651,7 +3740,7 @@ class LikeButton extends $pb.GeneratedMessage {
     LikeButtonResource? likeNightResource,
     LikeButtonResource? disLikeNightResource,
   }) {
-    final result = create();
+    final result = LikeButton._();
     if (aid != null) result.aid = aid;
     if (count != null) result.count = count;
     if (showCount != null) result.showCount = showCount;
@@ -3670,16 +3759,16 @@ class LikeButton extends $pb.GeneratedMessage {
 
   factory LikeButton.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      LikeButton()..mergeFromBuffer(data, registry);
   factory LikeButton.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      LikeButton()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'LikeButton',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: LikeButton.$_createMessage)
     ..aInt64(1, _omitFieldNames ? '' : 'aid')
     ..aI(2, _omitFieldNames ? '' : 'count')
     ..aOB(3, _omitFieldNames ? '' : 'showCount')
@@ -3687,13 +3776,13 @@ class LikeButton extends $pb.GeneratedMessage {
     ..aI(5, _omitFieldNames ? '' : 'selected')
     ..aOS(6, _omitFieldNames ? '' : 'eventV2')
     ..aOM<LikeButtonResource>(7, _omitFieldNames ? '' : 'likeResource',
-        subBuilder: LikeButtonResource.create)
+        subBuilder: LikeButtonResource.$_createMessage)
     ..aOM<LikeButtonResource>(8, _omitFieldNames ? '' : 'disLikeResource',
-        subBuilder: LikeButtonResource.create)
+        subBuilder: LikeButtonResource.$_createMessage)
     ..aOM<LikeButtonResource>(9, _omitFieldNames ? '' : 'likeNightResource',
-        subBuilder: LikeButtonResource.create)
+        subBuilder: LikeButtonResource.$_createMessage)
     ..aOM<LikeButtonResource>(10, _omitFieldNames ? '' : 'disLikeNightResource',
-        subBuilder: LikeButtonResource.create)
+        subBuilder: LikeButtonResource.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -3706,12 +3795,14 @@ class LikeButton extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use LikeButton() / LikeButton.new instead')
   static LikeButton create() => LikeButton._();
+  static $pb.GeneratedMessage $_createMessage() => LikeButton._();
   @$core.override
-  LikeButton createEmptyInstance() => create();
+  LikeButton createEmptyInstance() => LikeButton._();
   @$core.pragma('dart2js:noInline')
   static LikeButton getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<LikeButton>(create);
+      $pb.GeneratedMessage.$_defaultFor<LikeButton>(LikeButton.$_createMessage);
   static LikeButton? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -3818,7 +3909,7 @@ class LikeButtonResource extends $pb.GeneratedMessage {
     $core.String? url,
     $core.String? hash,
   }) {
-    final result = create();
+    final result = LikeButtonResource._();
     if (url != null) result.url = url;
     if (hash != null) result.hash = hash;
     return result;
@@ -3828,16 +3919,16 @@ class LikeButtonResource extends $pb.GeneratedMessage {
 
   factory LikeButtonResource.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      LikeButtonResource()..mergeFromBuffer(data, registry);
   factory LikeButtonResource.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      LikeButtonResource()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'LikeButtonResource',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: LikeButtonResource.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'url')
     ..aOS(2, _omitFieldNames ? '' : 'hash')
     ..hasRequiredFields = false;
@@ -3853,12 +3944,15 @@ class LikeButtonResource extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use LikeButtonResource() / LikeButtonResource.new instead')
   static LikeButtonResource create() => LikeButtonResource._();
+  static $pb.GeneratedMessage $_createMessage() => LikeButtonResource._();
   @$core.override
-  LikeButtonResource createEmptyInstance() => create();
+  LikeButtonResource createEmptyInstance() => LikeButtonResource._();
   @$core.pragma('dart2js:noInline')
   static LikeButtonResource getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<LikeButtonResource>(create);
+      $pb.GeneratedMessage.$_defaultFor<LikeButtonResource>(
+          LikeButtonResource.$_createMessage);
   static LikeButtonResource? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -3885,7 +3979,7 @@ class LikeCard extends $pb.GeneratedMessage {
     $fixnum.Int64? like,
     $core.bool? isFollow,
   }) {
-    final result = create();
+    final result = LikeCard._();
     if (like != null) result.like = like;
     if (isFollow != null) result.isFollow = isFollow;
     return result;
@@ -3895,16 +3989,16 @@ class LikeCard extends $pb.GeneratedMessage {
 
   factory LikeCard.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      LikeCard()..mergeFromBuffer(data, registry);
   factory LikeCard.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      LikeCard()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'LikeCard',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: LikeCard.$_createMessage)
     ..aInt64(1, _omitFieldNames ? '' : 'like')
     ..aOB(2, _omitFieldNames ? '' : 'isFollow')
     ..hasRequiredFields = false;
@@ -3919,12 +4013,14 @@ class LikeCard extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use LikeCard() / LikeCard.new instead')
   static LikeCard create() => LikeCard._();
+  static $pb.GeneratedMessage $_createMessage() => LikeCard._();
   @$core.override
-  LikeCard createEmptyInstance() => create();
+  LikeCard createEmptyInstance() => LikeCard._();
   @$core.pragma('dart2js:noInline')
-  static LikeCard getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<LikeCard>(create);
+  static LikeCard getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<LikeCard>(LikeCard.$_createMessage);
   static LikeCard? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -3956,7 +4052,7 @@ class MediaCard extends $pb.GeneratedMessage {
     Supernatant? butSecond,
     Scores? scores,
   }) {
-    final result = create();
+    final result = MediaCard._();
     if (cover != null) result.cover = cover;
     if (curTitle != null) result.curTitle = curTitle;
     if (style != null) result.style = style;
@@ -3971,25 +4067,26 @@ class MediaCard extends $pb.GeneratedMessage {
 
   factory MediaCard.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      MediaCard()..mergeFromBuffer(data, registry);
   factory MediaCard.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      MediaCard()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'MediaCard',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: MediaCard.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'cover')
     ..aOS(2, _omitFieldNames ? '' : 'curTitle')
     ..aOS(3, _omitFieldNames ? '' : 'style')
     ..aOS(4, _omitFieldNames ? '' : 'label')
     ..aOM<Button>(5, _omitFieldNames ? '' : 'butFirst',
-        subBuilder: Button.create)
+        subBuilder: Button.$_createMessage)
     ..aOM<Supernatant>(6, _omitFieldNames ? '' : 'butSecond',
-        subBuilder: Supernatant.create)
-    ..aOM<Scores>(7, _omitFieldNames ? '' : 'scores', subBuilder: Scores.create)
+        subBuilder: Supernatant.$_createMessage)
+    ..aOM<Scores>(7, _omitFieldNames ? '' : 'scores',
+        subBuilder: Scores.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -4002,12 +4099,14 @@ class MediaCard extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use MediaCard() / MediaCard.new instead')
   static MediaCard create() => MediaCard._();
+  static $pb.GeneratedMessage $_createMessage() => MediaCard._();
   @$core.override
-  MediaCard createEmptyInstance() => create();
+  MediaCard createEmptyInstance() => MediaCard._();
   @$core.pragma('dart2js:noInline')
-  static MediaCard getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MediaCard>(create);
+  static MediaCard getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<MediaCard>(MediaCard.$_createMessage);
   static MediaCard? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -4084,7 +4183,7 @@ class MediaCommentReply extends $pb.GeneratedMessage {
   factory MediaCommentReply({
     $core.String? errMsg,
   }) {
-    final result = create();
+    final result = MediaCommentReply._();
     if (errMsg != null) result.errMsg = errMsg;
     return result;
   }
@@ -4093,16 +4192,16 @@ class MediaCommentReply extends $pb.GeneratedMessage {
 
   factory MediaCommentReply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      MediaCommentReply()..mergeFromBuffer(data, registry);
   factory MediaCommentReply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      MediaCommentReply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'MediaCommentReply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: MediaCommentReply.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'errMsg')
     ..hasRequiredFields = false;
 
@@ -4117,12 +4216,15 @@ class MediaCommentReply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use MediaCommentReply() / MediaCommentReply.new instead')
   static MediaCommentReply create() => MediaCommentReply._();
+  static $pb.GeneratedMessage $_createMessage() => MediaCommentReply._();
   @$core.override
-  MediaCommentReply createEmptyInstance() => create();
+  MediaCommentReply createEmptyInstance() => MediaCommentReply._();
   @$core.pragma('dart2js:noInline')
-  static MediaCommentReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<MediaCommentReply>(create);
+  static MediaCommentReply getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MediaCommentReply>(
+          MediaCommentReply.$_createMessage);
   static MediaCommentReply? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -4139,7 +4241,7 @@ class MediaCommentReq extends $pb.GeneratedMessage {
   factory MediaCommentReq({
     $core.String? id,
   }) {
-    final result = create();
+    final result = MediaCommentReq._();
     if (id != null) result.id = id;
     return result;
   }
@@ -4148,16 +4250,16 @@ class MediaCommentReq extends $pb.GeneratedMessage {
 
   factory MediaCommentReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      MediaCommentReq()..mergeFromBuffer(data, registry);
   factory MediaCommentReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      MediaCommentReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'MediaCommentReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: MediaCommentReq.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'id')
     ..hasRequiredFields = false;
 
@@ -4172,12 +4274,15 @@ class MediaCommentReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use MediaCommentReq() / MediaCommentReq.new instead')
   static MediaCommentReq create() => MediaCommentReq._();
+  static $pb.GeneratedMessage $_createMessage() => MediaCommentReq._();
   @$core.override
-  MediaCommentReq createEmptyInstance() => create();
+  MediaCommentReq createEmptyInstance() => MediaCommentReq._();
   @$core.pragma('dart2js:noInline')
-  static MediaCommentReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<MediaCommentReq>(create);
+  static MediaCommentReq getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MediaCommentReq>(
+          MediaCommentReq.$_createMessage);
   static MediaCommentReq? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -4196,7 +4301,7 @@ class MediaDetailReply extends $pb.GeneratedMessage {
     Staff? staff,
     Overview? overview,
   }) {
-    final result = create();
+    final result = MediaDetailReply._();
     if (cast != null) result.cast = cast;
     if (staff != null) result.staff = staff;
     if (overview != null) result.overview = overview;
@@ -4207,20 +4312,22 @@ class MediaDetailReply extends $pb.GeneratedMessage {
 
   factory MediaDetailReply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      MediaDetailReply()..mergeFromBuffer(data, registry);
   factory MediaDetailReply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      MediaDetailReply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'MediaDetailReply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
-    ..aOM<Cast>(1, _omitFieldNames ? '' : 'cast', subBuilder: Cast.create)
-    ..aOM<Staff>(2, _omitFieldNames ? '' : 'staff', subBuilder: Staff.create)
+      createEmptyInstance: MediaDetailReply.$_createMessage)
+    ..aOM<Cast>(1, _omitFieldNames ? '' : 'cast',
+        subBuilder: Cast.$_createMessage)
+    ..aOM<Staff>(2, _omitFieldNames ? '' : 'staff',
+        subBuilder: Staff.$_createMessage)
     ..aOM<Overview>(3, _omitFieldNames ? '' : 'overview',
-        subBuilder: Overview.create)
+        subBuilder: Overview.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -4234,12 +4341,15 @@ class MediaDetailReply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use MediaDetailReply() / MediaDetailReply.new instead')
   static MediaDetailReply create() => MediaDetailReply._();
+  static $pb.GeneratedMessage $_createMessage() => MediaDetailReply._();
   @$core.override
-  MediaDetailReply createEmptyInstance() => create();
+  MediaDetailReply createEmptyInstance() => MediaDetailReply._();
   @$core.pragma('dart2js:noInline')
-  static MediaDetailReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<MediaDetailReply>(create);
+  static MediaDetailReply getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MediaDetailReply>(
+          MediaDetailReply.$_createMessage);
   static MediaDetailReply? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -4281,7 +4391,7 @@ class MediaDetailReq extends $pb.GeneratedMessage {
     $fixnum.Int64? bizId,
     $fixnum.Int64? bizType,
   }) {
-    final result = create();
+    final result = MediaDetailReq._();
     if (bizId != null) result.bizId = bizId;
     if (bizType != null) result.bizType = bizType;
     return result;
@@ -4291,16 +4401,16 @@ class MediaDetailReq extends $pb.GeneratedMessage {
 
   factory MediaDetailReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      MediaDetailReq()..mergeFromBuffer(data, registry);
   factory MediaDetailReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      MediaDetailReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'MediaDetailReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: MediaDetailReq.$_createMessage)
     ..aInt64(1, _omitFieldNames ? '' : 'bizId')
     ..aInt64(2, _omitFieldNames ? '' : 'bizType')
     ..hasRequiredFields = false;
@@ -4316,12 +4426,15 @@ class MediaDetailReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use MediaDetailReq() / MediaDetailReq.new instead')
   static MediaDetailReq create() => MediaDetailReq._();
+  static $pb.GeneratedMessage $_createMessage() => MediaDetailReq._();
   @$core.override
-  MediaDetailReq createEmptyInstance() => create();
+  MediaDetailReq createEmptyInstance() => MediaDetailReq._();
   @$core.pragma('dart2js:noInline')
-  static MediaDetailReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<MediaDetailReq>(create);
+  static MediaDetailReq getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MediaDetailReq>(
+          MediaDetailReq.$_createMessage);
   static MediaDetailReq? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -4344,22 +4457,22 @@ class MediaDetailReq extends $pb.GeneratedMessage {
 }
 
 class MediaFollowReply extends $pb.GeneratedMessage {
-  factory MediaFollowReply() => create();
+  factory MediaFollowReply() => MediaFollowReply._();
 
   MediaFollowReply._();
 
   factory MediaFollowReply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      MediaFollowReply()..mergeFromBuffer(data, registry);
   factory MediaFollowReply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      MediaFollowReply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'MediaFollowReply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: MediaFollowReply.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -4373,12 +4486,15 @@ class MediaFollowReply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use MediaFollowReply() / MediaFollowReply.new instead')
   static MediaFollowReply create() => MediaFollowReply._();
+  static $pb.GeneratedMessage $_createMessage() => MediaFollowReply._();
   @$core.override
-  MediaFollowReply createEmptyInstance() => create();
+  MediaFollowReply createEmptyInstance() => MediaFollowReply._();
   @$core.pragma('dart2js:noInline')
-  static MediaFollowReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<MediaFollowReply>(create);
+  static MediaFollowReply getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MediaFollowReply>(
+          MediaFollowReply.$_createMessage);
   static MediaFollowReply? _defaultInstance;
 }
 
@@ -4387,7 +4503,7 @@ class MediaFollowReq extends $pb.GeneratedMessage {
     $core.String? id,
     ButType? type,
   }) {
-    final result = create();
+    final result = MediaFollowReq._();
     if (id != null) result.id = id;
     if (type != null) result.type = type;
     return result;
@@ -4397,16 +4513,16 @@ class MediaFollowReq extends $pb.GeneratedMessage {
 
   factory MediaFollowReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      MediaFollowReq()..mergeFromBuffer(data, registry);
   factory MediaFollowReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      MediaFollowReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'MediaFollowReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: MediaFollowReq.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'id')
     ..aE<ButType>(2, _omitFieldNames ? '' : 'type', enumValues: ButType.values)
     ..hasRequiredFields = false;
@@ -4422,12 +4538,15 @@ class MediaFollowReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use MediaFollowReq() / MediaFollowReq.new instead')
   static MediaFollowReq create() => MediaFollowReq._();
+  static $pb.GeneratedMessage $_createMessage() => MediaFollowReq._();
   @$core.override
-  MediaFollowReq createEmptyInstance() => create();
+  MediaFollowReq createEmptyInstance() => MediaFollowReq._();
   @$core.pragma('dart2js:noInline')
-  static MediaFollowReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<MediaFollowReq>(create);
+  static MediaFollowReq getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MediaFollowReq>(
+          MediaFollowReq.$_createMessage);
   static MediaFollowReq? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -4457,7 +4576,7 @@ class MediaPerson extends $pb.GeneratedMessage {
     $fixnum.Int64? personId,
     $core.String? type,
   }) {
-    final result = create();
+    final result = MediaPerson._();
     if (realName != null) result.realName = realName;
     if (squareUrl != null) result.squareUrl = squareUrl;
     if (character != null) result.character = character;
@@ -4470,16 +4589,16 @@ class MediaPerson extends $pb.GeneratedMessage {
 
   factory MediaPerson.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      MediaPerson()..mergeFromBuffer(data, registry);
   factory MediaPerson.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      MediaPerson()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'MediaPerson',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: MediaPerson.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'realName')
     ..aOS(2, _omitFieldNames ? '' : 'squareUrl')
     ..aOS(3, _omitFieldNames ? '' : 'character')
@@ -4498,12 +4617,15 @@ class MediaPerson extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use MediaPerson() / MediaPerson.new instead')
   static MediaPerson create() => MediaPerson._();
+  static $pb.GeneratedMessage $_createMessage() => MediaPerson._();
   @$core.override
-  MediaPerson createEmptyInstance() => create();
+  MediaPerson createEmptyInstance() => MediaPerson._();
   @$core.pragma('dart2js:noInline')
-  static MediaPerson getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<MediaPerson>(create);
+  static MediaPerson getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MediaPerson>(
+          MediaPerson.$_createMessage);
   static MediaPerson? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -4558,7 +4680,7 @@ class MediaRelationReply extends $pb.GeneratedMessage {
     $core.bool? hasMore,
     $core.Iterable<SmallItem>? list,
   }) {
-    final result = create();
+    final result = MediaRelationReply._();
     if (offset != null) result.offset = offset;
     if (hasMore != null) result.hasMore = hasMore;
     if (list != null) result.list.addAll(list);
@@ -4569,20 +4691,20 @@ class MediaRelationReply extends $pb.GeneratedMessage {
 
   factory MediaRelationReply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      MediaRelationReply()..mergeFromBuffer(data, registry);
   factory MediaRelationReply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      MediaRelationReply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'MediaRelationReply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: MediaRelationReply.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'offset')
     ..aOB(2, _omitFieldNames ? '' : 'hasMore')
     ..pPM<SmallItem>(3, _omitFieldNames ? '' : 'list',
-        subBuilder: SmallItem.create)
+        subBuilder: SmallItem.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -4596,12 +4718,15 @@ class MediaRelationReply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use MediaRelationReply() / MediaRelationReply.new instead')
   static MediaRelationReply create() => MediaRelationReply._();
+  static $pb.GeneratedMessage $_createMessage() => MediaRelationReply._();
   @$core.override
-  MediaRelationReply createEmptyInstance() => create();
+  MediaRelationReply createEmptyInstance() => MediaRelationReply._();
   @$core.pragma('dart2js:noInline')
   static MediaRelationReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<MediaRelationReply>(create);
+      $pb.GeneratedMessage.$_defaultFor<MediaRelationReply>(
+          MediaRelationReply.$_createMessage);
   static MediaRelationReply? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -4634,7 +4759,7 @@ class MediaRelationReq extends $pb.GeneratedMessage {
     $core.String? offset,
     $core.int? ps,
   }) {
-    final result = create();
+    final result = MediaRelationReq._();
     if (bizId != null) result.bizId = bizId;
     if (bizType != null) result.bizType = bizType;
     if (feedId != null) result.feedId = feedId;
@@ -4647,16 +4772,16 @@ class MediaRelationReq extends $pb.GeneratedMessage {
 
   factory MediaRelationReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      MediaRelationReq()..mergeFromBuffer(data, registry);
   factory MediaRelationReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      MediaRelationReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'MediaRelationReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: MediaRelationReq.$_createMessage)
     ..aInt64(1, _omitFieldNames ? '' : 'bizId')
     ..aInt64(2, _omitFieldNames ? '' : 'bizType')
     ..aInt64(3, _omitFieldNames ? '' : 'feedId')
@@ -4675,12 +4800,15 @@ class MediaRelationReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use MediaRelationReq() / MediaRelationReq.new instead')
   static MediaRelationReq create() => MediaRelationReq._();
+  static $pb.GeneratedMessage $_createMessage() => MediaRelationReq._();
   @$core.override
-  MediaRelationReq createEmptyInstance() => create();
+  MediaRelationReq createEmptyInstance() => MediaRelationReq._();
   @$core.pragma('dart2js:noInline')
-  static MediaRelationReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<MediaRelationReq>(create);
+  static MediaRelationReq getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MediaRelationReq>(
+          MediaRelationReq.$_createMessage);
   static MediaRelationReq? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -4736,7 +4864,7 @@ class MediaTabReply extends $pb.GeneratedMessage {
     $fixnum.Int64? defaultTabIndex,
     ChannelInfo? channelInfo,
   }) {
-    final result = create();
+    final result = MediaTabReply._();
     if (mediaCard != null) result.mediaCard = mediaCard;
     if (tab != null) result.tab.addAll(tab);
     if (defaultTabIndex != null) result.defaultTabIndex = defaultTabIndex;
@@ -4748,22 +4876,23 @@ class MediaTabReply extends $pb.GeneratedMessage {
 
   factory MediaTabReply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      MediaTabReply()..mergeFromBuffer(data, registry);
   factory MediaTabReply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      MediaTabReply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'MediaTabReply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: MediaTabReply.$_createMessage)
     ..aOM<MediaCard>(1, _omitFieldNames ? '' : 'mediaCard',
-        subBuilder: MediaCard.create)
-    ..pPM<ShowTab>(2, _omitFieldNames ? '' : 'tab', subBuilder: ShowTab.create)
+        subBuilder: MediaCard.$_createMessage)
+    ..pPM<ShowTab>(2, _omitFieldNames ? '' : 'tab',
+        subBuilder: ShowTab.$_createMessage)
     ..aInt64(3, _omitFieldNames ? '' : 'defaultTabIndex')
     ..aOM<ChannelInfo>(4, _omitFieldNames ? '' : 'channelInfo',
-        subBuilder: ChannelInfo.create)
+        subBuilder: ChannelInfo.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -4777,12 +4906,15 @@ class MediaTabReply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use MediaTabReply() / MediaTabReply.new instead')
   static MediaTabReply create() => MediaTabReply._();
+  static $pb.GeneratedMessage $_createMessage() => MediaTabReply._();
   @$core.override
-  MediaTabReply createEmptyInstance() => create();
+  MediaTabReply createEmptyInstance() => MediaTabReply._();
   @$core.pragma('dart2js:noInline')
-  static MediaTabReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<MediaTabReply>(create);
+  static MediaTabReply getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MediaTabReply>(
+          MediaTabReply.$_createMessage);
   static MediaTabReply? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -4828,7 +4960,7 @@ class MediaTabReq extends $pb.GeneratedMessage {
     $core.String? spmid,
     $core.Iterable<$core.MapEntry<$core.String, $core.String>>? args,
   }) {
-    final result = create();
+    final result = MediaTabReq._();
     if (bizId != null) result.bizId = bizId;
     if (bizType != null) result.bizType = bizType;
     if (source != null) result.source = source;
@@ -4841,16 +4973,16 @@ class MediaTabReq extends $pb.GeneratedMessage {
 
   factory MediaTabReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      MediaTabReq()..mergeFromBuffer(data, registry);
   factory MediaTabReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      MediaTabReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'MediaTabReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: MediaTabReq.$_createMessage)
     ..aInt64(1, _omitFieldNames ? '' : 'bizId')
     ..aInt64(2, _omitFieldNames ? '' : 'bizType')
     ..aOS(3, _omitFieldNames ? '' : 'source')
@@ -4873,12 +5005,15 @@ class MediaTabReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use MediaTabReq() / MediaTabReq.new instead')
   static MediaTabReq create() => MediaTabReq._();
+  static $pb.GeneratedMessage $_createMessage() => MediaTabReq._();
   @$core.override
-  MediaTabReq createEmptyInstance() => create();
+  MediaTabReq createEmptyInstance() => MediaTabReq._();
   @$core.pragma('dart2js:noInline')
-  static MediaTabReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<MediaTabReq>(create);
+  static MediaTabReq getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MediaTabReq>(
+          MediaTabReq.$_createMessage);
   static MediaTabReq? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -4927,7 +5062,7 @@ class MediaVideoReply extends $pb.GeneratedMessage {
     $core.bool? hasMore,
     $core.Iterable<BigItem>? list,
   }) {
-    final result = create();
+    final result = MediaVideoReply._();
     if (offset != null) result.offset = offset;
     if (hasMore != null) result.hasMore = hasMore;
     if (list != null) result.list.addAll(list);
@@ -4938,19 +5073,20 @@ class MediaVideoReply extends $pb.GeneratedMessage {
 
   factory MediaVideoReply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      MediaVideoReply()..mergeFromBuffer(data, registry);
   factory MediaVideoReply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      MediaVideoReply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'MediaVideoReply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: MediaVideoReply.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'offset')
     ..aOB(2, _omitFieldNames ? '' : 'hasMore')
-    ..pPM<BigItem>(3, _omitFieldNames ? '' : 'list', subBuilder: BigItem.create)
+    ..pPM<BigItem>(3, _omitFieldNames ? '' : 'list',
+        subBuilder: BigItem.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -4964,12 +5100,15 @@ class MediaVideoReply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use MediaVideoReply() / MediaVideoReply.new instead')
   static MediaVideoReply create() => MediaVideoReply._();
+  static $pb.GeneratedMessage $_createMessage() => MediaVideoReply._();
   @$core.override
-  MediaVideoReply createEmptyInstance() => create();
+  MediaVideoReply createEmptyInstance() => MediaVideoReply._();
   @$core.pragma('dart2js:noInline')
-  static MediaVideoReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<MediaVideoReply>(create);
+  static MediaVideoReply getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MediaVideoReply>(
+          MediaVideoReply.$_createMessage);
   static MediaVideoReply? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -5003,7 +5142,7 @@ class MediaVideoReq extends $pb.GeneratedMessage {
     $core.int? ps,
     $3.PlayerArgs? playerArgs,
   }) {
-    final result = create();
+    final result = MediaVideoReq._();
     if (bizId != null) result.bizId = bizId;
     if (bizType != null) result.bizType = bizType;
     if (feedId != null) result.feedId = feedId;
@@ -5017,23 +5156,23 @@ class MediaVideoReq extends $pb.GeneratedMessage {
 
   factory MediaVideoReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      MediaVideoReq()..mergeFromBuffer(data, registry);
   factory MediaVideoReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      MediaVideoReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'MediaVideoReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: MediaVideoReq.$_createMessage)
     ..aInt64(1, _omitFieldNames ? '' : 'bizId')
     ..aInt64(2, _omitFieldNames ? '' : 'bizType')
     ..aInt64(3, _omitFieldNames ? '' : 'feedId')
     ..aOS(5, _omitFieldNames ? '' : 'offset')
     ..aI(6, _omitFieldNames ? '' : 'ps')
     ..aOM<$3.PlayerArgs>(7, _omitFieldNames ? '' : 'playerArgs',
-        subBuilder: $3.PlayerArgs.create)
+        subBuilder: $3.PlayerArgs.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -5047,12 +5186,15 @@ class MediaVideoReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use MediaVideoReq() / MediaVideoReq.new instead')
   static MediaVideoReq create() => MediaVideoReq._();
+  static $pb.GeneratedMessage $_createMessage() => MediaVideoReq._();
   @$core.override
-  MediaVideoReq createEmptyInstance() => create();
+  MediaVideoReq createEmptyInstance() => MediaVideoReq._();
   @$core.pragma('dart2js:noInline')
-  static MediaVideoReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<MediaVideoReq>(create);
+  static MediaVideoReq getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MediaVideoReq>(
+          MediaVideoReq.$_createMessage);
   static MediaVideoReq? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -5116,7 +5258,7 @@ class ModeStatusReply extends $pb.GeneratedMessage {
   factory ModeStatusReply({
     $core.Iterable<UserModel>? userModels,
   }) {
-    final result = create();
+    final result = ModeStatusReply._();
     if (userModels != null) result.userModels.addAll(userModels);
     return result;
   }
@@ -5125,18 +5267,18 @@ class ModeStatusReply extends $pb.GeneratedMessage {
 
   factory ModeStatusReply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      ModeStatusReply()..mergeFromBuffer(data, registry);
   factory ModeStatusReply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      ModeStatusReply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'ModeStatusReply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: ModeStatusReply.$_createMessage)
     ..pPM<UserModel>(1, _omitFieldNames ? '' : 'userModels',
-        subBuilder: UserModel.create)
+        subBuilder: UserModel.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -5150,12 +5292,15 @@ class ModeStatusReply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use ModeStatusReply() / ModeStatusReply.new instead')
   static ModeStatusReply create() => ModeStatusReply._();
+  static $pb.GeneratedMessage $_createMessage() => ModeStatusReply._();
   @$core.override
-  ModeStatusReply createEmptyInstance() => create();
+  ModeStatusReply createEmptyInstance() => ModeStatusReply._();
   @$core.pragma('dart2js:noInline')
-  static ModeStatusReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<ModeStatusReply>(create);
+  static ModeStatusReply getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ModeStatusReply>(
+          ModeStatusReply.$_createMessage);
   static ModeStatusReply? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -5166,7 +5311,7 @@ class ModeStatusReq extends $pb.GeneratedMessage {
   factory ModeStatusReq({
     $core.String? deviceToken,
   }) {
-    final result = create();
+    final result = ModeStatusReq._();
     if (deviceToken != null) result.deviceToken = deviceToken;
     return result;
   }
@@ -5175,16 +5320,16 @@ class ModeStatusReq extends $pb.GeneratedMessage {
 
   factory ModeStatusReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      ModeStatusReq()..mergeFromBuffer(data, registry);
   factory ModeStatusReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      ModeStatusReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'ModeStatusReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: ModeStatusReq.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'deviceToken')
     ..hasRequiredFields = false;
 
@@ -5199,12 +5344,15 @@ class ModeStatusReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use ModeStatusReq() / ModeStatusReq.new instead')
   static ModeStatusReq create() => ModeStatusReq._();
+  static $pb.GeneratedMessage $_createMessage() => ModeStatusReq._();
   @$core.override
-  ModeStatusReq createEmptyInstance() => create();
+  ModeStatusReq createEmptyInstance() => ModeStatusReq._();
   @$core.pragma('dart2js:noInline')
-  static ModeStatusReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<ModeStatusReq>(create);
+  static ModeStatusReq getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ModeStatusReq>(
+          ModeStatusReq.$_createMessage);
   static ModeStatusReq? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -5218,22 +5366,22 @@ class ModeStatusReq extends $pb.GeneratedMessage {
 }
 
 class ModifyPwdReply extends $pb.GeneratedMessage {
-  factory ModifyPwdReply() => create();
+  factory ModifyPwdReply() => ModifyPwdReply._();
 
   ModifyPwdReply._();
 
   factory ModifyPwdReply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      ModifyPwdReply()..mergeFromBuffer(data, registry);
   factory ModifyPwdReply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      ModifyPwdReply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'ModifyPwdReply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: ModifyPwdReply.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -5247,12 +5395,15 @@ class ModifyPwdReply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use ModifyPwdReply() / ModifyPwdReply.new instead')
   static ModifyPwdReply create() => ModifyPwdReply._();
+  static $pb.GeneratedMessage $_createMessage() => ModifyPwdReply._();
   @$core.override
-  ModifyPwdReply createEmptyInstance() => create();
+  ModifyPwdReply createEmptyInstance() => ModifyPwdReply._();
   @$core.pragma('dart2js:noInline')
-  static ModifyPwdReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<ModifyPwdReply>(create);
+  static ModifyPwdReply getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ModifyPwdReply>(
+          ModifyPwdReply.$_createMessage);
   static ModifyPwdReply? _defaultInstance;
 }
 
@@ -5262,7 +5413,7 @@ class ModifyPwdReq extends $pb.GeneratedMessage {
     $core.String? newPwd,
     $core.String? deviceToken,
   }) {
-    final result = create();
+    final result = ModifyPwdReq._();
     if (oldPwd != null) result.oldPwd = oldPwd;
     if (newPwd != null) result.newPwd = newPwd;
     if (deviceToken != null) result.deviceToken = deviceToken;
@@ -5273,16 +5424,16 @@ class ModifyPwdReq extends $pb.GeneratedMessage {
 
   factory ModifyPwdReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      ModifyPwdReq()..mergeFromBuffer(data, registry);
   factory ModifyPwdReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      ModifyPwdReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'ModifyPwdReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: ModifyPwdReq.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'oldPwd')
     ..aOS(2, _omitFieldNames ? '' : 'newPwd')
     ..aOS(3, _omitFieldNames ? '' : 'deviceToken')
@@ -5299,12 +5450,15 @@ class ModifyPwdReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use ModifyPwdReq() / ModifyPwdReq.new instead')
   static ModifyPwdReq create() => ModifyPwdReq._();
+  static $pb.GeneratedMessage $_createMessage() => ModifyPwdReq._();
   @$core.override
-  ModifyPwdReq createEmptyInstance() => create();
+  ModifyPwdReq createEmptyInstance() => ModifyPwdReq._();
   @$core.pragma('dart2js:noInline')
-  static ModifyPwdReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<ModifyPwdReq>(create);
+  static ModifyPwdReq getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ModifyPwdReq>(
+          ModifyPwdReq.$_createMessage);
   static ModifyPwdReq? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -5341,7 +5495,7 @@ class NftFaceIcon extends $pb.GeneratedMessage {
     $core.String? icon,
     $core.int? showStatus,
   }) {
-    final result = create();
+    final result = NftFaceIcon._();
     if (regionType != null) result.regionType = regionType;
     if (icon != null) result.icon = icon;
     if (showStatus != null) result.showStatus = showStatus;
@@ -5352,16 +5506,16 @@ class NftFaceIcon extends $pb.GeneratedMessage {
 
   factory NftFaceIcon.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      NftFaceIcon()..mergeFromBuffer(data, registry);
   factory NftFaceIcon.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      NftFaceIcon()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'NftFaceIcon',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: NftFaceIcon.$_createMessage)
     ..aI(1, _omitFieldNames ? '' : 'regionType')
     ..aOS(2, _omitFieldNames ? '' : 'icon')
     ..aI(3, _omitFieldNames ? '' : 'showStatus')
@@ -5378,12 +5532,15 @@ class NftFaceIcon extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use NftFaceIcon() / NftFaceIcon.new instead')
   static NftFaceIcon create() => NftFaceIcon._();
+  static $pb.GeneratedMessage $_createMessage() => NftFaceIcon._();
   @$core.override
-  NftFaceIcon createEmptyInstance() => create();
+  NftFaceIcon createEmptyInstance() => NftFaceIcon._();
   @$core.pragma('dart2js:noInline')
-  static NftFaceIcon getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<NftFaceIcon>(create);
+  static NftFaceIcon getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<NftFaceIcon>(
+          NftFaceIcon.$_createMessage);
   static NftFaceIcon? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -5415,22 +5572,22 @@ class NftFaceIcon extends $pb.GeneratedMessage {
 }
 
 class NoReply extends $pb.GeneratedMessage {
-  factory NoReply() => create();
+  factory NoReply() => NoReply._();
 
   NoReply._();
 
   factory NoReply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      NoReply()..mergeFromBuffer(data, registry);
   factory NoReply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      NoReply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'NoReply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: NoReply.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -5443,12 +5600,14 @@ class NoReply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use NoReply() / NoReply.new instead')
   static NoReply create() => NoReply._();
+  static $pb.GeneratedMessage $_createMessage() => NoReply._();
   @$core.override
-  NoReply createEmptyInstance() => create();
+  NoReply createEmptyInstance() => NoReply._();
   @$core.pragma('dart2js:noInline')
-  static NoReply getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<NoReply>(create);
+  static NoReply getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<NoReply>(NoReply.$_createMessage);
   static NoReply? _defaultInstance;
 }
 
@@ -5457,7 +5616,7 @@ class OfficialVerify extends $pb.GeneratedMessage {
     $core.int? type,
     $core.String? desc,
   }) {
-    final result = create();
+    final result = OfficialVerify._();
     if (type != null) result.type = type;
     if (desc != null) result.desc = desc;
     return result;
@@ -5467,16 +5626,16 @@ class OfficialVerify extends $pb.GeneratedMessage {
 
   factory OfficialVerify.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      OfficialVerify()..mergeFromBuffer(data, registry);
   factory OfficialVerify.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      OfficialVerify()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'OfficialVerify',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: OfficialVerify.$_createMessage)
     ..aI(1, _omitFieldNames ? '' : 'type')
     ..aOS(2, _omitFieldNames ? '' : 'desc')
     ..hasRequiredFields = false;
@@ -5492,12 +5651,15 @@ class OfficialVerify extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use OfficialVerify() / OfficialVerify.new instead')
   static OfficialVerify create() => OfficialVerify._();
+  static $pb.GeneratedMessage $_createMessage() => OfficialVerify._();
   @$core.override
-  OfficialVerify createEmptyInstance() => create();
+  OfficialVerify createEmptyInstance() => OfficialVerify._();
   @$core.pragma('dart2js:noInline')
-  static OfficialVerify getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<OfficialVerify>(create);
+  static OfficialVerify getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<OfficialVerify>(
+          OfficialVerify.$_createMessage);
   static OfficialVerify? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -5524,7 +5686,7 @@ class Overview extends $pb.GeneratedMessage {
     $core.String? title,
     $core.String? text,
   }) {
-    final result = create();
+    final result = Overview._();
     if (title != null) result.title = title;
     if (text != null) result.text = text;
     return result;
@@ -5534,16 +5696,16 @@ class Overview extends $pb.GeneratedMessage {
 
   factory Overview.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      Overview()..mergeFromBuffer(data, registry);
   factory Overview.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      Overview()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Overview',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: Overview.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'title')
     ..aOS(2, _omitFieldNames ? '' : 'text')
     ..hasRequiredFields = false;
@@ -5558,12 +5720,14 @@ class Overview extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Overview() / Overview.new instead')
   static Overview create() => Overview._();
+  static $pb.GeneratedMessage $_createMessage() => Overview._();
   @$core.override
-  Overview createEmptyInstance() => create();
+  Overview createEmptyInstance() => Overview._();
   @$core.pragma('dart2js:noInline')
-  static Overview getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Overview>(create);
+  static Overview getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Overview>(Overview.$_createMessage);
   static Overview? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -5590,7 +5754,7 @@ class Page extends $pb.GeneratedMessage {
     $fixnum.Int64? pn,
     $fixnum.Int64? total,
   }) {
-    final result = create();
+    final result = Page._();
     if (pn != null) result.pn = pn;
     if (total != null) result.total = total;
     return result;
@@ -5600,16 +5764,16 @@ class Page extends $pb.GeneratedMessage {
 
   factory Page.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      Page()..mergeFromBuffer(data, registry);
   factory Page.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      Page()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Page',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: Page.$_createMessage)
     ..aInt64(1, _omitFieldNames ? '' : 'pn')
     ..aInt64(2, _omitFieldNames ? '' : 'total')
     ..hasRequiredFields = false;
@@ -5624,12 +5788,14 @@ class Page extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Page() / Page.new instead')
   static Page create() => Page._();
+  static $pb.GeneratedMessage $_createMessage() => Page._();
   @$core.override
-  Page createEmptyInstance() => create();
+  Page createEmptyInstance() => Page._();
   @$core.pragma('dart2js:noInline')
-  static Page getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Page>(create);
+  static Page getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Page>(Page.$_createMessage);
   static Page? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -5659,7 +5825,7 @@ class PlayerPreloadParams extends $pb.GeneratedMessage {
     $fixnum.Int64? forceHost,
     $fixnum.Int64? fourk,
   }) {
-    final result = create();
+    final result = PlayerPreloadParams._();
     if (qn != null) result.qn = qn;
     if (fnver != null) result.fnver = fnver;
     if (fnval != null) result.fnval = fnval;
@@ -5672,16 +5838,16 @@ class PlayerPreloadParams extends $pb.GeneratedMessage {
 
   factory PlayerPreloadParams.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      PlayerPreloadParams()..mergeFromBuffer(data, registry);
   factory PlayerPreloadParams.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      PlayerPreloadParams()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'PlayerPreloadParams',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: PlayerPreloadParams.$_createMessage)
     ..aInt64(1, _omitFieldNames ? '' : 'qn')
     ..aInt64(2, _omitFieldNames ? '' : 'fnver')
     ..aInt64(3, _omitFieldNames ? '' : 'fnval')
@@ -5700,12 +5866,16 @@ class PlayerPreloadParams extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core
+      .Deprecated('Use PlayerPreloadParams() / PlayerPreloadParams.new instead')
   static PlayerPreloadParams create() => PlayerPreloadParams._();
+  static $pb.GeneratedMessage $_createMessage() => PlayerPreloadParams._();
   @$core.override
-  PlayerPreloadParams createEmptyInstance() => create();
+  PlayerPreloadParams createEmptyInstance() => PlayerPreloadParams._();
   @$core.pragma('dart2js:noInline')
   static PlayerPreloadParams getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<PlayerPreloadParams>(create);
+      $pb.GeneratedMessage.$_defaultFor<PlayerPreloadParams>(
+          PlayerPreloadParams.$_createMessage);
   static PlayerPreloadParams? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -5759,7 +5929,7 @@ class Policy extends $pb.GeneratedMessage {
     $fixnum.Int64? interval,
     $core.bool? useLocalTime,
   }) {
-    final result = create();
+    final result = Policy._();
     if (interval != null) result.interval = interval;
     if (useLocalTime != null) result.useLocalTime = useLocalTime;
     return result;
@@ -5769,16 +5939,16 @@ class Policy extends $pb.GeneratedMessage {
 
   factory Policy.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      Policy()..mergeFromBuffer(data, registry);
   factory Policy.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      Policy()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Policy',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: Policy.$_createMessage)
     ..aInt64(1, _omitFieldNames ? '' : 'interval')
     ..aOB(2, _omitFieldNames ? '' : 'useLocalTime')
     ..hasRequiredFields = false;
@@ -5793,12 +5963,14 @@ class Policy extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Policy() / Policy.new instead')
   static Policy create() => Policy._();
+  static $pb.GeneratedMessage $_createMessage() => Policy._();
   @$core.override
-  Policy createEmptyInstance() => create();
+  Policy createEmptyInstance() => Policy._();
   @$core.pragma('dart2js:noInline')
-  static Policy getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Policy>(create);
+  static Policy getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Policy>(Policy.$_createMessage);
   static Policy? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -5831,7 +6003,7 @@ class ReasonStyle extends $pb.GeneratedMessage {
     $core.String? borderColorNight,
     $core.int? bgStyle,
   }) {
-    final result = create();
+    final result = ReasonStyle._();
     if (text != null) result.text = text;
     if (textColor != null) result.textColor = textColor;
     if (textColorNight != null) result.textColorNight = textColorNight;
@@ -5847,16 +6019,16 @@ class ReasonStyle extends $pb.GeneratedMessage {
 
   factory ReasonStyle.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      ReasonStyle()..mergeFromBuffer(data, registry);
   factory ReasonStyle.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      ReasonStyle()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'ReasonStyle',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: ReasonStyle.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'text')
     ..aOS(2, _omitFieldNames ? '' : 'textColor')
     ..aOS(3, _omitFieldNames ? '' : 'textColorNight')
@@ -5878,12 +6050,15 @@ class ReasonStyle extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use ReasonStyle() / ReasonStyle.new instead')
   static ReasonStyle create() => ReasonStyle._();
+  static $pb.GeneratedMessage $_createMessage() => ReasonStyle._();
   @$core.override
-  ReasonStyle createEmptyInstance() => create();
+  ReasonStyle createEmptyInstance() => ReasonStyle._();
   @$core.pragma('dart2js:noInline')
-  static ReasonStyle getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<ReasonStyle>(create);
+  static ReasonStyle getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ReasonStyle>(
+          ReasonStyle.$_createMessage);
   static ReasonStyle? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -5966,7 +6141,7 @@ class Relation extends $pb.GeneratedMessage {
     $core.int? isFollow,
     $core.int? isFollowed,
   }) {
-    final result = create();
+    final result = Relation._();
     if (status != null) result.status = status;
     if (isFollow != null) result.isFollow = isFollow;
     if (isFollowed != null) result.isFollowed = isFollowed;
@@ -5977,16 +6152,16 @@ class Relation extends $pb.GeneratedMessage {
 
   factory Relation.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      Relation()..mergeFromBuffer(data, registry);
   factory Relation.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      Relation()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Relation',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: Relation.$_createMessage)
     ..aI(1, _omitFieldNames ? '' : 'status')
     ..aI(2, _omitFieldNames ? '' : 'isFollow')
     ..aI(3, _omitFieldNames ? '' : 'isFollowed')
@@ -6002,12 +6177,14 @@ class Relation extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Relation() / Relation.new instead')
   static Relation create() => Relation._();
+  static $pb.GeneratedMessage $_createMessage() => Relation._();
   @$core.override
-  Relation createEmptyInstance() => create();
+  Relation createEmptyInstance() => Relation._();
   @$core.pragma('dart2js:noInline')
-  static Relation getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Relation>(create);
+  static Relation getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Relation>(Relation.$_createMessage);
   static Relation? _defaultInstance;
 
   /// 按钮展示文案
@@ -6086,7 +6263,7 @@ class ResultItem extends $pb.GeneratedMessage {
     $core.int? isSeniorMember,
     $core.int? isSugStyleExp,
   }) {
-    final result = create();
+    final result = ResultItem._();
     if (from != null) result.from = from;
     if (title != null) result.title = title;
     if (keyword != null) result.keyword = keyword;
@@ -6125,16 +6302,16 @@ class ResultItem extends $pb.GeneratedMessage {
 
   factory ResultItem.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      ResultItem()..mergeFromBuffer(data, registry);
   factory ResultItem.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      ResultItem()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'ResultItem',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: ResultItem.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'from')
     ..aOS(2, _omitFieldNames ? '' : 'title')
     ..aOS(3, _omitFieldNames ? '' : 'keyword')
@@ -6146,7 +6323,7 @@ class ResultItem extends $pb.GeneratedMessage {
     ..aOS(9, _omitFieldNames ? '' : 'goto')
     ..aOS(10, _omitFieldNames ? '' : 'uri')
     ..aOM<OfficialVerify>(11, _omitFieldNames ? '' : 'officialVerify',
-        subBuilder: OfficialVerify.create)
+        subBuilder: OfficialVerify.$_createMessage)
     ..aOS(12, _omitFieldNames ? '' : 'param')
     ..aInt64(13, _omitFieldNames ? '' : 'mid')
     ..aI(14, _omitFieldNames ? '' : 'fans')
@@ -6160,13 +6337,13 @@ class ResultItem extends $pb.GeneratedMessage {
     ..aD(22, _omitFieldNames ? '' : 'rating')
     ..aI(23, _omitFieldNames ? '' : 'vote')
     ..pPM<ReasonStyle>(24, _omitFieldNames ? '' : 'badges',
-        subBuilder: ReasonStyle.create)
+        subBuilder: ReasonStyle.$_createMessage)
     ..aOS(25, _omitFieldNames ? '' : 'styles')
     ..aInt64(26, _omitFieldNames ? '' : 'moduleId')
     ..aOS(27, _omitFieldNames ? '' : 'liveLink')
     ..aI(28, _omitFieldNames ? '' : 'faceNftNew')
     ..aOM<NftFaceIcon>(29, _omitFieldNames ? '' : 'nftFaceIcon',
-        subBuilder: NftFaceIcon.create)
+        subBuilder: NftFaceIcon.$_createMessage)
     ..aI(30, _omitFieldNames ? '' : 'isSeniorMember')
     ..aI(31, _omitFieldNames ? '' : 'isSugStyleExp')
     ..hasRequiredFields = false;
@@ -6181,12 +6358,14 @@ class ResultItem extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use ResultItem() / ResultItem.new instead')
   static ResultItem create() => ResultItem._();
+  static $pb.GeneratedMessage $_createMessage() => ResultItem._();
   @$core.override
-  ResultItem createEmptyInstance() => create();
+  ResultItem createEmptyInstance() => ResultItem._();
   @$core.pragma('dart2js:noInline')
   static ResultItem getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<ResultItem>(create);
+      $pb.GeneratedMessage.$_defaultFor<ResultItem>(ResultItem.$_createMessage);
   static ResultItem? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -6471,7 +6650,7 @@ class Scores extends $pb.GeneratedMessage {
   factory Scores({
     $core.double? score,
   }) {
-    final result = create();
+    final result = Scores._();
     if (score != null) result.score = score;
     return result;
   }
@@ -6480,16 +6659,16 @@ class Scores extends $pb.GeneratedMessage {
 
   factory Scores.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      Scores()..mergeFromBuffer(data, registry);
   factory Scores.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      Scores()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Scores',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: Scores.$_createMessage)
     ..aD(1, _omitFieldNames ? '' : 'score', fieldType: $pb.PbFieldType.OF)
     ..hasRequiredFields = false;
 
@@ -6503,12 +6682,14 @@ class Scores extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Scores() / Scores.new instead')
   static Scores create() => Scores._();
+  static $pb.GeneratedMessage $_createMessage() => Scores._();
   @$core.override
-  Scores createEmptyInstance() => create();
+  Scores createEmptyInstance() => Scores._();
   @$core.pragma('dart2js:noInline')
-  static Scores getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Scores>(create);
+  static Scores getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Scores>(Scores.$_createMessage);
   static Scores? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -6526,7 +6707,7 @@ class SearchArchiveReply extends $pb.GeneratedMessage {
     $core.Iterable<Arc>? archives,
     $fixnum.Int64? total,
   }) {
-    final result = create();
+    final result = SearchArchiveReply._();
     if (archives != null) result.archives.addAll(archives);
     if (total != null) result.total = total;
     return result;
@@ -6536,17 +6717,18 @@ class SearchArchiveReply extends $pb.GeneratedMessage {
 
   factory SearchArchiveReply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      SearchArchiveReply()..mergeFromBuffer(data, registry);
   factory SearchArchiveReply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      SearchArchiveReply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'SearchArchiveReply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
-    ..pPM<Arc>(1, _omitFieldNames ? '' : 'archives', subBuilder: Arc.create)
+      createEmptyInstance: SearchArchiveReply.$_createMessage)
+    ..pPM<Arc>(1, _omitFieldNames ? '' : 'archives',
+        subBuilder: Arc.$_createMessage)
     ..aInt64(2, _omitFieldNames ? '' : 'total')
     ..hasRequiredFields = false;
 
@@ -6561,12 +6743,15 @@ class SearchArchiveReply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use SearchArchiveReply() / SearchArchiveReply.new instead')
   static SearchArchiveReply create() => SearchArchiveReply._();
+  static $pb.GeneratedMessage $_createMessage() => SearchArchiveReply._();
   @$core.override
-  SearchArchiveReply createEmptyInstance() => create();
+  SearchArchiveReply createEmptyInstance() => SearchArchiveReply._();
   @$core.pragma('dart2js:noInline')
   static SearchArchiveReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<SearchArchiveReply>(create);
+      $pb.GeneratedMessage.$_defaultFor<SearchArchiveReply>(
+          SearchArchiveReply.$_createMessage);
   static SearchArchiveReply? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -6590,7 +6775,7 @@ class SearchArchiveReq extends $pb.GeneratedMessage {
     $fixnum.Int64? ps,
     $3.PlayerArgs? playerArgs,
   }) {
-    final result = create();
+    final result = SearchArchiveReq._();
     if (keyword != null) result.keyword = keyword;
     if (mid != null) result.mid = mid;
     if (pn != null) result.pn = pn;
@@ -6603,22 +6788,22 @@ class SearchArchiveReq extends $pb.GeneratedMessage {
 
   factory SearchArchiveReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      SearchArchiveReq()..mergeFromBuffer(data, registry);
   factory SearchArchiveReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      SearchArchiveReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'SearchArchiveReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: SearchArchiveReq.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'keyword')
     ..aInt64(2, _omitFieldNames ? '' : 'mid')
     ..aInt64(3, _omitFieldNames ? '' : 'pn')
     ..aInt64(4, _omitFieldNames ? '' : 'ps')
     ..aOM<$3.PlayerArgs>(5, _omitFieldNames ? '' : 'playerArgs',
-        subBuilder: $3.PlayerArgs.create)
+        subBuilder: $3.PlayerArgs.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -6632,12 +6817,15 @@ class SearchArchiveReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use SearchArchiveReq() / SearchArchiveReq.new instead')
   static SearchArchiveReq create() => SearchArchiveReq._();
+  static $pb.GeneratedMessage $_createMessage() => SearchArchiveReq._();
   @$core.override
-  SearchArchiveReq createEmptyInstance() => create();
+  SearchArchiveReq createEmptyInstance() => SearchArchiveReq._();
   @$core.pragma('dart2js:noInline')
-  static SearchArchiveReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<SearchArchiveReq>(create);
+  static SearchArchiveReq getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SearchArchiveReq>(
+          SearchArchiveReq.$_createMessage);
   static SearchArchiveReq? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -6693,7 +6881,7 @@ class SearchDynamicReply extends $pb.GeneratedMessage {
     $core.Iterable<Dynamic>? dynamics,
     $fixnum.Int64? total,
   }) {
-    final result = create();
+    final result = SearchDynamicReply._();
     if (dynamics != null) result.dynamics.addAll(dynamics);
     if (total != null) result.total = total;
     return result;
@@ -6703,18 +6891,18 @@ class SearchDynamicReply extends $pb.GeneratedMessage {
 
   factory SearchDynamicReply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      SearchDynamicReply()..mergeFromBuffer(data, registry);
   factory SearchDynamicReply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      SearchDynamicReply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'SearchDynamicReply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: SearchDynamicReply.$_createMessage)
     ..pPM<Dynamic>(1, _omitFieldNames ? '' : 'dynamics',
-        subBuilder: Dynamic.create)
+        subBuilder: Dynamic.$_createMessage)
     ..aInt64(2, _omitFieldNames ? '' : 'total')
     ..hasRequiredFields = false;
 
@@ -6729,12 +6917,15 @@ class SearchDynamicReply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use SearchDynamicReply() / SearchDynamicReply.new instead')
   static SearchDynamicReply create() => SearchDynamicReply._();
+  static $pb.GeneratedMessage $_createMessage() => SearchDynamicReply._();
   @$core.override
-  SearchDynamicReply createEmptyInstance() => create();
+  SearchDynamicReply createEmptyInstance() => SearchDynamicReply._();
   @$core.pragma('dart2js:noInline')
   static SearchDynamicReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<SearchDynamicReply>(create);
+      $pb.GeneratedMessage.$_defaultFor<SearchDynamicReply>(
+          SearchDynamicReply.$_createMessage);
   static SearchDynamicReply? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -6758,7 +6949,7 @@ class SearchDynamicReq extends $pb.GeneratedMessage {
     $fixnum.Int64? ps,
     $3.PlayerArgs? playerArgs,
   }) {
-    final result = create();
+    final result = SearchDynamicReq._();
     if (keyword != null) result.keyword = keyword;
     if (mid != null) result.mid = mid;
     if (pn != null) result.pn = pn;
@@ -6771,22 +6962,22 @@ class SearchDynamicReq extends $pb.GeneratedMessage {
 
   factory SearchDynamicReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      SearchDynamicReq()..mergeFromBuffer(data, registry);
   factory SearchDynamicReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      SearchDynamicReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'SearchDynamicReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: SearchDynamicReq.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'keyword')
     ..aInt64(2, _omitFieldNames ? '' : 'mid')
     ..aInt64(3, _omitFieldNames ? '' : 'pn')
     ..aInt64(4, _omitFieldNames ? '' : 'ps')
     ..aOM<$3.PlayerArgs>(5, _omitFieldNames ? '' : 'playerArgs',
-        subBuilder: $3.PlayerArgs.create)
+        subBuilder: $3.PlayerArgs.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -6800,12 +6991,15 @@ class SearchDynamicReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use SearchDynamicReq() / SearchDynamicReq.new instead')
   static SearchDynamicReq create() => SearchDynamicReq._();
+  static $pb.GeneratedMessage $_createMessage() => SearchDynamicReq._();
   @$core.override
-  SearchDynamicReq createEmptyInstance() => create();
+  SearchDynamicReq createEmptyInstance() => SearchDynamicReq._();
   @$core.pragma('dart2js:noInline')
-  static SearchDynamicReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<SearchDynamicReq>(create);
+  static SearchDynamicReq getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SearchDynamicReq>(
+          SearchDynamicReq.$_createMessage);
   static SearchDynamicReq? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -6862,7 +7056,7 @@ class SearchReply extends $pb.GeneratedMessage {
     $core.bool? hasMore,
     Page? page,
   }) {
-    final result = create();
+    final result = SearchReply._();
     if (items != null) result.items.addAll(items);
     if (hasMore != null) result.hasMore = hasMore;
     if (page != null) result.page = page;
@@ -6873,20 +7067,21 @@ class SearchReply extends $pb.GeneratedMessage {
 
   factory SearchReply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      SearchReply()..mergeFromBuffer(data, registry);
   factory SearchReply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      SearchReply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'SearchReply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: SearchReply.$_createMessage)
     ..pPM<CursorItem>(1, _omitFieldNames ? '' : 'items',
-        subBuilder: CursorItem.create)
+        subBuilder: CursorItem.$_createMessage)
     ..aOB(2, _omitFieldNames ? '' : 'hasMore')
-    ..aOM<Page>(3, _omitFieldNames ? '' : 'page', subBuilder: Page.create)
+    ..aOM<Page>(3, _omitFieldNames ? '' : 'page',
+        subBuilder: Page.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -6900,12 +7095,15 @@ class SearchReply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use SearchReply() / SearchReply.new instead')
   static SearchReply create() => SearchReply._();
+  static $pb.GeneratedMessage $_createMessage() => SearchReply._();
   @$core.override
-  SearchReply createEmptyInstance() => create();
+  SearchReply createEmptyInstance() => SearchReply._();
   @$core.pragma('dart2js:noInline')
-  static SearchReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<SearchReply>(create);
+  static SearchReply getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SearchReply>(
+          SearchReply.$_createMessage);
   static SearchReply? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -6938,7 +7136,7 @@ class SearchReq extends $pb.GeneratedMessage {
     $fixnum.Int64? pn,
     $core.String? business,
   }) {
-    final result = create();
+    final result = SearchReq._();
     if (keyword != null) result.keyword = keyword;
     if (pn != null) result.pn = pn;
     if (business != null) result.business = business;
@@ -6949,16 +7147,16 @@ class SearchReq extends $pb.GeneratedMessage {
 
   factory SearchReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      SearchReq()..mergeFromBuffer(data, registry);
   factory SearchReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      SearchReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'SearchReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: SearchReq.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'keyword')
     ..aInt64(2, _omitFieldNames ? '' : 'pn')
     ..aOS(3, _omitFieldNames ? '' : 'business')
@@ -6974,12 +7172,14 @@ class SearchReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use SearchReq() / SearchReq.new instead')
   static SearchReq create() => SearchReq._();
+  static $pb.GeneratedMessage $_createMessage() => SearchReq._();
   @$core.override
-  SearchReq createEmptyInstance() => create();
+  SearchReq createEmptyInstance() => SearchReq._();
   @$core.pragma('dart2js:noInline')
-  static SearchReq getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SearchReq>(create);
+  static SearchReq getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SearchReq>(SearchReq.$_createMessage);
   static SearchReq? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -7015,7 +7215,7 @@ class SearchTabReply extends $pb.GeneratedMessage {
     $fixnum.Int64? focus,
     $core.Iterable<Tab>? tabs,
   }) {
-    final result = create();
+    final result = SearchTabReply._();
     if (focus != null) result.focus = focus;
     if (tabs != null) result.tabs.addAll(tabs);
     return result;
@@ -7025,18 +7225,19 @@ class SearchTabReply extends $pb.GeneratedMessage {
 
   factory SearchTabReply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      SearchTabReply()..mergeFromBuffer(data, registry);
   factory SearchTabReply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      SearchTabReply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'SearchTabReply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: SearchTabReply.$_createMessage)
     ..aInt64(1, _omitFieldNames ? '' : 'focus')
-    ..pPM<Tab>(2, _omitFieldNames ? '' : 'tabs', subBuilder: Tab.create)
+    ..pPM<Tab>(2, _omitFieldNames ? '' : 'tabs',
+        subBuilder: Tab.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -7050,12 +7251,15 @@ class SearchTabReply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use SearchTabReply() / SearchTabReply.new instead')
   static SearchTabReply create() => SearchTabReply._();
+  static $pb.GeneratedMessage $_createMessage() => SearchTabReply._();
   @$core.override
-  SearchTabReply createEmptyInstance() => create();
+  SearchTabReply createEmptyInstance() => SearchTabReply._();
   @$core.pragma('dart2js:noInline')
-  static SearchTabReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<SearchTabReply>(create);
+  static SearchTabReply getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SearchTabReply>(
+          SearchTabReply.$_createMessage);
   static SearchTabReply? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -7077,7 +7281,7 @@ class SearchTabReq extends $pb.GeneratedMessage {
     $fixnum.Int64? mid,
     From? from,
   }) {
-    final result = create();
+    final result = SearchTabReq._();
     if (keyword != null) result.keyword = keyword;
     if (mid != null) result.mid = mid;
     if (from != null) result.from = from;
@@ -7088,16 +7292,16 @@ class SearchTabReq extends $pb.GeneratedMessage {
 
   factory SearchTabReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      SearchTabReq()..mergeFromBuffer(data, registry);
   factory SearchTabReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      SearchTabReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'SearchTabReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: SearchTabReq.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'keyword')
     ..aInt64(2, _omitFieldNames ? '' : 'mid')
     ..aE<From>(3, _omitFieldNames ? '' : 'from', enumValues: From.values)
@@ -7114,12 +7318,15 @@ class SearchTabReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use SearchTabReq() / SearchTabReq.new instead')
   static SearchTabReq create() => SearchTabReq._();
+  static $pb.GeneratedMessage $_createMessage() => SearchTabReq._();
   @$core.override
-  SearchTabReq createEmptyInstance() => create();
+  SearchTabReq createEmptyInstance() => SearchTabReq._();
   @$core.pragma('dart2js:noInline')
-  static SearchTabReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<SearchTabReq>(create);
+  static SearchTabReq getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SearchTabReq>(
+          SearchTabReq.$_createMessage);
   static SearchTabReq? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -7151,22 +7358,22 @@ class SearchTabReq extends $pb.GeneratedMessage {
 }
 
 class SetTeenagersModelAgeReply extends $pb.GeneratedMessage {
-  factory SetTeenagersModelAgeReply() => create();
+  factory SetTeenagersModelAgeReply() => SetTeenagersModelAgeReply._();
 
   SetTeenagersModelAgeReply._();
 
   factory SetTeenagersModelAgeReply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      SetTeenagersModelAgeReply()..mergeFromBuffer(data, registry);
   factory SetTeenagersModelAgeReply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      SetTeenagersModelAgeReply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'SetTeenagersModelAgeReply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: SetTeenagersModelAgeReply.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -7181,12 +7388,18 @@ class SetTeenagersModelAgeReply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated(
+      'Use SetTeenagersModelAgeReply() / SetTeenagersModelAgeReply.new instead')
   static SetTeenagersModelAgeReply create() => SetTeenagersModelAgeReply._();
+  static $pb.GeneratedMessage $_createMessage() =>
+      SetTeenagersModelAgeReply._();
   @$core.override
-  SetTeenagersModelAgeReply createEmptyInstance() => create();
+  SetTeenagersModelAgeReply createEmptyInstance() =>
+      SetTeenagersModelAgeReply._();
   @$core.pragma('dart2js:noInline')
   static SetTeenagersModelAgeReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<SetTeenagersModelAgeReply>(create);
+      $pb.GeneratedMessage.$_defaultFor<SetTeenagersModelAgeReply>(
+          SetTeenagersModelAgeReply.$_createMessage);
   static SetTeenagersModelAgeReply? _defaultInstance;
 }
 
@@ -7198,7 +7411,7 @@ class SetTeenagersModelAgeReq extends $pb.GeneratedMessage {
     $core.int? age,
     $core.bool? isDynamic,
   }) {
-    final result = create();
+    final result = SetTeenagersModelAgeReq._();
     if (pwd != null) result.pwd = pwd;
     if (pwdFrom != null) result.pwdFrom = pwdFrom;
     if (deviceToken != null) result.deviceToken = deviceToken;
@@ -7211,16 +7424,16 @@ class SetTeenagersModelAgeReq extends $pb.GeneratedMessage {
 
   factory SetTeenagersModelAgeReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      SetTeenagersModelAgeReq()..mergeFromBuffer(data, registry);
   factory SetTeenagersModelAgeReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      SetTeenagersModelAgeReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'SetTeenagersModelAgeReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: SetTeenagersModelAgeReq.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'pwd')
     ..aE<PwdFrom>(2, _omitFieldNames ? '' : 'pwdFrom',
         enumValues: PwdFrom.values)
@@ -7241,12 +7454,16 @@ class SetTeenagersModelAgeReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated(
+      'Use SetTeenagersModelAgeReq() / SetTeenagersModelAgeReq.new instead')
   static SetTeenagersModelAgeReq create() => SetTeenagersModelAgeReq._();
+  static $pb.GeneratedMessage $_createMessage() => SetTeenagersModelAgeReq._();
   @$core.override
-  SetTeenagersModelAgeReq createEmptyInstance() => create();
+  SetTeenagersModelAgeReq createEmptyInstance() => SetTeenagersModelAgeReq._();
   @$core.pragma('dart2js:noInline')
   static SetTeenagersModelAgeReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<SetTeenagersModelAgeReq>(create);
+      $pb.GeneratedMessage.$_defaultFor<SetTeenagersModelAgeReq>(
+          SetTeenagersModelAgeReq.$_createMessage);
   static SetTeenagersModelAgeReq? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -7301,7 +7518,7 @@ class ShowTab extends $pb.GeneratedMessage {
     $core.String? title,
     $core.String? url,
   }) {
-    final result = create();
+    final result = ShowTab._();
     if (tabType != null) result.tabType = tabType;
     if (title != null) result.title = title;
     if (url != null) result.url = url;
@@ -7312,16 +7529,16 @@ class ShowTab extends $pb.GeneratedMessage {
 
   factory ShowTab.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      ShowTab()..mergeFromBuffer(data, registry);
   factory ShowTab.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      ShowTab()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'ShowTab',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: ShowTab.$_createMessage)
     ..aE<TabType>(1, _omitFieldNames ? '' : 'tabType',
         enumValues: TabType.values)
     ..aOS(2, _omitFieldNames ? '' : 'title')
@@ -7338,12 +7555,14 @@ class ShowTab extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use ShowTab() / ShowTab.new instead')
   static ShowTab create() => ShowTab._();
+  static $pb.GeneratedMessage $_createMessage() => ShowTab._();
   @$core.override
-  ShowTab createEmptyInstance() => create();
+  ShowTab createEmptyInstance() => ShowTab._();
   @$core.pragma('dart2js:noInline')
-  static ShowTab getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ShowTab>(create);
+  static ShowTab getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ShowTab>(ShowTab.$_createMessage);
   static ShowTab? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -7387,7 +7606,7 @@ class SmallItem extends $pb.GeneratedMessage {
     $fixnum.Int64? param,
     $fixnum.Int64? mid,
   }) {
-    final result = create();
+    final result = SmallItem._();
     if (title != null) result.title = title;
     if (coverImageUri != null) result.coverImageUri = coverImageUri;
     if (uri != null) result.uri = uri;
@@ -7405,16 +7624,16 @@ class SmallItem extends $pb.GeneratedMessage {
 
   factory SmallItem.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      SmallItem()..mergeFromBuffer(data, registry);
   factory SmallItem.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      SmallItem()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'SmallItem',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: SmallItem.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'title')
     ..aOS(2, _omitFieldNames ? '' : 'coverImageUri')
     ..aOS(3, _omitFieldNames ? '' : 'uri')
@@ -7437,12 +7656,14 @@ class SmallItem extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use SmallItem() / SmallItem.new instead')
   static SmallItem create() => SmallItem._();
+  static $pb.GeneratedMessage $_createMessage() => SmallItem._();
   @$core.override
-  SmallItem createEmptyInstance() => create();
+  SmallItem createEmptyInstance() => SmallItem._();
   @$core.pragma('dart2js:noInline')
-  static SmallItem getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SmallItem>(create);
+  static SmallItem getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SmallItem>(SmallItem.$_createMessage);
   static SmallItem? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -7541,7 +7762,7 @@ class Staff extends $pb.GeneratedMessage {
     $core.String? title,
     $core.String? text,
   }) {
-    final result = create();
+    final result = Staff._();
     if (title != null) result.title = title;
     if (text != null) result.text = text;
     return result;
@@ -7551,16 +7772,16 @@ class Staff extends $pb.GeneratedMessage {
 
   factory Staff.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      Staff()..mergeFromBuffer(data, registry);
   factory Staff.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      Staff()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Staff',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: Staff.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'title')
     ..aOS(2, _omitFieldNames ? '' : 'text')
     ..hasRequiredFields = false;
@@ -7575,12 +7796,14 @@ class Staff extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Staff() / Staff.new instead')
   static Staff create() => Staff._();
+  static $pb.GeneratedMessage $_createMessage() => Staff._();
   @$core.override
-  Staff createEmptyInstance() => create();
+  Staff createEmptyInstance() => Staff._();
   @$core.pragma('dart2js:noInline')
-  static Staff getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Staff>(create);
+  static Staff getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Staff>(Staff.$_createMessage);
   static Staff? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -7608,7 +7831,7 @@ class SuggestionResult3Reply extends $pb.GeneratedMessage {
     $core.Iterable<ResultItem>? list,
     $core.String? expStr,
   }) {
-    final result = create();
+    final result = SuggestionResult3Reply._();
     if (trackid != null) result.trackid = trackid;
     if (list != null) result.list.addAll(list);
     if (expStr != null) result.expStr = expStr;
@@ -7619,19 +7842,19 @@ class SuggestionResult3Reply extends $pb.GeneratedMessage {
 
   factory SuggestionResult3Reply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      SuggestionResult3Reply()..mergeFromBuffer(data, registry);
   factory SuggestionResult3Reply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      SuggestionResult3Reply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'SuggestionResult3Reply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: SuggestionResult3Reply.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'trackid')
     ..pPM<ResultItem>(2, _omitFieldNames ? '' : 'list',
-        subBuilder: ResultItem.create)
+        subBuilder: ResultItem.$_createMessage)
     ..aOS(3, _omitFieldNames ? '' : 'expStr')
     ..hasRequiredFields = false;
 
@@ -7647,12 +7870,16 @@ class SuggestionResult3Reply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated(
+      'Use SuggestionResult3Reply() / SuggestionResult3Reply.new instead')
   static SuggestionResult3Reply create() => SuggestionResult3Reply._();
+  static $pb.GeneratedMessage $_createMessage() => SuggestionResult3Reply._();
   @$core.override
-  SuggestionResult3Reply createEmptyInstance() => create();
+  SuggestionResult3Reply createEmptyInstance() => SuggestionResult3Reply._();
   @$core.pragma('dart2js:noInline')
   static SuggestionResult3Reply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<SuggestionResult3Reply>(create);
+      $pb.GeneratedMessage.$_defaultFor<SuggestionResult3Reply>(
+          SuggestionResult3Reply.$_createMessage);
   static SuggestionResult3Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -7684,7 +7911,7 @@ class SuggestionResult3Req extends $pb.GeneratedMessage {
     $core.int? teenagersMode,
     $core.String? userAct,
   }) {
-    final result = create();
+    final result = SuggestionResult3Req._();
     if (keyword != null) result.keyword = keyword;
     if (highlight != null) result.highlight = highlight;
     if (teenagersMode != null) result.teenagersMode = teenagersMode;
@@ -7696,16 +7923,16 @@ class SuggestionResult3Req extends $pb.GeneratedMessage {
 
   factory SuggestionResult3Req.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      SuggestionResult3Req()..mergeFromBuffer(data, registry);
   factory SuggestionResult3Req.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      SuggestionResult3Req()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'SuggestionResult3Req',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: SuggestionResult3Req.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'keyword')
     ..aI(2, _omitFieldNames ? '' : 'highlight')
     ..aI(3, _omitFieldNames ? '' : 'teenagersMode')
@@ -7723,12 +7950,16 @@ class SuggestionResult3Req extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated(
+      'Use SuggestionResult3Req() / SuggestionResult3Req.new instead')
   static SuggestionResult3Req create() => SuggestionResult3Req._();
+  static $pb.GeneratedMessage $_createMessage() => SuggestionResult3Req._();
   @$core.override
-  SuggestionResult3Req createEmptyInstance() => create();
+  SuggestionResult3Req createEmptyInstance() => SuggestionResult3Req._();
   @$core.pragma('dart2js:noInline')
   static SuggestionResult3Req getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<SuggestionResult3Req>(create);
+      $pb.GeneratedMessage.$_defaultFor<SuggestionResult3Req>(
+          SuggestionResult3Req.$_createMessage);
   static SuggestionResult3Req? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -7773,7 +8004,7 @@ class Supernatant extends $pb.GeneratedMessage {
     $core.String? title,
     $core.Iterable<CommentItem>? item,
   }) {
-    final result = create();
+    final result = Supernatant._();
     if (title != null) result.title = title;
     if (item != null) result.item.addAll(item);
     return result;
@@ -7783,19 +8014,19 @@ class Supernatant extends $pb.GeneratedMessage {
 
   factory Supernatant.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      Supernatant()..mergeFromBuffer(data, registry);
   factory Supernatant.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      Supernatant()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Supernatant',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: Supernatant.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'title')
     ..pPM<CommentItem>(2, _omitFieldNames ? '' : 'item',
-        subBuilder: CommentItem.create)
+        subBuilder: CommentItem.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -7809,12 +8040,15 @@ class Supernatant extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Supernatant() / Supernatant.new instead')
   static Supernatant create() => Supernatant._();
+  static $pb.GeneratedMessage $_createMessage() => Supernatant._();
   @$core.override
-  Supernatant createEmptyInstance() => create();
+  Supernatant createEmptyInstance() => Supernatant._();
   @$core.pragma('dart2js:noInline')
-  static Supernatant getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<Supernatant>(create);
+  static Supernatant getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Supernatant>(
+          Supernatant.$_createMessage);
   static Supernatant? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -7835,7 +8069,7 @@ class Tab extends $pb.GeneratedMessage {
     $core.String? title,
     $core.String? uri,
   }) {
-    final result = create();
+    final result = Tab._();
     if (title != null) result.title = title;
     if (uri != null) result.uri = uri;
     return result;
@@ -7845,16 +8079,16 @@ class Tab extends $pb.GeneratedMessage {
 
   factory Tab.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      Tab()..mergeFromBuffer(data, registry);
   factory Tab.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      Tab()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Tab',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: Tab.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'title')
     ..aOS(2, _omitFieldNames ? '' : 'uri')
     ..hasRequiredFields = false;
@@ -7869,12 +8103,14 @@ class Tab extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Tab() / Tab.new instead')
   static Tab create() => Tab._();
+  static $pb.GeneratedMessage $_createMessage() => Tab._();
   @$core.override
-  Tab createEmptyInstance() => create();
+  Tab createEmptyInstance() => Tab._();
   @$core.pragma('dart2js:noInline')
-  static Tab getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Tab>(create);
+  static Tab getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Tab>(Tab.$_createMessage);
   static Tab? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -7900,7 +8136,7 @@ class UpdateReserveStartTimeReply extends $pb.GeneratedMessage {
   factory UpdateReserveStartTimeReply({
     $core.String? descText,
   }) {
-    final result = create();
+    final result = UpdateReserveStartTimeReply._();
     if (descText != null) result.descText = descText;
     return result;
   }
@@ -7909,16 +8145,16 @@ class UpdateReserveStartTimeReply extends $pb.GeneratedMessage {
 
   factory UpdateReserveStartTimeReply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      UpdateReserveStartTimeReply()..mergeFromBuffer(data, registry);
   factory UpdateReserveStartTimeReply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      UpdateReserveStartTimeReply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'UpdateReserveStartTimeReply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: UpdateReserveStartTimeReply.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'descText')
     ..hasRequiredFields = false;
 
@@ -7935,13 +8171,19 @@ class UpdateReserveStartTimeReply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated(
+      'Use UpdateReserveStartTimeReply() / UpdateReserveStartTimeReply.new instead')
   static UpdateReserveStartTimeReply create() =>
       UpdateReserveStartTimeReply._();
+  static $pb.GeneratedMessage $_createMessage() =>
+      UpdateReserveStartTimeReply._();
   @$core.override
-  UpdateReserveStartTimeReply createEmptyInstance() => create();
+  UpdateReserveStartTimeReply createEmptyInstance() =>
+      UpdateReserveStartTimeReply._();
   @$core.pragma('dart2js:noInline')
   static UpdateReserveStartTimeReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<UpdateReserveStartTimeReply>(create);
+      $pb.GeneratedMessage.$_defaultFor<UpdateReserveStartTimeReply>(
+          UpdateReserveStartTimeReply.$_createMessage);
   static UpdateReserveStartTimeReply? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -7959,7 +8201,7 @@ class UpdateReserveStartTimeReq extends $pb.GeneratedMessage {
     $fixnum.Int64? sid,
     $fixnum.Int64? newLivePlanStartTime,
   }) {
-    final result = create();
+    final result = UpdateReserveStartTimeReq._();
     if (sid != null) result.sid = sid;
     if (newLivePlanStartTime != null)
       result.newLivePlanStartTime = newLivePlanStartTime;
@@ -7970,16 +8212,16 @@ class UpdateReserveStartTimeReq extends $pb.GeneratedMessage {
 
   factory UpdateReserveStartTimeReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      UpdateReserveStartTimeReq()..mergeFromBuffer(data, registry);
   factory UpdateReserveStartTimeReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      UpdateReserveStartTimeReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'UpdateReserveStartTimeReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: UpdateReserveStartTimeReq.$_createMessage)
     ..aInt64(1, _omitFieldNames ? '' : 'sid')
     ..aInt64(2, _omitFieldNames ? '' : 'newLivePlanStartTime')
     ..hasRequiredFields = false;
@@ -7996,12 +8238,18 @@ class UpdateReserveStartTimeReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated(
+      'Use UpdateReserveStartTimeReq() / UpdateReserveStartTimeReq.new instead')
   static UpdateReserveStartTimeReq create() => UpdateReserveStartTimeReq._();
+  static $pb.GeneratedMessage $_createMessage() =>
+      UpdateReserveStartTimeReq._();
   @$core.override
-  UpdateReserveStartTimeReq createEmptyInstance() => create();
+  UpdateReserveStartTimeReq createEmptyInstance() =>
+      UpdateReserveStartTimeReq._();
   @$core.pragma('dart2js:noInline')
   static UpdateReserveStartTimeReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<UpdateReserveStartTimeReq>(create);
+      $pb.GeneratedMessage.$_defaultFor<UpdateReserveStartTimeReq>(
+          UpdateReserveStartTimeReq.$_createMessage);
   static UpdateReserveStartTimeReq? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -8024,22 +8272,22 @@ class UpdateReserveStartTimeReq extends $pb.GeneratedMessage {
 }
 
 class UpdateStatusReply extends $pb.GeneratedMessage {
-  factory UpdateStatusReply() => create();
+  factory UpdateStatusReply() => UpdateStatusReply._();
 
   UpdateStatusReply._();
 
   factory UpdateStatusReply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      UpdateStatusReply()..mergeFromBuffer(data, registry);
   factory UpdateStatusReply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      UpdateStatusReply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'UpdateStatusReply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: UpdateStatusReply.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -8053,12 +8301,15 @@ class UpdateStatusReply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use UpdateStatusReply() / UpdateStatusReply.new instead')
   static UpdateStatusReply create() => UpdateStatusReply._();
+  static $pb.GeneratedMessage $_createMessage() => UpdateStatusReply._();
   @$core.override
-  UpdateStatusReply createEmptyInstance() => create();
+  UpdateStatusReply createEmptyInstance() => UpdateStatusReply._();
   @$core.pragma('dart2js:noInline')
-  static UpdateStatusReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<UpdateStatusReply>(create);
+  static UpdateStatusReply getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateStatusReply>(
+          UpdateStatusReply.$_createMessage);
   static UpdateStatusReply? _defaultInstance;
 }
 
@@ -8069,7 +8320,7 @@ class UpdateStatusReq extends $pb.GeneratedMessage {
     PwdFrom? pwdFrom,
     $core.String? deviceToken,
   }) {
-    final result = create();
+    final result = UpdateStatusReq._();
     if (pwd != null) result.pwd = pwd;
     if (switch_2 != null) result.switch_2 = switch_2;
     if (pwdFrom != null) result.pwdFrom = pwdFrom;
@@ -8081,16 +8332,16 @@ class UpdateStatusReq extends $pb.GeneratedMessage {
 
   factory UpdateStatusReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      UpdateStatusReq()..mergeFromBuffer(data, registry);
   factory UpdateStatusReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      UpdateStatusReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'UpdateStatusReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: UpdateStatusReq.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'pwd')
     ..aOB(2, _omitFieldNames ? '' : 'switch')
     ..aE<PwdFrom>(3, _omitFieldNames ? '' : 'pwdFrom',
@@ -8109,12 +8360,15 @@ class UpdateStatusReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use UpdateStatusReq() / UpdateStatusReq.new instead')
   static UpdateStatusReq create() => UpdateStatusReq._();
+  static $pb.GeneratedMessage $_createMessage() => UpdateStatusReq._();
   @$core.override
-  UpdateStatusReq createEmptyInstance() => create();
+  UpdateStatusReq createEmptyInstance() => UpdateStatusReq._();
   @$core.pragma('dart2js:noInline')
-  static UpdateStatusReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<UpdateStatusReq>(create);
+  static UpdateStatusReq getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateStatusReq>(
+          UpdateStatusReq.$_createMessage);
   static UpdateStatusReq? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -8161,7 +8415,7 @@ class UserCard extends $pb.GeneratedMessage {
     $core.String? userUrl,
     $fixnum.Int64? mid,
   }) {
-    final result = create();
+    final result = UserCard._();
     if (userName != null) result.userName = userName;
     if (userFace != null) result.userFace = userFace;
     if (userUrl != null) result.userUrl = userUrl;
@@ -8173,16 +8427,16 @@ class UserCard extends $pb.GeneratedMessage {
 
   factory UserCard.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      UserCard()..mergeFromBuffer(data, registry);
   factory UserCard.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      UserCard()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'UserCard',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: UserCard.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'userName')
     ..aOS(2, _omitFieldNames ? '' : 'userFace')
     ..aOS(3, _omitFieldNames ? '' : 'userUrl')
@@ -8199,12 +8453,14 @@ class UserCard extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use UserCard() / UserCard.new instead')
   static UserCard create() => UserCard._();
+  static $pb.GeneratedMessage $_createMessage() => UserCard._();
   @$core.override
-  UserCard createEmptyInstance() => create();
+  UserCard createEmptyInstance() => UserCard._();
   @$core.pragma('dart2js:noInline')
-  static UserCard getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UserCard>(create);
+  static UserCard getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<UserCard>(UserCard.$_createMessage);
   static UserCard? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -8257,7 +8513,7 @@ class UserModel extends $pb.GeneratedMessage {
     $core.bool? isParentControl,
     $core.int? age,
   }) {
-    final result = create();
+    final result = UserModel._();
     if (mid != null) result.mid = mid;
     if (mode != null) result.mode = mode;
     if (wsxcde != null) result.wsxcde = wsxcde;
@@ -8275,22 +8531,23 @@ class UserModel extends $pb.GeneratedMessage {
 
   factory UserModel.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      UserModel()..mergeFromBuffer(data, registry);
   factory UserModel.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      UserModel()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'UserModel',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: UserModel.$_createMessage)
     ..aInt64(1, _omitFieldNames ? '' : 'mid')
     ..aOS(2, _omitFieldNames ? '' : 'mode')
     ..aOS(3, _omitFieldNames ? '' : 'wsxcde')
     ..aE<ModelStatus>(4, _omitFieldNames ? '' : 'status',
         enumValues: ModelStatus.values)
-    ..aOM<Policy>(5, _omitFieldNames ? '' : 'policy', subBuilder: Policy.create)
+    ..aOM<Policy>(5, _omitFieldNames ? '' : 'policy',
+        subBuilder: Policy.$_createMessage)
     ..aOB(6, _omitFieldNames ? '' : 'isForced')
     ..aOB(7, _omitFieldNames ? '' : 'mustTeen')
     ..aOB(8, _omitFieldNames ? '' : 'mustRealName')
@@ -8308,12 +8565,14 @@ class UserModel extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use UserModel() / UserModel.new instead')
   static UserModel create() => UserModel._();
+  static $pb.GeneratedMessage $_createMessage() => UserModel._();
   @$core.override
-  UserModel createEmptyInstance() => create();
+  UserModel createEmptyInstance() => UserModel._();
   @$core.pragma('dart2js:noInline')
-  static UserModel getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UserModel>(create);
+  static UserModel getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<UserModel>(UserModel.$_createMessage);
   static UserModel? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -8410,22 +8669,22 @@ class UserModel extends $pb.GeneratedMessage {
 }
 
 class VerifyPwdReply extends $pb.GeneratedMessage {
-  factory VerifyPwdReply() => create();
+  factory VerifyPwdReply() => VerifyPwdReply._();
 
   VerifyPwdReply._();
 
   factory VerifyPwdReply.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      VerifyPwdReply()..mergeFromBuffer(data, registry);
   factory VerifyPwdReply.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      VerifyPwdReply()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'VerifyPwdReply',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: VerifyPwdReply.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -8439,12 +8698,15 @@ class VerifyPwdReply extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use VerifyPwdReply() / VerifyPwdReply.new instead')
   static VerifyPwdReply create() => VerifyPwdReply._();
+  static $pb.GeneratedMessage $_createMessage() => VerifyPwdReply._();
   @$core.override
-  VerifyPwdReply createEmptyInstance() => create();
+  VerifyPwdReply createEmptyInstance() => VerifyPwdReply._();
   @$core.pragma('dart2js:noInline')
-  static VerifyPwdReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<VerifyPwdReply>(create);
+  static VerifyPwdReply getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyPwdReply>(
+          VerifyPwdReply.$_createMessage);
   static VerifyPwdReply? _defaultInstance;
 }
 
@@ -8456,7 +8718,7 @@ class VerifyPwdReq extends $pb.GeneratedMessage {
     $core.bool? closeDevice,
     $core.String? deviceToken,
   }) {
-    final result = create();
+    final result = VerifyPwdReq._();
     if (pwd != null) result.pwd = pwd;
     if (pwdFrom != null) result.pwdFrom = pwdFrom;
     if (isDynamic != null) result.isDynamic = isDynamic;
@@ -8469,16 +8731,16 @@ class VerifyPwdReq extends $pb.GeneratedMessage {
 
   factory VerifyPwdReq.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      VerifyPwdReq()..mergeFromBuffer(data, registry);
   factory VerifyPwdReq.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      VerifyPwdReq()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'VerifyPwdReq',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.app.interfaces.v1'),
-      createEmptyInstance: create)
+      createEmptyInstance: VerifyPwdReq.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'pwd')
     ..aE<PwdFrom>(2, _omitFieldNames ? '' : 'pwdFrom',
         enumValues: PwdFrom.values)
@@ -8498,12 +8760,15 @@ class VerifyPwdReq extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use VerifyPwdReq() / VerifyPwdReq.new instead')
   static VerifyPwdReq create() => VerifyPwdReq._();
+  static $pb.GeneratedMessage $_createMessage() => VerifyPwdReq._();
   @$core.override
-  VerifyPwdReq createEmptyInstance() => create();
+  VerifyPwdReq createEmptyInstance() => VerifyPwdReq._();
   @$core.pragma('dart2js:noInline')
-  static VerifyPwdReq getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<VerifyPwdReq>(create);
+  static VerifyPwdReq getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyPwdReq>(
+          VerifyPwdReq.$_createMessage);
   static VerifyPwdReq? _defaultInstance;
 
   @$pb.TagNumber(1)

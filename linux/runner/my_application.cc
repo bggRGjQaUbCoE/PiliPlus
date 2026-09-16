@@ -117,7 +117,7 @@ static gboolean my_application_local_command_line(GApplication *application,
   g_application_activate(application);
   *exit_status = 0;
 
-  return TRUE;
+  return FALSE;
 }
 
 // Implements GApplication::startup.
@@ -163,7 +163,9 @@ MyApplication *my_application_new() {
   // the application to be recognized beyond its binary name.
   g_set_prgname(APPLICATION_ID);
 
-  return MY_APPLICATION(
-      g_object_new(my_application_get_type(), "application-id", APPLICATION_ID,
-                   "flags", static_cast<GApplicationFlags>(0), nullptr));
+  return MY_APPLICATION(g_object_new(
+      my_application_get_type(), "application-id", APPLICATION_ID, "flags",
+      static_cast<GApplicationFlags>(G_APPLICATION_HANDLES_COMMAND_LINE |
+                                     G_APPLICATION_HANDLES_OPEN),
+      nullptr));
 }

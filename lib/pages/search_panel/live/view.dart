@@ -54,7 +54,7 @@ class _SearchLivePanelState
   );
 
   @override
-  Widget buildList(ThemeData theme, List<SearchLiveItemModel> list) {
+  Widget buildList(List<SearchLiveItemModel> list) {
     return SliverPadding(
       padding: const EdgeInsets.only(
         left: Style.safeSpace,

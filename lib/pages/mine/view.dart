@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/common/widgets/player_bar.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
@@ -139,84 +140,84 @@ class _MediaPageState extends CommonPageState<MinePage>
     const iconSize = 22.0;
     const padding = EdgeInsets.all(8);
     const style = ButtonStyle(tapTargetSize: .shrinkWrap);
-    return Row(
-      spacing: 5,
-      mainAxisAlignment: .end,
+    return PlayerBar(
       children: [
         if (widget.showBackBtn)
-          const Expanded(
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Padding(
-                padding: EdgeInsets.only(left: 8),
-                child: BackButton(),
+          const Padding(
+            padding: EdgeInsets.only(left: 8),
+            child: BackButton(),
+          )
+        else
+          const SizedBox.shrink(),
+        Row(
+          spacing: 5,
+          mainAxisSize: .min,
+          children: [
+            if (!_mainController.hasHome) ...[
+              IconButton(
+                iconSize: iconSize,
+                padding: padding,
+                style: style,
+                tooltip: '搜索',
+                onPressed: () => Get.toNamed('/search'),
+                icon: const Icon(Icons.search),
+              ),
+              msgBadge(_mainController),
+            ],
+            if (GStorage.reply != null)
+              IconButton(
+                iconSize: iconSize,
+                padding: padding,
+                style: style,
+                tooltip: '评论记录',
+                onPressed: () => Get.toNamed('/myReply'),
+                icon: const Icon(Icons.message_outlined),
+              ),
+            Obx(
+              () {
+                final anonymity = MineController.anonymity.value;
+                return IconButton(
+                  iconSize: iconSize,
+                  padding: padding,
+                  style: style,
+                  tooltip: "${anonymity ? '退出' : '进入'}无痕模式",
+                  onPressed: MineController.onChangeAnonymity,
+                  icon: anonymity
+                      ? const Icon(MdiIcons.incognito)
+                      : const Icon(MdiIcons.incognitoOff),
+                );
+              },
+            ),
+            IconButton(
+              iconSize: iconSize,
+              padding: padding,
+              style: style,
+              tooltip: '切换账号',
+              onPressed: () => LoginPageController.switchAccountDialog(context),
+              icon: const Icon(Icons.switch_account_outlined),
+            ),
+            Obx(
+              () => IconButton(
+                iconSize: iconSize,
+                padding: padding,
+                style: style,
+                tooltip: '切换至${controller.nextThemeType.label}主题',
+                onPressed: controller.onChangeTheme,
+                icon: controller.themeType.value.icon,
               ),
             ),
-          ),
-        if (!_mainController.hasHome) ...[
-          IconButton(
-            iconSize: iconSize,
-            padding: padding,
-            style: style,
-            tooltip: '搜索',
-            onPressed: () => Get.toNamed('/search'),
-            icon: const Icon(Icons.search),
-          ),
-          msgBadge(_mainController),
-        ],
-        if (GStorage.reply != null)
-          IconButton(
-            iconSize: iconSize,
-            padding: padding,
-            style: style,
-            tooltip: '评论记录',
-            onPressed: () => Get.toNamed('/myReply'),
-            icon: const Icon(Icons.message_outlined),
-          ),
-        Obx(
-          () {
-            final anonymity = MineController.anonymity.value;
-            return IconButton(
+            IconButton(
               iconSize: iconSize,
               padding: padding,
               style: style,
-              tooltip: "${anonymity ? '退出' : '进入'}无痕模式",
-              onPressed: MineController.onChangeAnonymity,
-              icon: anonymity
-                  ? const Icon(MdiIcons.incognito)
-                  : const Icon(MdiIcons.incognitoOff),
-            );
-          },
+              tooltip: '设置',
+              onPressed: () =>
+                  Get.toNamed('/setting', preventDuplicates: false),
+              icon: const Icon(Icons.settings_outlined),
+            ),
+            const SizedBox(width: 16),
+          ],
         ),
-        IconButton(
-          iconSize: iconSize,
-          padding: padding,
-          style: style,
-          tooltip: '切换账号',
-          onPressed: () => LoginPageController.switchAccountDialog(context),
-          icon: const Icon(Icons.switch_account_outlined),
-        ),
-        Obx(
-          () {
-            return IconButton(
-              iconSize: iconSize,
-              padding: padding,
-              style: style,
-              tooltip: '切换至${controller.nextThemeType.label}主题',
-              onPressed: controller.onChangeTheme,
-              icon: controller.themeType.value.icon,
-            );
-          },
-        ),
-        IconButton(
-          iconSize: iconSize,
-          padding: padding,
-          style: style,
-          tooltip: '设置',
-          onPressed: () => Get.toNamed('/setting', preventDuplicates: false),
-          icon: const Icon(Icons.settings_outlined),
-        ),
-        const SizedBox(width: 16),
       ],
     );
   }

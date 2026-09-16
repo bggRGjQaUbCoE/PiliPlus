@@ -1,21 +1,18 @@
-import 'package:PiliPlus/common/skeleton/video_card_h.dart';
-import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
-import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/video_card/video_card_h.dart';
 import 'package:PiliPlus/models/search/result.dart';
+import 'package:PiliPlus/models/search/search_esports.dart';
 import 'package:PiliPlus/pages/search_panel/all/controller.dart';
-import 'package:PiliPlus/pages/search_panel/all/widgets/pgc_card_v_search.dart';
+import 'package:PiliPlus/pages/search_panel/all/widgets/activity.dart';
+import 'package:PiliPlus/pages/search_panel/all/widgets/esports.dart';
+import 'package:PiliPlus/pages/search_panel/all/widgets/user.dart';
 import 'package:PiliPlus/pages/search_panel/pgc/widgets/item.dart';
-import 'package:PiliPlus/pages/search_panel/user/widgets/item.dart';
+import 'package:PiliPlus/pages/search_panel/video/view.dart';
 import 'package:PiliPlus/pages/search_panel/view.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:PiliPlus/utils/waterfall.dart';
 import 'package:get/get.dart';
-import 'package:material_ui/material_ui.dart';
-import 'package:waterfall_flow/waterfall_flow.dart'
-    hide SliverWaterfallFlowDelegateWithMaxCrossAxisExtent;
+import 'package:material_ui/material_ui.dart'
+    hide SliverGridDelegateWithMaxCrossAxisExtent;
 
-class SearchAllPanel extends CommonSearchPanel {
+class SearchAllPanel extends SearchVideoPanel {
   const SearchAllPanel({
     super.key,
     required super.keyword,
@@ -28,7 +25,13 @@ class SearchAllPanel extends CommonSearchPanel {
 }
 
 class _SearchAllPanelState
-    extends CommonSearchPanelState<SearchAllPanel, SearchAllData, dynamic> {
+    extends
+        CommonSearchPanelState<
+          SearchAllPanel,
+          SearchVideoData,
+          SearchVideoItemModel
+        >
+    with GridMixin, SearchVideoPanelMixin<SearchAllPanel> {
   @override
   late final SearchAllController controller;
 
@@ -46,69 +49,67 @@ class _SearchAllPanelState
   }
 
   @override
-  Widget buildList(ThemeData theme, List<dynamic> list) {
-    return SliverWaterfallFlow(
-      gridDelegate: SliverWaterfallFlowDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: Grid.smallCardWidth * 2,
-        crossAxisSpacing: Style.safeSpace,
-      ),
-      delegate: SliverChildBuilderDelegate(
-        (_, index) {
-          if (index == list.length - 1) {
-            controller.onLoadMore();
-          }
-          return switch (list[index]) {
-            SearchVideoItemModel e => SizedBox(
-              height: 120,
-              child: VideoCardH(videoItem: e),
+  Widget buildList(List<SearchVideoItemModel> list) {
+    return SliverMainAxisGroup(
+      slivers: [
+        if (controller.searchEsports != null) ...[
+          _buildEsports(controller.searchEsports!),
+          SliverToBoxAdapter(
+            child: Divider(
+              height: 14,
+              color: colorScheme.outline.withValues(alpha: 0.1),
             ),
-            List<SearchPgcItemModel> e =>
-              e.length == 1
-                  ? SizedBox(
-                      height: 160,
-                      child: SearchPgcItem(item: e.first),
-                    )
-                  : SizedBox(
-                      height:
-                          Grid.smallCardWidth / 2 / 0.75 +
-                          MediaQuery.textScalerOf(context).scale(60),
-                      child: ListView.builder(
-                        padding: const EdgeInsets.only(bottom: 7),
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        scrollDirection: Axis.horizontal,
-                        itemCount: e.length,
-                        itemBuilder: (context, index) {
-                          return Container(
-                            width: Grid.smallCardWidth / 2,
-                            margin: EdgeInsets.only(
-                              left: Style.safeSpace,
-                              right: index == e.length - 1
-                                  ? Style.safeSpace
-                                  : 0,
-                            ),
-                            child: PgcCardVSearch(item: e[index]),
-                          );
-                        },
-                      ),
-                    ),
-            SearchUserItemModel e => Padding(
-              padding: const EdgeInsets.only(bottom: 5),
-              child: SearchUserItem(item: e),
+          ),
+        ],
+        ...?controller.searchActivity?.map((e) {
+          return SliverToBoxAdapter(
+            child: SearchActivityItem(item: e),
+          );
+        }),
+        ...?controller.searchUser?.map((e) {
+          return SliverToBoxAdapter(
+            child: SearchAllUserItem(item: e),
+          );
+        }),
+        if (controller.searchMedia != null) ...[
+          _buildPgc(controller.searchMedia!),
+          SliverToBoxAdapter(
+            child: Divider(
+              height: 14,
+              color: colorScheme.outline.withValues(alpha: 0.1),
             ),
-            _ => const SizedBox.shrink(),
-          };
-        },
-        childCount: list.length,
-      ),
+          ),
+        ],
+        super.buildList(list),
+      ],
     );
   }
 
-  @override
-  Widget get buildLoading => SliverGrid(
-    gridDelegate: Grid.videoCardHDelegate(),
-    delegate: const SliverSingleChildDelegate(
-      count: 10,
-      child: VideoCardHSkeleton(),
-    ),
+  static Widget _buildEsports(SearchEsports item) {
+    return SliverToBoxAdapter(child: SearchEsportsItem(item: item));
+  }
+
+  static Widget _buildPgc(List<SearchPgcItemModel> list) {
+    final Widget child;
+    if (list.length == 1) {
+      child = SearchPgcItem(item: list.first);
+    } else {
+      child = ListView.builder(
+        padding: .zero,
+        itemExtent: 340,
+        itemCount: list.length,
+        scrollDirection: .horizontal,
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemBuilder: (context, index) {
+          return SearchPgcItem(item: list[index]);
+        },
+      );
+    }
+    return SliverToBoxAdapter(child: SizedBox(height: 158, child: child));
+  }
+
+  late final pgcGridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
+    maxCrossAxisExtent: Grid.smallCardWidth * 2,
+    mainAxisExtent: 160,
   );
 }

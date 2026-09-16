@@ -26,6 +26,9 @@ Widget content(
   TextSpan? richNodes = richNode(
     context,
     theme: theme,
+    floor: floor,
+    isDetail: isDetail,
+    isSave: isSave,
     item: item,
   );
   final moduleDynamic = item.modules.moduleDynamic;

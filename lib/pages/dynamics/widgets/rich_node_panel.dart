@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 
+import 'package:PiliPlus/common/widgets/emote_tooltip.dart';
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart';
@@ -23,6 +24,9 @@ const _linkFoldedText = '网页链接';
 TextSpan? richNode(
   BuildContext context, {
   required ThemeData theme,
+  required int floor,
+  required bool isDetail,
+  required bool isSave,
   required DynamicItemModel item,
 }) {
   try {
@@ -73,15 +77,26 @@ TextSpan? richNode(
           // 表情
           case 'RICH_TEXT_NODE_TYPE_EMOJI' when (i.emoji != null):
             final size = i.emoji!.size * 20.0;
+            Widget child = NetworkImgLayer(
+              src: i.emoji!.url,
+              type: .emote,
+              width: size,
+              height: size,
+            );
+            if (floor == 1 && isDetail && !isSave) {
+              child = emoteTooltipBuilder(
+                triggerMode: .tap,
+                url: i.emoji!.url,
+                emote: i.origText,
+                jumpUrl: i.emoji!.jumpUrl,
+                colorScheme: theme.colorScheme,
+                child: child,
+              );
+            }
             spanChildren.add(
               WidgetSpan(
                 rawText: i.origText,
-                child: NetworkImgLayer(
-                  src: i.emoji!.url,
-                  type: .emote,
-                  width: size,
-                  height: size,
-                ),
+                child: child,
               ),
             );
             break;

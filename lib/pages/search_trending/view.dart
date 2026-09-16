@@ -147,9 +147,7 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
                 dense: true,
                 onTap: () => Get.toNamed(
                   '/searchResult',
-                  parameters: {
-                    'keyword': item.keyword!,
-                  },
+                  parameters: {'keyword': item.keyword},
                 ),
                 leading: index < _controller.topCount
                     ? const Icon(
@@ -173,7 +171,7 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
                   children: [
                     Flexible(
                       child: Text(
-                        item.keyword!,
+                        item.showName,
                         maxLines: 1,
                         overflow: .ellipsis,
                         strutStyle: const StrutStyle(height: 1, leading: 0),

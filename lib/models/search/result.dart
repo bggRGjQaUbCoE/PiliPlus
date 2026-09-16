@@ -1,11 +1,15 @@
+import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/models/horizontal_video_model.dart';
 import 'package:PiliPlus/models/model_avatar.dart';
 import 'package:PiliPlus/models/model_owner.dart';
 import 'package:PiliPlus/models/model_video.dart';
+import 'package:PiliPlus/models/search/search_esports.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/em.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
+import 'package:PiliPlus/utils/parse_int.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 
 abstract class SearchNumData<T> {
   SearchNumData({
@@ -15,40 +19,6 @@ abstract class SearchNumData<T> {
 
   int? numResults;
   List<T>? list;
-}
-
-class SearchAllData extends SearchNumData {
-  SearchAllData({
-    super.numResults,
-    super.list,
-  });
-
-  SearchAllData.fromJson(Map<String, dynamic> json) {
-    numResults = (json['numResults'] as num?)?.toInt();
-    if (json['result'] case List result) {
-      final isRefresh = json['page'] == 1;
-      list = [];
-      for (final item in result) {
-        if (item['data'] case List data) {
-          switch (item['result_type']) {
-            case 'media_bangumi' || 'media_bangumi':
-              if (isRefresh) {
-                list!.addAll(data.map((e) => SearchPgcItemModel.fromJson(e)));
-              }
-              break;
-            case 'bili_user':
-              if (isRefresh) {
-                list!.addAll(data.map((e) => SearchUserItemModel.fromJson(e)));
-              }
-              break;
-            case 'video':
-              list!.addAll(data.map((e) => SearchVideoItemModel.fromJson(e)));
-              break;
-          }
-        }
-      }
-    }
-  }
 }
 
 class SearchVideoData extends SearchNumData<SearchVideoItemModel> {
@@ -63,6 +33,148 @@ class SearchVideoData extends SearchNumData<SearchVideoItemModel> {
         ?.map<SearchVideoItemModel>((e) => SearchVideoItemModel.fromJson(e))
         .toList();
   }
+
+  List<SearchUser>? searchUser;
+  List<SearchPgcItemModel>? searchMedia;
+  List<SearchActivity>? searchActivity;
+  SearchEsports? searchEsports;
+
+  SearchVideoData.fromSearchAll(Map<String, dynamic> json) {
+    numResults = (json['numResults'] as num?)?.toInt();
+    if (json['result'] case List result when result.isNotEmpty) {
+      for (final item in result) {
+        switch (item['result_type']) {
+          case 'video':
+            list = (item['data'] as List?)
+                ?.map((e) => SearchVideoItemModel.fromJson(e))
+                .toList();
+          case 'bili_user':
+            if (item['data'] case List users when users.isNotEmpty) {
+              searchUser = users.map((e) => SearchUser.fromJson(e)).toList();
+            }
+          case 'media_bangumi' || 'media_ft':
+            if (item['data'] case List medias when medias.isNotEmpty) {
+              (searchMedia ??= <SearchPgcItemModel>[]).addAll(
+                medias.map((e) => SearchPgcItemModel.fromJson(e)),
+              );
+            }
+          case 'activity':
+            if (item['data'] case List activities when activities.isNotEmpty) {
+              for (final e in activities) {
+                if (e['url'] case final String url
+                    when url.startsWith(HttpString.liveUrl)) {
+                  final model = SearchActivity.fromJson(e, url);
+                  (searchActivity ??= <SearchActivity>[]).add(model);
+                }
+              }
+            }
+          case 'esports':
+            if (item['data'] case List esports when esports.isNotEmpty) {
+              try {
+                searchEsports = SearchEsports.fromJson(esports.first);
+              } catch (_) {
+                if (kDebugMode) rethrow;
+              }
+            }
+        }
+      }
+    }
+  }
+}
+
+class SearchActivity {
+  int? id;
+  String? title;
+  String? desc;
+  String? cover;
+  String url;
+  int? state;
+  int? status;
+  String? author;
+
+  SearchActivity({
+    this.id,
+    this.title,
+    this.desc,
+    this.cover,
+    required this.url,
+    this.state,
+    this.status,
+    this.author,
+  });
+
+  factory SearchActivity.fromJson(Map<String, dynamic> json, String url) {
+    return SearchActivity(
+      id: json['id'] as int?,
+      title: json['title'] as String?,
+      desc: json['desc'] as String?,
+      cover: json['cover'] as String?,
+      url: url,
+      state: json['state'] as int?,
+      status: json['status'] as int?,
+      author: json['author'] as String?,
+    );
+  }
+}
+
+class SearchUser {
+  int? mid;
+  String? uname;
+  String? usign;
+  int? fans;
+  int? videos;
+  String? upic;
+  String? verifyInfo;
+  int? level;
+  int? gender;
+  int? isUpuser;
+  int? isLive;
+  int? roomId;
+  List<SearchVideoItemModel>? res;
+  BaseOfficialVerify? officialVerify;
+  int? isSeniorMember;
+
+  SearchUser({
+    this.mid,
+    this.uname,
+    this.usign,
+    this.fans,
+    this.videos,
+    this.upic,
+    this.verifyInfo,
+    this.level,
+    this.gender,
+    this.isUpuser,
+    this.isLive,
+    this.roomId,
+    this.res,
+    this.officialVerify,
+    this.isSeniorMember,
+  });
+
+  factory SearchUser.fromJson(Map<String, dynamic> json) => SearchUser(
+    mid: json['mid'] as int?,
+    uname: json['uname'] as String?,
+    usign: json['usign'] as String?,
+    fans: json['fans'] as int?,
+    videos: json['videos'] as int?,
+    upic: json['upic'] as String?,
+    verifyInfo: json['verify_info'] as String?,
+    level: json['level'] as int?,
+    gender: json['gender'] as int?,
+    isUpuser: json['is_upuser'] as int?,
+    isLive: json['is_live'] as int?,
+    roomId: json['room_id'] as int?,
+    res: (json['res'] as List<dynamic>?)
+        ?.map((e) => SearchVideoItemModel.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    officialVerify: json['official_verify'] == null
+        ? null
+        : BaseOfficialVerify.fromJson(
+            json['official_verify'] as Map<String, dynamic>,
+          ),
+    isSeniorMember: json['is_senior_member'] as int?,
+  );
 }
 
 class SearchVideoItemModel extends HorizontalVideoModel {
@@ -111,11 +223,11 @@ class SearchStat extends BaseStat {
   int? reply;
 
   SearchStat.fromJson(Map<String, dynamic> json) {
-    view = json['play'];
-    danmu = json['danmaku'];
-    favorite = json['favorite'];
-    reply = json['review'];
-    like = json['like'];
+    view = safeToInt(json['play']);
+    danmu = safeToInt(json['danmaku']);
+    favorite = safeToInt(json['favorite']);
+    reply = safeToInt(json['review']);
+    like = safeToInt(json['like']);
   }
 }
 

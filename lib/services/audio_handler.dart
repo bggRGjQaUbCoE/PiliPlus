@@ -420,7 +420,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     );
     if (Platform.isAndroid &&
         (AndroidHelper.isPipMode ||
-            PlPlayerController.instance?.isAutoEnterPip == true)) {
+            PlPlayerController.instance!.isAutoEnterPip)) {
       AndroidHelper.updatePipActions(
         PlatformDispatcher.instance.engineId!,
         isLive,

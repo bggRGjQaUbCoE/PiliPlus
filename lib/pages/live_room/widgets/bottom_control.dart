@@ -45,11 +45,7 @@ class _BottomControlState extends State<BottomControl> with HeaderMixin {
   Widget build(BuildContext context) {
     final isFullScreen = plPlayerController.isFullScreen.value;
     return Padding(
-      padding: const .only(
-        left: 14,
-        right: 14,
-        bottom: (kToolbarHeight - 30) / 2,
-      ),
+      padding: const .symmetric(horizontal: 14, vertical: 13),
       child: Material(
         type: .transparency,
         child: Row(

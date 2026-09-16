@@ -58,6 +58,7 @@ class _MemberOpusState extends State<MemberOpus>
     final bottom = MediaQuery.viewPaddingOf(context).bottom;
     return ScaffoldLayout(
       body: refreshIndicator(
+        isClampingScrollPhysics: true,
         onRefresh: _controller.onRefresh,
         child: fabAnimWrapper(
           child: CustomScrollView(

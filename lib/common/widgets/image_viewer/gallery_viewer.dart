@@ -572,8 +572,8 @@ class _GalleryViewerState extends State<GalleryViewer>
                 PageUtils.launchURL(item.url);
               },
               child: const Text('网页打开', style: TextStyle(fontSize: 14)),
-            )
-          else if (widget.sources.length > 1)
+            ),
+          if (widget.sources.length > 1)
             DialogOption(
               onPressed: () {
                 Get.back();
@@ -626,6 +626,14 @@ class _GalleryViewerState extends State<GalleryViewer>
           onTap: () => PageUtils.launchURL(item.url),
           child: const Text('网页打开', style: TextStyle(fontSize: 14)),
         ),
+        if (widget.sources.length > 1)
+          PopupMenuItem(
+            height: 42,
+            onTap: () => ImageUtils.downloadImg(
+              widget.sources.map((item) => item.url).toList(),
+            ),
+            child: const Text('保存全部图片', style: TextStyle(fontSize: 14)),
+          ),
         if (item.sourceType == SourceType.livePhoto)
           PopupMenuItem(
             height: 42,

@@ -16,6 +16,7 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -258,21 +259,10 @@ class LoginPageController extends GetxController
         showDialog(
           context: Get.context!,
           builder: (context) => AlertDialog(
-            titlePadding: const EdgeInsets.only(
-              left: 16,
-              top: 18,
-              right: 16,
-              bottom: 12,
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-            actionsPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-            title: const Text(
-              "本次登录需要验证您的手机号",
-              textAlign: TextAlign.center,
-            ),
+            titlePadding: const .only(left: 16, top: 18, right: 16, bottom: 12),
+            contentPadding: const .symmetric(horizontal: 16),
+            actionsPadding: const .symmetric(horizontal: 16, vertical: 12),
+            title: const Text("本次登录需要验证您的手机号", textAlign: .center),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -401,14 +391,14 @@ class LoginPageController extends GetxController
                     );
                     return;
                   }
+                  Get.back();
                   SmartDialog.showToast('正在保存身份信息');
+                  TextInput.finishAutofillContext();
                   await setAccount(
                     data['token_info'],
                     data['cookie_info']['cookies'],
                   );
-                  Get
-                    ..back()
-                    ..back();
+                  Get.back();
                 },
                 child: const Text("确认"),
               ),
@@ -425,6 +415,7 @@ class LoginPageController extends GetxController
         return;
       }
       SmartDialog.showToast('正在保存身份信息');
+      TextInput.finishAutofillContext();
       await setAccount(data['token_info'], data['cookie_info']['cookies']);
       Get.back();
     } else {

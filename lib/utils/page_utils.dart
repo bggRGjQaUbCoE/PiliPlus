@@ -18,6 +18,7 @@ import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/pages/contact/view.dart';
 import 'package:PiliPlus/pages/fav_panel/view.dart';
 import 'package:PiliPlus/pages/share/view.dart';
+import 'package:PiliPlus/services/dynamic_unread_notifier.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
@@ -124,6 +125,10 @@ abstract final class PageUtils {
     );
     SmartDialog.dismiss();
     if (res case Success(:final response)) {
+      // 链接折叠的动态要先取详情才跳转，同样算「看过」。
+      DynamicUnreadNotifier.markContentRead(
+        response.modules.moduleAuthor?.mid ?? 0,
+      );
       if (response.basic?.commentType == 12) {
         toDupNamed(
           '/articlePage',
@@ -230,6 +235,8 @@ abstract final class PageUtils {
     feedBack();
 
     void push() {
+      // 用户点开了这条动态，视为看过该 UP 的这次更新，清除他在动态页的红点。
+      DynamicUnreadNotifier.markContentRead(item.modules.moduleAuthor?.mid ?? 0);
       if (item.basic?.commentType == 12) {
         toDupNamed(
           '/articlePage',

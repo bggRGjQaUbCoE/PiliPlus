@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/models/common/bar_hide_type.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
+import 'package:PiliPlus/models/common/dynamic/dynamic_up_list_mode.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
 import 'package:PiliPlus/models/common/follow_order_type.dart';
@@ -717,6 +718,19 @@ abstract final class Pref {
     SettingBoxKey.dynamicsShowAllFollowedUp,
     defaultValue: false,
   );
+
+  /// 兼容旧版“显示所有已关注 UP 主”布尔设置，并迁移到可选择红点范围的模式。
+  static DynamicUpListMode get dynamicUpListMode {
+    final index = _setting.get(SettingBoxKey.dynamicUpListMode);
+    if (index is int &&
+        index >= 0 &&
+        index < DynamicUpListMode.values.length) {
+      return DynamicUpListMode.values[index];
+    }
+    return dynamicsShowAllFollowedUp
+        ? DynamicUpListMode.all
+        : DynamicUpListMode.frequent;
+  }
 
   static bool get enableShowDanmaku =>
       _setting.get(SettingBoxKey.enableShowDanmaku, defaultValue: true);

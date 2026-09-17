@@ -296,6 +296,13 @@ List<SettingsModel> get playSettings => [
     setKey: SettingBoxKey.tempPlayerConf,
     defaultVal: false,
   ),
+  const SwitchModel(
+    title: '缓存音频点击进入音乐播放器',
+    subtitle: '离线缓存的音频文件点击后直接进入音乐播放器播放',
+    leading: Icon(Icons.headphones_outlined),
+    setKey: SettingBoxKey.cacheAudioEnterAudioPlayer,
+    defaultVal: false,
+  ),
 ];
 
 Future<void> _showSubtitleDialog(

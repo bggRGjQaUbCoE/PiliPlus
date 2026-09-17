@@ -26,14 +26,17 @@ class FileSource extends DataSource {
     required this.dir,
     required this.isMp4,
     required bool hasDashAudio,
+    required bool audioOnly,
     required String typeTag,
   }) : super(
-         videoSource: path.join(
-           dir,
-           typeTag,
-           isMp4 ? PathUtils.videoNameType1 : PathUtils.videoNameType2,
-         ),
-         audioSource: isMp4 || !hasDashAudio
+         videoSource: audioOnly
+             ? path.join(dir, typeTag, PathUtils.audioNameType2)
+             : path.join(
+                 dir,
+                 typeTag,
+                 isMp4 ? PathUtils.videoNameType1 : PathUtils.videoNameType2,
+               ),
+         audioSource: audioOnly || isMp4 || !hasDashAudio
              ? null
              : path.join(dir, typeTag, PathUtils.audioNameType2),
        );

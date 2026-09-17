@@ -48,6 +48,7 @@ import 'package:PiliPlus/plugin/pl_player/widgets/backward_seek.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/bottom_control.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/common_btn.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/forward_seek.dart';
+import 'package:PiliPlus/plugin/pl_player/widgets/ios_video_surface.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/mpv_convert_webp.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/play_pause_btn.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
@@ -2049,15 +2050,27 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                 return Transform.flip(
                   flipX: plPlayerController.flipX.value,
                   flipY: plPlayerController.flipY.value,
-                  child: FittedBox(
-                    fit: videoFit.boxFit,
-                    alignment: widget.alignment,
-                    child: SimpleVideo(
-                      controller: plPlayerController.videoController!,
-                      fill: widget.fill,
-                      aspectRatio: videoFit.aspectRatio,
-                    ),
-                  ),
+                  child: Platform.isIOS
+                      ? IosVideoSurface(
+                          controller: videoController,
+                          transformationController: _transformationController,
+                          fit: videoFit.boxFit,
+                          alignment: widget.alignment,
+                          fill: widget.fill,
+                          aspectRatio: videoFit.aspectRatio,
+                          resizeOutput:
+                              plPlayerController.superResolutionType.value ==
+                              SuperResolutionType.disable,
+                        )
+                      : FittedBox(
+                          fit: videoFit.boxFit,
+                          alignment: widget.alignment,
+                          child: SimpleVideo(
+                            controller: plPlayerController.videoController!,
+                            fill: widget.fill,
+                            aspectRatio: videoFit.aspectRatio,
+                          ),
+                        ),
                 );
               },
             ),

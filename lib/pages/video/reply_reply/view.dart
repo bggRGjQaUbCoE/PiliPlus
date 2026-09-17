@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:PiliPlus/common/skeleton/video_reply.dart';
@@ -43,9 +44,7 @@ class VideoReplyReplyPanel extends CommonSlidePage {
     required this.rpid,
     this.dialog,
     this.firstFloor,
-    this.seedReplies,
-    this.seedRootId,
-    this.seedOffset,
+    this.owner,
     this.removedReplies,
     required this.isVideoDetail,
     required this.replyType,
@@ -57,11 +56,12 @@ class VideoReplyReplyPanel extends CommonSlidePage {
   final int rpid;
   final int? dialog;
   final ReplyInfo? firstFloor;
-  final List<ReplyInfo>? seedReplies;
-  final int? seedRootId;
-  final String? seedOffset;
 
-  /// 继承自父面板的被屏蔽评论数据（rpid → ReplyInfo），seed 模式保留占位
+  /// 数据所有者。为 null 时本面板自己取数（普通楼中楼面板）；
+  /// 非 null 时只读该控制器（"继续此讨论串"面板）。
+  final VideoReplyReplyController? owner;
+
+  /// 继承自父面板的被屏蔽评论数据（rpid → ReplyInfo）
   final Map<Int64, ReplyInfo>? removedReplies;
   final bool isVideoDetail;
   final int replyType;
@@ -124,6 +124,9 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
 
   late final bool isDialogue = widget.dialog != null;
 
+  /// 数据与动作的来源：子面板用父控制器，普通面板用自己。
+  VideoReplyReplyController get _data => widget.owner ?? _controller;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -147,10 +150,8 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
         rpid: widget.rpid,
         dialog: widget.dialog,
         replyType: widget.replyType,
-        seedReplies: widget.seedReplies,
-        seedRootId: widget.seedRootId,
-        seedOffset: widget.seedOffset,
         removedReplies: widget.removedReplies,
+        owner: widget.owner,
       ),
       tag: _tag,
     );
@@ -158,6 +159,10 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
 
   @override
   void dispose() {
+    // 子面板关闭即停止父面板的楼层补全，避免用户离开后仍在发请求
+    if (widget.owner != null) {
+      widget.owner!.cancelFloorCompletion();
+    }
     Get.delete<VideoReplyReplyController>(tag: _tag);
     super.dispose();
   }
@@ -211,7 +216,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
   @override
   Widget buildList(ThemeData theme) {
     return refreshIndicator(
-      onRefresh: _controller.onRefresh,
+      onRefresh: _data.onRefresh,
       isClampingScrollPhysics: widget.isNested,
       child: CustomScrollView(
         key: ValueKey(scrollController.hashCode),
@@ -240,9 +245,41 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
               );
             }),
           ],
+          if (widget.owner != null)
+            SliverToBoxAdapter(
+              child: Obx(() {
+                // 订阅补全状态与进度
+                final completing = _data.isCompletingFloor.value;
+                final loaded = _data.floorLoaded.value;
+                final total = _data.count.value;
+                if (!completing) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  child: Row(
+                    children: [
+                      const SizedBox(
+                        width: 12,
+                        height: 12,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        total > 0
+                            ? '正在加载本楼层 $loaded/$total'
+                            : '正在加载本楼层 $loaded',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ),
           Obx(
             () {
-              final state = _controller.loadingState.value;
+              final state = _data.loadingState.value;
               // 订阅折叠状态变化，避免嵌套 Obx 导致生命周期冲突
               _controller.collapsedRpids.length;
               // 整树折叠：不渲染任何树行
@@ -265,9 +302,9 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
       replyItem: firstFloor,
       replyLevel: 2,
       needDivider: false,
-      onReply: (replyItem) => _controller.onReply(replyItem, index: -1),
-      upMid: widget.upMid ?? _controller.upMid,
-      onCheckReply: (item) => _controller.onCheckReply(item, isManual: true),
+      onReply: (replyItem) => _data.onReply(replyItem, index: -1),
+      upMid: widget.upMid ?? _data.upMid,
+      onCheckReply: (item) => _data.onCheckReply(item, isManual: true),
     );
     return SliverMainAxisGroup(
       slivers: [
@@ -309,7 +346,32 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Obx(() {
-            final count = _controller.count.value;
+            // 子面板展示的是一个子树，而 B站 不提供子树总数；
+            // 楼层未完整时只能诚实说明还差多少，不能拿已加载量充总数。
+            if (widget.owner != null && !_data.isEnd) {
+              final loaded = _data.loadingState.value.data?.length ?? 0;
+              final total = _data.count.value;
+              final remain = total > 0 ? total - loaded : 0;
+              if (remain > 0) {
+                return Text(
+                  '本楼层还有${NumUtils.numFormat(remain)}条未加载',
+                  style: const TextStyle(fontSize: 13),
+                );
+              }
+              return const SizedBox.shrink();
+            }
+            final count = _data.count.value;
+            if (widget.owner != null) {
+              // 楼层已完整：子树条数可精确算出
+              final sub = extractSubtree(
+                _data.loadingState.value.data ?? const [],
+                Int64(widget.rpid),
+              ).length;
+              return Text(
+                '相关回复共${NumUtils.numFormat(sub)}条',
+                style: const TextStyle(fontSize: 13),
+              );
+            }
             return count != -1
                 ? Text(
                     '相关回复共${NumUtils.numFormat(count)}条',
@@ -319,11 +381,11 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
           }),
           TextButton.icon(
             style: Style.buttonStyle,
-            onPressed: _controller.queryBySort,
+            onPressed: _data.queryBySort,
             icon: Icon(Icons.sort, size: 16, color: colorScheme.secondary),
             label: Obx(
               () => Text(
-                _controller.sortType.value.label,
+                _data.sortType.value.label,
                 style: TextStyle(fontSize: 13, color: colorScheme.secondary),
               ),
             ),
@@ -360,7 +422,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
       Success(:final response!) => _buildReplyList(colorScheme, response),
       Error(:final errMsg) => HttpError(
         errMsg: errMsg,
-        onReload: _controller.onReload,
+        onReload: _data.onReload,
       ),
     };
   }
@@ -370,21 +432,25 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
     final indent = ReplyTreeIndent(base: availableWidth <= 640 ? 40 : 44);
     final treeMaxDepth = Pref.replyTreeMaxDepth;
     final jumpIndex = _controller.index.value;
-    // seed 模式：只显示深层评论的子树（父面板数据已含整棵楼中楼）
-    final list = _controller.isSeedMode
-        ? extractSubtree(response, Int64(widget.rpid))
-        : response;
+    // 子面板只显示以本面板 rpid 为根的子树；普通面板显示整层。
+    // 注意这一份 list 只用于渲染，不能用来索引 —— 见下面的 dataIndexOf。
+    final list = _controller.subtreeData;
     final useTree = !isDialogue && Pref.replyTreeEnabled;
     // 树输入：有效 flat（保留被屏蔽 + 合成缺失父）+ suppressed 映射
     final input = _controller.treeInput;
     final wholeTreeCollapsed = useTree &&
         _controller.collapsedRpids.contains(Int64(widget.rpid));
+    // flatIndex 会被 view 的 onDelete/onReply 用于索引 _data 的列表；
+    // 子面板渲染用的 flat 是子树派生的子集，顺序与下标都不同，必须映射回真实下标。
+    final dataIndexOf = widget.owner != null
+        ? replyIndexOf(_data.loadingState.value.data ?? const [])
+        : null;
     final rows = !useTree
         ? <ReplyTreeRow>[
             for (var i = 0; i < list.length; i++)
               ReplyTreeItem(
                 depth: 0,
-                flatIndex: i,
+                flatIndex: dataIndexOf?[list[i].id] ?? i,
                 reply: list[i],
                 hasChildren: false,
               ),
@@ -396,23 +462,46 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
             rootId: Int64(widget.rpid),
             collapsed: _controller.collapsedRpids,
             maxDepth: treeMaxDepth,
+            indexOf: dataIndexOf,
           );
     return SuperSliverList.builder(
       listController: _controller.listController,
       itemBuilder: (context, index) {
         if (index == rows.length) {
-          _controller.onLoadMore();
+          // 有未消费的错误时不再自动重试，等用户点重试，避免失败风暴
+          if (_data.loadMoreError.value == null) {
+            _data.onLoadMore();
+          }
           return Container(
             height: 125,
             alignment: Alignment.center,
             margin: EdgeInsets.only(
               bottom: MediaQuery.viewPaddingOf(context).bottom,
             ),
-            child: Text(
-              _controller.isEnd ? '没有更多了' : '加载中...',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: colorScheme.outline),
-            ),
+            child: Obx(() {
+              final err = _data.loadMoreError.value;
+              if (err != null) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      err,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 12, color: colorScheme.error),
+                    ),
+                    TextButton(
+                      onPressed: _data.retryLoadMore,
+                      child: const Text('重试'),
+                    ),
+                  ],
+                );
+              }
+              return Text(
+                _data.isEnd ? '没有更多了' : '加载中...',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12, color: colorScheme.outline),
+              );
+            }),
           );
         }
         final Widget child = switch (rows[index]) {
@@ -442,6 +531,9 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
               depth: depth,
               rpid: rpid,
               count: count,
+              // 普通面板（owner == null）的列表就是整个楼层且历来直接报数，
+              // 保持原行为；只有子面板在楼层未完整时才因总数未知而不报数。
+              floorComplete: _data.isEnd || widget.owner == null,
               ancestors: (rows[index] as ReplyTreeDeepLink).ancestors,
               lastAtLevel: (rows[index] as ReplyTreeDeepLink).lastAtLevel,
               lineAtLevel: (rows[index] as ReplyTreeDeepLink).lineAtLevel,
@@ -452,10 +544,10 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
               onToggleCollapse: _controller.toggleCollapse,
               hoveredLine: _controller.hoveredLine,
               onOpen: () {
-                final seedList = _controller.loadingState.value.data;
+                final dataList = _data.loadingState.value.data;
                 ReplyInfo? target;
-                if (seedList != null) {
-                  for (final r in seedList) {
+                if (dataList != null) {
+                  for (final r in dataList) {
                     if (r.id == rpid) {
                       target = r;
                       break;
@@ -468,15 +560,16 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
                     oid: widget.oid,
                     rpid: rpid.toInt(),
                     firstFloor: target,
-                    seedReplies: seedList == null ? null : List.of(seedList),
-                    seedRootId: widget.rpid,
-                    seedOffset: _controller.paginationReply?.nextOffset,
-                    removedReplies: _controller.blockedReplies,
+                    owner: _data,
+                    removedReplies: _data.blockedReplies,
                     replyType: widget.replyType,
                     isVideoDetail: true,
                     isNested: widget.isNested,
                   ),
                 );
+                // 子面板只显示本楼层的一个子树，而 B站 不支持按子树分页，
+                // 因此补全整个楼层才能保证子树完整。补全是可中断的。
+                unawaited(_data.ensureFloorComplete());
               },
             ),
         };
@@ -504,9 +597,9 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
       replyLevel: isDialogue ? 3 : 2,
       // 树状模式下「查看对话」已冗余（完整对话树可见），屏蔽其入口
       enableViewDialogue: !(Pref.replyTreeEnabled && !isDialogue),
-      onReply: (replyItem) => _controller.onReply(replyItem, index: index),
-      onDelete: (item, subIndex) => _controller.onRemove(index, item, null),
-      upMid: _controller.upMid,
+      onReply: (replyItem) => _data.onReply(replyItem, index: index),
+      onDelete: (item, subIndex) => _data.onRemove(index, item, null),
+      upMid: _data.upMid,
       showDialogue: () => MiniScaffold.of(context).showBottomSheet(
         constraints: const BoxConstraints(),
         (context) => VideoReplyReplyPanel(
@@ -523,7 +616,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
           SmartDialog.showToast('评论可能已被删除');
         }
       },
-      onCheckReply: _controller.onCheckReply,
+      onCheckReply: _data.onCheckReply,
     );
   }
 
@@ -788,6 +881,7 @@ class _DeepLinkRow extends StatefulWidget {
     required this.depth,
     required this.rpid,
     required this.count,
+    required this.floorComplete,
     required this.ancestors,
     required this.lastAtLevel,
     required this.lineAtLevel,
@@ -802,6 +896,10 @@ class _DeepLinkRow extends StatefulWidget {
   final int depth;
   final Int64 rpid;
   final int count;
+
+  /// 楼层是否已完整加载。未完整时 `count` 只是已加载量的下界，
+  /// 不能作为"子树总数"报出，此时标签不显示数字。
+  final bool floorComplete;
   final List<Int64> ancestors;
   final List<bool> lastAtLevel;
   final List<bool> lineAtLevel;
@@ -941,7 +1039,9 @@ class _DeepLinkRowState extends State<_DeepLinkRow> {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      '继续此讨论串（${widget.count} 条回复）',
+                      widget.floorComplete
+                          ? '继续此讨论串（${widget.count} 条回复）'
+                          : '继续此讨论串',
                       style: TextStyle(
                         fontSize: 13,
                         color: widget.colorScheme.outline,

@@ -24,10 +24,8 @@ class VideoReplyReplyController extends ReplyController
     required this.rpid,
     required this.dialog,
     required this.replyType,
-    this.seedReplies,
-    this.seedRootId,
-    this.seedOffset,
     this.removedReplies,
+    this.owner,
   });
   final int? dialog;
   int? id;
@@ -37,22 +35,24 @@ class VideoReplyReplyController extends ReplyController
   int rpid;
   int replyType;
 
-  /// 继承自父面板（seed 模式）的被屏蔽评论数据（rpid → ReplyInfo）
+  /// 继承自父面板的被屏蔽评论数据（rpid → ReplyInfo）
   final Map<Int64, ReplyInfo>? removedReplies;
 
-  // seed 模式：复用父面板已加载数据，不再请求深层评论
-  final List<ReplyInfo>? seedReplies;
-  final int? seedRootId;
-  final String? seedOffset;
-  bool get isSeedMode => seedReplies != null;
-  Worker? _seedCountWorker;
+  /// 数据所有者。为 null 时本控制器自己取数（普通楼中楼面板）；
+  /// 非 null 时只读该控制器（"继续此讨论串"面板）。
+  ///
+  /// 必须经构造函数传入，**不能事后赋值**：GetX 在 `Get.put` 内部就同步调用
+  /// `onInit`（lifecycle.dart 的 `onStart → _onStart → onInit`），事后赋值
+  /// 会让 `onInit` 读到的仍是 null，从而误判为普通面板去发请求。
+  final VideoReplyReplyController? owner;
 
-  /// seed 模式下过滤为深层评论的子树（不含其自身），否则返回原数据
-  List<ReplyInfo> get subtreeData {
-    final data = loadingState.value.data;
-    if (!isSeedMode || data == null) return data ?? const [];
-    return extractSubtree(data, Int64(rpid));
-  }
+  /// 楼层的原始数据（来自 owner 或自身）
+  List<ReplyInfo> get _rawData =>
+      (owner ?? this).loadingState.value.data ?? const [];
+
+  /// 本面板渲染的评论列表：子面板筛出以 rpid 为根的子树，普通面板即整层。
+  List<ReplyInfo> get subtreeData =>
+      owner == null ? _rawData : extractSubtree(_rawData, Int64(rpid));
 
   /// 树输入：有效 flat（保留被屏蔽 + 合成缺失父）+ suppressed 映射
   ({List<ReplyInfo> flat, Map<Int64, ReplySuppressReason> suppressed})
@@ -62,7 +62,7 @@ class VideoReplyReplyController extends ReplyController
             rootId: Int64(rpid),
           );
 
-  /// 已收集的被屏蔽评论（rpid → ReplyInfo），供子面板 seed 模式继承
+  /// 已收集的被屏蔽评论（rpid → ReplyInfo），供子面板继承
   Map<Int64, ReplyInfo> get blockedReplies => _removedReplies;
 
   bool hasRoot = false;
@@ -104,26 +104,15 @@ class VideoReplyReplyController extends ReplyController
     final cacheSortType = Pref.reply2SortType;
     sortType.value = cacheSortType;
     mode = cacheSortType == .time ? Mode.MAIN_LIST_TIME : Mode.MAIN_LIST_HOT;
-    // seed 模式：父面板已过滤掉被屏蔽评论，这里继承其收集结果以重建占位
+    // 父面板已过滤掉被屏蔽评论，这里继承其收集结果以重建占位
     if (removedReplies case final removedReplies?) {
       _removedReplies.addAll(removedReplies);
     }
-    if (isSeedMode) {
-      // seed 模式：直接用父面板已加载数据，跳过 DetailList(root=深层评论)（该请求必然返回空）
-      loadingState.value = Success(seedReplies);
-      isEnd = seedOffset == null;
-      _refreshSeedCount();
-      // 每次数据变化后重算子树计数（增量续拉追加后）
-      _seedCountWorker = ever(loadingState, (_) => _refreshSeedCount());
-    } else {
+    // 子面板（owner != null）只读父控制器的数据，自己不取数：
+    // 它的 subtreeData 从 owner 读，这里发出的请求结果从不被渲染，
+    // 只会白费一次请求（且嵌套 root 会被服务端无视，见设计 §2.2）。
+    if (owner == null) {
       queryData();
-    }
-  }
-
-  void _refreshSeedCount() {
-    final data = loadingState.value.data;
-    if (data != null) {
-      count.value = extractSubtree(data, Int64(rpid)).length;
     }
   }
 
@@ -141,15 +130,11 @@ class VideoReplyReplyController extends ReplyController
     paginationReply = data.paginationReply;
     isEnd = data.cursor.isEnd;
 
-    // reply2Reply // isDialogue.not
     if (data is DetailListReply) {
       if (isRefresh) {
         collapsedRpids.clear();
       }
-      // seed 模式的 count 由子树大小决定（见 _refreshSeedCount），不覆盖
-      if (!isSeedMode) {
-        count.value = data.root.count.toInt();
-      }
+      count.value = data.root.count.toInt();
       if (isRefresh && !hasRoot) {
         firstFloor.value ??= data.root;
       }
@@ -219,17 +204,6 @@ class VideoReplyReplyController extends ReplyController
 
   @override
   Future<LoadingState> customGetData() {
-    if (isSeedMode) {
-      return ReplyGrpc.detailList(
-        type: replyType,
-        oid: oid,
-        root: seedRootId ?? 0,
-        rpid: 0,
-        mode: mode,
-        offset: paginationReply?.nextOffset ?? seedOffset,
-        removedOut: _removedReplies,
-      );
-    }
     return dialog != null
         ? ReplyGrpc.dialogList(
             type: replyType,
@@ -250,57 +224,119 @@ class VideoReplyReplyController extends ReplyController
   }
 
   @override
-  void checkIsEnd(int length) {
-    if (isSeedMode) return; // seed 模式以 API cursor.isEnd 为准
-    super.checkIsEnd(length);
-  }
-
-  @override
   Future<void> onRefresh() {
-    if (isSeedMode) return _continueSeedLoad();
+    // 刷新会重新取第一页：上一次 load-more 的失败信息已过期，
+    // 继续留着会让哨兵行一直显示旧错误并挡住自动翻页
+    loadMoreError.value = null;
     // 刷新前清空上一轮收集的被屏蔽评论，请求返回后 detailList 重新收集
     _removedReplies.clear();
+    // super 链（ReplyController → CommonListController）负责重置
+    // paginationReply / cursorNext / subjectControl / page，并以 isRefresh=true 取数
     return super.onRefresh();
   }
 
+  /// 非刷新请求的失败信息；null 表示无错误。供底部哨兵行显示重试入口。
+  final loadMoreError = RxnString();
+
   @override
-  Future<void> onLoadMore() {
-    if (isSeedMode) return _continueSeedLoad();
-    return super.onLoadMore();
+  void onLoadMoreError(String? errMsg) {
+    loadMoreError.value = errMsg ?? '加载失败';
   }
 
-  /// seed 模式增量续拉：从 seedOffset 起连续翻页，直到 isEnd 或无新数据
-  Future<void> _continueSeedLoad() async {
-    if (isLoading || isEnd) return;
-    var guard = 0;
-    while (!isEnd && guard < 50) {
-      guard++;
-      final before = loadingState.value.data?.length ?? 0;
-      await queryData(false);
-      final after = loadingState.value.data?.length ?? 0;
-      if (after <= before) break; // 无新数据，避免死循环
+  /// 用户点「重试」：清掉错误再走一次正常的加载更多入口。
+  void retryLoadMore() {
+    loadMoreError.value = null;
+    onLoadMore();
+  }
+
+  /// 正在补全本楼层（一次一页）时为 true
+  final isCompletingFloor = false.obs;
+  /// 已加载的楼层**唯一条数**（去重后，与 [count] 同量纲；便于 Obx 订阅）
+  final floorLoaded = 0.obs;
+  bool _completing = false;
+
+  /// 本楼层是否已完整（服务端给出终止信号）
+  bool get isFloorComplete => isEnd;
+
+  /// 一次一页地把本楼层补全。可被 `cancelFloorCompletion()` 打断。
+  ///
+  /// 判停完全基于 [decideFloorLoad]，不依赖任何固定页数/空闲页数常数。
+  /// 页间隔 300ms：连续数百个请求需要留间隔，避免触发风控。
+  Future<void> ensureFloorComplete() async {
+    if (_completing || isEnd) return;
+    _completing = true;
+    isCompletingFloor.value = true;
+    try {
+      while (_completing) {
+        // 用户滚动可能在加载同一楼层；queryData 遇 isLoading 会直接返回，
+        // 若不等它结束，下面会因"游标未推进"误判为翻完而提前收工。
+        while (isLoading && _completing) {
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+        if (!_completing) break;
+
+        final total = count.value;
+        // 必须用「去重后的唯一条数」：loadingState.data 是裸 addAll 累积的，
+        // 而热排序下边界条目会跨页重复返回（见 dedupeRepliesById）。
+        // 用原始长度会涨得比真实条数快，从而提前满足 `>= floorTotal` 而静默丢评论——
+        // 正是本功能要消灭的那种失败。
+        final loaded = dedupeRepliesById(
+          loadingState.value.data ?? const [],
+        ).length;
+        floorLoaded.value = loaded;
+        if (decideFloorLoad(
+              floorTotal: total,
+              floorLoaded: loaded,
+              isEnd: isEnd,
+              cursorAdvanced: true,
+            ) ==
+            FloorLoad.done) {
+          break;
+        }
+        final beforeOffset = paginationReply?.nextOffset;
+        await queryData(false);
+        floorLoaded.value = dedupeRepliesById(
+          loadingState.value.data ?? const [],
+        ).length;
+        if (!_completing) break;
+        // 用真实“游标是否推进”重算一次，避免空转
+        final advanced = paginationReply?.nextOffset != beforeOffset;
+        if (decideFloorLoad(
+              floorTotal: count.value,
+              floorLoaded: floorLoaded.value,
+              isEnd: isEnd,
+              cursorAdvanced: advanced,
+            ) ==
+            FloorLoad.done) {
+          break;
+        }
+        await Future.delayed(const Duration(milliseconds: 300));
+      }
+    } catch (e) {
+      // queryData 的异常路径不会复位 isLoading（common_list_controller.dart:31 置位、:64 复位），
+      // 不兜底会永久卡死该控制器之后的所有 queryData（含 onRefresh）。
+      // 这里**不复抛**：调用点是 unawaited()，复抛会变成未处理的异步错误。
+      // 但也不静默——复用 Task 2 的失败提示通道，让哨兵行能显示错误并重试。
+      isLoading = false;
+      onLoadMoreError(e.toString());
+    } finally {
+      _completing = false;
+      isCompletingFloor.value = false;
     }
+  }
+
+  /// 打断补全（面板关闭时调用）
+  void cancelFloorCompletion() {
+    _completing = false;
+    isCompletingFloor.value = false;
   }
 
   @override
   Future<void> onReload() {
-    if (isSeedMode) {
-      // seed 模式重新展示 seed 数据，避免 Loading 骨架卡死（排序对子树视图无意义）
-      index.value = null;
-      loadingState.value = Success(seedReplies);
-      _refreshSeedCount();
-      return Future.value();
-    }
     if (loadingState.value.isSuccess) {
       index.value = null;
     }
     return super.onReload();
-  }
-
-  @override
-  void queryBySort() {
-    if (isSeedMode) return; // 排序对 seed 子树视图无意义
-    super.queryBySort();
   }
 
   @override
@@ -361,9 +397,14 @@ class VideoReplyReplyController extends ReplyController
 
   @override
   void onClose() {
-    _seedCountWorker?.dispose();
+    cancelFloorCompletion();
     _controller?.dispose();
     _controller = null;
-    super.dispose();
+    // 必须是 super.onClose()：继承链上唯一的 dispose() 是 get 包的
+    // ListNotifierMixin.dispose，它不向上链式调用，导致 CommonController 的
+    // scrollController.dispose() 与 ReplyController 的 savedReplies.clear()
+    // 从不执行。onClose() 由 _onDelete() 触发且有 _isClosed 守卫，恰好一次，
+    // 改成 super.onClose() 不会双重释放。
+    super.onClose();
   }
 }

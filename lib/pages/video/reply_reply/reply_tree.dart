@@ -55,6 +55,30 @@ class _Node {
   final List<_Node> children = [];
 }
 
+/// 楼层续拉决策：是否还需要再翻一页。
+enum FloorLoad { done, next }
+
+/// 判断楼中楼是否已翻完。三个信号互为兜底，单点失效不会导致静默截断：
+///
+/// - [isEnd]：服务端权威终止信号（`cursor.isEnd`）。
+/// - [cursorAdvanced]：本次响应后 `paginationReply.nextOffset` 是否推进；
+///   为 false 表示服务端不再给出新位置，再翻也是同一页。
+/// - [floorTotal]：`data.root.count`，实测等于该楼层实际条数；随每页响应刷新。
+///   `<= 0` 表示未知，此时忽略该条件（只靠前两个信号）。
+///
+/// 之所以需要 [floorTotal] 兜底：B站偶有不翻转 `cursor.isEnd` 的情况，
+/// 基类 `ReplyController.checkIsEnd` 用 `length >= count` 兜底正是同一个原因。
+FloorLoad decideFloorLoad({
+  required int floorTotal,
+  required int floorLoaded,
+  required bool isEnd,
+  required bool cursorAdvanced,
+}) {
+  if (isEnd || !cursorAdvanced) return FloorLoad.done;
+  if (floorTotal > 0 && floorLoaded >= floorTotal) return FloorLoad.done;
+  return FloorLoad.next;
+}
+
 /// 由扁平子回复列表构建树并扁平化为行序列。
 ///
 /// - parent == rootId → 本线程根节点（depth 0）
@@ -64,17 +88,23 @@ class _Node {
 /// - 深度 >= maxDepth 且有子节点时输出 ReplyTreeDeepLink 占位行，截断子树
 /// - 每行附带 lineAtLevel（该层竖线在本行是否绘制）/ lastAtLevel（该层竖线在本行收尾）
 ///   与 ancestors（供点击折叠）
+///
+/// [indexOf]：回复 id → 在**完整数据列表**中的下标。省略时退化为 flat 内部下标
+/// （仅当 flat 就是完整数据列表时正确，即非 seed 模式）。
+/// seed 模式下必须传入 [replyIndexOf] 的结果，否则 ReplyTreeItem.flatIndex
+/// 会指向错误元素，导致删除/回复操作落到别的评论上。
 List<ReplyTreeRow> buildReplyTree({
   required List<ReplyInfo> flat,
   required Int64 rootId,
   required Set<Int64> collapsed,
   required int maxDepth,
+  Map<Int64, int>? indexOf,
 }) {
   final map = <Int64, _Node>{};
-  final indexMap = <Int64, int>{};
+  final indexMap = indexOf == null ? <Int64, int>{} : Map.of(indexOf);
   for (var i = 0; i < flat.length; i++) {
     map[flat[i].id] = _Node(flat[i]);
-    indexMap[flat[i].id] = i;
+    indexMap.putIfAbsent(flat[i].id, () => i);
   }
 
   final roots = <_Node>[];
@@ -218,7 +248,10 @@ List<ReplyTreeRow> buildReplyTree({
 ///
 /// 用于「继续此讨论串」：父面板已加载整棵楼中楼的扁平列表，
 /// 从中提取深层评论的子树作为新面板的数据源。
-/// 保持原列表顺序，供 flatIndex 使用。
+///
+/// 注意：返回的是按子树 DFS 顺序排列的**子集**，不是 `flat` 的子序列。
+/// 因此它的下标不能用来索引 `flat`/`loadingState.data`——需要下标时请用
+/// [replyIndexOf] 配合 `buildReplyTree(indexOf:)`。
 List<ReplyInfo> extractSubtree(List<ReplyInfo> flat, Int64 rootId) {
   final children = <Int64, List<ReplyInfo>>{};
   for (final r in flat) {
@@ -238,6 +271,51 @@ List<ReplyInfo> extractSubtree(List<ReplyInfo> flat, Int64 rootId) {
     }
   }
   return result;
+}
+
+/// 构造「回复 id → 该回复在完整数据列表中的下标」映射。
+///
+/// seed 模式下列表是 `extractSubtree` 的子集且顺序不同，树内部下标
+/// 无法用于索引 `loadingState.data`；调用方需用本映射让
+/// `ReplyTreeItem.flatIndex` 始终指向真实数据位置。
+Map<Int64, int> replyIndexOf(List<ReplyInfo> data) {
+  final map = <Int64, int>{};
+  for (var i = 0; i < data.length; i++) {
+    map[data[i].id] = i;
+  }
+  return map;
+}
+
+/// 按 rpid 去重：**保留首次出现的下标，数据取最后一次出现**。
+///
+/// `loadingState.data` 是裸 `addAll` 累积的，而分页用热度排序
+/// （`Mode.MAIN_LIST_HOT`）——翻页期间点赞数变化会让边界条目跨页重复返回。
+/// 重复项不处理会同时踩三个坑：
+/// 1. `buildReplyTree` 里 `map[id] = ...` 是覆盖（取最后一份数据），而
+///    `indexMap.putIfAbsent` 保留首个下标 → 数据与 `flatIndex` 错配；
+/// 2. 链接循环遍历 flat，重复项会把同一个 `_Node` 多次加进 `children`；
+/// 3. 重复页会让数组长度增长，使「无新数据」判断失真。
+///
+/// 保留首次下标是为了与 `indexOf` 的 `putIfAbsent` 语义一致；取最后一份
+/// 数据是因为热排序下后返回的那份点赞数更新。
+List<ReplyInfo> dedupeRepliesById(List<ReplyInfo> replies) {
+  final indexByRpid = <Int64, int>{};
+  final merged = <ReplyInfo>[];
+  for (final reply in replies) {
+    final rpid = reply.id;
+    if (rpid.isZero) {
+      merged.add(reply); // 无 id 无法归并，原样保留
+      continue;
+    }
+    final existing = indexByRpid[rpid];
+    if (existing == null) {
+      indexByRpid[rpid] = merged.length;
+      merged.add(reply);
+    } else {
+      merged[existing] = reply;
+    }
+  }
+  return merged;
 }
 
 /// 无法显示父评论的原因分类
@@ -286,7 +364,9 @@ final _mentionRe = RegExp(r'@([^@\s：:，,]+)');
   required Int64 rootId,
 }) {
   final suppressed = <Int64, ReplySuppressReason>{};
-  final flat = <ReplyInfo>[...replies];
+  // 先按 rpid 去重：热排序翻页会让边界条目跨页重复，重复项会导致
+  // flatIndex 与数据错配、children 出现重复节点（见 dedupeRepliesById）。
+  final flat = dedupeRepliesById(replies);
   final idSet = <Int64>{}..addAll(flat.map((r) => r.id));
 
   // 1) 保留「是某条真实回复祖先」或被删父级引用的被屏蔽评论

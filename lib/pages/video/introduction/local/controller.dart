@@ -4,7 +4,6 @@ import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/download/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/services/service_locator.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/scheduler.dart' show SchedulerBinding;
@@ -65,7 +64,7 @@ class LocalIntroController extends CommonIntroController {
     final currCid = videoDetailCtr.cid.value;
     final index = list.indexWhere((e) => e.cid == currCid);
     this.index.value = index;
-    if (PlatformUtils.isMobile) {
+    if (index != -1) {
       onVideoDetailChange(list[index]);
     }
     if (index != 0) {
@@ -141,9 +140,7 @@ class LocalIntroController extends CommonIntroController {
       ..value.title = entry.showTitle
       ..refresh();
     this.index.value = index;
-    if (PlatformUtils.isMobile) {
-      onVideoDetailChange(entry);
-    }
+    onVideoDetailChange(entry);
   }
 
   void onVideoDetailChange(BiliDownloadEntryInfo entry) {

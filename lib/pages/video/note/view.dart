@@ -1,5 +1,3 @@
-import 'dart:io' show Platform;
-
 import 'package:PiliPlus/common/skeleton/video_reply.dart';
 import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
@@ -304,10 +302,6 @@ class _NoteListPageState extends State<NoteListPage>
         'https://www.bilibili.com/h5/note-app?oid=${widget.oid}&pagefrom=ugcvideo&is_stein_gate=${widget.isStein ? 1 : 0}';
     MiniScaffold.of(context).showBottomSheet(
       constraints: const BoxConstraints(),
-      sheetAnimationStyle: Platform.isLinux
-          ? AnimationStyle.noAnimation
-          : null, // 弹出动画在 Linux 的 webview 有问题，禁用
-      enableDrag: !Platform.isLinux,
       (context) => WebviewPage(oid: widget.oid, title: widget.title, url: url),
     );
   }

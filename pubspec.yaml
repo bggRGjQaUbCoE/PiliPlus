@@ -139,6 +139,7 @@ dependencies:
       url: https://github.com/bggRGjQaUbCoE/flutter_native_device_orientation.git
       ref: master
   path: ^1.9.1
+  path_parsing: ^1.1.0
   path_provider: ^2.1.5
   permission_handler_android: ^14.0.0
   permission_handler_apple: ^9.4.7

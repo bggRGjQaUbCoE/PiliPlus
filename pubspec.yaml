@@ -69,10 +69,6 @@ dependencies:
   cookie_jar: ^4.0.8
   crypto: ^3.0.6
   cupertino_ui: ^1.0.0
-  desktop_webview_window:
-    git:
-      url: https://github.com/Predidit/linux_webview_window
-      ref: main
   device_info_plus: ^13.1.0
   dio: ^5.9.1
   dio_http2_adapter: ^2.7.1

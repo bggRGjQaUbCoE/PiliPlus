@@ -49,7 +49,7 @@ class SearchPgcItem extends StatelessWidget {
                   PBadge(
                     text: item.seasonTypeName,
                     top: 6.0,
-                    right: 4.0,
+                    right: 6.0,
                     bottom: null,
                     left: null,
                   ),

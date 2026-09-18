@@ -758,10 +758,10 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
 
   /// from: `static public boolean isDomainVerified(java.lang.String domain)`
   static core$_.bool isDomainVerified(
-    jni$_.JString? domain,
+    jni$_.JString domain,
   ) {
     final _$$classRef = _class.reference;
-    final _$domain = domain?.reference ?? jni$_.jNullReference;
+    final _$domain = domain.reference;
     return _isDomainVerified(
       _$$classRef.pointer,
       _id_isDomainVerified.pointer,
@@ -795,10 +795,10 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
   /// from: `static public java.lang.String openUrl(java.lang.String url)`
   /// The returned object must be released after use, by calling the [release] method.
   static jni$_.JString? openUrl(
-    jni$_.JString? url,
+    jni$_.JString url,
   ) {
     final _$$classRef = _class.reference;
-    final _$url = url?.reference ?? jni$_.jNullReference;
+    final _$url = url.reference;
     return _openUrl(
       _$$classRef.pointer,
       _id_openUrl.pointer,

@@ -1,10 +1,14 @@
 import 'package:PiliPlus/common/skeleton/video_card_h.dart';
 import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart'
+    show displacement;
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
+import 'package:PiliPlus/common/widgets/scroll_physics.dart'
+    show platformAlwaysClampingPhysics;
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
@@ -51,6 +55,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
   late final account = Accounts.main;
   late final String _bvid;
   late ColorScheme colorScheme;
+  late final _isRefreshing = RxBool(false);
 
   @override
   void initState() {
@@ -89,6 +94,29 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
     );
   }
 
+  Future<void> _loadPrevAndKeepPos() async {
+    assert(_controller.hasPrev);
+    _isRefreshing.value = true;
+    final lastCount = _controller.loadingState.value.dataOrNull?.length;
+    await _controller.onRefresh();
+    if (mounted) {
+      _isRefreshing.value = false;
+      final newCount = _controller.loadingState.value.dataOrNull?.length;
+      if (lastCount != null && newCount != null && newCount > lastCount) {
+        _controller.scrollController.jumpTo((newCount - lastCount) * 112);
+      }
+    }
+  }
+
+  bool onNotification(ScrollEndNotification notification) {
+    if (notification.metrics.pixels == 0 &&
+        _controller.hasPrev &&
+        !_controller.isLoading) {
+      _loadPrevAndKeepPos();
+    }
+    return false;
+  }
+
   Widget _buildUserPage(LoadingState userState) {
     return switch (userState) {
       Loading() => m3eLoading,
@@ -96,22 +124,36 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
         children: [
           _buildUserInfo(response),
           Expanded(
-            child: refreshIndicator(
-              onRefresh: _controller.onRefresh,
-              child: CustomScrollView(
-                controller: _controller.scrollController,
-                physics: const AlwaysScrollableScrollPhysics(),
-                slivers: [
-                  SliverPadding(
-                    padding: EdgeInsets.only(
-                      bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
-                    ),
-                    sliver: Obx(
-                      () => _buildVideoList(_controller.loadingState.value),
-                    ),
+            child: Stack(
+              clipBehavior: .none,
+              children: [
+                NotificationListener<ScrollEndNotification>(
+                  onNotification: onNotification,
+                  child: CustomScrollView(
+                    physics: platformAlwaysClampingPhysics,
+                    controller: _controller.scrollController,
+                    slivers: [
+                      SliverPadding(
+                        padding: EdgeInsets.only(
+                          bottom:
+                              MediaQuery.viewPaddingOf(context).bottom + 100,
+                        ),
+                        sliver: Obx(
+                          () => _buildVideoList(_controller.loadingState.value),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: displacement + 35,
+                  child: Obx(
+                    () => RefreshIndicator_(isRefreshing: _isRefreshing.value),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

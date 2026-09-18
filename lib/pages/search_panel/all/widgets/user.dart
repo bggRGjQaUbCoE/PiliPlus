@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -11,6 +13,7 @@ import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:material_ui/material_ui.dart';
@@ -153,7 +156,14 @@ Widget _buildVideoItem(
       child: GestureDetector(
         behavior: .opaque,
         onTap: () => pushVideoH(video),
-        onLongPress: PlatformUtils.isMobile ? onLongPress : null,
+        onLongPress: PlatformUtils.isMobile
+            ? () {
+                Platform.isIOS
+                    ? HapticFeedback.heavyImpact()
+                    : HapticFeedback.vibrate();
+                onLongPress();
+              }
+            : null,
         onSecondaryTap: PlatformUtils.isDesktop ? onLongPress : null,
         child: Column(
           crossAxisAlignment: .start,

@@ -48,8 +48,8 @@ import 'package:PiliPlus/plugin/pl_player/widgets/backward_seek.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/bottom_control.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/common_btn.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/forward_seek.dart';
-import 'package:PiliPlus/plugin/pl_player/widgets/ios_video_surface.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/mpv_convert_webp.dart';
+import 'package:PiliPlus/plugin/pl_player/widgets/native_video_surface.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/play_pause_btn.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
@@ -2047,20 +2047,26 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             child: Obx(
               () {
                 final videoFit = plPlayerController.videoFit.value;
+                // Super resolution shaders must process the full source. The
+                // software renderer of Windows & Linux clamps each axis to
+                // 1920x1080 independently, which would letterbox an arbitrary
+                // source.
+                final resizeVideoOutput =
+                    plPlayerController.hwdec != null &&
+                    plPlayerController.superResolutionType.value ==
+                        SuperResolutionType.disable;
                 return Transform.flip(
                   flipX: plPlayerController.flipX.value,
                   flipY: plPlayerController.flipY.value,
-                  child: Platform.isIOS
-                      ? IosVideoSurface(
+                  child: PlatformUtils.supportsVideoOutputResize
+                      ? NativeVideoSurface(
                           controller: videoController,
                           transformationController: _transformationController,
                           fit: videoFit.boxFit,
                           alignment: widget.alignment,
                           fill: widget.fill,
                           aspectRatio: videoFit.aspectRatio,
-                          resizeOutput:
-                              plPlayerController.superResolutionType.value ==
-                              SuperResolutionType.disable,
+                          resizeOutput: resizeVideoOutput,
                         )
                       : FittedBox(
                           fit: videoFit.boxFit,

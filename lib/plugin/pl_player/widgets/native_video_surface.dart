@@ -7,9 +7,11 @@ import 'package:flutter/widgets.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
-/// iOS-only surface. Keep layout based on source pixels, not resized textures.
-class IosVideoSurface extends StatefulWidget {
-  const IosVideoSurface({
+/// Surface for the platforms backed by media-kit's `NativeVideoController`
+/// (iOS, macOS, Windows, Linux). Keep layout based on source pixels, not
+/// resized textures.
+class NativeVideoSurface extends StatefulWidget {
+  const NativeVideoSurface({
     super.key,
     required this.controller,
     required this.transformationController,
@@ -29,14 +31,17 @@ class IosVideoSurface extends StatefulWidget {
   final double? aspectRatio;
 
   @override
-  State<IosVideoSurface> createState() => _IosVideoSurfaceState();
+  State<NativeVideoSurface> createState() => _NativeVideoSurfaceState();
 }
 
-class _IosVideoSurfaceState extends State<IosVideoSurface> {
+class _NativeVideoSurfaceState extends State<NativeVideoSurface> {
   // The pinned media-kit fork overwrites native dimensions on videoParams
   // changes without updating its setSize cache. Reapplying setSize with the
   // same dimensions is then a no-op. Use its native size command directly,
   // and reconcile output notifications, without modifying the dependency.
+  //
+  // Only invoke methods here: registering a method call handler on this
+  // channel would steal `VideoOutput.Resize` from the controller.
   static const _channel = MethodChannel('com.alexmercerind/media_kit_video');
 
   late VideoOutputResize _resize;
@@ -75,7 +80,7 @@ class _IosVideoSurfaceState extends State<IosVideoSurface> {
         },
       ),
       onError: (error, stackTrace) => logger.w(
-        'Unable to resize iOS video output',
+        'Unable to resize native video output',
         error: error,
         stackTrace: stackTrace,
       ),
@@ -102,7 +107,7 @@ class _IosVideoSurfaceState extends State<IosVideoSurface> {
   }
 
   @override
-  void didUpdateWidget(IosVideoSurface oldWidget) {
+  void didUpdateWidget(NativeVideoSurface oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       _detach(oldWidget.controller);

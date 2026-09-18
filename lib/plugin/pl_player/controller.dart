@@ -510,23 +510,26 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
           if (!isManualFS) {
             triggerFullScreen(status: false, orientation: orientation);
           }
-        } else {
+        } else if (!(isFullScreen && mode == .none)) {
+          // none 模式全屏中不锁定，仅跟随系统方向，避免锁残留
           portraitUpMode();
         }
       case .portraitDown:
         if (!horizontalScreen) return;
         if (!_isVertical && controlsLock.value) return;
-        portraitDownMode();
+        if (!(isFullScreen && mode == .none)) {
+          portraitDownMode();
+        }
       case .landscapeLeft:
         if (!horizontalScreen && !isFullScreen) {
           triggerFullScreen(orientation: orientation, isManualFS: false);
-        } else {
+        } else if (!(isFullScreen && mode == .none)) {
           landscapeLeftMode();
         }
       case .landscapeRight:
         if (!horizontalScreen && !isFullScreen) {
           triggerFullScreen(orientation: orientation, isManualFS: false);
-        } else {
+        } else if (!(isFullScreen && mode == .none)) {
           landscapeRightMode();
         }
     }
@@ -1419,10 +1422,15 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       if (status) {
         if (PlatformUtils.isMobile) {
           hideSystemBar();
-          await changeOrientation(
-            isVertical: isVertical,
-            orientation: orientation,
-          );
+          if (mode == .none) {
+            // none 模式：进入全屏时解锁方向锁定，全屏期间跟随系统自动旋转
+            fullMode();
+          } else {
+            await changeOrientation(
+              isVertical: isVertical,
+              orientation: orientation,
+            );
+          }
         } else {
           await enterDesktopFullScreen(inAppFullScreen: inAppFullScreen);
         }
@@ -1431,9 +1439,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
           if (!removeSafeArea) {
             showSystemBar();
           }
-          if (orientation == null && mode == .none) {
-            return;
-          }
+          // 退出全屏统一恢复应用默认方向：
+          // 手机默认竖屏；横屏适配/平板则解锁所有方向，继续跟随系统
           await resetScreenRotation();
         } else {
           await exitDesktopFullScreen();

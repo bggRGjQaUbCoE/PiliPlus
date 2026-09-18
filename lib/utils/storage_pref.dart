@@ -198,9 +198,7 @@ abstract final class Pref {
   static FullScreenMode get fullScreenMode {
     int? index = _setting.get(SettingBoxKey.fullScreenMode);
     if (index == null) {
-      final FullScreenMode mode = horizontalScreen && DeviceUtils.isTablet
-          ? .none
-          : .auto;
+      const FullScreenMode mode = .auto;
       _setting.put(SettingBoxKey.fullScreenMode, mode.index);
       return mode;
     }

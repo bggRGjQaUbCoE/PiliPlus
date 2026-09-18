@@ -5,21 +5,29 @@ import 'dart:io' show Directory, File;
 import 'package:PiliPlus/grpc/dm.dart';
 import 'package:PiliPlus/http/download.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/http/sponsor_block.dart';
+import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/models_new/download/bili_download_media_file_info.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart' as pgc;
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
+import 'package:PiliPlus/models_new/sponsor_block/segment_item.dart';
+import 'package:PiliPlus/models_new/sponsor_block/snapshot.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
 import 'package:PiliPlus/services/download/download_manager.dart';
+import 'package:PiliPlus/services/download/sponsor_block_cache.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/danmaku_utils.dart';
 import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
+import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -34,6 +42,39 @@ class DownloadService extends GetxService {
   static const _maxDanmakuConcurrency = 4;
 
   final _lock = Lock();
+  final sponsorBlockCache = SponsorBlockCache(
+    server: () => Pref.blockServer,
+    fetch: (target, server, token) => target.source == .pgc
+        ? DownloadHttp.getPgcSkipSegments(target, token)
+        : SponsorBlock.getCachedSegments(target, server, token),
+  );
+  StreamSubscription<dynamic>? _settingsSubscription;
+  int _prepareGeneration = 0;
+
+  static SponsorBlockTarget? sponsorTarget(
+    BiliDownloadEntryInfo entry, {
+    bool? enablePgcSkip,
+  }) => entry.pageData != null || (entry.ep != null && entry.source != null)
+      ? SponsorBlockTarget(
+          directory: entry.entryDirPath,
+          bvid: entry.bvid,
+          cid: entry.cid,
+          durationMs: entry.totalTimeMilli,
+          createdAt: entry.timeCreateStamp,
+          source:
+              entry.ep != null &&
+                  (enablePgcSkip ?? (Pref.pgcSkipType != SkipType.disable))
+              ? .pgc
+              : .community,
+          videoType: switch (entry.ep?.from) {
+            'pugv' => .pugv,
+            != null => .pgc,
+            _ => .ugc,
+          },
+          epid: entry.ep?.episodeId,
+          seasonId: entry.seasonId,
+        )
+      : null;
 
   final flagNotifier = SetNotifier();
   final waitDownloadQueue = RxList<BiliDownloadEntryInfo>();
@@ -59,9 +100,27 @@ class DownloadService extends GetxService {
   void onInit() {
     super.onInit();
     initDownloadList();
+    _settingsSubscription = GStorage.setting.watch().listen((event) {
+      if (const {
+        SettingBoxKey.blockServer,
+        SettingBoxKey.enableSponsorBlock,
+        SettingBoxKey.cacheSponsorBlock,
+        SettingBoxKey.pgcSkipType,
+      }.contains(event.key)) {
+        sponsorBlockCache.invalidateAll();
+      }
+    });
+  }
+
+  @override
+  void onClose() {
+    _settingsSubscription?.cancel();
+    sponsorBlockCache.invalidateAll();
+    super.onClose();
   }
 
   void initDownloadList() {
+    sponsorBlockCache.invalidateAll();
     waitForInitialization = _readDownloadList();
   }
 
@@ -238,9 +297,13 @@ class DownloadService extends GetxService {
   }
 
   Future<void> _createDownload(BiliDownloadEntryInfo entry) async {
-    final entryDir = await _getDownloadEntryDir(entry);
-    final entryJsonFile = File(path.join(entryDir.path, _entryFile));
-    await entryJsonFile.writeAsString(jsonEncode(entry.toJson()));
+    final entryDir = await sponsorBlockCache.withFiles(() async {
+      final directory = await _getDownloadEntryDir(entry);
+      await File(path.join(directory.path, _entryFile)).writeAsString(
+        jsonEncode(entry.toJson()),
+      );
+      return directory;
+    });
     entry
       ..pageDirPath = entryDir.parent.path
       ..entryDirPath = entryDir.path
@@ -279,7 +342,12 @@ class DownloadService extends GetxService {
   }
 
   Future<void> startDownload(BiliDownloadEntryInfo entry) {
+    final generation = ++_prepareGeneration;
+    if (curDownload.value case final current?) {
+      sponsorBlockCache.cancel(current.entryDirPath);
+    }
     return _lock.synchronized(() async {
+      if (generation != _prepareGeneration) return;
       await _downloadManager?.cancel(isDelete: false);
       await _audioDownloadManager?.cancel(isDelete: false);
       _downloadManager = null;
@@ -293,7 +361,7 @@ class DownloadService extends GetxService {
       _curCid = entry.cid;
       curDownload.value = entry;
       waitDownloadQueue.refresh();
-      await _startDownload(entry);
+      await _startDownload(entry, generation);
     });
   }
 
@@ -369,20 +437,27 @@ class DownloadService extends GetxService {
     }
   }
 
-  Future<void> _startDownload(BiliDownloadEntryInfo entry) async {
+  Future<void> _startDownload(
+    BiliDownloadEntryInfo entry,
+    int generation,
+  ) async {
     try {
       if (!await downloadDanmaku(entry: entry)) {
         return;
       }
+      if (generation != _prepareGeneration) return;
 
       _updateCurStatus(DownloadStatus.getPlayUrl);
 
+      List<SegmentItemModel>? pgcSegments;
       final mediaFileInfo = await DownloadHttp.getVideoUrl(
         entry: entry,
         ep: entry.ep,
         source: entry.source,
         pageData: entry.pageData,
+        onSkipSegments: (segments) => pgcSegments = segments,
       );
+      if (generation != _prepareGeneration) return;
 
       final videoDir = Directory(path.join(entry.entryDirPath, entry.typeTag));
       if (!videoDir.existsSync()) {
@@ -390,12 +465,21 @@ class DownloadService extends GetxService {
       }
 
       final mediaJsonFile = File(path.join(videoDir.path, _indexFile));
+      final target = sponsorTarget(entry);
       await Future.wait([
         mediaJsonFile.writeAsString(jsonEncode(mediaFileInfo.toJson())),
         _downloadCover(entry: entry),
+        if (target != null &&
+            Pref.cacheSponsorBlock &&
+            (target.source == .pgc || Pref.enableSponsorBlock))
+          sponsorBlockCache.update(
+            target,
+            segments: target.source == .pgc ? pgcSegments : null,
+          ),
       ]);
 
-      if (curDownload.value?.cid != entry.cid) {
+      if (generation != _prepareGeneration ||
+          curDownload.value?.cid != entry.cid) {
         return;
       }
 
@@ -438,6 +522,7 @@ class DownloadService extends GetxService {
           break;
       }
     } catch (e) {
+      if (generation != _prepareGeneration) return;
       _updateCurStatus(DownloadStatus.failPlayUrl);
       if (kDebugMode) {
         debugPrint('get download url error: $e');
@@ -544,17 +629,19 @@ class DownloadService extends GetxService {
         downloadNext: downloadNext,
       );
     }
-    final downloadDir = Directory(entry.pageDirPath);
-    if (downloadDir.existsSync()) {
-      if (!await downloadDir.lengthGte(2)) {
-        await downloadDir.tryDel(recursive: true);
-      } else {
-        final entryDir = Directory(entry.entryDirPath);
-        if (entryDir.existsSync()) {
-          await entryDir.tryDel(recursive: true);
+    await sponsorBlockCache.remove(entry.pageDirPath, () async {
+      final downloadDir = Directory(entry.pageDirPath);
+      if (downloadDir.existsSync()) {
+        if (!await downloadDir.lengthGte(2)) {
+          await downloadDir.tryDel(recursive: true);
+        } else {
+          final entryDir = Directory(entry.entryDirPath);
+          if (entryDir.existsSync()) {
+            await entryDir.tryDel(recursive: true);
+          }
         }
       }
-    }
+    });
     if (refresh) {
       flagNotifier.refresh();
     }
@@ -564,7 +651,10 @@ class DownloadService extends GetxService {
     required String pageDirPath,
     bool refresh = true,
   }) async {
-    await Directory(pageDirPath).tryDel(recursive: true);
+    await sponsorBlockCache.remove(
+      pageDirPath,
+      () => Directory(pageDirPath).tryDel(recursive: true),
+    );
     downloadList.removeWhere((e) => e.pageDirPath == pageDirPath);
     if (refresh) {
       flagNotifier.refresh();
@@ -575,6 +665,10 @@ class DownloadService extends GetxService {
     required bool isDelete,
     bool downloadNext = true,
   }) async {
+    _prepareGeneration++;
+    if (curDownload.value case final current?) {
+      sponsorBlockCache.cancel(current.entryDirPath);
+    }
     await _downloadManager?.cancel(isDelete: isDelete);
     await _audioDownloadManager?.cancel(isDelete: isDelete);
     _downloadManager = null;

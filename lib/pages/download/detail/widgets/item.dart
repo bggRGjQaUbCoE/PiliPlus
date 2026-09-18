@@ -13,6 +13,7 @@ import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/pages/download/downloading/view.dart';
+import 'package:PiliPlus/pages/download/widgets/sponsor_block_update.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
@@ -62,7 +63,7 @@ class DetailItem extends StatelessWidget {
     void onLongPress() => canDel && !enableMultiSelect
         ? showDialog(
             context: context,
-            builder: (context) => SimpleDialog(
+            builder: (_) => SimpleDialog(
               clipBehavior: Clip.hardEdge,
               contentPadding: const EdgeInsets.symmetric(vertical: 12),
               children: [
@@ -92,6 +93,22 @@ class DetailItem extends StatelessWidget {
                   },
                   child: const Text('更新弹幕', style: TextStyle(fontSize: 14)),
                 ),
+                if (DownloadService.sponsorTarget(entry) != null)
+                  DialogOption(
+                    onPressed: () {
+                      Get.back();
+                      showSponsorBlockUpdate(
+                        context,
+                        downloadService,
+                        [entry],
+                        refresh: true,
+                      );
+                    },
+                    child: const Text(
+                      '更新空降信息',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  ),
               ],
             ),
           )

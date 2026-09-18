@@ -4,6 +4,7 @@ import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/pages/common/search/common_search_page.dart';
 import 'package:PiliPlus/pages/download/detail/widgets/item.dart';
 import 'package:PiliPlus/pages/download/search/controller.dart';
+import 'package:PiliPlus/pages/download/widgets/sponsor_block_update.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -55,6 +56,15 @@ class _DownloadSearchPageState
 
   @override
   List<Widget>? get multiSelectActions => [
+    IconButton(
+      tooltip: '空降信息',
+      icon: const Icon(Icons.shield_outlined),
+      onPressed: () {
+        final entries = controller.allChecked.toList();
+        controller.handleSelect();
+        showSponsorBlockUpdate(context, _downloadService, entries);
+      },
+    ),
     TextButton(
       style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
       onPressed: () async {
@@ -75,7 +85,7 @@ class _DownloadSearchPageState
         }
       },
       child: Text(
-        '更新',
+        '更新弹幕',
         style: TextStyle(color: ColorScheme.of(context).onSurface),
       ),
     ),

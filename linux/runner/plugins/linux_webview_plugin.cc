@@ -476,7 +476,7 @@ static void HandleMethodCall(FlMethodChannel* channel,
     if (it != s_sessions.end() && it->second->web_view != nullptr) {
       const gchar* script = get_string_from_map(args, "script", "");
 
-      // WebKitGTK >= 2.40 (Ubuntu 22.04+, Debian 12+, Fedora 36+)
+#if WEBKIT_CHECK_VERSION(2, 40, 0)
       webkit_web_view_evaluate_javascript(
           WEBKIT_WEB_VIEW(it->second->web_view), script, -1, nullptr, nullptr,
           nullptr,
@@ -503,6 +503,38 @@ static void HandleMethodCall(FlMethodChannel* channel,
             g_object_unref(call);
           },
           g_object_ref(method_call));
+#else
+      webkit_web_view_run_javascript(
+          WEBKIT_WEB_VIEW(it->second->web_view), script, nullptr,
+          +[](GObject* object, GAsyncResult* res, gpointer user_data) {
+            GError* error = nullptr;
+            WebKitJavascriptResult* js_result =
+                webkit_web_view_run_javascript_finish(
+                    WEBKIT_WEB_VIEW(object), res, &error);
+            FlMethodCall* call = static_cast<FlMethodCall*>(user_data);
+            if (error != nullptr) {
+              fl_method_call_respond_error(call, "JS_ERROR", error->message,
+                                           nullptr, nullptr);
+              g_error_free(error);
+            } else {
+              JSCValue* val =
+                  (js_result != nullptr)
+                      ? webkit_javascript_result_get_js_value(js_result)
+                      : nullptr;
+              gchar* str =
+                  (val != nullptr) ? jsc_value_to_string(val) : nullptr;
+              g_autoptr(FlValue) result =
+                  fl_value_new_string(str != nullptr ? str : "");
+              fl_method_call_respond_success(call, result, nullptr);
+              if (str != nullptr) g_free(str);
+              if (js_result != nullptr) {
+                webkit_javascript_result_unref(js_result);
+              }
+            }
+            g_object_unref(call);
+          },
+          g_object_ref(method_call));
+#endif
       return;
     }
     fl_method_call_respond_error(method_call, "NOT_FOUND", "Session not found",

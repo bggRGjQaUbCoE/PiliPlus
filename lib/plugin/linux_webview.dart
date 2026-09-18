@@ -414,38 +414,56 @@ class _BoundsReportingWidget extends SingleChildRenderObjectWidget {
 class _RenderBoundsReporter extends RenderProxyBox {
   ValueChanged<Rect> onBoundsChanged;
   Rect? _lastRect;
+  bool _callbackScheduled = false;
 
   _RenderBoundsReporter(this.onBoundsChanged);
+
+  void _checkBounds() {
+    if (!attached) return;
+
+    RenderObject? node = this;
+    while (node != null) {
+      if (node is RenderOffstage && node.offstage) {
+        if (_lastRect != Rect.zero) {
+          _lastRect = Rect.zero;
+          onBoundsChanged(Rect.zero);
+        }
+        return;
+      }
+      node = node.parent;
+    }
+
+    final offset = localToGlobal(Offset.zero);
+    final rect = Rect.fromLTWH(
+      offset.dx.roundToDouble(),
+      offset.dy.roundToDouble(),
+      size.width.roundToDouble(),
+      size.height.roundToDouble(),
+    );
+    if (_lastRect != rect) {
+      _lastRect = rect;
+      onBoundsChanged(rect);
+    }
+  }
+
+  void _scheduleBoundsCheck() {
+    if (_callbackScheduled) return;
+    _callbackScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _callbackScheduled = false;
+      _checkBounds();
+    });
+  }
 
   @override
   void performLayout() {
     super.performLayout();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!attached) return;
+    _scheduleBoundsCheck();
+  }
 
-      RenderObject? node = this;
-      while (node != null) {
-        if (node is RenderOffstage && node.offstage) {
-          if (_lastRect != Rect.zero) {
-            _lastRect = Rect.zero;
-            onBoundsChanged(Rect.zero);
-          }
-          return;
-        }
-        node = node.parent;
-      }
-
-      final offset = localToGlobal(Offset.zero);
-      final rect = Rect.fromLTWH(
-        offset.dx.roundToDouble(),
-        offset.dy.roundToDouble(),
-        size.width.roundToDouble(),
-        size.height.roundToDouble(),
-      );
-      if (_lastRect != rect) {
-        _lastRect = rect;
-        onBoundsChanged(rect);
-      }
-    });
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    super.paint(context, offset);
+    _scheduleBoundsCheck();
   }
 }

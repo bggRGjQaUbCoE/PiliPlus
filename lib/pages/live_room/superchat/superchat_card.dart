@@ -3,7 +3,6 @@ import 'dart:async' show Timer;
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/models_new/live/live_superchat/item.dart';
-import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/pages/member/widget/medal_widget.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/color_utils.dart';
@@ -13,13 +12,11 @@ import 'package:PiliPlus/utils/extension/selectable_region_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/utils/screenshot.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:flutter/rendering.dart' show RenderRepaintBoundary;
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart' show DateFormat;
 import 'package:material_ui/material_ui.dart';
 
 part 'package:PiliPlus/common/widgets/context_menu/live_menu_helper.dart';
@@ -129,7 +126,7 @@ class _SuperChatCardState extends State<SuperChatCard> {
         ),
         PopupMenuItem(
           height: 38,
-          onTap: () => _ScToImage.save(item),
+          onTap: () => _screenShot(context, item),
           child: const Text(
             '保存为图片',
             style: TextStyle(fontSize: 13),
@@ -219,69 +216,83 @@ Widget _build({
     );
   }
 
+  Widget first = Container(
+    decoration: BoxDecoration(
+      borderRadius: const .vertical(top: .circular(8)),
+      color: ColourUtils.parseColor(item.backgroundColor),
+      border: Border(top: border, left: border, right: border),
+      image: item.backgroundImage == null
+          ? null
+          : DecorationImage(
+              alignment: .topRight,
+              image: CachedNetworkImageProvider(
+                ImageUtils.safeThumbnailUrl(item.backgroundImage),
+              ),
+            ),
+    ),
+    padding: const EdgeInsets.all(8),
+    child: Row(
+      spacing: 12,
+      children: [
+        _avatar(item.userInfo.face, item.userInfo.faceFrame),
+        Expanded(
+          child: Column(
+            mainAxisSize: .min,
+            crossAxisAlignment: .start,
+            children: [name, price],
+          ),
+        ),
+        ?remains_,
+      ],
+    ),
+  );
+
+  if (showMenu != null) {
+    first = GestureDetector(
+      onTapUp: showMenu_,
+      onSecondaryTapUp: PlatformUtils.isDesktop ? showMenu_ : null,
+      child: first,
+    );
+  }
+
+  final style = TextStyle(
+    color: ColourUtils.parseColor(item.messageFontColor),
+    // decoration: widget.persistentSC && item.deleted
+    //     ? .lineThrough
+    //     : null,
+    // decorationThickness: 1.5,
+    // decorationStyle: .double,
+    // decorationColor: Colors.white,
+  );
+
   return Column(
     mainAxisSize: .min,
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      GestureDetector(
-        onTapUp: showMenu_,
-        onSecondaryTapUp: PlatformUtils.isDesktop ? showMenu_ : null,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: const .vertical(top: .circular(8)),
-            color: ColourUtils.parseColor(item.backgroundColor),
-            border: Border(top: border, left: border, right: border),
-            image: item.backgroundImage == null
-                ? null
-                : DecorationImage(
-                    alignment: .topRight,
-                    image: CachedNetworkImageProvider(
-                      ImageUtils.safeThumbnailUrl(item.backgroundImage),
-                    ),
-                  ),
-          ),
-          padding: const EdgeInsets.all(8),
-          child: Row(
-            spacing: 12,
-            children: [
-              _avatar(item.userInfo.face, item.userInfo.faceFrame),
-              Expanded(
-                child: Column(
-                  mainAxisSize: .min,
-                  crossAxisAlignment: .start,
-                  children: [name, price],
-                ),
-              ),
-              ?remains_,
-            ],
-          ),
-        ),
-      ),
+      first,
       Container(
         decoration: BoxDecoration(
           borderRadius: const .vertical(bottom: .circular(8)),
           color: bottomColor,
         ),
         padding: const .all(8),
-        child: TextSelectionTheme(
-          data: TextSelectionThemeData(
-            selectionColor: Color.lerp(bottomColor, Colors.black, .26),
-            selectionHandleColor: Color.lerp(bottomColor, Colors.white, .26),
-          ),
-          child: SelectionText(
-            item.message,
-            contextMenuBuilder: scMenuBuilder,
-            style: TextStyle(
-              color: ColourUtils.parseColor(item.messageFontColor),
-              // decoration: widget.persistentSC && item.deleted
-              //     ? .lineThrough
-              //     : null,
-              // decorationThickness: 1.5,
-              // decorationStyle: .double,
-              // decorationColor: Colors.white,
-            ),
-          ),
-        ),
+        child: showMenu == null
+            ? Text(item.message, style: style)
+            : TextSelectionTheme(
+                data: TextSelectionThemeData(
+                  selectionColor: Color.lerp(bottomColor, Colors.black, .26),
+                  selectionHandleColor: Color.lerp(
+                    bottomColor,
+                    Colors.white,
+                    .26,
+                  ),
+                ),
+                child: SelectionText(
+                  item.message,
+                  contextMenuBuilder: scMenuBuilder,
+                  style: style,
+                ),
+              ),
       ),
     ],
   );
@@ -320,63 +331,23 @@ Widget _avatar(String face, String? faceFrame) {
   return avatar;
 }
 
-class _ScToImage extends StatelessWidget {
-  const _ScToImage({required this.item});
-
-  final SuperChatItem item;
-
-  static Future<void> save(SuperChatItem item) async {
-    if (PlatformUtils.isMobile &&
-        !await ImageUtils.checkPermissionDependOnSdkInt()) {
-      return;
-    }
-    Get.key.currentState!.push(
-      PublishRoute(
-        transitionDuration: .zero,
-        barrierColor: Colors.transparent,
-        pageBuilder: (_, _, _) => _ScToImage(item: item),
-        transitionBuilder: (_, _, _, child) => child,
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final key = GlobalKey();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      try {
-        final boundary =
-            key.currentContext!.findRenderObject() as RenderRepaintBoundary;
-        final image = await boundary.toImage(pixelRatio: 3);
-        final byteData = await image.toByteData(format: .png);
-        image.dispose();
-        final pngBytes = byteData!.buffer.asUint8List();
-        final picName =
-            'Bili_SuperChat_${item.roomid}_${item.userInfo.uname}_￥${item.price}_${DateFormatUtils.format(item.startSime, format: DateFormat('yyyyMMddHHmmss'))}';
-        final result = await ImageUtils.saveByteImg(
-          bytes: pngBytes,
-          fileName: picName,
-          showLoading: false,
-        );
-        if (result?.errorMessage != null) {
-          SmartDialog.showToast(result!.errorMessage!);
-        }
-      } catch (e) {
-        if (kDebugMode) rethrow;
-        SmartDialog.showToast(e.toString());
-      } finally {
-        Get.back();
-      }
-    });
-    return Align(
-      alignment: const Alignment(2, 2),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400),
-        child: RepaintBoundary(
-          key: key,
-          child: _build(item: item),
-        ),
-      ),
-    );
-  }
+Future<void> _screenShot(BuildContext context, SuperChatItem item) async {
+  final image = await Screenshot.screenshot(
+    context,
+    Material(
+      color: Colors.transparent,
+      child: _build(item: item),
+    ),
+    constraints: const BoxConstraints(maxWidth: 400),
+    pixelRatio: 3,
+    future: Future.pause, // wait for asset async loaded
+  );
+  final bytes = await image.toByteData(format: .png);
+  image.dispose();
+  final picName =
+      'Bili_SuperChat_${item.roomid}_${item.userInfo.uname}_￥${item.price}_${item.id}';
+  ImageUtils.saveByteImg(
+    bytes: bytes!.buffer.asUint8List(),
+    fileName: picName,
+  );
 }

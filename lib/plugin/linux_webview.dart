@@ -29,28 +29,28 @@ class LinuxWebviewPlugin {
       switch (call.method) {
         case 'onUrlChanged':
           final url = args['url'] as String? ?? '';
-          controller._onUrlChanged(url);
+          controller._onUrlChanged?.call(url);
           break;
         case 'onProgressChanged':
           final progress = (args['progress'] as num?)?.toDouble() ?? 0.0;
-          controller._onProgressChanged(progress);
+          controller._onProgressChanged?.call(progress);
           break;
         case 'onTitleChanged':
           final title = args['title'] as String? ?? '';
-          controller._onTitleChanged(title);
+          controller._onTitleChanged?.call(title);
           break;
         case 'onWebMessageReceived':
           final message = args['message'] as String? ?? '';
-          controller._onWebMessageReceived(message);
+          controller._onWebMessageReceived?.call(message);
           break;
         case 'onNavigationRequest':
           final url = args['url'] as String? ?? '';
-          controller._onNavigationRequest(url);
+          controller._onNavigationRequest?.call(url);
           break;
         case 'onLoadFailed':
           final url = args['url'] as String? ?? '';
           final error = args['error'] as String? ?? '';
-          controller._onLoadFailed(url, error);
+          controller._onLoadFailed?.call(url, error);
           break;
       }
     });
@@ -107,42 +107,31 @@ class LinuxWebviewPlugin {
 }
 
 class LinuxWebviewController {
+  static int _nextViewId = 0;
+
   final int viewId;
-  final ValueChanged<String>? onUrlChanged;
-  final ValueChanged<double>? onProgressChanged;
-  final ValueChanged<String>? onTitleChanged;
-  final ValueChanged<String>? onWebMessageReceived;
-  final ValueChanged<String>? onNavigationRequest;
-  final void Function(String url, String error)? onLoadFailed;
+  ValueChanged<String>? _onUrlChanged;
+  ValueChanged<double>? _onProgressChanged;
+  ValueChanged<String>? _onTitleChanged;
+  ValueChanged<String>? _onWebMessageReceived;
+  ValueChanged<String>? _onNavigationRequest;
+  void Function(String url, String error)? _onLoadFailed;
 
   String? currentUrl;
   bool _isDisposed = false;
 
   LinuxWebviewController({
-    required this.viewId,
     String? initialUrl,
-    this.onUrlChanged,
-    this.onProgressChanged,
-    this.onTitleChanged,
-    this.onWebMessageReceived,
-    this.onNavigationRequest,
-    this.onLoadFailed,
-  }) : currentUrl = initialUrl {
+    this._onUrlChanged,
+    this._onProgressChanged,
+    this._onTitleChanged,
+    this._onWebMessageReceived,
+    this._onNavigationRequest,
+    this._onLoadFailed,
+  }) : currentUrl = initialUrl,
+       viewId = ++_nextViewId {
     LinuxWebviewPlugin.registerController(viewId, this);
   }
-
-  void _onUrlChanged(String url) {
-    currentUrl = url;
-    onUrlChanged?.call(url);
-  }
-
-  void _onProgressChanged(double progress) => onProgressChanged?.call(progress);
-  void _onTitleChanged(String title) => onTitleChanged?.call(title);
-  void _onWebMessageReceived(String message) =>
-      onWebMessageReceived?.call(message);
-  void _onNavigationRequest(String url) => onNavigationRequest?.call(url);
-  void _onLoadFailed(String url, String error) =>
-      onLoadFailed?.call(url, error);
 
   Future<String?> getUrl() async => currentUrl;
 
@@ -275,7 +264,7 @@ class LinuxWebviewController {
   }
 }
 
-class LinuxWebview extends StatefulWidget {
+class LinuxWebview extends LeafRenderObjectWidget {
   final String? initialUrl;
   final String? initialHtml;
   final String? userAgent;
@@ -306,158 +295,77 @@ class LinuxWebview extends StatefulWidget {
   });
 
   @override
-  State<LinuxWebview> createState() => _LinuxWebviewState();
-}
-
-class _LinuxWebviewState extends State<LinuxWebview> {
-  static int _nextViewId = 1;
-  late final int _viewId;
-  LinuxWebviewController? _controller;
-  bool _initializedNative = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _viewId = _nextViewId++;
-  }
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    _controller = null;
-    super.dispose();
-  }
-
-  void _onBoundsChanged(Rect rect) {
-    final isVisible = rect.width > 0 && rect.height > 0;
-    if (!_initializedNative) {
-      if (isVisible) {
-        _initializedNative = true;
-        _createNativeWebview(rect);
-      }
-    } else {
-      _controller?.updateBounds(rect, visible: isVisible);
-    }
-  }
-
-  Future<void> _createNativeWebview(Rect bounds) async {
-    final controller = LinuxWebviewController(
-      viewId: _viewId,
-      initialUrl: widget.initialUrl,
-      onUrlChanged: widget.onUrlChanged,
-      onProgressChanged: widget.onProgress,
-      onTitleChanged: widget.onTitleChanged,
-      onWebMessageReceived: widget.onWebMessageReceived,
-      onNavigationRequest: widget.onNavigationRequest,
-      onLoadFailed: widget.onLoadFailed,
-    );
-    _controller = controller;
-
-    try {
-      await LinuxWebviewPlugin.channel.invokeMethod('create', {
-        'viewId': _viewId,
-        'url': widget.initialUrl ?? '',
-        'x': bounds.left,
-        'y': bounds.top,
-        'width': bounds.width,
-        'height': bounds.height,
-        'userAgent': widget.userAgent,
-        'incognito': widget.incognito,
-        'userScripts': widget.userScripts,
-      });
-
-      if (widget.initialHtml != null && widget.initialHtml!.isNotEmpty) {
-        await controller.loadHtml(widget.initialHtml!);
-      }
-
-      if (mounted) {
-        widget.onWebViewCreated?.call(controller);
-      }
-    } catch (e) {
-      debugPrint('LinuxWebview create error: $e');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _BoundsReportingWidget(
-      onBoundsChanged: _onBoundsChanged,
-      child: Container(
-        color: Theme.of(context).scaffoldBackgroundColor,
-      ),
-    );
-  }
-}
-
-class _BoundsReportingWidget extends SingleChildRenderObjectWidget {
-  final ValueChanged<Rect> onBoundsChanged;
-
-  const _BoundsReportingWidget({
-    required this.onBoundsChanged,
-    super.child,
-  });
-
-  @override
   RenderObject createRenderObject(BuildContext context) {
-    return _RenderBoundsReporter(onBoundsChanged);
+    return _LinuxWebviewRenderObject(
+      LinuxWebviewController(
+        initialUrl: initialUrl,
+        onUrlChanged: onUrlChanged,
+        onProgressChanged: onProgress,
+        onTitleChanged: onTitleChanged,
+        onWebMessageReceived: onWebMessageReceived,
+        onNavigationRequest: onNavigationRequest,
+        onLoadFailed: onLoadFailed,
+      ),
+      initialHtml,
+      userAgent,
+      incognito,
+      userScripts,
+      onWebViewCreated,
+    );
   }
 
   @override
   void updateRenderObject(
     BuildContext context,
-    covariant _RenderBoundsReporter renderObject,
+    // ignore: library_private_types_in_public_api
+    covariant _LinuxWebviewRenderObject renderObject,
   ) {
-    renderObject.onBoundsChanged = onBoundsChanged;
+    renderObject._controller
+      .._onUrlChanged = onUrlChanged
+      .._onProgressChanged = onProgress
+      .._onTitleChanged = onTitleChanged
+      .._onWebMessageReceived = onWebMessageReceived
+      .._onNavigationRequest = onNavigationRequest
+      .._onLoadFailed = onLoadFailed;
+    renderObject
+      ..initialHtml = initialHtml
+      ..userAgent = userAgent
+      ..incognito = incognito
+      ..userScripts = userScripts
+      ..onWebViewCreated = onWebViewCreated;
   }
 }
 
-class _RenderBoundsReporter extends RenderProxyBox {
-  ValueChanged<Rect> onBoundsChanged;
+class _LinuxWebviewRenderObject extends RenderBox {
+  final LinuxWebviewController _controller;
+  bool _initializedNative = false;
   Rect? _lastRect;
   bool _callbackScheduled = false;
 
-  _RenderBoundsReporter(this.onBoundsChanged);
+  String? initialHtml;
+  String? userAgent;
+  bool incognito;
+  List<Map<String, dynamic>>? userScripts;
+  ValueChanged<LinuxWebviewController>? onWebViewCreated;
 
-  void _checkBounds() {
-    if (!attached) return;
+  _LinuxWebviewRenderObject(
+    this._controller,
+    this.initialHtml,
+    this.userAgent,
+    this.incognito,
+    this.userScripts,
+    this.onWebViewCreated,
+  );
 
-    RenderObject? node = this;
-    while (node != null) {
-      if (node is RenderOffstage && node.offstage) {
-        if (_lastRect != Rect.zero) {
-          _lastRect = Rect.zero;
-          onBoundsChanged(Rect.zero);
-        }
-        return;
-      }
-      node = node.parent;
-    }
-
-    final offset = localToGlobal(Offset.zero);
-    final rect = Rect.fromLTWH(
-      offset.dx.roundToDouble(),
-      offset.dy.roundToDouble(),
-      size.width.roundToDouble(),
-      size.height.roundToDouble(),
-    );
-    if (_lastRect != rect) {
-      _lastRect = rect;
-      onBoundsChanged(rect);
-    }
-  }
-
-  void _scheduleBoundsCheck() {
-    if (_callbackScheduled) return;
-    _callbackScheduled = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _callbackScheduled = false;
-      _checkBounds();
-    });
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   void performLayout() {
-    super.performLayout();
+    size = constraints.biggest;
     _scheduleBoundsCheck();
   }
 
@@ -465,5 +373,67 @@ class _RenderBoundsReporter extends RenderProxyBox {
   void paint(PaintingContext context, Offset offset) {
     super.paint(context, offset);
     _scheduleBoundsCheck();
+  }
+
+  void _scheduleBoundsCheck() {
+    if (_callbackScheduled) return;
+    _callbackScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback(_checkBounds);
+  }
+
+  void _checkBounds(_) {
+    _callbackScheduled = false;
+    if (!attached) return;
+
+    for (RenderObject? node = this; node != null; node = node.parent) {
+      if (node is RenderOffstage && node.offstage) {
+        if (_lastRect != Rect.zero) {
+          _lastRect = Rect.zero;
+          _controller.updateBounds(Rect.zero, visible: false);
+        }
+        return;
+      }
+    }
+
+    final rect = localToGlobal(Offset.zero) & size;
+    if (_lastRect == rect) return;
+    _lastRect = rect;
+
+    final isVisible = rect.width > 0 && rect.height > 0;
+
+    if (!_initializedNative) {
+      if (isVisible) {
+        _initializedNative = true;
+        _createNativeWebview(rect);
+      }
+    } else {
+      _controller.updateBounds(rect, visible: isVisible);
+    }
+  }
+
+  Future<void> _createNativeWebview(Rect bounds) async {
+    try {
+      await LinuxWebviewPlugin.channel.invokeMethod('create', {
+        'viewId': _controller.viewId,
+        'url': _controller.currentUrl ?? '',
+        'x': bounds.left,
+        'y': bounds.top,
+        'width': bounds.width,
+        'height': bounds.height,
+        'userAgent': userAgent,
+        'incognito': incognito,
+        'userScripts': userScripts,
+      });
+
+      if (initialHtml case final html? when html.isNotEmpty) {
+        await _controller.loadHtml(html);
+      }
+
+      if (attached) {
+        onWebViewCreated?.call(_controller);
+      }
+    } catch (e) {
+      debugPrint('LinuxWebview create error: $e');
+    }
   }
 }

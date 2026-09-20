@@ -71,6 +71,25 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   VideoController? _videoController;
 
   static PlPlayerController? _instance;
+  static Future<void>? _iosPlayerDisposal;
+
+  // mpv's iOS audio output deactivates the shared AVAudioSession on teardown.
+  // Finish unloading the old player before a new player acquires the session.
+  static void _disposePlayer(Player? player) {
+    if (player == null) return;
+    final disposal = player.dispose();
+    if (Platform.isIOS) {
+      _iosPlayerDisposal =
+          Future.wait<void>([
+                ?_iosPlayerDisposal,
+                disposal,
+              ])
+              .then<void>((_) {})
+              .catchError((Object error, StackTrace stackTrace) {
+                Utils.reportError(error, stackTrace);
+              });
+    }
+  }
 
   final playerStatus = PlPlayerStatus(.playing);
 
@@ -642,7 +661,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
       if (_playerCount == 0) {
         _removeListeners();
-        _videoPlayerController?.dispose();
+        _disposePlayer(_videoPlayerController);
         _videoPlayerController = null;
         _videoController = null;
         return;
@@ -724,6 +743,9 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   Future<Player> _initPlayer() async {
     assert(_videoPlayerController == null);
+    if (Platform.isIOS) {
+      await _iosPlayerDisposal;
+    }
     final opt = {
       'video-sync': Pref.videoSync,
       if (Platform.isAndroid) 'ao': Pref.audioOutput,
@@ -780,7 +802,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       player = await _initPlayer();
       if (_playerCount == 0) {
         _removeListeners();
-        player.dispose();
+        _disposePlayer(player);
         player = null;
         _videoController = null;
         return;
@@ -819,6 +841,10 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     }
 
     assert(!isLive || seekTo == null);
+    // Even a paused load initializes mpv's audio output. Activating only in
+    // play() is too late if AudioUnit initialization has already failed.
+    await _prepareIosAudioSession();
+    if (_playerCount == 0) return;
     await player.open(
       Media(
         video,
@@ -829,16 +855,26 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     );
   }
 
-  Future<void>? refreshPlayer() {
+  Future<void> _prepareIosAudioSession() async {
+    if (Platform.isIOS) {
+      await _iosPlayerDisposal;
+      if (await audioSessionHandler?.setActive(true) == false) {
+        throw StateError('Unable to activate the iOS audio session');
+      }
+    }
+  }
+
+  Future<void> refreshPlayer() async {
     if (dataSource is FileSource) {
-      return null;
+      return;
     }
     if (_videoPlayerController case final ctr? when (ctr.current.isNotEmpty)) {
       var media = ctr.current.last;
       if (!isLive) media = media.copyWith(start: ctr.state.position);
+      await _prepareIosAudioSession();
+      if (_playerCount == 0 || ctr != _videoPlayerController) return;
       return ctr.open(media, play: true);
     }
-    return null;
   }
 
   // 开始播放
@@ -1145,9 +1181,9 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       await seekTo(Duration.zero, isSeek: false);
     }
 
+    if (await audioSessionHandler?.setActive(true) == false) return;
+    if (_playerCount == 0) return;
     await _videoPlayerController?.play();
-
-    audioSessionHandler?.setActive(true);
 
     playerStatus.value = PlayerStatus.playing;
     // screenManager.setOverlays(false);
@@ -1160,7 +1196,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
     // 主动暂停时让出音频焦点
     if (!isInterrupt) {
-      audioSessionHandler?.setActive(false);
+      await audioSessionHandler?.setActive(false);
     }
   }
 
@@ -1602,7 +1638,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     if (kDebugMode) {
       debugPrint('dispose player');
     }
-    _videoPlayerController?.dispose();
+    _disposePlayer(_videoPlayerController);
     _videoPlayerController = null;
     _videoController = null;
     _instance = null;

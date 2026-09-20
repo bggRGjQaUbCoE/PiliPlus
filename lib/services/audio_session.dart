@@ -1,22 +1,28 @@
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:audio_session/audio_session.dart';
+import 'package:synchronized/synchronized.dart';
 
 class AudioSessionHandler {
   late AudioSession session;
   bool _playInterrupted = false;
+  late final Future<void> ready;
+  final _activationLock = Lock();
 
   Future<bool> setActive(bool active) {
-    return session.setActive(active);
+    return _activationLock.synchronized(() async {
+      await ready;
+      return session.setActive(active);
+    });
   }
 
-  AudioSessionHandler() {
-    initSession();
+  AudioSessionHandler({Future<AudioSession>? session}) {
+    ready = initSession(session);
   }
 
-  Future<void> initSession() async {
-    session = await AudioSession.instance;
-    session.configure(const AudioSessionConfiguration.music());
+  Future<void> initSession([Future<AudioSession>? instance]) async {
+    session = await (instance ?? AudioSession.instance);
+    await session.configure(const AudioSessionConfiguration.music());
 
     session.interruptionEventStream.listen((event) {
       final playerStatus = PlPlayerController.getPlayerStatusIfExists();

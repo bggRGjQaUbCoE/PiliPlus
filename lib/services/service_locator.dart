@@ -8,4 +8,5 @@ Future<void> setupServiceLocator() async {
   final audio = await initAudioService();
   videoPlayerServiceHandler = audio;
   audioSessionHandler = AudioSessionHandler();
+  await audioSessionHandler!.ready;
 }

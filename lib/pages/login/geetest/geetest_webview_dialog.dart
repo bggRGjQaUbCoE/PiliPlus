@@ -39,14 +39,18 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
         'if(!d||d.status!="success"){R("error",JSON.stringify(d));return};'
         'C=Object.assign({gt:"$gt",challenge:"$challenge",offline:false,new_captcha:true,product:"bind",width:"100%",https:true,protocol:"https://"},d.data);T()'
         '};'
-        'G=()=>{S=1;T()}';
+        'G=()=>{S=1;T()};'
+        'E=()=>{document.getElementById("E").textContent="验证码加载失败";R("error","geetest script load failed")}';
 
-    return '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width"></head><body>'
+    return '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width"></head>'
+        '<style>#E{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:red}</style>'
+        '<body><div id="E"></div>'
         '<script>'
         '${Platform.isLinux ? "R=(n,o)=>window.webkit.messageHandlers.msgToNative.postMessage(n+':'+JSON.stringify(o))" : "R=flutter_inappwebview.callHandler"};$js'
         '</script>'
-        '<script src="$_geetestJsUri" onload="G()" onerror="R(\'error\',\'geetest script load failed\')"></script>'
-        '<script src="$_geetestConfigUri?gt=$gt&callback=geetest_$ts"></script>';
+        '<script src="$_geetestJsUri" onload="G()" onerror="E()"></script>'
+        '<script src="$_geetestConfigUri?gt=$gt&callback=geetest_$ts" onerror="E()"></script>'
+        '</body></html>';
   }
 
   @override

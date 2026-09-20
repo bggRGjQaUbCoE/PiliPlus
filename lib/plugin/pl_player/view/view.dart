@@ -273,6 +273,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           _getCurrVolume();
           FlutterVolumeController.addListener(
             _onVolumeChanged,
+            // The plugin defaults to ambient and overwrites AVAudioSession.
+            // Keep media playback audible regardless of listener/mpv init order.
+            category: AudioSessionCategory.playback,
             emitOnStart: false,
           );
         } catch (_) {}

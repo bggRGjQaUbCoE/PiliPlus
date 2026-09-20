@@ -6,17 +6,21 @@ class AudioSessionHandler {
   late AudioSession session;
   bool _playInterrupted = false;
 
-  Future<bool> setActive(bool active) {
+  /// Completes when [session] is configured and listeners are attached.
+  late final Future<void> ready;
+
+  Future<bool> setActive(bool active) async {
+    await ready;
     return session.setActive(active);
   }
 
   AudioSessionHandler() {
-    initSession();
+    ready = initSession();
   }
 
   Future<void> initSession() async {
     session = await AudioSession.instance;
-    session.configure(const AudioSessionConfiguration.music());
+    await session.configure(const AudioSessionConfiguration.music());
 
     session.interruptionEventStream.listen((event) {
       final playerStatus = PlPlayerController.getPlayerStatusIfExists();

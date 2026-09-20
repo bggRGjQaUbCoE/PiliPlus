@@ -1145,9 +1145,10 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       await seekTo(Duration.zero, isSeek: false);
     }
 
-    await _videoPlayerController?.play();
+    // Activate AVAudioSession before play so iOS first-play isn't silent.
+    await audioSessionHandler?.setActive(true);
 
-    audioSessionHandler?.setActive(true);
+    await _videoPlayerController?.play();
 
     playerStatus.value = PlayerStatus.playing;
     // screenManager.setOverlays(false);

@@ -28,6 +28,7 @@ import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
+import 'package:PiliPlus/services/multi_thread_proxy.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
@@ -998,7 +999,13 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
             event.startsWith("Can not open external file https://") ||
             //tcp: ffurl_read returned 0xdfb9b0bb
             //tcp: ffurl_read returned 0xffffff99
-            event.startsWith('tcp: ffurl_read returned ')) {
+            event.startsWith('tcp: ffurl_read returned ') ||
+            // 多线程加速开启时播放地址为本地代理
+            (MultiThreadProxy.enable &&
+                (event.startsWith("Failed to open http://") ||
+                    event.startsWith(
+                      "Can not open external file http://",
+                    )))) {
           EasyThrottle.throttle(
             'controllerStream.error.listen',
             const Duration(milliseconds: 10000),

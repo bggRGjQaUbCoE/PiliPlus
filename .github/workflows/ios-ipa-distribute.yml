@@ -1,0 +1,22 @@
+name: iOS IPA Distribute
+
+# Manual-only workflow for quick iOS IPA testing.
+# Reuses the existing unsigned IPA build path from ios.yml
+# (flutter build ios --no-codesign + zip). No Android / full CI.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Optional GitHub release tag (leave empty to only upload artifact)"
+        required: false
+        default: ""
+        type: string
+
+jobs:
+  ios:
+    name: Build & distribute iOS IPA
+    uses: ./.github/workflows/ios.yml
+    permissions: write-all
+    with:
+      tag: ${{ inputs.tag }}

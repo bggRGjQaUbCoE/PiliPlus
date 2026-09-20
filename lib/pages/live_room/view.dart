@@ -694,40 +694,39 @@ class _LiveRoomPageState extends State<LiveRoomPage>
   Widget _buildBodyH(bool isFullScreen) {
     double videoWidth =
         clampDouble(maxHeight / maxWidth * 1.08, 0.56, 0.7) * maxWidth;
-    final rightWidth = min(400.0, maxWidth - videoWidth - padding.horizontal);
-    videoWidth = maxWidth - rightWidth - padding.horizontal;
+    // 播放器贴左边缘铺满，挖孔/刘海落在视频黑边里，右侧聊天栏才需要避让
+    final rightWidth = min(400.0, maxWidth - videoWidth - padding.right);
+    videoWidth = maxWidth - rightWidth - padding.right;
     final videoHeight = maxHeight - padding.top - kToolbarHeight;
     final width = isFullScreen ? maxWidth : videoWidth;
     final height = isFullScreen
         ? maxHeight - (isWindowMode && !isPortrait ? 0 : padding.top)
         : videoHeight;
-    return Padding(
-      padding: isFullScreen
-          ? EdgeInsets.zero
-          : EdgeInsets.only(left: padding.left, right: padding.right),
-      child: Row(
-        children: [
-          Container(
+    return Row(
+      children: [
+        Container(
+          width: width,
+          height: height,
+          margin: EdgeInsets.only(bottom: padding.bottom),
+          child: videoPlayerPanel(
+            isFullScreen,
+            fill: Colors.transparent,
             width: width,
             height: height,
-            margin: EdgeInsets.only(bottom: padding.bottom),
-            child: videoPlayerPanel(
-              isFullScreen,
-              fill: Colors.transparent,
-              width: width,
-              height: height,
-            ),
           ),
-          Offstage(
-            offstage: isFullScreen,
+        ),
+        Offstage(
+          offstage: isFullScreen,
+          child: Padding(
+            padding: EdgeInsets.only(right: padding.right),
             child: SizedBox(
               width: rightWidth,
               height: videoHeight,
               child: _buildBottomWidget,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

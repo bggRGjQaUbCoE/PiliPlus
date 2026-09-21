@@ -36,7 +36,7 @@ abstract final class ReplyHttp {
                   '{"offset":"${nextOffset.replaceAll('"', '\\"')}"}',
               'mode': sort + 2, //2:按时间排序；3：按热度排序
             },
-            options: !isLogin ? options : null,
+            options: options,
           )
         : await Request().get(
             Api.replyList,
@@ -47,7 +47,8 @@ abstract final class ReplyHttp {
               'pn': page,
               'ps': 20,
             },
-            options: !isLogin ? options : null,
+            // Comment visibility checks must use the publishing account.
+            options: Options(extra: {'account': Accounts.main}),
           );
     if (res.data['code'] == 0) {
       return Success(ReplyData.fromJson(res.data['data']));
@@ -74,7 +75,7 @@ abstract final class ReplyHttp {
         'sort': 1,
         if (isLogin) 'csrf': Accounts.main.csrf,
       },
-      options: !isLogin ? options : null,
+      options: isLogin ? Options(extra: {'account': Accounts.main}) : options,
     );
     if (res.data['code'] == 0) {
       ReplyReplyData replyData = ReplyReplyData.fromJson(res.data['data']);

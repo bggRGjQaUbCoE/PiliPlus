@@ -1535,6 +1535,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   void dispose() {
     // 每次减1，最后销毁
+    _shotBusy = false; // 兜底：路由整体被销毁时 showDialog 的 future 不会完成
     resetScreenRotation();
     cancelLongPressTimer();
     _cancelSubForSeek();
@@ -1646,56 +1647,70 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     videoShot = await VideoHttp.videoshot(bvid: bvid, cid: cid!);
   }
 
+  bool _shotBusy = false;
+
   Future<void> takeScreenshot() async {
-    SmartDialog.showToast('截图中');
-    final image = await videoPlayerController?.screenshot();
-    if (image != null) {
-      SmartDialog.showToast('点击弹窗保存截图');
-      showDialog(
-        context: Get.context!,
-        builder: (context) => GestureDetector(
-          onTap: () async {
-            final bytes = await image.toByteData(format: .png);
-            if (bytes != null) {
-              final time = DurationUtils.formatDuration(
-                positionInMilliseconds / 1000,
-              ).replaceAll(':', '-');
-              ImageUtils.saveByteImg(
-                bytes: bytes.buffer.asUint8List(),
-                fileName: 'screenshot_${cid}_$time',
-              );
-            } else {
-              SmartDialog.showToast('保存失败');
-            }
-            Get.back();
-          },
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: min(MediaQuery.widthOf(context) / 3, 350),
-                ),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      width: 5,
-                      color: ColorScheme.of(context).surface,
-                    ),
+    if (_shotBusy) {
+      return;
+    }
+    _shotBusy = true;
+    try {
+      SmartDialog.showToast('截图中');
+      final image = await videoPlayerController?.screenshot();
+      if (image != null) {
+        SmartDialog.showToast('点击弹窗保存截图');
+        await showDialog<void>(
+          context: Get.context!,
+          builder: (context) => GestureDetector(
+            onTap: () async {
+              final route = ModalRoute.of(context);
+              final bytes = await image.toByteData(format: .png);
+              if (route?.isCurrent != true) {
+                return;
+              }
+              if (bytes != null) {
+                final time = DurationUtils.formatDuration(
+                  positionInMilliseconds / 1000,
+                ).replaceAll(':', '-');
+                ImageUtils.saveByteImg(
+                  bytes: bytes.buffer.asUint8List(),
+                  fileName: 'screenshot_${cid}_$time',
+                );
+              } else {
+                SmartDialog.showToast('保存失败');
+              }
+              Navigator.of(context).pop();
+            },
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: min(MediaQuery.widthOf(context) / 3, 350),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: RawImage(image: image),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        width: 5,
+                        color: ColorScheme.of(context).surface,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: RawImage(image: image),
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
-      ).whenComplete(image.dispose);
-    } else {
-      SmartDialog.showToast('截图失败');
+        ).whenComplete(image.dispose);
+      } else {
+        SmartDialog.showToast('截图失败');
+      }
+    } finally {
+      _shotBusy = false;
     }
   }
 

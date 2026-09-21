@@ -844,9 +844,11 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   Future<void> _initializePlayer() async {
     if (_instance == null) return;
     // 设置倍速
-    if (_videoPlayerController != null &&
-        _videoPlayerController!.state.rate != _playbackSpeed.value) {
-      await setPlaybackSpeed(isLive ? 1.0 : _playbackSpeed.value);
+    if (_videoPlayerController != null) {
+      final speed = isLive ? 1.0 : playbackSpeed;
+      if (_videoPlayerController!.state.rate != speed) {
+        await setPlaybackSpeed(speed);
+      }
     }
     _initVideoFit();
 
@@ -1651,11 +1653,13 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     final image = await videoPlayerController?.screenshot();
     if (image != null) {
       SmartDialog.showToast('点击弹窗保存截图');
-      showDialog(
+      final dispose = await showDialog<bool>(
         context: Get.context!,
         builder: (context) => GestureDetector(
           onTap: () async {
+            Get.back(result: false);
             final bytes = await image.toByteData(format: .png);
+            image.dispose();
             if (bytes != null) {
               final time = DurationUtils.formatDuration(
                 positionInMilliseconds / 1000,
@@ -1667,7 +1671,6 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
             } else {
               SmartDialog.showToast('保存失败');
             }
-            Get.back();
           },
           child: Align(
             alignment: Alignment.centerRight,
@@ -1693,7 +1696,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
             ),
           ),
         ),
-      ).whenComplete(image.dispose);
+      );
+      if (dispose ?? true) image.dispose();
     } else {
       SmartDialog.showToast('截图失败');
     }

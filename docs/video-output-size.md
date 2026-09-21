@@ -29,7 +29,7 @@ change; it keeps the plain `FittedBox` + `SimpleVideo` surface.
 | Platform | Implementation | Effect of a resize |
 | --- | --- | --- |
 | iOS / macOS | `media_kit_video/common/darwin/Classes/plugin/VideoOutput.swift` | `texture.resize(size)` reallocates the BGRA pixel buffer, then notifies Dart. |
-| Windows | `media_kit_video/windows/video_output.cc` | `CheckAndResize()` → `Resize()` unregisters and re-registers the Flutter texture and reallocates the D3D11 texture. `texture_id_` is briefly 0, so a frame can be skipped. |
+| Windows | `media_kit_video/windows/video_output.cc` | `CheckAndResize()` → `Resize()` unregisters and re-registers the Flutter texture and reallocates the D3D11 texture. `texture_id_` is briefly 0, so the video flashes for a frame. |
 | Linux | `media_kit_video/linux/video_output.cc`, `texture_gl.cc` | The size is stored and honoured at render time. `texture_gl_populate_texture` rebuilds the mpv FBO/textures inside Flutter's populate callback; the Flutter texture is not unregistered. |
 | Android | not implemented | Only `VideoOutputManager.SetSurfaceSize` exists; `AndroidVideoController.setSize` throws. |
 
@@ -38,6 +38,23 @@ source resolution whenever `videoParams` changes (`NativeVideoController`'s
 listener calls `SetSize(dw, dh)`), and the native side updates
 `controller.rect` when the output actually changes. The reconciliation in
 `VideoOutputResize` depends on both.
+
+## Known limitations
+
+On Windows every applied resize flashes the video for at least one frame.
+`VideoOutput::Resize()` unregisters the old Flutter texture before registering
+the new one; while `texture_id_` is 0, `Render()` skips
+`MarkTextureFrameAvailable` and the GPU surface callback returns `nullptr`, so
+Dart keeps drawing an already unregistered texture id. This is inherent to the
+pinned plugin and cannot be avoided from the app: resizing while paused does not
+work either (`CheckAndResize()` runs from mpv's render callback, which does not
+fire without new frames), and resizing only before the first frame would leave a
+small output that Flutter then upscales once the player goes fullscreen. It is
+accepted deliberately in exchange for a smaller output on high resolution
+sources.
+
+macOS and Linux resize in place: they neither change the texture id nor
+unregister the Flutter texture, so they do not flash.
 
 ## Dependency contract
 
@@ -78,11 +95,9 @@ Platform specific notes:
 
 - iOS and macOS: `VideoOutput.Resize` log lines should be stable after each
   layout change. Also cover the desktop picture-in-picture window on macOS.
-- Windows: each applied resize unregisters and re-registers the Flutter texture
-  (`media_kit: VideoOutput: Create Texture:` in the console). Expect one line per
-  settled size, not one per frame, and check whether a frame is dropped. Repeat
-  with hardware acceleration disabled (`Pref.enableHA`), where resizing must not
-  happen at all.
+- Windows: expect one `media_kit: VideoOutput: Create Texture:` line and one
+  visible flash per settled size, not one per frame. Repeat with hardware
+  acceleration disabled (`Pref.enableHA`), where resizing must not happen at all.
 - Linux: same scenarios as Windows, plus the software rendering fallback (EGL
   initialization failure) to confirm no letterboxing appears.
 

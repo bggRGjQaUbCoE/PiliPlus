@@ -60,27 +60,30 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
     if (Platform.isLinux) {
       return AlertDialog(
         title: const Text('验证码'),
-        constraints: const BoxConstraints(maxWidth: 300, maxHeight: 400),
-        content: LinuxWebview(
-          initialHtml: html,
-          userAgent: BrowserUa.mob,
-          incognito: true,
-          onWebMessageReceived: (msg) {
-            final msgStr = msg.toString();
-            if (msgStr.startsWith("success:")) {
-              final dataStr = msgStr.substring("success:".length);
-              try {
-                final data = jsonDecode(dataStr);
-                Get.back(result: data);
-              } catch (e) {
-                debugPrint('geetest decode error: $e');
+        content: SizedBox(
+          width: 300,
+          height: 400,
+          child: LinuxWebview(
+            initialHtml: html,
+            userAgent: BrowserUa.mob,
+            incognito: true,
+            onWebMessageReceived: (msg) {
+              final msgStr = msg.toString();
+              if (msgStr.startsWith("success:")) {
+                final dataStr = msgStr.substring("success:".length);
+                try {
+                  final data = jsonDecode(dataStr);
+                  Get.back(result: data);
+                } catch (e) {
+                  debugPrint('geetest decode error: $e');
+                }
+              } else if (msgStr.startsWith("error:")) {
+                debugPrint('geetest error: $msgStr');
+              } else if (msgStr.startsWith('close:')) {
+                Get.back();
               }
-            } else if (msgStr.startsWith("error:")) {
-              debugPrint('geetest error: $msgStr');
-            } else if (msgStr.startsWith('close:')) {
-              Get.back();
-            }
-          },
+            },
+          ),
         ),
       );
     }

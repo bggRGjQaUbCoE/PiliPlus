@@ -1,6 +1,7 @@
 name: Vendor Windows ARM64 ARMv8.0 libraries
 
 # Builds the Snapdragon 835 baseline archives. Do not run this on every app build.
+# First run compiles LLVM (~2h) plus the aarch64 MinGW sysroot, then libmpv.
 # After it publishes tag windows-arm64-libs, pin the MD5 in
 # windows/packaging/arm64/vendor.json.
 
@@ -13,10 +14,14 @@ on:
         default: false
         type: boolean
 
+env:
+  CACHE_PREFIX: mpv-winbuild-armv8a-v1
+
 jobs:
-  mpv-armv8a:
-    name: libmpv aarch64 -mcpu=generic
+  toolchain:
+    name: Clang aarch64 sysroot
     runs-on: ubuntu-latest
+    timeout-minutes: 360
     container:
       image: docker://ghcr.io/shinchiro/archlinux:latest
     steps:
@@ -24,7 +29,130 @@ jobs:
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global --add safe.directory '*'
+
+      - name: Checkout mpv-winbuild-cmake
+        uses: actions/checkout@v7
+        with:
+          repository: bggRGjQaUbCoE/mpv-winbuild-cmake
+          ref: master
+          path: mpv-winbuild-cmake
+
+      - name: Restore clang sysroot
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            mpv-winbuild-cmake/clang_root
+            mpv-winbuild-cmake/build_aarch64
+          key: ${{ env.CACHE_PREFIX }}-toolchain-${{ github.run_id }}
+          restore-keys: |
+            ${{ env.CACHE_PREFIX }}-toolchain-
+
+      - name: Restore package sources
+        uses: actions/cache/restore@v4
+        with:
+          path: mpv-winbuild-cmake/src_packages
+          key: ${{ env.CACHE_PREFIX }}-src-${{ github.run_id }}
+          restore-keys: |
+            ${{ env.CACHE_PREFIX }}-src-
+
+      - name: Configure
+        working-directory: mpv-winbuild-cmake
+        run: |
+          cmake -DTARGET_ARCH=aarch64-w64-mingw32 \
+            -DCOMPILER_TOOLCHAIN=clang \
+            -DGCC_ARCH=generic \
+            -DCLANG_FLAGS="-march=armv8-a" \
+            -DCMAKE_INSTALL_PREFIX="$PWD/clang_root" \
+            -DMINGW_INSTALL_PREFIX="$PWD/build_aarch64/aarch64-w64-mingw32" \
+            -DSINGLE_SOURCE_LOCATION="$PWD/src_packages" \
+            -DRUSTUP_LOCATION="$PWD/clang_root/install_rustup" \
+            -DENABLE_CCACHE=ON \
+            -DLLVM_CCACHE_BUILD=ON \
+            -G Ninja \
+            --fresh \
+            -B build_aarch64 \
+            -S "$PWD"
+
+      - name: Build llvm-clang
+        working-directory: mpv-winbuild-cmake
+        run: |
+          ninja -C build_aarch64 download || true
+          if [ -x clang_root/bin/clang ] && \
+             [ -x clang_root/bin/aarch64-w64-mingw32-clang ] && \
+             [ -d build_aarch64/aarch64-w64-mingw32/include ]; then
+            echo "clang sysroot already present; skipping llvm-clang"
+          else
+            ninja -C build_aarch64 llvm-clang
+          fi
+          if [ ! -x clang_root/install_rustup/.cargo/bin/rustc ]; then
+            ninja -C build_aarch64 rustup
+          fi
+          test -x clang_root/bin/clang
+          test -x clang_root/bin/aarch64-w64-mingw32-clang
+          test -d build_aarch64/aarch64-w64-mingw32/include
+
+      - name: Collect toolchain logs
+        if: always()
+        working-directory: mpv-winbuild-cmake
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/vendor-out/logs"
+          find build_aarch64 -type f \( -name '*-*.log' -o -name 'config.log' \) -print |
+            while IFS= read -r f; do
+              echo "===== $f ====="
+              tail -n 80 "$f" || true
+            done
+          cp -fr $(find build_aarch64 -type f \( -iname '*-*.log' -o -name 'config.log' \)) \
+            "$GITHUB_WORKSPACE/vendor-out/logs" || true
+          7z a -m0=lzma2 -mx=9 "$GITHUB_WORKSPACE/vendor-out/toolchain-armv8a-logs.7z" \
+            "$GITHUB_WORKSPACE/vendor-out/logs" || true
+
+      - name: Upload toolchain logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: toolchain-armv8a-logs
+          path: vendor-out/toolchain-armv8a-logs.7z
+          if-no-files-found: ignore
+          retention-days: 5
+
+      - name: Drop LLVM object files before cache
+        if: always()
+        working-directory: mpv-winbuild-cmake
+        run: rm -rf build_aarch64/toolchain build_aarch64/packages
+
+      - name: Save clang sysroot
+        if: always()
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            mpv-winbuild-cmake/clang_root
+            mpv-winbuild-cmake/build_aarch64
+          key: ${{ env.CACHE_PREFIX }}-toolchain-${{ github.run_id }}
+
+      - name: Save package sources
+        if: always()
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: mpv-winbuild-cmake/src_packages
+          key: ${{ env.CACHE_PREFIX }}-src-${{ github.run_id }}
+
+  mpv-armv8a:
+    name: libmpv aarch64 -mcpu=generic
+    needs: toolchain
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    container:
+      image: docker://ghcr.io/shinchiro/archlinux:latest
+    steps:
+      - name: Setup git
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global --add safe.directory '*'
 
       - name: Checkout PiliPlus scripts
         uses: actions/checkout@v7
@@ -38,9 +166,30 @@ jobs:
           ref: master
           path: mpv-winbuild-cmake
 
-      - name: Configure and build
+      - name: Restore clang sysroot
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            mpv-winbuild-cmake/clang_root
+            mpv-winbuild-cmake/build_aarch64
+          key: ${{ env.CACHE_PREFIX }}-toolchain-${{ github.run_id }}
+          restore-keys: |
+            ${{ env.CACHE_PREFIX }}-toolchain-
+
+      - name: Restore package sources
+        uses: actions/cache/restore@v4
+        with:
+          path: mpv-winbuild-cmake/src_packages
+          key: ${{ env.CACHE_PREFIX }}-src-full-${{ github.run_id }}
+          restore-keys: |
+            ${{ env.CACHE_PREFIX }}-src-full-
+            ${{ env.CACHE_PREFIX }}-src-
+
+      - name: Configure and build libmpv
         working-directory: mpv-winbuild-cmake
         run: |
+          test -x clang_root/bin/clang
+          test -x clang_root/bin/aarch64-w64-mingw32-clang
           cmake -DTARGET_ARCH=aarch64-w64-mingw32 \
             -DCOMPILER_TOOLCHAIN=clang \
             -DGCC_ARCH=generic \
@@ -48,12 +197,14 @@ jobs:
             -DCMAKE_INSTALL_PREFIX="$PWD/clang_root" \
             -DMINGW_INSTALL_PREFIX="$PWD/build_aarch64/aarch64-w64-mingw32" \
             -DSINGLE_SOURCE_LOCATION="$PWD/src_packages" \
+            -DRUSTUP_LOCATION="$PWD/clang_root/install_rustup" \
             -DENABLE_CCACHE=ON \
             -G Ninja \
             --fresh \
             -B build_aarch64 \
             -S "$PWD"
           ninja -C build_aarch64 download || true
+          ninja -C build_aarch64 update
           ninja -C build_aarch64 mpv
           ninja -C build_aarch64 mpv-packaging
           mkdir -p "$GITHUB_WORKSPACE/vendor-out"
@@ -64,19 +215,61 @@ jobs:
             exit 1
           fi
           cp "$DEV" "$GITHUB_WORKSPACE/vendor-out/mpv-dev-aarch64-armv8a.7z"
-          md5sum "$GITHUB_WORKSPACE/vendor-out/mpv-dev-aarch64-armv8a.7z" | tee "$GITHUB_WORKSPACE/vendor-out/mpv-dev-aarch64-armv8a.md5"
+          md5sum "$GITHUB_WORKSPACE/vendor-out/mpv-dev-aarch64-armv8a.7z" |
+            tee "$GITHUB_WORKSPACE/vendor-out/mpv-dev-aarch64-armv8a.md5"
           mkdir -p "$GITHUB_WORKSPACE/vendor-out/mpv"
-          7z x "$GITHUB_WORKSPACE/vendor-out/mpv-dev-aarch64-armv8a.7z" -o"$GITHUB_WORKSPACE/vendor-out/mpv"
+          7z x "$GITHUB_WORKSPACE/vendor-out/mpv-dev-aarch64-armv8a.7z" \
+            -o"$GITHUB_WORKSPACE/vendor-out/mpv"
           python3 "$GITHUB_WORKSPACE/piliplus/lib/scripts/check_windows_arm64_binaries.py" \
             "$GITHUB_WORKSPACE/vendor-out/mpv" \
             --opcode-file libmpv-2.dll
+
+      - name: Collect libmpv logs
+        if: always()
+        working-directory: mpv-winbuild-cmake
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/vendor-out/logs"
+          find build_aarch64 -type f \( -name '*-configure-*.log' -o -name '*-build-*.log' -o -name 'config.log' \) -print |
+            while IFS= read -r f; do
+              echo "===== $f ====="
+              tail -n 80 "$f" || true
+            done
+          cp -fr $(find build_aarch64 -type f \( -iname '*-*.log' -o -wholename '*/ffbuild/config.log' \)) \
+            "$GITHUB_WORKSPACE/vendor-out/logs" || true
+          7z a -m0=lzma2 -mx=9 "$GITHUB_WORKSPACE/vendor-out/mpv-armv8a-logs.7z" \
+            "$GITHUB_WORKSPACE/vendor-out/logs" || true
 
       - name: Upload libmpv archive
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: mpv-dev-aarch64-armv8a
-          path: vendor-out/mpv-dev-aarch64-armv8a.*
+          path: vendor-out/mpv-dev-aarch64-armv8a.7z
+
+      - name: Upload libmpv md5
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: mpv-dev-aarch64-armv8a-md5
+          path: vendor-out/mpv-dev-aarch64-armv8a.md5
+
+      - name: Upload libmpv logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: mpv-armv8a-logs
+          path: vendor-out/mpv-armv8a-logs.7z
+          if-no-files-found: ignore
+          retention-days: 5
+
+      - name: Save package sources
+        if: always()
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: mpv-winbuild-cmake/src_packages
+          key: ${{ env.CACHE_PREFIX }}-src-full-${{ github.run_id }}
 
   angle-armv8a:
     name: ANGLE ARM64 /arch:armv8.0
@@ -85,7 +278,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Stage ARM64 ANGLE and enforce /arch:armv8.0 baseline
+      - name: Stage ARM64 ANGLE
         shell: pwsh
         run: |
           choco install 7zip -y
@@ -95,14 +288,27 @@ jobs:
           Copy-Item -Force "$env:TEMP\ANGLE_WINARM64.7z" vendor-out/ANGLE_WINARM64_armv8a.7z
           (Get-FileHash -Algorithm MD5 vendor-out/ANGLE_WINARM64_armv8a.7z).Hash.ToLowerInvariant() |
             Set-Content vendor-out/ANGLE_WINARM64_armv8a.md5
-          Write-Host "ANGLE candidate hashed. Rebuild with MSVC /arch:armv8.0 if the opcode gate failed."
+
+      - name: Check ANGLE Snapdragon 835 opcodes
+        shell: pwsh
+        run: |
+          python lib/scripts/check_windows_arm64_binaries.py vendor-out/ANGLE `
+            --opcode-file libEGL.dll `
+            --opcode-file libGLESv2.dll
 
       - name: Upload ANGLE archive
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: ANGLE_WINARM64_armv8a
-          path: vendor-out/ANGLE_WINARM64_armv8a.*
+          path: vendor-out/ANGLE_WINARM64_armv8a.7z
+
+      - name: Upload ANGLE md5
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: ANGLE_WINARM64_armv8a-md5
+          path: vendor-out/ANGLE_WINARM64_armv8a.md5
 
   publish:
     name: Publish windows-arm64-libs
@@ -128,5 +334,5 @@ jobs:
             vendor-out/ANGLE_WINARM64_armv8a.7z
           body: |
             ARMv8.0-A Windows ARM64 native libraries for Snapdragon 835.
-            libmpv was built with -DGCC_ARCH=generic.
+            libmpv was built with -DGCC_ARCH=generic -DCLANG_FLAGS=-march=armv8-a.
             Pin MD5 sums from the sibling .md5 artifacts into windows/packaging/arm64/vendor.json.

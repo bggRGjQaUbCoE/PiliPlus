@@ -768,17 +768,19 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     final double videoHeight = maxHeight - padding.vertical;
     final double width = videoHeight * ratio;
     final videoWidth = isFullScreen ? maxWidth : width;
-    // 播放器贴左边缘铺满，右侧简介栏才需要避让
-    final introWidth = maxWidth - width - padding.right;
+    final introWidth = maxWidth - width - padding.horizontal;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          width: videoWidth,
-          height: videoHeight,
-          child: videoPlayer(
+        playerSafeArea(
+          isFullScreen,
+          child: SizedBox(
             width: videoWidth,
             height: videoHeight,
+            child: videoPlayer(
+              width: videoWidth,
+              height: videoHeight,
+            ),
           ),
         ),
         Offstage(
@@ -911,25 +913,27 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              width: videoWidth,
-              height: videoHeight,
-              child: videoPlayer(
+            playerSafeArea(
+              isFullScreen,
+              child: SizedBox(
                 width: videoWidth,
                 height: videoHeight,
+                child: videoPlayer(
+                  width: videoWidth,
+                  height: videoHeight,
+                ),
               ),
             ),
             if (!videoDetailController.isFileSource)
               Offstage(
                 offstage: isFullScreen,
                 child: Padding(
-                  // 播放器铺满，但它下方的简介栏贴着左边缘，仍需避让
                   padding: EdgeInsets.only(left: padding.left),
                   child: SizedBox(
-                    width: width - padding.left,
+                    width: width,
                     height: introHeight,
                     child: videoIntro(
-                      width: width - padding.left,
+                      width: width,
                       height: introHeight,
                       needRelated: false,
                       needCtr: false,
@@ -944,7 +948,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
           child: Padding(
             padding: EdgeInsets.only(right: padding.right),
             child: SizedBox(
-              width: maxWidth - width - padding.right,
+              width: maxWidth - width - padding.horizontal,
               height: maxHeight - padding.top,
               child: MiniScaffold(
                 key: videoDetailController.childKey,
@@ -1266,10 +1270,24 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   bool isWindowMode = false;
   late EdgeInsets padding;
 
-  /// 播放器画面铺满屏幕，挖孔/刘海落在视频黑边里，左右避让只留给内容区，
-  /// 避免避让区被画成 surface 色后与黑色播放器撞色形成白条
+  /// 内容区的左右安全区避让
   EdgeInsets get contentPadding =>
       EdgeInsets.only(left: padding.left, right: padding.right);
+
+  /// 非全屏时播放器左侧照常避让挖孔/刘海，不让它压住画面；
+  /// 避让条涂成与播放器一致的黑色，避免被画成 surface 色后形成白条
+  Widget playerSafeArea(bool isFullScreen, {required Widget child}) {
+    if (isFullScreen) {
+      return child;
+    }
+    return ColoredBox(
+      color: Colors.black,
+      child: Padding(
+        padding: EdgeInsets.only(left: padding.left),
+        child: child,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

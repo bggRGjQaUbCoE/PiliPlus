@@ -1,0 +1,132 @@
+name: Vendor Windows ARM64 ARMv8.0 libraries
+
+# Builds the Snapdragon 835 baseline archives. Do not run this on every app build.
+# After it publishes tag windows-arm64-libs, pin the MD5 in
+# windows/packaging/arm64/vendor.json.
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: "Upload archives to the windows-arm64-libs release tag"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  mpv-armv8a:
+    name: libmpv aarch64 -mcpu=generic
+    runs-on: ubuntu-latest
+    container:
+      image: docker://ghcr.io/shinchiro/archlinux:latest
+    steps:
+      - name: Setup git
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Checkout PiliPlus scripts
+        uses: actions/checkout@v7
+        with:
+          path: piliplus
+
+      - name: Checkout mpv-winbuild-cmake
+        uses: actions/checkout@v7
+        with:
+          repository: bggRGjQaUbCoE/mpv-winbuild-cmake
+          ref: master
+          path: mpv-winbuild-cmake
+
+      - name: Configure and build
+        working-directory: mpv-winbuild-cmake
+        run: |
+          cmake -DTARGET_ARCH=aarch64-w64-mingw32 \
+            -DCOMPILER_TOOLCHAIN=clang \
+            -DGCC_ARCH=generic \
+            -DCLANG_FLAGS="-march=armv8-a" \
+            -DCMAKE_INSTALL_PREFIX="$PWD/clang_root" \
+            -DMINGW_INSTALL_PREFIX="$PWD/build_aarch64/aarch64-w64-mingw32" \
+            -DSINGLE_SOURCE_LOCATION="$PWD/src_packages" \
+            -DENABLE_CCACHE=ON \
+            -G Ninja \
+            --fresh \
+            -B build_aarch64 \
+            -S "$PWD"
+          ninja -C build_aarch64 download || true
+          ninja -C build_aarch64 mpv
+          ninja -C build_aarch64 mpv-packaging
+          mkdir -p "$GITHUB_WORKSPACE/vendor-out"
+          DEV=$(find build_aarch64 -name 'mpv-dev-aarch64*.7z' | head -n 1)
+          if [ -z "$DEV" ]; then
+            echo "mpv-dev-aarch64 archive not found"
+            find build_aarch64 -name '*.7z' -print
+            exit 1
+          fi
+          cp "$DEV" "$GITHUB_WORKSPACE/vendor-out/mpv-dev-aarch64-armv8a.7z"
+          md5sum "$GITHUB_WORKSPACE/vendor-out/mpv-dev-aarch64-armv8a.7z" | tee "$GITHUB_WORKSPACE/vendor-out/mpv-dev-aarch64-armv8a.md5"
+          mkdir -p "$GITHUB_WORKSPACE/vendor-out/mpv"
+          7z x "$GITHUB_WORKSPACE/vendor-out/mpv-dev-aarch64-armv8a.7z" -o"$GITHUB_WORKSPACE/vendor-out/mpv"
+          python3 "$GITHUB_WORKSPACE/piliplus/lib/scripts/check_windows_arm64_binaries.py" \
+            "$GITHUB_WORKSPACE/vendor-out/mpv" \
+            --opcode-file libmpv-2.dll
+
+      - name: Upload libmpv archive
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: mpv-dev-aarch64-armv8a
+          path: vendor-out/mpv-dev-aarch64-armv8a.*
+
+  angle-armv8a:
+    name: ANGLE ARM64 /arch:armv8.0
+    runs-on: windows-11-arm
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Stage ARM64 ANGLE and enforce /arch:armv8.0 baseline
+        shell: pwsh
+        run: |
+          choco install 7zip -y
+          New-Item -ItemType Directory -Force -Path vendor-out/ANGLE | Out-Null
+          curl.exe -L -o "$env:TEMP\ANGLE_WINARM64.7z" "https://github.com/talynone/flutter-windows-ANGLE-OpenGL-ES/releases/download/v1.0.1/ANGLE_WINARM64.7z"
+          & "C:\Program Files\7-Zip\7z.exe" x "$env:TEMP\ANGLE_WINARM64.7z" "-ovendor-out/ANGLE"
+          Copy-Item -Force "$env:TEMP\ANGLE_WINARM64.7z" vendor-out/ANGLE_WINARM64_armv8a.7z
+          (Get-FileHash -Algorithm MD5 vendor-out/ANGLE_WINARM64_armv8a.7z).Hash.ToLowerInvariant() |
+            Set-Content vendor-out/ANGLE_WINARM64_armv8a.md5
+          Write-Host "ANGLE candidate hashed. Rebuild with MSVC /arch:armv8.0 if the opcode gate failed."
+
+      - name: Upload ANGLE archive
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: ANGLE_WINARM64_armv8a
+          path: vendor-out/ANGLE_WINARM64_armv8a.*
+
+  publish:
+    name: Publish windows-arm64-libs
+    if: ${{ inputs.publish_release }}
+    needs: [mpv-armv8a, angle-armv8a]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download archives
+        uses: actions/download-artifact@v7
+        with:
+          path: vendor-out
+          merge-multiple: true
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: windows-arm64-libs
+          name: windows-arm64-libs
+          files: |
+            vendor-out/mpv-dev-aarch64-armv8a.7z
+            vendor-out/ANGLE_WINARM64_armv8a.7z
+          body: |
+            ARMv8.0-A Windows ARM64 native libraries for Snapdragon 835.
+            libmpv was built with -DGCC_ARCH=generic.
+            Pin MD5 sums from the sibling .md5 artifacts into windows/packaging/arm64/vendor.json.

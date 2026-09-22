@@ -1,0 +1,144 @@
+name: Build for Windows ARM64
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: "tag"
+        required: false
+        default: ""
+        type: string
+  workflow_dispatch:
+
+jobs:
+  build-windows-arm64-app:
+    name: Release Windows ARM64
+    # Public repos only. windows-11-arm is not free on private repositories.
+    runs-on: windows-11-arm
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Verify vendor libmpv URL
+        shell: pwsh
+        run: |
+          $Vendor = Get-Content -Raw windows/packaging/arm64/vendor.json | ConvertFrom-Json
+          $Url = $Vendor.libmpv.url.Replace('{server}', $env:GITHUB_SERVER_URL).Replace('{repository}', $env:GITHUB_REPOSITORY)
+          Write-Host "libmpv $Url"
+          $Code = [int](curl.exe -sI -o NUL -w '%{http_code}' -L $Url)
+          if ($Code -ne 200) {
+            throw "libmpv archive $Url returned HTTP $Code. Run vendor_windows_arm64_libs.yml and publish tag windows-arm64-libs."
+          }
+
+      - name: Setup flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+
+      - name: Add Inno Setup
+        run: choco install innosetup
+
+      - name: Add Chinese language file for Inno Setup
+        run: |
+          Copy-Item "windows/packaging/exe/ChineseSimplified.isl" "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl"
+        shell: pwsh
+
+      - name: Set and Extract version
+        shell: pwsh
+        run: lib/scripts/build.ps1
+
+      - name: Apply Patch
+        shell: pwsh
+        run: lib/scripts/patch.ps1 windows
+
+      - name: Pin ARMv8.0-A media_kit libraries
+        shell: pwsh
+        run: lib/scripts/patch_media_kit_windows_arm64.ps1
+
+      - name: Build Windows ARM64
+        run: flutter build windows --release --dart-define-from-file=pili_release.json --no-pub
+
+      - name: Bundle ARM64 VC++ CRT
+        shell: pwsh
+        run: |
+          $Release = "build/windows/arm64/runner/Release"
+          if (-not (Test-Path $Release)) {
+            throw "missing $Release"
+          }
+          $Redist = Get-ChildItem -Path @(
+            "${env:ProgramFiles}\Microsoft Visual Studio\*\*\VC\Redist\MSVC\*\arm64\Microsoft.VC*.CRT",
+            "${env:ProgramFiles(x86)}\Microsoft Visual Studio\*\*\VC\Redist\MSVC\*\arm64\Microsoft.VC*.CRT"
+          ) -Directory -ErrorAction SilentlyContinue |
+            Sort-Object FullName -Descending |
+            Select-Object -First 1
+          if (-not $Redist) {
+            throw "ARM64 VC++ CRT redist not found"
+          }
+          Write-Host "CRT $($Redist.FullName)"
+          Copy-Item -Force (Join-Path $Redist.FullName '*.dll') $Release
+          foreach ($Name in @('vcruntime140.dll', 'vcruntime140_1.dll', 'msvcp140.dll')) {
+            if (-not (Test-Path (Join-Path $Release $Name))) {
+              throw "missing $Name after CRT copy"
+            }
+          }
+
+      - name: Check ARM64 PE and Snapdragon 835 opcodes
+        shell: pwsh
+        run: lib/scripts/check_windows_arm64_binaries.ps1 -Path build/windows/arm64/runner/Release
+
+      - name: Prepare Upload
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path Release/PiliPlus-Win, PiliPlus-Win-Setup | Out-Null
+          Copy-Item -Recurse -Force build/windows/arm64/runner/Release/* Release/PiliPlus-Win/
+          Compress-Archive -Path Release/PiliPlus-Win -DestinationPath "PiliPlus_windows_${{ env.version }}_arm64_portable.zip"
+
+      - name: Package ARM64 setup
+        shell: pwsh
+        run: |
+          $IssIn = "windows/packaging/exe/inno_setup_arm64.iss"
+          $IssOut = "windows/packaging/exe/_inno_setup_arm64_filled.iss"
+          $Source = (Resolve-Path "build/windows/arm64/runner/Release").Path
+          $Icon = (Resolve-Path "windows/runner/resources/app_icon.ico").Path
+          $Text = Get-Content -Raw -Path $IssIn
+          $Text = $Text.Replace('{{APP_ID}}', '{{5ef970f9-2b9e-4155-b7d6-a9d4dbd6b226}}')
+          $Text = $Text.Replace('{{APP_VERSION}}', $env:version)
+          $Text = $Text.Replace('{{DISPLAY_NAME}}', 'PiliPlus')
+          $Text = $Text.Replace('{{PUBLISHER_NAME}}', 'dom')
+          $Text = $Text.Replace('{{PUBLISHER_URL}}', 'https://github.com/bggRGjQaUbCoE/PiliPlus')
+          $Text = $Text.Replace('{{INSTALL_DIR_NAME}}', '{autopf}\PiliPlus')
+          $Text = $Text.Replace('{{OUTPUT_BASE_FILENAME}}', "PiliPlus_windows_$($env:version)_arm64_setup")
+          $Text = $Text.Replace('{{SETUP_ICON_FILE}}', $Icon)
+          $Text = $Text.Replace('{{PRIVILEGES_REQUIRED}}', 'admin')
+          $Text = $Text.Replace('{{SOURCE_DIR}}', $Source)
+          $Text = $Text.Replace('{{EXECUTABLE_NAME}}', 'piliplus.exe')
+          Set-Content -Path $IssOut -Value $Text -Encoding UTF8
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" $IssOut
+          Move-Item -Force "windows/packaging/exe/PiliPlus_windows_$($env:version)_arm64_setup.exe" "PiliPlus-Win-Setup/"
+
+      - name: Release
+        if: ${{ github.event.inputs.tag != '' }}
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.event.inputs.tag }}
+          name: ${{ github.event.inputs.tag }}
+          files: |
+            PiliPlus_windows_*.zip
+            PiliPlus-Win-Setup/PiliPlus_windows_*.exe
+
+      - name: Upload windows file release
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: Windows-file-arm64-release
+          path: PiliPlus_windows_*.zip
+
+      - name: Upload windows setup release
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: Windows-setup-arm64-release
+          path: PiliPlus-Win-Setup/PiliPlus_windows_*.exe

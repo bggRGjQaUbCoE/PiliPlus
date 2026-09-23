@@ -318,25 +318,60 @@ jobs:
           call fetch.bat angle
           call gclient.bat sync
 
-      - name: Configure ANGLE MSVC ARMv8.0
+      - name: Pin a complete Windows SDK for Chromium
+        shell: pwsh
+        run: |
+          $Kits = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\Include'
+          Write-Host "Installed Include trees:"
+          if (Test-Path $Kits) { Get-ChildItem $Kits | ForEach-Object { $_.FullName } }
+          $Need = Join-Path $Kits '10.0.28000.0\um\Windows.h'
+          if (-not (Test-Path $Need)) {
+            Write-Host "10.0.28000.0 um is missing; trying winget"
+            try {
+              winget install --id Microsoft.WindowsSDK.10.0.28000 -e --accept-package-agreements --accept-source-agreements --disable-interactivity
+            } catch {
+              Write-Host "winget install failed: $_"
+            }
+          }
+          $Sdk = $null
+          foreach ($Ver in @('10.0.28000.0', '10.0.26100.0')) {
+            if (Test-Path (Join-Path $Kits "$Ver\um\Windows.h")) { $Sdk = $Ver; break }
+          }
+          if (-not $Sdk) { throw "no usable Windows SDK um headers under $Kits" }
+          Write-Host "Using Windows SDK $Sdk"
+          $Re = "SDK_VERSION = '[^']+'"
+          $New = "SDK_VERSION = '$Sdk'"
+          foreach ($Rel in @(
+            'angle\build\toolchain\win\setup_toolchain.py',
+            'angle\build\vs_toolchain.py'
+          )) {
+            $Path = Join-Path $env:GITHUB_WORKSPACE $Rel
+            if (-not (Test-Path $Path)) { continue }
+            $Text = Get-Content -Raw $Path
+            $Updated = [regex]::Replace($Text, $Re, $New)
+            if ($Updated -eq $Text) {
+              Write-Host "no SDK_VERSION in $Rel"
+            } else {
+              Set-Content -Path $Path -Value $Updated -NoNewline
+              Write-Host "pinned $Rel to $Sdk"
+            }
+          }
+
+      - name: Configure ANGLE ARMv8.0
         working-directory: angle
         shell: cmd
         run: |
           set "PATH=%GITHUB_WORKSPACE%\depot_tools;%PATH%"
-          for /f "usebackq delims=" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath`) do (
-            call "%%i\VC\Auxiliary\Build\vcvarsall.bat" x64_arm64
-          )
-          set "PATH=%GITHUB_WORKSPACE%\depot_tools;%PATH%"
+          set INCLUDE=
+          set LIB=
+          set LIBPATH=
+          set VSINSTALLDIR=
           gn gen out/armv8a --args="target_cpu=\"arm64\" target_os=\"win\" is_debug=false is_component_build=false is_clang=false angle_enable_d3d9=false angle_enable_gl=false treat_warnings_as_errors=false extra_cflags=\"/arch:armv8.0\""
 
       - name: Build libEGL libGLESv2
         working-directory: angle
         shell: cmd
         run: |
-          set "PATH=%GITHUB_WORKSPACE%\depot_tools;%PATH%"
-          for /f "usebackq delims=" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath`) do (
-            call "%%i\VC\Auxiliary\Build\vcvarsall.bat" x64_arm64
-          )
           set "PATH=%GITHUB_WORKSPACE%\depot_tools;%PATH%"
           autoninja -C out/armv8a libEGL libGLESv2
 

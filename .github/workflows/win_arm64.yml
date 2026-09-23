@@ -58,8 +58,8 @@ jobs:
       - name: Precache Flutter
         run: flutter --version
 
-      - name: Add Inno Setup
-        run: choco install innosetup
+      - name: Add Inno Setup and 7-Zip
+        run: choco install innosetup 7zip
 
       - name: Add Chinese language file for Inno Setup
         run: |

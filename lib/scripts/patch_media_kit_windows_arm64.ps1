@@ -99,7 +99,35 @@ if ($CMake3 -eq $CMake2) {
     throw 'failed to replace ANGLE archive block in media_kit CMakeLists.txt'
 }
 
-Set-Content -Path $CMakePath -Value $CMake3 -NoNewline
+# cmake -E tar cannot decode 7z ARM64 BCJ (libarchive codec 0x0A). Use 7-Zip.
+$CMake4 = $CMake3
+if ($CMake4 -notmatch 'SEVEN_ZIP') {
+    $CMake4 = $CMake4 -replace 'cmake_minimum_required\(VERSION 3\.14\)', @'
+cmake_minimum_required(VERSION 3.14)
+find_program(SEVEN_ZIP NAMES 7z 7za REQUIRED PATHS "C:/Program Files/7-Zip" "C:/Program Files (x86)/7-Zip")
+'@
+}
+if ($CMake4 -eq $CMake3) {
+    throw 'failed to inject 7-Zip lookup in media_kit CMakeLists.txt'
+}
+
+$CMake5 = $CMake4.Replace(
+    'COMMAND "${CMAKE_COMMAND}" -E tar xzf "\"${LIBMPV_ARCHIVE}\""',
+    'COMMAND "${SEVEN_ZIP}" x -y "${LIBMPV_ARCHIVE}"'
+)
+if ($CMake5 -eq $CMake4) {
+    throw 'failed to replace libmpv extract command in media_kit CMakeLists.txt'
+}
+
+$CMake6 = $CMake5.Replace(
+    'COMMAND "${CMAKE_COMMAND}" -E tar xzf "\"${ANGLE_ARCHIVE}\""',
+    'COMMAND "${SEVEN_ZIP}" x -y "${ANGLE_ARCHIVE}"'
+)
+if ($CMake6 -eq $CMake5) {
+    throw 'failed to replace ANGLE extract command in media_kit CMakeLists.txt'
+}
+
+Set-Content -Path $CMakePath -Value $CMake6 -NoNewline
 Write-Host "patched $CMakePath"
 Write-Host "libmpv $($Vendor.libmpv.filename) $LibmpvUrl"
 Write-Host "angle $($Vendor.angle.filename) $AngleUrl"

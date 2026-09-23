@@ -288,44 +288,57 @@ jobs:
         with:
           path: piliplus
 
-      - name: MSVC ARM64 cross tools
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: amd64_arm64
-
       - name: Download depot_tools
         shell: cmd
-        run: git clone --filter=tree:0 https://chromium.googlesource.com/chromium/tools/depot_tools depot_tools
+        run: git clone --filter=tree:0 https://chromium.googlesource.com/chromium/tools/depot_tools.git depot_tools
 
-      - name: Initialize depot_tools
-        working-directory: depot_tools
+      - name: Put depot_tools at the front of PATH
+        shell: pwsh
+        run: |
+          $Depot = Join-Path $env:GITHUB_WORKSPACE 'depot_tools'
+          Add-Content -Path $env:GITHUB_PATH -Value $Depot
+          Write-Host "depot_tools $Depot"
+
+      - name: Bootstrap depot_tools
         shell: cmd
         run: |
-          gclient
-          echo %CD%>> %GITHUB_PATH%
+          set "PATH=%GITHUB_WORKSPACE%\depot_tools;%PATH%"
+          where gclient
+          call gclient.bat
           exit /b 0
 
       - name: Fetch and sync ANGLE
         shell: cmd
         run: |
+          set "PATH=%GITHUB_WORKSPACE%\depot_tools;%PATH%"
+          where fetch
+          where gclient
           mkdir angle
           cd angle
-          fetch angle
-          gclient sync
+          call fetch.bat angle
+          call gclient.bat sync
 
       - name: Configure ANGLE MSVC ARMv8.0
         working-directory: angle
         shell: cmd
-        run: >
-          gn gen out/armv8a --args="target_cpu=\"arm64\" target_os=\"win\"
-          is_debug=false is_component_build=false is_clang=false
-          angle_enable_d3d9=false angle_enable_gl=false
-          treat_warnings_as_errors=false extra_cflags=\"/arch:armv8.0\""
+        run: |
+          set "PATH=%GITHUB_WORKSPACE%\depot_tools;%PATH%"
+          for /f "usebackq delims=" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath`) do (
+            call "%%i\VC\Auxiliary\Build\vcvarsall.bat" x64_arm64
+          )
+          set "PATH=%GITHUB_WORKSPACE%\depot_tools;%PATH%"
+          gn gen out/armv8a --args="target_cpu=\"arm64\" target_os=\"win\" is_debug=false is_component_build=false is_clang=false angle_enable_d3d9=false angle_enable_gl=false treat_warnings_as_errors=false extra_cflags=\"/arch:armv8.0\""
 
       - name: Build libEGL libGLESv2
         working-directory: angle
         shell: cmd
-        run: autoninja -C out/armv8a libEGL libGLESv2
+        run: |
+          set "PATH=%GITHUB_WORKSPACE%\depot_tools;%PATH%"
+          for /f "usebackq delims=" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath`) do (
+            call "%%i\VC\Auxiliary\Build\vcvarsall.bat" x64_arm64
+          )
+          set "PATH=%GITHUB_WORKSPACE%\depot_tools;%PATH%"
+          autoninja -C out/armv8a libEGL libGLESv2
 
       - name: Package ANGLE archive
         shell: pwsh

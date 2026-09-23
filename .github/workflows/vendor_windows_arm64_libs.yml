@@ -222,15 +222,21 @@ jobs:
           test -x clang_root/bin/aarch64-w64-mingw32-clang
           # Intel oneVPL has no ARM64 Windows backend. Keep a dummy target so
           # ffmpeg's DEPENDS graph stays valid, and disable the FFmpeg hook.
-          printf '%s\n' \
-            'ExternalProject_Add(libvpl' \
-            '  DOWNLOAD_COMMAND ""' \
-            '  UPDATE_COMMAND ""' \
-            '  CONFIGURE_COMMAND ""' \
-            '  BUILD_COMMAND ""' \
-            '  INSTALL_COMMAND ""' \
-            ')' > packages/libvpl.cmake
+          dummy_pkg() {
+            printf '%s\n' \
+              "ExternalProject_Add($1" \
+              '  DOWNLOAD_COMMAND ""' \
+              '  UPDATE_COMMAND ""' \
+              '  CONFIGURE_COMMAND ""' \
+              '  BUILD_COMMAND ""' \
+              '  INSTALL_COMMAND ""' \
+              ')' > "packages/$1.cmake"
+          }
+          # Intel oneVPL has no ARM64 Windows backend.
+          dummy_pkg libvpl
           sed -i '/^ libvpl$/d; s/--enable-libvpl/--disable-libvpl/' packages/ffmpeg.cmake
+          # libcurl is not a libmpv/FFmpeg dependency here (openssl/libssh/libsrt).
+          dummy_pkg curl
           cmake -DTARGET_ARCH=aarch64-w64-mingw32 \
             -DCOMPILER_TOOLCHAIN=clang \
             -DGCC_ARCH=generic \
@@ -246,7 +252,15 @@ jobs:
             -S "$PWD"
           ninja -C build_aarch64 download || true
           ninja -C build_aarch64 update
-          ninja -C build_aarch64 mpv
+          if ! ninja -C build_aarch64 mpv; then
+            echo "===== newest ExternalProject error logs ====="
+            find build_aarch64 -type f \( -name '*-build-err.log' -o -name '*-configure-err.log' \) \
+              -printf '%T@ %p\n' | sort -nr | head -n 8 | while read -r _ f; do
+              echo "===== $f ====="
+              tail -n 80 "$f" || true
+            done
+            exit 1
+          fi
           ninja -C build_aarch64 mpv-packaging
           mkdir -p "$GITHUB_WORKSPACE/vendor-out"
           DEV=$(find build_aarch64 -name 'mpv-dev-aarch64*.7z' | head -n 1)
@@ -404,7 +418,7 @@ jobs:
           if (Test-Path $WinVer) {
             $Text = Get-Content -Raw $WinVer
             $Updated = [regex]::Replace($Text, 'NTDDI_VERSION=NTDDI_WIN[A-Z0-9_]+', "NTDDI_VERSION=$Ntddi")
-            $ArchFlags = 'cflags += [ "--target=aarch64-pc-windows", "-march=armv8-a", "-mno-lse", "-mno-outline-atomics" ]'
+            $ArchFlags = 'cflags += [ "--target=aarch64-pc-windows", "/clang:-march=armv8-a", "/clang:-mno-lse", "/clang:-mno-outline-atomics" ]'
             $Updated = [regex]::Replace(
               $Updated,
               'cflags \+= \[ "--target=aarch64-pc-windows" \]',
@@ -443,9 +457,9 @@ jobs:
             'angle_build_tests = false'
             'treat_warnings_as_errors = false'
             'symbol_level = 0'
-            'extra_cflags = "-march=armv8-a -mno-lse -mno-outline-atomics"'
-            'extra_cxxflags = "-march=armv8-a -mno-lse -mno-outline-atomics"'
-            'extra_cppflags = "-march=armv8-a -mno-lse -mno-outline-atomics"'
+            'extra_cflags = "/clang:-march=armv8-a /clang:-mno-lse /clang:-mno-outline-atomics"'
+            'extra_cxxflags = "/clang:-march=armv8-a /clang:-mno-lse /clang:-mno-outline-atomics"'
+            'extra_cppflags = "/clang:-march=armv8-a /clang:-mno-lse /clang:-mno-outline-atomics"'
           ) | Set-Content -Encoding ascii -Path out/armv8a/args.gn
           Get-Content out/armv8a/args.gn
           gn gen out/armv8a
@@ -473,10 +487,13 @@ jobs:
             Get-ChildItem -Recurse -Path angle\out\armv8a -Filter libGLESv2.dll
           )
           if ($Built.Count -lt 2) { throw "built libEGL.dll / libGLESv2.dll not found under angle/out/armv8a" }
+          $Stage = 'vendor-out/angle-check'
+          New-Item -ItemType Directory -Force -Path $Stage | Out-Null
           foreach ($F in $Built) {
             Write-Host ("built {0} md5={1}" -f $F.FullName, (Get-FileHash -Algorithm MD5 $F.FullName).Hash.ToLowerInvariant())
+            Copy-Item -Force $F.FullName (Join-Path $Stage $F.Name)
           }
-          python piliplus/lib/scripts/check_windows_arm64_binaries.py angle/out/armv8a `
+          python piliplus/lib/scripts/check_windows_arm64_binaries.py $Stage `
             --opcode-file libEGL.dll `
             --opcode-file libGLESv2.dll
 

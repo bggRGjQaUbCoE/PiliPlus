@@ -79,8 +79,29 @@ jobs:
         run: |
           # llvm-clang does not depend on llvm. Wrappers are written first and
           # mingw-w64-crt configure then fails because clang_root/bin/clang is missing.
+          heartbeat() {
+            local label="$1"
+            while true; do
+              sleep 60
+              echo "===== ${label} heartbeat $(date -u +%H:%M:%S) ====="
+              find build_aarch64 -type f \( \
+                -name "${label}-configure*.log" -o \
+                -name "${label}-build*.log" -o \
+                -name CMakeOutput.log -o \
+                -name CMakeError.log \
+              \) -print |
+                while IFS= read -r f; do
+                  echo "-- $f --"
+                  tail -n 20 "$f" || true
+                done
+            done
+          }
           if [ ! -x clang_root/bin/clang ]; then
+            heartbeat llvm &
+            heart=$!
             ninja -C build_aarch64 llvm
+            kill "$heart" 2>/dev/null || true
+            wait "$heart" 2>/dev/null || true
           fi
           if [ ! -x clang_root/install_rustup/.cargo/bin/rustc ]; then
             ninja -C build_aarch64 rustup
@@ -89,7 +110,11 @@ jobs:
              [ -f build_aarch64/aarch64-w64-mingw32/lib/libmingw32.a ]; then
             echo "clang sysroot already present; skipping llvm-clang"
           else
+            heartbeat llvm-clang &
+            heart=$!
             ninja -C build_aarch64 llvm-clang
+            kill "$heart" 2>/dev/null || true
+            wait "$heart" 2>/dev/null || true
           fi
           test -x clang_root/bin/clang
           test -x clang_root/bin/aarch64-w64-mingw32-clang
@@ -390,7 +415,7 @@ jobs:
             'target_cpu = "arm64"'
             'target_os = "win"'
             'is_debug = false'
-            'is_official_build = true'
+            'chrome_pgo_phase = 0'
             'is_component_build = false'
             'angle_enable_d3d9 = false'
             'angle_enable_gl = false'

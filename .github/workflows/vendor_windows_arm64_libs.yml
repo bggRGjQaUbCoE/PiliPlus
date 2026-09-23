@@ -220,6 +220,17 @@ jobs:
         run: |
           test -x clang_root/bin/clang
           test -x clang_root/bin/aarch64-w64-mingw32-clang
+          # Intel oneVPL has no ARM64 Windows backend. Keep a dummy target so
+          # ffmpeg's DEPENDS graph stays valid, and disable the FFmpeg hook.
+          printf '%s\n' \
+            'ExternalProject_Add(libvpl' \
+            '  DOWNLOAD_COMMAND ""' \
+            '  UPDATE_COMMAND ""' \
+            '  CONFIGURE_COMMAND ""' \
+            '  BUILD_COMMAND ""' \
+            '  INSTALL_COMMAND ""' \
+            ')' > packages/libvpl.cmake
+          sed -i '/^ libvpl$/d; s/--enable-libvpl/--disable-libvpl/' packages/ffmpeg.cmake
           cmake -DTARGET_ARCH=aarch64-w64-mingw32 \
             -DCOMPILER_TOOLCHAIN=clang \
             -DGCC_ARCH=generic \

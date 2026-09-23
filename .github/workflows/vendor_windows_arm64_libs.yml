@@ -356,17 +356,55 @@ jobs:
               Write-Host "pinned $Rel to $Sdk"
             }
           }
+          $Sdkddk = Join-Path $Kits "$Sdk\shared\sdkddkver.h"
+          $SdkddkText = Get-Content -Raw $Sdkddk
+          $Ntddi = $null
+          foreach ($Name in @('NTDDI_WIN11_BR', 'NTDDI_WIN11_SE', 'NTDDI_WIN11_GE', 'NTDDI_WIN11_GA', 'NTDDI_WIN10_NI')) {
+            if ($SdkddkText -match $Name) { $Ntddi = $Name; break }
+          }
+          if (-not $Ntddi) { throw "no NTDDI_WIN* macro in $Sdkddk" }
+          Write-Host "SDK $Sdk defines $Ntddi"
+          $WinVer = Join-Path $env:GITHUB_WORKSPACE 'angle\build\config\win\BUILD.gn'
+          if (Test-Path $WinVer) {
+            $Text = Get-Content -Raw $WinVer
+            $Updated = [regex]::Replace($Text, 'NTDDI_VERSION=NTDDI_WIN[A-Z0-9_]+', "NTDDI_VERSION=$Ntddi")
+            if ($Updated -eq $Text) {
+              Write-Host "no NTDDI_VERSION in $WinVer"
+            } else {
+              Set-Content -Path $WinVer -Value $Updated -NoNewline
+              Write-Host "pinned $WinVer to $Ntddi"
+            }
+          }
 
-      - name: Configure ANGLE ARMv8.0
+      - name: Configure ANGLE D3D11 ARMv8.0
         working-directory: angle
-        shell: cmd
+        shell: pwsh
         run: |
-          set "PATH=%GITHUB_WORKSPACE%\depot_tools;%PATH%"
-          set INCLUDE=
-          set LIB=
-          set LIBPATH=
-          set VSINSTALLDIR=
-          gn gen out/armv8a --args="target_cpu=\"arm64\" target_os=\"win\" is_debug=false is_component_build=false angle_enable_d3d9=false angle_enable_gl=false angle_enable_vulkan=false treat_warnings_as_errors=false extra_cflags=\"-march=armv8-a -mno-lse -mno-outline-atomics\""
+          $env:PATH = "$env:GITHUB_WORKSPACE\depot_tools;$env:PATH"
+          $env:INCLUDE = $null
+          $env:LIB = $null
+          $env:LIBPATH = $null
+          $env:VSINSTALLDIR = $null
+          New-Item -ItemType Directory -Force -Path out/armv8a | Out-Null
+          @(
+            'target_cpu = "arm64"'
+            'target_os = "win"'
+            'is_debug = false'
+            'is_official_build = true'
+            'is_component_build = false'
+            'angle_enable_d3d9 = false'
+            'angle_enable_gl = false'
+            'angle_enable_vulkan = false'
+            'angle_enable_swiftshader = false'
+            'angle_enable_wgpu = false'
+            'angle_enable_null = false'
+            'angle_build_tests = false'
+            'treat_warnings_as_errors = false'
+            'symbol_level = 0'
+            'extra_cflags = "-march=armv8-a -mno-lse -mno-outline-atomics"'
+          ) | Set-Content -Encoding ascii -Path out/armv8a/args.gn
+          Get-Content out/armv8a/args.gn
+          gn gen out/armv8a
 
       - name: Build libEGL libGLESv2
         working-directory: angle

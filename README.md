@@ -213,7 +213,9 @@
 
 ## 下载
 
-可以通过右侧release进行下载或拉取代码到本地进行编译
+可以通过右侧release进行下载或拉取代码到本地进行编译。
+
+Linux ARM64（无 CI 产物）见 [docs/linux-arm64.md](docs/linux-arm64.md)。
 
 <br/>
 

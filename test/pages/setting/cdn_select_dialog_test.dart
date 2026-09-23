@@ -132,8 +132,34 @@ VideoItem _sample() => VideoItem(
 );
 
 double? _progress(WidgetTester tester) => tester
-    .widget<LinearProgressIndicator>(find.byType(LinearProgressIndicator))
+    .widget<LinearProgressIndicator>(
+      find.byKey(const ValueKey('cdn-total-progress')),
+    )
     .value;
+
+Finder _row(int index) => find.byWidgetPredicate(
+  (widget) =>
+      widget is RadioListTile<CDNService> &&
+      widget.value == CDNService.values[index],
+);
+
+Finder _rowText(int index, Pattern pattern) => find.descendant(
+  of: _row(index),
+  matching: find.textContaining(pattern),
+);
+
+Finder _rowProgress(int index) => find.byKey(ValueKey('cdn-progress-$index'));
+
+double? _downloadProgress(WidgetTester tester, int index) =>
+    tester.widget<LinearProgressIndicator>(_rowProgress(index)).value;
+
+// Match real elapsed time used by Stopwatch, then advance the fake timer clock.
+Future<void> _sampleInterval(WidgetTester tester) async {
+  await tester.runAsync(
+    () => Future<void>.delayed(const Duration(milliseconds: 275)),
+  );
+  await tester.pump(const Duration(milliseconds: 250));
+}
 
 // Dio schedules interceptor steps as timer events, not only microtasks.
 Future<void> _flushNetwork(WidgetTester tester) async {
@@ -221,6 +247,93 @@ void main() {
     expect(find.textContaining('MB/s'), findsOneWidget);
     await tester.pumpWidget(const SizedBox.shrink());
     await _flushNetwork(tester);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('active sample shows growing bytes and speed before EOF', (
+    tester,
+  ) async {
+    final client = _Client();
+    await _show(tester, client);
+    final first = client.requests.single;
+    expect(_rowText(0, 'MB/s'), findsNothing);
+    expect(_downloadProgress(tester, 0), 0);
+
+    first.body.add(Uint8List(256 * 1024));
+    await _flushNetwork(tester);
+    expect(first.body.isClosed, isFalse);
+    expect(client.requests, hasLength(1));
+    expect(_progress(tester), 0);
+    expect(_downloadProgress(tester, 0), 1 / 32);
+    expect(_rowText(0, '0.25 / 8.00 MiB'), findsOneWidget);
+    final initialSpeed = tester
+        .widget<Text>(
+          _rowText(0, RegExp(r'^实时 ')),
+        )
+        .data!;
+    final speedValue = double.parse(
+      RegExp(r'^实时 ([0-9.eE+\-]+) MB/s').firstMatch(initialSpeed)!.group(1)!,
+    );
+    expect(speedValue, isPositive);
+    expect(speedValue.isFinite, isTrue);
+
+    // A stalled source must not keep displaying the previous interval's speed.
+    await _sampleInterval(tester);
+    final stalledSpeed = tester
+        .widget<Text>(
+          _rowText(0, RegExp(r'^实时 ')),
+        )
+        .data!;
+    expect(
+      double.parse(
+        RegExp(r'^实时 ([0-9.eE+\-]+) MB/s').firstMatch(stalledSpeed)!.group(1)!,
+      ),
+      0,
+    );
+    expect(_downloadProgress(tester, 0), 1 / 32);
+
+    first.body.add(Uint8List(256 * 1024));
+    await _flushNetwork(tester);
+    await _sampleInterval(tester);
+    expect(client.requests, hasLength(1));
+    expect(_downloadProgress(tester, 0), 1 / 16);
+    expect(_rowText(0, '0.50 / 8.00 MiB'), findsOneWidget);
+    unawaited(first.body.close());
+    await _flushNetwork(tester);
+
+    expect(_rowProgress(0), findsNothing);
+    expect(_rowText(0, RegExp(r'^平均 .* MB/s$')), findsOneWidget);
+    expect(client.requests, hasLength(2));
+    expect(_progress(tester), 1 / CDNService.values.length);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 16));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('stream failure replaces live progress and continues the queue', (
+    tester,
+  ) async {
+    final client = _Client();
+    await _show(tester, client);
+    final first = client.requests.single;
+    first.body.add(Uint8List(256 * 1024));
+    await _flushNetwork(tester);
+    expect(_downloadProgress(tester, 0), 1 / 32);
+
+    first.body.addError(const SocketException('test stream failed'));
+    await _flushNetwork(tester);
+    expect(first.aborted, isTrue);
+    expect(first.sourceCancelled, isTrue);
+    expect(client.requests, hasLength(2));
+    expect(_rowProgress(0), findsNothing);
+    expect(_rowText(0, 'MB/s'), findsNothing);
+    expect(_progress(tester), 1 / CDNService.values.length);
+    // A previous node's periodic refresh must not resurrect its active state.
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(_rowProgress(0), findsNothing);
+    expect(_rowText(0, 'MB/s'), findsNothing);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 16));
     expect(tester.takeException(), isNull);
   });
 

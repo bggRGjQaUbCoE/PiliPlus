@@ -244,6 +244,7 @@ jobs:
           # libjxl pulls Highway, which compiles HWY_NEON_DOT into the static DLL.
           sed -i '/^ libjxl$/d; s/--enable-libjxl/--disable-libjxl/' packages/ffmpeg.cmake
           sed -i 's/-DENABLE_SVE=OFF/-DENABLE_SVE=OFF -DENABLE_NEON_DOTPROD=OFF -DENABLE_NEON_I8MM=OFF/' packages/aom.cmake
+          sed -i 's/-Dxxhash_muxer=enabled/-Dxxhash_muxer=enabled -Denable_asm=false/' packages/dav1d.cmake
           dummy_pkg curl
           sed -i \
             -e 's/-Dlibcurl=enabled/-Dlibcurl=disabled/' \
@@ -290,35 +291,13 @@ jobs:
             fi
             git -C "$repo" clean -fd
           done
-          # -march=+nodotprod does not strip hand-written / per-TU DotProd
-          # kernels (dav1d .S, zlib-ng adler32_neon_dotprod). Those 202 hits
-          # are that leftover. Drop the sources and rebuild those packages only.
-          python3 - << 'PY'
-          import re
-          from pathlib import Path
-          root = Path("src_packages/dav1d")
-          if root.is_dir():
-              pat = re.compile(
-                  r"[,'\s]*['\"][^'\"]*(?:dotprod|i8mm)[^'\"]*['\"]",
-                  re.I,
-              )
-              for p in root.rglob("meson.build"):
-                  text = p.read_text()
-                  new = pat.sub("", text)
-                  if new != text:
-                      p.write_text(new)
-                      print(f"dav1d: stripped dotprod/i8mm from {p}")
-          zlib = Path("src_packages/zlib/CMakeLists.txt")
-          if zlib.is_file():
-              text = zlib.read_text()
-              new = text.replace(
-                  "if(NEON_HAS_DOTPROD AND ARCH_64BIT)",
-                  "if(FALSE AND NEON_HAS_DOTPROD AND ARCH_64BIT)",
-              )
-              if new != text:
-                  zlib.write_text(new)
-                  print("zlib-ng: disabled NEON_DOTPROD")
-          PY
+          # Do not regex-edit dav1d meson.build: stripping 'dotprod'/'i8mm'
+          # strings also deletes aarch64_extensions keys and meson dies.
+          # -Denable_asm=false is the supported switch (C decode, no UDOT).
+          zlib=src_packages/zlib/CMakeLists.txt
+          if [ -f "$zlib" ]; then
+            sed -i 's/if(NEON_HAS_DOTPROD AND ARCH_64BIT)/if(FALSE AND NEON_HAS_DOTPROD AND ARCH_64BIT)/' "$zlib"
+          fi
           # Only drop 0-byte step stamps so cmake --fresh's *-info.txt / *.cmake
           # stay. Deleting zlib-patch-info.txt makes ninja fail with
           # "needed by zlib-patch, missing and no known rule".

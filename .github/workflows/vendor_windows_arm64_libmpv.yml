@@ -272,8 +272,21 @@ jobs:
             -B build_aarch64 \
             -S "$PWD"
           ninja -C build_aarch64 download || true
-          # Do not `ninja update`: force-update deletes 0-byte stamps when git
-          # moves and rebuilds ffmpeg/libplacebo from scratch.
+          # Cached src_packages already have patches committed (e.g. spirv-cross
+          # "static linking hacks"). cmake --fresh re-runs `git am` and fails
+          # with "sha1 information is lacking". Reset each repo to its remote
+          # tip so PATCH_COMMAND can apply once. Do not `ninja update`.
+          for repo in src_packages/*/; do
+            [ -d "${repo}.git" ] || continue
+            git -C "$repo" am --abort 2>/dev/null || true
+            git -C "$repo" rebase --abort 2>/dev/null || true
+            if git -C "$repo" rev-parse --abbrev-ref '@{u}' >/dev/null 2>&1; then
+              git -C "$repo" reset --hard '@{u}'
+            else
+              git -C "$repo" reset --hard
+            fi
+            git -C "$repo" clean -fd
+          done
           if ! ninja -C build_aarch64 mpv; then
             echo "===== ninja mpv failed (packaging extras); harvesting libmpv if present ====="
             find build_aarch64 -type f \( -name '*-build-err.log' -o -name '*-configure-err.log' -o -name meson-log.txt \) \

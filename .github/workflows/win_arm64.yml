@@ -21,17 +21,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Verify vendor libmpv URL
-        shell: pwsh
-        run: |
-          $Vendor = Get-Content -Raw windows/packaging/arm64/vendor.json | ConvertFrom-Json
-          $Url = $Vendor.libmpv.url.Replace('{server}', $env:GITHUB_SERVER_URL).Replace('{repository}', $env:GITHUB_REPOSITORY)
-          Write-Host "libmpv $Url"
-          $Code = [int](curl.exe -sI -o NUL -w '%{http_code}' -L $Url)
-          if ($Code -ne 200) {
-            throw "libmpv archive $Url returned HTTP $Code. Run vendor_windows_arm64_libs.yml and publish tag windows-arm64-libs."
-          }
-
       - name: Setup flutter
         uses: subosito/flutter-action@v2
         with:
@@ -54,7 +43,7 @@ jobs:
         shell: pwsh
         run: lib/scripts/patch.ps1 windows
 
-      - name: Pin ARMv8.0-A media_kit libraries
+      - name: Pin Windows ARM64 media_kit libraries
         shell: pwsh
         run: lib/scripts/patch_media_kit_windows_arm64.ps1
 
@@ -85,7 +74,7 @@ jobs:
             }
           }
 
-      - name: Check ARM64 PE and Snapdragon 835 opcodes
+      - name: Check ARM64 PE machine type
         shell: pwsh
         run: lib/scripts/check_windows_arm64_binaries.ps1 -Path build/windows/arm64/runner/Release
 

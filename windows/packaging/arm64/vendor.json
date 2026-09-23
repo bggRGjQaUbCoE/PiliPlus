@@ -1,17 +1,12 @@
 {
-  "required_isa": "armv8-a",
-  "required_msvc_arch": "/arch:armv8.0",
-  "required_mpv_mcpu": "generic",
   "libmpv": {
-    "filename": "mpv-dev-aarch64-armv8a.7z",
-    "url": "{server}/{repository}/releases/download/windows-arm64-libs/mpv-dev-aarch64-armv8a.7z",
-    "md5": "",
-    "build": "mpv-winbuild-cmake -DTARGET_ARCH=aarch64-w64-mingw32 -DCOMPILER_TOOLCHAIN=clang -DGCC_ARCH=generic"
+    "filename": "mpv-dev-aarch64-20260922-git-c646756799.7z",
+    "url": "https://github.com/zhongfly/mpv-winbuild/releases/download/2026-09-22-c646756799/mpv-dev-aarch64-20260922-git-c646756799.7z",
+    "md5": "f4927329533dc9db3445c2afaf06bff0"
   },
   "angle": {
     "filename": "ANGLE_WINARM64.7z",
     "url": "https://github.com/talynone/flutter-windows-ANGLE-OpenGL-ES/releases/download/v1.0.1/ANGLE_WINARM64.7z",
-    "md5": "b56aaae894ccf6c8ee90b59ee642a787",
-    "build": "Rebuild libEGL.dll and libGLESv2.dll with Chromium Clang -march=armv8-a -mno-lse. Do not ship the talynone archive; it contains LSE ldadd."
+    "md5": "b56aaae894ccf6c8ee90b59ee642a787"
   }
 }

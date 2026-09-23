@@ -36,9 +36,9 @@ on:
                 type: boolean
 
             build_win_arm64:
-                description: "Build Win-arm64 (requires windows-arm64-libs vendor release)"
+                description: "Build Win-arm64"
                 required: false
-                default: false
+                default: true
                 type: boolean
 
             build_linux_x64:

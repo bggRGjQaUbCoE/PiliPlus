@@ -58,7 +58,6 @@ $CMake = Get-Content -Raw -Path $CMakePath
 $LibmpvBlock = @"
 # libmpv archive containing the pre-built shared libraries & headers.
 if(FLUTTER_TARGET_PLATFORM STREQUAL "windows-arm64")
-  # ARMv8.0-A (-mcpu=generic). cortex-a76 archives illegal-instruction on Snapdragon 835.
   set(LIBMPV "$($Vendor.libmpv.filename)")
   set(LIBMPV_URL "$LibmpvUrl")
   set(LIBMPV_MD5 "$LibmpvMd5")
@@ -72,7 +71,6 @@ endif()
 $AngleBlock = @"
 # ANGLE archive containing the pre-built shared libraries & headers.
 if(FLUTTER_TARGET_PLATFORM STREQUAL "windows-arm64")
-  # MSVC /arch:armv8.0. Do not use Clang -mcpu=native on the windows-11-arm runner.
   set(ANGLE "$($Vendor.angle.filename)")
   set(ANGLE_URL "$AngleUrl")
   set(ANGLE_MD5 "$AngleMd5")

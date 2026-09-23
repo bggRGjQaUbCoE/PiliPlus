@@ -432,11 +432,18 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Download archives
+      - name: Download libmpv archive
         uses: actions/download-artifact@v7
         with:
+          name: mpv-dev-aarch64-nodotprod
           path: vendor-out
-          merge-multiple: true
+
+      - name: Download libmpv md5
+        continue-on-error: true
+        uses: actions/download-artifact@v7
+        with:
+          name: mpv-dev-aarch64-nodotprod-md5
+          path: vendor-out
 
       - name: Publish release
         uses: softprops/action-gh-release@v3
@@ -445,9 +452,10 @@ jobs:
           name: windows-arm64-libmpv
           files: |
             vendor-out/mpv-dev-aarch64-nodotprod.7z
+            vendor-out/mpv-dev-aarch64-nodotprod.md5
           body: |
             Windows ARM64 libmpv without FEAT_DotProd (SDOT/UDOT).
             Built with -DGCC_ARCH=generic -DCLANG_FLAGS=-march=armv8.2-a+nodotprod.
             For Snapdragon 850 WOA (Kryo 385): stock cortex-a76 archives illegal-instruction (c000001d).
             ANGLE is unchanged: talynone ANGLE_WINARM64.7z.
-            Pin the MD5 from the sibling artifact into windows/packaging/arm64/vendor.json.
+            Pin the MD5 from mpv-dev-aarch64-nodotprod.md5 into windows/packaging/arm64/vendor.json.

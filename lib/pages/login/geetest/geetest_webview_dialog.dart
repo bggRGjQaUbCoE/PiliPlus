@@ -46,7 +46,7 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
         '<style>#E{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:red}</style>'
         '<body><div id="E"></div>'
         '<script>'
-        '${Platform.isLinux ? "R=(n,o)=>window.webkit.messageHandlers.msgToNative.postMessage(n+':'+JSON.stringify(o))" : "R=flutter_inappwebview.callHandler"};$js'
+        '${Platform.isLinux ? "R=(n,o)=>window.webkit.messageHandlers.msgToNative.postMessage(n+':'+JSON.stringify(o))" : "R=(n,o)=>window.flutter_inappwebview?.callHandler(n,o)"};$js'
         '</script>'
         '<script src="$_geetestJsUri" onload="G()" onerror="E()"></script>'
         '<script src="$_geetestConfigUri?gt=$gt&callback=geetest_$ts" onerror="E()"></script>'

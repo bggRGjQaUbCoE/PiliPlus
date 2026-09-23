@@ -393,11 +393,17 @@ jobs:
           if (Test-Path $WinVer) {
             $Text = Get-Content -Raw $WinVer
             $Updated = [regex]::Replace($Text, 'NTDDI_VERSION=NTDDI_WIN[A-Z0-9_]+', "NTDDI_VERSION=$Ntddi")
+            $ArchFlags = 'cflags += [ "--target=aarch64-pc-windows", "-march=armv8-a", "-mno-lse", "-mno-outline-atomics" ]'
+            $Updated = [regex]::Replace(
+              $Updated,
+              'cflags \+= \[ "--target=aarch64-pc-windows" \]',
+              $ArchFlags
+            )
             if ($Updated -eq $Text) {
-              Write-Host "no NTDDI_VERSION in $WinVer"
+              Write-Host "no NTDDI_VERSION / arm64 target rewrite in $WinVer"
             } else {
               Set-Content -Path $WinVer -Value $Updated -NoNewline
-              Write-Host "pinned $WinVer to $Ntddi"
+              Write-Host "pinned $WinVer to $Ntddi and ARMv8.0 cflags"
             }
           }
 
@@ -427,9 +433,19 @@ jobs:
             'treat_warnings_as_errors = false'
             'symbol_level = 0'
             'extra_cflags = "-march=armv8-a -mno-lse -mno-outline-atomics"'
+            'extra_cxxflags = "-march=armv8-a -mno-lse -mno-outline-atomics"'
+            'extra_cppflags = "-march=armv8-a -mno-lse -mno-outline-atomics"'
           ) | Set-Content -Encoding ascii -Path out/armv8a/args.gn
           Get-Content out/armv8a/args.gn
           gn gen out/armv8a
+          gn ls out/armv8a --type=shared_library
+          foreach ($Label in @('//:libGLESv2', '//src/libGLESv2:libGLESv2')) {
+            gn desc out/armv8a $Label cflags
+            if ($LASTEXITCODE -eq 0) {
+              gn desc out/armv8a $Label cflags_cc
+              break
+            }
+          }
 
       - name: Build libEGL libGLESv2
         working-directory: angle
@@ -437,6 +453,21 @@ jobs:
         run: |
           set "PATH=%GITHUB_WORKSPACE%\depot_tools;%PATH%"
           autoninja -C out/armv8a libEGL libGLESv2
+
+      - name: Check built ANGLE DLLs before packaging
+        shell: pwsh
+        run: |
+          $Built = @(
+            Get-ChildItem -Recurse -Path angle\out\armv8a -Filter libEGL.dll
+            Get-ChildItem -Recurse -Path angle\out\armv8a -Filter libGLESv2.dll
+          )
+          if ($Built.Count -lt 2) { throw "built libEGL.dll / libGLESv2.dll not found under angle/out/armv8a" }
+          foreach ($F in $Built) {
+            Write-Host ("built {0} md5={1}" -f $F.FullName, (Get-FileHash -Algorithm MD5 $F.FullName).Hash.ToLowerInvariant())
+          }
+          python piliplus/lib/scripts/check_windows_arm64_binaries.py angle/out/armv8a `
+            --opcode-file libEGL.dll `
+            --opcode-file libGLESv2.dll
 
       - name: Package ANGLE archive
         shell: pwsh
@@ -453,7 +484,13 @@ jobs:
             $Src = $Built | Where-Object { $_.Name -eq $Name } | Select-Object -First 1
             if (-not $Src) { throw "missing built $Name" }
             $Dest = Get-ChildItem -Recurse -Path vendor-out/ANGLE -Filter $Name | Select-Object -First 1
+            $SrcHash = (Get-FileHash -Algorithm MD5 $Src.FullName).Hash
             if ($Dest) {
+              $OldHash = (Get-FileHash -Algorithm MD5 $Dest.FullName).Hash
+              Write-Host ("replace {0} {1} -> {2}" -f $Name, $OldHash, $SrcHash)
+              if ($OldHash -eq $SrcHash) {
+                throw "$Name hash still matches the talynone archive"
+              }
               Copy-Item -Force $Src.FullName $Dest.FullName
             } else {
               Copy-Item -Force $Src.FullName (Join-Path vendor-out/ANGLE $Name)

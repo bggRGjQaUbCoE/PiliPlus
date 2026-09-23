@@ -127,7 +127,6 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
           initialData: InAppWebViewInitialData(data: html),
           onWebViewCreated: (ctr) {
             ctr
-              ..openDevTools()
               ..addJavaScriptHandler(
                 handlerName: 'success',
                 callback: (args) {

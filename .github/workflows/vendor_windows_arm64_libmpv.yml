@@ -319,9 +319,18 @@ jobs:
                   zlib.write_text(new)
                   print("zlib-ng: disabled NEON_DOTPROD")
           PY
-          for p in dav1d zlib ffmpeg libjxl highway mpv; do
-            find "build_aarch64/packages/${p}-prefix" -path '*-stamp/*' -type f \
-              -delete 2>/dev/null || true
+          # Only drop 0-byte step stamps so cmake --fresh's *-info.txt / *.cmake
+          # stay. Deleting zlib-patch-info.txt makes ninja fail with
+          # "needed by zlib-patch, missing and no known rule".
+          for p in dav1d zlib ffmpeg mpv; do
+            stamp="build_aarch64/packages/${p}-prefix/src/${p}-stamp"
+            [ -d "$stamp" ] || continue
+            find "$stamp" -type f -size 0c \
+              ! -name '*.cmake' ! -name '*-info.txt' \
+              \( -name "${p}-configure" -o -name "${p}-build" \
+                 -o -name "${p}-install" -o -name "${p}-done" \
+                 -o -name "${p}-force-meson-configure" \) \
+              -delete
           done
           if ! ninja -C build_aarch64 mpv; then
             echo "===== ninja mpv failed (packaging extras); harvesting libmpv if present ====="

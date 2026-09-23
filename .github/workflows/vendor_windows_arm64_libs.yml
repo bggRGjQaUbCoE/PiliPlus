@@ -15,7 +15,7 @@ on:
         type: boolean
 
 env:
-  CACHE_PREFIX: mpv-winbuild-armv8a-v1
+  CACHE_PREFIX: mpv-winbuild-armv8a-v2
 
 jobs:
   toolchain:
@@ -74,29 +74,34 @@ jobs:
             -B build_aarch64 \
             -S "$PWD"
 
-      - name: Build llvm-clang
+      - name: Build LLVM then llvm-clang
         working-directory: mpv-winbuild-cmake
         run: |
-          ninja -C build_aarch64 download || true
-          if [ -x clang_root/bin/clang ] && \
-             [ -x clang_root/bin/aarch64-w64-mingw32-clang ] && \
-             [ -d build_aarch64/aarch64-w64-mingw32/include ]; then
-            echo "clang sysroot already present; skipping llvm-clang"
-          else
-            ninja -C build_aarch64 llvm-clang
+          # llvm-clang does not depend on llvm. Wrappers are written first and
+          # mingw-w64-crt configure then fails because clang_root/bin/clang is missing.
+          if [ ! -x clang_root/bin/clang ]; then
+            ninja -C build_aarch64 llvm
           fi
           if [ ! -x clang_root/install_rustup/.cargo/bin/rustc ]; then
             ninja -C build_aarch64 rustup
           fi
+          if [ -x clang_root/bin/clang ] && \
+             [ -f build_aarch64/aarch64-w64-mingw32/lib/libmingw32.a ]; then
+            echo "clang sysroot already present; skipping llvm-clang"
+          else
+            ninja -C build_aarch64 llvm-clang
+          fi
           test -x clang_root/bin/clang
           test -x clang_root/bin/aarch64-w64-mingw32-clang
-          test -d build_aarch64/aarch64-w64-mingw32/include
+          test -f build_aarch64/aarch64-w64-mingw32/lib/libmingw32.a
 
       - name: Collect toolchain logs
         if: always()
         working-directory: mpv-winbuild-cmake
         run: |
           mkdir -p "$GITHUB_WORKSPACE/vendor-out/logs"
+          echo "===== mingw-w64-crt configure ====="
+          find build_aarch64 -name 'mingw-w64-crt-configure*.log' -print -exec tail -n 120 {} \; || true
           find build_aarch64 -type f \( -name '*-*.log' -o -name 'config.log' \) -print |
             while IFS= read -r f; do
               echo "===== $f ====="
@@ -273,26 +278,87 @@ jobs:
 
   angle-armv8a:
     name: ANGLE ARM64 /arch:armv8.0
-    runs-on: windows-11-arm
+    runs-on: windows-2022
+    timeout-minutes: 360
+    env:
+      DEPOT_TOOLS_WIN_TOOLCHAIN: "0"
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          path: piliplus
 
-      - name: Stage ARM64 ANGLE
+      - name: MSVC ARM64 cross tools
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64_arm64
+
+      - name: Download depot_tools
+        shell: cmd
+        run: git clone --filter=tree:0 https://chromium.googlesource.com/chromium/tools/depot_tools depot_tools
+
+      - name: Initialize depot_tools
+        working-directory: depot_tools
+        shell: cmd
+        run: |
+          gclient
+          echo %CD%>> %GITHUB_PATH%
+          exit /b 0
+
+      - name: Fetch and sync ANGLE
+        shell: cmd
+        run: |
+          mkdir angle
+          cd angle
+          fetch angle
+          gclient sync
+
+      - name: Configure ANGLE MSVC ARMv8.0
+        working-directory: angle
+        shell: cmd
+        run: >
+          gn gen out/armv8a --args="target_cpu=\"arm64\" target_os=\"win\"
+          is_debug=false is_component_build=false is_clang=false
+          angle_enable_d3d9=false angle_enable_gl=false
+          treat_warnings_as_errors=false extra_cflags=\"/arch:armv8.0\""
+
+      - name: Build libEGL libGLESv2
+        working-directory: angle
+        shell: cmd
+        run: autoninja -C out/armv8a libEGL libGLESv2
+
+      - name: Package ANGLE archive
         shell: pwsh
         run: |
           choco install 7zip -y
           New-Item -ItemType Directory -Force -Path vendor-out/ANGLE | Out-Null
           curl.exe -L -o "$env:TEMP\ANGLE_WINARM64.7z" "https://github.com/talynone/flutter-windows-ANGLE-OpenGL-ES/releases/download/v1.0.1/ANGLE_WINARM64.7z"
           & "C:\Program Files\7-Zip\7z.exe" x "$env:TEMP\ANGLE_WINARM64.7z" "-ovendor-out/ANGLE"
-          Copy-Item -Force "$env:TEMP\ANGLE_WINARM64.7z" vendor-out/ANGLE_WINARM64_armv8a.7z
+          $Built = @(
+            Get-ChildItem -Recurse -Path angle\out\armv8a -Filter libEGL.dll
+            Get-ChildItem -Recurse -Path angle\out\armv8a -Filter libGLESv2.dll
+          )
+          foreach ($Name in @('libEGL.dll', 'libGLESv2.dll')) {
+            $Src = $Built | Where-Object { $_.Name -eq $Name } | Select-Object -First 1
+            if (-not $Src) { throw "missing built $Name" }
+            $Dest = Get-ChildItem -Recurse -Path vendor-out/ANGLE -Filter $Name | Select-Object -First 1
+            if ($Dest) {
+              Copy-Item -Force $Src.FullName $Dest.FullName
+            } else {
+              Copy-Item -Force $Src.FullName (Join-Path vendor-out/ANGLE $Name)
+            }
+          }
+          if (Test-Path vendor-out/ANGLE/libc++.dll) {
+            Remove-Item -Force vendor-out/ANGLE/libc++.dll
+          }
+          & "C:\Program Files\7-Zip\7z.exe" a -t7z vendor-out/ANGLE_WINARM64_armv8a.7z ".\vendor-out\ANGLE\*"
           (Get-FileHash -Algorithm MD5 vendor-out/ANGLE_WINARM64_armv8a.7z).Hash.ToLowerInvariant() |
             Set-Content vendor-out/ANGLE_WINARM64_armv8a.md5
 
       - name: Check ANGLE Snapdragon 835 opcodes
         shell: pwsh
         run: |
-          python lib/scripts/check_windows_arm64_binaries.py vendor-out/ANGLE `
+          python piliplus/lib/scripts/check_windows_arm64_binaries.py vendor-out/ANGLE `
             --opcode-file libEGL.dll `
             --opcode-file libGLESv2.dll
 
@@ -335,4 +401,5 @@ jobs:
           body: |
             ARMv8.0-A Windows ARM64 native libraries for Snapdragon 835.
             libmpv was built with -DGCC_ARCH=generic -DCLANG_FLAGS=-march=armv8-a.
+            ANGLE libEGL/libGLESv2 were rebuilt with MSVC /arch:armv8.0.
             Pin MD5 sums from the sibling .md5 artifacts into windows/packaging/arm64/vendor.json.

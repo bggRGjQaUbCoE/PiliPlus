@@ -12,6 +12,6 @@
     "filename": "ANGLE_WINARM64.7z",
     "url": "https://github.com/talynone/flutter-windows-ANGLE-OpenGL-ES/releases/download/v1.0.1/ANGLE_WINARM64.7z",
     "md5": "b56aaae894ccf6c8ee90b59ee642a787",
-    "build": "Replace with an MSVC /arch:armv8.0 rebuild if the opcode gate fails. Do not use Clang -mcpu=native on windows-11-arm."
+    "build": "Rebuild libEGL.dll and libGLESv2.dll with MSVC /arch:armv8.0. Do not ship the talynone Clang ARM64 archive; it contains LSE ldadd."
   }
 }

@@ -385,7 +385,7 @@ jobs:
           archive: false
           name: mpv-dev-aarch64-nodotprod
           path: vendor-out/mpv-dev-aarch64-nodotprod.7z
-          if-no-files-found: ignore
+          if-no-files-found: error
 
       - name: Upload libmpv md5
         if: always()
@@ -432,18 +432,19 @@ jobs:
     permissions:
       contents: write
     steps:
+      # upload-artifact@v7 archive:false ignores `name` and uses the filename.
+      # The artifact is mpv-dev-aarch64-nodotprod.7z, not mpv-dev-aarch64-nodotprod.
       - name: Download libmpv archive
         uses: actions/download-artifact@v7
         with:
-          name: mpv-dev-aarch64-nodotprod
+          pattern: mpv-dev-aarch64-nodotprod*
           path: vendor-out
+          merge-multiple: true
 
-      - name: Download libmpv md5
-        continue-on-error: true
-        uses: actions/download-artifact@v7
-        with:
-          name: mpv-dev-aarch64-nodotprod-md5
-          path: vendor-out
+      - name: Locate archive
+        run: |
+          find vendor-out -type f -print
+          test -f vendor-out/mpv-dev-aarch64-nodotprod.7z
 
       - name: Publish release
         uses: softprops/action-gh-release@v3

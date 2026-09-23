@@ -21,6 +21,17 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Verify vendor libmpv URL
+        shell: pwsh
+        run: |
+          $Vendor = Get-Content -Raw windows/packaging/arm64/vendor.json | ConvertFrom-Json
+          $Url = $Vendor.libmpv.url.Replace('{server}', $env:GITHUB_SERVER_URL).Replace('{repository}', $env:GITHUB_REPOSITORY)
+          Write-Host "libmpv $Url"
+          $Code = [int](curl.exe -sI -o NUL -w '%{http_code}' -L $Url)
+          if ($Code -ne 200) {
+            throw "libmpv archive $Url returned HTTP $Code. Run vendor_windows_arm64_libmpv.yml and publish tag windows-arm64-libmpv."
+          }
+
       # releases_windows.json has no dart_sdk_arch=arm64 entry. flutter-action@v2
       # therefore cannot install Flutter 3.47.5 on windows-11-arm. Clone the
       # pinned tag; update_dart_sdk.ps1 fetches the Windows ARM64 Dart SDK.
@@ -135,7 +146,7 @@ jobs:
             }
           }
 
-      - name: Check ARM64 PE machine type
+      - name: Check ARM64 PE and libmpv DotProd
         shell: pwsh
         run: lib/scripts/check_windows_arm64_binaries.ps1 -Path build/windows/arm64/runner/Release
 

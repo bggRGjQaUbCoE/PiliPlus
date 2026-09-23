@@ -36,9 +36,9 @@ on:
                 type: boolean
 
             build_win_arm64:
-                description: "Build Win-arm64"
+                description: "Build Win-arm64 (needs windows-arm64-libmpv vendor release)"
                 required: false
-                default: true
+                default: false
                 type: boolean
 
             build_linux_x64:

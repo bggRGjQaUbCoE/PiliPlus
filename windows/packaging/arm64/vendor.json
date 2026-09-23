@@ -1,8 +1,9 @@
 {
   "libmpv": {
-    "filename": "mpv-dev-aarch64-20260922-git-c646756799.7z",
-    "url": "https://github.com/zhongfly/mpv-winbuild/releases/download/2026-09-22-c646756799/mpv-dev-aarch64-20260922-git-c646756799.7z",
-    "md5": "f4927329533dc9db3445c2afaf06bff0"
+    "filename": "mpv-dev-aarch64-nodotprod.7z",
+    "url": "{server}/{repository}/releases/download/windows-arm64-libmpv/mpv-dev-aarch64-nodotprod.7z",
+    "md5": "",
+    "build": "mpv-winbuild-cmake -DTARGET_ARCH=aarch64-w64-mingw32 -DCOMPILER_TOOLCHAIN=clang -DGCC_ARCH=generic -DCLANG_FLAGS=-march=armv8.2-a+nodotprod"
   },
   "angle": {
     "filename": "ANGLE_WINARM64.7z",

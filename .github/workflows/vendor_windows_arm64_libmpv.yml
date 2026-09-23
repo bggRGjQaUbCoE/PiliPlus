@@ -1,0 +1,355 @@
+name: Vendor Windows ARM64 libmpv (no DotProd)
+
+# Rebuilds libmpv for Snapdragon 850 WOA. Stock zhongfly/shinchiro aarch64
+# archives use -mcpu=cortex-a76 and emit UDOT (c000001d on Kryo 385).
+# Do not run this on every app build. After it publishes tag
+# windows-arm64-libmpv, pin the MD5 in windows/packaging/arm64/vendor.json.
+# ANGLE stays the public talynone archive.
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: "Upload archive to the windows-arm64-libmpv release tag"
+        required: false
+        default: false
+        type: boolean
+
+env:
+  CACHE_PREFIX: mpv-winbuild-nodotprod-v1
+  CLANG_ISA: "-march=armv8.2-a+nodotprod"
+
+jobs:
+  toolchain:
+    name: Clang aarch64 sysroot
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    container:
+      image: docker://ghcr.io/shinchiro/archlinux:latest
+    steps:
+      - name: Setup git
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global --add safe.directory '*'
+
+      - name: Checkout mpv-winbuild-cmake
+        uses: actions/checkout@v7
+        with:
+          repository: bggRGjQaUbCoE/mpv-winbuild-cmake
+          ref: master
+          path: mpv-winbuild-cmake
+
+      - name: Restore clang sysroot
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            mpv-winbuild-cmake/clang_root
+            mpv-winbuild-cmake/build_aarch64
+          key: ${{ env.CACHE_PREFIX }}-toolchain-${{ github.run_id }}
+          restore-keys: |
+            ${{ env.CACHE_PREFIX }}-toolchain-
+
+      - name: Restore package sources
+        uses: actions/cache/restore@v4
+        with:
+          path: mpv-winbuild-cmake/src_packages
+          key: ${{ env.CACHE_PREFIX }}-src-${{ github.run_id }}
+          restore-keys: |
+            ${{ env.CACHE_PREFIX }}-src-
+
+      - name: Configure
+        working-directory: mpv-winbuild-cmake
+        run: |
+          cmake -DTARGET_ARCH=aarch64-w64-mingw32 \
+            -DCOMPILER_TOOLCHAIN=clang \
+            -DGCC_ARCH=generic \
+            -DCLANG_FLAGS="${{ env.CLANG_ISA }}" \
+            -DCMAKE_INSTALL_PREFIX="$PWD/clang_root" \
+            -DMINGW_INSTALL_PREFIX="$PWD/build_aarch64/aarch64-w64-mingw32" \
+            -DSINGLE_SOURCE_LOCATION="$PWD/src_packages" \
+            -DRUSTUP_LOCATION="$PWD/clang_root/install_rustup" \
+            -DENABLE_CCACHE=ON \
+            -DLLVM_CCACHE_BUILD=ON \
+            -G Ninja \
+            --fresh \
+            -B build_aarch64 \
+            -S "$PWD"
+
+      - name: Build LLVM then llvm-clang
+        working-directory: mpv-winbuild-cmake
+        run: |
+          heartbeat() {
+            local label="$1"
+            while true; do
+              sleep 60
+              echo "===== ${label} heartbeat $(date -u +%H:%M:%S) ====="
+              find build_aarch64 -type f \( \
+                -name "${label}-configure*.log" -o \
+                -name "${label}-build*.log" -o \
+                -name CMakeOutput.log -o \
+                -name CMakeError.log \
+              \) -print |
+                while IFS= read -r f; do
+                  echo "-- $f --"
+                  tail -n 20 "$f" || true
+                done
+            done
+          }
+          if [ ! -x clang_root/bin/clang ]; then
+            heartbeat llvm &
+            heart=$!
+            ninja -C build_aarch64 llvm
+            kill "$heart" 2>/dev/null || true
+            wait "$heart" 2>/dev/null || true
+          fi
+          if [ ! -x clang_root/install_rustup/.cargo/bin/rustc ]; then
+            ninja -C build_aarch64 rustup
+          fi
+          if [ -x clang_root/bin/clang ] && \
+             [ -f build_aarch64/aarch64-w64-mingw32/lib/libmingw32.a ]; then
+            echo "clang sysroot already present; skipping llvm-clang"
+          else
+            heartbeat llvm-clang &
+            heart=$!
+            ninja -C build_aarch64 llvm-clang
+            kill "$heart" 2>/dev/null || true
+            wait "$heart" 2>/dev/null || true
+          fi
+          test -x clang_root/bin/clang
+          test -x clang_root/bin/aarch64-w64-mingw32-clang
+          test -f build_aarch64/aarch64-w64-mingw32/lib/libmingw32.a
+
+      - name: Collect toolchain logs
+        if: always()
+        working-directory: mpv-winbuild-cmake
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/vendor-out/logs"
+          find build_aarch64 -type f \( -name '*-*.log' -o -name 'config.log' \) -print |
+            while IFS= read -r f; do
+              echo "===== $f ====="
+              tail -n 80 "$f" || true
+            done
+          cp -fr $(find build_aarch64 -type f \( -iname '*-*.log' -o -name 'config.log' \)) \
+            "$GITHUB_WORKSPACE/vendor-out/logs" || true
+          7z a -m0=lzma2 -mx=9 "$GITHUB_WORKSPACE/vendor-out/toolchain-nodotprod-logs.7z" \
+            "$GITHUB_WORKSPACE/vendor-out/logs" || true
+
+      - name: Upload toolchain logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: toolchain-nodotprod-logs
+          path: vendor-out/toolchain-nodotprod-logs.7z
+          if-no-files-found: ignore
+          retention-days: 5
+
+      - name: Drop LLVM object files before cache
+        if: always()
+        working-directory: mpv-winbuild-cmake
+        run: rm -rf build_aarch64/toolchain build_aarch64/packages
+
+      - name: Save clang sysroot
+        if: always()
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            mpv-winbuild-cmake/clang_root
+            mpv-winbuild-cmake/build_aarch64
+          key: ${{ env.CACHE_PREFIX }}-toolchain-${{ github.run_id }}
+
+      - name: Save package sources
+        if: always()
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: mpv-winbuild-cmake/src_packages
+          key: ${{ env.CACHE_PREFIX }}-src-${{ github.run_id }}
+
+  mpv-nodotprod:
+    name: libmpv aarch64 no-dotprod
+    needs: toolchain
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    container:
+      image: docker://ghcr.io/shinchiro/archlinux:latest
+    steps:
+      - name: Setup git
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global --add safe.directory '*'
+
+      - name: Checkout PiliPlus scripts
+        uses: actions/checkout@v7
+        with:
+          path: piliplus
+
+      - name: Checkout mpv-winbuild-cmake
+        uses: actions/checkout@v7
+        with:
+          repository: bggRGjQaUbCoE/mpv-winbuild-cmake
+          ref: master
+          path: mpv-winbuild-cmake
+
+      - name: Restore clang sysroot
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            mpv-winbuild-cmake/clang_root
+            mpv-winbuild-cmake/build_aarch64
+          key: ${{ env.CACHE_PREFIX }}-toolchain-${{ github.run_id }}
+          restore-keys: |
+            ${{ env.CACHE_PREFIX }}-toolchain-
+
+      - name: Restore package sources
+        uses: actions/cache/restore@v4
+        with:
+          path: mpv-winbuild-cmake/src_packages
+          key: ${{ env.CACHE_PREFIX }}-src-full-${{ github.run_id }}
+          restore-keys: |
+            ${{ env.CACHE_PREFIX }}-src-full-
+            ${{ env.CACHE_PREFIX }}-src-
+
+      - name: Configure and build libmpv
+        working-directory: mpv-winbuild-cmake
+        run: |
+          test -x clang_root/bin/clang
+          test -x clang_root/bin/aarch64-w64-mingw32-clang
+          dummy_pkg() {
+            printf '%s\n' \
+              "ExternalProject_Add($1" \
+              '  DOWNLOAD_COMMAND ""' \
+              '  UPDATE_COMMAND ""' \
+              '  CONFIGURE_COMMAND ""' \
+              '  BUILD_COMMAND ""' \
+              '  INSTALL_COMMAND ""' \
+              ')' > "packages/$1.cmake"
+          }
+          dummy_pkg libvpl
+          sed -i '/^ libvpl$/d; s/--enable-libvpl/--disable-libvpl/' packages/ffmpeg.cmake
+          sed -i 's/--enable-runtime-cpudetect/--enable-runtime-cpudetect --disable-dotprod --disable-i8mm --disable-sve --disable-sve2/' packages/ffmpeg.cmake
+          dummy_pkg curl
+          sed -i \
+            -e 's/-Dlibcurl=enabled/-Dlibcurl=disabled/' \
+            -e 's/-Dpdf-build=enabled/-Dpdf-build=disabled/' \
+            -e '/^ curl$/d' \
+            packages/mpv.cmake
+          cmake -DTARGET_ARCH=aarch64-w64-mingw32 \
+            -DCOMPILER_TOOLCHAIN=clang \
+            -DGCC_ARCH=generic \
+            -DCLANG_FLAGS="${{ env.CLANG_ISA }}" \
+            -DCMAKE_INSTALL_PREFIX="$PWD/clang_root" \
+            -DMINGW_INSTALL_PREFIX="$PWD/build_aarch64/aarch64-w64-mingw32" \
+            -DSINGLE_SOURCE_LOCATION="$PWD/src_packages" \
+            -DRUSTUP_LOCATION="$PWD/clang_root/install_rustup" \
+            -DENABLE_CCACHE=ON \
+            -G Ninja \
+            --fresh \
+            -B build_aarch64 \
+            -S "$PWD"
+          ninja -C build_aarch64 download || true
+          ninja -C build_aarch64 update
+          if ! ninja -C build_aarch64 mpv; then
+            echo "===== newest ExternalProject error logs ====="
+            find build_aarch64 -type f \( -name '*-build-err.log' -o -name '*-configure-err.log' -o -name meson-log.txt \) \
+              -printf '%T@ %p\n' | sort -nr | head -n 12 | while read -r _ f; do
+              echo "===== $f ====="
+              tail -n 120 "$f" || true
+            done
+            exit 1
+          fi
+          ninja -C build_aarch64 mpv-packaging
+          mkdir -p "$GITHUB_WORKSPACE/vendor-out"
+          DEV=$(find build_aarch64 -name 'mpv-dev-aarch64*.7z' | head -n 1)
+          if [ -z "$DEV" ]; then
+            echo "mpv-dev-aarch64 archive not found"
+            find build_aarch64 -name '*.7z' -print
+            exit 1
+          fi
+          cp "$DEV" "$GITHUB_WORKSPACE/vendor-out/mpv-dev-aarch64-nodotprod.7z"
+          md5sum "$GITHUB_WORKSPACE/vendor-out/mpv-dev-aarch64-nodotprod.7z" |
+            tee "$GITHUB_WORKSPACE/vendor-out/mpv-dev-aarch64-nodotprod.md5"
+          mkdir -p "$GITHUB_WORKSPACE/vendor-out/mpv"
+          7z x "$GITHUB_WORKSPACE/vendor-out/mpv-dev-aarch64-nodotprod.7z" \
+            -o"$GITHUB_WORKSPACE/vendor-out/mpv"
+          python3 "$GITHUB_WORKSPACE/piliplus/lib/scripts/check_windows_arm64_dotprod.py" \
+            "$GITHUB_WORKSPACE/vendor-out/mpv" \
+            --file libmpv-2.dll
+
+      - name: Collect libmpv logs
+        if: always()
+        working-directory: mpv-winbuild-cmake
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/vendor-out/logs"
+          find build_aarch64 -type f \( -name '*-configure-*.log' -o -name '*-build-*.log' -o -name 'config.log' -o -name meson-log.txt \) -print |
+            while IFS= read -r f; do
+              echo "===== $f ====="
+              tail -n 80 "$f" || true
+            done
+          cp -fr $(find build_aarch64 -type f \( -iname '*-*.log' -o -wholename '*/ffbuild/config.log' -o -name meson-log.txt \)) \
+            "$GITHUB_WORKSPACE/vendor-out/logs" || true
+          7z a -m0=lzma2 -mx=9 "$GITHUB_WORKSPACE/vendor-out/mpv-nodotprod-logs.7z" \
+            "$GITHUB_WORKSPACE/vendor-out/logs" || true
+
+      - name: Upload libmpv archive
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: mpv-dev-aarch64-nodotprod
+          path: vendor-out/mpv-dev-aarch64-nodotprod.7z
+
+      - name: Upload libmpv md5
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: mpv-dev-aarch64-nodotprod-md5
+          path: vendor-out/mpv-dev-aarch64-nodotprod.md5
+
+      - name: Upload libmpv logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: mpv-nodotprod-logs
+          path: vendor-out/mpv-nodotprod-logs.7z
+          if-no-files-found: ignore
+          retention-days: 5
+
+      - name: Save package sources
+        if: always()
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: mpv-winbuild-cmake/src_packages
+          key: ${{ env.CACHE_PREFIX }}-src-full-${{ github.run_id }}
+
+  publish:
+    name: Publish windows-arm64-libmpv
+    if: ${{ inputs.publish_release }}
+    needs: [mpv-nodotprod]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download archives
+        uses: actions/download-artifact@v7
+        with:
+          path: vendor-out
+          merge-multiple: true
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: windows-arm64-libmpv
+          name: windows-arm64-libmpv
+          files: |
+            vendor-out/mpv-dev-aarch64-nodotprod.7z
+          body: |
+            Windows ARM64 libmpv without FEAT_DotProd (SDOT/UDOT).
+            Built with -DGCC_ARCH=generic -DCLANG_FLAGS=-march=armv8.2-a+nodotprod.
+            For Snapdragon 850 WOA (Kryo 385): stock cortex-a76 archives illegal-instruction (c000001d).
+            ANGLE is unchanged: talynone ANGLE_WINARM64.7z.
+            Pin the MD5 from the sibling artifact into windows/packaging/arm64/vendor.json.

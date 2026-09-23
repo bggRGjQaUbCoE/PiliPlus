@@ -2,7 +2,7 @@
   "libmpv": {
     "filename": "mpv-dev-aarch64-nodotprod.7z",
     "url": "{server}/{repository}/releases/download/windows-arm64-libmpv/mpv-dev-aarch64-nodotprod.7z",
-    "md5": "",
+    "md5": "d64114f38dc0c0cc73ff98c5a1387f0f",
     "build": "mpv-winbuild-cmake -DTARGET_ARCH=aarch64-w64-mingw32 -DCOMPILER_TOOLCHAIN=clang -DGCC_ARCH=generic -DCLANG_FLAGS=-march=armv8.2-a+nodotprod"
   },
   "angle": {

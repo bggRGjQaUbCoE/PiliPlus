@@ -152,3 +152,7 @@ dist
 test*
 
 .cursor/
+
+# Local-only notes (kept on disk, not for upstream)
+docs/linux-arm64.md
+feasibility.md

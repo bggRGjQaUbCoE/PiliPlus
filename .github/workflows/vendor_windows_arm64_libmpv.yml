@@ -4,6 +4,9 @@ name: Vendor Windows ARM64 libmpv (no DotProd)
 # archives use -mcpu=cortex-a76 and emit UDOT (c000001d on Kryo 385).
 # Do not run this on every app build. After it publishes tag
 # windows-arm64-libmpv, pin the MD5 in windows/packaging/arm64/vendor.json.
+# After merge into bggRGjQaUbCoE/PiliPlus, upload the existing
+# mpv-dev-aarch64-nodotprod.7z (and .md5) to that same tag on the target
+# repo — a gh release of the current artifact, not another LLVM build.
 # ANGLE stays the public talynone archive.
 
 on:

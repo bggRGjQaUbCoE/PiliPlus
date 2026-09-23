@@ -213,6 +213,16 @@ jobs:
             ${{ env.CACHE_PREFIX }}-src-full-
             ${{ env.CACHE_PREFIX }}-src-
 
+      - name: Restore built packages
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            mpv-winbuild-cmake/build_aarch64/packages
+            mpv-winbuild-cmake/build_aarch64/aarch64-w64-mingw32
+          key: ${{ env.CACHE_PREFIX }}-packages-${{ github.run_id }}
+          restore-keys: |
+            ${{ env.CACHE_PREFIX }}-packages-
+
       - name: Configure and build libmpv
         working-directory: mpv-winbuild-cmake
         run: |
@@ -235,8 +245,19 @@ jobs:
           sed -i \
             -e 's/-Dlibcurl=enabled/-Dlibcurl=disabled/' \
             -e 's/-Dpdf-build=enabled/-Dpdf-build=disabled/' \
+            -e '/mpv\.pdf/d' \
+            -e '/fonts\.conf/d' \
             -e '/^ curl$/d' \
             packages/mpv.cmake
+          cat >> packages/mpv.cmake << 'EOF'
+
+          ExternalProject_Add_Step(mpv ensure-optional-files
+            DEPENDEES strip-binary
+            DEPENDERS copy-binary
+            COMMAND ${CMAKE_COMMAND} -E touch <BINARY_DIR>/mpv.pdf
+            COMMAND ${CMAKE_COMMAND} -E true
+          )
+          EOF
           cmake -DTARGET_ARCH=aarch64-w64-mingw32 \
             -DCOMPILER_TOOLCHAIN=clang \
             -DGCC_ARCH=generic \
@@ -251,32 +272,58 @@ jobs:
             -B build_aarch64 \
             -S "$PWD"
           ninja -C build_aarch64 download || true
-          ninja -C build_aarch64 update
+          # Do not `ninja update`: force-update deletes 0-byte stamps when git
+          # moves and rebuilds ffmpeg/libplacebo from scratch.
           if ! ninja -C build_aarch64 mpv; then
-            echo "===== newest ExternalProject error logs ====="
+            echo "===== ninja mpv failed (packaging extras); harvesting libmpv if present ====="
             find build_aarch64 -type f \( -name '*-build-err.log' -o -name '*-configure-err.log' -o -name meson-log.txt \) \
               -printf '%T@ %p\n' | sort -nr | head -n 12 | while read -r _ f; do
               echo "===== $f ====="
-              tail -n 120 "$f" || true
+              tail -n 80 "$f" || true
             done
+          fi
+          mkdir -p "$GITHUB_WORKSPACE/vendor-out/mpv-dev/include/mpv"
+          DLL=$(find build_aarch64 -name libmpv-2.dll -print | head -n 1)
+          if [ -z "$DLL" ]; then
+            echo "libmpv-2.dll was not produced"
             exit 1
           fi
-          ninja -C build_aarch64 mpv-packaging
-          mkdir -p "$GITHUB_WORKSPACE/vendor-out"
-          DEV=$(find build_aarch64 -name 'mpv-dev-aarch64*.7z' | head -n 1)
-          if [ -z "$DEV" ]; then
-            echo "mpv-dev-aarch64 archive not found"
-            find build_aarch64 -name '*.7z' -print
+          DLL_DIR=$(dirname "$DLL")
+          cp -f "$DLL" "$GITHUB_WORKSPACE/vendor-out/mpv-dev/libmpv-2.dll"
+          if [ -f "$DLL_DIR/libmpv.dll.a" ]; then
+            cp -f "$DLL_DIR/libmpv.dll.a" "$GITHUB_WORKSPACE/vendor-out/mpv-dev/libmpv.dll.a"
+          fi
+          HDR_DIR=""
+          if [ -f src_packages/mpv/include/mpv/client.h ]; then
+            HDR_DIR=src_packages/mpv/include/mpv
+          else
+            HDR=$(find build_aarch64 src_packages -path '*/include/mpv/client.h' -print | head -n 1)
+            HDR_DIR=$(dirname "$HDR")
+          fi
+          if [ -z "$HDR_DIR" ] || [ ! -f "$HDR_DIR/client.h" ]; then
+            echo "mpv headers not found"
             exit 1
           fi
-          cp "$DEV" "$GITHUB_WORKSPACE/vendor-out/mpv-dev-aarch64-nodotprod.7z"
+          cp -f "$HDR_DIR"/*.h "$GITHUB_WORKSPACE/vendor-out/mpv-dev/include/mpv/"
+          (
+            cd "$GITHUB_WORKSPACE/vendor-out/mpv-dev"
+            7z a -m0=lzma2 -mx=9 \
+              "$GITHUB_WORKSPACE/vendor-out/mpv-dev-aarch64-nodotprod.7z" \
+              libmpv-2.dll include
+            if [ -f libmpv.dll.a ]; then
+              7z a -m0=lzma2 -mx=9 \
+                "$GITHUB_WORKSPACE/vendor-out/mpv-dev-aarch64-nodotprod.7z" \
+                libmpv.dll.a
+            fi
+          )
           md5sum "$GITHUB_WORKSPACE/vendor-out/mpv-dev-aarch64-nodotprod.7z" |
             tee "$GITHUB_WORKSPACE/vendor-out/mpv-dev-aarch64-nodotprod.md5"
-          mkdir -p "$GITHUB_WORKSPACE/vendor-out/mpv"
-          7z x "$GITHUB_WORKSPACE/vendor-out/mpv-dev-aarch64-nodotprod.7z" \
-            -o"$GITHUB_WORKSPACE/vendor-out/mpv"
+          ls -l "$GITHUB_WORKSPACE/vendor-out/mpv-dev"
+
+      - name: Check libmpv has no DotProd
+        run: |
           python3 "$GITHUB_WORKSPACE/piliplus/lib/scripts/check_windows_arm64_dotprod.py" \
-            "$GITHUB_WORKSPACE/vendor-out/mpv" \
+            "$GITHUB_WORKSPACE/vendor-out/mpv-dev" \
             --file libmpv-2.dll
 
       - name: Collect libmpv logs
@@ -295,18 +342,22 @@ jobs:
             "$GITHUB_WORKSPACE/vendor-out/logs" || true
 
       - name: Upload libmpv archive
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: mpv-dev-aarch64-nodotprod
           path: vendor-out/mpv-dev-aarch64-nodotprod.7z
+          if-no-files-found: ignore
 
       - name: Upload libmpv md5
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: mpv-dev-aarch64-nodotprod-md5
           path: vendor-out/mpv-dev-aarch64-nodotprod.md5
+          if-no-files-found: ignore
 
       - name: Upload libmpv logs
         if: always()
@@ -317,6 +368,16 @@ jobs:
           path: vendor-out/mpv-nodotprod-logs.7z
           if-no-files-found: ignore
           retention-days: 5
+
+      - name: Save built packages
+        if: always()
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            mpv-winbuild-cmake/build_aarch64/packages
+            mpv-winbuild-cmake/build_aarch64/aarch64-w64-mingw32
+          key: ${{ env.CACHE_PREFIX }}-packages-${{ github.run_id }}
 
       - name: Save package sources
         if: always()

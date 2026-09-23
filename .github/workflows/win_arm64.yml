@@ -21,11 +21,42 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup flutter
-        uses: subosito/flutter-action@v2
+      # releases_windows.json has no dart_sdk_arch=arm64 entry. flutter-action@v2
+      # therefore cannot install Flutter 3.47.5 on windows-11-arm. Clone the
+      # pinned tag; update_dart_sdk.ps1 fetches the Windows ARM64 Dart SDK.
+      - name: Read Flutter version
+        id: flutter-version
+        shell: pwsh
+        run: |
+          $Match = Select-String -Path pubspec.yaml -Pattern '^\s+flutter:\s+([0-9][0-9.]+)\s*$' |
+            Select-Object -First 1
+          if (-not $Match) {
+            throw 'environment.flutter version not found in pubspec.yaml'
+          }
+          $Version = $Match.Matches[0].Groups[1].Value
+          "version=$Version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Flutter $Version"
+
+      - name: Cache Flutter SDK
+        uses: actions/cache@v4
         with:
-          channel: stable
-          flutter-version-file: pubspec.yaml
+          path: ${{ runner.temp }}/flutter
+          key: flutter-git-windows-arm64-${{ steps.flutter-version.outputs.version }}
+
+      - name: Clone Flutter
+        shell: pwsh
+        run: |
+          $FlutterRoot = Join-Path $env:RUNNER_TEMP 'flutter'
+          if (-not (Test-Path (Join-Path $FlutterRoot 'bin\flutter.bat'))) {
+            git clone --depth 1 --branch ${{ steps.flutter-version.outputs.version }} `
+              https://github.com/flutter/flutter.git $FlutterRoot
+          }
+          git config --global --add safe.directory $FlutterRoot
+          Add-Content -Path $env:GITHUB_PATH -Value (Join-Path $FlutterRoot 'bin')
+          Add-Content -Path $env:GITHUB_ENV -Value "FLUTTER_ROOT=$FlutterRoot"
+
+      - name: Precache Flutter
+        run: flutter --version
 
       - name: Add Inno Setup
         run: choco install innosetup

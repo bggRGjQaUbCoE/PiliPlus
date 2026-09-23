@@ -277,7 +277,7 @@ jobs:
           key: ${{ env.CACHE_PREFIX }}-src-full-${{ github.run_id }}
 
   angle-armv8a:
-    name: ANGLE ARM64 /arch:armv8.0
+    name: ANGLE ARM64 armv8-a
     runs-on: windows-2022
     timeout-minutes: 360
     env:
@@ -366,7 +366,7 @@ jobs:
           set LIB=
           set LIBPATH=
           set VSINSTALLDIR=
-          gn gen out/armv8a --args="target_cpu=\"arm64\" target_os=\"win\" is_debug=false is_component_build=false is_clang=false angle_enable_d3d9=false angle_enable_gl=false treat_warnings_as_errors=false extra_cflags=\"/arch:armv8.0\""
+          gn gen out/armv8a --args="target_cpu=\"arm64\" target_os=\"win\" is_debug=false is_component_build=false angle_enable_d3d9=false angle_enable_gl=false angle_enable_vulkan=false treat_warnings_as_errors=false extra_cflags=\"-march=armv8-a -mno-lse -mno-outline-atomics\""
 
       - name: Build libEGL libGLESv2
         working-directory: angle
@@ -449,5 +449,5 @@ jobs:
           body: |
             ARMv8.0-A Windows ARM64 native libraries for Snapdragon 835.
             libmpv was built with -DGCC_ARCH=generic -DCLANG_FLAGS=-march=armv8-a.
-            ANGLE libEGL/libGLESv2 were rebuilt with MSVC /arch:armv8.0.
+            ANGLE libEGL/libGLESv2 were rebuilt with Chromium Clang -march=armv8-a.
             Pin MD5 sums from the sibling .md5 artifacts into windows/packaging/arm64/vendor.json.

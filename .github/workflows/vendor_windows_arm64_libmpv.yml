@@ -173,6 +173,8 @@ jobs:
     needs: toolchain
     runs-on: ubuntu-latest
     timeout-minutes: 360
+    permissions:
+      contents: write
     container:
       image: docker://ghcr.io/shinchiro/archlinux:latest
     steps:
@@ -382,7 +384,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          archive: false
           name: mpv-dev-aarch64-nodotprod
           path: vendor-out/mpv-dev-aarch64-nodotprod.7z
           if-no-files-found: error
@@ -391,7 +392,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          archive: false
           name: mpv-dev-aarch64-nodotprod-md5
           path: vendor-out/mpv-dev-aarch64-nodotprod.md5
           if-no-files-found: ignore
@@ -424,29 +424,10 @@ jobs:
           path: mpv-winbuild-cmake/src_packages
           key: ${{ env.CACHE_PREFIX }}-src-full-${{ github.run_id }}
 
-  publish:
-    name: Publish windows-arm64-libmpv
-    if: ${{ inputs.publish_release }}
-    needs: [mpv-nodotprod]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      # upload-artifact@v7 archive:false ignores `name` and uses the filename.
-      # The artifact is mpv-dev-aarch64-nodotprod.7z, not mpv-dev-aarch64-nodotprod.
-      - name: Download libmpv archive
-        uses: actions/download-artifact@v7
-        with:
-          pattern: mpv-dev-aarch64-nodotprod*
-          path: vendor-out
-          merge-multiple: true
-
-      - name: Locate archive
-        run: |
-          find vendor-out -type f -print
-          test -f vendor-out/mpv-dev-aarch64-nodotprod.7z
-
-      - name: Publish release
+      # Do not use download-artifact for this 7z. archive:false blobs are
+      # extracted as zip and fail after 5 retries (3 publish failures).
+      - name: Publish windows-arm64-libmpv
+        if: ${{ inputs.publish_release && success() }}
         uses: softprops/action-gh-release@v3
         with:
           tag_name: windows-arm64-libmpv

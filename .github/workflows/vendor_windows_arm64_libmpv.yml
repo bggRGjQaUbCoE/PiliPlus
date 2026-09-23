@@ -241,6 +241,9 @@ jobs:
           dummy_pkg libvpl
           sed -i '/^ libvpl$/d; s/--enable-libvpl/--disable-libvpl/' packages/ffmpeg.cmake
           sed -i 's/--enable-runtime-cpudetect/--enable-runtime-cpudetect --disable-dotprod --disable-i8mm --disable-sve --disable-sve2/' packages/ffmpeg.cmake
+          # libjxl pulls Highway, which compiles HWY_NEON_DOT into the static DLL.
+          sed -i '/^ libjxl$/d; s/--enable-libjxl/--disable-libjxl/' packages/ffmpeg.cmake
+          sed -i 's/-DENABLE_SVE=OFF/-DENABLE_SVE=OFF -DENABLE_NEON_DOTPROD=OFF -DENABLE_NEON_I8MM=OFF/' packages/aom.cmake
           dummy_pkg curl
           sed -i \
             -e 's/-Dlibcurl=enabled/-Dlibcurl=disabled/' \
@@ -286,6 +289,39 @@ jobs:
               git -C "$repo" reset --hard
             fi
             git -C "$repo" clean -fd
+          done
+          # -march=+nodotprod does not strip hand-written / per-TU DotProd
+          # kernels (dav1d .S, zlib-ng adler32_neon_dotprod). Those 202 hits
+          # are that leftover. Drop the sources and rebuild those packages only.
+          python3 - << 'PY'
+          import re
+          from pathlib import Path
+          root = Path("src_packages/dav1d")
+          if root.is_dir():
+              pat = re.compile(
+                  r"[,'\s]*['\"][^'\"]*(?:dotprod|i8mm)[^'\"]*['\"]",
+                  re.I,
+              )
+              for p in root.rglob("meson.build"):
+                  text = p.read_text()
+                  new = pat.sub("", text)
+                  if new != text:
+                      p.write_text(new)
+                      print(f"dav1d: stripped dotprod/i8mm from {p}")
+          zlib = Path("src_packages/zlib/CMakeLists.txt")
+          if zlib.is_file():
+              text = zlib.read_text()
+              new = text.replace(
+                  "if(NEON_HAS_DOTPROD AND ARCH_64BIT)",
+                  "if(FALSE AND NEON_HAS_DOTPROD AND ARCH_64BIT)",
+              )
+              if new != text:
+                  zlib.write_text(new)
+                  print("zlib-ng: disabled NEON_DOTPROD")
+          PY
+          for p in dav1d zlib ffmpeg libjxl highway mpv; do
+            find "build_aarch64/packages/${p}-prefix" -path '*-stamp/*' -type f \
+              -delete 2>/dev/null || true
           done
           if ! ninja -C build_aarch64 mpv; then
             echo "===== ninja mpv failed (packaging extras); harvesting libmpv if present ====="

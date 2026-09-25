@@ -35,6 +35,12 @@ on:
                 default: true
                 type: boolean
 
+            build_win_arm64:
+                description: "Build Win-arm64"
+                required: false
+                default: true
+                type: boolean
+
             build_linux_x64:
                 description: "Build Linux-x64"
                 required: false
@@ -161,6 +167,13 @@ jobs:
     win_x64:
         if: ${{ (github.event_name == 'pull_request' && github.repository == 'bggRGjQaUbCoE/PiliPlus') || github.event.inputs.build_win_x64 == 'true' }}
         uses: ./.github/workflows/win_x64.yml
+        permissions: write-all
+        with:
+            tag: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || '' }}
+
+    win_arm64:
+        if: ${{ (github.event_name == 'pull_request' && github.repository == 'bggRGjQaUbCoE/PiliPlus') || github.event.inputs.build_win_arm64 == 'true' }}
+        uses: ./.github/workflows/win_arm64.yml
         permissions: write-all
         with:
             tag: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || '' }}

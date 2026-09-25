@@ -30,7 +30,7 @@
 - [x] Android
 - [x] iOS
 - [x] Pad
-- [x] Windows
+- [x] Windows（Release 含 x64 与 ARM64，便携 zip 与安装包）
 - [x] Linux
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/piliplus.svg)](https://repology.org/project/piliplus/versions)
@@ -213,7 +213,9 @@
 
 ## 下载
 
-可以通过右侧release进行下载或拉取代码到本地进行编译
+可以通过右侧release进行下载或拉取代码到本地进行编译。
+
+ARM64 包在 Release 里（`*_arm64_portable.zip` / `*_arm64_setup.exe`）；面向 Windows 11 ARM / Snapdragon 850；流媒体若 HTTPS 失败可设用户环境变量 `SSL_CERT_FILE` 指向 [cacert.pem](https://curl.se/ca/cacert.pem)（OpenSSL 不读系统证书库）。封面图仍可用应用内「禁用 SSL 证书验证」。
 
 <br/>
 

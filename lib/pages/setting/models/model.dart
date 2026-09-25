@@ -267,6 +267,7 @@ SettingsModel getBanWordModel({
 SettingsModel getVideoFilterSelectModel({
   required String title,
   String? subtitle,
+  String? subtitleSuffix,
   String? suffix,
   required String key,
   required List<int> values,
@@ -282,8 +283,8 @@ SettingsModel getVideoFilterSelectModel({
     subtitle: subtitle,
     getSubtitle: subtitle == null
         ? () => isFilter
-              ? '过滤掉$title小于「$value${suffix ?? ""}」的视频'
-              : '当前$title:「$value${suffix ?? ""}」'
+              ? '过滤掉$title小于「$value${suffix ?? ""}」的视频${subtitleSuffix ?? ""}'
+              : '当前$title:「$value${suffix ?? ""}」${subtitleSuffix ?? ""}'
         : null,
     onTap: (context, setState) async {
       var result = await showDialog<int>(

@@ -242,6 +242,26 @@ try {
 
 flutter pub get
 
+$CanvasDanmakuPatch = "$env:GITHUB_WORKSPACE/lib/scripts/canvas_danmaku_scroll_offset.patch"
+$CanvasDanmakuDir = Get-ChildItem "$PubCacheDir/git" -Directory |
+    Where-Object { $_.Name -like "canvas_danmaku-*" } |
+    Select-Object -Last 1
+
+if (-not $CanvasDanmakuDir) {
+    throw "canvas_danmaku package not found in pub cache"
+}
+
+Write-Host "canvas_danmaku dir: $($CanvasDanmakuDir.FullName)"
+Set-Location $CanvasDanmakuDir.FullName
+git reset --hard HEAD
+git apply $CanvasDanmakuPatch
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "$CanvasDanmakuPatch applied"
+} else {
+    throw "$LASTEXITCODE"
+}
+Set-Location $env:GITHUB_WORKSPACE
+
 $MaterialUiDir = Get-ChildItem "$PubCacheDir/hosted/pub.dev" -Directory |
     Where-Object { $_.Name -like "material_ui-*" } |
     Select-Object -Last 1

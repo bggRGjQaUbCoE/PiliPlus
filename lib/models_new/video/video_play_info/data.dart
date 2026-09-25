@@ -1,3 +1,4 @@
+import 'package:PiliPlus/models_new/video/video_play_info/dm_mask.dart';
 import 'package:PiliPlus/models_new/video/video_play_info/interaction.dart';
 import 'package:PiliPlus/models_new/video/video_play_info/subtitle_info.dart';
 import 'package:PiliPlus/models_new/video/video_play_info/view_point.dart';
@@ -7,12 +8,14 @@ class PlayInfoData {
   SubtitleInfo? subtitle;
   List<ViewPoint>? viewPoints;
   Interaction? interaction;
+  DmMask? dmMask;
 
   PlayInfoData({
     this.lastPlayCid,
     this.subtitle,
     this.viewPoints,
     this.interaction,
+    this.dmMask,
   });
 
   factory PlayInfoData.fromJson(Map<String, dynamic> json) => PlayInfoData(
@@ -26,5 +29,6 @@ class PlayInfoData {
     interaction: json["interaction"] == null
         ? null
         : Interaction.fromJson(json["interaction"]),
+    dmMask: DmMask.fromJsonOrNull(json['dm_mask']),
   );
 }

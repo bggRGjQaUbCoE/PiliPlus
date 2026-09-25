@@ -52,6 +52,7 @@ import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
+import 'package:PiliPlus/services/multi_thread_proxy.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
@@ -691,7 +692,10 @@ class VideoDetailController extends GetxController
       ..buffered.value = 0;
 
     firstVideo = findVideoByQa(currentVideoQa.code, setCodecs: true);
-    videoUrl = VideoUtils.getCdnUrl(firstVideo.playUrls);
+    videoUrl = MultiThreadProxy.wrap(
+      VideoUtils.getCdnUrl(firstVideo.playUrls),
+      firstVideo,
+    );
 
     /// 根据currentAudioQa 重新设置audioUrl
     if (currentAudioQa != null) {
@@ -699,7 +703,11 @@ class VideoDetailController extends GetxController
         (i) => i.id == currentAudioQa!.code,
         orElse: () => data.dash!.audio!.first,
       );
-      audioUrl = VideoUtils.getCdnUrl(firstAudio.playUrls, isAudio: true);
+      audioUrl = MultiThreadProxy.wrap(
+        VideoUtils.getCdnUrl(firstAudio.playUrls, isAudio: true),
+        firstAudio,
+        isAudio: true,
+      );
     }
 
     playerInit();
@@ -960,7 +968,10 @@ class VideoDetailController extends GetxController
       );
       _setVideoHeight();
 
-      videoUrl = VideoUtils.getCdnUrl(firstVideo.playUrls);
+      videoUrl = MultiThreadProxy.wrap(
+        VideoUtils.getCdnUrl(firstVideo.playUrls),
+        firstVideo,
+      );
 
       /// 优先顺序 设置中指定质量 -> 当前可选的最高质量
       AudioItem? firstAudio;
@@ -979,7 +990,11 @@ class VideoDetailController extends GetxController
           (e) => e.id == closestNumber,
           orElse: () => audioList.first,
         );
-        audioUrl = VideoUtils.getCdnUrl(firstAudio.playUrls, isAudio: true);
+        audioUrl = MultiThreadProxy.wrap(
+          VideoUtils.getCdnUrl(firstAudio.playUrls, isAudio: true),
+          firstAudio,
+          isAudio: true,
+        );
         currentAudioQa = AudioQuality.fromCode(firstAudio.id);
       } else {
         audioUrl = '';
@@ -1247,6 +1262,7 @@ class VideoDetailController extends GetxController
   @override
   void onClose() {
     cid.close();
+    MultiThreadProxy.cancelAll();
     if (isFileSource) {
       cacheLocalProgress();
     }

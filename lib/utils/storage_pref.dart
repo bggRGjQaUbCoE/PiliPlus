@@ -640,6 +640,12 @@ abstract final class Pref {
   static bool get disableAudioCDN =>
       _setting.get(SettingBoxKey.disableAudioCDN, defaultValue: false);
 
+  static bool get enableMultiThread =>
+      _setting.get(SettingBoxKey.enableMultiThread, defaultValue: false);
+
+  static int get multiThreadCount =>
+      _setting.get(SettingBoxKey.multiThreadCount, defaultValue: 8);
+
   static int get minDurationForRcmd =>
       _setting.get(SettingBoxKey.minDurationForRcmd, defaultValue: 0);
 

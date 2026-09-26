@@ -23,11 +23,13 @@ import 'package:PiliPlus/plugin/pl_player/models/data_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/double_tap_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/duration.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
+import 'package:PiliPlus/plugin/pl_player/models/hdr_playback.dart';
 import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
+import 'package:PiliPlus/plugin/pl_player/utils/hdr_policy.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
@@ -367,6 +369,18 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   bool enableHeart = true;
   late final String? hwdec = Pref.enableHA ? Pref.hardwareDecoding : null;
 
+  /// 当前片源的 HDR 播放状态
+  final Rx<HdrPlaybackInfo> hdrInfo = HdrPlaybackInfo.unknown.obs;
+
+  /// HDR 状态跟踪，负责换源重置与片源类型切换
+  final HdrPlaybackTracker hdrTracker = HdrPlaybackTracker();
+
+  /// 播放器未接受的色彩参数
+  final Set<String> unsupportedColorOptions = <String>{};
+
+  /// HDR 片源播放期间被暂停的着色器
+  bool _shaderSuspendedForHdr = false;
+
   late final progressType = Pref.btmProgressBehavior;
   late final enableQuickDouble = Pref.enableQuickDouble;
   late final fullScreenGestureReverse = Pref.fullScreenGestureReverse;
@@ -612,6 +626,11 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       this.width = width;
       this.height = height;
       this.dataSource = dataSource;
+      // 重置为未知，等待解码参数到达后重新判定
+      hdrInfo.value = hdrTracker.reset(
+        dataSource.hdrHint,
+        optionUnsupported: unsupportedColorOptions.isNotEmpty,
+      );
       _autoPlay = autoplay;
       // 初始化数据加载状态
       dataStatus.value = DataStatus.loading;
@@ -755,9 +774,36 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
     player.setMediaHeader(userAgent: BrowserUa.pc, referer: HttpString.baseUrl);
 
+    // media-kit 会在 mpv_initialize 之后写入自己的默认值，
+    // 因此色彩相关参数必须在此处覆盖
+    if (player case final NativePlayer nativePlayer) {
+      _applyVideoColorOptions(nativePlayer);
+    }
+
     _startListeners(player);
 
     return player;
+  }
+
+  /// 写入色彩相关参数，并记录播放器未接受的项
+  void _applyVideoColorOptions(NativePlayer player) {
+    unsupportedColorOptions.clear();
+    for (final entry in HdrPolicy.videoColorOptions.entries) {
+      try {
+        player.setProperty(entry.key, entry.value);
+        if (player.getProperty(entry.key) != entry.value) {
+          unsupportedColorOptions.add(entry.key);
+        }
+      } catch (err) {
+        if (kDebugMode) {
+          debugPrint('set ${entry.key} failed: $err');
+        }
+        unsupportedColorOptions.add(entry.key);
+      }
+    }
+    if (kDebugMode && unsupportedColorOptions.isNotEmpty) {
+      debugPrint('unsupported color options: $unsupportedColorOptions');
+    }
   }
 
   late final buffer = Pref.initBuffer(_playbackSpeed.value);
@@ -785,6 +831,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
         return;
       }
       _videoPlayerController = player;
+      _shaderSuspendedForHdr = false;
       if (isAnim && superResolutionType.value != .disable) {
         await setShader();
       }
@@ -965,6 +1012,19 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       stream.buffer.listen((Duration buffer) {
         buffered.value = buffer.inSeconds;
       }),
+      /// videoParams
+      /// 以解码后的传递函数与色彩元数据判定片源动态范围
+      stream.videoParams.listen((VideoParams params) {
+        final decoded = HdrVideoParams(
+          gamma: params.gamma,
+          primaries: params.primaries,
+          sigPeak: params.sigPeak,
+        );
+        if (decoded.isEmpty) {
+          return;
+        }
+        _updateHdrState(decoded);
+      }),
       stream.buffering.listen((bool buffering) {
         isBuffering.value = buffering;
         if (!playerStatus.isCompleted) {
@@ -1023,7 +1083,13 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
             },
           );
         } else if (event.startsWith('Could not open codec')) {
-          SmartDialog.showToast('无法加载解码器, $event，可能会切换至软解');
+          if (hdrTracker.hint.isHdr) {
+            SmartDialog.showToast(
+              '无法解码当前 HDR 片源（$event），可在画质中切换至普通画质',
+            );
+          } else {
+            SmartDialog.showToast('无法加载解码器, $event，可能会切换至软解');
+          }
         } else if (!onlyPlayAudio.value) {
           if (event.startsWith("error running") ||
               event.startsWith("Failed to open .") ||
@@ -1045,6 +1111,37 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     _subscriptions?.forEach((e) => e.cancel());
     _subscriptions?.clear();
     _subscriptions = null;
+  }
+
+  /// 依据解码结果更新 HDR 状态
+  void _updateHdrState(HdrVideoParams? decoded) {
+    final changed = hdrTracker.update(
+      decoded,
+      optionUnsupported: unsupportedColorOptions.isNotEmpty,
+    );
+    if (changed) {
+      hdrInfo.value = hdrTracker.info;
+    }
+    _syncShaderForHdr(hdrTracker.info);
+  }
+
+  /// HDR 片源下暂停 Anime4K 着色器，该着色器针对 SDR 片源设计
+  void _syncShaderForHdr(HdrPlaybackInfo info) {
+    if (!isAnim) {
+      return;
+    }
+    if (_videoPlayerController case final NativePlayer player) {
+      if (info.isHdrSource) {
+        if (!_shaderSuspendedForHdr &&
+            superResolutionType.value != SuperResolutionType.disable) {
+          _shaderSuspendedForHdr = true;
+          player.command(const ['change-list', 'glsl-shaders', 'clr', '']);
+        }
+      } else if (_shaderSuspendedForHdr) {
+        _shaderSuspendedForHdr = false;
+        setShader(null, player);
+      }
+    }
   }
 
   void _cancelSubForSeek() {

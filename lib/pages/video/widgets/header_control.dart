@@ -37,7 +37,9 @@ import 'package:PiliPlus/pages/video/introduction/ugc/widgets/menu_row.dart';
 import 'package:PiliPlus/pages/video/widgets/header_mixin.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
+import 'package:PiliPlus/plugin/pl_player/models/hdr_playback.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
+import 'package:PiliPlus/plugin/pl_player/utils/hdr_policy.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart'
     show shutdownTimerService, ShutdownPanel;
 import 'package:PiliPlus/utils/accounts.dart';
@@ -814,6 +816,16 @@ class HeaderControlState extends State<HeaderControl>
       builder: (context) {
         final state = player.state;
         final colorScheme = ColorScheme.of(context);
+        final videoParams = state.videoParams;
+        final hdrInfo =
+            PlPlayerController.instance?.hdrInfo.value ??
+            HdrPolicy.resolve(
+              decoded: HdrVideoParams(
+                gamma: videoParams.gamma,
+                primaries: videoParams.primaries,
+                sigPeak: videoParams.sigPeak,
+              ),
+            );
         return AlertDialog(
           title: const Text('播放信息'),
           contentPadding: const EdgeInsets.only(top: 16),
@@ -831,6 +843,12 @@ class HeaderControlState extends State<HeaderControl>
                       onTap: () => Utils.copyText(
                         'Resolution\n${state.width}x${state.height}',
                       ),
+                    ),
+                    ListTile(
+                      dense: true,
+                      title: const Text("HDR"),
+                      subtitle: Text(hdrInfo.displayText),
+                      onTap: () => Utils.copyText('HDR\n${hdrInfo.displayText}'),
                     ),
                     ListTile(
                       dense: true,

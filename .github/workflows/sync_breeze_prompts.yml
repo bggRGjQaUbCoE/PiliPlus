@@ -1,6 +1,6 @@
 name: Sync BiliBreeze prompts
 
-# The classification prompts are maintained in BiliBreeze
+# The classification prompts and default thresholds are maintained in BiliBreeze
 # (https://github.com/PosvdM/bili-breeze, prompts/). This workflow copies
 # them with .github/scripts/sync-breeze-prompts.cjs and opens a pull request;
 # nothing is committed to the base branch directly. Prompts are compiled into
@@ -107,7 +107,7 @@ jobs:
 
           if [ "$PASSED" = "true" ]; then
             title="chore(breeze): $SUMMARY"
-            body="BiliBreeze 更新了识别 Prompt，本 PR 由同步脚本生成，一致性测试已通过。
+            body="BiliBreeze 更新了识别 Prompt 或默认阈值，本 PR 由同步脚本生成，一致性测试已通过。
 
           - 来源：https://github.com/PosvdM/bili-breeze/tree/main/prompts
           - 只改动 \`lib/services/breeze/breeze_prompts.dart\` 和 \`test/services/breeze_prompt_fixtures.json\`

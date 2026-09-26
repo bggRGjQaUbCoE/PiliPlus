@@ -1,7 +1,8 @@
 // Syncs BiliBreeze prompts into PiliPlus.
 // Usage: node sync-breeze-prompts.cjs <bili-breeze dir> <PiliPlus dir>
 //
-// Prompt text, rules version and length limit are copied into
+// Prompt text, rules version, length limit and the default fold thresholds
+// (tuned together with the prompt) are copied into
 // lib/services/breeze/breeze_prompts.dart. Request assembly is Dart code and
 // is not translated: test/services/breeze_prompt_fixtures.json holds the
 // extension's own sanitize/cacheKey/request results for fixed cases, and
@@ -21,12 +22,16 @@ for (const file of ['prompts/classification.js', 'prompts/giveaway.js']) vm.runI
 const get = name => vm.runInContext(name, prompts);
 const version = get('CLASSIFICATION_VERSION');
 const limit = get('PROMPT_LIMIT');
+const adThreshold = get('DEFAULT_AD_THRESHOLD');
+const cautiousThreshold = get('DEFAULT_CAUTIOUS_THRESHOLD');
 const defaultPrompt = get('DEFAULT_PROMPT');
 const giveawayPrompt = get('GIVEAWAY_PROMPT');
 for (const [name, value] of Object.entries({version, defaultPrompt, giveawayPrompt})) {
   if (typeof value !== 'string' || !value) throw new Error(`${name} missing`);
 }
-if (!Number.isInteger(limit)) throw new Error('PROMPT_LIMIT missing');
+for (const [name, value] of Object.entries({PROMPT_LIMIT: limit, DEFAULT_AD_THRESHOLD: adThreshold, DEFAULT_CAUTIOUS_THRESHOLD: cautiousThreshold})) {
+  if (!Number.isInteger(value)) throw new Error(`${name} missing`);
+}
 const source = execFileSync('git', ['-C', ext, 'log', '-1', '--format=%h', '--', 'prompts'], {encoding: 'utf8'}).trim();
 
 // Explicit \n escapes keep the text exact on CRLF checkouts.
@@ -43,6 +48,10 @@ const dart = `import 'dart:convert';
 /// Bump when classification rules change, so cached decisions are not reused.
 const breezeClassificationVersion = ${lit(version)};
 const breezePromptLimit = ${limit};
+
+/// Default fold thresholds (%), tuned for [breezeDefaultPrompt].
+const breezeDefaultAdThreshold = ${adThreshold};
+const breezeDefaultCautiousThreshold = ${cautiousThreshold};
 
 /// Editable classification rules; the output format is always appended.
 const breezeDefaultPrompt =
@@ -149,6 +158,8 @@ const cases = [
     source: `PosvdM/bili-breeze prompts/ at ${source}`,
     classificationVersion: version,
     promptLimit: limit,
+    defaultAdThreshold: adThreshold,
+    defaultCautiousThreshold: cautiousThreshold,
     defaultPrompt: digest(defaultPrompt),
     giveawayPrompt: digest(giveawayPrompt),
     cases: results

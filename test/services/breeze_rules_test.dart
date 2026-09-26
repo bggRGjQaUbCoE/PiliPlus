@@ -291,6 +291,16 @@ void main() {
     ) as Map<String, dynamic>;
     expect(breezeClassificationVersion, fixtures['classificationVersion']);
     expect(breezePromptLimit, fixtures['promptLimit']);
+    expect(breezeDefaultAdThreshold, fixtures['defaultAdThreshold']);
+    expect(
+      breezeDefaultCautiousThreshold,
+      fixtures['defaultCautiousThreshold'],
+    );
+    expect(const BreezeConfig().adThreshold, breezeDefaultAdThreshold);
+    expect(
+      const BreezeConfig().cautiousThreshold,
+      breezeDefaultCautiousThreshold,
+    );
     expect(sha256Hex(breezeDefaultPrompt), fixtures['defaultPrompt']);
     expect(sha256Hex(breezeGiveawayPrompt), fixtures['giveawayPrompt']);
 

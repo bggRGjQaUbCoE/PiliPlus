@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-// Generated from PosvdM/bili-breeze prompts/ at 29f5cc2 by
+// Generated from PosvdM/bili-breeze prompts/ at 2033902 by
 // .github/scripts/sync-breeze-prompts.cjs. Edit the extension, not the text
 // here; the request assembly below is checked against the extension by
 // test/services/breeze_prompt_fixtures.json.
@@ -8,6 +8,10 @@ import 'dart:convert';
 /// Bump when classification rules change, so cached decisions are not reused.
 const breezeClassificationVersion = 'general-rules-v8';
 const breezePromptLimit = 4000;
+
+/// Default fold thresholds (%), tuned for [breezeDefaultPrompt].
+const breezeDefaultAdThreshold = 40;
+const breezeDefaultCautiousThreshold = 90;
 
 /// Editable classification rules; the output format is always appended.
 const breezeDefaultPrompt =

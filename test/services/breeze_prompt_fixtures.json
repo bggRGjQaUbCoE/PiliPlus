@@ -1,7 +1,9 @@
 {
-  "source": "PosvdM/bili-breeze prompts/ at 29f5cc2",
+  "source": "PosvdM/bili-breeze prompts/ at 2033902",
   "classificationVersion": "general-rules-v8",
   "promptLimit": 4000,
+  "defaultAdThreshold": 40,
+  "defaultCautiousThreshold": 90,
   "defaultPrompt": "7d38e3528fb0ec9d7e6eaad4faedcc6cb180457b8881ef2e1836e5626e6bfece",
   "giveawayPrompt": "3de847744207fe15ce775dd8a6394abd105b65e422eba97c21939ed40e69fa3d",
   "cases": [

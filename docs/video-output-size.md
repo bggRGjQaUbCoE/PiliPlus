@@ -77,7 +77,6 @@ Run with the Flutter version required by pubspec.yaml:
 ```sh
 flutter pub get
 flutter analyze
-flutter test test/plugin/pl_player/video_output_size_test.dart
 ```
 
 Then, per platform, use a release/profile build and compare the same 4K60 clip

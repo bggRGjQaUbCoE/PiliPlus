@@ -150,6 +150,3 @@ pili_release.json
 dist
 
 test*
-# Keep Flutter regression tests in source control.
-!test/
-!test/**

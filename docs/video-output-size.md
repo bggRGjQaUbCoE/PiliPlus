@@ -17,7 +17,7 @@ change; it keeps the plain `FittedBox` + `SimpleVideo` surface.
   frame may use the previous texture until the gesture settles. This also
   coalesces continuous window resizes on desktop: dragging a window keeps
   restarting the timer, so only one native resize runs once it settles.
-- Reapply the target after media-kit overwrites output dimensions on stream changes.
+- Reconcile native output notifications with the requested target dimensions.
 - Suspend requests for routes disabled by TickerMode and cancel pending work on disposal.
 - Keep the full source output when Anime4K is enabled, and when hardware
   acceleration is off (`hwdec == null`). The Windows and Linux software renderer
@@ -33,11 +33,9 @@ change; it keeps the plain `FittedBox` + `SimpleVideo` surface.
 | Linux | `media_kit_video/linux/video_output.cc`, `texture_gl.cc` | The size is stored and honoured at render time. `texture_gl_populate_texture` rebuilds the mpv FBO/textures inside Flutter's populate callback; the Flutter texture is not unregistered. |
 | Android | not implemented | Only `VideoOutputManager.SetSurfaceSize` exists; `AndroidVideoController.setSize` throws. |
 
-On all four native platforms the output dimensions are overwritten with the
-source resolution whenever `videoParams` changes (`NativeVideoController`'s
-listener calls `SetSize(dw, dh)`), and the native side updates
-`controller.rect` when the output actually changes. The reconciliation in
-`VideoOutputResize` depends on both.
+The native side updates `controller.rect` when the output actually changes.
+`VideoOutputResize` observes these notifications to reconcile the requested size.
+Source dimensions are tracked separately through `player.stream.videoParams`.
 
 ## Known limitations
 
@@ -59,12 +57,13 @@ unregister the Flutter texture, so they do not flash.
 ## Dependency contract
 
 The lockfile pins My-Responsitories/media-kit at
-b0187daeb076cbe29c3d332f0626cca5a34f1624. Its `NativeVideoController` videoParams
-listener sends original dimensions without updating the `setSize` cache, so a
-later `setSize` with the same dimensions is a no-op. Therefore
-`NativeVideoSurface` uses `VideoOutputManager.SetSize` on the existing method
-channel and observes `controller.rect` to reconcile native overrides. Check this
-contract when updating media-kit.
+73771ec38176be2d984a3049c28177bce23b54a0. This revision no longer has the
+`NativeVideoController` videoParams listener that reset output dimensions on
+stream changes. `NativeVideoSurface` continues to use
+`VideoOutputManager.SetSize` on the existing method channel and observes
+`controller.rect` to reconcile output notifications. The command accepts the
+player handle, width and height as strings. Check this contract when updating
+media-kit.
 
 It does not replace the plugin's method-call handler. The surface only invokes
 methods and must never call `setMethodCallHandler` on that channel, otherwise

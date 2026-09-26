@@ -35,10 +35,9 @@ class NativeVideoSurface extends StatefulWidget {
 }
 
 class _NativeVideoSurfaceState extends State<NativeVideoSurface> {
-  // The pinned media-kit fork overwrites native dimensions on videoParams
-  // changes without updating its setSize cache. Reapplying setSize with the
-  // same dimensions is then a no-op. Use its native size command directly,
-  // and reconcile output notifications, without modifying the dependency.
+  // Use the native size command directly so reconciliation does not depend
+  // on NativeVideoController's setSize cache. Observe output notifications
+  // to reconcile the actual texture dimensions with the requested size.
   //
   // Only invoke methods here: registering a method call handler on this
   // channel would steal `VideoOutput.Resize` from the controller.

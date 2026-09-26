@@ -2,6 +2,7 @@ import 'package:PiliPlus/pages/article/view.dart';
 import 'package:PiliPlus/pages/article_list/view.dart';
 import 'package:PiliPlus/pages/audio/view.dart';
 import 'package:PiliPlus/pages/blacklist/view.dart';
+import 'package:PiliPlus/pages/breeze/settings_page.dart';
 import 'package:PiliPlus/pages/bubble/view.dart';
 import 'package:PiliPlus/pages/danmaku_block/view.dart';
 import 'package:PiliPlus/pages/dlna/view.dart';
@@ -149,6 +150,7 @@ class Routes {
     // 弹幕屏蔽管理
     GetPage(name: '/danmakuBlock', page: () => const DanmakuBlockPage()),
     GetPage(name: '/sponsorBlock', page: () => const SponsorBlockPage()),
+    GetPage(name: '/breezeSetting', page: () => const BreezeSettingsPage()),
     GetPage(name: '/createFav', page: () => const CreateFavPage()),
     GetPage(name: '/editProfile', page: () => const EditProfilePage()),
     GetPage(name: '/settingsSearch', page: () => const SettingsSearchPage()),

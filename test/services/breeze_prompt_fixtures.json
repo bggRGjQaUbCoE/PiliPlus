@@ -1,0 +1,163 @@
+{
+  "source": "PosvdM/bili-breeze prompts/ at 29f5cc2",
+  "classificationVersion": "general-rules-v8",
+  "promptLimit": 4000,
+  "defaultPrompt": "7d38e3528fb0ec9d7e6eaad4faedcc6cb180457b8881ef2e1836e5626e6bfece",
+  "giveawayPrompt": "3de847744207fe15ce775dd8a6394abd105b65e422eba97c21939ed40e69fa3d",
+  "cases": [
+    {
+      "name": "jev giveaway",
+      "raw": {
+        "kind": "dynamic",
+        "text": "互动抽奖 转发关注抽1人送耳机",
+        "originalText": "感谢支持",
+        "forwardedText": "互动抽奖",
+        "links": [
+          "https://t.bilibili.com/1"
+        ]
+      },
+      "config": {
+        "provider": "jev",
+        "rulesPrompt": ""
+      },
+      "expected": {
+        "lottery": true,
+        "state": "25dd70ce7e54cd7278df8688cd6c84da1ad7f4cb5462f39452bb7ca8d0957706",
+        "cacheKey": "4ec74085f9ed25466ccc1a133aa704d8b446f4da9a5e579977a3eef9570c6135",
+        "payload": "17612581b18d73bf0da1a82edd4f253dd2315afaf220479168bf78162042c75c"
+      }
+    },
+    {
+      "name": "jev author context",
+      "raw": {
+        "kind": "dynamic",
+        "author": "  游戏科学  ",
+        "text": "《黑神话：钟馗》首支预告",
+        "links": []
+      },
+      "config": {
+        "provider": "jev",
+        "rulesPrompt": ""
+      },
+      "expected": {
+        "lottery": false,
+        "state": "a9fd9c7c54b1dce442c75509c96a233b677de8401fd6c4fd0b2fc1dc53720cdf",
+        "cacheKey": "58f27372792410930c98bd7ae15f13ff01b0d2920e3b6804ddef28d922bebfbc",
+        "payload": "bdd0be17c00614ddfd455fca1dd3fee509aedaa2024670da089d0de06b10d510"
+      }
+    },
+    {
+      "name": "jev pinned comment",
+      "raw": {
+        "kind": "pinned",
+        "author": "测试UP",
+        "text": "补充说明：视频第三分钟口误，正确年份是2024年。",
+        "title": "视频标题",
+        "links": [
+          "https://www.bilibili.com/video/BV1xx411c7mD"
+        ]
+      },
+      "config": {
+        "provider": "jev",
+        "rulesPrompt": ""
+      },
+      "expected": {
+        "lottery": false,
+        "state": "eed59b950b54096a1ce35cd6e07aa660abe667d81196cc86ec645f6effcaf570",
+        "cacheKey": "575bf5888e5a041db84362770a47a2eb350e2f6b0e6b81685146c9b8a9a3e294",
+        "payload": "abbb7af4958f5f24d3c4946fcd2801e7692a8806c0bd3420cf262e9b7c0b9eeb"
+      }
+    },
+    {
+      "name": "jev edited prompt",
+      "raw": {
+        "kind": "dynamic",
+        "author": "  游戏科学  ",
+        "text": "《黑神话：钟馗》首支预告",
+        "links": []
+      },
+      "config": {
+        "provider": "jev",
+        "rulesPrompt": "游戏官方号宣传新活动也算广告"
+      },
+      "expected": {
+        "lottery": false,
+        "state": "a9fd9c7c54b1dce442c75509c96a233b677de8401fd6c4fd0b2fc1dc53720cdf",
+        "cacheKey": "bf4f70c6c5d4f7c01780e3b942c00b437e8377aa29598176755c13c4658b3eec",
+        "payload": "b284de39c03ecbd076b9404c97408db28a90b6751ca3b03f57a010c2fcfb9d70"
+      }
+    },
+    {
+      "name": "openai giveaway edited prompt",
+      "raw": {
+        "kind": "dynamic",
+        "text": "互动抽奖 转发关注抽1人送耳机",
+        "originalText": "感谢支持",
+        "forwardedText": "互动抽奖",
+        "links": [
+          "https://t.bilibili.com/1"
+        ]
+      },
+      "config": {
+        "provider": "custom",
+        "apiProtocol": "openai",
+        "apiUrl": "https://example.test/v1/chat/completions",
+        "apiModel": " m ",
+        "rulesPrompt": "只判断品牌商单。"
+      },
+      "expected": {
+        "lottery": true,
+        "state": "25dd70ce7e54cd7278df8688cd6c84da1ad7f4cb5462f39452bb7ca8d0957706",
+        "cacheKey": "b0c550d80ecbd548011ddc0a2c27d0898d3303901ac244158f34b1f5f58dcdc6",
+        "payload": "124a4c4339ce0e721a306cb0770d1366fe57201b62303a24621ffa9b730d52ed"
+      }
+    },
+    {
+      "name": "openai author context",
+      "raw": {
+        "kind": "dynamic",
+        "author": "  游戏科学  ",
+        "text": "《黑神话：钟馗》首支预告",
+        "links": []
+      },
+      "config": {
+        "provider": "custom",
+        "apiProtocol": "openai",
+        "apiUrl": "https://example.test/v1/chat/completions",
+        "apiModel": "m",
+        "rulesPrompt": ""
+      },
+      "expected": {
+        "lottery": false,
+        "state": "a9fd9c7c54b1dce442c75509c96a233b677de8401fd6c4fd0b2fc1dc53720cdf",
+        "cacheKey": "50548cacf9f9c388fc9c707e280dec8a55c1f57adea1670d54912da95ff9e99e",
+        "payload": "be7d06f63509664b096d9ea1fd49ab455edaeae0db4489da75bb6d67a4d5fbcc"
+      }
+    },
+    {
+      "name": "jev-compatible custom",
+      "raw": {
+        "kind": "dynamic",
+        "text": "互动抽奖 转发关注抽1人送耳机",
+        "originalText": "感谢支持",
+        "forwardedText": "互动抽奖",
+        "links": [
+          "https://t.bilibili.com/1"
+        ]
+      },
+      "config": {
+        "provider": "custom",
+        "apiProtocol": "jev",
+        "apiUrl": "https://example.test/v1/chat/completions",
+        "apiModel": "model-x",
+        "rulesPrompt": ""
+      },
+      "expected": {
+        "lottery": true,
+        "state": "25dd70ce7e54cd7278df8688cd6c84da1ad7f4cb5462f39452bb7ca8d0957706",
+        "cacheKey": "66dee239b2560e9e7a4df68e600e8afa664815e27c47d1a597ef8c1475ca4dd9",
+        "payload": "8fc3649d5056902898dc16099b4cbfa3aaf2af87c20b7696bae81dfcea90001a"
+      }
+    }
+  ]
+}

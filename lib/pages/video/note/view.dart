@@ -1,5 +1,3 @@
-import 'dart:io' show Platform;
-
 import 'package:PiliPlus/common/skeleton/video_reply.dart';
 import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
@@ -15,8 +13,6 @@ import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
-import 'package:desktop_webview_window/desktop_webview_window.dart' as dww;
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -41,17 +37,6 @@ class NoteListPage extends CommonSlidePage {
 
 class _NoteListPageState extends State<NoteListPage>
     with SingleTickerProviderStateMixin, CommonSlideMixin {
-  static dww.Webview? _activeNoteWebview;
-  static bool _isOpeningNote = false;
-  static Object? _dwwOwner;
-
-  void _closeLinuxWebview({bool close = false}) {
-    if (close) _activeNoteWebview?.close();
-    _activeNoteWebview = null;
-    _isOpeningNote = false;
-    _dwwOwner = null;
-  }
-
   late final NoteListPageCtr _controller;
 
   @override
@@ -66,9 +51,6 @@ class _NoteListPageState extends State<NoteListPage>
   @override
   void dispose() {
     Get.delete<NoteListPageCtr>(tag: widget.heroTag);
-    if (_dwwOwner == this) {
-      _closeLinuxWebview(close: true);
-    }
     super.dispose();
   }
 
@@ -173,7 +155,7 @@ class _NoteListPageState extends State<NoteListPage>
                   borderRadius: BorderRadius.all(Radius.circular(6)),
                 ),
               ),
-              onPressed: _onTakeNote,
+              onPressed: () => _onTakeNote(context),
               child: const Text('开始记笔记'),
             ),
           ),
@@ -315,41 +297,9 @@ class _NoteListPageState extends State<NoteListPage>
     );
   }
 
-  Future<void> _onTakeNoteLinux(String url) async {
-    if (_activeNoteWebview != null) {
-      await _activeNoteWebview?.bringToForeground();
-      SmartDialog.showToast('已置顶笔记窗口');
-      return;
-    }
-    if (_isOpeningNote) return;
-    _isOpeningNote = true;
-    SmartDialog.showToast('已在新窗口打开');
-    try {
-      var webview = await WebviewPage.openLinux(
-        oid: widget.oid,
-        title: widget.title,
-        url: url,
-        onClose: _closeLinuxWebview,
-      );
-      if (mounted) {
-        _activeNoteWebview = webview;
-        _dwwOwner = this;
-      } else {
-        webview?.close();
-        webview = null;
-      }
-    } finally {
-      _isOpeningNote = false;
-    }
-  }
-
-  void _onTakeNote() {
+  void _onTakeNote(BuildContext context) {
     final url =
         'https://www.bilibili.com/h5/note-app?oid=${widget.oid}&pagefrom=ugcvideo&is_stein_gate=${widget.isStein ? 1 : 0}';
-    if (Platform.isLinux) {
-      _onTakeNoteLinux(url);
-      return;
-    }
     MiniScaffold.of(context).showBottomSheet(
       constraints: const BoxConstraints(),
       (context) => WebviewPage(oid: widget.oid, title: widget.title, url: url),

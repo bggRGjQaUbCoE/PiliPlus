@@ -1,4 +1,8 @@
 // mpv --hwdec=help
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart' show kDebugMode;
+
 enum HwDecType {
   no('no', '启用软解'),
   auto('auto', '启用任意可用解码器'),
@@ -38,8 +42,9 @@ enum HwDecType {
   final String desc;
   const HwDecType(this.hwdec, this.desc);
 
-  static final String androidDefault = [
-    HwDecType.mediacodec.hwdec,
-    HwDecType.autoSafe.hwdec,
-  ].join(',');
+  static final String kHwdec = Platform.isAndroid
+      ? kDebugMode
+            ? autoSafe.hwdec
+            : [mediacodec.hwdec, autoSafe.hwdec].join(',')
+      : auto.hwdec;
 }

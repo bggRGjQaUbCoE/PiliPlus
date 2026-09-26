@@ -261,8 +261,7 @@ abstract final class Api {
   static const String searchDefault = '/x/web-interface/wbi/search/default';
 
   // 搜索关键词
-  static const String searchSuggest =
-      'https://s.search.bilibili.com/main/suggest';
+  static const String searchSuggest = '/x/web-interface/suggest';
 
   // 分类搜索
   static const String searchByType = '/x/web-interface/wbi/search/type';

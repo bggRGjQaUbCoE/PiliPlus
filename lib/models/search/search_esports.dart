@@ -1,15 +1,11 @@
 import 'package:PiliPlus/utils/parse_string.dart';
 
 class SearchEsports {
-  EsportsConfigInfo configInfo;
   List<EsportsContest> contest;
 
-  SearchEsports({required this.configInfo, required this.contest});
+  SearchEsports({required this.contest});
 
   factory SearchEsports.fromJson(Map<String, dynamic> json) => SearchEsports(
-    configInfo: EsportsConfigInfo.fromJson(
-      json['config_info'] as Map<String, dynamic>,
-    ),
     contest: (json['contest'] as List<dynamic>)
         .map((e) => EsportsContest.fromJson(e as Map<String, dynamic>))
         .toList(),
@@ -27,6 +23,7 @@ class EsportsContest {
   String? playback;
   int? contestStatus;
   int? stime;
+  String? title;
 
   EsportsContest({
     required this.id,
@@ -39,6 +36,7 @@ class EsportsContest {
     this.playback,
     this.contestStatus,
     this.stime,
+    this.title,
   });
 
   factory EsportsContest.fromJson(Map<String, dynamic> json) => EsportsContest(
@@ -52,22 +50,8 @@ class EsportsContest {
     playback: json['playback'] as String?,
     contestStatus: json['contestStatus'] as int?,
     stime: json['stime'] as int?,
+    title: json['season']?['title'] as String?,
   );
-}
-
-class EsportsConfigInfo {
-  String esportTitle;
-  List<EsportsBtnList>? btnList;
-
-  EsportsConfigInfo({required this.esportTitle, this.btnList});
-
-  factory EsportsConfigInfo.fromJson(Map<String, dynamic> json) =>
-      EsportsConfigInfo(
-        esportTitle: json['esport_title'] as String,
-        btnList: (json['btn_list'] as List<dynamic>?)
-            ?.map((e) => EsportsBtnList.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
 }
 
 class EsportsTeam {

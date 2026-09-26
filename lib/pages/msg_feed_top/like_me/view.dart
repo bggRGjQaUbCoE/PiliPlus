@@ -167,11 +167,14 @@ class _LikeMePageState extends State<LikeMePage> {
     final firstUser = item.users!.first;
     Widget avatar;
     if (item.users!.length == 1) {
-      avatar = NetworkImgLayer(
-        width: 45,
-        height: 45,
-        type: ImageType.avatar,
-        src: firstUser.avatar,
+      avatar = GestureDetector(
+        onTap: () => Get.toNamed('/member?mid=${firstUser.mid}'),
+        child: NetworkImgLayer(
+          width: 45,
+          height: 45,
+          type: ImageType.avatar,
+          src: firstUser.avatar,
+        ),
       );
     } else {
       avatar = SizedBox(

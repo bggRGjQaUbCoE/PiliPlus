@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -128,6 +130,9 @@ class FavDetailController
     } else if (response.hasMore == false) {
       isEnd = true;
     }
+    if (pageDesc) {
+      return response.medias?.reversed.toList();
+    }
     return response.medias;
   }
 
@@ -207,7 +212,7 @@ class FavDetailController
     final res = await FavHttp.cleanFav(mediaId: mediaId);
     if (res.isSuccess) {
       SmartDialog.showToast('清除成功');
-      Future.delayed(const Duration(milliseconds: 200), onReload);
+      Timer(const Duration(milliseconds: 200), onReload);
     } else {
       res.toast();
     }
@@ -241,7 +246,7 @@ class FavDetailController
               'oid': item.id,
               'favTitle': folder.title,
               'count': folder.mediaCount,
-              'desc': true,
+              'desc': !pageDesc,
               if (index != null) 'isContinuePlaying': index != 0,
               'isOwner': isOwner,
             }

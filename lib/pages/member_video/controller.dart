@@ -185,7 +185,7 @@ class MemberVideoCtr
             bvid: bvid,
             cid: cid,
             dimension: res!.dimension,
-            title: res.title,
+            // title: res.title,
             extraArguments: {
               'sourceType': SourceType.archive,
               'mediaId': seasonId ?? seriesId ?? mid,

@@ -5,6 +5,7 @@ import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/browser_ua.dart';
+import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/login.dart';
@@ -970,6 +971,13 @@ abstract final class VideoHttp {
     final res = await Request().get(
       Api.popularSeriesList,
       queryParameters: await WbiSign.makSign({'web_location': 333.934}),
+      options: Options(
+        headers: const {
+          'user-agent': BrowserUa.pc,
+          'origin': HttpString.baseUrl,
+          'referer': 'https://www.bilibili.com/v/popular/weekly',
+        },
+      ),
     );
     if (res.data['code'] == 0) {
       return Success(
@@ -993,6 +1001,13 @@ abstract final class VideoHttp {
         'number': number,
         'web_location': 333.934,
       }),
+      options: Options(
+        headers: {
+          'user-agent': BrowserUa.pc,
+          'origin': HttpString.baseUrl,
+          'referer': 'https://www.bilibili.com/v/popular/weekly?num=$number',
+        },
+      ),
     );
     if (res.data['code'] == 0) {
       return Success(PopularSeriesOneData.fromJson(res.data['data']));
@@ -1011,6 +1026,13 @@ abstract final class VideoHttp {
         'page': page,
         'web_location': 333.934,
       }),
+      options: Options(
+        headers: const {
+          'user-agent': BrowserUa.pc,
+          'origin': HttpString.baseUrl,
+          'referer': 'https://www.bilibili.com/v/popular/history',
+        },
+      ),
     );
     if (res.data['code'] == 0) {
       return Success(PopularPreciousData.fromJson(res.data['data']));

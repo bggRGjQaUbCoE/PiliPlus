@@ -142,7 +142,10 @@ class _SearchPageState extends State<SearchPage> {
                   .map(
                     (item) => InkWell(
                       borderRadius: const .all(.circular(4)),
-                      onTap: () => _searchController.onClickKeyword(item.term!),
+                      onTap: () => _searchController.onClickKeyword(
+                        item.term!,
+                        clearSuggest: false,
+                      ),
                       child: Padding(
                         padding: const .only(left: 20, top: 9, bottom: 9),
                         child: Text.rich(
@@ -355,8 +358,10 @@ class _SearchPageState extends State<SearchPage> {
                     text: list[index],
                     onTap: _searchController.onClickKeyword,
                     onLongPress: _searchController.onLongSelect,
-                    fontSize: 14,
                     height: 1,
+                    maxLines: 1,
+                    fontSize: 14,
+                    overflow: .ellipsis,
                     padding: const .fromLTRB(11, 8, 11, 0),
                   ),
                 ),

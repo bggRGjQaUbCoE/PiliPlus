@@ -237,11 +237,12 @@ abstract final class ImageUtils {
     required Uint8List bytes,
     required String fileName,
     String ext = 'png',
+    bool showLoading = true,
   }) async {
     SaveResult? res;
     fileName += '.$ext';
     if (PlatformUtils.isMobile) {
-      SmartDialog.showLoading(msg: '正在保存');
+      if (showLoading) SmartDialog.showLoading(msg: '正在保存');
       res = await SaverGallery.saveImage(
         bytes,
         fileName: fileName,

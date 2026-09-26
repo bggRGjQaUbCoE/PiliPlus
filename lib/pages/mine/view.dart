@@ -440,7 +440,7 @@ class _MediaPageState extends CommonPageState<MinePage>
     );
   }
 
-  void _autoRefresh() => Future.delayed(
+  void _autoRefresh() => Timer(
     const Duration(milliseconds: 150),
     () => controller.onRefresh(isManual: false),
   );

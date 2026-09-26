@@ -55,7 +55,7 @@ abstract final class UrlUtils {
           bvid: bvid,
           cid: cid,
           dimension: res!.dimension,
-          title: res.title,
+          // title: res.title,
         );
       }
     } else {

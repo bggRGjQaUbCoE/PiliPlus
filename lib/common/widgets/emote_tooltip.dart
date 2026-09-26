@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/widgets/custom_tooltip.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
+import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:material_ui/material_ui.dart';
@@ -20,12 +21,13 @@ Widget emoteTooltipBuilder({
   required Widget child,
 }) {
   if (enable ?? enableEmoteTooltip) {
-    final bg = colorScheme.surface;
-
     return CustomTooltip(
+      color: colorScheme.isDark
+          ? colorScheme.surfaceContainerHigh
+          : colorScheme.surface,
+      shadow: Colors.black,
       triggerMode: triggerMode,
       jumpUrl: jumpUrl,
-      indicator: () => Triangle(color: bg, size: const Size(14, 8)),
       overlayWidget: () {
         Widget overlay = NetworkImgLayer(
           src: url,
@@ -60,15 +62,7 @@ Widget emoteTooltipBuilder({
             ],
           );
         }
-        return Container(
-          padding: const .all(8),
-          decoration: BoxDecoration(
-            color: bg,
-            borderRadius: const .all(.circular(8)),
-            border: const Border.fromBorderSide(BorderSide(color: borderColor)),
-          ),
-          child: overlay,
-        );
+        return Padding(padding: const .all(8.0), child: overlay);
       },
       child: child,
     );

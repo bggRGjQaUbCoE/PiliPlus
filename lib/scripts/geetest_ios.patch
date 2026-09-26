@@ -115,16 +115,18 @@ index 000000000..2823c2188
 +  }
 +}
 diff --git a/lib/pages/login/geetest/geetest_webview_dialog.dart b/lib/pages/login/geetest/geetest_webview_dialog.dart
-index 7a0461170..da032af1a 100644
+index 339f0fcda..41d953998 100644
 --- a/lib/pages/login/geetest/geetest_webview_dialog.dart
 +++ b/lib/pages/login/geetest/geetest_webview_dialog.dart
-@@ -1,3 +1,5 @@
+@@ -7,6 +7,7 @@ import 'package:PiliPlus/plugin/linux_webview.dart';
+ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+ import 'package:get/get.dart';
+ import 'package:material_ui/material_ui.dart';
 +import 'package:PiliPlus/pages/login/geetest/geetest_plugin.dart';
-+
- import 'dart:convert' show base64, jsonDecode, jsonEncode, utf8;
- import 'dart:io' show Platform;
  
-@@ -22,6 +24,7 @@ class GeetestWebviewDialog extends StatefulWidget {
+ class GeetestWebviewDialog extends StatefulWidget {
+   const GeetestWebviewDialog(this.gt, this.challenge, {super.key});
+@@ -18,6 +19,7 @@ class GeetestWebviewDialog extends StatefulWidget {
    State<GeetestWebviewDialog> createState() => _GeetestWebviewDialogState();
  
    static Future<Map<String, dynamic>?> geetest(String gt, String challenge) {

@@ -54,6 +54,10 @@ add_subdirectory(${FLUTTER_MANAGED_DIR})
 # System-level dependencies.
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0)
+pkg_check_modules(WEBKIT IMPORTED_TARGET webkit2gtk-4.1)
+if(NOT WEBKIT_FOUND)
+  pkg_check_modules(WEBKIT REQUIRED IMPORTED_TARGET webkit2gtk-4.0)
+endif()
 
 # Application build; see runner/CMakeLists.txt.
 add_subdirectory("runner")

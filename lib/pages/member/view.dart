@@ -34,6 +34,7 @@ import 'package:PiliPlus/pages/member_pgc/view.dart';
 import 'package:PiliPlus/pages/member_shop/view.dart';
 import 'package:PiliPlus/pages/member_video_web/archive/view.dart';
 import 'package:PiliPlus/pages/member_video_web/season_series/view.dart';
+import 'package:PiliPlus/services/breeze/breeze_service.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
@@ -333,6 +334,45 @@ class _MemberPageState extends State<MemberPage> {
     );
   }
 
+  PopupMenuItem _breezeItem(String listKey, IconData icon) {
+    final listed = BreezeService.inList(listKey, '$_mid');
+    final whitelist = listKey == BreezeKey.whitelist;
+    return PopupMenuItem(
+      onTap: () async {
+        try {
+          await BreezeService.setListed(
+            listKey,
+            '$_mid',
+            add: !listed,
+            name: _userController.username ?? '',
+          );
+          SmartDialog.showToast(
+            BreezeService.inList(BreezeKey.whitelist, '$_mid') &&
+                    BreezeService.inList(BreezeKey.enhancedList, '$_mid')
+                ? '已在两个名单中，白名单优先'
+                : listed
+                ? '已从哔哩清风名单移除'
+                : '已加入哔哩清风名单',
+          );
+        } catch (e) {
+          SmartDialog.showToast('保存失败：$e');
+        }
+      },
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 19),
+          const SizedBox(width: 10),
+          Text(
+            whitelist
+                ? (listed ? '移出清风白名单' : '加入清风白名单')
+                : (listed ? '取消清风谨慎过滤' : '清风谨慎过滤'),
+          ),
+        ],
+      ),
+    );
+  }
+
   List<Widget> _actions(ColorScheme theme) => [
     if (_userController.reserves?.isNotEmpty ?? false)
       _reserveBtn(_userController.reserves!, theme),
@@ -373,6 +413,12 @@ class _MemberPageState extends State<MemberPage> {
                 ],
               ),
             ),
+        ],
+        if (_userController.account.mid != _mid &&
+            BreezeService.config.enabled &&
+            BreezeService.config.configured) ...[
+          _breezeItem(BreezeKey.whitelist, Icons.verified_user_outlined),
+          _breezeItem(BreezeKey.enhancedList, Icons.shield_outlined),
         ],
         PopupMenuItem(
           onTap: _userController.shareUser,

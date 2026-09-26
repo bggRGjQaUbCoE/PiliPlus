@@ -9,11 +9,13 @@ import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/pages/breeze/breeze_fold.dart';
 import 'package:PiliPlus/pages/common/fab_mixin.dart';
 import 'package:PiliPlus/pages/video/reply/controller.dart';
 import 'package:PiliPlus/pages/video/reply/vote/reply_vote_item.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/pages/video/reply_reply/view.dart';
+import 'package:PiliPlus/services/breeze/breeze_rules.dart' show BreezeKind;
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:get/get.dart';
@@ -186,7 +188,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
                   ),
                 );
               } else {
-                return ReplyItemGrpc(
+                final child = ReplyItemGrpc(
                   replyItem: response[index],
                   replyLevel: widget.replyLevel,
                   replyReply: replyReply,
@@ -203,6 +205,24 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
                     _videoReplyController.videoType.replyType,
                   ),
                 );
+                if (index == 0 && _videoReplyController.hasUpTop) {
+                  final reply = response[index];
+                  Widget fold() => BreezeFold(
+                    kind: BreezeKind.pinned,
+                    source: reply,
+                    raw: () => _videoReplyController.breezePinnedRaw(reply),
+                    child: child,
+                  );
+                  // Rebuild when the video details arrive; the title and
+                  // uploader are part of what is judged.
+                  final detail = _videoReplyController.breezeVideoDetail;
+                  if (detail == null) return fold();
+                  return Obx(() {
+                    detail.value;
+                    return fold();
+                  });
+                }
+                return child;
               }
             },
             itemCount: count,

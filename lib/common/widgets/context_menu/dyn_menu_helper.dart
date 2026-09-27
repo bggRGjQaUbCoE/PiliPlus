@@ -167,12 +167,3 @@ void _showTextDialog(String text) {
     ),
   );
 }
-
-Widget openUrlMenuBuilder(_, SelectableRegionState state) {
-  final buttonItems = state.contextMenuButtonItems;
-  state.addLaunchMenuIfNeeded(buttonItems, index: 3);
-  return AdaptiveTextSelectionToolbar.buttonItems(
-    buttonItems: buttonItems,
-    anchors: state.contextMenuAnchors,
-  );
-}

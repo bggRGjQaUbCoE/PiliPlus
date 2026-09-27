@@ -33,6 +33,90 @@ class AiPromptTemplate {
       AiPromptTemplate(name: json['name'] ?? '', prompt: json['prompt'] ?? '');
 }
 
+/// 规范化流式增量：服务层负责协议字段提取与 `<think>` 解析，
+/// 控制器只负责把两个增量追加到当前助手消息
+class AiStreamDelta {
+  const AiStreamDelta({this.contentDelta = '', this.reasoningDelta = ''});
+
+  /// 回答正文增量
+  final String contentDelta;
+
+  /// 思考内容增量
+  final String reasoningDelta;
+}
+
+/// 一次响应内思考内容的来源。以最先产生非空思考内容的来源为准，
+/// 之后出现的另一种来源按未知/重复协议数据忽略
+enum _ReasoningSource { field, thinkTag }
+
+/// `<think>` / `</think>` 增量解析器。
+///
+/// 在一次 `streamChat` 请求内保持状态：开闭标签可能被拆在多个 chunk 中，
+/// 不能对每个 chunk 独立做正则替换，尾部可能是标签前缀的文本必须暂存到
+/// 下一个 chunk 再判断；流结束时未闭合的 `<think>` 视为思考内容。
+class _ThinkTagParser {
+  static const _openTag = '<think>';
+  static const _closeTag = '</think>';
+
+  String _buffer = '';
+  bool _inThinking = false;
+
+  /// 追加一个 SSE chunk，返回本次可下发的拆分结果
+  ({String content, String reasoning}) add(String chunk) {
+    if (chunk.isEmpty) return (content: '', reasoning: '');
+    _buffer += chunk;
+    return _drain(isEnd: false);
+  }
+
+  /// 流结束时冲刷暂存内容
+  ({String content, String reasoning}) flush() => _drain(isEnd: true);
+
+  ({String content, String reasoning}) _drain({required bool isEnd}) {
+    final content = StringBuffer();
+    final reasoning = StringBuffer();
+    while (_buffer.isNotEmpty) {
+      if (_inThinking) {
+        final close = _buffer.indexOf(_closeTag);
+        if (close >= 0) {
+          reasoning.write(_buffer.substring(0, close));
+          _buffer = _buffer.substring(close + _closeTag.length);
+          _inThinking = false;
+          continue;
+        }
+        final keep = isEnd ? 0 : _partialSuffix(_buffer, _closeTag);
+        reasoning.write(
+          keep == 0 ? _buffer : _buffer.substring(0, _buffer.length - keep),
+        );
+        _buffer = keep == 0 ? '' : _buffer.substring(_buffer.length - keep);
+      } else {
+        final open = _buffer.indexOf(_openTag);
+        if (open >= 0) {
+          content.write(_buffer.substring(0, open));
+          _buffer = _buffer.substring(open + _openTag.length);
+          _inThinking = true;
+          continue;
+        }
+        final keep = isEnd ? 0 : _partialSuffix(_buffer, _openTag);
+        content.write(
+          keep == 0 ? _buffer : _buffer.substring(0, _buffer.length - keep),
+        );
+        _buffer = keep == 0 ? '' : _buffer.substring(_buffer.length - keep);
+      }
+      break;
+    }
+    return (content: content.toString(), reasoning: reasoning.toString());
+  }
+
+  /// [text] 末尾作为 [tag] 前缀（不含完整标签）的最长长度
+  static int _partialSuffix(String text, String tag) {
+    final max = text.length < tag.length - 1 ? text.length : tag.length - 1;
+    for (var len = max; len > 0; len--) {
+      if (text.endsWith(tag.substring(0, len))) return len;
+    }
+    return 0;
+  }
+}
+
 class AiChatService {
   static Options _options({Duration? receiveTimeout}) {
     final apiKey = Pref.aiApiKey;
@@ -152,10 +236,13 @@ class AiChatService {
   }
 
   /// Stream chat completion from {base}/chat/completions
-  /// Returns a stream of content strings (each token/chunk)
-  static Stream<String> streamChat({
+  ///
+  /// 返回结构化增量流：`contentDelta` 为回答正文，`reasoningDelta` 为思考
+  /// 内容（`reasoning_content` 字段或 `content` 中包裹的 `<think>`）
+  static Stream<AiStreamDelta> streamChat({
     required List<Map<String, String>> messages,
     String? model,
+    String? reasoningEffort,
   }) async* {
     final baseUrl = _baseUrl();
     if (baseUrl.isEmpty) throw Exception('请先配置 API 地址');
@@ -173,6 +260,12 @@ class AiChatService {
           'model': useModel,
           'messages': messages,
           'stream': true,
+          // 'default'（含旧值 'auto'）表示不干预服务商默认行为，不下发该字段
+          if (reasoningEffort != null &&
+              reasoningEffort.isNotEmpty &&
+              reasoningEffort != 'default' &&
+              reasoningEffort != 'auto')
+            'reasoning_effort': reasoningEffort,
         }),
         options: opts,
       );
@@ -186,6 +279,21 @@ class AiChatService {
     // 返回 HTML 页面或完整 JSON）会静默产出空回复，需在流结束后报错
     var sawData = false;
     final nonSse = StringBuffer();
+    final parser = _ThinkTagParser();
+    _ReasoningSource? source;
+
+    // 解析器记录本次响应第一个产生非空思考内容的来源，来源确定后只接受该来源，
+    // 避免同一段内容被展示两次
+    String? acceptReasoning(String text, _ReasoningSource from) {
+      if (text.isEmpty) return null;
+      if (source == null) {
+        source = from;
+      } else if (source != from) {
+        return null;
+      }
+      return text;
+    }
+
     await for (final line in stream
         .cast<List<int>>()
         .transform(utf8.decoder)
@@ -198,7 +306,20 @@ class AiChatService {
       }
       sawData = true;
       final data = trimmed.replaceFirst('data:', '').trim();
-      if (data == '[DONE]') return;
+      if (data == '[DONE]') {
+        final split = parser.flush();
+        final reasoning = acceptReasoning(
+          split.reasoning,
+          _ReasoningSource.thinkTag,
+        );
+        if (reasoning != null) {
+          yield AiStreamDelta(reasoningDelta: reasoning);
+        }
+        if (split.content.isNotEmpty) {
+          yield AiStreamDelta(contentDelta: split.content);
+        }
+        return;
+      }
       if (data.isEmpty) continue;
       try {
         final json = jsonDecode(data) as Map<String, dynamic>;
@@ -206,14 +327,49 @@ class AiChatService {
         if (choices != null && choices.isNotEmpty) {
           final delta = choices[0]['delta'] as Map<String, dynamic>?;
           final content = delta?['content'] as String?;
-          if (content != null) {
-            yield content;
+          if (content != null && content.isNotEmpty) {
+            // 思考标签必须剥离，不能混入正文
+            final split = parser.add(content);
+            final reasoning = acceptReasoning(
+              split.reasoning,
+              _ReasoningSource.thinkTag,
+            );
+            if (reasoning != null) {
+              yield AiStreamDelta(reasoningDelta: reasoning);
+            }
+            if (split.content.isNotEmpty) {
+              yield AiStreamDelta(contentDelta: split.content);
+            }
+          }
+          final reasoningContent = delta?['reasoning_content'] as String?;
+          if (reasoningContent != null) {
+            final reasoning = acceptReasoning(
+              reasoningContent,
+              _ReasoningSource.field,
+            );
+            if (reasoning != null) {
+              yield AiStreamDelta(reasoningDelta: reasoning);
+            }
           }
         }
       } catch (e) {
         if (kDebugMode) debugPrint('SSE parse error: $e');
       }
     }
+
+    // 没有 [DONE] 就断流时同样冲刷解析器暂存内容
+    final split = parser.flush();
+    final reasoning = acceptReasoning(
+      split.reasoning,
+      _ReasoningSource.thinkTag,
+    );
+    if (reasoning != null) {
+      yield AiStreamDelta(reasoningDelta: reasoning);
+    }
+    if (split.content.isNotEmpty) {
+      yield AiStreamDelta(contentDelta: split.content);
+    }
+
     if (!sawData) {
       final contentType = response.headers.value(Headers.contentTypeHeader);
       throw _logged(AiApiException(

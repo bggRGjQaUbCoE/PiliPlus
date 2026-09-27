@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:PiliPlus/common/widgets/animated_height.dart';
 import 'package:PiliPlus/common/widgets/draggable_sheet/dyn.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/text_field.dart';
@@ -205,7 +207,7 @@ class _RepostPanelState extends CommonRichTextPubPageState<RepostPanel>
     behavior: HitTestBehavior.opaque,
     onTap: () {
       setState(() => _expanded = true);
-      Future.delayed(_durtion, () {
+      Timer(_durtion, () {
         if (mounted) {
           focusNode.requestFocus();
         }

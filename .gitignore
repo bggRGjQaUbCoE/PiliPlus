@@ -179,3 +179,5 @@ test*
 /.comet/*
 !/.comet/config.yaml
 # <<< Comet managed project state <<<
+
+.agents

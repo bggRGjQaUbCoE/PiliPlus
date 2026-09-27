@@ -17,7 +17,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
 # update when release
-version: 2.1.3+1
+version: 2.1.5+1
 
 environment:
   sdk: ">=3.13.0"
@@ -41,13 +41,16 @@ dependencies:
     git:
       url: https://github.com/bggRGjQaUbCoE/audio_service.git
       path: audio_service
-      ref: main
+      ref: dev
   audio_service_win:
     git:
       url: https://github.com/Starfallan/audio_service_win.git
       ref: main
   audio_service_mpris: 1.0.0-beta.2
-  audio_session: ^0.2.2
+  audio_session:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/audio_session.git
+      ref: dev
   battery_plus: ^7.0.0
   brotli: ^0.6.0
   cached_network_image_ce:
@@ -58,7 +61,7 @@ dependencies:
   canvas_danmaku:
     git:
       url: https://github.com/Starfallan/canvas_danmaku.git
-      ref: main
+      ref: feat/mask-region
   catcher_2:
     git:
       url: https://github.com/My-Responsitories/catcher_2.git
@@ -150,6 +153,7 @@ dependencies:
       ref: master
   package_info_plus: ^10.1.0
   path: ^1.9.1
+  path_parsing: ^1.1.0
   path_provider: ^2.1.5
   permission_handler_android: ^14.0.0
   permission_handler_apple: ^9.4.7

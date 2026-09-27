@@ -82,6 +82,7 @@ const _crossAxisExtent = 200.0;
 
 MemberVideoCtr _controller(_FakeArchive archive) {
   final controller = MemberVideoCtr(
+    heroTag: null,
     type: ContributeType.video,
     mid: 1,
     seasonId: null,

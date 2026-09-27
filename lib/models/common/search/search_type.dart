@@ -1,6 +1,9 @@
 // ignore_for_file: constant_identifier_names
-enum SearchType {
-  // all('综合'),
+import 'package:PiliPlus/http/api.dart';
+import 'package:PiliPlus/models/common/enum_with_label.dart';
+
+enum SearchType implements EnumWithLabel {
+  all('综合', api: Api.searchAll),
   // 视频：video
   video('视频'),
   // 番剧：media_bangumi,
@@ -24,6 +27,8 @@ enum SearchType {
   // 相簿：photo
   // photo
 
+  @override
   final String label;
-  const SearchType(this.label);
+  final String api;
+  const SearchType(this.label, {this.api = Api.searchByType});
 }

@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/menu_row.dart';
+import 'package:PiliPlus/pages/danmaku/mask/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/danmaku_options.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
@@ -50,7 +51,7 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
   }
 
   /// 弹幕功能
-  void showSetDanmaku({bool isLive = false}) {
+  void showSetDanmaku({bool isLive = false, DanmakuMaskController? maskController}) {
     // 屏蔽类型
     const blockTypesList = [
       (value: 2, label: '滚动'),
@@ -242,6 +243,19 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
                       child: Row(
                         spacing: 10,
                         children: [
+                          if (maskController != null &&
+                              maskController.available)
+                            ActionRowLineItem(
+                              selectStatus: maskController.enabled,
+                              onTap: () {
+                                maskController.setEnabled(
+                                  !maskController.enabled,
+                                  plPlayerController.positionInMilliseconds,
+                                );
+                                setState(() {});
+                              },
+                              text: '智能防挡',
+                            ),
                           ActionRowLineItem(
                             selectStatus: DanmakuOptions.danmakuMassiveMode,
                             onTap: () {

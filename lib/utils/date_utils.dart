@@ -6,11 +6,13 @@ abstract final class DateFormatUtils {
   static final _shortFormatD = DateFormat('MM-dd HH:mm');
   static final longFormatD = DateFormat('yyyy-MM-dd HH:mm');
   static final longFormatDs = DateFormat('yyyy-MM-dd HH:mm:ss');
+  static final only0_9 = DateFormat('yyyyMMddHHmmss');
 
   static String dateFormat(
     int? time, {
     DateFormat? short,
     DateFormat? long,
+    bool showYesterdayTime = true,
   }) {
     if (time == null || time == 0) {
       return '';
@@ -31,7 +33,9 @@ abstract final class DateFormatUtils {
     final dateDay = DateTime(date.year, date.month, date.day);
     final dayDiff = today.difference(dateDay).inDays;
     if (dayDiff == 1) {
-      return '昨天 ${_twoDigits(date.hour)}:${_twoDigits(date.minute)}';
+      return showYesterdayTime
+          ? '昨天 ${_twoDigits(date.hour)}:${_twoDigits(date.minute)}'
+          : '昨天';
     }
     if (dayDiff < 4) {
       return '$dayDiff天前';

@@ -10,6 +10,7 @@ import 'package:PiliPlus/utils/accounts/account_type_adapter.dart';
 import 'package:PiliPlus/utils/accounts/cookie_jar_adapter.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/set_int_adapter.dart';
+import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:hive_ce/hive.dart';
@@ -31,6 +32,12 @@ abstract final class GStorage {
     'replyBlockedMids',
     'remarkMids',
   ];
+
+  /// 不参与导出的设置项：本机临时缓存，换设备/重装后导入无意义
+  static const nonExportableSettingKeys = {
+    SettingBoxKey.aiModelListCache,
+    SettingBoxKey.aiModelListCacheTime,
+  };
   static late final Box<Uint8List>? reply;
 
   static Future<void> init() async {
@@ -96,8 +103,12 @@ abstract final class GStorage {
       }
     }
 
+    // 导出设置项时排除本机临时缓存
+    final settingData = Map<String, dynamic>.from(setting.toMap())
+      ..removeWhere((key, _) => nonExportableSettingKeys.contains(key));
+
     return Utils.jsonEncoder.convert({
-      setting.name: setting.toMap(),
+      setting.name: settingData,
       video.name: video.toMap(),
       localCache.name: localCacheData,
     });

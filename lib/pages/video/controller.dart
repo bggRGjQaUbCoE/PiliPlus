@@ -10,6 +10,8 @@ import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
 import 'package:PiliPlus/common/widgets/scaffold/mini_scaffold.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pbenum.dart'
     show PlaylistSource;
+import 'package:PiliPlus/grpc/bilibili/community/service/dm/v1.pb.dart'
+    show DanmakuElem;
 import 'package:PiliPlus/grpc/dm.dart';
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/fav.dart';
@@ -45,6 +47,7 @@ import 'package:PiliPlus/models_new/video/video_stein_edgeinfo/data.dart';
 import 'package:PiliPlus/pages/ai_chat/controller.dart';
 import 'package:PiliPlus/pages/audio/view.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
+import 'package:PiliPlus/pages/danmaku/mask/controller.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/pages/sponsor_block/block_mixin.dart';
 import 'package:PiliPlus/pages/video/download_panel/view.dart';
@@ -127,6 +130,17 @@ class VideoDetailController extends GetxController
   // 是否正在进入应用内小窗
   bool isEnteringPip = false;
 
+  // 三点菜单「应用内画中画」的触发入口，由视频页 State 绑定：
+  // 小窗流程依赖页面的路由生命周期（pop 收起），controller 自身无法发起
+  VoidCallback? onRequestInAppPip;
+
+  /// 视频页能否被 pop：页面 popScope 的 canPop 与三点菜单小窗入口共用。
+  /// 横屏模式下竖屏才可 pop（横屏由播放器自己接管返回）
+  bool canPopPage({required bool isPortrait}) =>
+      !plPlayerController.isFullScreen.value &&
+      !plPlayerController.isDesktopPip &&
+      (horizontalScreen || isPortrait);
+
   /// tabs相关配置
   late TabController tabCtr;
 
@@ -159,9 +173,12 @@ class VideoDetailController extends GetxController
   String? audioUrl;
   Duration? defaultST;
   Duration? playedTime;
-  String get playedTimePos {
+  String playedTimePos(bool hasParams) {
     final pos = playedTime?.inMilliseconds;
-    return pos == null || pos == 0 ? '' : '?t=${pos / 1000}';
+    if (pos != null && pos > 0) {
+      return '${hasParams ? '&' : '?'}t=${pos / 1000}';
+    }
+    return '';
   }
 
   // 亮度
@@ -997,6 +1014,10 @@ class VideoDetailController extends GetxController
         _getDmTrend();
       }
 
+      if (Pref.enableDmCount && dmCount.value == null) {
+        _getDmCount();
+      }
+
       if (plPlayerController.enableBlock) {
         initSkip();
       }
@@ -1333,6 +1354,7 @@ class VideoDetailController extends GetxController
   }
 
   RxList<Subtitle> subtitles = RxList<Subtitle>();
+  final danmakuMaskController = DanmakuMaskController();
   final Map<int, ({bool isData, String id})> vttSubtitles = {};
   late final RxInt vttSubtitlesIndex = (-1).obs;
   late final RxBool showVP = Pref.showViewPointsOverlay.obs;
@@ -1582,6 +1604,7 @@ class VideoDetailController extends GetxController
   }
 
   Future<void> _queryPlayInfo() async {
+    final requestedCid = cid.value;
     vttSubtitles.clear();
     vttSubtitlesIndex.value = 0;
     // 副字幕不跨 P/视频保留;同时清掉 mpv 的 secondary-sid 选项,
@@ -1597,6 +1620,12 @@ class VideoDetailController extends GetxController
       epId: epId,
     );
     if (res case Success(:final response)) {
+      if (requestedCid == cid.value) {
+        final dmMask = response.dmMask;
+        danmakuMaskController.setSource(
+          dmMask?.cid == requestedCid ? dmMask : null,
+        );
+      }
       if (response.lastPlayTime != null &&
           response.lastPlayTime! > 0 &&
           _canUseLastPlayTime(response.lastPlayCid)) {
@@ -1766,6 +1795,7 @@ class VideoDetailController extends GetxController
       ..dispose();
     subtitles.clear();
     vttSubtitles.clear();
+    danmakuMaskController.dispose();
     Get.delete<AiChatController>(tag: heroTag);
     super.onClose();
   }
@@ -1777,12 +1807,18 @@ class VideoDetailController extends GetxController
 
     playedTime = null;
     _dmTrendTaskId++;
+    // 切分P/视频时作废全量弹幕任务并清空弹幕数
+    _dmFetchTaskId++;
+    _dmElemsFuture = null;
+    _dmElemsCid = null;
+    dmCount.value = null;
     defaultST = null;
     videoUrl = null;
     audioUrl = null;
 
     // danmaku
     savedDanmaku = null;
+    danmakuMaskController.setSource(null);
 
     // subtitle
     subtitles.clear();
@@ -1819,6 +1855,36 @@ class VideoDetailController extends GetxController
       Rx<LoadingState<List<double>>?>(null);
   late final RxBool showDmTrendChart = true.obs;
   int _dmTrendTaskId = 0;
+
+  /// 当前分P弹幕数（null 表示尚未就绪）
+  late final Rx<int?> dmCount = Rx<int?>(null);
+  int _dmFetchTaskId = 0;
+  int? _dmElemsCid;
+  Future<List<DanmakuElem>?>? _dmElemsFuture;
+
+  /// 拉取当前分P的全量弹幕；同一分P内复用结果，避免与高能进度条重复请求
+  Future<List<DanmakuElem>?> _fetchAllDanmaku() {
+    final cached = _dmElemsFuture;
+    if (_dmElemsCid == cid.value && cached != null) {
+      return cached;
+    }
+    final taskId = ++_dmFetchTaskId;
+    bool shouldCancel() => taskId != _dmFetchTaskId || isClosed;
+    final durationMs =
+        data.timeLength ?? plPlayerController.durationInMilliseconds;
+    return _dmElemsFuture = DanmakuDensityTrend.fetchAll(
+      cid: cid.value,
+      durationMs: durationMs,
+      shouldCancel: shouldCancel,
+    );
+  }
+
+  Future<void> _getDmCount() async {
+    if (isFileSource) return;
+    final elems = await _fetchAllDanmaku();
+    if (elems == null || isClosed) return;
+    dmCount.value = elems.length;
+  }
 
   Future<void> _getDmTrend() async {
     final source = plPlayerController.dmChartSource;
@@ -1898,10 +1964,12 @@ class VideoDetailController extends GetxController
     try {
       final durationMs =
           data.timeLength ?? plPlayerController.durationInMilliseconds;
+      final elems = await _fetchAllDanmaku();
+      if (shouldCancel() || elems == null) return null;
       return await DanmakuDensityTrend.build(
         cid: cid.value,
         durationMs: durationMs,
-        shouldCancel: shouldCancel,
+        elems: elems,
       );
     } catch (e, s) {
       if (kDebugMode) debugPrint('_tryBuildLocalDmTrend: $e');

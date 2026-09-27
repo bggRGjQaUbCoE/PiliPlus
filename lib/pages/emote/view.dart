@@ -1,5 +1,5 @@
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
-import 'package:PiliPlus/common/widgets/custom_tooltip.dart';
+import 'package:PiliPlus/common/widgets/emote_tooltip.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart'
@@ -45,11 +45,6 @@ class _EmotePanelState extends State<EmotePanel>
     ThemeData theme,
     LoadingState<List<Package>?> loadingState,
   ) {
-    late final color = ElevationOverlay.colorWithOverlay(
-      theme.colorScheme.surface,
-      theme.hoverColor,
-      Get.currentRoute.startsWith('/whisperDetail') ? 8 : 2,
-    );
     return switch (loadingState) {
       Loading() => m3eLoading,
       Success(:final response) =>
@@ -104,42 +99,13 @@ class _EmotePanelState extends State<EmotePanel>
                                       ),
                               );
                               if (!isTextEmote) {
-                                child = CustomTooltip(
-                                  indicator: () => Triangle(
-                                    color: color,
-                                    size: const Size(14, 8),
-                                  ),
-                                  overlayWidget: () => Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: color,
-                                      borderRadius: const BorderRadius.all(
-                                        Radius.circular(8),
-                                      ),
-                                    ),
-                                    child: Column(
-                                      spacing: 4,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        NetworkImgLayer(
-                                          src: item.url,
-                                          width: 65,
-                                          height: 65,
-                                          type: ImageType.emote,
-                                          fit: BoxFit.contain,
-                                        ),
-                                        Text(
-                                          item.meta?.alias ??
-                                              item.text?.substring(
-                                                1,
-                                                item.text!.length - 1,
-                                              ) ??
-                                              '',
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                                child = emoteTooltipBuilder(
+                                  enable: true,
+                                  size: 70,
+                                  colorScheme: theme.colorScheme,
+                                  url: item.url,
+                                  emote: item.text,
+                                  triggerMode: kTriggerMode,
                                   child: child,
                                 );
                               }

@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/search/search_type.dart';
 import 'package:PiliPlus/models/common/search/video_search_type.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
@@ -16,74 +15,48 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
-class SearchVideoController
-    extends SearchPanelController<SearchVideoData, SearchVideoItemModel> {
-  SearchVideoController({
-    required super.keyword,
-    required super.searchType,
-    required super.tag,
-  });
+final _b23Regex = RegExp(r'b23\.tv/[A-Za-z0-9]{7}$', caseSensitive: false);
 
-  late bool hasJump2Video = false;
+mixin SearchVideoMixin on SearchVideoController {
+  late bool _hasJump2Video = false;
 
   @override
   void onInit() {
     super.onInit();
-    videoDurationType = VideoDurationType.all;
-    videoZoneType = VideoZoneType.all;
-    DateTime now = DateTime.now();
-    pubBeginDate = DateTime(now.year, now.month, 1, 0, 0, 0);
-    pubEndDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
-
-    jump2Video();
-  }
-
-  @override
-  List<SearchVideoItemModel>? getDataList(SearchVideoData response) {
-    return response.list;
+    _jump2Video();
   }
 
   @override
   bool customHandleResponse(bool isRefresh, Success<SearchVideoData> response) {
-    searchResultController?.count[searchType.index] =
-        response.response.numResults ?? 0;
-    final list = response.response.list;
-    if (list != null) {
-      list.removeWhere(
-        (item) => RecommendFilter.searchShouldRemove(item.owner.mid, item.title),
-      );
+    if (isRefresh && !_hasJump2Video) {
+      _hasJump2Video = true;
+      _onPushDetail(response.response.list);
     }
-    if (searchType == SearchType.video && !hasJump2Video && isRefresh) {
-      hasJump2Video = true;
-      onPushDetail(list);
-    }
-    return false;
+    return super.customHandleResponse(isRefresh, response);
   }
 
-  void onPushDetail(List<SearchVideoItemModel>? resultList) {
+  void _onPushDetail(List<SearchVideoItemModel>? resultList) {
     try {
-      int? aid = int.tryParse(keyword);
+      final aid = int.tryParse(keyword);
       if (aid != null && resultList?.firstOrNull?.aid == aid) {
         PiliScheme.videoPush(aid, null, showDialog: false);
       }
     } catch (_) {}
   }
 
-  static final _b23Regex = RegExp(r'b23\.tv/[A-Za-z0-9]{7}$', caseSensitive: false);
-
-  Future<void> jump2Video() async {
+  Future<void> _jump2Video() async {
     if (IdUtils.avRegexExact.hasMatch(keyword)) {
-      hasJump2Video = true;
+      _hasJump2Video = true;
       PiliScheme.videoPush(
         int.parse(keyword.substring(2)),
         null,
         showDialog: false,
       );
     } else if (IdUtils.bvRegexExact.hasMatch(keyword)) {
-      hasJump2Video = true;
+      _hasJump2Video = true;
       PiliScheme.videoPush(null, keyword, showDialog: false);
     } else if (_b23Regex.hasMatch(keyword)) {
-      hasJump2Video = true;
+      _hasJump2Video = true;
       final redirectUrl = await UrlUtils.parseRedirectUrl(keyword);
       if (redirectUrl != null) {
         final matchRes = IdUtils.matchAvorBv(input: redirectUrl);
@@ -95,6 +68,41 @@ class SearchVideoController
         }
       }
     }
+  }
+}
+
+class SearchVideoController
+    extends SearchPanelController<SearchVideoData, SearchVideoItemModel> {
+  SearchVideoController({
+    required super.keyword,
+    required super.searchType,
+    required super.tag,
+  });
+
+  @override
+  void onInit() {
+    super.onInit();
+    videoDurationType = .all;
+    videoZoneType = .all;
+    DateTime now = DateTime.now();
+    pubBeginDate = DateTime(now.year, now.month, 1, 0, 0, 0);
+    pubEndDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
+  }
+
+  @override
+  List<SearchVideoItemModel>? getDataList(SearchVideoData response) {
+    return response.list;
+  }
+
+  @override
+  bool customHandleResponse(bool isRefresh, Success<SearchVideoData> response) {
+    final list = response.response.list;
+    if (list != null) {
+      list.removeWhere(
+        (item) => RecommendFilter.searchShouldRemove(item.owner.mid, item.title),
+      );
+    }
+    return super.customHandleResponse(isRefresh, response);
   }
 
   final Rx<ArchiveFilterType> selectedType = ArchiveFilterType.totalrank.obs;

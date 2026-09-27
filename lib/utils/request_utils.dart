@@ -297,7 +297,7 @@ abstract final class RequestUtils {
   static Future<void> insertCreatedDyn(dynamic id) async {
     if (id != null) {
       try {
-        await Future.delayed(const Duration(milliseconds: 450));
+        await Future.pause(const Duration(milliseconds: 450));
         final res = await DynamicsHttp.dynamicDetail(id: id);
         if (res case final Success<DynamicItemModel> e) {
           final ctr = Get.find<DynamicsTabController>(tag: 'all');
@@ -323,7 +323,7 @@ abstract final class RequestUtils {
       try {
         if (id != null) {
           if (!isManual) {
-            await Future.delayed(const Duration(seconds: 5));
+            await Future.pause(const Duration(seconds: 5));
           }
           final res = await DynamicsHttp.dynamicDetail(
             id: id,
@@ -486,11 +486,14 @@ abstract final class RequestUtils {
                 TextButton(
                   onPressed: () {
                     if (checkedId != null) {
-                      final removeList = ctr.allChecked.toSet();
+                      final isFav = ctr is BaseFavController;
+                      final removeList = isFav
+                          ? ctr.allChecked.toList().reversed.toSet()
+                          : ctr.allChecked.toSet();
                       SmartDialog.showLoading();
                       FavHttp.copyOrMoveFav(
                         isCopy: isCopy,
-                        isFav: ctr is BaseFavController,
+                        isFav: isFav,
                         srcMediaId: mediaId,
                         tarMediaId: checkedId,
                         resources: removeList
@@ -510,6 +513,11 @@ abstract final class RequestUtils {
                             ctr.loadingState
                               ..value.data!.removeWhere(removeList.contains)
                               ..refresh();
+                            if (isFav) {
+                              (ctr as BaseFavController).updateCount?.call(
+                                removeList.length,
+                              );
+                            }
                           }
                           SmartDialog.dismiss();
                           SmartDialog.showToast('${isCopy ? '复制' : '移动'}成功');

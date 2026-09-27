@@ -3,6 +3,7 @@ import 'dart:convert' show utf8, jsonDecode;
 
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
+import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/storage_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -11,7 +12,6 @@ import 'package:flutter/services.dart' show Clipboard;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
-import 'package:intl/intl.dart' show DateFormat;
 import 'package:material_ui/material_ui.dart';
 import 'package:re_highlight/languages/json.dart';
 import 'package:re_highlight/re_highlight.dart';
@@ -32,7 +32,7 @@ void exportToLocalFile({
   StorageUtils.saveBytes2File(
     name:
         'piliplus_${localFileName()}_'
-        '${DateFormat('yyyyMMddHHmmss').format(DateTime.now())}.json',
+        '${DateFormatUtils.only0_9.format(DateTime.now())}.json',
     bytes: res,
     allowedExtensions: const ['json'],
   );

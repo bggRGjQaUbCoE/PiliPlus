@@ -8,8 +8,8 @@ import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/pages/fullscreen_sc_size.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
-import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/pages/setting/widgets/slider_dialog.dart';
+import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
 import 'package:PiliPlus/plugin/pl_player/models/double_tap_seek_layout.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
@@ -32,6 +32,13 @@ List<SettingsModel> get playSettings => [
     leading: Icon(CustomIcons.dm_settings),
     setKey: SettingBoxKey.enableShowDanmaku,
     defaultVal: true,
+  ),
+  const SwitchModel(
+    title: '智能防挡',
+    subtitle: '让弹幕避开画面中的人物（部分视频支持）',
+    leading: Icon(Icons.person_off_outlined),
+    setKey: SettingBoxKey.enableDanmakuMask,
+    defaultVal: false,
   ),
   if (PlatformUtils.isMobile)
     const SwitchModel(
@@ -355,6 +362,13 @@ List<SettingsModel> get playSettings => [
     subtitle: '展示同时在看人数',
     leading: Icon(Icons.people_outlined),
     setKey: SettingBoxKey.enableOnlineTotal,
+    defaultVal: false,
+  ),
+  const SwitchModel(
+    title: '弹幕数',
+    subtitle: '展示当前播放视频的具体弹幕数',
+    leading: Icon(CustomIcons.dm_on),
+    setKey: SettingBoxKey.enableDmCount,
     defaultVal: false,
   ),
   NormalModel(

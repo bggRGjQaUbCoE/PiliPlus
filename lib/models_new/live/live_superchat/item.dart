@@ -24,6 +24,7 @@ class SuperChatItem {
   late bool expired = false;
   late bool deleted = false;
   UinfoMedal? medalInfo;
+  int roomid;
 
   SuperChatItem({
     required this.id,
@@ -41,56 +42,62 @@ class SuperChatItem {
     required this.ts,
     required this.userInfo,
     this.medalInfo,
+    required this.roomid,
   });
 
   static SuperChatItem get random {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    return SuperChatItem.fromJson({
-      "id": Utils.random.nextInt(2147483647),
-      "uid": 0,
-      "price": 66,
-      "start_time": now,
-      "end_time": now + 5,
-      "message": Utils.generateRandomString(55),
-      "user_info": {
-        "face": "",
-        'face_frame': BiliUtils.liveGuardPendant(Utils.random.nextInt(4)),
-        "uname": "UNAME",
-      },
-      'token': '',
-      'ts': now,
-      'uinfo': {
-        'medal': {
-          "name": "Medal",
-          "level": Utils.random.nextInt(40),
-          "id": 123,
-          "ruid": 456,
-          "v2_medal_color_start": "#4C7DFF99",
-          "v2_medal_color_text": "#FFFFFF",
+    return SuperChatItem.fromJson(
+      {
+        "id": Utils.random.nextInt(2147483647),
+        "uid": 0,
+        "price": 66,
+        "start_time": now,
+        "end_time": now + 5,
+        "message": Utils.generateRandomString(55),
+        "user_info": {
+          "face": "",
+          'face_frame': BiliUtils.liveGuardPendant(Utils.random.nextInt(4)),
+          "uname": "UNAME",
+        },
+        'token': '',
+        'ts': now,
+        'uinfo': {
+          'medal': {
+            "name": "Medal",
+            "level": Utils.random.nextInt(40),
+            "id": 123,
+            "ruid": 456,
+            "v2_medal_color_start": "#4C7DFF99",
+            "v2_medal_color_text": "#FFFFFF",
+          },
         },
       },
-    });
+      Utils.random.nextInt(2147483647),
+    );
   }
 
-  factory SuperChatItem.fromJson(Map<String, dynamic> json) => SuperChatItem(
-    id: safeToInt(json['id']) ?? Utils.random.nextInt(2147483647),
-    uid: safeToInt(json['uid'])!,
-    price: json['price'],
-    backgroundImage: nonNullOrEmptyString(json['background_image']),
-    backgroundColor: json['background_color'] ?? '#EDF5FF',
-    backgroundBottomColor: json['background_bottom_color'] ?? '#2A60B2',
-    backgroundPriceColor: json['background_price_color'] ?? '#7497CD',
-    messageFontColor: json['message_font_color'] ?? '#FFFFFF',
-    startSime: safeToInt(json['start_time'])!,
-    endTime: safeToInt(json['end_time'])!,
-    message: json['message'],
-    token: json['token'],
-    ts: safeToInt(json['ts'])!,
-    userInfo: UserInfo.fromJson(json['user_info'] as Map<String, dynamic>),
-    medalInfo: !GlobalData().showMedal || json['uinfo']?['medal'] == null
-        ? null
-        : UinfoMedal.fromJson(json['uinfo']['medal']),
-  );
+  factory SuperChatItem.fromJson(Map<String, dynamic> json, int roomid) =>
+      SuperChatItem(
+        id: safeToInt(json['id']) ?? Utils.random.nextInt(2147483647),
+        uid: safeToInt(json['uid'])!,
+        price: json['price'],
+        backgroundImage: nonNullOrEmptyString(json['background_image']),
+        backgroundColor: json['background_color'] ?? '#EDF5FF',
+        backgroundBottomColor: json['background_bottom_color'] ?? '#2A60B2',
+        backgroundPriceColor: json['background_price_color'] ?? '#7497CD',
+        messageFontColor: json['message_font_color'] ?? '#FFFFFF',
+        startSime: safeToInt(json['start_time'])!,
+        endTime: safeToInt(json['end_time'])!,
+        message: json['message'],
+        token: json['token'],
+        ts: safeToInt(json['ts'])!,
+        userInfo: UserInfo.fromJson(json['user_info'] as Map<String, dynamic>),
+        medalInfo: !GlobalData().showMedal || json['uinfo']?['medal'] == null
+            ? null
+            : UinfoMedal.fromJson(json['uinfo']['medal']),
+        roomid: roomid,
+      );
 
   SuperChatItem copyWith({
     int? id,
@@ -125,6 +132,7 @@ class SuperChatItem {
       ts: ts ?? this.ts,
       userInfo: userInfo ?? this.userInfo,
       medalInfo: medalInfo ?? this.medalInfo,
+      roomid: roomid,
     );
   }
 
@@ -144,5 +152,6 @@ class SuperChatItem {
     'ts': ts,
     'user_info': userInfo.toJson(),
     'medal': ?medalInfo?.toJson(),
+    'roomid': roomid,
   };
 }

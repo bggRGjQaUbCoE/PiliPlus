@@ -532,35 +532,19 @@ class _LivePipWidgetState extends State<LivePipWidget>
   void didChangeMetrics() {
     // 屏幕旋转 / 桌面窗口尺寸变化：触发重建，让 build 按新尺寸把小窗位置
     // 钳回界内。仅重建、不改 _left/_top 意图值，窗口恢复时能自动回原位。
+    // 系统 PiP 期间尺寸变化来自 PiP 窗口本身，build 会整段跳过几何计算。
     if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-    // 按当前窗口短边分档:手机维持现状,平板/桌面放大
-    _baseLong = PipWindowMemory.basePipLong(screenSize);
-    _baseShort = PipWindowMemory.basePipShort(screenSize);
-    // 旋转/窗口尺寸变化后按新屏幕重新钳制 scale:竖屏屏拉大后转横屏时
-    // 上限变小,超出即自动缩小;同时回写会话记忆,恢复时保持缩小后的值
-    _scale = PipWindowMemory.clampScaleContinuous(
-      _scale,
-      screenSize,
-      isVertical: LivePipOverlayService.isVertical,
-    );
-    PipWindowMemory.scale = _scale;
-
-    // 恢复上次摆放位置（会话级记忆）；越界（旋转/窗口尺寸变化）时钳回屏内
-    _left ??= (PipWindowMemory.position?.dx ?? screenSize.width - _width - 16)
-        .clamp(0.0, max(0.0, screenSize.width - _width))
-        .toDouble();
-    _top ??= (PipWindowMemory.position?.dy ?? screenSize.height - _height - 100)
-        .clamp(0.0, max(0.0, screenSize.height - _height))
-        .toDouble();
-
     return Obx(() {
+      final screenSize = MediaQuery.of(context).size;
       final bool isNative = LivePipOverlayService.isNativePip;
 
+      // 系统 PiP 模式下直接铺满窗口，且不执行任何自定义尺寸/位置计算：此时
+      // MediaQuery 给出的是系统 PiP 窗口自身的尺寸（非整屏），若照常钳制会把
+      // 缩放下限强加给小窗并写回会话记忆，退出 PiP 后小窗就永久停在最小档。
       if (isNative) {
         return Positioned.fill(
           child: ColoredBox(
@@ -574,6 +558,26 @@ class _LivePipWidgetState extends State<LivePipWidget>
           ),
         );
       }
+
+      // 按当前窗口短边分档:手机维持现状,平板/桌面放大
+      _baseLong = PipWindowMemory.basePipLong(screenSize);
+      _baseShort = PipWindowMemory.basePipShort(screenSize);
+      // 旋转/窗口尺寸变化后按新屏幕重新钳制 scale:竖屏屏拉大后转横屏时
+      // 上限变小,超出即自动缩小;同时回写会话记忆,恢复时保持缩小后的值
+      _scale = PipWindowMemory.clampScaleContinuous(
+        _scale,
+        screenSize,
+        isVertical: LivePipOverlayService.isVertical,
+      );
+      PipWindowMemory.scale = _scale;
+
+      // 恢复上次摆放位置（会话级记忆）；越界（旋转/窗口尺寸变化）时钳回屏内
+      _left ??= (PipWindowMemory.position?.dx ?? screenSize.width - _width - 16)
+          .clamp(0.0, max(0.0, screenSize.width - _width))
+          .toDouble();
+      _top ??= (PipWindowMemory.position?.dy ?? screenSize.height - _height - 100)
+          .clamp(0.0, max(0.0, screenSize.height - _height))
+          .toDouble();
 
       return AnimatedBuilder(
         animation: Listenable.merge([_phaseCtr, _closeCtr, _transition]),
@@ -793,11 +797,9 @@ class _LivePipWidgetState extends State<LivePipWidget>
                                           child: Center(
                                             child: Obx(() {
                                               final isPlaying =
-                                                  widget
-                                                      .plPlayerController
-                                                      .playerStatus
-                                                      .value ==
-                                                  PlayerStatus.playing;
+                                                  widget.plPlayerController
+                                                          .playerStatus ==
+                                                      PlayerStatus.playing;
                                               return PipControlButton(
                                                 targetSize: bottomControl,
                                                 onTap: () {

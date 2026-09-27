@@ -93,8 +93,8 @@ packages:
     dependency: "direct main"
     description:
       path: audio_service
-      ref: main
-      resolved-ref: b531c6202b1205621cd95129b6361517398c3bce
+      ref: dev
+      resolved-ref: ac920683b8140134fe8af8f7d1d89f155a879e1d
       url: "https://github.com/bggRGjQaUbCoE/audio_service.git"
     source: git
     version: "0.18.19"
@@ -134,10 +134,11 @@ packages:
   audio_session:
     dependency: "direct main"
     description:
-      name: audio_session
-      sha256: f9e7711a0e24ca8b40f5d7ac374c3c6e55016f3157912badd18199cdbbca5c4d
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: dev
+      resolved-ref: c8c2143c1720292801f72867e29ddeb50c36134e
+      url: "https://github.com/bggRGjQaUbCoE/audio_session.git"
+    source: git
     version: "0.2.4"
   battery_plus:
     dependency: "direct main"
@@ -241,8 +242,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: main
-      resolved-ref: a671d192051f44693228e8f51edf554aa045f6eb
+      ref: "feat/mask-region"
+      resolved-ref: "1fad3fb35c44031657867f9d0bb3214a2d7d052f"
       url: "https://github.com/Starfallan/canvas_danmaku.git"
     source: git
     version: "0.2.6"
@@ -1376,7 +1377,7 @@ packages:
     source: hosted
     version: "1.9.1"
   path_parsing:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: path_parsing
       sha256: "883402936929eac138ee0a45da5b0f2c80f89913e6dc3bf77eb65b84b409c6ca"

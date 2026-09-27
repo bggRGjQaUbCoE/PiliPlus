@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:PiliPlus/models_new/space/space/tab2.dart';
 import 'package:PiliPlus/pages/member/controller.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -26,22 +25,18 @@ class MemberContributeCtr extends GetxController
     SpaceTab2 contribute = _ctr.tab2!.firstWhere(
       (item) => item.param == 'contribute',
     );
-    if (contribute.items?.isNullOrEmpty == false) {
-      items = contribute.items;
+    final items = contribute.items;
+    if (items != null && items.isNotEmpty) {
+      this.items = items;
       if (contribute.items!.length > 1) {
         // show if exist
         if (_ctr.hasSeasonOrSeries == true) {
-          items!.add(
-            const SpaceTab2Item(
-              param: 'ugcSeason',
-              title: '全部合集/列表',
-            ),
-          );
+          items.add(const SpaceTab2Item(param: 'ugcSeason', title: '全部合集/列表'));
         }
-        tabs = items!.map((item) => Tab(text: item.title)).toList();
+        tabs = items.map((item) => Tab(text: item.title)).toList();
         tabController = TabController(
           vsync: this,
-          length: items!.length,
+          length: items.length,
           initialIndex: max(0, initialIndex ?? 0),
         );
       }

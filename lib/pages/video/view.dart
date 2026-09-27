@@ -112,6 +112,10 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   // 需要在 didPopNext 关闭其他 PiP 后重试启动
   bool _pipRetryPending = false;
 
+  // 标志位：三点菜单「应用内画中画」发起的 pop，一次性；由 _onPopInvokedWithResult 消费，
+  // 让本次收起绕过设置开关与嵌套栈判断
+  bool _manualPipRequested = false;
+
   // 从 PiP 恢复时提前取出的 additional controllers（在 stopPip 清空前保存）
   dynamic _savedIntroControllerFromPip;
   VideoReplyController? _savedReplyControllerFromPip;
@@ -157,6 +161,10 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   bool get isFullScreen =>
       videoDetailController.plPlayerController.isFullScreen.value;
+
+  // 本页能否被 pop 收起：popScope 的 canPop 与手动小窗入口共用同一判定
+  bool get _canPopPage =>
+      videoDetailController.canPopPage(isPortrait: isPortrait);
 
   bool get _shouldShowSeasonPanel {
     if (videoDetailController.isFileSource ||
@@ -471,6 +479,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       Get.put(AiChatController(heroTag: heroTag), tag: heroTag);
     }
 
+    // 必须在 videoDetailController 三条赋值路径（恢复/新建）汇合之后绑定
+    videoDetailController.onRequestInAppPip = _enterInAppPipManually;
+
     if (restoringFromPip) {
       plPlayerController = videoDetailController.plPlayerController;
       final wasPlaying = plPlayerController!.playerStatus.isPlaying;
@@ -615,6 +626,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       return;
     }
     videoDetailController.playedTime = position;
+    videoDetailController.danmakuMaskController.updatePosition(position);
   }
 
   @override
@@ -785,6 +797,11 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       ?..removeStatusLister(playerListener)
       ..removePositionListener(positionListener);
 
+    // 从小窗展开的新页面会复用同一 controller 并重新绑定，只解绑指向本页的引用
+    if (videoDetailController.onRequestInAppPip == _enterInAppPipManually) {
+      videoDetailController.onRequestInAppPip = null;
+    }
+
     Get.delete<HorizontalMemberPageController>(
       tag: videoDetailController.heroTag,
     );
@@ -838,7 +855,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     }
 
     // 2. 计算小窗触发状态
-    final playerStatusBeforePush = plPlayerController?.playerStatus.value;
+    final playerStatusBeforePush = plPlayerController?.playerStatus;
     final bool willStartPip =
         plPlayerController != null &&
         playerStatusBeforePush?.isPlaying == true &&
@@ -923,7 +940,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         // 小窗里的实际状态是用户最新的播放意图（可能在小窗中手动暂停过），
         // 先于关闭小窗记录，交由 didPopNext 末尾统一对账
         videoDetailController.playerStatus =
-            plPlayerController?.playerStatus.value;
+            plPlayerController?.playerStatus;
         // 返回展开：小窗飞回页内播放器位置，非销毁式 stopPip 推迟到握手完成；
         // 无法归位（无小窗会话）则维持旧的瞬时关闭
         if (PipOverlayService.transition.beginRestore()) {
@@ -961,6 +978,11 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     if (LivePipOverlayService.isInPipMode) {
       LivePipOverlayService.stopLivePip(callOnClose: true, immediate: true);
     }
+
+    // 设置页可能改了「智能防挡」开关，回到本页时对齐一次
+    videoDetailController.danmakuMaskController.syncEnabledFromPreference(
+      videoDetailController.plPlayerController.positionInMilliseconds,
+    );
 
     // 如果是从开启新页面方式（Get.toNamed）从小窗手动返回，播放器应已在运行，跳过部分重置逻辑
     final bool fromPip = Get.arguments?['fromPip'] ?? false;
@@ -1897,10 +1919,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     // videoPlayerKey 不再有共享冲突，同时兼任收起源矩形/归位目标矩形的量取锚点
     final Widget player = popScope(
       key: videoDetailController.videoPlayerKey,
-      canPop:
-          !isFullScreen &&
-          !videoDetailController.plPlayerController.isDesktopPip &&
-          (videoDetailController.horizontalScreen || isPortrait),
+      canPop: _canPopPage,
       onPopInvokedWithResult: _onPopInvokedWithResult,
       child: Obx(
         () =>
@@ -2819,7 +2838,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       plPlayerController?.disableAutoEnterPip();
     }
     if (didPop) {
-      _startInAppPipIfNeeded(fromPop: true);
+      final manual = _manualPipRequested;
+      _manualPipRequested = false;
+      _startInAppPipIfNeeded(fromPop: true, manual: manual);
       // 消费 didPopNext else 分支设的重试标志（用户真的继续 pop 了）。
       // 立即调用通常足够（didPopNext 已同步关闭其他 PiP，playerInit 多半已完成）；
       // 若立即失败（rapid back press 时 playerInit 还在 await，playerStatus 不是 playing），
@@ -2833,6 +2854,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
           });
         }
       }
+    } else {
+      // pop 被拦下，手动小窗的一次性豁免不能留给下一次普通返回
+      _manualPipRequested = false;
     }
     videoDetailController.plPlayerController.onPopInvokedWithResult(
       didPop,
@@ -2849,11 +2873,14 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         previousRoute.startsWith('/video');
   }
 
-  bool _shouldStartInAppPip({bool fromPop = false}) {
+  /// [manual] 为三点菜单手动触发：不受设置开关约束；嵌套的视频/直播页在
+  /// 触发前已被静默移除，且 didRemove 会把 Get.previousRoute 改写成被移除页
+  /// 的名字，栈判断在此路径下既无必要也不可信
+  bool _shouldStartInAppPip({bool fromPop = false, bool manual = false}) {
     _logSponsorBlock(
-      'Checking PiP: count=${VideoStackManager.getCount()}, previousRoute=${Get.previousRoute}',
+      'Checking PiP: count=${VideoStackManager.getCount()}, previousRoute=${Get.previousRoute}, manual=$manual',
     );
-    if (!Pref.enableInAppPip) {
+    if (!manual && !Pref.enableInAppPip) {
       _logSponsorBlock('Reject PiP: in-app PiP is disabled in settings');
       return false;
     }
@@ -2873,7 +2900,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       );
       return false;
     }
-    if (controller.playerStatus.value != PlayerStatus.playing) {
+    if (controller.playerStatus != PlayerStatus.playing) {
       _logSponsorBlock('Reject PiP: video is paused');
       return false;
     }
@@ -2888,7 +2915,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       return false;
     }
     final prevRoute = Get.previousRoute;
-    if (VideoStackManager.isReturningToVideo()) {
+    if (!manual && VideoStackManager.isReturningToVideo()) {
       // 如果返回的页面不是视频或直播详情页，允许开启小窗
       if (!prevRoute.startsWith('/video') &&
           !prevRoute.startsWith('/liveRoom')) {
@@ -2905,8 +2932,59 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     return true;
   }
 
-  void _startInAppPipIfNeeded({bool fromPop = false}) {
-    if (!_shouldStartInAppPip(fromPop: fromPop)) {
+  /// 三点菜单「应用内画中画」：不依赖设置开关，把当前视频临时收进小窗。
+  /// 复用返回键收起路径（pop → _onPopInvokedWithResult → _startInAppPipIfNeeded），
+  /// 只是提前把门禁条件凑齐：全屏的先退全屏、暂停的先续播、嵌套页先静默移除
+  Future<void> _enterInAppPipManually() async {
+    if (!mounted || _isEnteringPipMode || _manualPipRequested) {
+      return;
+    }
+    plPlayerController ??= videoDetailController.plPlayerController;
+    final controller = plPlayerController!;
+    if (controller.isFullScreen.value) {
+      // 全屏时返回键语义是"退出全屏"，页面本就不能被 pop；且直接 pop 会把
+      // 播放器单例的 isFullScreen 留在 true、方向也不复位（resetScreenRotation
+      // 只在 triggerFullScreen 内调用）。先退回半屏再走正常的收起流程
+      await controller.triggerFullScreen(status: false);
+      if (!mounted) {
+        return;
+      }
+      // 横屏退出全屏会把设备转回竖屏，由 OS 异步完成；isPortrait 是 _canPopPage
+      // 的一项，未等到就判定会被误拒。这里直接用待判定的条件本身当落定信号：
+      // 竖屏视频退出全屏不转屏，isPortrait 已为 true，只等保底的一帧；
+      // 方向本就未变时（如 fullScreenMode=.none 的横屏手机）等不到，超时后
+      // 由下面的判定拒绝——这种形态本就不该 pop 本页
+      await PipOverlayService.awaitLayoutSettled(() => _canPopPage);
+      if (!mounted) {
+        return;
+      }
+    }
+    if (controller.videoController != null &&
+        !controller.playerStatus.isPlaying) {
+      // 手动进小窗是明确的播放意图；播完的从头播
+      await controller.play(repeat: controller.playerStatus.isCompleted);
+      if (!mounted) {
+        return;
+      }
+    }
+    if (!_canPopPage || !_shouldStartInAppPip(manual: true)) {
+      SmartDialog.showToast('当前无法进入小窗');
+      return;
+    }
+    if (PipOverlayService.removeNestedVideoLikeRoutesBelow(context) > 0) {
+      // 被移除的页面要到下一帧才卸载并归还各自的播放器计数；等它们落地再 pop，
+      // 否则小窗按 X 关闭时计数未归零、播放器不会真正销毁
+      await WidgetsBinding.instance.endOfFrame;
+      if (!mounted) {
+        return;
+      }
+    }
+    _manualPipRequested = true;
+    Get.back();
+  }
+
+  void _startInAppPipIfNeeded({bool fromPop = false, bool manual = false}) {
+    if (!_shouldStartInAppPip(fromPop: fromPop, manual: manual)) {
       return;
     }
 

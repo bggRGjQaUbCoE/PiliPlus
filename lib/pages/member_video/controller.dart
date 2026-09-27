@@ -12,6 +12,7 @@ import 'package:PiliPlus/models_new/space/space_archive/data.dart';
 import 'package:PiliPlus/models_new/space/space_archive/episodic_button.dart';
 import 'package:PiliPlus/models_new/space/space_archive/item.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
+import 'package:PiliPlus/pages/member/controller.dart';
 import 'package:PiliPlus/pages/member_video/video_filter.dart';
 import 'package:PiliPlus/utils/extension/dimension_ext.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
@@ -33,6 +34,7 @@ class MemberVideoCtr
     extends CommonListController<SpaceArchiveData, SpaceArchiveItem>
     with ReloadMixin {
   MemberVideoCtr({
+    required this.heroTag,
     required this.type,
     required this.mid,
     required this.seasonId,
@@ -57,6 +59,7 @@ class MemberVideoCtr
        _archiveLoader = archiveLoader ?? MemberHttp.spaceArchive,
        gridDelegate = gridDelegate ?? Grid.videoCardHDelegate();
 
+  final String? heroTag;
   final ContributeType type;
   final bool isVideo;
   int? seasonId;
@@ -92,7 +95,24 @@ class MemberVideoCtr
   String? firstAid;
   String? lastAid;
   String? fromViewAid;
-  RxBool isLocating = false.obs;
+  final RxBool _isLocating = false.obs;
+  bool get isLocating => _isLocating.value;
+  void setIsLocating(bool value, {bool isOnlyInnerScroll = true}) {
+    _isLocating.value = value;
+    if (isOnlyInnerScroll) {
+      onlyInnerScroll = value;
+    }
+  }
+
+  set onlyInnerScroll(bool value) {
+    final state = Get.find<MemberController>(tag: heroTag)
+        .scrollKey
+        .currentState;
+    if (state != null && state.mounted) {
+      state.onlyInnerScroll = value;
+    }
+  }
+
   bool isLoadPrevious = false;
   bool? hasPrev;
 
@@ -127,7 +147,7 @@ class MemberVideoCtr
   // 手动上拉是用户主动继续，清除「已达上限」暂停态，允许后续再次触发自动补载
   int _lastManualLoadTime = 0;
   void manualLoadMore() {
-    if (isAutoLoading.value || isLocating.value) return;
+    if (isAutoLoading.value || isLocating) return;
     if (isLoading || isEnd) return;
     final now = DateTime.now().millisecondsSinceEpoch;
     if (now - _lastManualLoadTime < 1200) return;
@@ -220,7 +240,7 @@ class MemberVideoCtr
     try {
       while (hasActiveFilter &&
           !isEnd &&
-          !isLocating.value &&
+          !isLocating &&
           pagesLoaded < pageLimit &&
           !filteredContentFillsViewport(
             visibleCount: filteredList.length,
@@ -247,7 +267,7 @@ class MemberVideoCtr
       autoLoadPaused.value =
           hasActiveFilter &&
           !isEnd &&
-          !isLocating.value &&
+          !isLocating &&
           pagesLoaded >= pageLimit &&
           !filteredContentFillsViewport(
             visibleCount: filteredList.length,
@@ -284,7 +304,7 @@ class MemberVideoCtr
     required double viewportHeight,
     required double crossAxisExtent,
   }) {
-    if (isAutoLoading.value || autoLoadPaused.value || isLocating.value) {
+    if (isAutoLoading.value || autoLoadPaused.value || isLocating) {
       return;
     }
     _pendingViewportHeight = viewportHeight;
@@ -314,7 +334,7 @@ class MemberVideoCtr
 
   @override
   Future<void> onRefresh() async {
-    if (isLocating.value) {
+    if (isLocating) {
       if (hasPrev == true) {
         isLoadPrevious = true;
         await queryData();
@@ -350,6 +370,9 @@ class MemberVideoCtr
     next = data.next;
     if (page == 0 || isLoadPrevious) {
       hasPrev = data.hasPrev;
+      if (isLoadPrevious && hasPrev != true) {
+        onlyInnerScroll = false;
+      }
     }
     if (page == 0 || !isLoadPrevious) {
       if ((isVideo ? data.hasNext == false : data.next == 0) ||
@@ -395,13 +418,13 @@ class MemberVideoCtr
         next: next,
         seasonId: seasonId,
         seriesId: seriesId,
-        includeCursor: isLocating.value && page == 0,
+        includeCursor: isLocating && page == 0,
       );
 
   void queryBySort() {
     if (isLoading) return;
     if (isVideo) {
-      isLocating.value = false;
+      setIsLocating(false);
       order = order == .pubdate ? .click : .pubdate;
     } else {
       sort = sort == .desc ? .asc : .desc;
@@ -425,7 +448,7 @@ class MemberVideoCtr
             bvid: bvid,
             cid: cid,
             dimension: res!.dimension,
-            title: res.title,
+            // title: res.title,
             extraArguments: {
               'sourceType': SourceType.archive,
               'mediaId': seasonId ?? seriesId ?? mid,
@@ -492,7 +515,7 @@ class MemberVideoCtr
   @override
   Future<void> onReload() {
     reload = true;
-    isLocating.value = false;
+    setIsLocating(false);
     return super.onReload();
   }
 }

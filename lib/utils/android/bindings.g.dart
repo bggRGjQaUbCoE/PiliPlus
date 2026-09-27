@@ -732,6 +732,79 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
       enabled ? 1 : 0,
     ).check();
   }
+
+  static final _id_isDomainVerified = _class.staticMethodId(
+    r'isDomainVerified',
+    r'(Ljava/lang/String;)Z',
+  );
+
+  static final _isDomainVerified =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallStaticBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `static public boolean isDomainVerified(java.lang.String domain)`
+  static core$_.bool isDomainVerified(
+    jni$_.JString domain,
+  ) {
+    final _$$classRef = _class.reference;
+    final _$domain = domain.reference;
+    return _isDomainVerified(
+      _$$classRef.pointer,
+      _id_isDomainVerified.pointer,
+      _$domain.pointer,
+    ).boolean;
+  }
+
+  static final _id_openUrl = _class.staticMethodId(
+    r'openUrl',
+    r'(Ljava/lang/String;)Ljava/lang/String;',
+  );
+
+  static final _openUrl =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+                jni$_.VarArgs<(jni$_.Pointer<jni$_.Void>,)>,
+              )
+            >
+          >('globalEnv_CallStaticObjectMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+              jni$_.Pointer<jni$_.Void>,
+            )
+          >();
+
+  /// from: `static public java.lang.String openUrl(java.lang.String url)`
+  /// The returned object must be released after use, by calling the [release] method.
+  static jni$_.JString? openUrl(
+    jni$_.JString url,
+  ) {
+    final _$$classRef = _class.reference;
+    final _$url = url.reference;
+    return _openUrl(
+      _$$classRef.pointer,
+      _id_openUrl.pointer,
+      _$url.pointer,
+    ).object<jni$_.JString?>();
+  }
 }
 
 final class $AndroidHelper$Type$ extends jni$_.JType<AndroidHelper> {

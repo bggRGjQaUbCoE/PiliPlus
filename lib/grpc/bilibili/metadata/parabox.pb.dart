@@ -22,7 +22,7 @@ class Exp extends $pb.GeneratedMessage {
     $fixnum.Int64? id,
     $core.int? bucket,
   }) {
-    final result = create();
+    final result = Exp._();
     if (id != null) result.id = id;
     if (bucket != null) result.bucket = bucket;
     return result;
@@ -32,16 +32,16 @@ class Exp extends $pb.GeneratedMessage {
 
   factory Exp.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      Exp()..mergeFromBuffer(data, registry);
   factory Exp.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      Exp()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Exp',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.metadata.parabox'),
-      createEmptyInstance: create)
+      createEmptyInstance: Exp.$_createMessage)
     ..aInt64(1, _omitFieldNames ? '' : 'id')
     ..aI(2, _omitFieldNames ? '' : 'bucket')
     ..hasRequiredFields = false;
@@ -56,12 +56,14 @@ class Exp extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Exp() / Exp.new instead')
   static Exp create() => Exp._();
+  static $pb.GeneratedMessage $_createMessage() => Exp._();
   @$core.override
-  Exp createEmptyInstance() => create();
+  Exp createEmptyInstance() => Exp._();
   @$core.pragma('dart2js:noInline')
-  static Exp getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Exp>(create);
+  static Exp getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Exp>(Exp.$_createMessage);
   static Exp? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -87,7 +89,7 @@ class Exps extends $pb.GeneratedMessage {
   factory Exps({
     $core.Iterable<Exp>? exps,
   }) {
-    final result = create();
+    final result = Exps._();
     if (exps != null) result.exps.addAll(exps);
     return result;
   }
@@ -96,17 +98,18 @@ class Exps extends $pb.GeneratedMessage {
 
   factory Exps.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      Exps()..mergeFromBuffer(data, registry);
   factory Exps.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      Exps()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Exps',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.metadata.parabox'),
-      createEmptyInstance: create)
-    ..pPM<Exp>(1, _omitFieldNames ? '' : 'exps', subBuilder: Exp.create)
+      createEmptyInstance: Exps.$_createMessage)
+    ..pPM<Exp>(1, _omitFieldNames ? '' : 'exps',
+        subBuilder: Exp.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -119,12 +122,14 @@ class Exps extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Exps() / Exps.new instead')
   static Exps create() => Exps._();
+  static $pb.GeneratedMessage $_createMessage() => Exps._();
   @$core.override
-  Exps createEmptyInstance() => create();
+  Exps createEmptyInstance() => Exps._();
   @$core.pragma('dart2js:noInline')
-  static Exps getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Exps>(create);
+  static Exps getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Exps>(Exps.$_createMessage);
   static Exps? _defaultInstance;
 
   @$pb.TagNumber(1)

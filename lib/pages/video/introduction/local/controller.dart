@@ -49,7 +49,6 @@ class LocalIntroController extends CommonIntroController {
   void onClose() {
     if (isEnteringPip) return;
     aidSet.clear();
-    videoPlayerServiceHandler?.onVideoDetailDispose(heroTag);
     super.onClose();
   }
 

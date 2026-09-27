@@ -49,6 +49,7 @@ class DynamicsDataModel {
   static bool antiGoodsDyn = Pref.antiGoodsDyn;
   static bool removeBlockedDyn = Pref.removeBlockedDyn;
   static bool removeOnlyFansVideoDyn = Pref.removeOnlyFansVideoDyn;
+  static bool removeDynVideoDyn = Pref.removeDynVideoDyn;
   static Set<int> dynamicsBlockedMids = Pref.dynamicsBlockedMids;
 
   DynamicsDataModel.fromJson(
@@ -65,6 +66,8 @@ class DynamicsDataModel {
           type != DynamicsTabType.up && tempBannedList?.isNotEmpty == true;
       late final filterBlockedUsers =
           type != DynamicsTabType.up && dynamicsBlockedMids.isNotEmpty;
+      late final filterDynVideo =
+          type != DynamicsTabType.up && removeDynVideoDyn;
       final whitelistMids = GlobalData().whitelistMids;
       for (final e in list) {
         DynamicItemModel item = DynamicItemModel.fromJson(e);
@@ -84,6 +87,9 @@ class DynamicsDataModel {
         if (removeOnlyFansVideoDyn &&
             (item.hasOnlyFansVideoBadge ||
                 (item.orig?.hasOnlyFansVideoBadge ?? false))) {
+          continue;
+        }
+        if (filterDynVideo && item.hasDynVideoBadge) {
           continue;
         }
         if (antiGoodsDyn &&
@@ -171,6 +177,9 @@ class DynamicItemModel {
       (basic?.isOnlyFans ?? false) &&
       type == 'DYNAMIC_TYPE_AV' &&
       modules.moduleDynamic?.major?.archive?.badge?.text == '充电专属';
+
+  bool get hasDynVideoBadge =>
+      modules.moduleDynamic?.major?.archive?.badge?.text == '动态视频';
 }
 
 class Fallback {
@@ -1214,6 +1223,7 @@ class RichTextNodeItem {
 class Emoji {
   String? url;
   late num size;
+  String? jumpUrl;
 
   Emoji.fromJson(Map<String, dynamic> json) {
     url =
@@ -1221,6 +1231,7 @@ class Emoji {
         nonNullOrEmptyString(json['gif_url']) ??
         nonNullOrEmptyString(json['icon_url']);
     size = json['size'] ?? 1;
+    jumpUrl = json['jump_url'];
   }
 }
 

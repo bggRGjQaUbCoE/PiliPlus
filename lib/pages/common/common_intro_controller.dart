@@ -64,6 +64,8 @@ abstract class CommonIntroController extends GetxController
 
   // 同时观看
   final bool isShowOnlineTotal = Pref.enableOnlineTotal;
+  // 当前分P弹幕数
+  final bool isShowDmCount = Pref.enableDmCount;
   late final RxString total = '1'.obs;
   Timer? timer;
 

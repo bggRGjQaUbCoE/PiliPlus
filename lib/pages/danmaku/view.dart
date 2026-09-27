@@ -73,7 +73,13 @@ class _PlDanmakuState extends State<PlDanmaku> {
     playerController
       ..addStatusLister(playerListener)
       ..addPositionListener(videoPositionListen);
+    if (!widget.isPipMode) {
+      playerController.danmakuMaskPath.addListener(_onMaskPathChanged);
+    }
   }
+
+  void _onMaskPathChanged() =>
+      _controller?.setMask(playerController.danmakuMaskPath.value);
 
   @override
   void didUpdateWidget(PlDanmaku oldWidget) {
@@ -83,6 +89,15 @@ class _PlDanmakuState extends State<PlDanmaku> {
       _controller?.updateOption(
         DanmakuOptions.get(notFullscreen: widget.notFullscreen),
       );
+    }
+    if (oldWidget.isPipMode != widget.isPipMode) {
+      if (widget.isPipMode) {
+        playerController.danmakuMaskPath.removeListener(_onMaskPathChanged);
+        _controller?.setMask(null);
+      } else {
+        playerController.danmakuMaskPath.addListener(_onMaskPathChanged);
+        _onMaskPathChanged();
+      }
     }
   }
 
@@ -201,6 +216,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
 
   @override
   void dispose() {
+    playerController.danmakuMaskPath.removeListener(_onMaskPathChanged); // 未注册也安全
     if (kDebugMode) {
       debugPrint(
         '[PlDanmaku] dispose state=${identityHashCode(this)} cid=${widget.cid}',
@@ -235,6 +251,9 @@ class _PlDanmakuState extends State<PlDanmaku> {
               );
             }
             playerController.danmakuController = _controller = e;
+            if (!widget.isPipMode) {
+              e.setMask(playerController.danmakuMaskPath.value);
+            }
           },
           option: option,
           size: widget.size,
@@ -242,5 +261,5 @@ class _PlDanmakuState extends State<PlDanmaku> {
       ),
     );
   }
-
 }
+

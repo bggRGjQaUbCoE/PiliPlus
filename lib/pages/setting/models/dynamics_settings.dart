@@ -68,4 +68,14 @@ List<SettingsModel> get dynamicsSettings => [
       DynamicsDataModel.removeOnlyFansVideoDyn = value;
     },
   ),
+  SwitchModel(
+    title: '屏蔽动态视频',
+    subtitle: '过滤动态流中的动态视频（信息密度较低，仅非 UP 页生效）',
+    leading: const Icon(Icons.smart_display_outlined),
+    setKey: SettingBoxKey.removeDynVideoDyn,
+    defaultVal: false,
+    onChanged: (value) {
+      DynamicsDataModel.removeDynVideoDyn = value;
+    },
+  ),
 ];

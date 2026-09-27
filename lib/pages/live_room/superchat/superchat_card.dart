@@ -13,6 +13,7 @@ import 'package:PiliPlus/utils/extension/selectable_region_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/utils/screenshot.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -66,7 +67,7 @@ class _SuperChatCardState extends State<SuperChatCard> {
 
   void _remove() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(seconds: 1), _onRemove);
+      Timer(const Duration(seconds: 1), _onRemove);
     });
   }
 
@@ -129,6 +130,17 @@ class _SuperChatCardState extends State<SuperChatCard> {
         ),
         CustomPopupMenuItem<void>(
           height: 38,
+          onTap: () {
+            if (!mounted) return;
+            _screenShot(context, item, showTime: _showTime);
+          },
+          child: const Text(
+            '保存为图片',
+            style: TextStyle(fontSize: 13),
+          ),
+        ),
+        CustomPopupMenuItem<void>(
+          height: 38,
           onTap: widget.onReport,
           child: const Text(
             '举报',
@@ -149,175 +161,231 @@ class _SuperChatCardState extends State<SuperChatCard> {
     SuperChatTimeType.always => true,
   };
 
-  String _formatTime(int ts) {
-    final dt = DateTime.fromMillisecondsSinceEpoch(ts * 1000);
-    final h = dt.hour.toString().padLeft(2, '0');
-    final m = dt.minute.toString().padLeft(2, '0');
-    final s = dt.second.toString().padLeft(2, '0');
-    return '$h:$m:$s';
-  }
-
   @override
   Widget build(BuildContext context) {
-    final item = widget.item;
-    final bottomColor = ColourUtils.parseColor(item.backgroundBottomColor);
-    final border = BorderSide(color: bottomColor);
-    void showMenu(TapUpDetails e) => _showMenu(e.globalPosition, item);
-
-    Widget name = Text(
-      item.userInfo.uname,
-      maxLines: 1,
-      overflow: .ellipsis,
-      style: TextStyle(
-        color: ColourUtils.parseColor(item.userInfo.nameColor),
-      ),
+    return _build(
+      item: widget.item,
+      remains: _remains,
+      showMenu: _showMenu,
+      showTime: _showTime,
     );
-    if (item.medalInfo case final medal?) {
-      try {
-        name = Row(
-          spacing: 5,
-          children: [
-            MedalWidget.fromMedalInfo(
-              medal: medal,
-              padding: MedalWidget.mediumPadding,
-            ),
-            Flexible(child: name),
-          ],
-        );
-      } catch (e, s) {
-        if (kDebugMode) {
-          Utils.reportError(e, s);
-        }
+  }
+}
+
+String _formatTime(int ts) {
+  final dt = DateTime.fromMillisecondsSinceEpoch(ts * 1000);
+  final h = dt.hour.toString().padLeft(2, '0');
+  final m = dt.minute.toString().padLeft(2, '0');
+  final s = dt.second.toString().padLeft(2, '0');
+  return '$h:$m:$s';
+}
+
+Widget _build({
+  required SuperChatItem item,
+  Function(Offset, SuperChatItem)? showMenu,
+  RxInt? remains,
+  bool showTime = false,
+}) {
+  final bottomColor = ColourUtils.parseColor(item.backgroundBottomColor);
+  final border = BorderSide(color: bottomColor);
+  final sendTime = showTime ? _formatTime(item.ts) : null;
+
+  Widget name = Text(
+    item.userInfo.uname,
+    maxLines: 1,
+    overflow: .ellipsis,
+    style: TextStyle(
+      color: ColourUtils.parseColor(item.userInfo.nameColor),
+    ),
+  );
+  if (item.medalInfo case final medal?) {
+    try {
+      name = Row(
+        spacing: 5,
+        children: [
+          MedalWidget.fromMedalInfo(
+            medal: medal,
+            padding: MedalWidget.mediumPadding,
+          ),
+          Flexible(child: name),
+        ],
+      );
+    } catch (e, s) {
+      if (kDebugMode) {
+        Utils.reportError(e, s);
       }
     }
+  }
 
-    Widget price = Text("￥${item.price}", style: TextStyle(color: bottomColor));
-    Widget? remains;
-    if (_remains != null) {
-      remains = Obx(
-        () => Text(
-          _remains.toString(),
-          style: const TextStyle(fontSize: 14, color: Colors.grey),
-        ),
-      );
-    }
+  Widget price = Text("￥${item.price}", style: TextStyle(color: bottomColor));
+  Widget? remains_;
+  if (remains != null) {
+    remains_ = Obx(
+      () => Text(
+        remains.toString(),
+        style: const TextStyle(fontSize: 14, color: Colors.grey),
+      ),
+    );
+  }
 
-    return Column(
-      mainAxisSize: .min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        GestureDetector(
-          onTapUp: showMenu,
-          onSecondaryTapUp: PlatformUtils.isDesktop ? showMenu : null,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: const .vertical(top: .circular(8)),
-              color: ColourUtils.parseColor(item.backgroundColor),
-              border: Border(top: border, left: border, right: border),
-              image: item.backgroundImage == null
-                  ? null
-                  : DecorationImage(
-                      alignment: .topRight,
-                      image: CachedNetworkImageProvider(
-                        ImageUtils.safeThumbnailUrl(item.backgroundImage),
-                      ),
-                    ),
-            ),
-            padding: const EdgeInsets.all(8),
-            child: Row(
-              spacing: 12,
-              children: [
-                _avatar(item.userInfo.face, item.userInfo.faceFrame),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: .min,
-                    crossAxisAlignment: .start,
-                    children: [name, price],
-                  ),
-                ),
-                if (_showTime)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ?remains,
-                      Text(
-                        _formatTime(item.ts),
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: ColourUtils.parseColor(
-                            item.backgroundPriceColor,
-                          ).withValues(alpha: 0.6),
-                        ),
-                      ),
-                    ],
-                  )
-                else
-                  ?remains,
-              ],
-            ),
-          ),
-        ),
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: const .vertical(bottom: .circular(8)),
-            color: bottomColor,
-          ),
-          padding: const .all(8),
-          child: TextSelectionTheme(
-            data: TextSelectionThemeData(
-              selectionColor: Color.lerp(bottomColor, Colors.black, .26),
-              selectionHandleColor: Color.lerp(bottomColor, Colors.white, .26),
-            ),
-            child: SelectionText(
-              item.message,
-              contextMenuBuilder: scMenuBuilder,
-              style: TextStyle(
-                color: ColourUtils.parseColor(item.messageFontColor),
-                // decoration: widget.persistentSC && item.deleted
-                //     ? .lineThrough
-                //     : null,
-                // decorationThickness: 1.5,
-                // decorationStyle: .double,
-                // decorationColor: Colors.white,
+  Widget top = Container(
+    decoration: BoxDecoration(
+      borderRadius: const .vertical(top: .circular(8)),
+      color: ColourUtils.parseColor(item.backgroundColor),
+      border: Border(top: border, left: border, right: border),
+      image: item.backgroundImage == null
+          ? null
+          : DecorationImage(
+              alignment: .topRight,
+              image: CachedNetworkImageProvider(
+                ImageUtils.safeThumbnailUrl(item.backgroundImage),
               ),
             ),
+    ),
+    padding: const EdgeInsets.all(8),
+    child: Row(
+      spacing: 12,
+      children: [
+        _avatar(item.userInfo.face, item.userInfo.faceFrame),
+        Expanded(
+          child: Column(
+            mainAxisSize: .min,
+            crossAxisAlignment: .start,
+            children: [name, price],
+          ),
+        ),
+        if (sendTime != null)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ?remains_,
+              Text(
+                sendTime,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: ColourUtils.parseColor(
+                    item.backgroundPriceColor,
+                  ).withValues(alpha: 0.6),
+                ),
+              ),
+            ],
+          )
+        else
+          ?remains_,
+      ],
+    ),
+  );
+
+  final Widget msg;
+
+  final style = TextStyle(
+    color: ColourUtils.parseColor(item.messageFontColor),
+    // decoration: widget.persistentSC && item.deleted
+    //     ? .lineThrough
+    //     : null,
+    // decorationThickness: 1.5,
+    // decorationStyle: .double,
+    // decorationColor: Colors.white,
+  );
+
+  if (showMenu != null) {
+    void showMenu_(TapUpDetails e) => showMenu(e.globalPosition, item);
+    top = GestureDetector(
+      onTapUp: showMenu_,
+      onSecondaryTapUp: PlatformUtils.isDesktop ? showMenu_ : null,
+      child: top,
+    );
+    msg = TextSelectionTheme(
+      data: TextSelectionThemeData(
+        selectionColor: Color.lerp(bottomColor, Colors.black, .26),
+        selectionHandleColor: Color.lerp(
+          bottomColor,
+          Colors.white,
+          .26,
+        ),
+      ),
+      child: SelectionText(
+        item.message,
+        contextMenuBuilder: scMenuBuilder,
+        style: style,
+      ),
+    );
+  } else {
+    msg = Text(item.message, style: style);
+  }
+
+  return Column(
+    mainAxisSize: .min,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      top,
+      Container(
+        decoration: BoxDecoration(
+          borderRadius: const .vertical(bottom: .circular(8)),
+          color: bottomColor,
+        ),
+        padding: const .all(8),
+        child: msg,
+      ),
+    ],
+  );
+}
+
+Widget _avatar(String face, String? faceFrame) {
+  const size = 45.0;
+  final avatar = NetworkImgLayer(
+    src: face,
+    width: size,
+    height: size,
+    type: .avatar,
+  );
+  if (faceFrame != null && faceFrame.isNotEmpty) {
+    const ratio = 1.16;
+    const pendantSize = size * ratio;
+    const offset = ((1 - ratio) * size) / 2;
+    return Stack(
+      clipBehavior: .none,
+      alignment: .center,
+      children: [
+        avatar,
+        Positioned(
+          top: offset,
+          child: NetworkImgLayer(
+            type: .emote,
+            width: pendantSize,
+            height: pendantSize,
+            src: faceFrame,
+            getPlaceHolder: () => const SizedBox.shrink(),
           ),
         ),
       ],
     );
   }
+  return avatar;
+}
 
-  static Widget _avatar(String face, String? faceFrame) {
-    const size = 45.0;
-    final avatar = NetworkImgLayer(
-      src: face,
-      width: size,
-      height: size,
-      type: .avatar,
-    );
-    if (faceFrame != null && faceFrame.isNotEmpty) {
-      const ratio = 1.16;
-      const pendantSize = size * ratio;
-      const offset = ((1 - ratio) * size) / 2;
-      return Stack(
-        clipBehavior: .none,
-        alignment: .center,
-        children: [
-          avatar,
-          Positioned(
-            top: offset,
-            child: NetworkImgLayer(
-              type: .emote,
-              width: pendantSize,
-              height: pendantSize,
-              src: faceFrame,
-              getPlaceHolder: () => const SizedBox.shrink(),
-            ),
-          ),
-        ],
-      );
-    }
-    return avatar;
-  }
+Future<void> _screenShot(
+  BuildContext context,
+  SuperChatItem item, {
+  required bool showTime,
+}) async {
+  final image = await Screenshot.screenshot(
+    context,
+    Material(
+      type: .transparency,
+      child: _build(item: item, showTime: showTime),
+    ),
+    constraints: const BoxConstraints(maxWidth: 400),
+    pixelRatio: 3,
+    future: Future.pause, // wait for asset async loaded
+  );
+  final bytes = await image.toByteData(format: .png);
+  image.dispose();
+  final picName =
+      'Bili_SuperChat_${item.roomid}_${item.userInfo.uname}_￥${item.price}_${item.id}';
+  ImageUtils.saveByteImg(
+    bytes: bytes!.buffer.asUint8List(),
+    fileName: picName,
+  );
 }

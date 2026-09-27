@@ -12,6 +12,8 @@ class SearchText extends StatelessWidget {
   final double? height;
   final EdgeInsets padding;
   final BorderRadius borderRadius;
+  final int? maxLines;
+  final TextOverflow? overflow;
 
   const SearchText({
     super.key,
@@ -25,6 +27,8 @@ class SearchText extends StatelessWidget {
     this.height,
     this.padding = const .symmetric(horizontal: 11, vertical: 5),
     this.borderRadius = const .all(.circular(6)),
+    this.maxLines,
+    this.overflow,
   });
 
   @override
@@ -45,6 +49,8 @@ class SearchText extends StatelessWidget {
           padding: padding,
           child: Text(
             text,
+            maxLines: maxLines,
+            overflow: overflow,
             textAlign: textAlign,
             style: TextStyle(
               fontSize: fontSize,

@@ -271,6 +271,7 @@ class VideoCardV extends StatelessWidget {
                 videoItem.pubdate,
                 short: shortFormat,
                 long: longFormat,
+                showYesterdayTime: false,
               ),
             ),
           ),

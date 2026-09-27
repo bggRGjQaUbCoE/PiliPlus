@@ -28,7 +28,7 @@ class NetQuality extends $pb.GeneratedMessage {
     $fixnum.Int64? speedTimestamp,
     $core.int? netType,
   }) {
-    final result = create();
+    final result = NetQuality._();
     if (successRate != null) result.successRate = successRate;
     if (speed != null) result.speed = speed;
     if (speedTimestamp != null) result.speedTimestamp = speedTimestamp;
@@ -40,16 +40,16 @@ class NetQuality extends $pb.GeneratedMessage {
 
   factory NetQuality.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      NetQuality()..mergeFromBuffer(data, registry);
   factory NetQuality.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      NetQuality()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'NetQuality',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.metadata.network'),
-      createEmptyInstance: create)
+      createEmptyInstance: NetQuality.$_createMessage)
     ..aD(1, _omitFieldNames ? '' : 'successRate', fieldType: $pb.PbFieldType.OF)
     ..aI(2, _omitFieldNames ? '' : 'speed')
     ..aInt64(3, _omitFieldNames ? '' : 'speedTimestamp')
@@ -66,12 +66,14 @@ class NetQuality extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use NetQuality() / NetQuality.new instead')
   static NetQuality create() => NetQuality._();
+  static $pb.GeneratedMessage $_createMessage() => NetQuality._();
   @$core.override
-  NetQuality createEmptyInstance() => create();
+  NetQuality createEmptyInstance() => NetQuality._();
   @$core.pragma('dart2js:noInline')
   static NetQuality getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<NetQuality>(create);
+      $pb.GeneratedMessage.$_defaultFor<NetQuality>(NetQuality.$_createMessage);
   static NetQuality? _defaultInstance;
 
   @$pb.TagNumber(1)
@@ -117,7 +119,7 @@ class Network extends $pb.GeneratedMessage {
     TFType? tf,
     $core.String? oid,
   }) {
-    final result = create();
+    final result = Network._();
     if (type != null) result.type = type;
     if (tf != null) result.tf = tf;
     if (oid != null) result.oid = oid;
@@ -128,16 +130,16 @@ class Network extends $pb.GeneratedMessage {
 
   factory Network.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      Network()..mergeFromBuffer(data, registry);
   factory Network.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      Network()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Network',
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.metadata.network'),
-      createEmptyInstance: create)
+      createEmptyInstance: Network.$_createMessage)
     ..aE<NetworkType>(1, _omitFieldNames ? '' : 'type',
         enumValues: NetworkType.values)
     ..aE<TFType>(2, _omitFieldNames ? '' : 'tf', enumValues: TFType.values)
@@ -154,12 +156,14 @@ class Network extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Network() / Network.new instead')
   static Network create() => Network._();
+  static $pb.GeneratedMessage $_createMessage() => Network._();
   @$core.override
-  Network createEmptyInstance() => create();
+  Network createEmptyInstance() => Network._();
   @$core.pragma('dart2js:noInline')
-  static Network getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Network>(create);
+  static Network getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Network>(Network.$_createMessage);
   static Network? _defaultInstance;
 
   @$pb.TagNumber(1)

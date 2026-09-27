@@ -46,6 +46,7 @@ class _MemberFavoriteState extends State<MemberFavorite>
     super.build(context);
     final theme = Theme.of(context);
     return refreshIndicator(
+      isClampingScrollPhysics: true,
       onRefresh: _controller.onRefresh,
       child: CustomScrollView(
         physics: _FavScrollPhysics(controller: _controller),

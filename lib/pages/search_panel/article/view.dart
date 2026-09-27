@@ -48,9 +48,9 @@ class _SearchArticlePanelState
   }
 
   @override
-  Widget buildHeader(ThemeData theme) {
+  Widget buildHeader() {
     return SliverFloatingHeaderWidget(
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: colorScheme.surface,
       child: Padding(
         padding: const .fromLTRB(25, 0, 12, 4),
         child: Row(
@@ -59,7 +59,7 @@ class _SearchArticlePanelState
               () => Text(
                 '排序: ${controller.articleOrderType.value.label}',
                 maxLines: 1,
-                style: TextStyle(color: theme.colorScheme.outline),
+                style: TextStyle(color: colorScheme.outline),
               ),
             ),
             const Spacer(),
@@ -67,7 +67,7 @@ class _SearchArticlePanelState
               () => Text(
                 '分区: ${controller.articleZoneType!.value.label}',
                 maxLines: 1,
-                style: TextStyle(color: theme.colorScheme.outline),
+                style: TextStyle(color: colorScheme.outline),
               ),
             ),
             const Spacer(),
@@ -86,7 +86,7 @@ class _SearchArticlePanelState
                       ? Icons.filter_list
                       : Icons.filter_list_off,
                   size: 18,
-                  color: theme.colorScheme.primary,
+                  color: colorScheme.primary,
                 )),
               ),
             ),
@@ -97,7 +97,7 @@ class _SearchArticlePanelState
   }
 
   @override
-  Widget buildList(ThemeData theme, List<SearchArticleItemModel> list) {
+  Widget buildList(List<SearchArticleItemModel> list) {
     return SliverGrid.builder(
       gridDelegate: gridDelegate,
       itemBuilder: (context, index) {

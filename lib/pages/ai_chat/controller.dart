@@ -5,6 +5,7 @@ import 'package:PiliPlus/pages/ai_chat/models.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/services/ai_chat/ai_chat_service.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
@@ -45,10 +46,20 @@ class AiChatController extends GetxController {
   int _contextLoadIndex = -1;
   bool _isLoadingContext = false;
 
+  // --- 思考耗时计时器（约 100ms 刷新，正文首字或流结束时冻结）---
+  Timer? _reasoningTimer;
+  ChatMessage? _reasoningTimerMsg;
+
   @override
   void onInit() {
     super.onInit();
     _videoCtl = Get.find<VideoDetailController>(tag: heroTag);
+  }
+
+  @override
+  void onClose() {
+    _stopReasoningTimer();
+    super.onClose();
   }
 
   bool get hasSubtitles => _videoCtl.subtitles.isNotEmpty;
@@ -204,39 +215,110 @@ class AiChatController extends GetxController {
       });
     }
 
-    // Add conversation history, truncating at context load boundary
+    // Add conversation history, truncating at context load boundary.
+    // 思考内容只保留在本地供 UI 展示，出站历史只用 role + 正文；
+    // 正文为空的助手消息整条跳过（失败留下的思考卡片、流结束无正文的
+    // 卡片、正在流式且尚无正文的占位都不发送空 content）
     final startIdx = _contextLoadIndex >= 0 ? _contextLoadIndex : 0;
     for (final m in messages.skip(startIdx)) {
       if (m.isDivider) continue;
-      if (!m.isStreaming || m.content.isNotEmpty) {
-        chatMessages.add({'role': m.role, 'content': m.content});
-      }
+      if (m.role == 'assistant' && m.content.isEmpty) continue;
+      chatMessages.add({'role': m.role, 'content': m.content});
     }
 
     final lastMsg = messages.last;
     try {
-      await for (final token in AiChatService.streamChat(
+      await for (final delta in AiChatService.streamChat(
         messages: chatMessages,
+        reasoningEffort: Pref.aiReasoningEffort,
       )) {
-        lastMsg.appendContent(token);
-        messages.refresh();
+        if (delta.reasoningDelta.isNotEmpty) {
+          _appendReasoningDelta(lastMsg, delta.reasoningDelta);
+        }
+        if (delta.contentDelta.isNotEmpty) {
+          _appendContentDelta(lastMsg, delta.contentDelta);
+        }
       }
       lastMsg.isStreaming = false;
+      // 流正常结束仍无正文时保持卡片形态与当时高度档，不自动收成胶囊
+      _freezeReasoningDuration(lastMsg);
       messages.refresh();
     } catch (e) {
       lastMsg.isStreaming = false;
+      _freezeReasoningDuration(lastMsg);
       messages.refresh();
       rethrow;
     }
   }
 
+  /// 追加思考增量。首次非空增量记录起始时刻，正文仍空时默认展开为限高卡片
+  void _appendReasoningDelta(ChatMessage msg, String delta) {
+    if (msg.reasoningStartedAt == null) {
+      msg.reasoningStartedAt = DateTime.now();
+      if (msg.content.isEmpty) {
+        msg
+          ..isReasoningExpanded = true
+          ..isReasoningFullHeight = false;
+      }
+      _startReasoningTimer(msg);
+    }
+    msg.appendReasoningContent(delta);
+    messages.refresh();
+  }
+
+  /// 追加正文增量。第一个正文字符到达时强制收成胶囊并冻结思考耗时
+  void _appendContentDelta(ChatMessage msg, String delta) {
+    if (msg.content.isEmpty) {
+      _freezeReasoningDuration(msg);
+      msg.isReasoningExpanded = false;
+    }
+    msg.appendContent(delta);
+    messages.refresh();
+  }
+
+  /// 进行中的秒数由 [ChatMessage.reasoningSeconds] 实时计算，
+  /// 这里只负责约每 100ms 触发一次刷新
+  void _startReasoningTimer(ChatMessage msg) {
+    _stopReasoningTimer();
+    _reasoningTimerMsg = msg;
+    _reasoningTimer = Timer.periodic(const Duration(milliseconds: 100), (_) {
+      final target = _reasoningTimerMsg;
+      if (target == null || target.reasoningDurationSeconds != null) {
+        _stopReasoningTimer();
+        return;
+      }
+      messages.refresh();
+    });
+  }
+
+  void _stopReasoningTimer() {
+    _reasoningTimer?.cancel();
+    _reasoningTimer = null;
+    _reasoningTimerMsg = null;
+  }
+
+  /// 按当前时刻冻结思考耗时：第一个正文字符到达或流结束时调用
+  void _freezeReasoningDuration(ChatMessage msg) {
+    if (msg.reasoningStartedAt != null) {
+      msg.reasoningDurationSeconds = msg.reasoningSeconds;
+    }
+    if (identical(_reasoningTimerMsg, msg)) _stopReasoningTimer();
+  }
+
+  /// 请求失败时删掉这条助手消息：思考内容（含只有空白/标签的情况）和
+  /// 正文都为空才删；已有非空内容时保留，思考卡片留给用户看
   void _removeLastIfStreaming() {
-    if (messages.isNotEmpty && messages.last.isStreaming) {
+    if (messages.isEmpty) return;
+    final last = messages.last;
+    if (last.role == 'assistant' &&
+        last.content.isEmpty &&
+        !last.hasReasoning) {
       messages.removeLast();
     }
   }
 
   void clearMessages() {
+    _stopReasoningTimer();
     messages.clear();
     subtitleWarning.value = false;
     hasVideoContext.value = false;

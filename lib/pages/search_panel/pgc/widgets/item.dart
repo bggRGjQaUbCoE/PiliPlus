@@ -33,7 +33,7 @@ class SearchPgcItem extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: Style.safeSpace,
-            vertical: Style.cardSpace,
+            vertical: 5,
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,7 +49,7 @@ class SearchPgcItem extends StatelessWidget {
                   PBadge(
                     text: item.seasonTypeName,
                     top: 6.0,
-                    right: 4.0,
+                    right: 6.0,
                     bottom: null,
                     left: null,
                   ),
@@ -60,7 +60,6 @@ class SearchPgcItem extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 4),
                     Text.rich(
                       TextSpan(
                         children: item.title
@@ -79,29 +78,28 @@ class SearchPgcItem extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Text('评分:${item.mediaScore?['score']}', style: style),
-                    Row(
-                      children: [
-                        if (item.areas?.isNotEmpty == true)
-                          Text(item.areas!, style: style),
-                        const SizedBox(width: 3),
-                        const Text('·'),
-                        const SizedBox(width: 3),
-                        Text(
-                          DateFormatUtils.dateFormat(item.pubtime),
-                          style: style,
-                        ),
-                      ],
+                    Text.rich(
+                      style: style,
+                      TextSpan(
+                        children: [
+                          if (item.areas?.isNotEmpty == true)
+                            TextSpan(text: '${item.areas!}  ·  '),
+                          TextSpan(
+                            text: DateFormatUtils.dateFormat(item.pubtime),
+                          ),
+                        ],
+                      ),
                     ),
-                    Row(
-                      children: [
-                        if (item.styles?.isNotEmpty == true)
-                          Text(item.styles!, style: style),
-                        const SizedBox(width: 3),
-                        const Text('·'),
-                        const SizedBox(width: 3),
-                        if (item.indexShow?.isNotEmpty == true)
-                          Text(item.indexShow!, style: style),
-                      ],
+                    Text.rich(
+                      style: style,
+                      TextSpan(
+                        children: [
+                          if (item.styles?.isNotEmpty == true)
+                            TextSpan(text: '${item.styles!}  ·  '),
+                          if (item.indexShow?.isNotEmpty == true)
+                            TextSpan(text: item.indexShow!),
+                        ],
+                      ),
                     ),
                   ],
                 ),

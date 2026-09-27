@@ -10,6 +10,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, compute;
 import 'package:protobuf/protobuf.dart' show GeneratedMessage;
 
+/// gRPC-over-HTTP 的轻量客户端。
+///
+/// B 站 gRPC 仍通过全局 Dio 发送，因此会复用 App 账号的 headers、Cookie 策略
+/// 和网络设置；这里只负责 protobuf 帧封装、gzip、状态解析与 protobuf 解码。
 abstract final class GrpcReq {
   static const _isolateSize = 256 * 1024;
   static const _gzipMinLength = 64;
@@ -19,7 +23,9 @@ abstract final class GrpcReq {
     responseType: ResponseType.bytes,
   );
 
+  /// 封装标准 gRPC length-prefixed message：1 字节压缩标志 + 4 字节大端长度 + payload。
   static Uint8List compressProtobuf(Uint8List proto) {
+    // 小消息压缩收益低，超过阈值后才启用 gzip。
     final compress = proto.length > _gzipMinLength;
     if (compress) {
       proto = const GZipEncoder().encodeBytes(proto);
@@ -42,6 +48,7 @@ abstract final class GrpcReq {
     }
   }
 
+  /// 解开 gRPC 帧并交给具体生成类的 `fromBuffer`。
   static LoadingState<T> _parse<T>((Uint8List, T Function(Uint8List)) args) {
     try {
       final data = decompressProtobuf(args.$1);
@@ -52,6 +59,10 @@ abstract final class GrpcReq {
     }
   }
 
+  /// 发送一个 protobuf gRPC 请求并返回强类型 [LoadingState]。
+  ///
+  /// [isolate] 用于弹幕等大响应：超过阈值后在独立 isolate 解压和解析，
+  /// 避免阻塞 Flutter UI isolate。
   static Future<LoadingState<T>> request<T extends GeneratedMessage>(
     String url,
     GeneratedMessage request,
@@ -64,6 +75,7 @@ abstract final class GrpcReq {
       options: options,
     );
 
+    // Request.post 会把 Dio 异常转换为 data['message'] 的 Map，而非抛出异常。
     if (response.data case final Map map) {
       return Error(map['message']);
     }
@@ -72,6 +84,7 @@ abstract final class GrpcReq {
       final data = response.data;
       if (data is Uint8List) {
         return isolate && data.length > _isolateSize
+            // 大响应跨 isolate 解析；小响应直接在当前 isolate 启动更快。
             ? compute(_parse, (data, grpcParser))
             : _parse((data, grpcParser));
       } else {
@@ -79,6 +92,8 @@ abstract final class GrpcReq {
       }
     } else {
       try {
+        // Grpc-Status-Details-Bin 是 base64 编码的 protobuf Status；
+        // 先补齐 Base64 padding，再尝试提取嵌套的业务错误码和消息。
         int? code;
         String msg = response.headers.value('Grpc-Status-Details-Bin') ?? '';
         if (msg.isNotEmpty) {

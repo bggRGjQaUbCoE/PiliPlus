@@ -22,6 +22,10 @@ import 'package:dio/io.dart';
 import 'package:dio_http2_adapter/dio_http2_adapter.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, listEquals;
 
+/// 全局 REST/App HTTP 门面。
+///
+/// 页面层通常不直接操作 Dio，而是调用 [get]、[post] 或 [downloadFile]。
+/// Dio 实例、HTTP/2 连接池、解压和账号拦截器都在进程启动时只创建一次。
 class Request {
   static const _gzipDecoder = GZipDecoder();
   static const _brotliDecoder = BrotliDecoder();
@@ -35,13 +39,18 @@ class Request {
       _http11Dio ??= _enableHttp2 ? _cloneHttp11Dio() : dio;
   factory Request() => _instance;
 
-  /// 设置cookie
+  /// 安装账号拦截器，并恢复账号角色与 Web Cookie。
+  ///
+  /// 该方法由 `main()` 在首次请求前调用。之后的 REST 与 gRPC-over-HTTP 请求
+  /// 都经过同一个 [AccountManager]，从而复用账号选择、签名和 Cookie 持久化逻辑。
   static void setCookie() {
     accountManager = AccountManager();
     dio.interceptors.add(accountManager);
+    // Hive 中的账号记录是事实来源；启动时重建各角色当前使用的账号。
     Accounts.refresh();
     LoginUtils.setWebCookie();
 
+    // 优先恢复上次缓存的金币数；没有缓存时再异步请求服务器。
     if (Accounts.main.isLogin) {
       final coin = Pref.userInfoCache?.money;
       if (coin == null) {
@@ -100,6 +109,9 @@ class Request {
     } catch (_) {}
   }
 
+  /// 克隆仅使用 HTTP/1.1 的客户端，作为协议不兼容时的显式降级通道。
+  ///
+  /// Dio 克隆会复制拦截器，但 RetryInterceptor 仍引用原客户端，因此必须重绑。
   static Dio _cloneHttp11Dio() {
     final h11 = dio.clone(
       httpClientAdapter:
@@ -119,6 +131,7 @@ class Request {
   static Timer? _networkChangeDebounce;
 
   static void _onConnectivityChanged(List<ConnectivityResult> result) {
+    // 网络快速抖动时防抖，避免连续销毁并创建连接池。
     if (listEquals(result, const [ConnectivityResult.none])) {
       return;
     }
@@ -133,6 +146,9 @@ class Request {
     Connectivity().onConnectivityChanged.skip(1).listen(_onConnectivityChanged);
   }
 
+  /// 按当前设置构造 HTTP/1.1 适配器和可选 HTTP/2 连接管理器。
+  ///
+  /// 两条协议链都关闭自动解压，由 [_responseDecoder] 统一处理 gzip/br。
   static (IOHttpClientAdapter, ConnectionManager?) _createPool() {
     final bool enableSystemProxy;
     late final String systemProxyHost;
@@ -176,6 +192,7 @@ class Request {
     return (http11Adapter, connectionManager);
   }
 
+  /// 网络切换后重建连接池，避免旧连接继续绑定失效的接口或代理。
   @pragma('vm:notify-debugger-on-exception')
   static void _resetAdaptersForNetworkChange() {
     try {
@@ -195,11 +212,11 @@ class Request {
     } catch (_) {}
   }
 
-  /*
-   * config it and create
-   */
+  /// 构造进程唯一的 Dio 客户端。
+  ///
+  /// 拦截器顺序很重要：重试与日志先安装，账号拦截器随后由 [setCookie] 添加。
   Request._internal() {
-    //BaseOptions、Options、RequestOptions 都可以配置参数，优先级别依次递增，且可以根据优先级别覆盖参数
+    // BaseOptions、Options、RequestOptions 都可以配置参数，优先级依次递增。
     BaseOptions options = BaseOptions(
       //请求基地址,可以包含子路径
       baseUrl: HttpString.apiBaseUrl,
@@ -219,6 +236,7 @@ class Request {
 
     final (h11, connectionManager) = _createPool();
 
+    // HTTP/2 客户端保留 HTTP/1.1 fallback；调用方可取得独立的 1.1 客户端。
     dio = Dio(options)
       ..httpClientAdapter = _enableHttp2
           ? Http2Adapter(connectionManager, fallbackAdapter: h11)
@@ -242,6 +260,7 @@ class Request {
       );
     }
 
+    // 后台转换避免大响应阻塞 UI isolate；非 2xx 交给包装层统一转成 Error。
     dio
       ..transformer = BackgroundTransformer()
       ..options.validateStatus = (int? status) {
@@ -251,9 +270,10 @@ class Request {
     if (Platform.isIOS) _watchConnectivity();
   }
 
-  /*
-   * get请求
-   */
+  /// 发起 GET 请求。
+  ///
+  /// Dio 网络异常不会继续向上抛出，而是包装成 `data['message']` 的 Response。
+  /// 业务 API 包装器仍需检查 B 站业务码，再转换为 [LoadingState]。
   Future<Response> get<T>(
     String url, {
     Map<String, dynamic>? queryParameters,
@@ -278,9 +298,7 @@ class Request {
     }
   }
 
-  /*
-   * post请求
-   */
+  /// 发起 POST 请求，并使用与 GET 相同的合成 Response 错误协议。
   Future<Response> post<T>(
     String url, {
     Object? data,
@@ -309,9 +327,7 @@ class Request {
     }
   }
 
-  /*
-   * 下载文件
-   */
+  /// 下载文件到指定路径；下载异常同样转换为可检查的 Response。
   Future<Response> downloadFile(
     String urlPath,
     String savePath, {
@@ -340,6 +356,7 @@ class Request {
     }
   }
 
+  /// 根据响应头选择解码器，兼容 HTTP/2 适配器不会自动解压的行为。
   static List<int> responseBytesDecoder(
     List<int> responseBytes,
     Map<String, List<String>> headers,

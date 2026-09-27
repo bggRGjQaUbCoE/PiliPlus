@@ -6,6 +6,10 @@ import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:hive_ce/hive.dart';
 
+/// 请求层使用的账号能力协议。
+///
+/// 实现分为持久化的 [LoginAccount]、进程级匿名账号 [AnonymousAccount]，
+/// 以及用于显式跳过账号处理的 [NoAccount]。
 sealed class Account {
   Map<String, dynamic>? toJson() => null;
 
@@ -38,6 +42,7 @@ sealed class Account {
   const Account();
 }
 
+/// 已登录账号。CookieJar、access key、refresh token 和角色集合持久化到 Hive。
 @HiveType(typeId: 9)
 class LoginAccount extends Account {
   @override
@@ -62,6 +67,7 @@ class LoginAccount extends Account {
   late final int mid = int.parse(_midStr);
 
   @override
+  // Web/App 共用的客户端头；mid 和设备标识由当前登录账号动态生成。
   late final Map<String, String> headers = {
     ...Constants.baseHeaders,
     'x-bili-mid': _midStr,
@@ -77,6 +83,8 @@ class LoginAccount extends Account {
   late final String csrf =
       cookieJar.domainCookies['bilibili.com']!['/']!['bili_jct']!.cookie.value;
 
+  // 删除墓碑必须先于异步删除落盘：迟到的网络响应可能仍会调用 onChange()，
+  // 若不检查该标记，已删除账号会被 Cookie 响应重新写回 Hive。
   bool _hasDelete = false;
 
   @override
@@ -112,6 +120,7 @@ class LoginAccount extends Account {
     this.refresh, [
     Set<AccountType>? type,
   ]) : type = type ?? {} {
+    // 每个登录/匿名身份都需要稳定的 buvid3，供游客态和风控请求使用。
     cookieJar.setBuvid3();
   }
 
@@ -130,6 +139,7 @@ class LoginAccount extends Account {
       identical(this, other) || (other is LoginAccount && mid == other.mid);
 }
 
+/// 匿名账号单例。角色切换可复用它，但删除时会重置 Cookie/BUVID。
 class AnonymousAccount extends Account {
   @override
   final bool isLogin = false;
@@ -160,6 +170,7 @@ class AnonymousAccount extends Account {
     return cookieJar.deleteAll().whenComplete(cookieJar.setBuvid3);
   }
 
+  // 匿名账号无需按角色复制；所有匿名槽位共享同一个 CookieJar。
   static final _instance = AnonymousAccount._();
 
   AnonymousAccount._();
@@ -226,6 +237,7 @@ extension BiliCookieJar on DefaultCookieJar {
         };
 }
 
+/// 标记“此请求不绑定任何账号”。AccountManager 会原样放行且不处理 Cookie。
 final class NoAccount extends Account {
   const NoAccount();
 }

@@ -1,4 +1,5 @@
-// edit from package:dio_cookie_manager
+// 基于 dio_cookie_manager 思路扩展：除 Cookie 外还负责账号选择、App 签名、
+// gRPC 元数据、错误提示和 Set-Cookie 持久化。不要直接照搬上游实现。
 import 'dart:io';
 
 import 'package:PiliPlus/http/api.dart';
@@ -17,6 +18,8 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:material_ui/material_ui.dart';
 
+// Dio 可能把多个 Set-Cookie 合并到一个响应头；只拆分会出现在后续 cookie 键值前的逗号，
+// 避免误拆 Expires=Wed, 21 Oct 2015 07:28:00 GMT 这类属性值。
 final _setCookieReg = RegExp('(?<=)(,)(?=[^;]+?=)');
 
 class AccountManager extends Interceptor {
@@ -24,6 +27,9 @@ class AccountManager extends Interceptor {
 
   static String blockServer = Pref.blockServer;
 
+  /// 将 CookieJar 返回的 Cookie 扁平化为请求头。
+  ///
+  /// 更长的 path 排在前面，与浏览器处理同名 Cookie 时的优先级一致。
   static String getCookies(List<Cookie> cookies) {
     // Sort cookies by path (longer path first).
     cookies.sort((a, b) {
@@ -40,14 +46,21 @@ class AccountManager extends Interceptor {
     return cookies.map((cookie) => '${cookie.name}=${cookie.value}').join('; ');
   }
 
+  /// 请求发送前的统一策略。
+  ///
+  /// 关键顺序：先固定本请求使用的账号，再决定跳过 Cookie、注入 Web Cookie，
+  /// 或为 App/gRPC 请求注入 access_key、headers 和签名。
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final path = options.path;
 
+    // 绑定结果写入 options.extra，使响应阶段能取回同一个账号实例保存 Cookie。
     final account = _bindRequestAccount(options);
 
+    // NoAccount 是显式跳过点；CDN 和被屏蔽服务器不应收到 B 站 Cookie。
     if (account is NoAccount || _skipCookie(path)) return handler.next(options);
 
+    // 心跳接口要求登录账号，游客模式下直接取消而不是发出必然失败的请求。
     if (!account.isLogin && path == Api.heartBeat) {
       return handler.reject(
         DioException.requestCancelled(requestOptions: options, reason: null),
@@ -58,6 +71,7 @@ class AccountManager extends Interceptor {
     final isApp = path.startsWith(HttpString.appBaseUrl);
 
     if (isApp && options.responseType == ResponseType.bytes) {
+      // gRPC-over-HTTP 复用 App 地址，但鉴权依靠 protobuf/header 元数据而非 Cookie。
       options.headers.addAll(account.grpcHeaders);
       return handler.next(options);
     }
@@ -66,7 +80,7 @@ class AccountManager extends Interceptor {
       ..addAll(account.headers)
       ..['referer'] ??= HttpString.baseUrl;
 
-    // app端不需要管理cookie
+    // App API 不使用 Cookie Jar；它依赖 access_key、客户端头和请求签名。
     if (isApp) {
       // if (kDebugMode) debugPrint('is app: ${options.path}');
       final dataPtr = (options.method == 'POST' && options.data is Map
@@ -81,6 +95,8 @@ class AccountManager extends Interceptor {
       }
       return handler.next(options);
     } else {
+      // Web API 从所选账号的 CookieJar 加载匹配 domain/path 的 Cookie，
+      // 再与调用方显式提供的 Cookie 合并。
       account.cookieJar
           .loadForRequest(options.uri)
           .then((cookies) {
@@ -109,6 +125,7 @@ class AccountManager extends Interceptor {
     }
   }
 
+  /// 收到 Web 响应后先保存服务端更新/删除的 Cookie，再把响应交给调用方。
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     if (_boundRequestAccount(response.requestOptions) case final account?) {
@@ -133,6 +150,7 @@ class AccountManager extends Interceptor {
     }
   }
 
+  /// 错误响应也可能包含有效的 Set-Cookie，因此保存 Cookie 后再继续传播异常。
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     final options = err.requestOptions;
@@ -182,6 +200,7 @@ class AccountManager extends Interceptor {
     }
   }
 
+  /// 解析 Set-Cookie，并保存到该请求绑定账号的 CookieJar。
   static Future<void> _saveCookies(Account account, Response response) async {
     final setCookies = response.headers[HttpHeaders.setCookieHeader];
     if (setCookies == null || setCookies.isEmpty) {
@@ -197,6 +216,7 @@ class AccountManager extends Interceptor {
     final locations = response.headers[HttpHeaders.locationHeader] ?? const [];
     final isRedirectRequest = statusCode >= 300 && statusCode < 400;
     final originalUri = response.requestOptions.uri;
+    // 使用最终响应 URL 解析 domain/path；重定向时也按 Location 的目标域保存。
     final realUri = originalUri.resolveUri(response.realUri);
     await account.cookieJar.saveFromResponse(realUri, cookies);
     if (isRedirectRequest && locations.isNotEmpty) {
@@ -220,6 +240,10 @@ class AccountManager extends Interceptor {
         path.contains('biliimg.com');
   }
 
+  /// 根据 URL 选择账号角色。
+  ///
+  /// 登录接口必须匿名；其余接口先匹配 heartbeat/recommend/video 规则，
+  /// 未命中时回退到主账号。调用方也可通过 Options.extra['account'] 显式覆盖。
   static Account _findAccount(String path) => ApiType.loginApi.contains(path)
       ? AnonymousAccount()
       : Accounts.get(
@@ -229,11 +253,13 @@ class AccountManager extends Interceptor {
           ),
         );
 
+  /// 首次触达请求时选择账号并记录；同一请求的响应阶段复用该结果。
   static Account _bindRequestAccount(RequestOptions options) {
     assert(options.extra['account'] is Account?);
     return options.extra['account'] ??= _findAccount(options.path);
   }
 
+  /// 仅 Web/Cookie 请求需要回写账号；App、CDN 和 NoAccount 请求不保存 Cookie。
   static Account? _boundRequestAccount(RequestOptions options) {
     final path = options.path;
     final account = options.extra['account'] as Account;
@@ -245,6 +271,7 @@ class AccountManager extends Interceptor {
     return account;
   }
 
+  /// 把 Dio 技术异常转换为面向用户的中文提示。
   static Future<String> dioError(DioException error) async {
     switch (error.type) {
       case .badCertificate:

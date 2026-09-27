@@ -151,7 +151,8 @@ class _MainAppState extends PopScopeState<MainApp>
 
   @override
   Future<void> onWindowMoved() async {
-    if (PlPlayerController.instance?.isDesktopPip ?? false) {
+    // 小窗自身的移动、以及小窗退出时还原窗口引发的移动，都不算用户操作
+    if (PlPlayerController.instance?.ignoreWindowChange ?? false) {
       return;
     }
     final Offset offset = await windowManager.getPosition();
@@ -160,7 +161,7 @@ class _MainAppState extends PopScopeState<MainApp>
 
   @override
   Future<void> onWindowResized() async {
-    if (PlPlayerController.instance?.isDesktopPip ?? false) {
+    if (PlPlayerController.instance?.ignoreWindowChange ?? false) {
       return;
     }
     final Rect bounds = await windowManager.getBounds();

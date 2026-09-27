@@ -201,6 +201,9 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   late bool isDesktopPip = false;
   late Rect _lastWindowBounds;
 
+  /// 记忆的小窗位置与尺寸,重启 App 失效
+  static Rect? _savedPipBounds;
+
   late final showWindowTitleBar = Pref.showWindowTitleBar;
   late final RxBool isAlwaysOnTop = false.obs;
   Future<void> setAlwaysOnTop(bool value) {
@@ -208,16 +211,30 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     return windowManager.setAlwaysOnTop(value);
   }
 
-  Future<void> exitDesktopPip() {
+  bool _isPipTransitioning = false;
+
+  /// 窗口的 move / resize 是否应当忽略：小窗模式中，或小窗正在进出
+  bool get ignoreWindowChange => isDesktopPip || _isPipTransitioning;
+
+  Future<void> exitDesktopPip() async {
+    // isDesktopPip 必须先置 false。它不是 Rx，界面只会在窗口尺寸变化顺带触发的
+    // 那次重建里读到它；置晚了，那次重建读到的还是 true，界面就卡在小窗布局 ——
+    // showVideoSheet 为真导致视频按 sheet 展示（看着像应用内全屏），底栏也因为
+    // !isDesktopPip 不成立而不显示全屏按钮，得手动拖一下窗口才恢复。
     isDesktopPip = false;
-    return Future.wait([
-      if (showWindowTitleBar)
-        windowManager.setTitleBarStyle(TitleBarStyle.normal),
-      windowManager.setMinimumSize(const Size(400, 700)),
-      windowManager.setBounds(_lastWindowBounds),
-      setAlwaysOnTop(false),
-      windowManager.setAspectRatio(0),
-    ]);
+    _isPipTransitioning = true;
+    try {
+      _savedPipBounds = await windowManager.getBounds();
+      if (showWindowTitleBar) {
+        await windowManager.setTitleBarStyle(TitleBarStyle.normal);
+      }
+      await windowManager.setAspectRatio(0);
+      await windowManager.setBounds(_lastWindowBounds);
+      await windowManager.setMinimumSize(const Size(400, 700));
+      await setAlwaysOnTop(false);
+    } finally {
+      _isPipTransitioning = false;
+    }
   }
 
   Future<void> enterDesktopPip() async {
@@ -231,8 +248,15 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       windowManager.setTitleBarStyle(TitleBarStyle.hidden);
     }
 
-    const shortSide = 280.0;
+    const defaultShortSide = 280.0;
     const minShortSide = 160.0;
+    const maxShortSide = 600.0;
+    final double shortSide = _savedPipBounds == null
+        ? defaultShortSide
+        : min(
+            _savedPipBounds!.width,
+            _savedPipBounds!.height,
+          ).clamp(minShortSide, maxShortSide).toDouble();
     final Size size;
     final Size minimumSize;
     final state = videoPlayerController!.state;
@@ -254,9 +278,14 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
     await windowManager.setMinimumSize(minimumSize);
     setAlwaysOnTop(true);
-    windowManager
-      ..setSize(size)
-      ..setAspectRatio(width / height);
+    if (_savedPipBounds case final saved?) {
+      await windowManager.setBounds(
+        Rect.fromLTWH(saved.left, saved.top, size.width, size.height),
+      );
+    } else {
+      await windowManager.setSize(size);
+    }
+    await windowManager.setAspectRatio(width / height);
   }
 
   void toggleDesktopPip() {

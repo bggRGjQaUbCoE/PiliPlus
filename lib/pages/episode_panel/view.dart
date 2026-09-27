@@ -100,9 +100,15 @@ class _EpisodePanelState extends State<EpisodePanel>
 
   // item
   late int _currentItemIndex;
+
+  /// 判断"当前集"用的 cid。
+  int get _liveCid => showTitle
+      ? (widget.ugcIntroController?.cid.value ?? widget.cid)
+      : widget.cid;
+
   int get _findCurrentItemIndex => max(
     0,
-    _getCurrEpisodes.indexWhere((item) => item.cid == widget.cid),
+    _getCurrEpisodes.indexWhere((item) => item.cid == _liveCid),
   );
 
   late final List<bool> _isReversed;
@@ -289,70 +295,70 @@ class _EpisodePanelState extends State<EpisodePanel>
               top: 7,
               bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
             ),
-            sliver: showTitle
-                ? SliverVariedExtentList.builder(
-                    itemCount: episodes.length,
-                    itemBuilder: (context, index) {
-                      final episode = episodes[index];
-                      final isCurrItem = isCurrTab
-                          ? index == _currentItemIndex
-                          : false;
-                      Widget episodeItem = _buildEpisodeItem(
-                        theme: theme,
-                        episode: episode,
-                        index: index,
-                        length: episodes.length,
-                        isCurrentIndex: isCurrItem,
-                      );
-                      if (episode is ugc.EpisodeItem &&
-                          episode.pages!.length > 1) {
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            episodeItem, // 110
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 5,
-                              ), // 10
-                              child: PagesPanel(
-                                // 45
-                                list: isCurrTab && isCurrItem
-                                    ? null
-                                    : episode.pages,
-                                cover: episode.arc?.pic,
-                                heroTag: widget.heroTag,
-                                ugcIntroController: widget.ugcIntroController!,
-                                bvid:
-                                    episode.bvid ?? IdUtils.av2bv(episode.aid!),
-                              ),
-                            ),
-                          ],
+            // 切集后列表要跟着重算高亮（独立面板的 widget.cid 是固定值）。
+            sliver: Obx(() {
+              final currIndex = _findCurrentItemIndex;
+              return showTitle
+                  ? SliverVariedExtentList.builder(
+                      itemCount: episodes.length,
+                      itemBuilder: (context, index) {
+                        final episode = episodes[index];
+                        final isCurrItem = isCurrTab && index == currIndex;
+                        Widget episodeItem = _buildEpisodeItem(
+                          theme: theme,
+                          episode: episode,
+                          index: index,
+                          length: episodes.length,
+                          isCurrentIndex: isCurrItem,
                         );
-                      }
-                      return episodeItem;
-                    },
-                    itemExtentBuilder: (index, _) =>
-                        _calcItemHeight(episodes[index]),
-                  )
-                : SliverFixedExtentList.builder(
-                    itemCount: episodes.length,
-                    itemBuilder: (context, index) {
-                      final episode = episodes[index];
-                      final isCurrItem = isCurrTab
-                          ? index == _currentItemIndex
-                          : false;
-                      return _buildEpisodeItem(
-                        theme: theme,
-                        episode: episode,
-                        index: index,
-                        length: episodes.length,
-                        isCurrentIndex: isCurrItem,
-                      );
-                    },
-                    itemExtent: 112,
-                  ),
+                        if (episode is ugc.EpisodeItem &&
+                            episode.pages!.length > 1) {
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              episodeItem, // 110
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 5,
+                                ), // 10
+                                child: PagesPanel(
+                                  // 45
+                                  list: isCurrItem ? null : episode.pages,
+                                  cover: episode.arc?.pic,
+                                  heroTag: widget.heroTag,
+                                  ugcIntroController:
+                                      widget.ugcIntroController!,
+                                  bvid:
+                                      episode.bvid ??
+                                      IdUtils.av2bv(episode.aid!),
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+                        return episodeItem;
+                      },
+                      itemExtentBuilder: (index, _) =>
+                          _calcItemHeight(episodes[index]),
+                    )
+                  : SliverFixedExtentList.builder(
+                      itemCount: episodes.length,
+                      itemBuilder: (context, index) {
+                        final episode = episodes[index];
+                        final isCurrItem = isCurrTab && index == currIndex;
+                        return _buildEpisodeItem(
+                          theme: theme,
+                          episode: episode,
+                          index: index,
+                          length: episodes.length,
+                          isCurrentIndex: isCurrItem,
+                        );
+                      },
+                      itemExtent: 112,
+                    );
+            }),
           ),
         ],
       ),
@@ -685,7 +691,7 @@ class _EpisodePanelState extends State<EpisodePanel>
               await Future.pause(const Duration(milliseconds: 225));
             }
             _itemScrollController[widget.initialTabIndex].animTo(
-              _calcItemOffset(_currentItemIndex),
+              _calcItemOffset(_findCurrentItemIndex),
               duration: const Duration(milliseconds: 200),
             );
           },

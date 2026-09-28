@@ -1,0 +1,5615 @@
+{
+  "version": "1.0.0",
+  "project": {
+    "name": "PiliPlus",
+    "languages": [
+      "dart",
+      "markdown",
+      "yaml"
+    ],
+    "frameworks": [
+      "Flutter",
+      "Dart",
+      "GetX",
+      "Dio",
+      "Hive CE",
+      "media_kit"
+    ],
+    "description": "PiliPlus 是一个使用 Flutter 编写的跨平台哔哩哔哩（bilibili）第三方客户端，涵盖首页推荐、动态、视频播放、直播、会员空间等完整功能；架构上使用 GetX 做状态管理与路由、Dio 做 HTTP 拦截与账号注入、Hive 做本地持久化，并通过 gRPC 接入 B 站新版接口。",
+    "analyzedAt": "2026-09-28T09:03:13.887Z",
+    "gitCommitHash": "4ed416744f379e0fa4ad4072478b04dbe398e731"
+  },
+  "nodes": [
+    {
+      "id": "document:README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "README.md",
+      "summary": "项目总览文档：介绍 PiliPlus 这个跨平台 B 站第三方客户端的定位、功能特性、多端支持与构建方式，并指向贡献指南与开发者文档入口。",
+      "tags": [
+        "documentation",
+        "entry-point",
+        "overview",
+        "使用说明"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:pubspec.yaml",
+      "type": "config",
+      "name": "pubspec.yaml",
+      "filePath": "pubspec.yaml",
+      "summary": "Dart/Flutter 包清单：声明应用名 PiliPlus、版本号、Flutter 3.47.5 与 Dart 3.13 约束，以及 Dio、GetX、Hive、media_kit 等依赖；其中相当一部分依赖指向作者自建的 git fork，发布构建依赖这些 fork 才能工作。",
+      "tags": [
+        "configuration",
+        "build-system",
+        "依赖管理",
+        "entry-point"
+      ],
+      "complexity": "complex",
+      "languageNotes": "大量依赖使用 git + ref 指向 fork（getx、flutter_smart_dialog、media_kit 等），意味着 pub get 依赖 GitHub 可达，且这些 fork 可能包含上游尚未合入的改动。"
+    },
+    {
+      "id": "config:analysis_options.yaml",
+      "type": "config",
+      "name": "analysis_options.yaml",
+      "filePath": "analysis_options.yaml",
+      "summary": "Dart 静态分析配置：排除 protobuf 生成代码、各平台 runner 目录与 *.g.dart，并开启多项 lint 规则，是 CI 中 flutter analyze 的判定依据。",
+      "tags": [
+        "configuration",
+        "lint",
+        "quality-gate",
+        "构建系统"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "显式排除 lib/grpc/bilibili/** 与 lib/**/*.g.dart，说明生成代码规模大到必须从分析范围中剔除，否则会淹没真实问题。"
+    },
+    {
+      "id": "file:lib/build_config.dart",
+      "type": "file",
+      "name": "build_config.dart",
+      "filePath": "lib/build_config.dart",
+      "summary": "构建期注入的版本信息载体，把 CI 通过 --dart-define 传入的 versionCode 与 buildMode 保存下来供应用内「关于」页展示。",
+      "tags": [
+        "configuration",
+        "build-system",
+        "entry-point"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/build_config.dart:BuildConfig",
+      "type": "class",
+      "name": "BuildConfig",
+      "filePath": "lib/build_config.dart",
+      "lineRange": [
+        1,
+        16
+      ],
+      "summary": "封装版本号与构建模式等编译期常量，通常为空实现占位，由构建脚本在打包时覆写。",
+      "tags": [
+        "configuration",
+        "type-definition",
+        "构建信息"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/common/assets.dart",
+      "type": "file",
+      "name": "assets.dart",
+      "filePath": "lib/common/assets.dart",
+      "summary": "静态资源路径常量表，把 logo、字体、占位图等 assets 路径集中声明，避免字符串散落各处。",
+      "tags": [
+        "configuration",
+        "utility",
+        "常量表"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/common/assets.dart:Assets",
+      "type": "class",
+      "name": "Assets",
+      "filePath": "lib/common/assets.dart",
+      "lineRange": [
+        1,
+        56
+      ],
+      "summary": "以静态常量方式声明的 assets 路径集合，按图片/字体等分类分组。",
+      "tags": [
+        "configuration",
+        "常量表",
+        "资源管理"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/common/constants.dart",
+      "type": "file",
+      "name": "constants.dart",
+      "filePath": "lib/common/constants.dart",
+      "summary": "全局通用常量：默认请求头、UA 等与账号无关的固定值。",
+      "tags": [
+        "configuration",
+        "常量表",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/common/constants.dart:Constants",
+      "type": "class",
+      "name": "Constants",
+      "filePath": "lib/common/constants.dart",
+      "lineRange": [
+        1,
+        44
+      ],
+      "summary": "存放 baseHeaders 等匿名态通用常量，供 Account 实现直接引用。",
+      "tags": [
+        "configuration",
+        "常量表",
+        "全局常量",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/common/dial_prefix.dart",
+      "type": "file",
+      "name": "dial_prefix.dart",
+      "filePath": "lib/common/dial_prefix.dart",
+      "summary": "登录相关的号码国际区号前缀清单，覆盖各国家/地区的拨打前缀，供手机号登录界面选择。",
+      "tags": [
+        "data-model",
+        "配置数据",
+        "登录"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:lib/common/dial_prefix.dart:Login",
+      "type": "class",
+      "name": "Login",
+      "filePath": "lib/common/dial_prefix.dart",
+      "lineRange": [
+        1,
+        220
+      ],
+      "summary": "以静态列表形式硬编码的区号前缀表，是纯数据容器类。",
+      "tags": [
+        "data-model",
+        "常量表",
+        "登录"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:lib/common/style.dart",
+      "type": "file",
+      "name": "style.dart",
+      "filePath": "lib/common/style.dart",
+      "summary": "全局视觉常量：圆角、间距等设计 token，供全局复用保证跨页面视觉一致。",
+      "tags": [
+        "configuration",
+        "样式",
+        "常量表"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/common/style.dart:Style",
+      "type": "class",
+      "name": "Style",
+      "filePath": "lib/common/style.dart",
+      "lineRange": [
+        4,
+        20
+      ],
+      "summary": "设计 token 容器，集中声明圆角半径等视觉规范常量。",
+      "tags": [
+        "configuration",
+        "样式",
+        "全局常量",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/grpc/dm.dart",
+      "type": "file",
+      "name": "dm.dart",
+      "filePath": "lib/grpc/dm.dart",
+      "summary": "弹幕 gRPC 接口封装，提供弹幕分段拉取与弹幕视图查询。",
+      "tags": [
+        "api-handler",
+        "grpc",
+        "弹幕"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/grpc/dm.dart:DmGrpc",
+      "type": "class",
+      "name": "DmGrpc",
+      "filePath": "lib/grpc/dm.dart",
+      "lineRange": [
+        7,
+        32
+      ],
+      "summary": "弹幕服务客户端，方法均为静态形式直接返回生成的 protobuf 响应。",
+      "tags": [
+        "service",
+        "grpc",
+        "弹幕"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/grpc/dm.dart:dmSegMobile",
+      "type": "function",
+      "name": "dmSegMobile",
+      "filePath": "lib/grpc/dm.dart",
+      "lineRange": [
+        8,
+        12
+      ],
+      "summary": "移动端弹幕分段接口，按 oid 与分段号拉取protobuf 编码的弹幕数据。",
+      "tags": [
+        "grpc",
+        "弹幕",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/grpc/dyn.dart",
+      "type": "file",
+      "name": "dyn.dart",
+      "filePath": "lib/grpc/dyn.dart",
+      "summary": "动态（图文）相关 gRPC 接口封装：动态流、图文详情、点赞与转发列表。",
+      "tags": [
+        "api-handler",
+        "grpc",
+        "动态"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:lib/grpc/dyn.dart:DynGrpc",
+      "type": "class",
+      "name": "DynGrpc",
+      "filePath": "lib/grpc/dyn.dart",
+      "lineRange": [
+        18,
+        98
+      ],
+      "summary": "动态服务客户端，封装 opusDetail、likeList、repostList 等新版动态接口。",
+      "tags": [
+        "service",
+        "grpc",
+        "动态"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/grpc/dyn.dart:opusDetail",
+      "type": "function",
+      "name": "opusDetail",
+      "filePath": "lib/grpc/dyn.dart",
+      "lineRange": [
+        44,
+        47
+      ],
+      "summary": "拉取单个图文动态的详情内容。",
+      "tags": [
+        "grpc",
+        "动态",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/grpc/dyn.dart:likeList",
+      "type": "function",
+      "name": "likeList",
+      "filePath": "lib/grpc/dyn.dart",
+      "lineRange": [
+        58,
+        64
+      ],
+      "summary": "获取某条动态的点赞用户列表。",
+      "tags": [
+        "grpc",
+        "动态",
+        "gRPC 接口",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/grpc/dyn.dart:repostList",
+      "type": "function",
+      "name": "repostList",
+      "filePath": "lib/grpc/dyn.dart",
+      "lineRange": [
+        78,
+        85
+      ],
+      "summary": "获取某条动态的转发用户列表。",
+      "tags": [
+        "grpc",
+        "动态",
+        "gRPC 接口",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/grpc/grpc_req.dart",
+      "type": "file",
+      "name": "grpc_req.dart",
+      "filePath": "lib/grpc/grpc_req.dart",
+      "summary": "gRPC-over-HTTP 传输层：把 protobuf 响应按 B 站私有的 5 字节帧格式解包，并对超过阈值的负载做 gzip 解压，是所有 lib/grpc/* 客户端的共同底座。",
+      "tags": [
+        "基础设施",
+        "grpc",
+        "序列化",
+        "反序列化"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "大响应会走 Flutter 的 compute() 丢到独立 isolate 解压，避免主线程卡顿；帧头补零对齐 base64 是常见的踩坑点。"
+    },
+    {
+      "id": "class:lib/grpc/grpc_req.dart:GrpcReq",
+      "type": "class",
+      "name": "GrpcReq",
+      "filePath": "lib/grpc/grpc_req.dart",
+      "lineRange": [
+        17,
+        146
+      ],
+      "summary": "复用全局 Dio 单例发起 gRPC 请求的基类，负责帧解析、压缩解压与错误合成。",
+      "tags": [
+        "基础设施",
+        "grpc",
+        "service"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/grpc/grpc_req.dart:compressProtobuf",
+      "type": "function",
+      "name": "compressProtobuf",
+      "filePath": "lib/grpc/grpc_req.dart",
+      "lineRange": [
+        27,
+        27
+      ],
+      "summary": "按阈值判断是否对 protobuf 负载做 gzip 压缩。",
+      "tags": [
+        "grpc",
+        "压缩",
+        "gRPC 接口",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/grpc/grpc_req.dart:decompressProtobuf",
+      "type": "function",
+      "name": "decompressProtobuf",
+      "filePath": "lib/grpc/grpc_req.dart",
+      "lineRange": [
+        39,
+        39
+      ],
+      "summary": "解压 gRPC 响应中的 gzip 负载。",
+      "tags": [
+        "grpc",
+        "压缩",
+        "gRPC 接口",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/grpc/grpc_req.dart:_parse",
+      "type": "function",
+      "name": "_parse",
+      "filePath": "lib/grpc/grpc_req.dart",
+      "lineRange": [
+        52,
+        52
+      ],
+      "summary": "按 5 字节帧头逐帧切分 gRPC 响应体，取出各帧的 protobuf 负载。",
+      "tags": [
+        "grpc",
+        "反序列化",
+        "解析"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/grpc/grpc_req.dart:request",
+      "type": "function",
+      "name": "request",
+      "filePath": "lib/grpc/grpc_req.dart",
+      "lineRange": [
+        66,
+        71
+      ],
+      "summary": "发起 gRPC POST 请求并把 Dio 异常合成为 message 字段的 Map，与 REST 层错误语义保持一致。",
+      "tags": [
+        "grpc",
+        "网络请求",
+        "错误处理"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:lib/grpc/im.dart",
+      "type": "file",
+      "name": "im.dart",
+      "filePath": "lib/grpc/im.dart",
+      "summary": "私信（IM）gRPC 接口全集：会话列表、会话详情、发送消息、免打扰、置顶、关键词屏蔽与未读数等。",
+      "tags": [
+        "api-handler",
+        "grpc",
+        "私信"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:lib/grpc/im.dart:ImGrpc",
+      "type": "class",
+      "name": "ImGrpc",
+      "filePath": "lib/grpc/im.dart",
+      "lineRange": [
+        11,
+        227
+      ],
+      "summary": "IM 服务客户端，以静态方法暴露全部私信相关 gRPC 端点。",
+      "tags": [
+        "service",
+        "grpc",
+        "私信"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/grpc/im.dart:sendMsg",
+      "type": "function",
+      "name": "sendMsg",
+      "filePath": "lib/grpc/im.dart",
+      "lineRange": [
+        12,
+        17
+      ],
+      "summary": "发送私信消息，构造 SendMsg 请求并返回生成响应。",
+      "tags": [
+        "grpc",
+        "私信",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/grpc/im.dart:syncFetchSessionMsgs",
+      "type": "function",
+      "name": "syncFetchSessionMsgs",
+      "filePath": "lib/grpc/im.dart",
+      "lineRange": [
+        45,
+        49
+      ],
+      "summary": "按游标增量同步某个会话内的历史消息。",
+      "tags": [
+        "grpc",
+        "私信",
+        "gRPC 接口",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/grpc/im.dart:sessionMain",
+      "type": "function",
+      "name": "sessionMain",
+      "filePath": "lib/grpc/im.dart",
+      "lineRange": [
+        64,
+        66
+      ],
+      "summary": "拉取主会话列表。",
+      "tags": [
+        "grpc",
+        "私信",
+        "gRPC 接口",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/grpc/im.dart:getTotalUnread",
+      "type": "function",
+      "name": "getTotalUnread",
+      "filePath": "lib/grpc/im.dart",
+      "lineRange": [
+        206,
+        208
+      ],
+      "summary": "获取全局未读消息总数，供角标展示。",
+      "tags": [
+        "grpc",
+        "私信",
+        "未读数"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/grpc/reply.dart",
+      "type": "file",
+      "name": "reply.dart",
+      "filePath": "lib/grpc/reply.dart",
+      "summary": "评论区 gRPC 接口封装：主楼列表、楼中楼、对话树、搜索与评论翻译。",
+      "tags": [
+        "api-handler",
+        "grpc",
+        "评论"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:lib/grpc/reply.dart:ReplyGrpc",
+      "type": "class",
+      "name": "ReplyGrpc",
+      "filePath": "lib/grpc/reply.dart",
+      "lineRange": [
+        10,
+        167
+      ],
+      "summary": "评论服务客户端，封装新版评论体系的全部 gRPC 端点。",
+      "tags": [
+        "service",
+        "grpc",
+        "评论"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/grpc/reply.dart:mainList",
+      "type": "function",
+      "name": "mainList",
+      "filePath": "lib/grpc/reply.dart",
+      "lineRange": [
+        44,
+        50
+      ],
+      "summary": "拉取评论区主楼列表，支持排序与分页游标。",
+      "tags": [
+        "grpc",
+        "评论",
+        "gRPC 接口",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/grpc/reply.dart:detailList",
+      "type": "function",
+      "name": "detailList",
+      "filePath": "lib/grpc/reply.dart",
+      "lineRange": [
+        85,
+        92
+      ],
+      "summary": "拉取指定主楼下的楼中楼回复列表。",
+      "tags": [
+        "grpc",
+        "评论",
+        "gRPC 接口",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/grpc/reply.dart:translateReply",
+      "type": "function",
+      "name": "translateReply",
+      "filePath": "lib/grpc/reply.dart",
+      "lineRange": [
+        152,
+        156
+      ],
+      "summary": "请求评论文本翻译。",
+      "tags": [
+        "grpc",
+        "评论",
+        "翻译"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/grpc/space.dart",
+      "type": "file",
+      "name": "space.dart",
+      "filePath": "lib/grpc/space.dart",
+      "summary": "空间（个人主页）相关 gRPC 接口：图文动态流与合集搜索。",
+      "tags": [
+        "api-handler",
+        "grpc",
+        "空间"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/grpc/space.dart:SpaceGrpc",
+      "type": "class",
+      "name": "SpaceGrpc",
+      "filePath": "lib/grpc/space.dart",
+      "lineRange": [
+        10,
+        44
+      ],
+      "summary": "空间服务客户端，封装 opusSpaceFlow 与 searchArchive 两个端点。",
+      "tags": [
+        "service",
+        "grpc",
+        "空间"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/grpc/url.dart",
+      "type": "file",
+      "name": "url.dart",
+      "filePath": "lib/grpc/url.dart",
+      "summary": "各 gRPC 服务的 host 集中声明，是所有 gRPC 客户端拼装请求地址的唯一来源。",
+      "tags": [
+        "configuration",
+        "常量表",
+        "grpc"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/grpc/url.dart:GrpcUrl",
+      "type": "class",
+      "name": "GrpcUrl",
+      "filePath": "lib/grpc/url.dart",
+      "lineRange": [
+        1,
+        66
+      ],
+      "summary": "以静态常量声明各 gRPC 服务的域名，避免散落硬编码。",
+      "tags": [
+        "configuration",
+        "常量表",
+        "grpc"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/grpc/view.dart",
+      "type": "file",
+      "name": "view.dart",
+      "filePath": "lib/grpc/view.dart",
+      "summary": "播放统计（view）gRPC 接口封装，用于上报播放进度与统计数据。",
+      "tags": [
+        "api-handler",
+        "grpc",
+        "播放统计"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/grpc/view.dart:ViewGrpc",
+      "type": "class",
+      "name": "ViewGrpc",
+      "filePath": "lib/grpc/view.dart",
+      "lineRange": [
+        7,
+        17
+      ],
+      "summary": "view 服务客户端，仅暴露一个上报方法。",
+      "tags": [
+        "service",
+        "grpc",
+        "gRPC 接口",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/http/constants.dart",
+      "type": "file",
+      "name": "constants.dart",
+      "filePath": "lib/http/constants.dart",
+      "summary": "HTTP 层的通用字符串常量集合。",
+      "tags": [
+        "configuration",
+        "常量表",
+        "HTTP 接口",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/http/constants.dart:HttpString",
+      "type": "class",
+      "name": "HttpString",
+      "filePath": "lib/http/constants.dart",
+      "lineRange": [
+        1,
+        17
+      ],
+      "summary": "集中声明 HTTP 相关字符串常量，减少魔法字符串。",
+      "tags": [
+        "configuration",
+        "常量表",
+        "HTTP 接口",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/http/init.dart",
+      "type": "file",
+      "name": "init.dart",
+      "filePath": "lib/http/init.dart",
+      "summary": "全局 HTTP 客户端单例所在：构造主Dio 与 HTTP/1.1 回退客户端、配置重试与解压、注入账号 Cookie 拦截器，并暴露 get/post/downloadFile 三个统一入口。",
+      "tags": [
+        "基础设施",
+        "网络请求",
+        "singleton",
+        "拦截器"
+      ],
+      "complexity": "complex",
+      "languageNotes": "禁用 Dio 自带自动解压、改用 responseBytesDecoder 自行判断 gzip/br，是为了让错误响应体也能被正确解压读取。"
+    },
+    {
+      "id": "class:lib/http/init.dart:Request",
+      "type": "class",
+      "name": "Request",
+      "filePath": "lib/http/init.dart",
+      "lineRange": [
+        29,
+        377
+      ],
+      "summary": "网络层核心单例类，持有 Dio 实例并封装统一请求入口、Cookie 缓存、网络变化重置适配器等职责。",
+      "tags": [
+        "singleton",
+        "基础设施",
+        "网络请求",
+        "service"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:lib/http/init.dart:_cloneHttp11Dio",
+      "type": "function",
+      "name": "_cloneHttp11Dio",
+      "filePath": "lib/http/init.dart",
+      "lineRange": [
+        115,
+        115
+      ],
+      "summary": "克隆主 Dio 构造 HTTP/1.1 回退客户端，并在克隆后重新绑定重试拦截器。",
+      "tags": [
+        "网络请求",
+        "回退策略",
+        "克隆"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/http/init.dart:_onConnectivityChanged",
+      "type": "function",
+      "name": "_onConnectivityChanged",
+      "filePath": "lib/http/init.dart",
+      "lineRange": [
+        133,
+        133
+      ],
+      "summary": "监听系统网络状态变化，在切换网络时重置连接池与适配器。",
+      "tags": [
+        "网络请求",
+        "网络状态",
+        "事件处理"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/http/init.dart:_createPool",
+      "type": "function",
+      "name": "_createPool",
+      "filePath": "lib/http/init.dart",
+      "lineRange": [
+        152,
+        152
+      ],
+      "summary": "创建并配置 IOClient 连接池，禁用自动解压以交由自定义解码器处理。",
+      "tags": [
+        "网络请求",
+        "连接池",
+        "配置"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/http/init.dart:_resetAdaptersForNetworkChange",
+      "type": "function",
+      "name": "_resetAdaptersForNetworkChange",
+      "filePath": "lib/http/init.dart",
+      "lineRange": [
+        197,
+        197
+      ],
+      "summary": "网络切换后重建两个 Dio 的 httpClientAdapter，清理失效连接。",
+      "tags": [
+        "网络请求",
+        "网络状态",
+        "HTTP 接口",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/http/init.dart:get",
+      "type": "function",
+      "name": "get",
+      "filePath": "lib/http/init.dart",
+      "lineRange": [
+        277,
+        282
+      ],
+      "summary": "统一 GET 入口，失败时把 Dio 异常包装成 {'message': ...} 结构返回。",
+      "tags": [
+        "网络请求",
+        "api-handler",
+        "错误处理"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/http/init.dart:post",
+      "type": "function",
+      "name": "post",
+      "filePath": "lib/http/init.dart",
+      "lineRange": [
+        302,
+        308
+      ],
+      "summary": "统一 POST 入口，错误语义与 get 保持一致。",
+      "tags": [
+        "网络请求",
+        "api-handler",
+        "错误处理"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/http/init.dart:downloadFile",
+      "type": "function",
+      "name": "downloadFile",
+      "filePath": "lib/http/init.dart",
+      "lineRange": [
+        331,
+        335
+      ],
+      "summary": "文件下载入口，复用同一 Dio 实例并返回 File 对象。",
+      "tags": [
+        "网络请求",
+        "文件下载",
+        "HTTP 接口",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/http/loading_state.dart",
+      "type": "file",
+      "name": "loading_state.dart",
+      "filePath": "lib/http/loading_state.dart",
+      "summary": "定义 sealed 类 LoadingState<T>，以 Loading / Success / Error 三态显式表达异步结果，是所有业务包装函数与 Controller 的返回类型。",
+      "tags": [
+        "type-definition",
+        "状态管理",
+        "sealed"
+      ],
+      "complexity": "simple",
+      "languageNotes": "利用 Dart 3 的 sealed + switch 模式匹配，让调用方在编译期就能穷举所有状态分支。"
+    },
+    {
+      "id": "class:lib/http/loading_state.dart:LoadingState",
+      "type": "class",
+      "name": "LoadingState",
+      "filePath": "lib/http/loading_state.dart",
+      "lineRange": [
+        4,
+        22
+      ],
+      "summary": "密封基类，提供 isSuccess、data、dataOrNull 等便捷访问器，用模式匹配把三种子状态收敛成统一视图。",
+      "tags": [
+        "type-definition",
+        "状态管理",
+        "sealed"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/http/loading_state.dart:Loading",
+      "type": "class",
+      "name": "Loading",
+      "filePath": "lib/http/loading_state.dart",
+      "lineRange": [
+        24,
+        31
+      ],
+      "summary": "表示加载中的空状态，泛型固定为 Never。",
+      "tags": [
+        "type-definition",
+        "状态管理",
+        "HTTP 接口",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/http/loading_state.dart:Success",
+      "type": "class",
+      "name": "Success",
+      "filePath": "lib/http/loading_state.dart",
+      "lineRange": [
+        34,
+        52
+      ],
+      "summary": "表示成功并携带响应数据的状态，实现了值相等与 hashCode。",
+      "tags": [
+        "type-definition",
+        "状态管理",
+        "数据模型"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/http/loading_state.dart:Error",
+      "type": "class",
+      "name": "Error",
+      "filePath": "lib/http/loading_state.dart",
+      "lineRange": [
+        54,
+        76
+      ],
+      "summary": "表示失败状态，携带可选的业务错误码与错误消息。",
+      "tags": [
+        "type-definition",
+        "状态管理",
+        "错误处理"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/http/login.dart",
+      "type": "file",
+      "name": "login.dart",
+      "filePath": "lib/http/login.dart",
+      "summary": "登录与安全中心相关 REST 接口全集：密码登录、短信登录、验证码轮询、预捕获、风控短信验证、oauth2 换取access token 与登出。",
+      "tags": [
+        "api-handler",
+        "登录",
+        "认证"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:lib/http/login.dart:LoginHttp",
+      "type": "class",
+      "name": "LoginHttp",
+      "filePath": "lib/http/login.dart",
+      "lineRange": [
+        17,
+        535
+      ],
+      "summary": "登录服务客户端，以静态方法暴露全部认证端点，多数方法在失败时返回 LoginHttp.msg 供 UI 提示。",
+      "tags": [
+        "service",
+        "登录",
+        "api-handler"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:lib/http/login.dart:sendSmsCode",
+      "type": "function",
+      "name": "sendSmsCode",
+      "filePath": "lib/http/login.dart",
+      "lineRange": [
+        94,
+        102
+      ],
+      "summary": "发送短信验证码，携带图形验证码与 recaptcha token。",
+      "tags": [
+        "登录",
+        "认证",
+        "api-handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/http/login.dart:loginByPwd",
+      "type": "function",
+      "name": "loginByPwd",
+      "filePath": "lib/http/login.dart",
+      "lineRange": [
+        191,
+        200
+      ],
+      "summary": "账号密码登录，处理 geetest 风控挑战并返回结果与错误消息。",
+      "tags": [
+        "登录",
+        "认证",
+        "api-handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/http/login.dart:loginBySms",
+      "type": "function",
+      "name": "loginBySms",
+      "filePath": "lib/http/login.dart",
+      "lineRange": [
+        266,
+        272
+      ],
+      "summary": "使用短信验证码完成登录。",
+      "tags": [
+        "登录",
+        "认证",
+        "api-handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/http/login.dart:oauth2AccessToken",
+      "type": "function",
+      "name": "oauth2AccessToken",
+      "filePath": "lib/http/login.dart",
+      "lineRange": [
+        451,
+        453
+      ],
+      "summary": "用 refresh token 换取新的 access token，用于登录态续期。",
+      "tags": [
+        "登录",
+        "认证",
+        "令牌"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/http/login.dart:logout",
+      "type": "function",
+      "name": "logout",
+      "filePath": "lib/http/login.dart",
+      "lineRange": [
+        494,
+        494
+      ],
+      "summary": "服务端登出并使本地 Cookie 失效。",
+      "tags": [
+        "登录",
+        "认证",
+        "HTTP 接口",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/http/msg.dart",
+      "type": "file",
+      "name": "msg.dart",
+      "filePath": "lib/http/msg.dart",
+      "summary": "消息中心 REST 接口全集：回复、@、点赞三类消息、互动通知、系统消息、消息上报、图片与 BFS 上传、发布纯文字动态等。",
+      "tags": [
+        "api-handler",
+        "消息",
+        "动态"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:lib/http/msg.dart:MsgHttp",
+      "type": "class",
+      "name": "MsgHttp",
+      "filePath": "lib/http/msg.dart",
+      "lineRange": [
+        22,
+        636
+      ],
+      "summary": "消息服务客户端，封装消息拉取、未读统计与内容发布等端点。",
+      "tags": [
+        "service",
+        "消息",
+        "api-handler"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:lib/http/msg.dart:uploadImage",
+      "type": "function",
+      "name": "uploadImage",
+      "filePath": "lib/http/msg.dart",
+      "lineRange": [
+        154,
+        158
+      ],
+      "summary": "上传图片到 B 站图床并返回图片链接。",
+      "tags": [
+        "消息",
+        "文件上传",
+        "HTTP 接口",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/http/msg.dart:msgUnread",
+      "type": "function",
+      "name": "msgUnread",
+      "filePath": "lib/http/msg.dart",
+      "lineRange": [
+        575,
+        575
+      ],
+      "summary": "获取各类型消息的未读数，用于底部导航角标。",
+      "tags": [
+        "消息",
+        "未读数",
+        "HTTP 接口",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/http/msg.dart:createTextDynamic",
+      "type": "function",
+      "name": "createTextDynamic",
+      "filePath": "lib/http/msg.dart",
+      "lineRange": [
+        198,
+        200
+      ],
+      "summary": "发布一条纯文字动态。",
+      "tags": [
+        "动态",
+        "内容发布",
+        "HTTP 接口",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/http/retry_interceptor.dart",
+      "type": "file",
+      "name": "retry_interceptor.dart",
+      "filePath": "lib/http/retry_interceptor.dart",
+      "summary": "Dio 拦截器：对可重试的失败请求按指数退避自动重试，并通过 copyWith 克隆自身以绑定到 HTTP/1.1 回退客户端。",
+      "tags": [
+        "拦截器",
+        "容错",
+        "重试",
+        "网络请求"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:lib/http/retry_interceptor.dart:RetryInterceptor",
+      "type": "class",
+      "name": "RetryInterceptor",
+      "filePath": "lib/http/retry_interceptor.dart",
+      "lineRange": [
+        6,
+        84
+      ],
+      "summary": "实现 onError 的重试拦截器，区分可重试错误并以防抖方式控制重试频率。",
+      "tags": [
+        "拦截器",
+        "容错",
+        "重试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/http/retry_interceptor.dart:onError",
+      "type": "function",
+      "name": "onError",
+      "filePath": "lib/http/retry_interceptor.dart",
+      "lineRange": [
+        14,
+        14
+      ],
+      "summary": "拦截错误并判断是否满足重试条件，满足则延时后重新发起请求。",
+      "tags": [
+        "拦截器",
+        "重试",
+        "错误处理"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/http/retry_interceptor.dart:copyWith",
+      "type": "function",
+      "name": "copyWith",
+      "filePath": "lib/http/retry_interceptor.dart",
+      "lineRange": [
+        82,
+        82
+      ],
+      "summary": "克隆拦截器实例并替换 Dio 引用，用于绑定到克隆出的 HTTP/1.1 客户端。",
+      "tags": [
+        "拦截器",
+        "克隆",
+        "HTTP 接口",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/http/user.dart",
+      "type": "file",
+      "name": "user.dart",
+      "filePath": "lib/http/user.dart",
+      "summary": "用户相关 REST 接口全集：用户信息、观看历史、稍后再看、收藏夹、投稿合集、金币、空间设置与实名信息等。",
+      "tags": [
+        "api-handler",
+        "用户",
+        "历史记录"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:lib/http/user.dart:UserHttp",
+      "type": "class",
+      "name": "UserHttp",
+      "filePath": "lib/http/user.dart",
+      "lineRange": [
+        25,
+        593
+      ],
+      "summary": "用户服务客户端，封装用户资料、历史与收藏等端点。",
+      "tags": [
+        "service",
+        "用户",
+        "api-handler"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:lib/http/user.dart:historyList",
+      "type": "function",
+      "name": "historyList",
+      "filePath": "lib/http/user.dart",
+      "lineRange": [
+        85,
+        90
+      ],
+      "summary": "分页拉取观看历史记录，支持按类型筛选。",
+      "tags": [
+        "用户",
+        "历史记录",
+        "api-handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/http/user.dart:clearHistory",
+      "type": "function",
+      "name": "clearHistory",
+      "filePath": "lib/http/user.dart",
+      "lineRange": [
+        148,
+        148
+      ],
+      "summary": "清空观看历史。",
+      "tags": [
+        "用户",
+        "历史记录",
+        "HTTP 接口",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/http/user.dart:getMediaList",
+      "type": "function",
+      "name": "getMediaList",
+      "filePath": "lib/http/user.dart",
+      "lineRange": [
+        351,
+        361
+      ],
+      "summary": "获取用户空间的视频/合集列表并携带分页游标。",
+      "tags": [
+        "用户",
+        "空间",
+        "api-handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/http/user.dart:spaceSetting",
+      "type": "function",
+      "name": "spaceSetting",
+      "filePath": "lib/http/user.dart",
+      "lineRange": [
+        420,
+        420
+      ],
+      "summary": "读取用户空间个性化设置。",
+      "tags": [
+        "用户",
+        "设置",
+        "HTTP 接口",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/main.dart",
+      "type": "file",
+      "name": "main.dart",
+      "filePath": "lib/main.dart",
+      "summary": "应用入口：串联 Hive 初始化、并行平台初始化、GetX 依赖注入、HTTP Cookie 预置、系统 UI 配置与 Catcher2 异常捕获，最终 runApp 挂载 MyApp。",
+      "tags": [
+        "entry-point",
+        "bootstrap",
+        "依赖注入",
+        "初始化"
+      ],
+      "complexity": "complex",
+      "languageNotes": "启动顺序存在硬依赖——必须先Request() 初始化再 setCookie()，且动态取色要在 MyApp 构建主题之前完成，否则会读到未就绪的状态。"
+    },
+    {
+      "id": "function:lib/main.dart:main",
+      "type": "function",
+      "name": "main",
+      "filePath": "lib/main.dart",
+      "lineRange": [
+        100,
+        100
+      ],
+      "summary": "应用主入口函数，负责全部启动期初始化并启动 Flutter 应用。",
+      "tags": [
+        "entry-point",
+        "bootstrap",
+        "初始化"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:lib/pages/home/controller.dart",
+      "type": "file",
+      "name": "controller.dart",
+      "filePath": "lib/pages/home/controller.dart",
+      "summary": "首页 Tab 容器的 GetX 控制器，管理子 Tab 配置、刷新与搜索跳转。",
+      "tags": [
+        "状态管理",
+        "controller",
+        "首页"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:lib/pages/home/controller.dart:HomeController",
+      "type": "class",
+      "name": "HomeController",
+      "filePath": "lib/pages/home/controller.dart",
+      "lineRange": [
+        18,
+        100
+      ],
+      "summary": "首页控制器，持有分页控制器与滚动控制器，并把子 Tab 的分页/筛选配置聚合起来交给视图。",
+      "tags": [
+        "controller",
+        "状态管理",
+        "分页"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/pages/home/controller.dart:onRefresh",
+      "type": "function",
+      "name": "onRefresh",
+      "filePath": "lib/pages/home/controller.dart",
+      "lineRange": [
+        61,
+        61
+      ],
+      "summary": "下拉刷新时重置所有子 Tab 的分页状态并重新加载。",
+      "tags": [
+        "状态管理",
+        "分页",
+        "刷新"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/pages/home/controller.dart:onInit",
+      "type": "function",
+      "name": "onInit",
+      "filePath": "lib/pages/home/controller.dart",
+      "lineRange": [
+        38,
+        38
+      ],
+      "summary": "控制器初始化，装配各 Tab 配置并注册到响应式列表。",
+      "tags": [
+        "状态管理",
+        "初始化",
+        "首页",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/pages/home/view.dart",
+      "type": "file",
+      "name": "view.dart",
+      "filePath": "lib/pages/home/view.dart",
+      "summary": "首页视图：承载可横滑的推荐 Tab 容器、自定义搜索栏、用户头像入口与消息角标。",
+      "tags": [
+        "component",
+        "首页",
+        "视图"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:lib/pages/home/view.dart:HomePage",
+      "type": "class",
+      "name": "HomePage",
+      "filePath": "lib/pages/home/view.dart",
+      "lineRange": [
+        16,
+        21
+      ],
+      "summary": "首页 State-less 部件入口，创建对应的 _HomePageState。",
+      "tags": [
+        "component",
+        "首页",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/pages/home/view.dart:_HomePageState",
+      "type": "class",
+      "name": "_HomePageState",
+      "filePath": "lib/pages/home/view.dart",
+      "lineRange": [
+        23,
+        193
+      ],
+      "summary": "首页状态类，实现 keep-alive 以在 Tab 切换时保留滚动位置与分页状态。",
+      "tags": [
+        "component",
+        "状态管理",
+        "首页"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:lib/pages/login/controller.dart",
+      "type": "file",
+      "name": "controller.dart",
+      "filePath": "lib/pages/login/controller.dart",
+      "summary": "登录页控制器：驱动二维码与密码/短信三种登录方式的完整状态机，含geetest 风控弹窗、Cookie 登录检测、账号落盘与多账号切换。",
+      "tags": [
+        "状态管理",
+        "controller",
+        "登录",
+        "风控"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:lib/pages/login/controller.dart:LoginPageController",
+      "type": "class",
+      "name": "LoginPageController",
+      "filePath": "lib/pages/login/controller.dart",
+      "lineRange": [
+        23,
+        766
+      ],
+      "summary": "登录控制器，聚合表单字段的响应式状态、倒计时与各登录路径的调用编排。",
+      "tags": [
+        "controller",
+        "状态管理",
+        "登录"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:lib/pages/login/controller.dart:refreshQRCode",
+      "type": "function",
+      "name": "refreshQRCode",
+      "filePath": "lib/pages/login/controller.dart",
+      "lineRange": [
+        73,
+        73
+      ],
+      "summary": "刷新登录二维码并启动轮询以检测扫码状态。",
+      "tags": [
+        "登录",
+        "二维码",
+        "轮询"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/pages/login/controller.dart:getCaptcha",
+      "type": "function",
+      "name": "getCaptcha",
+      "filePath": "lib/pages/login/controller.dart",
+      "lineRange": [
+        120,
+        124
+      ],
+      "summary": "获取图形验证码供短信登录使用。",
+      "tags": [
+        "登录",
+        "验证码",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/pages/login/controller.dart:loginByPassword",
+      "type": "function",
+      "name": "loginByPassword",
+      "filePath": "lib/pages/login/controller.dart",
+      "lineRange": [
+        199,
+        199
+      ],
+      "summary": "执行密码登录并处理可能触发的 geetest 风控验证流程。",
+      "tags": [
+        "登录",
+        "认证",
+        "风控"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:lib/pages/login/controller.dart:sendSmsCode",
+      "type": "function",
+      "name": "sendSmsCode",
+      "filePath": "lib/pages/login/controller.dart",
+      "lineRange": [
+        497,
+        497
+      ],
+      "summary": "发送短信验证码并启动重发倒计时。",
+      "tags": [
+        "登录",
+        "验证码",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/pages/login/controller.dart:setAccount",
+      "type": "function",
+      "name": "setAccount",
+      "filePath": "lib/pages/login/controller.dart",
+      "lineRange": [
+        621,
+        621
+      ],
+      "summary": "登录成功后构造 LoginAccount 并写入本地存储。",
+      "tags": [
+        "登录",
+        "账号持久化",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/pages/login/controller.dart:switchAccountDialog",
+      "type": "function",
+      "name": "switchAccountDialog",
+      "filePath": "lib/pages/login/controller.dart",
+      "lineRange": [
+        641,
+        641
+      ],
+      "summary": "弹出已保存账号列表供快速切换或删除。",
+      "tags": [
+        "登录",
+        "多账号",
+        "对话框"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:lib/pages/main/controller.dart",
+      "type": "file",
+      "name": "controller.dart",
+      "filePath": "lib/pages/main/controller.dart",
+      "summary": "主框架控制器：管理底部导航索引、导航栏动态配置、未读消息轮询、推荐刷新以及账号切换后的全局状态刷新。",
+      "tags": [
+        "状态管理",
+        "controller",
+        "未读数",
+        "导航"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:lib/pages/main/controller.dart:MainController",
+      "type": "class",
+      "name": "MainController",
+      "filePath": "lib/pages/main/controller.dart",
+      "lineRange": [
+        28,
+        368
+      ],
+      "summary": "主框架控制器，聚合导航状态、未读角标与账号变更回调，是应用级状态的中枢。",
+      "tags": [
+        "controller",
+        "状态管理",
+        "导航"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:lib/pages/main/controller.dart:onInit",
+      "type": "function",
+      "name": "onInit",
+      "filePath": "lib/pages/main/controller.dart",
+      "lineRange": [
+        76,
+        76
+      ],
+      "summary": "初始化导航栏配置、默认搜索词并启动未读消息轮询。",
+      "tags": [
+        "状态管理",
+        "初始化",
+        "未读数"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/pages/main/controller.dart:checkUnread",
+      "type": "function",
+      "name": "checkUnread",
+      "filePath": "lib/pages/main/controller.dart",
+      "lineRange": [
+        261,
+        261
+      ],
+      "summary": "汇总查询消息与动态的未读数并驱动角标刷新。",
+      "tags": [
+        "未读数",
+        "状态管理",
+        "主框架",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/pages/main/controller.dart:setNavBarConfig",
+      "type": "function",
+      "name": "setNavBarConfig",
+      "filePath": "lib/pages/main/controller.dart",
+      "lineRange": [
+        230,
+        230
+      ],
+      "summary": "根据当前账号与设置动态构建底部导航栏项。",
+      "tags": [
+        "导航",
+        "状态管理",
+        "主框架",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/pages/main/controller.dart:onChangeAccount",
+      "type": "function",
+      "name": "onChangeAccount",
+      "filePath": "lib/pages/main/controller.dart",
+      "lineRange": [
+        360,
+        360
+      ],
+      "summary": "账号切换后重置未读、导航与推荐数据等全局状态。",
+      "tags": [
+        "账号",
+        "状态管理",
+        "事件处理"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/pages/main/controller.dart:refreshRecommendations",
+      "type": "function",
+      "name": "refreshRecommendations",
+      "filePath": "lib/pages/main/controller.dart",
+      "lineRange": [
+        342,
+        342
+      ],
+      "summary": "强制刷新首页推荐流数据。",
+      "tags": [
+        "状态管理",
+        "推荐",
+        "主框架",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/pages/main/view.dart",
+      "type": "file",
+      "name": "view.dart",
+      "filePath": "lib/pages/main/view.dart",
+      "summary": "主框架视图：把底部导航与各 Tab 页面装配在一起，并根据折叠/展开状态切换导航栏形态。",
+      "tags": [
+        "component",
+        "导航",
+        "视图"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:lib/pages/main/view.dart:MainApp",
+      "type": "class",
+      "name": "MainApp",
+      "filePath": "lib/pages/main/view.dart",
+      "lineRange": [
+        31,
+        36
+      ],
+      "summary": "主框架 StatefulWidget 入口，绑定 MainController 并创建对应 State。",
+      "tags": [
+        "component",
+        "导航",
+        "主框架",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/pages/main/view.dart:_MainAppState",
+      "type": "class",
+      "name": "_MainAppState",
+      "filePath": "lib/pages/main/view.dart",
+      "lineRange": [
+        37,
+        581
+      ],
+      "summary": "主框架状态类，管理导航栏折叠动画、页面索引切换与各 Tab 的懒加载保活。",
+      "tags": [
+        "component",
+        "状态管理",
+        "导航"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:lib/pages/video/controller.dart",
+      "type": "file",
+      "name": "controller.dart",
+      "filePath": "lib/pages/video/controller.dart",
+      "summary": "视频播放页控制器：全项目最复杂的单一文件，串联播放地址获取与清晰度补全、分P 列表、字幕、弹幕、竖屏手势、播放进度上报与投屏等播放全链路。",
+      "tags": [
+        "状态管理",
+        "controller",
+        "视频播放",
+        "播放器"
+      ],
+      "complexity": "complex",
+      "languageNotes": "通过 PlPlayerController 单例共享播放器实例，并用 Rx 系列响应式字段把播放状态暴露给 Obx 重建。"
+    },
+    {
+      "id": "class:lib/pages/video/controller.dart:VideoDetailController",
+      "type": "class",
+      "name": "VideoDetailController",
+      "filePath": "lib/pages/video/controller.dart",
+      "lineRange": [
+        81,
+        1617
+      ],
+      "summary": "播放页控制器，混合 GetTickerProviderStateMixin 与 BlockMixin，持有大量 Rx 状态与播放器引用。",
+      "tags": [
+        "controller",
+        "状态管理",
+        "视频播放"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:lib/pages/video/controller.dart:onInit",
+      "type": "function",
+      "name": "onInit",
+      "filePath": "lib/pages/video/controller.dart",
+      "lineRange": [
+        357,
+        357
+      ],
+      "summary": "播放页初始化，按视频类型分流进入UGC 或 PGC/番剧播放流程。",
+      "tags": [
+        "控制器",
+        "初始化",
+        "视频播放"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:lib/pages/video/controller.dart:_queryVideoUrl",
+      "type": "function",
+      "name": "_queryVideoUrl",
+      "filePath": "lib/pages/video/controller.dart",
+      "lineRange": [
+        842,
+        842
+      ],
+      "summary": "核心播放地址获取流程：按当前清晰度请求、失败时降级补全可用清晰度，并处理自动全屏与错误提示。",
+      "tags": [
+        "视频播放",
+        "网络请求",
+        "错误处理"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:lib/pages/video/controller.dart:playerInit",
+      "type": "function",
+      "name": "playerInit",
+      "filePath": "lib/pages/video/controller.dart",
+      "lineRange": [
+        721,
+        721
+      ],
+      "summary": "初始化 media_kit 播放器：设置数据源、音轨字幕、硬件解码与亮度音量策略。",
+      "tags": [
+        "视频播放",
+        "播放器",
+        "初始化"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:lib/pages/video/controller.dart:showMediaListPanel",
+      "type": "function",
+      "name": "showMediaListPanel",
+      "filePath": "lib/pages/video/controller.dart",
+      "lineRange": [
+        457,
+        457
+      ],
+      "summary": "弹出分P/剧集列表面板，支持选集、批量下载与历史记录定位。",
+      "tags": [
+        "视频播放",
+        "面板",
+        "分P"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:lib/pages/video/controller.dart:_queryPlayInfo",
+      "type": "function",
+      "name": "_queryPlayInfo",
+      "filePath": "lib/pages/video/controller.dart",
+      "lineRange": [
+        1107,
+        1107
+      ],
+      "summary": "查询播放统计所需的信息（aid/cid/上报标识），用于播放进度与观看时长上报。",
+      "tags": [
+        "视频播放",
+        "埋点上报",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/pages/video/controller.dart:makeHeartBeat",
+      "type": "function",
+      "name": "makeHeartBeat",
+      "filePath": "lib/pages/video/controller.dart",
+      "lineRange": [
+        1222,
+        1222
+      ],
+      "summary": "构建并持续上报播放心跳，标记视频确实被观看。",
+      "tags": [
+        "视频播放",
+        "心跳上报",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/pages/video/controller.dart:cacheLocalProgress",
+      "type": "function",
+      "name": "cacheLocalProgress",
+      "filePath": "lib/pages/video/controller.dart",
+      "lineRange": [
+        327,
+        327
+      ],
+      "summary": "把当前播放进度写入本地存储，供下次进入时续播。",
+      "tags": [
+        "视频播放",
+        "本地缓存",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/pages/video/controller.dart:initFileSource",
+      "type": "function",
+      "name": "initFileSource",
+      "filePath": "lib/pages/video/controller.dart",
+      "lineRange": [
+        335,
+        335
+      ],
+      "summary": "以本地文件作为数据源初始化播放器，用于离线播放已下载内容。",
+      "tags": [
+        "视频播放",
+        "本地播放",
+        "离线"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:lib/router/app_pages.dart",
+      "type": "file",
+      "name": "app_pages.dart",
+      "filePath": "lib/router/app_pages.dart",
+      "summary": "GetX 路由表：集中声明应用全部页面路由及其绑定，入口路由 '/' 映射到主框架 MainApp。",
+      "tags": [
+        "路由",
+        "entry-point",
+        "配置"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:lib/router/app_pages.dart:Routes",
+      "type": "class",
+      "name": "Routes",
+      "filePath": "lib/router/app_pages.dart",
+      "lineRange": [
+        73,
+        181
+      ],
+      "summary": "以静态 getPages 返回 GetPage 列表的路由容器类，每个路由在此绑定对应视图与控制器。",
+      "tags": [
+        "路由",
+        "配置",
+        "type-definition"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:lib/services/account_service.dart",
+      "type": "file",
+      "name": "account_service.dart",
+      "filePath": "lib/services/account_service.dart",
+      "summary": "账号变更服务与混入：提供全局的账号切换回调通道，并通过 Get.put 注册为长期服务。",
+      "tags": [
+        "service",
+        "账号",
+        "事件处理",
+        "依赖注入"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/services/account_service.dart:AccountService",
+      "type": "class",
+      "name": "AccountService",
+      "filePath": "lib/services/account_service.dart",
+      "lineRange": [
+        7,
+        23
+      ],
+      "summary": "账号服务，持有 onChangeAccount 回调并在初始化时绑定为全局单例。",
+      "tags": [
+        "service",
+        "账号",
+        "singleton"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/services/account_service.dart:AccountMixin",
+      "type": "class",
+      "name": "AccountMixin",
+      "filePath": "lib/services/account_service.dart",
+      "lineRange": [
+        25,
+        44
+      ],
+      "summary": "混入类，暴露 accountService 单例并提供 onChangeAccount 钩子，让任意 GetXController 都能响应账号切换。",
+      "tags": [
+        "mixin",
+        "账号",
+        "事件处理"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/services/account_service.dart:onChangeAccount",
+      "type": "function",
+      "name": "onChangeAccount",
+      "filePath": "lib/services/account_service.dart",
+      "lineRange": [
+        30,
+        30
+      ],
+      "summary": "账号变更回调定义点，由 AccountService 在登出/切换时调用。",
+      "tags": [
+        "账号",
+        "事件处理",
+        "回调"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/services/audio_session.dart",
+      "type": "file",
+      "name": "audio_session.dart",
+      "filePath": "lib/services/audio_session.dart",
+      "summary": "音频会话配置：按平台与播放场景设置音频焦点，避免与系统音乐或其他应用抢占。",
+      "tags": [
+        "service",
+        "音频",
+        "平台适配"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/services/audio_session.dart:AudioSessionHandler",
+      "type": "class",
+      "name": "AudioSessionHandler",
+      "filePath": "lib/services/audio_session.dart",
+      "lineRange": [
+        5,
+        75
+      ],
+      "summary": "音频会话处理器，集中声明各平台音频焦点与中断处理的配置片段。",
+      "tags": [
+        "service",
+        "音频",
+        "平台适配"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/services/audio_session.dart:initSession",
+      "type": "function",
+      "name": "initSession",
+      "filePath": "lib/services/audio_session.dart",
+      "lineRange": [
+        17,
+        17
+      ],
+      "summary": "初始化并配置全局 AudioSession 实例。",
+      "tags": [
+        "音频",
+        "初始化",
+        "平台服务",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:lib/services/logger.dart",
+      "type": "file",
+      "name": "logger.dart",
+      "filePath": "lib/services/logger.dart",
+      "summary": "日志基础设施：提供全局 logger 实例与把日志落盘为 .pili_logs.json 的工具类，并在设置页支持清空。",
+      "tags": [
+        "service",
+        "日志",
+        "可观测性",
+        "错误处理"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/services/logger.dart:LoggerUtils",
+      "type": "class",
+      "name": "LoggerUtils",
+      "filePath": "lib/services/logger.dart",
+      "lineRange": [
+        18,
+        50
+      ],
+      "summary": "日志文件工具类，惰性缓存日志文件路径并提供清空日志能力。",
+      "tags": [
+        "service",
+        "日志",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/services/logger.dart:getLogsPath",
+      "type": "function",
+      "name": "getLogsPath",
+      "filePath": "lib/services/logger.dart",
+      "lineRange": [
+        20,
+        20
+      ],
+      "summary": "惰性获取并缓存日志文件路径，文件不存在时自动创建。",
+      "tags": [
+        "日志",
+        "文件IO",
+        "平台服务",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/services/service_locator.dart",
+      "type": "file",
+      "name": "service_locator.dart",
+      "filePath": "lib/services/service_locator.dart",
+      "summary": "服务定位器入口，在启动期集中注册全局单例服务。",
+      "tags": [
+        "依赖注入",
+        "entry-point",
+        "service"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/services/service_locator.dart:setupServiceLocator",
+      "type": "function",
+      "name": "setupServiceLocator",
+      "filePath": "lib/services/service_locator.dart",
+      "lineRange": [
+        7,
+        7
+      ],
+      "summary": "在应用启动时统一装配各全局服务实例。",
+      "tags": [
+        "依赖注入",
+        "初始化",
+        "service"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/services/shutdown_timer_service.dart",
+      "type": "file",
+      "name": "shutdown_timer_service.dart",
+      "filePath": "lib/services/shutdown_timer_service.dart",
+      "summary": "关机/休眠计时服务：监听系统电源与灭屏事件，到达设定时长后主动关闭应用，是长时间播放场景下的省电策略。",
+      "tags": [
+        "service",
+        "电源管理",
+        "定时器",
+        "平台适配"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:lib/services/shutdown_timer_service.dart:_ShutdownType",
+      "type": "class",
+      "name": "_ShutdownType",
+      "filePath": "lib/services/shutdown_timer_service.dart",
+      "lineRange": [
+        22,
+        23
+      ],
+      "summary": "关机触发方式枚举，区分手动触发与系统休眠触发。",
+      "tags": [
+        "type-definition",
+        "电源管理",
+        "平台服务",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/tcp/live.dart",
+      "type": "file",
+      "name": "live.dart",
+      "filePath": "lib/tcp/live.dart",
+      "summary": "直播长连接的私有 TCP 协议客户端：自行实现包头编解码、鉴权包与心跳包，并维护可复用的消息流以接收弹幕与房间事件。",
+      "tags": [
+        "基础设施",
+        "TCP",
+        "直播",
+        "协议实现"
+      ],
+      "complexity": "complex",
+      "languageNotes": "自建二进制协议栈是本项目少数不依赖生成代码的网络实现，包头与包体分离的编解码需要严格处理字节序。"
+    },
+    {
+      "id": "class:lib/tcp/live.dart:PackageHeader",
+      "type": "class",
+      "name": "PackageHeader",
+      "filePath": "lib/tcp/live.dart",
+      "lineRange": [
+        12,
+        39
+      ],
+      "summary": "直播协议包头，负责序列化协议号、包体长度与操作码。",
+      "tags": [
+        "TCP",
+        "序列化",
+        "直播"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:lib/tcp/live.dart:PackageHeaderRes",
+      "type": "class",
+      "name": "PackageHeaderRes",
+      "filePath": "lib/tcp/live.dart",
+      "lineRange": [
+        39,
+        78
+      ],
+      "summary": "包头反序列化结果，承载操作码、错误码与包体负载。",
+      "tags": [
+        "TCP",
+        "反序列化",
+        "直播"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:lib/tcp/live.dart:Message",
+      "type": "class",
+      "name": "Message",
+      "filePath": "lib/tcp/live.dart",
+      "lineRange": [
+        78,
+        82
+      ],
+      "summary": "直播消息抽象接口，约束各类消息的统一处理方式。",
+      "tags": [
+        "type-definition",
+        "直播",
+        "直播长连接",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/tcp/live.dart:AuthMessage",
+      "type": "class",
+      "name": "AuthMessage",
+      "filePath": "lib/tcp/live.dart",
+      "lineRange": [
+        82,
+        113
+      ],
+      "summary": "鉴权消息体，携带进入直播间所需的身份信息。",
+      "tags": [
+        "TCP",
+        "认证",
+        "直播"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:lib/tcp/live.dart:AbstractPackage",
+      "type": "class",
+      "name": "AbstractPackage",
+      "filePath": "lib/tcp/live.dart",
+      "lineRange": [
+        113,
+        121
+      ],
+      "summary": "泛型数据包抽象基类，定义包头与负载的统一组装流程。",
+      "tags": [
+        "TCP",
+        "类型定义",
+        "直播"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/tcp/live.dart:AuthPackage",
+      "type": "class",
+      "name": "AuthPackage",
+      "filePath": "lib/tcp/live.dart",
+      "lineRange": [
+        121,
+        135
+      ],
+      "summary": "鉴权数据包，把 AuthMessage 包装为可发送的协议包。",
+      "tags": [
+        "TCP",
+        "认证",
+        "直播"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/tcp/live.dart:HeartbeatPackage",
+      "type": "class",
+      "name": "HeartbeatPackage",
+      "filePath": "lib/tcp/live.dart",
+      "lineRange": [
+        135,
+        144
+      ],
+      "summary": "心跳数据包，用于维持直播长连接不被服务端断开。",
+      "tags": [
+        "TCP",
+        "心跳",
+        "直播"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/tcp/live.dart:LiveMessageStream",
+      "type": "class",
+      "name": "LiveMessageStream",
+      "filePath": "lib/tcp/live.dart",
+      "lineRange": [
+        144,
+        324
+      ],
+      "summary": "直播消息流，负责连接建立、鉴权、心跳调度与消息分发，是直播间弹幕数据的主要来源。",
+      "tags": [
+        "TCP",
+        "直播",
+        "service"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:lib/utils/accounts.dart",
+      "type": "file",
+      "name": "accounts.dart",
+      "filePath": "lib/utils/accounts.dart",
+      "summary": "账号注册表：以 AccountType 槽位数组集中管理主号、视频号与心跳号，history 缺省时复用主号，并负责账号的增删改与持久化。",
+      "tags": [
+        "账号",
+        "状态管理",
+        "singleton",
+        "注册表"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:lib/utils/accounts.dart:Accounts",
+      "type": "class",
+      "name": "Accounts",
+      "filePath": "lib/utils/accounts.dart",
+      "lineRange": [
+        12,
+        108
+      ],
+      "summary": "账号槽位容器，提供按角色读写账号的方法；一个账号可同时占据多个槽位。",
+      "tags": [
+        "账号",
+        "状态管理",
+        "singleton"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/utils/accounts.dart:init",
+      "type": "function",
+      "name": "init",
+      "filePath": "lib/utils/accounts.dart",
+      "lineRange": [
+        34,
+        34
+      ],
+      "summary": "启动时从Hive 读取已存账号并填充各角色槽位。",
+      "tags": [
+        "账号",
+        "初始化",
+        "持久化"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/utils/accounts.dart:refresh",
+      "type": "function",
+      "name": "refresh",
+      "filePath": "lib/utils/accounts.dart",
+      "lineRange": [
+        44,
+        44
+      ],
+      "summary": "重新同步槽位与Hive 中的账号数据。",
+      "tags": [
+        "账号",
+        "状态管理",
+        "账号体系",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/utils/accounts.dart:set",
+      "type": "function",
+      "name": "set",
+      "filePath": "lib/utils/accounts.dart",
+      "lineRange": [
+        84,
+        84
+      ],
+      "summary": "把账号写入指定角色槽位，并维护账号与角色之间的双向关系。",
+      "tags": [
+        "账号",
+        "状态管理",
+        "账号体系",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/utils/accounts.dart:deleteAll",
+      "type": "function",
+      "name": "deleteAll",
+      "filePath": "lib/utils/accounts.dart",
+      "lineRange": [
+        69,
+        69
+      ],
+      "summary": "批量删除账号，删除前先记录当前主账号状态以便正确回填槽位。",
+      "tags": [
+        "账号",
+        "删除",
+        "状态管理"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:lib/utils/accounts/account.dart",
+      "type": "file",
+      "name": "account.dart",
+      "filePath": "lib/utils/accounts/account.dart",
+      "summary": "账号领域模型：以 sealed class Account 统一登录态/匿名态/空账号三种实现，向上层暴露 Cookie、CSRF、请求头与 gRPC 头。",
+      "tags": [
+        "type-definition",
+        "账号",
+        "sealed",
+        "data-model"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "基类的默认实现大量抛 UnimplementedError，由 sealed 三个子类各自补齐，编译期即可保证穷举所有账号形态。"
+    },
+    {
+      "id": "class:lib/utils/accounts/account.dart:Account",
+      "type": "class",
+      "name": "Account",
+      "filePath": "lib/utils/accounts/account.dart",
+      "lineRange": [
+        13,
+        44
+      ],
+      "summary": "密封账号基类，定义 type、cookieJar、csrf、headers、grpcHeaders 等统一契约。",
+      "tags": [
+        "type-definition",
+        "账号",
+        "sealed"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:lib/utils/accounts/account.dart:LoginAccount",
+      "type": "class",
+      "name": "LoginAccount",
+      "filePath": "lib/utils/accounts/account.dart",
+      "lineRange": [
+        47,
+        141
+      ],
+      "summary": "已登录账号实现，持有 mid、accessKey、refresh 与 Cookie 罐，并实现 Hive 序列化；删除时通过墓碑标记避免被迟到的异步变更复活。",
+      "tags": [
+        "账号",
+        "data-model",
+        "认证",
+        "持久化"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:lib/utils/accounts/account.dart:AnonymousAccount",
+      "type": "class",
+      "name": "AnonymousAccount",
+      "filePath": "lib/utils/accounts/account.dart",
+      "lineRange": [
+        143,
+        240
+      ],
+      "summary": "匿名账号单例，未登录时提供 buvid3 等最小身份信息以支持游客态接口。",
+      "tags": [
+        "账号",
+        "singleton",
+        "游客态"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:lib/utils/accounts/account.dart:NoAccount",
+      "type": "class",
+      "name": "NoAccount",
+      "filePath": "lib/utils/accounts/account.dart",
+      "lineRange": [
+        242,
+        243
+      ],
+      "summary": "空账号占位，表示当前角色尚未分配任何账号。",
+      "tags": [
+        "账号",
+        "type-definition",
+        "账号体系",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/utils/accounts/account_adapter.dart",
+      "type": "file",
+      "name": "account_adapter.dart",
+      "filePath": "lib/utils/accounts/account_adapter.dart",
+      "summary": "LoginAccount 的 Hive TypeAdapter，负责在登录态与匿名态之间切换 typeId 的读写。",
+      "tags": [
+        "serialization",
+        "账号",
+        "持久化"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/utils/accounts/account_adapter.dart:AccountAdapter",
+      "type": "class",
+      "name": "AccountAdapter",
+      "filePath": "lib/utils/accounts/account_adapter.dart",
+      "lineRange": [
+        1,
+        47
+      ],
+      "summary": "自定义 TypeAdapter，定义 LoginAccount 的 typeId（9）并委托 json 序列化。",
+      "tags": [
+        "serialization",
+        "账号",
+        "持久化"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/utils/accounts/account_manager/account_mgr.dart",
+      "type": "file",
+      "name": "account_mgr.dart",
+      "filePath": "lib/utils/accounts/account_manager/account_mgr.dart",
+      "summary": "账号管理拦截器：Dio Interceptor，按请求特征选择账号角色、注入 Cookie 与 App 签名、补充 gRPC 头，并在响应后回存 Cookie 与处理错误提示。",
+      "tags": [
+        "拦截器",
+        "账号",
+        "认证",
+        "基础设施"
+      ],
+      "complexity": "complex",
+      "languageNotes": "onRequest 中 Cookie 绑定、跳过判断、心跳取消、gRPC 头与签名的顺序不可调换，否则会覆盖显式传入的账号。"
+    },
+    {
+      "id": "class:lib/utils/accounts/account_manager/account_mgr.dart:AccountManager",
+      "type": "class",
+      "name": "AccountManager",
+      "filePath": "lib/utils/accounts/account_manager/account_mgr.dart",
+      "lineRange": [
+        1,
+        309
+      ],
+      "summary": "Dio 拦截器类，实现账号选择、Cookie 注入与落盘、App 签名以及统一的错误 Toast 提示。",
+      "tags": [
+        "拦截器",
+        "账号",
+        "认证"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:lib/utils/accounts/account_manager/account_mgr.dart:onRequest",
+      "type": "function",
+      "name": "onRequest",
+      "filePath": "lib/utils/accounts/account_manager/account_mgr.dart",
+      "lineRange": [
+        1,
+        309
+      ],
+      "summary": "请求拦截主流程：绑定账号、跳过免签名接口、取消心跳请求、注入 gRPC 头，最后按需附加 Web Cookie 或 App 签名。",
+      "tags": [
+        "拦截器",
+        "账号",
+        "签名",
+        "请求处理"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:lib/utils/accounts/account_manager/account_mgr.dart:onResponse",
+      "type": "function",
+      "name": "onResponse",
+      "filePath": "lib/utils/accounts/account_manager/account_mgr.dart",
+      "lineRange": [
+        1,
+        309
+      ],
+      "summary": "响应拦截：先从 Set-Cookie 落盘账号 Cookie，再放行响应。",
+      "tags": [
+        "拦截器",
+        "账号",
+        "Cookie"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/utils/accounts/account_manager/account_mgr.dart:_saveCookies",
+      "type": "function",
+      "name": "_saveCookies",
+      "filePath": "lib/utils/accounts/account_manager/account_mgr.dart",
+      "lineRange": [
+        1,
+        309
+      ],
+      "summary": "把响应 Cookie 按真实请求地址与重定向链写回对应账号的 Cookie 罐。",
+      "tags": [
+        "账号",
+        "Cookie",
+        "持久化"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/utils/accounts/account_manager/account_mgr.dart:_findAccount",
+      "type": "function",
+      "name": "_findAccount",
+      "filePath": "lib/utils/accounts/account_manager/account_mgr.dart",
+      "lineRange": [
+        1,
+        309
+      ],
+      "summary": "根据请求路径特征与 extra['account'] 显式覆盖决定本次请求使用哪个角色的账号。",
+      "tags": [
+        "账号",
+        "请求处理",
+        "选择策略"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:lib/utils/accounts/api_type.dart",
+      "type": "file",
+      "name": "api_type.dart",
+      "filePath": "lib/utils/accounts/api_type.dart",
+      "summary": "定义账号角色枚举 AccountType（main/heartbeat/recommend/video）及其到业务语义的映射，是整个账号选择体系的类型基础。",
+      "tags": [
+        "type-definition",
+        "账号",
+        "枚举"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/utils/accounts/api_type.dart:AccountType",
+      "type": "class",
+      "name": "AccountType",
+      "filePath": "lib/utils/accounts/api_type.dart",
+      "lineRange": [
+        1,
+        120
+      ],
+      "summary": "账号角色枚举及其辅助扩展，定义每个角色对应使用的接口类别。",
+      "tags": [
+        "type-definition",
+        "账号",
+        "枚举"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:lib/utils/accounts/grpc_headers.dart",
+      "type": "file",
+      "name": "grpc_headers.dart",
+      "filePath": "lib/utils/accounts/grpc_headers.dart",
+      "summary": "构造 gRPC 请求头：集中生成 authorization、grpc-accept-encoding、x-bili-* 等元数据头。",
+      "tags": [
+        "账号",
+        "grpc",
+        "请求头",
+        "认证"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/utils/accounts/grpc_headers.dart:GrpcHeaders",
+      "type": "class",
+      "name": "GrpcHeaders",
+      "filePath": "lib/utils/accounts/grpc_headers.dart",
+      "lineRange": [
+        1,
+        86
+      ],
+      "summary": "gRPC 头部生成器，从账号对象读取 token 与设备信息拼装标准元数据。",
+      "tags": [
+        "grpc",
+        "请求头",
+        "认证",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/utils/app_sign.dart",
+      "type": "file",
+      "name": "app_sign.dart",
+      "filePath": "lib/utils/app_sign.dart",
+      "summary": "App 端请求签名算法：按固定字段顺序拼接参数并用 appsec 做 MD5，供需要 appkey 签名的接口调用。",
+      "tags": [
+        "签名",
+        "安全",
+        "认证",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:lib/utils/app_sign.dart:AppSign",
+      "type": "class",
+      "name": "AppSign",
+      "filePath": "lib/utils/app_sign.dart",
+      "lineRange": [
+        6,
+        57
+      ],
+      "summary": "签名工具类，静态方法生成 appkey/appsec 签名字符串并追加到查询参数。",
+      "tags": [
+        "签名",
+        "安全",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/utils/app_sign.dart:appSign",
+      "type": "function",
+      "name": "appSign",
+      "filePath": "lib/utils/app_sign.dart",
+      "lineRange": [
+        7,
+        7
+      ],
+      "summary": "为给定参数 Map 计算 app 签名。",
+      "tags": [
+        "签名",
+        "安全",
+        "请求签名",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:lib/utils/cache_manager.dart",
+      "type": "file",
+      "name": "cache_manager.dart",
+      "filePath": "lib/utils/cache_manager.dart",
+      "summary": "缓存管理：封装 flutter_cache_manager 的默认实例，提供缓存统计、体积格式化与一键清理能力。",
+      "tags": [
+        "service",
+        "缓存",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/utils/cache_manager.dart:CacheManager",
+      "type": "class",
+      "name": "CacheManager",
+      "filePath": "lib/utils/cache_manager.dart",
+      "lineRange": [
+        9,
+        84
+      ],
+      "summary": "缓存门面类，聚合缓存初始化、目录体积统计与清理操作。",
+      "tags": [
+        "service",
+        "缓存",
+        "缓存管理",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:lib/utils/cache_manager.dart:clearLibraryCache",
+      "type": "function",
+      "name": "clearLibraryCache",
+      "filePath": "lib/utils/cache_manager.dart",
+      "lineRange": [
+        68,
+        68
+      ],
+      "summary": "清空图片等资源缓存目录。",
+      "tags": [
+        "缓存",
+        "文件IO",
+        "缓存管理",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/utils/extension/box_ext.dart",
+      "type": "file",
+      "name": "box_ext.dart",
+      "filePath": "lib/utils/extension/box_ext.dart",
+      "summary": "Hive Box 的 Dart 扩展方法，为泛型 Box 提供更易用的读写封装。",
+      "tags": [
+        "utility",
+        "扩展方法",
+        "持久化"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/utils/extension/box_ext.dart:BoxExt",
+      "type": "class",
+      "name": "BoxExt",
+      "filePath": "lib/utils/extension/box_ext.dart",
+      "lineRange": [
+        1,
+        28
+      ],
+      "summary": "为 Box 添加便捷方法的扩展声明。",
+      "tags": [
+        "utility",
+        "扩展方法",
+        "PiliPlus",
+        "B站客户端"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/utils/extension/context_ext.dart",
+      "type": "file",
+      "name": "context_ext.dart",
+      "filePath": "lib/utils/extension/context_ext.dart",
+      "summary": "BuildContext 扩展集合：集中封装主题、文本样式、Toast 与 Navigator 操作，避免在视图中重复写 Theme.of。",
+      "tags": [
+        "utility",
+        "扩展方法",
+        "视图辅助"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/utils/extension/context_ext.dart:ContextExt",
+      "type": "class",
+      "name": "ContextExt",
+      "filePath": "lib/utils/extension/context_ext.dart",
+      "lineRange": [
+        1,
+        74
+      ],
+      "summary": "BuildContext 扩展声明集合，提供主题/文本样式快捷访问与提示封装。",
+      "tags": [
+        "utility",
+        "扩展方法",
+        "视图辅助"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/utils/extension/get_ext.dart",
+      "type": "file",
+      "name": "get_ext.dart",
+      "filePath": "lib/utils/extension/get_ext.dart",
+      "summary": "GetX 扩展方法，补充框架未提供的辅助能力（如安全获取参数）。",
+      "tags": [
+        "utility",
+        "扩展方法",
+        "GetX"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/utils/extension/get_ext.dart:GetExt",
+      "type": "class",
+      "name": "GetExt",
+      "filePath": "lib/utils/extension/get_ext.dart",
+      "lineRange": [
+        1,
+        30
+      ],
+      "summary": "GetX 扩展声明，提供路由参数的宽松读取。",
+      "tags": [
+        "utility",
+        "扩展方法",
+        "GetX"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/utils/extension/rx_ext.dart",
+      "type": "file",
+      "name": "rx_ext.dart",
+      "filePath": "lib/utils/extension/rx_ext.dart",
+      "summary": "Rx 响应式类型的扩展方法，提供防抖/节流等变换。",
+      "tags": [
+        "utility",
+        "扩展方法",
+        "状态管理"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/utils/extension/rx_ext.dart:RxExt",
+      "type": "class",
+      "name": "RxExt",
+      "filePath": "lib/utils/extension/rx_ext.dart",
+      "lineRange": [
+        1,
+        10
+      ],
+      "summary": "Rx 扩展声明，补充响应式流变换能力。",
+      "tags": [
+        "utility",
+        "扩展方法",
+        "状态管理"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/utils/extension/theme_ext.dart",
+      "type": "file",
+      "name": "theme_ext.dart",
+      "filePath": "lib/utils/extension/theme_ext.dart",
+      "summary": "主题扩展：为 ThemeData 补充 B 站主题色、播放页背景色等自定义属性。",
+      "tags": [
+        "utility",
+        "扩展方法",
+        "主题"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/utils/extension/theme_ext.dart:ThemeExt",
+      "type": "class",
+      "name": "ThemeExt",
+      "filePath": "lib/utils/extension/theme_ext.dart",
+      "lineRange": [
+        1,
+        53
+      ],
+      "summary": "主题扩展声明集合，集中定义自定义主题字段。",
+      "tags": [
+        "utility",
+        "扩展方法",
+        "主题"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/utils/storage.dart",
+      "type": "file",
+      "name": "storage.dart",
+      "filePath": "lib/utils/storage.dart",
+      "summary": "Hive 存储门面：集中打开并持有 userInfo、setting、localCache、video、watchProgress 等所有 Box，并提供设置项的导入导出。",
+      "tags": [
+        "基础设施",
+        "持久化",
+        "singleton",
+        "配置"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:lib/utils/storage.dart:GStorage",
+      "type": "class",
+      "name": "GStorage",
+      "filePath": "lib/utils/storage.dart",
+      "lineRange": [
+        18,
+        168
+      ],
+      "summary": "全局存储容器，静态 late final 字段持有各 Box 实例，注册 TypeAdapter 后即可在任意位置直接访问。",
+      "tags": [
+        "基础设施",
+        "持久化",
+        "singleton"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/utils/storage.dart:init",
+      "type": "function",
+      "name": "init",
+      "filePath": "lib/utils/storage.dart",
+      "lineRange": [
+        27,
+        27
+      ],
+      "summary": "注册 TypeAdapter 并打开所有 Hive Box，是应用持久化层的启动入口。",
+      "tags": [
+        "持久化",
+        "初始化",
+        "基础设施"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:lib/utils/storage.dart:exportAllSettings",
+      "type": "function",
+      "name": "exportAllSettings",
+      "filePath": "lib/utils/storage.dart",
+      "lineRange": [
+        80,
+        80
+      ],
+      "summary": "把所有设置导出为 JSON 字符串，便于备份与迁移。",
+      "tags": [
+        "持久化",
+        "配置",
+        "导入导出"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/utils/storage_key.dart",
+      "type": "file",
+      "name": "storage_key.dart",
+      "filePath": "lib/utils/storage_key.dart",
+      "summary": "持久化键名常量表：以 SettingBoxKey / LocalCacheKey / VideoBoxKey 三个类集中声明所有 Hive 键名，杜绝魔法字符串。",
+      "tags": [
+        "configuration",
+        "常量表",
+        "持久化"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "使用逗号分隔的连续 const 声明大量字符串常量，并配合 ignore_for_file 关闭命名规范告警。"
+    },
+    {
+      "id": "class:lib/utils/storage_key.dart:SettingBoxKey",
+      "type": "class",
+      "name": "SettingBoxKey",
+      "filePath": "lib/utils/storage_key.dart",
+      "lineRange": [
+        3,
+        244
+      ],
+      "summary": "设置项键名常量集合，覆盖播放、界面、网络、直播等全部可配置项。",
+      "tags": [
+        "configuration",
+        "常量表",
+        "设置"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:lib/utils/storage_key.dart:LocalCacheKey",
+      "type": "class",
+      "name": "LocalCacheKey",
+      "filePath": "lib/utils/storage_key.dart",
+      "lineRange": [
+        246,
+        253
+      ],
+      "summary": "本地缓存键名常量集合。",
+      "tags": [
+        "configuration",
+        "常量表",
+        "缓存"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:lib/utils/storage_key.dart:VideoBoxKey",
+      "type": "class",
+      "name": "VideoBoxKey",
+      "filePath": "lib/utils/storage_key.dart",
+      "lineRange": [
+        255,
+        261
+      ],
+      "summary": "视频相关存储键名常量集合。",
+      "tags": [
+        "configuration",
+        "常量表",
+        "视频"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:lib/utils/storage_pref.dart",
+      "type": "file",
+      "name": "storage_pref.dart",
+      "filePath": "lib/utils/storage_pref.dart",
+      "summary": "设置访问门面 Pref：把 Hive 中分散的设置项包装成带默认值的静态读写属性，249 个 getter/setter 构成全局配置的统一入口。",
+      "tags": [
+        "基础设施",
+        "配置",
+        "状态管理",
+        "持久化"
+      ],
+      "complexity": "complex",
+      "languageNotes": "采用「静态字段缓存 + 首次访问时读 Hive」的模式，既避免重复 IO 又保证外部修改后能同步。"
+    },
+    {
+      "id": "class:lib/utils/storage_pref.dart:Pref",
+      "type": "class",
+      "name": "Pref",
+      "filePath": "lib/utils/storage_pref.dart",
+      "lineRange": [
+        1,
+        1050
+      ],
+      "summary": "设置门面类，声明全部配置的静态字段与读写方法，是业务代码读取配置的推荐入口。",
+      "tags": [
+        "配置",
+        "singleton",
+        "持久化",
+        "基础设施"
+      ],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {
+      "source": "document:README.md",
+      "target": "file:lib/main.dart",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "config:pubspec.yaml",
+      "target": "file:lib/main.dart",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:analysis_options.yaml",
+      "target": "file:lib/main.dart",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:analysis_options.yaml",
+      "target": "file:lib/grpc/grpc_req.dart",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:analysis_options.yaml",
+      "target": "file:lib/utils/storage_pref.dart",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/build_config.dart",
+      "target": "class:lib/build_config.dart:BuildConfig",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/common/assets.dart",
+      "target": "class:lib/common/assets.dart:Assets",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/common/constants.dart",
+      "target": "class:lib/common/constants.dart:Constants",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/common/dial_prefix.dart",
+      "target": "class:lib/common/dial_prefix.dart:Login",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/common/style.dart",
+      "target": "class:lib/common/style.dart:Style",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/dm.dart",
+      "target": "class:lib/grpc/dm.dart:DmGrpc",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/dm.dart",
+      "target": "function:lib/grpc/dm.dart:dmSegMobile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/dyn.dart",
+      "target": "class:lib/grpc/dyn.dart:DynGrpc",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/dyn.dart",
+      "target": "function:lib/grpc/dyn.dart:opusDetail",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/dyn.dart",
+      "target": "function:lib/grpc/dyn.dart:likeList",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/dyn.dart",
+      "target": "function:lib/grpc/dyn.dart:repostList",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/grpc_req.dart",
+      "target": "class:lib/grpc/grpc_req.dart:GrpcReq",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/grpc_req.dart",
+      "target": "function:lib/grpc/grpc_req.dart:compressProtobuf",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/grpc_req.dart",
+      "target": "function:lib/grpc/grpc_req.dart:decompressProtobuf",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/grpc_req.dart",
+      "target": "function:lib/grpc/grpc_req.dart:_parse",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/grpc_req.dart",
+      "target": "function:lib/grpc/grpc_req.dart:request",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/im.dart",
+      "target": "class:lib/grpc/im.dart:ImGrpc",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/im.dart",
+      "target": "function:lib/grpc/im.dart:sendMsg",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/im.dart",
+      "target": "function:lib/grpc/im.dart:syncFetchSessionMsgs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/im.dart",
+      "target": "function:lib/grpc/im.dart:sessionMain",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/im.dart",
+      "target": "function:lib/grpc/im.dart:getTotalUnread",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/reply.dart",
+      "target": "class:lib/grpc/reply.dart:ReplyGrpc",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/reply.dart",
+      "target": "function:lib/grpc/reply.dart:mainList",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/reply.dart",
+      "target": "function:lib/grpc/reply.dart:detailList",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/reply.dart",
+      "target": "function:lib/grpc/reply.dart:translateReply",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/space.dart",
+      "target": "class:lib/grpc/space.dart:SpaceGrpc",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/url.dart",
+      "target": "class:lib/grpc/url.dart:GrpcUrl",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/view.dart",
+      "target": "class:lib/grpc/view.dart:ViewGrpc",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/constants.dart",
+      "target": "class:lib/http/constants.dart:HttpString",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/init.dart",
+      "target": "class:lib/http/init.dart:Request",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/init.dart",
+      "target": "function:lib/http/init.dart:_cloneHttp11Dio",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/init.dart",
+      "target": "function:lib/http/init.dart:_onConnectivityChanged",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/init.dart",
+      "target": "function:lib/http/init.dart:_createPool",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/init.dart",
+      "target": "function:lib/http/init.dart:_resetAdaptersForNetworkChange",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/init.dart",
+      "target": "function:lib/http/init.dart:get",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/init.dart",
+      "target": "function:lib/http/init.dart:post",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/init.dart",
+      "target": "function:lib/http/init.dart:downloadFile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/loading_state.dart",
+      "target": "class:lib/http/loading_state.dart:LoadingState",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/loading_state.dart",
+      "target": "class:lib/http/loading_state.dart:Loading",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/loading_state.dart",
+      "target": "class:lib/http/loading_state.dart:Success",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/loading_state.dart",
+      "target": "class:lib/http/loading_state.dart:Error",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/login.dart",
+      "target": "class:lib/http/login.dart:LoginHttp",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/login.dart",
+      "target": "function:lib/http/login.dart:sendSmsCode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/login.dart",
+      "target": "function:lib/http/login.dart:loginByPwd",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/login.dart",
+      "target": "function:lib/http/login.dart:loginBySms",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/login.dart",
+      "target": "function:lib/http/login.dart:oauth2AccessToken",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/login.dart",
+      "target": "function:lib/http/login.dart:logout",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/msg.dart",
+      "target": "class:lib/http/msg.dart:MsgHttp",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/msg.dart",
+      "target": "function:lib/http/msg.dart:uploadImage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/msg.dart",
+      "target": "function:lib/http/msg.dart:msgUnread",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/msg.dart",
+      "target": "function:lib/http/msg.dart:createTextDynamic",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/retry_interceptor.dart",
+      "target": "class:lib/http/retry_interceptor.dart:RetryInterceptor",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/retry_interceptor.dart",
+      "target": "function:lib/http/retry_interceptor.dart:onError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/retry_interceptor.dart",
+      "target": "function:lib/http/retry_interceptor.dart:copyWith",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/user.dart",
+      "target": "class:lib/http/user.dart:UserHttp",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/user.dart",
+      "target": "function:lib/http/user.dart:historyList",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/user.dart",
+      "target": "function:lib/http/user.dart:clearHistory",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/user.dart",
+      "target": "function:lib/http/user.dart:getMediaList",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/http/user.dart",
+      "target": "function:lib/http/user.dart:spaceSetting",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/main.dart",
+      "target": "function:lib/main.dart:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/home/controller.dart",
+      "target": "class:lib/pages/home/controller.dart:HomeController",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/home/controller.dart",
+      "target": "function:lib/pages/home/controller.dart:onRefresh",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/home/controller.dart",
+      "target": "function:lib/pages/home/controller.dart:onInit",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/home/view.dart",
+      "target": "class:lib/pages/home/view.dart:HomePage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/home/view.dart",
+      "target": "class:lib/pages/home/view.dart:_HomePageState",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/login/controller.dart",
+      "target": "class:lib/pages/login/controller.dart:LoginPageController",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/login/controller.dart",
+      "target": "function:lib/pages/login/controller.dart:refreshQRCode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/login/controller.dart",
+      "target": "function:lib/pages/login/controller.dart:getCaptcha",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/login/controller.dart",
+      "target": "function:lib/pages/login/controller.dart:loginByPassword",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/login/controller.dart",
+      "target": "function:lib/pages/login/controller.dart:sendSmsCode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/login/controller.dart",
+      "target": "function:lib/pages/login/controller.dart:setAccount",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/login/controller.dart",
+      "target": "function:lib/pages/login/controller.dart:switchAccountDialog",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/main/controller.dart",
+      "target": "class:lib/pages/main/controller.dart:MainController",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/main/controller.dart",
+      "target": "function:lib/pages/main/controller.dart:onInit",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/main/controller.dart",
+      "target": "function:lib/pages/main/controller.dart:checkUnread",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/main/controller.dart",
+      "target": "function:lib/pages/main/controller.dart:setNavBarConfig",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/main/controller.dart",
+      "target": "function:lib/pages/main/controller.dart:onChangeAccount",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/main/controller.dart",
+      "target": "function:lib/pages/main/controller.dart:refreshRecommendations",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/grpc/dm.dart",
+      "target": "file:lib/grpc/grpc_req.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/grpc/dm.dart",
+      "target": "file:lib/grpc/url.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/grpc/dm.dart",
+      "target": "file:lib/http/loading_state.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/grpc/dyn.dart",
+      "target": "file:lib/grpc/grpc_req.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/grpc/dyn.dart",
+      "target": "file:lib/grpc/url.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/grpc/dyn.dart",
+      "target": "file:lib/http/loading_state.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/grpc/grpc_req.dart",
+      "target": "file:lib/http/constants.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/grpc/grpc_req.dart",
+      "target": "file:lib/http/init.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/grpc/grpc_req.dart",
+      "target": "file:lib/http/loading_state.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/grpc/im.dart",
+      "target": "file:lib/grpc/grpc_req.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/grpc/im.dart",
+      "target": "file:lib/grpc/url.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/grpc/im.dart",
+      "target": "file:lib/http/loading_state.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/grpc/reply.dart",
+      "target": "file:lib/common/constants.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/grpc/reply.dart",
+      "target": "file:lib/grpc/grpc_req.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/grpc/reply.dart",
+      "target": "file:lib/grpc/url.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/grpc/reply.dart",
+      "target": "file:lib/http/loading_state.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/grpc/reply.dart",
+      "target": "file:lib/utils/storage_pref.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/grpc/space.dart",
+      "target": "file:lib/grpc/grpc_req.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/grpc/space.dart",
+      "target": "file:lib/grpc/url.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/grpc/space.dart",
+      "target": "file:lib/http/loading_state.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/grpc/view.dart",
+      "target": "file:lib/grpc/grpc_req.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/grpc/view.dart",
+      "target": "file:lib/grpc/url.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/grpc/view.dart",
+      "target": "file:lib/http/loading_state.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/init.dart",
+      "target": "file:lib/http/constants.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/init.dart",
+      "target": "file:lib/http/loading_state.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/init.dart",
+      "target": "file:lib/http/retry_interceptor.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/init.dart",
+      "target": "file:lib/http/user.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/init.dart",
+      "target": "file:lib/utils/accounts.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/init.dart",
+      "target": "file:lib/utils/accounts/account.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/init.dart",
+      "target": "file:lib/utils/accounts/account_manager/account_mgr.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/init.dart",
+      "target": "file:lib/utils/storage_pref.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/login.dart",
+      "target": "file:lib/common/constants.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/login.dart",
+      "target": "file:lib/http/init.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/login.dart",
+      "target": "file:lib/http/loading_state.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/login.dart",
+      "target": "file:lib/utils/accounts.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/login.dart",
+      "target": "file:lib/utils/accounts/account.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/login.dart",
+      "target": "file:lib/utils/app_sign.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/msg.dart",
+      "target": "file:lib/http/constants.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/msg.dart",
+      "target": "file:lib/http/init.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/msg.dart",
+      "target": "file:lib/http/loading_state.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/msg.dart",
+      "target": "file:lib/utils/accounts.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/user.dart",
+      "target": "file:lib/http/init.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/user.dart",
+      "target": "file:lib/http/loading_state.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/user.dart",
+      "target": "file:lib/utils/accounts.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/user.dart",
+      "target": "file:lib/utils/accounts/account.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/http/user.dart",
+      "target": "file:lib/utils/app_sign.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/main.dart",
+      "target": "file:lib/build_config.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/main.dart",
+      "target": "file:lib/common/constants.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/main.dart",
+      "target": "file:lib/http/init.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/main.dart",
+      "target": "file:lib/router/app_pages.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/main.dart",
+      "target": "file:lib/services/account_service.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/main.dart",
+      "target": "file:lib/services/logger.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/main.dart",
+      "target": "file:lib/services/service_locator.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/main.dart",
+      "target": "file:lib/utils/cache_manager.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/main.dart",
+      "target": "file:lib/utils/extension/theme_ext.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/main.dart",
+      "target": "file:lib/utils/storage.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/main.dart",
+      "target": "file:lib/utils/storage_key.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/main.dart",
+      "target": "file:lib/utils/storage_pref.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/home/controller.dart",
+      "target": "file:lib/http/init.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/home/controller.dart",
+      "target": "file:lib/pages/main/controller.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/home/controller.dart",
+      "target": "file:lib/services/account_service.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/home/controller.dart",
+      "target": "file:lib/utils/storage.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/home/controller.dart",
+      "target": "file:lib/utils/storage_key.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/home/controller.dart",
+      "target": "file:lib/utils/storage_pref.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/home/view.dart",
+      "target": "file:lib/common/style.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/home/view.dart",
+      "target": "file:lib/pages/home/controller.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/home/view.dart",
+      "target": "file:lib/pages/main/controller.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/home/view.dart",
+      "target": "file:lib/utils/extension/get_ext.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/login/controller.dart",
+      "target": "file:lib/common/dial_prefix.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/login/controller.dart",
+      "target": "file:lib/http/init.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/login/controller.dart",
+      "target": "file:lib/http/loading_state.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/login/controller.dart",
+      "target": "file:lib/http/login.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/login/controller.dart",
+      "target": "file:lib/utils/accounts.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/login/controller.dart",
+      "target": "file:lib/utils/accounts/account.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/main/controller.dart",
+      "target": "file:lib/grpc/dyn.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/main/controller.dart",
+      "target": "file:lib/http/loading_state.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/main/controller.dart",
+      "target": "file:lib/http/msg.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/main/controller.dart",
+      "target": "file:lib/pages/home/controller.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/main/controller.dart",
+      "target": "file:lib/services/account_service.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/main/controller.dart",
+      "target": "file:lib/utils/extension/get_ext.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/main/controller.dart",
+      "target": "file:lib/utils/storage.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/main/controller.dart",
+      "target": "file:lib/utils/storage_key.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/main/controller.dart",
+      "target": "file:lib/utils/storage_pref.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:lib/http/loading_state.dart:Loading",
+      "target": "class:lib/http/loading_state.dart:LoadingState",
+      "type": "inherits",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "class:lib/http/loading_state.dart:Success",
+      "target": "class:lib/http/loading_state.dart:LoadingState",
+      "type": "inherits",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "class:lib/http/loading_state.dart:Error",
+      "target": "class:lib/http/loading_state.dart:LoadingState",
+      "type": "inherits",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "function:lib/grpc/dm.dart:dmSegMobile",
+      "target": "function:lib/grpc/grpc_req.dart:request",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:lib/grpc/dyn.dart:opusDetail",
+      "target": "function:lib/grpc/grpc_req.dart:request",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:lib/grpc/im.dart:sendMsg",
+      "target": "function:lib/grpc/grpc_req.dart:request",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:lib/grpc/reply.dart:mainList",
+      "target": "function:lib/grpc/grpc_req.dart:request",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:lib/http/login.dart:loginByPwd",
+      "target": "function:lib/http/init.dart:post",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:lib/http/msg.dart:uploadImage",
+      "target": "function:lib/http/init.dart:post",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:lib/http/user.dart:historyList",
+      "target": "function:lib/http/init.dart:get",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:lib/pages/main/controller.dart:MainController",
+      "target": "class:lib/pages/home/controller.dart:HomeController",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "function:lib/pages/main/controller.dart:checkUnread",
+      "target": "function:lib/http/msg.dart:msgUnread",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:lib/pages/login/controller.dart:setAccount",
+      "target": "function:lib/utils/accounts.dart:set",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:lib/pages/main/view.dart",
+      "target": "class:lib/pages/main/view.dart:MainApp",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/main/view.dart",
+      "target": "class:lib/pages/main/view.dart:_MainAppState",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/video/controller.dart",
+      "target": "class:lib/pages/video/controller.dart:VideoDetailController",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/video/controller.dart",
+      "target": "function:lib/pages/video/controller.dart:onInit",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/video/controller.dart",
+      "target": "function:lib/pages/video/controller.dart:_queryVideoUrl",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/video/controller.dart",
+      "target": "function:lib/pages/video/controller.dart:playerInit",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/video/controller.dart",
+      "target": "function:lib/pages/video/controller.dart:showMediaListPanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/video/controller.dart",
+      "target": "function:lib/pages/video/controller.dart:_queryPlayInfo",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/video/controller.dart",
+      "target": "function:lib/pages/video/controller.dart:makeHeartBeat",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/video/controller.dart",
+      "target": "function:lib/pages/video/controller.dart:cacheLocalProgress",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/video/controller.dart",
+      "target": "function:lib/pages/video/controller.dart:initFileSource",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/router/app_pages.dart",
+      "target": "class:lib/router/app_pages.dart:Routes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/services/account_service.dart",
+      "target": "class:lib/services/account_service.dart:AccountService",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/services/account_service.dart",
+      "target": "class:lib/services/account_service.dart:AccountMixin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/services/account_service.dart",
+      "target": "function:lib/services/account_service.dart:onChangeAccount",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/services/audio_session.dart",
+      "target": "class:lib/services/audio_session.dart:AudioSessionHandler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/services/audio_session.dart",
+      "target": "function:lib/services/audio_session.dart:initSession",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/services/logger.dart",
+      "target": "class:lib/services/logger.dart:LoggerUtils",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/services/logger.dart",
+      "target": "function:lib/services/logger.dart:getLogsPath",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/services/service_locator.dart",
+      "target": "function:lib/services/service_locator.dart:setupServiceLocator",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/services/shutdown_timer_service.dart",
+      "target": "class:lib/services/shutdown_timer_service.dart:_ShutdownType",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/tcp/live.dart",
+      "target": "class:lib/tcp/live.dart:PackageHeader",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/tcp/live.dart",
+      "target": "class:lib/tcp/live.dart:PackageHeaderRes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/tcp/live.dart",
+      "target": "class:lib/tcp/live.dart:Message",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/tcp/live.dart",
+      "target": "class:lib/tcp/live.dart:AuthMessage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/tcp/live.dart",
+      "target": "class:lib/tcp/live.dart:AbstractPackage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/tcp/live.dart",
+      "target": "class:lib/tcp/live.dart:AuthPackage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/tcp/live.dart",
+      "target": "class:lib/tcp/live.dart:HeartbeatPackage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/tcp/live.dart",
+      "target": "class:lib/tcp/live.dart:LiveMessageStream",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/accounts.dart",
+      "target": "class:lib/utils/accounts.dart:Accounts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/accounts.dart",
+      "target": "function:lib/utils/accounts.dart:init",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/accounts.dart",
+      "target": "function:lib/utils/accounts.dart:refresh",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/accounts.dart",
+      "target": "function:lib/utils/accounts.dart:set",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/accounts.dart",
+      "target": "function:lib/utils/accounts.dart:deleteAll",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/accounts/account.dart",
+      "target": "class:lib/utils/accounts/account.dart:Account",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/accounts/account.dart",
+      "target": "class:lib/utils/accounts/account.dart:LoginAccount",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/accounts/account.dart",
+      "target": "class:lib/utils/accounts/account.dart:AnonymousAccount",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/accounts/account.dart",
+      "target": "class:lib/utils/accounts/account.dart:NoAccount",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/accounts/account_adapter.dart",
+      "target": "class:lib/utils/accounts/account_adapter.dart:AccountAdapter",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/accounts/account_manager/account_mgr.dart",
+      "target": "class:lib/utils/accounts/account_manager/account_mgr.dart:AccountManager",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/accounts/account_manager/account_mgr.dart",
+      "target": "function:lib/utils/accounts/account_manager/account_mgr.dart:onRequest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/accounts/account_manager/account_mgr.dart",
+      "target": "function:lib/utils/accounts/account_manager/account_mgr.dart:onResponse",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/accounts/account_manager/account_mgr.dart",
+      "target": "function:lib/utils/accounts/account_manager/account_mgr.dart:_saveCookies",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/accounts/account_manager/account_mgr.dart",
+      "target": "function:lib/utils/accounts/account_manager/account_mgr.dart:_findAccount",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/accounts/api_type.dart",
+      "target": "class:lib/utils/accounts/api_type.dart:AccountType",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/accounts/grpc_headers.dart",
+      "target": "class:lib/utils/accounts/grpc_headers.dart:GrpcHeaders",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/app_sign.dart",
+      "target": "class:lib/utils/app_sign.dart:AppSign",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/app_sign.dart",
+      "target": "function:lib/utils/app_sign.dart:appSign",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/cache_manager.dart",
+      "target": "class:lib/utils/cache_manager.dart:CacheManager",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/cache_manager.dart",
+      "target": "function:lib/utils/cache_manager.dart:clearLibraryCache",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/extension/box_ext.dart",
+      "target": "class:lib/utils/extension/box_ext.dart:BoxExt",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/extension/context_ext.dart",
+      "target": "class:lib/utils/extension/context_ext.dart:ContextExt",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/extension/get_ext.dart",
+      "target": "class:lib/utils/extension/get_ext.dart:GetExt",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/extension/rx_ext.dart",
+      "target": "class:lib/utils/extension/rx_ext.dart:RxExt",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/extension/theme_ext.dart",
+      "target": "class:lib/utils/extension/theme_ext.dart:ThemeExt",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/storage.dart",
+      "target": "class:lib/utils/storage.dart:GStorage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/storage.dart",
+      "target": "function:lib/utils/storage.dart:init",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/storage.dart",
+      "target": "function:lib/utils/storage.dart:exportAllSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/storage_key.dart",
+      "target": "class:lib/utils/storage_key.dart:SettingBoxKey",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/storage_key.dart",
+      "target": "class:lib/utils/storage_key.dart:LocalCacheKey",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/storage_key.dart",
+      "target": "class:lib/utils/storage_key.dart:VideoBoxKey",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/utils/storage_pref.dart",
+      "target": "class:lib/utils/storage_pref.dart:Pref",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:lib/pages/main/view.dart",
+      "target": "file:lib/common/assets.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/main/view.dart",
+      "target": "file:lib/common/constants.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/main/view.dart",
+      "target": "file:lib/common/style.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/main/view.dart",
+      "target": "file:lib/pages/home/view.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/main/view.dart",
+      "target": "file:lib/pages/main/controller.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/main/view.dart",
+      "target": "file:lib/utils/extension/context_ext.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/main/view.dart",
+      "target": "file:lib/utils/extension/theme_ext.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/main/view.dart",
+      "target": "file:lib/utils/storage.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/main/view.dart",
+      "target": "file:lib/utils/storage_key.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/video/controller.dart",
+      "target": "file:lib/common/style.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/video/controller.dart",
+      "target": "file:lib/grpc/dm.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/video/controller.dart",
+      "target": "file:lib/http/init.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/video/controller.dart",
+      "target": "file:lib/http/loading_state.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/video/controller.dart",
+      "target": "file:lib/http/user.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/video/controller.dart",
+      "target": "file:lib/utils/accounts.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/video/controller.dart",
+      "target": "file:lib/utils/extension/context_ext.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/video/controller.dart",
+      "target": "file:lib/utils/storage.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/pages/video/controller.dart",
+      "target": "file:lib/utils/storage_pref.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/router/app_pages.dart",
+      "target": "file:lib/pages/home/view.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/router/app_pages.dart",
+      "target": "file:lib/pages/main/view.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/services/account_service.dart",
+      "target": "file:lib/utils/storage_pref.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/services/logger.dart",
+      "target": "file:lib/utils/storage_pref.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/services/service_locator.dart",
+      "target": "file:lib/services/audio_session.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/tcp/live.dart",
+      "target": "file:lib/services/logger.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/utils/accounts.dart",
+      "target": "file:lib/http/init.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/utils/accounts.dart",
+      "target": "file:lib/utils/accounts/account.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/utils/accounts/account.dart",
+      "target": "file:lib/common/constants.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/utils/accounts/account.dart",
+      "target": "file:lib/utils/accounts.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/utils/accounts/account.dart",
+      "target": "file:lib/utils/accounts/grpc_headers.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/utils/accounts/account_adapter.dart",
+      "target": "file:lib/utils/accounts/account.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/utils/accounts/account_manager/account_mgr.dart",
+      "target": "file:lib/http/constants.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/utils/accounts/account_manager/account_mgr.dart",
+      "target": "file:lib/utils/accounts.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/utils/accounts/account_manager/account_mgr.dart",
+      "target": "file:lib/utils/accounts/account.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/utils/accounts/account_manager/account_mgr.dart",
+      "target": "file:lib/utils/accounts/api_type.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/utils/accounts/account_manager/account_mgr.dart",
+      "target": "file:lib/utils/app_sign.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/utils/accounts/account_manager/account_mgr.dart",
+      "target": "file:lib/utils/storage_pref.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/utils/accounts/grpc_headers.dart",
+      "target": "file:lib/common/constants.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/utils/app_sign.dart",
+      "target": "file:lib/common/constants.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/utils/cache_manager.dart",
+      "target": "file:lib/utils/storage_pref.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/utils/extension/get_ext.dart",
+      "target": "file:lib/main.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/utils/storage.dart",
+      "target": "file:lib/utils/accounts.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/utils/storage.dart",
+      "target": "file:lib/utils/accounts/account_adapter.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/utils/storage.dart",
+      "target": "file:lib/utils/storage_pref.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/utils/storage_pref.dart",
+      "target": "file:lib/http/constants.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/utils/storage_pref.dart",
+      "target": "file:lib/utils/storage.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:lib/utils/storage_pref.dart",
+      "target": "file:lib/utils/storage_key.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:lib/utils/accounts/account.dart:LoginAccount",
+      "target": "class:lib/utils/accounts/account.dart:Account",
+      "type": "inherits",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "class:lib/utils/accounts/account.dart:AnonymousAccount",
+      "target": "class:lib/utils/accounts/account.dart:Account",
+      "type": "inherits",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "class:lib/utils/accounts/account.dart:NoAccount",
+      "target": "class:lib/utils/accounts/account.dart:Account",
+      "type": "inherits",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "class:lib/pages/main/view.dart:MainApp",
+      "target": "class:lib/pages/home/view.dart:HomePage",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "function:lib/pages/video/controller.dart:playerInit",
+      "target": "class:lib/services/audio_session.dart:AudioSessionHandler",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "function:lib/pages/video/controller.dart:onInit",
+      "target": "class:lib/utils/storage.dart:GStorage",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:lib/utils/accounts/account.dart:LoginAccount",
+      "target": "class:lib/utils/accounts/grpc_headers.dart:GrpcHeaders",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:lib/services/shutdown_timer_service.dart",
+      "target": "file:lib/services/audio_session.dart",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:lib/utils/extension/box_ext.dart",
+      "target": "file:lib/utils/storage.dart",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:lib/utils/extension/rx_ext.dart",
+      "target": "file:lib/utils/accounts.dart",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "config:pubspec.yaml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "config:analysis_options.yaml",
+      "target": "config:pubspec.yaml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:lib/services/shutdown_timer_service.dart",
+      "target": "file:lib/main.dart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    }
+  ],
+  "layers": [
+    {
+      "id": "layer:entrypoint",
+      "name": "入口与启动",
+      "description": "应用引导与路由注册：初始化 Hive、装配依赖、配置系统 UI，并声明全部页面路由。",
+      "nodeIds": [
+        "file:lib/build_config.dart",
+        "file:lib/main.dart",
+        "file:lib/router/app_pages.dart"
+      ]
+    },
+    {
+      "id": "layer:ui",
+      "name": "界面层",
+      "description": "负责渲染的 StatefulWidget/StatelessWidget 及其私有 State，组合控制器暴露的状态生成页面。",
+      "nodeIds": [
+        "file:lib/pages/home/view.dart",
+        "file:lib/pages/main/view.dart"
+      ]
+    },
+    {
+      "id": "layer:controllers",
+      "name": "状态管理层",
+      "description": "GetX 控制器：持有响应式状态，编排网络调用与分页刷新，并向界面层暴露视图模型。",
+      "nodeIds": [
+        "file:lib/pages/home/controller.dart",
+        "file:lib/pages/login/controller.dart",
+        "file:lib/pages/main/controller.dart",
+        "file:lib/pages/video/controller.dart"
+      ]
+    },
+    {
+      "id": "layer:http",
+      "name": "HTTP 业务层",
+      "description": "REST 业务包装层与全局 Dio 客户端：统一错误语义、三态返回模型与各业务域端点封装。",
+      "nodeIds": [
+        "file:lib/http/constants.dart",
+        "file:lib/http/init.dart",
+        "file:lib/http/loading_state.dart",
+        "file:lib/http/login.dart",
+        "file:lib/http/msg.dart",
+        "file:lib/http/retry_interceptor.dart",
+        "file:lib/http/user.dart"
+      ]
+    },
+    {
+      "id": "layer:grpc",
+      "name": "gRPC 传输层",
+      "description": "B 站新版接口的 gRPC-over-HTTP 客户端：私有帧协议编解码、压缩解压与各服务方法。",
+      "nodeIds": [
+        "file:lib/grpc/dm.dart",
+        "file:lib/grpc/dyn.dart",
+        "file:lib/grpc/grpc_req.dart",
+        "file:lib/grpc/im.dart",
+        "file:lib/grpc/reply.dart",
+        "file:lib/grpc/space.dart",
+        "file:lib/grpc/url.dart",
+        "file:lib/grpc/view.dart"
+      ]
+    },
+    {
+      "id": "layer:auth",
+      "name": "账号与认证",
+      "description": "账号领域模型、多角色槽位注册表与 Dio 拦截器：按角色选择账号、注入 Cookie、生成 App 签名与 gRPC 头。",
+      "nodeIds": [
+        "file:lib/services/account_service.dart",
+        "file:lib/utils/accounts.dart",
+        "file:lib/utils/accounts/account.dart",
+        "file:lib/utils/accounts/account_adapter.dart",
+        "file:lib/utils/accounts/account_manager/account_mgr.dart",
+        "file:lib/utils/accounts/api_type.dart",
+        "file:lib/utils/accounts/grpc_headers.dart",
+        "file:lib/utils/app_sign.dart"
+      ]
+    },
+    {
+      "id": "layer:storage",
+      "name": "存储与配置",
+      "description": "Hive 持久化门面、设置读写代理与键名常量表，构成应用的全部本地状态来源。",
+      "nodeIds": [
+        "file:lib/common/constants.dart",
+        "file:lib/utils/cache_manager.dart",
+        "file:lib/utils/storage.dart",
+        "file:lib/utils/storage_key.dart",
+        "file:lib/utils/storage_pref.dart"
+      ]
+    },
+    {
+      "id": "layer:platform",
+      "name": "平台服务",
+      "description": "与操作系统打交道的服务：音频焦点、关机计时、日志落盘、直播 TCP 长连接。",
+      "nodeIds": [
+        "file:lib/services/audio_session.dart",
+        "file:lib/services/logger.dart",
+        "file:lib/services/service_locator.dart",
+        "file:lib/services/shutdown_timer_service.dart",
+        "file:lib/tcp/live.dart"
+      ]
+    },
+    {
+      "id": "layer:shared",
+      "name": "通用基础",
+      "description": "跨层复用的常量、样式、静态资源与 Dart 扩展方法，不含业务逻辑。",
+      "nodeIds": [
+        "file:lib/common/assets.dart",
+        "file:lib/common/dial_prefix.dart",
+        "file:lib/common/style.dart",
+        "file:lib/utils/extension/box_ext.dart",
+        "file:lib/utils/extension/context_ext.dart",
+        "file:lib/utils/extension/get_ext.dart",
+        "file:lib/utils/extension/rx_ext.dart",
+        "file:lib/utils/extension/theme_ext.dart"
+      ]
+    },
+    {
+      "id": "layer:project-config",
+      "name": "项目配置与文档",
+      "description": "依赖清单、静态分析配置与项目说明文档。",
+      "nodeIds": [
+        "document:README.md",
+        "config:pubspec.yaml",
+        "config:analysis_options.yaml"
+      ]
+    }
+  ],
+  "tour": [
+    {
+      "order": 1,
+      "title": "项目全貌",
+      "description": "先读README 与依赖清单，弄清 PiliPlus 是什么、技术栈有哪些（Flutter + GetX + Dio + Hive + media_kit），以及大量依赖指向作者自建 fork 这一重要前提。",
+      "nodeIds": [
+        "document:README.md",
+        "config:pubspec.yaml",
+        "config:analysis_options.yaml"
+      ]
+    },
+    {
+      "order": 2,
+      "title": "应用启动与路由",
+      "description": "顺着 main() 看一次完整冷启动：Hive 初始化 → 平台并行初始化 → GetX 依赖注入 → HTTP 客户端与 Cookie 预置 → 系统 UI 与异常捕获 → runApp。再看 app_pages.dart 确认 GetX 路由表如何把 URL 映射到页面，根路由 '/' 即主框架。启动顺序存在硬依赖，注释里有详细说明。",
+      "nodeIds": [
+        "file:lib/main.dart",
+        "file:lib/build_config.dart",
+        "class:lib/build_config.dart:BuildConfig",
+        "file:lib/router/app_pages.dart",
+        "class:lib/router/app_pages.dart:Routes"
+      ]
+    },
+    {
+      "order": 3,
+      "title": "本地存储与配置",
+      "description": "在任何业务逻辑之前先理解数据从哪来。GStorage 集中持有全部 Hive Box 并注册 TypeAdapter；storage_key.dart 声明所有键名；Pref 把分散的设置包装成带默认值的静态读写属性。业务代码读配置一律走 Pref。",
+      "nodeIds": [
+        "file:lib/utils/storage.dart",
+        "class:lib/utils/storage.dart:GStorage",
+        "file:lib/utils/storage_key.dart",
+        "class:lib/utils/storage_key.dart:SettingBoxKey",
+        "file:lib/utils/storage_pref.dart",
+        "class:lib/utils/storage_pref.dart:Pref",
+        "file:lib/utils/cache_manager.dart"
+      ]
+    },
+    {
+      "order": 4,
+      "title": "账号与认证体系",
+      "description": "PiliPlus 最精妙的部分。先看 Account 密封类如何用 LoginAccount / AnonymousAccount / NoAccount 三态统一登录态，再看 Accounts 槽位注册表如何让一个账号同时占据主号/视频号/心跳号多个角色，最后看 AccountManager 拦截器：它按请求特征选账号、注入 Cookie 与 App 签名、并在响应后回存 Cookie。onRequest 里的顺序不可随意调换。",
+      "nodeIds": [
+        "file:lib/utils/accounts/account.dart",
+        "class:lib/utils/accounts/account.dart:Account",
+        "class:lib/utils/accounts/account.dart:LoginAccount",
+        "class:lib/utils/accounts/account.dart:AnonymousAccount",
+        "class:lib/utils/accounts/account.dart:NoAccount",
+        "file:lib/utils/accounts.dart",
+        "class:lib/utils/accounts.dart:Accounts",
+        "file:lib/utils/accounts/api_type.dart",
+        "class:lib/utils/accounts/api_type.dart:AccountType",
+        "file:lib/utils/accounts/grpc_headers.dart",
+        "class:lib/utils/accounts/grpc_headers.dart:GrpcHeaders",
+        "file:lib/utils/app_sign.dart",
+        "class:lib/utils/app_sign.dart:AppSign",
+        "file:lib/utils/accounts/account_adapter.dart",
+        "file:lib/utils/accounts/account_manager/account_mgr.dart",
+        "class:lib/utils/accounts/account_manager/account_mgr.dart:AccountManager"
+      ]
+    },
+    {
+      "order": 5,
+      "title": "HTTP 传输与业务包装",
+      "description": "Request 单例持有主 Dio 与 HTTP/1.1 回退客户端，配置重试、连接池与自定义解压，并暴露统一的 get/post。业务侧不看 Dio，只看三个约定：LoadingState 三态模型、业务 code==0 检查、失败统一返回 message 字段。再看 retry_interceptor 理解容错策略。",
+      "nodeIds": [
+        "file:lib/http/init.dart",
+        "class:lib/http/init.dart:Request",
+        "file:lib/http/loading_state.dart",
+        "class:lib/http/loading_state.dart:LoadingState",
+        "class:lib/http/loading_state.dart:Loading",
+        "class:lib/http/loading_state.dart:Success",
+        "class:lib/http/loading_state.dart:Error",
+        "file:lib/http/retry_interceptor.dart",
+        "class:lib/http/retry_interceptor.dart:RetryInterceptor",
+        "file:lib/http/constants.dart"
+      ]
+    },
+    {
+      "order": 6,
+      "title": "gRPC 传输层",
+      "description": "B 站新版接口走 gRPC-over-HTTP。GrpcReq 是全部客户端的底座：按5 字节帧头切分响应、gzip 阈值压缩解压、大响应跨 isolate。GrpcUrl 集中声明各服务域名。看完底座后，其余 dm/dyn/im/reply 等文件都只是薄薄一层端点声明。",
+      "nodeIds": [
+        "file:lib/grpc/grpc_req.dart",
+        "class:lib/grpc/grpc_req.dart:GrpcReq",
+        "file:lib/grpc/url.dart",
+        "class:lib/grpc/url.dart:GrpcUrl",
+        "file:lib/grpc/view.dart",
+        "file:lib/grpc/dm.dart",
+        "file:lib/grpc/dyn.dart",
+        "file:lib/grpc/im.dart",
+        "file:lib/grpc/reply.dart",
+        "file:lib/grpc/space.dart"
+      ]
+    },
+    {
+      "order": 7,
+      "title": "业务接口清单",
+      "description": "按业务域扫一遍 HTTP 包装层，确认每个功能对应哪个文件。这里只读方法名与注释即可，不必深究实现——它们都是「调Request → 检查 code → 返回 Success/Error」的统一范式。",
+      "nodeIds": [
+        "file:lib/http/login.dart",
+        "class:lib/http/login.dart:LoginHttp",
+        "file:lib/http/user.dart",
+        "class:lib/http/user.dart:UserHttp",
+        "file:lib/http/msg.dart",
+        "class:lib/http/msg.dart:MsgHttp"
+      ]
+    },
+    {
+      "order": 8,
+      "title": "页面范式：GetX Controller + View",
+      "description": "PiliPlus 所有页面都是同一套范式：Controller（GetxController）持有 Rx 状态并编排请求，View 通过 Obx 订阅重建。读 main/controller.dart 看应用级状态中枢（导航、未读轮询、账号切换），再看 home 与 login 两个规模较小的完整例子，最后挑战最复杂的 video/controller.dart。",
+      "nodeIds": [
+        "file:lib/pages/main/controller.dart",
+        "class:lib/pages/main/controller.dart:MainController",
+        "file:lib/pages/main/view.dart",
+        "class:lib/pages/main/view.dart:MainApp",
+        "class:lib/pages/main/view.dart:_MainAppState",
+        "file:lib/pages/home/controller.dart",
+        "class:lib/pages/home/controller.dart:HomeController",
+        "file:lib/pages/home/view.dart",
+        "class:lib/pages/home/view.dart:HomePage",
+        "file:lib/pages/login/controller.dart",
+        "class:lib/pages/login/controller.dart:LoginPageController"
+      ]
+    },
+    {
+      "order": 9,
+      "title": "视频播放链路",
+      "description": "全项目最复杂的控制器。VideoDetailController 串联清晰度获取与降级、播放器初始化、分P 列表、字幕、弹幕、竖屏手势、进度续播与心跳上报，建议按 onInit → _queryVideoUrl → playerInit 的调用顺序读，并结合本项目已加的行级注释。",
+      "nodeIds": [
+        "file:lib/pages/video/controller.dart",
+        "class:lib/pages/video/controller.dart:VideoDetailController",
+        "function:lib/pages/video/controller.dart:onInit",
+        "function:lib/pages/video/controller.dart:_queryVideoUrl",
+        "function:lib/pages/video/controller.dart:playerInit"
+      ]
+    },
+    {
+      "order": 10,
+      "title": "平台服务与直播长连接",
+      "description": "最后了解与操作系统打交道的部分：音频焦点、关机计时、日志落盘、服务定位器。直播的 TCP 私有协议是全项目少数不依赖生成代码的网络实现，单独理解包头编解码与心跳保活。",
+      "nodeIds": [
+        "file:lib/services/service_locator.dart",
+        "file:lib/services/account_service.dart",
+        "class:lib/services/account_service.dart:AccountService",
+        "class:lib/services/account_service.dart:AccountMixin",
+        "file:lib/services/audio_session.dart",
+        "class:lib/services/audio_session.dart:AudioSessionHandler",
+        "file:lib/services/shutdown_timer_service.dart",
+        "file:lib/services/logger.dart",
+        "class:lib/services/logger.dart:LoggerUtils",
+        "file:lib/tcp/live.dart",
+        "class:lib/tcp/live.dart:LiveMessageStream",
+        "class:lib/tcp/live.dart:PackageHeader"
+      ]
+    },
+    {
+      "order": 11,
+      "title": "通用基础与视觉常量",
+      "description": "收尾看跨层复用的部分：设计 token、静态资源、区号前缀数据表，以及一批 Dart 扩展方法。内容简单但能解释界面上大量「看起来凭空出现」的常量来自哪里。",
+      "nodeIds": [
+        "file:lib/common/style.dart",
+        "file:lib/common/assets.dart",
+        "file:lib/common/constants.dart",
+        "file:lib/common/dial_prefix.dart",
+        "file:lib/utils/extension/context_ext.dart",
+        "file:lib/utils/extension/theme_ext.dart",
+        "file:lib/utils/extension/get_ext.dart",
+        "file:lib/utils/extension/box_ext.dart",
+        "file:lib/utils/extension/rx_ext.dart"
+      ]
+    }
+  ]
+}

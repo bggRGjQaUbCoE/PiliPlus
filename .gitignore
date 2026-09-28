@@ -150,3 +150,6 @@ pili_release.json
 dist
 
 test*
+
+# Understand-Anything 本地工作目录（正式产物提交在 docs/knowledge-graph/）
+.ua/

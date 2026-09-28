@@ -1,0 +1,177 @@
+# .understandignore — patterns for files/dirs to exclude from analysis
+# Syntax: same as .gitignore (globs, # comments, ! negation, trailing / for dirs)
+# Lines below are suggestions — uncomment to activate.
+# Use ! prefix to force-include something excluded by defaults.
+#
+# Built-in defaults (always excluded unless negated):
+#   node_modules/, .git/, dist/, build/, obj/, *.lock, *.min.js, etc.
+#
+
+# --- From .gitignore (uncomment to exclude) ---
+
+# *.class
+# *.pyc
+# *.swp
+# .DS_Store
+# .atom/
+# .build/
+# .buildlog/
+# .history
+# .svn/
+# .swiftpm/
+# migrate_working_dir/
+# Package.resolved
+# *.iml
+# *.ipr
+# *.iws
+# /bin/cache/
+# /bin/internal/bootstrap.bat
+# /bin/internal/bootstrap.sh
+# /bin/mingit/
+# /dev/benchmarks/mega_gallery/
+# /dev/bots/.recipe_deps
+# /dev/bots/android_tools/
+# /dev/devicelab/ABresults*.json
+# /dev/docs/doc/
+# /dev/docs/api_docs.zip
+# /dev/docs/flutter.docs.zip
+# /dev/docs/lib/
+# /dev/docs/pubspec.yaml
+# /dev/integration_tests/**/xcuserdata
+# /dev/integration_tests/**/Pods
+# /packages/flutter/coverage/
+# version
+# analysis_benchmark.json
+# .packages.generated
+# **/doc/api/
+# **/ios/Flutter/.last_build_id
+# .dart_tool/
+# .flutter-plugins
+# .flutter-plugins-dependencies
+# .packages
+# .pub-cache/
+# .pub/
+# /build/
+# flutter_*.png
+# linked_*.ds
+# unlinked.ds
+# unlinked_spec.ds
+# app.*.map.json
+# **/android/**/gradle-wrapper.jar
+# .gradle/
+# **/android/captures/
+# **/android/gradlew
+# **/android/gradlew.bat
+# **/android/local.properties
+# **/android/**/GeneratedPluginRegistrant.java
+# **/android/key.properties
+# *.jks
+# **/ios/**/*.mode1v3
+# **/ios/**/*.mode2v3
+# **/ios/**/*.moved-aside
+# **/ios/**/*.pbxuser
+# **/ios/**/*.perspectivev3
+# **/ios/**/*sync/
+# **/ios/**/.sconsign.dblite
+# **/ios/**/.tags*
+# **/ios/**/.vagrant/
+# **/ios/**/DerivedData/
+# **/ios/**/Icon?
+# **/ios/**/Pods/
+# **/ios/**/.symlinks/
+# **/ios/**/profile
+# **/ios/**/xcuserdata
+# **/ios/.generated/
+# **/ios/Flutter/.last_build_id
+# **/ios/Flutter/App.framework
+# **/ios/Flutter/Flutter.framework
+# **/ios/Flutter/Flutter.podspec
+# **/ios/Flutter/Generated.xcconfig
+# **/ios/Flutter/ephemeral
+# **/ios/Flutter/app.flx
+# **/ios/Flutter/app.zip
+# **/ios/Flutter/flutter_assets/
+# **/ios/Flutter/flutter_export_environment.sh
+# **/ios/ServiceDefinitions.json
+# **/ios/Runner/GeneratedPluginRegistrant.*
+# **/Flutter/ephemeral/
+# **/Pods/
+# **/macos/Flutter/GeneratedPluginRegistrant.swift
+# **/macos/Flutter/ephemeral
+# **/xcuserdata/
+# **/windows/flutter/generated_plugin_registrant.cc
+# **/windows/flutter/generated_plugin_registrant.h
+# **/windows/flutter/generated_plugins.cmake
+# **/linux/flutter/generated_plugin_registrant.cc
+# **/linux/flutter/generated_plugin_registrant.h
+# **/linux/flutter/generated_plugins.cmake
+# app.*.symbols
+# !**/ios/**/default.mode1v3
+# !**/ios/**/default.mode2v3
+# !**/ios/**/default.pbxuser
+# !**/ios/**/default.perspectivev3
+# !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+# !/dev/ci/**/Gemfile.lock
+# !.vscode/settings.json
+# !.vscode/launch.json
+# !.vscode/tasks.json
+# devtools_options.yaml
+# .fvm/
+# pili_release.json
+# test*
+
+# --- Detected directories (uncomment to exclude) ---
+
+# docs/
+# test/
+
+# --- Test file patterns (uncomment to exclude) ---
+
+# JS / TS
+# *.test.*
+# *.spec.*
+# *.snap
+# C# / .NET
+# **/*Tests.cs
+# **/*Test.cs
+# **/*Fixture.cs
+# **/*.Tests.csproj
+# Java / Kotlin
+# **/src/test/**
+# **/*Test.java
+# **/*IT.java
+# **/*Spec.kt
+# Go
+# **/*_test.go
+# C++
+# **/*_test.cc
+# **/*_test.cpp
+# **/*_test.cxx
+# **/*Test.cc
+# **/*Test.cpp
+# **/*_unittest.cc
+# **/*_unittest.cpp
+# **/*_browsertest.cc
+# **/*_benchmark.cc
+# **/*Benchmark.cpp
+# Python
+# **/test_*.py
+# **/*_test.py
+# **/tests.py
+# **/conftest.py
+# Rust
+# **/tests.rs
+# **/test_*.rs
+# **/*_test.rs
+# **/bench_*.rs
+# **/*_bench.rs
+# Ruby
+# **/*_spec.rb
+# **/*_test.rb
+# **/test_*.rb
+# **/spec_helper.rb
+# **/test_helper.rb
+# **/rails_helper.rb
+# Swift
+# **/Tests/**/*.swift
+# **/Specs/**/*.swift

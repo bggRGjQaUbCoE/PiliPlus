@@ -956,7 +956,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           if (videoInfo.dash == null) {
             return const SizedBox.shrink();
           }
-          final videoFormat = videoInfo.supportFormats!;
+          final videoFormat = videoDetailController.selectableVideoFormats;
           final availableQa = videoInfo.dash!.video!.availableVideoQualities;
           return StaticPopupMenuButton<int>(
             tooltip: '画质',
@@ -2656,7 +2656,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                     qa = video.quality;
                     return false;
                   },
-                  itemBuilder: (context) => videoInfo.supportFormats!
+                  itemBuilder: (context) => videoDetailController
+                      .selectableVideoFormats
                       .map(
                         (i) => PopupMenuItem(
                           enabled: ids.contains(i.quality),

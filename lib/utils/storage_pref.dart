@@ -448,6 +448,15 @@ abstract final class Pref {
     return val as int;
   }
 
+  /// 播放时屏蔽的画质，全局生效，WiFi 与蜂窝共用
+  static Set<int> get blockedVideoQualities {
+    final quality = _setting.get(SettingBoxKey.blockedVideoQualities);
+    if (quality is List) {
+      return quality.whereType<int>().toSet();
+    }
+    return const {};
+  }
+
   static int get defaultAudioQa => _setting.get(
     SettingBoxKey.defaultAudioQa,
     defaultValue: AudioQuality.hiRes.code,

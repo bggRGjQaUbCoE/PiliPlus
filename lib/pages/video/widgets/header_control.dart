@@ -1039,7 +1039,7 @@ class HeaderControlState extends State<HeaderControl>
     final VideoQuality? currentVideoQa = videoDetailCtr.currentVideoQa.value;
     if (currentVideoQa == null) return;
 
-    final List<FormatItem> videoFormat = videoInfo.supportFormats!;
+    final List<FormatItem> videoFormat = videoDetailCtr.selectableVideoFormats;
     final availableQa = videoInfo.dash!.video!.availableVideoQualities;
 
     showBottomSheet(

@@ -421,15 +421,11 @@ class VideoDetailController extends GetxController
       if (halfScreenQa == null) return;
       final isWiFi = await ConnectivityUtils.isWiFi;
       final fsQa = isWiFi ? Pref.defaultVideoQa : Pref.defaultVideoQaCellular;
-      final curHighestVideoQa = data.dash!.video!.first.quality.code;
-      int targetQa = curHighestVideoQa;
-      if (data.acceptQuality?.isNotEmpty == true &&
-          fsQa <= curHighestVideoQa) {
-        targetQa = data.acceptQuality!.findClosestTarget(
-          (e) => e <= fsQa,
-          (a, b) => a > b ? a : b,
-        );
-      }
+      // 半屏 → 全屏与播放初始化的选档共用同一套规则（含画质屏蔽）
+      final targetQa = data.findAvailableVideoQuality(
+        fsQa,
+        blockedQualities: Pref.blockedVideoQualities,
+      );
       // 只升不降：目标 ≤ 当前则跳过切换，保留（可能是手动选择的）当前画质，
       // 避免进全屏降档重载闪屏。半屏/全屏预设回落到同一可用画质时也走此分支。
       final curQa = currentVideoQa.value?.code;
@@ -866,14 +862,27 @@ class VideoDetailController extends GetxController
     }
   }
 
+  /// 播放器手动画质菜单使用：接口声明的画质列表中剔除用户屏蔽的档位，
+  /// 底部控制栏弹窗与全屏「选择画质」共用
+  List<FormatItem> get selectableVideoFormats {
+    final formats = data.supportFormats;
+    if (formats == null) return const [];
+    final blocked = Pref.blockedVideoQualities;
+    if (blocked.isEmpty) return formats;
+    return formats.where((e) => !blocked.contains(e.quality)).toList();
+  }
+
   VideoItem findVideoByQa(int qa, {bool setCodecs = false}) {
     /// 根据currentVideoQa和currentDecodeFormats 重新设置videoUrl
     final allVideos = data.dash!.video!;
     final videoList = allVideos.where((i) => i.id == qa).toList();
 
     if (videoList.isEmpty) {
-      final fallback = allVideos.first;
-      currentVideoQa.value = VideoQuality.fromCode(fallback.id!);
+      // 目标画质没有对应流：兜底跳过被屏蔽的画质，全被屏蔽时才退回首个流
+      final fallback = data.fallbackVideo(
+        blockedQualities: Pref.blockedVideoQualities,
+      );
+      currentVideoQa.value = VideoQuality.fromCode(fallback.id);
       return fallback;
     }
 
@@ -1242,7 +1251,10 @@ class VideoDetailController extends GetxController
 
       // if (kDebugMode) debugPrint("allVideosList:${allVideosList}");
       final cacheVideoQa = plPlayerController.cacheVideoQa!;
-      final targetVideoQa = data.findAvailableVideoQuality(cacheVideoQa);
+      final targetVideoQa = data.findAvailableVideoQuality(
+        cacheVideoQa,
+        blockedQualities: Pref.blockedVideoQualities,
+      );
       currentVideoQa.value = VideoQuality.fromCode(targetVideoQa);
 
       /// 优先顺序 设置中指定解码格式 -> 当前可选的首个解码格式

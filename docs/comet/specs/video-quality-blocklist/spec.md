@@ -86,10 +86,11 @@ final targetQa = data.findAvailableVideoQuality(
 
 ## 手动画质菜单
 
-两处菜单都改用 `videoDetailController.selectableVideoFormats`，并保持各自既有的 `availableQa.contains(item.quality)` 可用性判断：
+三处菜单都改用 `videoDetailController.selectableVideoFormats`，并保持各自既有的 `availableQa.contains(item.quality)` 可用性判断：
 
 1. `lib/plugin/pl_player/view/view.dart` 的底部控制栏画质弹窗（`BottomControlType.qa`）：`itemBuilder` 遍历 `selectableVideoFormats`。
 2. `lib/pages/video/widgets/header_control.dart` 的 `showSetVideoQa()`：`videoFormat` 取 `selectableVideoFormats`。
+3. `lib/plugin/pl_player/view/view.dart` 的 `_screenshotWebp()` 动态截图「选择画质」弹窗：`itemBuilder` 遍历 `selectableVideoFormats`。
 
 菜单项被选中后的链路（`cacheVideoQa` → `currentVideoQa.value` → `updatePlayer()` → `persistVideoQa(quality)` 与 toast）不变。
 

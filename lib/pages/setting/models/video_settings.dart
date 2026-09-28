@@ -7,6 +7,7 @@ import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/widgets/cdn_node_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/cdn_select_dialog.dart';
+import 'package:PiliPlus/pages/setting/widgets/multi_select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/ordered_multi_select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/plugin/pl_player/models/audio_output_type.dart';
@@ -123,6 +124,20 @@ List<SettingsModel> get videoSettings => [
     getSubtitle: () =>
         '当前画质：${VideoQuality.fromCode(Pref.defaultVideoQaCellular).desc}',
     onTap: _showVideoCellularQaDialog,
+  ),
+  NormalModel(
+    title: '屏蔽画质',
+    leading: const Icon(MdiIcons.eyeOffOutline),
+    getSubtitle: () {
+      final blocked = Pref.blockedVideoQualities;
+      if (blocked.isEmpty) return '未屏蔽任何画质';
+      final desc = VideoQuality.values
+          .where((e) => blocked.contains(e.code))
+          .map((e) => e.desc)
+          .join('、');
+      return '已屏蔽：$desc';
+    },
+    onTap: _showBlockedVideoQaDialog,
   ),
   NormalModel(
     title: '默认音质',
@@ -350,6 +365,28 @@ Future<void> _showVideoCellularQaDialog(
       SettingBoxKey.defaultVideoQaCellular,
       res,
     );
+    setState();
+  }
+}
+
+Future<void> _showBlockedVideoQaDialog(
+  BuildContext context,
+  VoidCallback setState,
+) async {
+  final res = await showDialog<Set<int>>(
+    context: context,
+    builder: (context) => MultiSelectDialog<int>(
+      title: '屏蔽画质',
+      initValues: Pref.blockedVideoQualities,
+      values: {for (final e in VideoQuality.values) e.code: e.desc},
+    ),
+  );
+  if (res != null) {
+    await GStorage.setting.put(
+      SettingBoxKey.blockedVideoQualities,
+      res.toList(),
+    );
+    SmartDialog.showToast('设置成功');
     setState();
   }
 }

@@ -58,14 +58,65 @@ class PlayUrlModel {
   Language? language;
   List<SegmentItemModel>? clipInfoList;
 
-  int findAvailableVideoQuality(int preferredQuality) {
-    final curHighestVideoQa = dash!.video!.first.quality.code;
-    if (acceptQuality case final qualitys?
-        when preferredQuality <= curHighestVideoQa) {
-      return qualitys.findClosestTarget((e) => e <= preferredQuality, max);
-    } else {
-      return curHighestVideoQa;
+  /// 在 [acceptQuality] 候选集中挑选不超过 [preferredQuality] 的最高画质码。
+  ///
+  /// [blockedQualities] 命中的画质会先从候选集中剔除；剔除后没有候选时
+  /// 退回未剔除的结果，保证播放不中断。
+  /// 候选中没有不超过首选的档位时，沿用 `findClosestTarget` 的既有兜底
+  /// （取候选集最大值）。
+  int _selectFromCandidates(
+    List<int> candidates,
+    int preferredQuality,
+    Set<int> blockedQualities,
+  ) {
+    if (blockedQualities.isNotEmpty) {
+      final allowed = candidates
+          .where((e) => !blockedQualities.contains(e))
+          .toList();
+      if (allowed.isNotEmpty) {
+        return allowed.findClosestTarget((e) => e <= preferredQuality, max);
+      }
     }
+    return candidates.findClosestTarget((e) => e <= preferredQuality, max);
+  }
+
+  /// 返回实际上应播放的画质码。
+  ///
+  /// 首选画质不超过视频最高可用档时，从 [acceptQuality] 中取不超过首选的最高档；
+  /// 首选高于最高可用档时取最高可用档，被 [blockedQualities] 屏蔽则退到不超过它的
+  /// 最高未屏蔽档。两种情况都先剔除被屏蔽的档位；剔除后无候选时退回本方法原来的结果。
+  int findAvailableVideoQuality(
+    int preferredQuality, {
+    Set<int> blockedQualities = const {},
+  }) {
+    final curHighestVideoQa = dash!.video!.first.quality.code;
+    final qualitys = acceptQuality;
+    if (qualitys != null &&
+        qualitys.isNotEmpty &&
+        preferredQuality <= curHighestVideoQa) {
+      return _selectFromCandidates(qualitys, preferredQuality, blockedQualities);
+    }
+    if (qualitys != null &&
+        blockedQualities.isNotEmpty &&
+        blockedQualities.contains(curHighestVideoQa)) {
+      final allowed = qualitys
+          .where((e) => !blockedQualities.contains(e) && e <= curHighestVideoQa)
+          .toList();
+      if (allowed.isNotEmpty) return allowed.reduce(max);
+    }
+    return curHighestVideoQa;
+  }
+
+  /// 目标画质没有对应视频流时的兜底视频流：第一个未被 [blockedQualities] 屏蔽的
+  /// 可用流；全部被屏蔽时退回首个流，与旧版一致，保证有流可播。
+  VideoItem fallbackVideo({Set<int> blockedQualities = const {}}) {
+    final videos = dash!.video!;
+    if (blockedQualities.isNotEmpty) {
+      for (final video in videos) {
+        if (!blockedQualities.contains(video.id)) return video;
+      }
+    }
+    return videos.first;
   }
 
   @pragma('vm:notify-debugger-on-exception')

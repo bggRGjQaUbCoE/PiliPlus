@@ -174,10 +174,11 @@ test*
 !docs/comet/
 !docs/comet/**
 # <<< Comet managed artifacts <<<
+
+.agents
 # >>> Comet managed project state >>>
 !/.comet/
 /.comet/*
 !/.comet/config.yaml
 # <<< Comet managed project state <<<
-
-.agents
+docs/comet/.DS_Store

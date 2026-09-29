@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/desktop/desktop_content.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
@@ -84,20 +85,23 @@ class _DownloadSearchPageState
   @override
   Widget buildList(List<BiliDownloadEntryInfo> list) {
     if (list.isNotEmpty) {
-      return SliverGrid.builder(
-        gridDelegate: gridDelegate,
-        itemBuilder: (context, index) {
-          final entry = list[index];
-          return DetailItem(
-            entry: entry,
-            progress: widget.progress,
-            downloadService: _downloadService,
-            showTitle: true,
-            onDelete: () => controller.onRemoveSingle(index, entry),
-            controller: controller,
-          );
-        },
-        itemCount: list.length,
+      return desktopLimitSliver(
+        SliverGrid.builder(
+          gridDelegate: gridDelegate,
+          itemBuilder: (context, index) {
+            final entry = list[index];
+            return DetailItem(
+              entry: entry,
+              progress: widget.progress,
+              downloadService: _downloadService,
+              showTitle: true,
+              onDelete: () => controller.onRemoveSingle(index, entry),
+              controller: controller,
+            );
+          },
+          itemCount: list.length,
+        ),
+        maxWidth: 1280,
       );
     }
     return const HttpError();

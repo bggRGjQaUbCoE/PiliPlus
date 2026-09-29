@@ -9,6 +9,7 @@ import 'package:PiliPlus/models/user/danmaku_block.dart';
 import 'package:PiliPlus/models/user/danmaku_rule.dart';
 import 'package:PiliPlus/pages/danmaku_block/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:flutter/services.dart';
@@ -103,9 +104,12 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
     if (list.isEmpty) {
       return scrollableError;
     }
-    return ListView.builder(
+    // M8：桌面内容限宽居中（弹幕屏蔽列表）。
+    final listView = ListView.builder(
       itemCount: list.length,
-      padding: .only(bottom: padding.bottom + 100),
+      padding: .only(
+        bottom: PlatformUtils.isDesktop ? 24 : padding.bottom + 100,
+      ),
       itemBuilder: (context, itemIndex) {
         final SimpleRule item = list[itemIndex];
         final child = iconButton(
@@ -149,6 +153,15 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
         );
       },
     );
+    if (PlatformUtils.isDesktop) {
+      return Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1280),
+          child: listView,
+        ),
+      );
+    }
+    return listView;
   }
 
   void _showAddDialog(

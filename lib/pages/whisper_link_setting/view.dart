@@ -6,6 +6,7 @@ import 'package:PiliPlus/models_new/msg/msg_dnd/uid_setting.dart';
 import 'package:PiliPlus/models_new/msg/session_ss/data.dart';
 import 'package:PiliPlus/pages/whisper_link_setting/controller.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -47,46 +48,55 @@ class _WhisperLinkSettingPageState extends State<WhisperLinkSettingPage> {
       indent: 16,
       color: theme.colorScheme.outline.withValues(alpha: 0.1),
     );
+    final listBody = ListView(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
+      ),
+      children: [
+        divider,
+        Obx(
+          () => _buildUserInfo(theme, divider, _controller.userState.value),
+        ),
+        Obx(
+          () => _buildSessionSs(
+            theme,
+            divider,
+            divider2,
+            _controller.sessionSs.value,
+          ),
+        ),
+        Obx(
+          () {
+            if (_controller.sessionSs.value case Success(:final response)) {
+              return _buildBlockItem(response.followStatus == 128);
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+        divider2,
+        ListTile(
+          dense: true,
+          onTap: _controller.report,
+          title: const Text('举报', style: TextStyle(fontSize: 14)),
+          trailing: Icon(
+            Icons.keyboard_arrow_right,
+            color: theme.colorScheme.outline,
+          ),
+        ),
+        divider,
+      ],
+    );
     return SimpleScaffold(
       appBar: AppBar(title: const Text('聊天设置')),
-      body: ListView(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
-        ),
-        children: [
-          divider,
-          Obx(
-            () => _buildUserInfo(theme, divider, _controller.userState.value),
-          ),
-          Obx(
-            () => _buildSessionSs(
-              theme,
-              divider,
-              divider2,
-              _controller.sessionSs.value,
-            ),
-          ),
-          Obx(
-            () {
-              if (_controller.sessionSs.value case Success(:final response)) {
-                return _buildBlockItem(response.followStatus == 128);
-              }
-              return const SizedBox.shrink();
-            },
-          ),
-          divider2,
-          ListTile(
-            dense: true,
-            onTap: _controller.report,
-            title: const Text('举报', style: TextStyle(fontSize: 14)),
-            trailing: Icon(
-              Icons.keyboard_arrow_right,
-              color: theme.colorScheme.outline,
-            ),
-          ),
-          divider,
-        ],
-      ),
+      // M8：桌面内容限宽居中（聊天设置）。
+      body: PlatformUtils.isDesktop
+          ? Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1280),
+                child: listBody,
+              ),
+            )
+          : listBody,
     );
   }
 

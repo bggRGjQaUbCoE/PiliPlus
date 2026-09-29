@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/desktop/desktop_content.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_insets_safe_area.dart';
@@ -94,19 +95,23 @@ class _SettingsSearchPageState
         child: CustomScrollView(
           slivers: [
             ViewSliverSafeArea(
-              sliver: Obx(
-                () => _list.isEmpty
-                    ? const HttpError()
-                    : SliverWaterfallFlow(
-                        gridDelegate:
-                            SliverWaterfallFlowDelegateWithMaxCrossAxisExtent(
-                              maxCrossAxisExtent: Grid.smallCardWidth * 2,
-                            ),
-                        delegate: SliverChildBuilderDelegate(
-                          (_, index) => _list[index].widget,
-                          childCount: _list.length,
+              // M8：桌面内容限宽居中（设置搜索）。
+              sliver: desktopLimitSliver(
+                Obx(
+                  () => _list.isEmpty
+                      ? const HttpError()
+                      : SliverWaterfallFlow(
+                          gridDelegate:
+                              SliverWaterfallFlowDelegateWithMaxCrossAxisExtent(
+                                maxCrossAxisExtent: Grid.smallCardWidth * 2,
+                              ),
+                          delegate: SliverChildBuilderDelegate(
+                            (_, index) => _list[index].widget,
+                            childCount: _list.length,
+                          ),
                         ),
-                      ),
+                ),
+                maxWidth: 1280,
               ),
             ),
           ],

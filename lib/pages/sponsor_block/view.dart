@@ -10,6 +10,7 @@ import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
 import 'package:PiliPlus/utils/accounts/account_manager/account_mgr.dart';
 import 'package:PiliPlus/utils/filtering_text.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -480,49 +481,58 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
       ),
     );
 
+    final bodyScroll = CustomScrollView(
+      slivers: [
+        dividerL,
+        SliverToBoxAdapter(child: _serverStatusItem(theme, titleStyle)),
+        dividerL,
+        SliverToBoxAdapter(
+          child: _blockLimitItem(theme, titleStyle, subTitleStyle),
+        ),
+        sliverDivider,
+        SliverToBoxAdapter(child: _blockToastItem(titleStyle)),
+        sliverDivider,
+        SliverToBoxAdapter(child: _blockTrackItem(titleStyle, subTitleStyle)),
+        sliverDivider,
+        SliverToBoxAdapter(
+          child: _blockUserInfo(theme, titleStyle, subTitleStyle),
+        ),
+        dividerL,
+        SliverList.separated(
+          itemCount: _blockSettings.length,
+          itemBuilder: (context, index) =>
+              _buildItem(theme, index, _blockSettings[index]),
+          separatorBuilder: (context, index) => divider,
+        ),
+        dividerL,
+        SliverToBoxAdapter(
+          child: _userIdItem(theme, titleStyle, subTitleStyle),
+        ),
+        sliverDivider,
+        SliverToBoxAdapter(
+          child: _blockServerItem(theme, titleStyle, subTitleStyle),
+        ),
+        dividerL,
+        SliverToBoxAdapter(child: _aboutItem(titleStyle, subTitleStyle)),
+        dividerL,
+        SliverToBoxAdapter(
+          child: SizedBox(
+            height: 55 + MediaQuery.viewPaddingOf(context).bottom,
+          ),
+        ),
+      ],
+    );
     return SimpleScaffold(
       appBar: AppBar(title: const Text('空降助手')),
-      body: CustomScrollView(
-        slivers: [
-          dividerL,
-          SliverToBoxAdapter(child: _serverStatusItem(theme, titleStyle)),
-          dividerL,
-          SliverToBoxAdapter(
-            child: _blockLimitItem(theme, titleStyle, subTitleStyle),
-          ),
-          sliverDivider,
-          SliverToBoxAdapter(child: _blockToastItem(titleStyle)),
-          sliverDivider,
-          SliverToBoxAdapter(child: _blockTrackItem(titleStyle, subTitleStyle)),
-          sliverDivider,
-          SliverToBoxAdapter(
-            child: _blockUserInfo(theme, titleStyle, subTitleStyle),
-          ),
-          dividerL,
-          SliverList.separated(
-            itemCount: _blockSettings.length,
-            itemBuilder: (context, index) =>
-                _buildItem(theme, index, _blockSettings[index]),
-            separatorBuilder: (context, index) => divider,
-          ),
-          dividerL,
-          SliverToBoxAdapter(
-            child: _userIdItem(theme, titleStyle, subTitleStyle),
-          ),
-          sliverDivider,
-          SliverToBoxAdapter(
-            child: _blockServerItem(theme, titleStyle, subTitleStyle),
-          ),
-          dividerL,
-          SliverToBoxAdapter(child: _aboutItem(titleStyle, subTitleStyle)),
-          dividerL,
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 55 + MediaQuery.viewPaddingOf(context).bottom,
-            ),
-          ),
-        ],
-      ),
+      // M8：桌面内容限宽居中（空降助手）。
+      body: PlatformUtils.isDesktop
+          ? Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1280),
+                child: bodyScroll,
+              ),
+            )
+          : bodyScroll,
     );
   }
 

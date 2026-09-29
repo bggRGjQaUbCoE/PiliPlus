@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:PiliPlus/common/widgets/appbar/appbar.dart';
+import 'package:PiliPlus/common/widgets/desktop/desktop_content.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -146,42 +147,48 @@ class _DownloadDetailPageState extends State<DownloadDetailPage>
           body: CustomScrollView(
             slivers: [
               ViewSliverSafeArea(
-                sliver: Obx(() {
-                  if (_downloadItems.isNotEmpty) {
-                    return SliverGrid.builder(
-                      gridDelegate: gridDelegate,
-                      itemBuilder: (context, index) {
-                        final entry = _downloadItems[index];
-                        return DetailItem(
-                          entry: entry,
-                          progress: widget.progress,
-                          downloadService: _downloadService,
-                          showTitle: false,
-                          onDelete: () async {
-                            if (_downloadItems.length == 1) {
-                              await _closeSub();
-                              await _downloadService.deletePage(
-                                pageDirPath: entry.pageDirPath,
-                              );
-                              if (mounted) {
-                                Get.back();
+                // M8：桌面内容限宽居中（下载详情）。
+                sliver: desktopLimitSliver(
+                  Obx(() {
+                    if (_downloadItems.isNotEmpty) {
+                      return SliverGrid.builder(
+                        gridDelegate: gridDelegate,
+                        itemBuilder: (context, index) {
+                          final entry = _downloadItems[index];
+                          return DetailItem(
+                            entry: entry,
+                            progress: widget.progress,
+                            downloadService: _downloadService,
+                            showTitle: false,
+                            onDelete: () async {
+                              if (_downloadItems.length == 1) {
+                                await _closeSub();
+                                await _downloadService.deletePage(
+                                  pageDirPath: entry.pageDirPath,
+                                );
+                                if (mounted) {
+                                  Get.back();
+                                }
+                              } else {
+                                _downloadService.deleteDownload(
+                                  entry: entry,
+                                  removeList: true,
+                                );
                               }
-                            } else {
-                              _downloadService.deleteDownload(
-                                entry: entry,
-                                removeList: true,
+                              GStorage.watchProgress.delete(
+                                entry.cid.toString(),
                               );
-                            }
-                            GStorage.watchProgress.delete(entry.cid.toString());
-                          },
-                          controller: this,
-                        );
-                      },
-                      itemCount: _downloadItems.length,
-                    );
-                  }
-                  return const HttpError();
-                }),
+                            },
+                            controller: this,
+                          );
+                        },
+                        itemCount: _downloadItems.length,
+                      );
+                    }
+                    return const HttpError();
+                  }),
+                  maxWidth: 1280,
+                ),
               ),
             ],
           ),

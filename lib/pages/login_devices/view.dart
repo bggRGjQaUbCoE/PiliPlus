@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/desktop/desktop_content.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -31,8 +32,15 @@ class LoginDevicesPageState extends State<LoginDevicesPage> {
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             ViewSliverSafeArea(
-              sliver: Obx(
-                () => _buildBody(colorScheme, _controller.loadingState.value),
+              // M8：桌面内容限宽居中（登录设备）。
+              sliver: desktopLimitSliver(
+                Obx(
+                  () => _buildBody(
+                    colorScheme,
+                    _controller.loadingState.value,
+                  ),
+                ),
+                maxWidth: 1280,
               ),
             ),
           ],

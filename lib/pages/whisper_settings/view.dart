@@ -7,6 +7,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/whisper_block/view.dart';
 import 'package:PiliPlus/pages/whisper_settings/controller.dart';
 import 'package:PiliPlus/pages/whisper_settings/widgets/item.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -44,7 +45,17 @@ class _WhisperSettingsPageState extends State<WhisperSettingsPage> {
       appBar: AppBar(
         title: Obx(() => Text(_controller.title.value)),
       ),
-      body: Obx(() => _buildBody(theme, _controller.loadingState.value)),
+      // M8：桌面内容限宽居中（私信设置）。
+      body: Obx(
+        () => PlatformUtils.isDesktop
+            ? Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1280),
+                  child: _buildBody(theme, _controller.loadingState.value),
+                ),
+              )
+            : _buildBody(theme, _controller.loadingState.value),
+      ),
     );
   }
 

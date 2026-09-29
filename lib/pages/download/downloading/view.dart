@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/appbar/appbar.dart';
+import 'package:PiliPlus/common/widgets/desktop/desktop_content.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -66,33 +67,37 @@ class _DownloadingPageState extends State<DownloadingPage>
           body: CustomScrollView(
             slivers: [
               ViewSliverSafeArea(
-                sliver: Obx(() {
-                  if (_waitDownloadQueue.isNotEmpty) {
-                    return SliverGrid.builder(
-                      gridDelegate: gridDelegate,
-                      itemCount: _waitDownloadQueue.length,
-                      itemBuilder: (context, index) {
-                        final entry = _waitDownloadQueue[index];
-                        final isCurr = entry.cid == _downloadService.curCid;
-                        return DetailItem(
-                          entry: entry,
-                          downloadService: _downloadService,
-                          showTitle: true,
-                          isCurr: isCurr,
-                          onDelete: () => _downloadService.deleteDownload(
+                // M8：桌面内容限宽居中（正在缓存）。
+                sliver: desktopLimitSliver(
+                  Obx(() {
+                    if (_waitDownloadQueue.isNotEmpty) {
+                      return SliverGrid.builder(
+                        gridDelegate: gridDelegate,
+                        itemCount: _waitDownloadQueue.length,
+                        itemBuilder: (context, index) {
+                          final entry = _waitDownloadQueue[index];
+                          final isCurr = entry.cid == _downloadService.curCid;
+                          return DetailItem(
                             entry: entry,
-                            removeQueue: true,
-                            downloadNext:
-                                isCurr &&
-                                entry.status == DownloadStatus.downloading,
-                          ),
-                          controller: this,
-                        );
-                      },
-                    );
-                  }
-                  return const HttpError();
-                }),
+                            downloadService: _downloadService,
+                            showTitle: true,
+                            isCurr: isCurr,
+                            onDelete: () => _downloadService.deleteDownload(
+                              entry: entry,
+                              removeQueue: true,
+                              downloadNext:
+                                  isCurr &&
+                                  entry.status == DownloadStatus.downloading,
+                            ),
+                            controller: this,
+                          );
+                        },
+                      );
+                    }
+                    return const HttpError();
+                  }),
+                  maxWidth: 1280,
+                ),
               ),
             ],
           ),

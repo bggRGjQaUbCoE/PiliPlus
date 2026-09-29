@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/space_setting/privacy.dart';
 import 'package:PiliPlus/pages/space_setting/controller.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -23,7 +24,18 @@ class _SpaceSettingPageState extends State<SpaceSettingPage> {
     final theme = Theme.of(context);
     return SimpleScaffold(
       appBar: AppBar(title: const Text('空间设置')),
-      body: Obx(() => _buildBody(theme, _controller.loadingState.value)),
+      // M8：桌面内容限宽居中（空间设置）。
+      body: Obx(() {
+        final body = _buildBody(theme, _controller.loadingState.value);
+        return PlatformUtils.isDesktop
+            ? Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1280),
+                  child: body,
+                ),
+              )
+            : body;
+      }),
     );
   }
 

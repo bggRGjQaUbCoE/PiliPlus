@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_insets_safe_area.dart';
 import 'package:PiliPlus/pages/webdav/webdav.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -40,87 +41,96 @@ class _WebDavSettingPageState extends State<WebDavSettingPage> {
   Widget build(BuildContext context) {
     final showAppBar = widget.showAppBar;
     final padding = MediaQuery.viewPaddingOf(context);
+    final form = ViewInsetsSafeArea(
+      child: ListView(
+        padding: padding.copyWith(
+          top: 20,
+          left: 20 + (showAppBar ? padding.left : 0),
+          right: 20 + (showAppBar ? padding.right : 0),
+          bottom: padding.bottom + 100,
+        ),
+        children: [
+          TextField(
+            controller: _uriCtr,
+            decoration: const InputDecoration(
+              labelText: '地址',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 20),
+          TextField(
+            controller: _usernameCtr,
+            decoration: const InputDecoration(
+              labelText: '用户',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 20),
+          TextField(
+            controller: _passwordCtr,
+            autofillHints: const [AutofillHints.password],
+            decoration: InputDecoration(
+              labelText: '密码',
+              border: const OutlineInputBorder(),
+              suffixIcon: IconButton(
+                onPressed: () => setState(() => _obscureText = !_obscureText),
+                icon: _obscureText
+                    ? const Icon(Icons.visibility)
+                    : const Icon(Icons.visibility_off),
+              ),
+            ),
+            obscureText: _obscureText,
+          ),
+          const SizedBox(height: 20),
+          TextField(
+            controller: _directoryCtr,
+            decoration: const InputDecoration(
+              labelText: '路径',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton.tonal(
+                  style: FilledButton.styleFrom(
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: Style.mdRadius,
+                    ),
+                  ),
+                  onPressed: WebDav().backup,
+                  child: const Text('备份设置'),
+                ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: FilledButton.tonal(
+                  style: FilledButton.styleFrom(
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: Style.mdRadius,
+                    ),
+                  ),
+                  onPressed: WebDav().restore,
+                  child: const Text('恢复设置'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
     return SimpleScaffold(
       appBar: showAppBar ? AppBar(title: const Text('WebDAV 设置')) : null,
-      body: ViewInsetsSafeArea(
-        child: ListView(
-          padding: padding.copyWith(
-            top: 20,
-            left: 20 + (showAppBar ? padding.left : 0),
-            right: 20 + (showAppBar ? padding.right : 0),
-            bottom: padding.bottom + 100,
-          ),
-          children: [
-            TextField(
-              controller: _uriCtr,
-              decoration: const InputDecoration(
-                labelText: '地址',
-                border: OutlineInputBorder(),
+      // M8：桌面内容限宽居中（WebDAV 设置）。
+      body: PlatformUtils.isDesktop
+          ? Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
+                child: form,
               ),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _usernameCtr,
-              decoration: const InputDecoration(
-                labelText: '用户',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _passwordCtr,
-              autofillHints: const [AutofillHints.password],
-              decoration: InputDecoration(
-                labelText: '密码',
-                border: const OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  onPressed: () => setState(() => _obscureText = !_obscureText),
-                  icon: _obscureText
-                      ? const Icon(Icons.visibility)
-                      : const Icon(Icons.visibility_off),
-                ),
-              ),
-              obscureText: _obscureText,
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _directoryCtr,
-              decoration: const InputDecoration(
-                labelText: '路径',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: FilledButton.tonal(
-                    style: FilledButton.styleFrom(
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: Style.mdRadius,
-                      ),
-                    ),
-                    onPressed: WebDav().backup,
-                    child: const Text('备份设置'),
-                  ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: FilledButton.tonal(
-                    style: FilledButton.styleFrom(
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: Style.mdRadius,
-                      ),
-                    ),
-                    onPressed: WebDav().restore,
-                    child: const Text('恢复设置'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+            )
+          : form,
       fab: Padding(
         padding: .only(
           right: kFloatingActionButtonMargin + (showAppBar ? padding.right : 0),

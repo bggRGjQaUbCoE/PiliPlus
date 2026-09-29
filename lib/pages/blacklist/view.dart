@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/skeleton/msg_feed_top.dart';
 import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
+import 'package:PiliPlus/common/widgets/desktop/desktop_content.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -10,6 +11,7 @@ import 'package:PiliPlus/models_new/blacklist/list.dart';
 import 'package:PiliPlus/pages/blacklist/controller.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/global_data.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -52,10 +54,16 @@ class _BlackListPageState extends State<BlackListPage> {
           slivers: [
             SliverPadding(
               padding: EdgeInsets.only(
-                bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
+                bottom: PlatformUtils.isDesktop
+                    ? 24
+                    : MediaQuery.viewPaddingOf(context).bottom + 100,
               ),
-              sliver: Obx(
-                () => _buildBody(_blackListController.loadingState.value),
+              // M8：桌面内容限宽居中（黑名单）。
+              sliver: desktopLimitSliver(
+                Obx(
+                  () => _buildBody(_blackListController.loadingState.value),
+                ),
+                maxWidth: 1280,
               ),
             ),
           ],

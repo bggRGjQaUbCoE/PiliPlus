@@ -116,107 +116,127 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
               ],
             ),
           ),
-          body: Padding(
-            padding: EdgeInsets.only(left: padding.left, right: padding.right),
-            child: CustomScrollView(
-              slivers: [
-                Obx(() {
-                  final entry =
-                      _downloadService.waitDownloadQueue.firstWhereOrNull(
-                        (e) => e.cid == _downloadService.curCid,
-                      ) ??
-                      _downloadService.waitDownloadQueue.firstOrNull;
-                  if (entry != null) {
-                    return SliverMainAxisGroup(
-                      slivers: [
-                        SliverPadding(
-                          padding: const EdgeInsets.only(left: 12, bottom: 7),
-                          sliver: SliverToBoxAdapter(
-                            child: Text(
-                              '正在缓存 (${_downloadService.waitDownloadQueue.length})',
-                            ),
-                          ),
-                        ),
-                        SliverToBoxAdapter(
-                          child: SizedBox(
-                            height: 110,
-                            child: DetailItem(
-                              entry: entry,
-                              progress: _progress,
-                              downloadService: _downloadService,
-                              showTitle: true,
-                              isCurr: true,
-                              controller: _controller,
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  }
-                  return const SliverToBoxAdapter();
-                }),
-                Obx(() {
-                  if (_controller.pages.isNotEmpty) {
-                    return SliverMainAxisGroup(
-                      slivers: [
-                        SliverPadding(
-                          padding: EdgeInsets.only(
-                            left: 12,
-                            bottom: 7,
-                            top: _downloadService.waitDownloadQueue.isEmpty
-                                ? 0
-                                : 7,
-                          ),
-                          sliver: const SliverToBoxAdapter(
-                            child: Text('已缓存视频'),
-                          ),
-                        ),
-                        SliverGrid.builder(
-                          gridDelegate: gridDelegate,
-                          itemBuilder: (context, index) {
-                            final item = _controller.pages[index];
-                            if (item.entries.length == 1) {
-                              final entry = item.entries.first;
-                              return DetailItem(
-                                entry: entry,
-                                progress: _progress,
-                                downloadService: _downloadService,
-                                showTitle: true,
-                                onDelete: () {
-                                  _downloadService.deleteDownload(
-                                    entry: entry,
-                                    removeList: true,
-                                  );
-                                  GStorage.watchProgress.delete(
-                                    entry.cid.toString(),
-                                  );
-                                },
-                                checked: item.checked,
-                                onSelect: (_) => _controller.onSelect(item),
-                                controller: _controller,
-                              );
-                            }
-                            return _buildItem(theme, item, enableMultiSelect);
-                          },
-                          itemCount: _controller.pages.length,
-                        ),
-                      ],
-                    );
-                  }
-                  if (_downloadService.waitDownloadQueue.isNotEmpty) {
-                    return const SliverToBoxAdapter();
-                  }
-                  return const HttpError();
-                }),
-                SliverToBoxAdapter(
-                  child: SizedBox(height: padding.bottom + 100),
-                ),
-              ],
-            ),
-          ),
+          // M8：桌面内容限宽居中（离线缓存）。
+          body: PlatformUtils.isDesktop
+              ? Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1280),
+                    child: _pageBody(theme, padding, enableMultiSelect),
+                  ),
+                )
+              : _pageBody(theme, padding, enableMultiSelect),
         ),
       );
     });
+  }
+
+  Widget _pageBody(
+    ThemeData theme,
+    EdgeInsets padding,
+    bool enableMultiSelect,
+  ) {
+    return Padding(
+      padding: EdgeInsets.only(left: padding.left, right: padding.right),
+      child: CustomScrollView(
+        slivers: [
+          Obx(() {
+            final entry =
+                _downloadService.waitDownloadQueue.firstWhereOrNull(
+                  (e) => e.cid == _downloadService.curCid,
+                ) ??
+                _downloadService.waitDownloadQueue.firstOrNull;
+            if (entry != null) {
+              return SliverMainAxisGroup(
+                slivers: [
+                  SliverPadding(
+                    padding: const EdgeInsets.only(left: 12, bottom: 7),
+                    sliver: SliverToBoxAdapter(
+                      child: Text(
+                        '正在缓存 (${_downloadService.waitDownloadQueue.length})',
+                      ),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 110,
+                      child: DetailItem(
+                        entry: entry,
+                        progress: _progress,
+                        downloadService: _downloadService,
+                        showTitle: true,
+                        isCurr: true,
+                        controller: _controller,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }
+            return const SliverToBoxAdapter();
+          }),
+          Obx(() {
+            if (_controller.pages.isNotEmpty) {
+              return SliverMainAxisGroup(
+                slivers: [
+                  SliverPadding(
+                    padding: EdgeInsets.only(
+                      left: 12,
+                      bottom: 7,
+                      top: _downloadService.waitDownloadQueue.isEmpty ? 0 : 7,
+                    ),
+                    sliver: const SliverToBoxAdapter(
+                      child: Text('已缓存视频'),
+                    ),
+                  ),
+                  SliverGrid.builder(
+                    gridDelegate: gridDelegate,
+                    itemBuilder: (context, index) {
+                      final item = _controller.pages[index];
+                      if (item.entries.length == 1) {
+                        final entry = item.entries.first;
+                        return DetailItem(
+                          entry: entry,
+                          progress: _progress,
+                          downloadService: _downloadService,
+                          showTitle: true,
+                          onDelete: () {
+                            _downloadService.deleteDownload(
+                              entry: entry,
+                              removeList: true,
+                            );
+                            GStorage.watchProgress.delete(
+                              entry.cid.toString(),
+                            );
+                          },
+                          checked: item.checked,
+                          onSelect: (_) => _controller.onSelect(item),
+                          controller: _controller,
+                        );
+                      }
+                      return _buildItem(
+                        theme,
+                        item,
+                        enableMultiSelect,
+                      );
+                    },
+                    itemCount: _controller.pages.length,
+                  ),
+                ],
+              );
+            }
+            if (_downloadService.waitDownloadQueue.isNotEmpty) {
+              return const SliverToBoxAdapter();
+            }
+            return const HttpError();
+          }),
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: PlatformUtils.isDesktop ? 24 : padding.bottom + 100,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildItem(

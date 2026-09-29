@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:PiliPlus/common/widgets/desktop/desktop_content.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
@@ -86,7 +87,13 @@ class _DLNAPageState extends State<DLNAPage> {
       body: CustomScrollView(
         slivers: [
           if (_isSearching) linearLoading,
-          ViewSliverSafeArea(sliver: _buildBody(colorScheme)),
+          ViewSliverSafeArea(
+            // M8：桌面内容限宽居中（投屏设备）。
+            sliver: desktopLimitSliver(
+              _buildBody(colorScheme),
+              maxWidth: 1280,
+            ),
+          ),
         ],
       ),
     );

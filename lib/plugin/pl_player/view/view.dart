@@ -879,17 +879,14 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       ),
 
       /// 网页全屏：播放器铺满当前程序窗口，不进入系统级全屏；再次点击恢复原布局
+      /// 尺寸/图标大小与「全屏」按钮完全一致
       BottomControlType.webFullScreen => ComBtn(
         width: widgetWidth,
         height: 30,
         tooltip: isFullScreen ? '退出全屏' : '网页全屏',
         icon: isFullScreen
             ? const Icon(Icons.close_fullscreen, size: 24, color: Colors.white)
-            : const Icon(
-                Icons.desktop_windows_outlined,
-                size: 24,
-                color: Colors.white,
-              ),
+            : const Icon(Icons.fit_screen, size: 24, color: Colors.white),
         onTap: () => plPlayerController.triggerFullScreen(
           status: !isFullScreen,
           inAppFullScreen: true,

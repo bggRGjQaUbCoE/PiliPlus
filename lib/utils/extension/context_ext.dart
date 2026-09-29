@@ -1,3 +1,4 @@
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// from Getx
@@ -57,8 +58,13 @@ extension ContextExtensions on BuildContext {
   /// get the shortestSide from screen
   double get mediaQueryShortestSide => mediaQuerySize.shortestSide;
 
-  /// True if width be larger than 800
-  bool get showNavbar => (width > 800);
+  /// True if width be larger than 800（桌面端恒真，见 [isDesktopLayout]）
+  bool get showNavbar => PlatformUtils.isDesktop || (width > 800);
+
+  /// 桌面端布局粘滞：桌面平台始终按桌面布局处理，窗口缩放/变竖时**不再切回**
+  /// 原移动端布局（避免 Desktop ↔ Mobile 的切换、闪现与回退）。
+  /// 移动端语义不变（仍按宽度 800 判定）。
+  bool get isDesktopLayout => PlatformUtils.isDesktop || showNavbar;
 
   /// True if the shortestSide is smaller than 600p
   bool get isPhone => (mediaQueryShortestSide < 600);

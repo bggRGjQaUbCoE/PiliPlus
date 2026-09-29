@@ -6,6 +6,7 @@ import 'package:PiliPlus/pages/common/common_page.dart';
 import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
+import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
@@ -78,6 +79,7 @@ class _HomePageState extends CommonPageState<HomePage>
     return Column(
       children: [
         if (!_mainController.useSideBar &&
+            !context.isDesktopLayout &&
             MediaQuery.sizeOf(context).isPortrait)
           customAppBar(),
         tabBar,

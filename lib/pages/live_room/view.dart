@@ -110,7 +110,8 @@ class _LiveRoomPageState extends State<LiveRoomPage>
       width: maxWidth * plPlayerController.uiScale,
       height: maxHeight * plPlayerController.uiScale,
     );
-    isPortrait = size.isPortrait;
+    // 桌面端粘滞：始终按横屏布局处理，缩放/变竖不切回移动端布局
+    isPortrait = !PlatformUtils.isDesktop && size.isPortrait;
     plPlayerController.screenRatio = maxHeight / maxWidth;
   }
 

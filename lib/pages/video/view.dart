@@ -1259,6 +1259,12 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       child = plPlayer(width: maxWidth, height: maxHeight, isPipMode: true);
     } else if (!videoDetailController.horizontalScreen) {
       child = childWhenDisabled;
+    } else if (PlatformUtils.isDesktop) {
+      // 桌面端粘滞：窗口变窄/变竖时不再退回竖屏(移动端)播放页布局，
+      // 只在桌面分支之间按比例选择。
+      child = maxWidth / maxHeight >= kScreenRatio
+          ? childWhenDisabledLandscape
+          : childWhenDisabledAlmostSquare;
     } else if (maxWidth / maxHeight >= kScreenRatio) {
       child = childWhenDisabledLandscape;
     } else if (maxWidth / Style.aspectRatio16x9 < 0.4 * maxHeight) {

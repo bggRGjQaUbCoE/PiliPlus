@@ -10,6 +10,7 @@ import 'package:PiliPlus/pages/setting/widgets/multi_select_dialog.dart';
 import 'package:PiliPlus/pages/webdav/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
+import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/extension/widget_ext.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -89,7 +90,9 @@ class _SettingPageState extends State<SettingPage> {
     super.didChangeDependencies();
 
     theme = Theme.of(context);
-    _isPortrait = MediaQuery.sizeOf(context).isPortrait;
+    // 桌面端粘滞：始终保持主从布局，不因窗口变竖退回移动端单列
+    _isPortrait =
+        !context.isDesktopLayout && MediaQuery.sizeOf(context).isPortrait;
   }
 
   @override

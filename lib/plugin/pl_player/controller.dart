@@ -1156,7 +1156,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   void hideTaskControls() {
     _timer?.cancel();
     _timer = Timer(showControlDuration, () {
-      if (!isSeeking.value && !tripling) {
+      if (!isSeeking.value && !tripling && !_volumePanelShowing) {
         controls = false;
       }
       _timer = null;
@@ -1238,6 +1238,21 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     showControls.value = visible;
     _timer?.cancel();
     if (visible) {
+      hideTaskControls();
+    }
+  }
+
+  /// 音量浮层展开期间为 true：底部控制栏常驻，不参与自动隐藏
+  bool _volumePanelShowing = false;
+
+  set volumePanelShowing(bool val) {
+    if (_volumePanelShowing == val) return;
+    _volumePanelShowing = val;
+    if (val) {
+      _timer?.cancel();
+      _timer = null;
+      showControls.value = true;
+    } else if (showControls.value) {
       hideTaskControls();
     }
   }

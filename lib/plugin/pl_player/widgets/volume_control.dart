@@ -43,11 +43,11 @@ class _VolumeControlState extends State<VolumeControl> {
     );
   }
 
-  /// 滑块就地嵌在控制栏内；展开期间控制栏常驻，不参与自动隐藏
-  void _togglePanel() {
-    final expanded = !_expanded;
-    setState(() => _expanded = expanded);
-    widget.plPlayerController.volumePanelShowing = expanded;
+  void _togglePanel() => setState(() => _expanded = !_expanded);
+
+  /// 指针在音量区域（按钮/滑块）内时唤醒控制栏；移开后交还原自动隐藏机制
+  void _setAwake(bool awake) {
+    widget.plPlayerController.volumePanelShowing = awake;
   }
 
   @override
@@ -79,51 +79,55 @@ class _VolumeControlState extends State<VolumeControl> {
       () {
         final volume = ctr.volume.value;
         final maxVolume = ctr.maxVolume;
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ComBtn(
-              width: widget.width,
-              height: 30,
-              tooltip: _expanded ? '收起音量（右键静音）' : '音量（右键静音）',
-              icon: Icon(
-                volume <= 0
-                    ? Icons.volume_off
-                    : volume / maxVolume < 0.5
-                    ? Icons.volume_down
-                    : Icons.volume_up,
-                size: 24,
-                color: Colors.white,
-              ),
-              onTap: _togglePanel,
-              onSecondaryTap: _toggleMute,
-            ),
-            if (_expanded)
-              SizedBox(
-                width: 76,
+        return MouseRegion(
+          onEnter: (_) => _setAwake(true),
+          onExit: (_) => _setAwake(false),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ComBtn(
+                width: widget.width,
                 height: 30,
-                child: SliderTheme(
-                  data: const SliderThemeData(
-                    trackHeight: 2.5,
-                    activeTrackColor: Colors.white,
-                    inactiveTrackColor: Colors.white38,
-                    thumbColor: Colors.white,
-                    overlayColor: Colors.white24,
-                    thumbShape: RoundSliderThumbShape(enabledThumbRadius: 6),
-                    overlayShape: RoundSliderOverlayShape(overlayRadius: 12),
-                  ),
-                  child: Slider(
-                    value: volume.clamp(0.0, maxVolume).toDouble(),
-                    max: maxVolume,
-                    onChanged: (value) {
-                      ctr
-                        ..setVolume(value)
-                        ..isMuted = value == 0;
-                    },
+                tooltip: _expanded ? '收起音量（右键静音）' : '音量（右键静音）',
+                icon: Icon(
+                  volume <= 0
+                      ? Icons.volume_off
+                      : volume / maxVolume < 0.5
+                      ? Icons.volume_down
+                      : Icons.volume_up,
+                  size: 24,
+                  color: Colors.white,
+                ),
+                onTap: _togglePanel,
+                onSecondaryTap: _toggleMute,
+              ),
+              if (_expanded)
+                SizedBox(
+                  width: 76,
+                  height: 30,
+                  child: SliderTheme(
+                    data: const SliderThemeData(
+                      trackHeight: 2.5,
+                      activeTrackColor: Colors.white,
+                      inactiveTrackColor: Colors.white38,
+                      thumbColor: Colors.white,
+                      overlayColor: Colors.white24,
+                      thumbShape: RoundSliderThumbShape(enabledThumbRadius: 6),
+                      overlayShape: RoundSliderOverlayShape(overlayRadius: 12),
+                    ),
+                    child: Slider(
+                      value: volume.clamp(0.0, maxVolume).toDouble(),
+                      max: maxVolume,
+                      onChanged: (value) {
+                        ctr
+                          ..setVolume(value)
+                          ..isMuted = value == 0;
+                      },
+                    ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         );
       },
     );

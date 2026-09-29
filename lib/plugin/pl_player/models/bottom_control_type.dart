@@ -8,6 +8,7 @@ enum BottomControlType {
   subtitle,
   speed,
   fullscreen,
+  webFullScreen,
   viewPoints,
   superResolution,
   dmChart,

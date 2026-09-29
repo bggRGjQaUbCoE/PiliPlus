@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
+import 'package:PiliPlus/common/widgets/desktop/desktop_content.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -47,8 +48,12 @@ class _FavNoteChildPageState extends State<FavNoteChildPage>
           slivers: [
             SliverPadding(
               padding: EdgeInsets.only(bottom: padding.bottom + 100),
-              sliver: Obx(
-                () => _buildBody(_favNoteController.loadingState.value),
+              // 桌面端内容限宽居中（1280）
+              sliver: desktopLimitSliver(
+                Obx(
+                  () => _buildBody(_favNoteController.loadingState.value),
+                ),
+                maxWidth: 1280,
               ),
             ),
           ],

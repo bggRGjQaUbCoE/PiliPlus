@@ -11,6 +11,7 @@ import 'package:PiliPlus/pages/webdav/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
+import 'package:PiliPlus/utils/extension/widget_ext.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -97,41 +98,45 @@ class _SettingPageState extends State<SettingPage> {
       appBar: AppBar(
         title: _isPortrait ? const Text('设置') : Text(_type.title),
       ),
-      body: ViewSafeArea(
-        child: _isPortrait
-            ? _buildList(theme)
-            : Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 4,
-                    child: _buildList(theme),
-                  ),
-                  VerticalDivider(
-                    width: 1,
-                    color: theme.colorScheme.outline.withValues(alpha: 0.1),
-                  ),
-                  Expanded(
-                    flex: 6,
-                    child: switch (_type) {
-                      .privacySetting ||
-                      .recommendSetting ||
-                      .videoSetting ||
-                      .playSetting ||
-                      .styleSetting ||
-                      .extraSetting => CommonSetting(
-                        settingType: _type,
-                        showAppBar: false,
+      body:
+          ViewSafeArea(
+            child: _isPortrait
+                ? _buildList(theme)
+                : Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 4,
+                        child: _buildList(theme),
                       ),
-                      .webdavSetting => const WebDavSettingPage(
-                        showAppBar: false,
+                      VerticalDivider(
+                        width: 1,
+                        color: theme.colorScheme.outline.withValues(alpha: 0.1),
                       ),
-                      .about => const AboutPage(showAppBar: false),
-                    },
+                      Expanded(
+                        flex: 6,
+                        child: switch (_type) {
+                          .privacySetting ||
+                          .recommendSetting ||
+                          .videoSetting ||
+                          .playSetting ||
+                          .styleSetting ||
+                          .extraSetting => CommonSetting(
+                            settingType: _type,
+                            showAppBar: false,
+                          ),
+                          .webdavSetting => const WebDavSettingPage(
+                            showAppBar: false,
+                          ),
+                          .about => const AboutPage(showAppBar: false),
+                        },
+                      ),
+                    ],
                   ),
-                ],
-              ),
-      ),
+            // 桌面端内容限宽居中（1280）；窄屏下宽度本来就不足，自动无效果
+          ).constraintWidth(
+            constraints: const BoxConstraints(maxWidth: 1280),
+          ),
     );
   }
 

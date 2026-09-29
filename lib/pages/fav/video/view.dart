@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/desktop/desktop_content.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -37,8 +38,12 @@ class _FavVideoPageState extends State<FavVideoPage>
               top: 7,
               bottom: 100 + MediaQuery.viewPaddingOf(context).bottom,
             ),
-            sliver: Obx(
-              () => _buildBody(_favController.loadingState.value),
+            // 桌面端内容限宽居中（1280）
+            sliver: desktopLimitSliver(
+              Obx(
+                () => _buildBody(_favController.loadingState.value),
+              ),
+              maxWidth: 1280,
             ),
           ),
         ],

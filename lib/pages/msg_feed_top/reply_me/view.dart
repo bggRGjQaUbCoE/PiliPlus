@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/skeleton/msg_feed_top.dart';
 import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
+import 'package:PiliPlus/common/widgets/desktop/desktop_content.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -60,8 +61,13 @@ class _ReplyMePageState extends State<ReplyMePage> {
               padding: EdgeInsets.only(
                 bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
               ),
-              sliver: Obx(
-                () => _buildBody(theme, _replyMeController.loadingState.value),
+              // 桌面端内容限宽居中（1280）
+              sliver: desktopLimitSliver(
+                Obx(
+                  () =>
+                      _buildBody(theme, _replyMeController.loadingState.value),
+                ),
+                maxWidth: 1280,
               ),
             ),
           ],

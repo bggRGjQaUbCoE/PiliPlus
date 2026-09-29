@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/skeleton/fav_pgc_item.dart';
 import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
+import 'package:PiliPlus/common/widgets/desktop/desktop_content.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -54,8 +55,12 @@ class _FavPgcChildPageState extends State<FavPgcChildPage>
           slivers: [
             SliverPadding(
               padding: EdgeInsets.only(bottom: padding.bottom + 100),
-              sliver: Obx(
-                () => _buildBody(_favPgcController.loadingState.value),
+              // 桌面端内容限宽居中（1280）
+              sliver: desktopLimitSliver(
+                Obx(
+                  () => _buildBody(_favPgcController.loadingState.value),
+                ),
+                maxWidth: 1280,
               ),
             ),
           ],

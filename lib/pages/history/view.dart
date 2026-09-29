@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/appbar/appbar.dart';
+import 'package:PiliPlus/common/widgets/desktop/desktop_content.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart';
@@ -72,8 +73,12 @@ class _HistoryPageState extends State<HistoryPage>
               top: 7,
               bottom: padding.bottom + 100,
             ),
-            sliver: Obx(
-              () => _buildBody(_historyController.loadingState.value),
+            // 桌面端内容限宽居中（1280）
+            sliver: desktopLimitSliver(
+              Obx(
+                () => _buildBody(_historyController.loadingState.value),
+              ),
+              maxWidth: 1280,
             ),
           ),
         ],

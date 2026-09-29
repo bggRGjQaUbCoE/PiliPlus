@@ -69,7 +69,7 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode, clampDouble;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -468,9 +468,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     final minVideoHeight = shortestSide / Style.aspectRatio16x9;
     final maxVideoHeight = max(size.longestSide * 0.65, shortestSide);
     videoDetailController
-      // 桌面端粘滞：始终保持横屏(桌面)布局，不因窗口变竖切回竖屏分支
-      ..isPortrait = isPortrait =
-          !PlatformUtils.isDesktop && maxHeight >= maxWidth
+      ..isPortrait = isPortrait = maxHeight >= maxWidth
       ..minVideoHeight = minVideoHeight
       ..maxVideoHeight = maxVideoHeight
       ..videoHeight = videoDetailController.isVertical.value
@@ -887,19 +885,13 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   }
 
   Widget _childWhenDisabledLandscapeInner(bool isFullScreen) {
-    // 播放器尺寸由「窗口高度」驱动（桌面标准）：
-    //   高度 = 可用高度 − 左侧标题区预留；宽度 = 高度 × 16:9
-    // 于是：横向拉伸窗口时播放器**完全不变**（多出的宽度全部给右列），
-    //       只有竖向拉伸才按 16:9 整体缩放。
-    const titleAreaReserve = 96.0;
-    double height = maxHeight - titleAreaReserve - padding.top;
-    double width = height * Style.aspectRatio16x9;
-    if (!isFullScreen && width > maxWidth) {
-      // 窗口很窄时退回按宽度约束，保持 16:9 不溢出
-      width = maxWidth;
-      height = width / Style.aspectRatio16x9;
+    double width =
+        clampDouble(maxHeight / maxWidth * 1.08, 0.5, 0.7) * maxWidth;
+    if (maxWidth >= 560) {
+      width = maxWidth - clampDouble(maxWidth - width, 280, 425);
     }
     final videoWidth = isFullScreen ? maxWidth : width;
+    final double height = width / Style.aspectRatio16x9;
     final videoHeight = isFullScreen
         ? maxHeight - (isWindowMode && !isPortrait ? 0 : padding.top)
         : height;
@@ -1265,11 +1257,6 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     Widget child;
     if (videoDetailController.plPlayerController.isPipMode) {
       child = plPlayer(width: maxWidth, height: maxHeight, isPipMode: true);
-    } else if (PlatformUtils.isDesktop) {
-      // 桌面端统一横向布局（所有窗口尺寸，且不受「横屏适配」开关影响）：
-      // 播放器按窗口高度放大并靠左，标题/简介/评论进右列 —— 播放器顶部与
-      // 标题顶部水平对齐；下方功能区在右列内滚动，可完整查看、不被裁切遮挡。
-      child = childWhenDisabledLandscape;
     } else if (!videoDetailController.horizontalScreen) {
       child = childWhenDisabled;
     } else if (maxWidth / maxHeight >= kScreenRatio) {

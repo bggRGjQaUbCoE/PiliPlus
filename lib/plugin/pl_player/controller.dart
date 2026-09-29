@@ -1247,6 +1247,9 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   /// 音量浮层展开期间为 true：底部控制栏常驻，不参与自动隐藏
   bool _volumePanelShowing = false;
 
+  /// 点击播放器空白区域时收起音量滑块（由音量控件注册）
+  VoidCallback? volumePanelCloser;
+
   set volumePanelShowing(bool val) {
     if (_volumePanelShowing == val) return;
     _volumePanelShowing = val;

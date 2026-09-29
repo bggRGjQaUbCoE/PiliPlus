@@ -54,6 +54,7 @@ class _VolumeControlState extends State<VolumeControl>
       _controller.show();
       // 进入音量调节状态：底部控制栏常驻，禁用自动隐藏
       widget.plPlayerController.volumePanelShowing = true;
+      widget.plPlayerController.volumePanelCloser = _closePanel;
       setState(() {});
     }
   }
@@ -62,6 +63,7 @@ class _VolumeControlState extends State<VolumeControl>
   void _closePanel() {
     _controller.hide();
     widget.plPlayerController.volumePanelShowing = false;
+    widget.plPlayerController.volumePanelCloser = null;
     if (mounted) setState(() {});
   }
 
@@ -89,6 +91,7 @@ class _VolumeControlState extends State<VolumeControl>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     widget.plPlayerController.volumePanelShowing = false;
+    widget.plPlayerController.volumePanelCloser = null;
     if (_controller.isShowing) {
       _controller.hide();
     }

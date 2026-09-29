@@ -922,8 +922,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       if (PlatformUtils.isDesktop) .volume,
       .speed,
       if (isNotFileSource && flag) .qa,
-      if (PlatformUtils.isDesktop &&
-          !plPlayerController.isDesktopPip)
+      if (PlatformUtils.isDesktop && !plPlayerController.isDesktopPip)
         .webFullScreen,
       if (!plPlayerController.isDesktopPip) .fullscreen,
     ];
@@ -1174,6 +1173,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   }
 
   void _onTapUp(TapUpDetails details) {
+    plPlayerController.volumePanelCloser?.call();
     switch (details.kind) {
       case ui.PointerDeviceKind.mouse when PlatformUtils.isDesktop:
         plPlayerController.onDoubleTapCenter();

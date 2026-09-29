@@ -893,7 +893,13 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       width = maxWidth - clampDouble(maxWidth - width, 280, 425);
     }
     final videoWidth = isFullScreen ? maxWidth : width;
-    final double height = width / Style.aspectRatio16x9;
+    // 为左侧「标题区域」预留高度：播放器底边与标题上沿对齐，
+    // 保证标题（及下方内容）完整可见、不被裁切；大窗口下通常不触发。
+    const titleAreaReserve = 96.0;
+    final double height = min(
+      width / Style.aspectRatio16x9,
+      maxHeight - titleAreaReserve - padding.top,
+    );
     final videoHeight = isFullScreen
         ? maxHeight - (isWindowMode && !isPortrait ? 0 : padding.top)
         : height;

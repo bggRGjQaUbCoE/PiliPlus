@@ -1247,6 +1247,93 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     return true;
   }
 
+  // 桌面右键菜单（播放/静音/全屏/画中画/锁定/截图）。
+  // 触发时机=pointer down（与原“右键即切全屏”同节点），仅桌面接管；移动端不变。
+  Future<void> _showPlayerContextMenu(PointerDownEvent event) async {
+    final ctr = plPlayerController;
+    final isPlaying = ctr.playerStatus.isPlaying;
+    final isLive = ctr.isLive;
+    final fs = isFullScreen;
+    final pip = ctr.isDesktopPip;
+    final controlsLocked = ctr.controlsLock.value;
+    final isMuted = ctr.isMuted;
+
+    const int kPlayPause = 0;
+    const int kMute = 1;
+    const int kFullscreen = 2;
+    const int kPip = 3;
+    const int kLock = 4;
+    const int kScreenshot = 5;
+
+    final items = <PopupMenuEntry<int>>[
+      if (!isLive)
+        PopupMenuItem<int>(
+          value: kPlayPause,
+          child: Text(isPlaying ? '暂停' : '播放'),
+        ),
+      PopupMenuItem<int>(
+        value: kMute,
+        child: Text(isMuted ? '取消静音' : '静音'),
+      ),
+      const PopupMenuDivider(),
+      PopupMenuItem<int>(
+        value: kFullscreen,
+        child: Text(fs ? '退出全屏' : '进入全屏'),
+      ),
+      if (!isLive && !fs && !pip)
+        const PopupMenuItem<int>(value: kPip, child: Text('桌面画中画')),
+      if (fs || pip)
+        PopupMenuItem<int>(
+          value: kLock,
+          child: Text(controlsLocked ? '解锁控制' : '锁定控制'),
+        ),
+      if (fs && !isLive && ctr.videoPlayerController != null)
+        const PopupMenuItem<int>(value: kScreenshot, child: Text('截图')),
+    ];
+
+    if (items.isEmpty) return;
+
+    final int? selected = await showMenu<int>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        event.position.dx,
+        event.position.dy,
+        event.position.dx,
+        event.position.dy,
+      ),
+      items: items,
+    );
+    if (!mounted || selected == null) return;
+
+    final hasPlayer = ctr.videoPlayerController != null;
+    switch (selected) {
+      case kPlayPause:
+        if (hasPlayer) {
+          ctr.onDoubleTapCenter();
+        }
+      case kMute:
+        if (hasPlayer) {
+          final target = isMuted ? ctr.volume.value * 100 : 0.0;
+          ctr.videoPlayerController!.setVolume(target);
+          ctr.isMuted = !isMuted;
+          SmartDialog.showToast(isMuted ? '取消静音' : '已静音');
+        }
+      case kFullscreen:
+        if (fs && ctr.controlsLock.value) {
+          ctr
+            ..controlsLock.value = false
+            ..showControls.value = false;
+        }
+        ctr.triggerFullScreen(status: !fs);
+      case kPip:
+        ctr.toggleDesktopPip();
+      case kLock:
+        ctr.onLockControl(!controlsLocked);
+      case kScreenshot:
+        ctr.takeScreenshot();
+    }
+  }
+
   /// 鼠标中键/右键全屏切换的挂起项：(进入全屏, 应用内全屏)。
   /// 在鼠标按下时启动原生全屏过渡会与本次点击重叠，窗口可能卡在半过渡状态
   /// 导致鼠标事件失效，因此延后到抬起后执行。
@@ -1260,8 +1347,20 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     if (PlatformUtils.isDesktop) {
       final buttons = event.buttons;
       final isSecondaryBtn = buttons == kSecondaryMouseButton;
-      if (isSecondaryBtn || buttons == kMiddleMouseButton) {
-        _pendingFullScreenToggle = (!isFullScreen, isSecondaryBtn);
+      if (isSecondaryBtn) {
+        // 桌面右键 → 播放器上下文菜单（原行为：直接切换全屏）
+        _showPlayerContextMenu(event);
+        return;
+      }
+      if (buttons == kMiddleMouseButton) {
+        // 中键：保留原「解锁并切换全屏」语义
+        final bool fs = isFullScreen;
+        if (fs && plPlayerController.controlsLock.value) {
+          plPlayerController
+            ..controlsLock.value = false
+            ..showControls.value = false;
+        }
+        plPlayerController.triggerFullScreen(status: !fs);
         return;
       }
     }

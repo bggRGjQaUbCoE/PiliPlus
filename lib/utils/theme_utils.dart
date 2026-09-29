@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/font_utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoThemeData;
 import 'package:flutter/foundation.dart' show PlatformDispatcher;
@@ -121,6 +122,11 @@ abstract final class ThemeUtils {
         shape: const RoundedRectangleBorder(
           borderRadius: Style.bottomSheetRadius,
         ),
+        // 桌面端弹层宿主限宽：模态面板不再横向铺满整窗，由框架自动底部居中。
+        // 移动端保持 null（全宽），行为与原来完全一致。
+        constraints: PlatformUtils.isDesktop
+            ? const BoxConstraints(maxWidth: 640)
+            : null,
       ),
       // ignore: deprecated_member_use
       sliderTheme: const SliderThemeData(year2023: false),

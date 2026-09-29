@@ -93,7 +93,16 @@ class VideoCardV extends StatelessWidget {
           child: InkWell(
             onTap: onPushDetail,
             onLongPress: onLongPress,
-            onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
+            // M3：桌面右键=卡片操作菜单（与 ⋮ 同一动作集），长按仍=保存封面（触屏）。
+            onSecondaryTap: null,
+            onSecondaryTapDown: PlatformUtils.isMobile
+                ? null
+                : (details) => showVideoContextMenu(
+                    context,
+                    globalPos: details.globalPosition,
+                    videoItem: videoItem,
+                    onRemove: onRemove,
+                  ),
             borderRadius: const .all(.circular(12)),
             child: Column(
               crossAxisAlignment: .start,

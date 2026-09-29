@@ -1262,11 +1262,10 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     } else if (!videoDetailController.horizontalScreen) {
       child = childWhenDisabled;
     } else if (PlatformUtils.isDesktop) {
-      // 桌面端粘滞：窗口变窄/变竖时不再退回竖屏(移动端)播放页布局，
-      // 只在桌面分支之间按比例选择。
-      child = maxWidth / maxHeight >= kScreenRatio
-          ? childWhenDisabledLandscape
-          : childWhenDisabledAlmostSquare;
+      // 桌面端统一横向布局（所有窗口尺寸）：
+      // 播放器按窗口高度放大并靠左，标题/简介/评论进右列 —— 播放器顶部与
+      // 标题顶部水平对齐；下方功能区在右列内滚动，可完整查看、不被裁切遮挡。
+      child = childWhenDisabledLandscape;
     } else if (maxWidth / maxHeight >= kScreenRatio) {
       child = childWhenDisabledLandscape;
     } else if (maxWidth / Style.aspectRatio16x9 < 0.4 * maxHeight) {

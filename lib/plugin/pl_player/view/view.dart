@@ -60,6 +60,7 @@ import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/mobile_observer.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
+import 'package:PiliPlus/plugin/pl_player/widgets/volume_control.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -878,6 +879,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         ),
       ),
 
+      /// 音量：默认只显示按钮，点击展开滑块、再次点击收起；右键静音/取消静音
+      BottomControlType.volume => VolumeControl(
+        plPlayerController: plPlayerController,
+        width: widgetWidth,
+      ),
+
       /// 网页全屏：播放器铺满当前程序窗口，不进入系统级全屏；再次点击恢复原布局
       /// 尺寸/图标大小与「全屏」按钮完全一致
       BottomControlType.webFullScreen => ComBtn(
@@ -912,6 +919,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       if (flag) .fit,
       if (isNotFileSource) .aiTranslate,
       .subtitle,
+      if (PlatformUtils.isDesktop) .volume,
       .speed,
       if (isNotFileSource && flag) .qa,
       if (PlatformUtils.isDesktop &&

@@ -10,6 +10,7 @@ import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_controller.dart';
 import 'package:PiliPlus/pages/common/fab_mixin.dart';
@@ -27,13 +28,16 @@ import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 enum DynType implements EnumWithLabel {
-  repost('转发'),
-  reply('评论'),
-  like('赞');
+  repost,
+  reply,
+  like;
 
   @override
-  final String label;
-  const DynType(this.label);
+  String get label => switch (this) {
+    repost => L10n.current.repost,
+    reply => L10n.current.comments,
+    like => L10n.current.dynTypeLikeLabel,
+  };
 }
 
 abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
@@ -115,7 +119,11 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
               () {
                 final count = controller.count.value;
                 return Text(
-                  '${count == -1 ? 0 : NumUtils.numFormat(count)}条回复',
+                  L10n.current
+                      .pagesCommonDynCommonDynPageBuildReplyHeaderChildren(
+                        (count == -1 ? 0 : NumUtils.numFormat(count))
+                            .toString(),
+                      ),
                 );
               },
             ),
@@ -171,7 +179,11 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
                   margin: EdgeInsets.only(bottom: padding.bottom),
                   height: 125,
                   child: Text(
-                    controller.isEnd ? '没有更多了' : '加载中...',
+                    controller.isEnd
+                        ? L10n.current.noMore
+                        : L10n
+                              .current
+                              .pagesCommonDynCommonDynPageReplyListChild2,
                     style: TextStyle(
                       fontSize: 12,
                       color: theme.colorScheme.outline,
@@ -202,7 +214,7 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
         }
 
         final child = HttpError(
-          errMsg: '还没有评论',
+          errMsg: L10n.current.noComments,
           onReload: controller.onReload,
         );
         if (controller.voteCard case final voteCard?) {
@@ -246,7 +258,9 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
         if (showBackBtn) {
           return SimpleScaffold(
             appBar: AppBar(
-              title: const Text('评论详情'),
+              title: Text(
+                L10n.current.pagesCommonDynCommonDynPageReplyReplyPageTitle,
+              ),
               shape: Border(
                 bottom: BorderSide(
                   color: theme.colorScheme.outline.withValues(alpha: 0.1),
@@ -285,7 +299,7 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
   }
 
   Widget ratioWidget(double maxWidth) => IconButton(
-    tooltip: '页面比例调节',
+    tooltip: L10n.current.pagesCommonDynCommonDynPageRatioWidgetTooltip,
     onPressed: () => showDialog(
       context: context,
       builder: (context) => Align(
@@ -347,7 +361,7 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
         );
       } catch (_) {}
     },
-    tooltip: '评论',
+    tooltip: L10n.current.comments,
     child: const Icon(Icons.reply),
   );
 }

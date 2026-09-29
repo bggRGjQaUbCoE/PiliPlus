@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_top/topic_item.dart';
 import 'package:PiliPlus/pages/dynamics_select_topic/widgets/item.dart';
 import 'package:PiliPlus/pages/dynamics_topic_rcmd/controller.dart';
@@ -23,7 +24,7 @@ class _DynTopicRcmdPageState extends State<DynTopicRcmdPage> {
   @override
   Widget build(BuildContext context) {
     return SimpleScaffold(
-      appBar: AppBar(title: const Text('话题')),
+      appBar: AppBar(title: Text(L10n.current.favTabTypeTopicTitle)),
       body: refreshIndicator(
         onRefresh: _controller.onRefresh,
         child: CustomScrollView(

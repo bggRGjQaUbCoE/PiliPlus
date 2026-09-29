@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -88,9 +89,19 @@ class SearchArticleItem extends StatelessWidget {
                     ),
                     Row(
                       children: [
-                        Text('${item.view}浏览', style: textStyle),
+                        Text(
+                          L10n.current.searchArticleItemChildren(
+                            item.view.toString(),
+                          ),
+                          style: textStyle,
+                        ),
                         Text(' • ', style: textStyle),
-                        Text('${item.reply}评论', style: textStyle),
+                        Text(
+                          L10n.current.searchArticleItemChildren2(
+                            item.reply.toString(),
+                          ),
+                          style: textStyle,
+                        ),
                       ],
                     ),
                   ],

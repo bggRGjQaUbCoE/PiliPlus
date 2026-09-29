@@ -9,6 +9,7 @@ import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/grpc/bilibili/app/im/v1.pbenum.dart'
     show IMSettingType;
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/msg/msg_reply/item.dart';
 import 'package:PiliPlus/pages/msg_feed_top/reply_me/controller.dart';
@@ -34,7 +35,7 @@ class _ReplyMePageState extends State<ReplyMePage> {
     final theme = Theme.of(context);
     return SimpleScaffold(
       appBar: AppBar(
-        title: const Text('回复我的'),
+        title: Text(L10n.current.msgUnReadTypeReplyTitle),
         actions: [
           IconButton(
             onPressed: () => Get.to(
@@ -102,7 +103,7 @@ class _ReplyMePageState extends State<ReplyMePage> {
 
               void onLongPress() => showConfirmDialog(
                 context: context,
-                title: const Text('确定删除该通知?'),
+                title: Text(L10n.current.atMePageOnLongPressTitle),
                 onConfirm: () => _replyMeController.onRemove(item.id, index),
               );
 
@@ -143,13 +144,16 @@ class _ReplyMePageState extends State<ReplyMePage> {
                       ),
                       if (item.isMulti == 1)
                         TextSpan(
-                          text: " 等人",
+                          text: L10n.current.replyMePageBuildBodyText,
                           style: theme.textTheme.titleSmall!.copyWith(
                             fontSize: 12,
                           ),
                         ),
                       TextSpan(
-                        text: " 对我的${item.item?.business}发布了${item.counts}条评论",
+                        text: L10n.current.replyMePageBuildBodyText2(
+                          (item.item?.business).toString(),
+                          item.counts.toString(),
+                        ),
                         style: theme.textTheme.titleSmall!.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),

@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
 import 'package:PiliPlus/models/dynamics/up.dart';
 import 'package:PiliPlus/pages/dynamics/controller.dart';
@@ -63,7 +64,9 @@ class _UpPanelState extends State<UpPanel> {
                 TextSpan(
                   children: [
                     TextSpan(
-                      text: 'Live(${upData.liveUsers?.count ?? 0})',
+                      text: L10n.current.liveRoomLabel(
+                        upData.liveUsers?.count ?? 0,
+                      ),
                     ),
                     if (!isTop) ...[
                       const TextSpan(text: '\n'),
@@ -102,14 +105,17 @@ class _UpPanelState extends State<UpPanel> {
             },
           ),
         SliverToBoxAdapter(
-          child: upItemBuild(theme, UpItem(face: '', uname: '全部动态', mid: -1)),
+          child: upItemBuild(
+            theme,
+            UpItem(face: '', uname: L10n.current.upPanelUname2, mid: -1),
+          ),
         ),
         SliverToBoxAdapter(
           child: Obx(
             () => upItemBuild(
               theme,
               UpItem(
-                uname: '我',
+                uname: L10n.current.upPanelUname,
                 face: controller.accountService.face.value,
                 mid: Accounts.main.mid,
               ),
@@ -176,7 +182,7 @@ class _UpPanelState extends State<UpPanel> {
               top: isLive && !isTop ? -5 : 0,
               right: -6,
               child: Badge(
-                label: const Text(' Live '),
+                label: Text(L10n.current.liveBadge),
                 textColor: theme.colorScheme.onSecondaryContainer,
                 backgroundColor: theme.colorScheme.secondaryContainer
                     .withValues(alpha: 0.75),

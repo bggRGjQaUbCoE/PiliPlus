@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart';
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/search.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart'
     show SourceModel;
 import 'package:PiliPlus/models/dynamics/result.dart';
@@ -173,7 +174,10 @@ TextSpan? richNode(
               )
               ..add(
                 TextSpan(
-                  text: '投票：${i.text}',
+                  text: L10n.current
+                      .pagesDynamicsWidgetsRichNodePanelRichNodeText(
+                        i.text.toString(),
+                      ),
                   style: style,
                   recognizer: NoDeadlineTapGestureRecognizer()
                     ..onTap = () => showVoteDialog(

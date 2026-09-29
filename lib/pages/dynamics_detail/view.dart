@@ -21,6 +21,7 @@ import 'package:PiliPlus/common/widgets/tap_region_surface.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/reply/reply_option_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_page.dart';
@@ -570,7 +571,7 @@ class _DynamicDetailPageState
                       final forward = moduleStat?.forward;
                       return textIconButton(
                         icon: FontAwesomeIcons.shareFromSquare,
-                        text: '转发',
+                        text: L10n.current.repost,
                         stat: forward,
                         onPressed: (_) => showModalBottomSheet(
                           context: context,
@@ -596,7 +597,7 @@ class _DynamicDetailPageState
                 Expanded(
                   child: textIconButton(
                     icon: CustomIcons.share_node,
-                    text: '分享',
+                    text: L10n.current.share,
                     stat: null,
                     onPressed: (_) => ShareUtils.shareText(
                       '${HttpString.opusBaseUrl}/${controller.dynItem.idStr}',
@@ -606,7 +607,7 @@ class _DynamicDetailPageState
                 Expanded(
                   child: textIconButton(
                     icon: FontAwesomeIcons.comment,
-                    text: '评论',
+                    text: L10n.current.comments,
                     stat: moduleStat?.comment,
                     onPressed: _jumpToComment,
                   ),
@@ -617,7 +618,7 @@ class _DynamicDetailPageState
                       return textIconButton(
                         icon: FontAwesomeIcons.thumbsUp,
                         activatedIcon: FontAwesomeIcons.solidThumbsUp,
-                        text: '点赞',
+                        text: L10n.current.like,
                         stat: moduleStat?.like,
                         onPressed: (iconColor) => RequestUtils.onLikeDynamic(
                           controller.dynItem,

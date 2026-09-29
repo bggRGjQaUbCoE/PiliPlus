@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/common/widgets/video_card/video_card_h.dart'
     show pushVideoH;
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
@@ -75,8 +76,10 @@ class SearchAllUserItem extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text.rich(
                           TextSpan(
-                            text:
-                                '${NumUtils.numFormat(item.fans)}粉丝 · ${NumUtils.numFormat(item.videos)}个视频',
+                            text: L10n.current.searchAllUserItemText(
+                              NumUtils.numFormat(item.fans),
+                              NumUtils.numFormat(item.videos),
+                            ),
                             children: item.officialVerify?.desc != null
                                 ? [
                                     TextSpan(

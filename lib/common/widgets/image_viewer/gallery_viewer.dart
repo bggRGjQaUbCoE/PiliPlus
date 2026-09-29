@@ -26,6 +26,7 @@ import 'package:PiliPlus/common/widgets/image_viewer/loading_indicator.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/viewer.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show tabBarScrollPhysics;
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/main.dart' show tmpPadding;
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
@@ -550,21 +551,30 @@ class _GalleryViewerState extends State<GalleryViewer>
                 Get.back();
                 ImageUtils.onShareImg(item.url);
               },
-              child: const Text('分享', style: TextStyle(fontSize: 14)),
+              child: Text(
+                L10n.current.share,
+                style: const TextStyle(fontSize: 14),
+              ),
             ),
           DialogOption(
             onPressed: () {
               Get.back();
               Utils.copyText(item.url);
             },
-            child: const Text('复制链接', style: TextStyle(fontSize: 14)),
+            child: Text(
+              L10n.current.copyLink,
+              style: const TextStyle(fontSize: 14),
+            ),
           ),
           DialogOption(
             onPressed: () {
               Get.back();
               ImageUtils.downloadImg([item.url]);
             },
-            child: const Text('保存图片', style: TextStyle(fontSize: 14)),
+            child: Text(
+              L10n.current.saveImage,
+              style: const TextStyle(fontSize: 14),
+            ),
           ),
           if (PlatformUtils.isDesktop)
             DialogOption(
@@ -572,7 +582,10 @@ class _GalleryViewerState extends State<GalleryViewer>
                 Get.back();
                 PageUtils.launchURL(item.url);
               },
-              child: const Text('网页打开', style: TextStyle(fontSize: 14)),
+              child: Text(
+                L10n.current.imageGridViewShowMenuChild3,
+                style: const TextStyle(fontSize: 14),
+              ),
             ),
           if (widget.sources.length > 1)
             DialogOption(
@@ -582,7 +595,10 @@ class _GalleryViewerState extends State<GalleryViewer>
                   widget.sources.map((item) => item.url).toList(),
                 );
               },
-              child: const Text('保存全部图片', style: TextStyle(fontSize: 14)),
+              child: Text(
+                L10n.current.galleryViewerOnLongPressChild,
+                style: const TextStyle(fontSize: 14),
+              ),
             ),
           if (item.sourceType == SourceType.livePhoto)
             DialogOption(
@@ -596,7 +612,9 @@ class _GalleryViewerState extends State<GalleryViewer>
                 );
               },
               child: Text(
-                '保存${Platform.isIOS ? ' Live Photo' : '视频'}',
+                L10n.current.imageGridViewShowMenuChild5(
+                  Platform.isIOS ? ' Live Photo' : L10n.current.video,
+                ),
                 style: const TextStyle(fontSize: 14),
               ),
             ),
@@ -615,17 +633,26 @@ class _GalleryViewerState extends State<GalleryViewer>
         PopupMenuItem(
           height: 42,
           onTap: () => ImageUtils.downloadImg([item.url]),
-          child: const Text('保存图片', style: TextStyle(fontSize: 14)),
+          child: Text(
+            L10n.current.saveImage,
+            style: const TextStyle(fontSize: 14),
+          ),
         ),
         PopupMenuItem(
           height: 42,
           onTap: () => Utils.copyText(item.url),
-          child: const Text('复制链接', style: TextStyle(fontSize: 14)),
+          child: Text(
+            L10n.current.copyLink,
+            style: const TextStyle(fontSize: 14),
+          ),
         ),
         PopupMenuItem(
           height: 42,
           onTap: () => PageUtils.launchURL(item.url),
-          child: const Text('网页打开', style: TextStyle(fontSize: 14)),
+          child: Text(
+            L10n.current.imageGridViewShowMenuChild3,
+            style: const TextStyle(fontSize: 14),
+          ),
         ),
         if (widget.sources.length > 1)
           PopupMenuItem(
@@ -633,7 +660,10 @@ class _GalleryViewerState extends State<GalleryViewer>
             onTap: () => ImageUtils.downloadImg(
               widget.sources.map((item) => item.url).toList(),
             ),
-            child: const Text('保存全部图片', style: TextStyle(fontSize: 14)),
+            child: Text(
+              L10n.current.galleryViewerOnLongPressChild,
+              style: const TextStyle(fontSize: 14),
+            ),
           ),
         if (item.sourceType == SourceType.livePhoto)
           PopupMenuItem(
@@ -644,7 +674,10 @@ class _GalleryViewerState extends State<GalleryViewer>
               width: item.width!,
               height: item.height!,
             ),
-            child: const Text('保存视频', style: TextStyle(fontSize: 14)),
+            child: Text(
+              L10n.current.galleryViewerShowDesktopMenuChild,
+              style: const TextStyle(fontSize: 14),
+            ),
           ),
       ],
     );

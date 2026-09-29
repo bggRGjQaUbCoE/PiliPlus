@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/match/match_info/contest.dart';
 import 'package:PiliPlus/models_new/match/match_info/team.dart';
@@ -41,7 +42,7 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
   Widget build(BuildContext context) {
     return fabAnimWrapper(
       child: SimpleScaffold(
-        appBar: AppBar(title: const Text('比赛详情')),
+        appBar: AppBar(title: Text(L10n.current.matchInfoPageTitle)),
         body: ViewSafeArea(
           child: refreshIndicator(
             onRefresh: controller.onRefresh,
@@ -144,11 +145,13 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
                             ),
                             onPressed: () =>
                                 PageUtils.toLiveRoom(response.liveRoom),
-                            child: const Text('看直播'),
+                            child: Text(
+                              L10n.current.matchInfoPageBuildInfoChild,
+                            ),
                           )
                         else if (response.contestStatus == 3)
                           Text(
-                            '${DateFormatUtils.dateFormat(response.stime)}${response.contestStatus == 3 ? ' 已结束' : ''}',
+                            '${DateFormatUtils.dateFormat(response.stime)}${response.contestStatus == 3 ? L10n.current.matchInfoPageBuildInfoChildren : ''}',
                             style: TextStyle(
                               color: theme.colorScheme.outline,
                             ),
@@ -193,7 +196,9 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
       Get.to(
         SimpleScaffold(
           appBar: AppBar(
-            title: const Text('评论详情'),
+            title: Text(
+              L10n.current.pagesCommonDynCommonDynPageReplyReplyPageTitle,
+            ),
             shape: Border(
               bottom: BorderSide(
                 color: theme.colorScheme.outline.withValues(alpha: 0.1),

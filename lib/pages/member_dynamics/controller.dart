@@ -2,6 +2,7 @@ import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/member.dart';
 import 'package:PiliPlus/http/msg.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -54,7 +55,7 @@ class MemberDynamicsController
       loadingState
         ..value.data!.removeWhere((item) => item.idStr == dynamicId)
         ..refresh();
-      SmartDialog.showToast('删除成功');
+      SmartDialog.showToast(L10n.current.commonWhisperControllerOnRemoveText);
     } else {
       res.toast();
     }
@@ -71,17 +72,21 @@ class MemberDynamicsController
         ..moduleAuthor?.isTop = false;
       if (isTop) {
         loadingState.refresh();
-        SmartDialog.showToast('取消置顶成功');
+        SmartDialog.showToast(
+          L10n.current.memberDynamicsControllerOnSetTopText3,
+        );
       } else {
         final item = list.firstWhere((item) => item.idStr == dynamicId);
         item.modules
-          ..moduleTag = ModuleTag(text: '置顶')
+          ..moduleTag = ModuleTag(text: L10n.current.pin)
           ..moduleAuthor?.isTop = true;
         list
           ..remove(item)
           ..insert(0, item);
         loadingState.refresh();
-        SmartDialog.showToast('置顶成功');
+        SmartDialog.showToast(
+          L10n.current.memberDynamicsControllerOnSetTopText2,
+        );
       }
     } else {
       res.toast();

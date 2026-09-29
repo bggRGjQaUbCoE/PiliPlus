@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/later_view_type.dart';
 import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models_new/later/list.dart';
@@ -92,7 +93,7 @@ class _LaterViewChildPageState extends State<LaterViewChildPage>
                                 'count': _laterController
                                     .baseCtr
                                     .counts[LaterViewType.all.index],
-                                'favTitle': '稍后再看',
+                                'favTitle': L10n.current.watchLater,
                                 'mediaId': _laterController.mid,
                                 'desc': _laterController.asc.value,
                                 'isContinuePlaying': index != 0,

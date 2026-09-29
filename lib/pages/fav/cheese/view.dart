@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/space/space_cheese/item.dart';
 import 'package:PiliPlus/pages/fav/cheese/controller.dart';
 import 'package:PiliPlus/pages/member_cheese/widgets/item.dart';
@@ -66,7 +67,7 @@ class _FavCheesePageState extends State<FavCheesePage>
                     item: item,
                     onRemove: () => showConfirmDialog(
                       context: context,
-                      title: const Text('确定取消收藏该课堂？'),
+                      title: Text(L10n.current.favCheesePageBuildBodyTitle),
                       onConfirm: () =>
                           _controller.onRemove(index, item.seasonId!),
                     ),

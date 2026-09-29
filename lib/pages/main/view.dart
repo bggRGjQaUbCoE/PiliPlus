@@ -8,6 +8,7 @@ import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/main_layout.dart';
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/pages/home/view.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
@@ -64,6 +65,7 @@ class _MainAppState extends PopScopeState<MainApp>
         ..setPreventClose(true);
       if (_mainController.showTrayIcon) {
         trayManager.addListener(this);
+        L10n.changes.addListener(_updateTrayLanguage);
         _handleTray();
       }
     }
@@ -123,6 +125,7 @@ class _MainAppState extends PopScopeState<MainApp>
       HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
     }
     if (PlatformUtils.isDesktop) {
+      L10n.changes.removeListener(_updateTrayLanguage);
       trayManager.removeListener(this);
       windowManager.removeListener(this);
     }
@@ -285,11 +288,15 @@ class _MainAppState extends PopScopeState<MainApp>
       await trayManager.setToolTip(Constants.appName);
     }
 
+    await _updateTrayLanguage();
+  }
+
+  Future<void> _updateTrayLanguage() async {
     Menu trayMenu = Menu(
       items: [
-        MenuItem(key: 'show', label: '显示窗口'),
+        MenuItem(key: 'show', label: L10n.current.showWindow),
         MenuItem.separator(),
-        MenuItem(key: 'exit', label: '退出 ${Constants.appName}'),
+        MenuItem(key: 'exit', label: L10n.current.exitApp(Constants.appName)),
       ],
     );
     await trayManager.setContextMenu(trayMenu);
@@ -568,10 +575,10 @@ class _MainAppState extends PopScopeState<MainApp>
         const SizedBox(height: 8),
         msgBadge(_mainController),
         IconButton(
-          tooltip: '搜索',
-          icon: const Icon(
+          tooltip: L10n.current.search,
+          icon: Icon(
             Icons.search_outlined,
-            semanticLabel: '搜索',
+            semanticLabel: L10n.current.search,
           ),
           onPressed: () => Get.toNamed('/search'),
         ),

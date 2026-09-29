@@ -1,0 +1,4 @@
+"NSPhotoLibraryUsageDescription" = "Allow PiliPlus to save images to your photo library.";
+"NSCameraUsageDescription" = "Allow PiliPlus to access your camera.";
+"NSAppleMusicUsageDescription" = "Allow PiliPlus to access your media library.";
+"NSLocalNetworkUsageDescription" = "Allow PiliPlus to find and connect to DLNA casting devices on your local network.";

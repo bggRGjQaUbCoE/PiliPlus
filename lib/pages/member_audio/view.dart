@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/space/space_audio/item.dart';
 import 'package:PiliPlus/pages/member_audio/controller.dart';
 import 'package:PiliPlus/pages/member_audio/widgets/item.dart';
@@ -81,7 +82,9 @@ class _MemberAudioState extends State<MemberAudio>
                       child: Row(
                         children: [
                           Text(
-                            '共${_controller.totalSize ?? 0}首',
+                            L10n.current.memberAudioBuildBodyChildren(
+                              _controller.totalSize ?? 0,
+                            ),
                             style: const TextStyle(fontSize: 13),
                           ),
                           Padding(
@@ -95,7 +98,7 @@ class _MemberAudioState extends State<MemberAudio>
                                 color: colorScheme.secondary,
                               ),
                               label: Text(
-                                '播放全部',
+                                L10n.current.playAll,
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: colorScheme.secondary,

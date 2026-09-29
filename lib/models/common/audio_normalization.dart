@@ -1,19 +1,25 @@
 import 'dart:io' show Platform;
 
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/video/play/url.dart' show Volume;
 import 'package:PiliPlus/utils/storage_pref.dart';
 
 enum AudioNormalization {
-  disable('禁用'),
+  disable,
   // ref https://github.com/KRTirtho/spotube/commit/da10ab2e291d4ba4d3082b9a6ae535639fb8f1b7
-  dynaudnorm('预设 dynaudnorm', 'dynaudnorm=g=5:f=250:r=0.9:p=0.5'),
-  loudnorm('预设 loudnorm', 'loudnorm=I=-16:LRA=11:TP=-1.5'),
-  custom('自定义参数'),
+  dynaudnorm('dynaudnorm=g=5:f=250:r=0.9:p=0.5'),
+  loudnorm('loudnorm=I=-16:LRA=11:TP=-1.5'),
+  custom,
   ;
 
-  final String title;
+  String get title => switch (this) {
+    disable => L10n.current.disable,
+    dynaudnorm => L10n.current.audioNormalizationDynaudnormTitle,
+    loudnorm => L10n.current.audioNormalizationLoudnormTitle,
+    custom => L10n.current.audioNormalizationCustomTitle,
+  };
   final String param;
-  const AudioNormalization(this.title, [this.param = '']);
+  const AudioNormalization([this.param = '']);
 
   static String getTitleFromConfig(String config) => switch (config) {
     '0' => disable.title,

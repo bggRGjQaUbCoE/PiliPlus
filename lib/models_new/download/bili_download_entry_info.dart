@@ -1,3 +1,4 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart'
     show MultiSelectData;
@@ -71,7 +72,10 @@ class BiliDownloadEntryInfo with MultiSelectData {
       itemBuilder: (_) => [
         PopupMenuItem(
           height: 38,
-          child: const Text('查看详情页', style: TextStyle(fontSize: 13)),
+          child: Text(
+            L10n.current.viewDetailsPage,
+            style: const TextStyle(fontSize: 13),
+          ),
           onTap: () {
             if (ep case final ep?) {
               if (ep.from == VideoType.pugv.name) {
@@ -101,20 +105,28 @@ class BiliDownloadEntryInfo with MultiSelectData {
         if (PlatformUtils.isDesktop)
           PopupMenuItem(
             height: 38,
-            child: const Text('打开本地文件夹', style: TextStyle(fontSize: 13)),
+            child: Text(
+              L10n.current.openLocalFolder,
+              style: const TextStyle(fontSize: 13),
+            ),
             onTap: () => PathUtils.openDir(entryDirPath),
           )
         else
           PopupMenuItem(
             height: 38,
-            child: const Text('复制缓存路径', style: TextStyle(fontSize: 13)),
+            child: Text(
+              L10n.current.copyDownloadPath,
+              style: const TextStyle(fontSize: 13),
+            ),
             onTap: () => Utils.copyText(entryDirPath),
           ),
         if (ownerId case final mid?)
           PopupMenuItem(
             height: 38,
             child: Text(
-              '访问${ownerName != null ? '：$ownerName' : '用户主页'}',
+              L10n.current.biliDownloadEntryInfoMoreBtnChild5(
+                ownerName != null ? '：$ownerName' : L10n.current.userProfile,
+              ),
               style: const TextStyle(fontSize: 13),
             ),
             onTap: () => Get.toNamed('/member?mid=$mid'),
@@ -397,22 +409,33 @@ class EpInfo {
 }
 
 enum DownloadStatus {
-  downloading('正在下载'),
-  audioDownloading('正在下载音频'),
-  getDanmaku('获取弹幕'),
-  getPlayUrl('获取播放地址'),
+  downloading,
+  audioDownloading,
+  getDanmaku,
+  getPlayUrl,
   //
-  completed('下载完成'),
-  failDownload('下载失败'),
-  failDownloadAudio('音频下载失败'),
-  failDanmaku('获取弹幕失败'),
-  failPlayUrl('获取播放地址失败'),
-  pause('暂停中'),
-  wait('等待中'),
+  completed,
+  failDownload,
+  failDownloadAudio,
+  failDanmaku,
+  failPlayUrl,
+  pause,
+  wait,
   ;
 
-  final String message;
-  const DownloadStatus(this.message);
+  String get message => switch (this) {
+    downloading => L10n.current.downloading,
+    audioDownloading => L10n.current.downloadStatusAudioDownloadingMessage,
+    getDanmaku => L10n.current.downloadStatusGetDanmakuMessage,
+    getPlayUrl => L10n.current.downloadStatusGetPlayUrlMessage,
+    completed => L10n.current.downloadComplete,
+    failDownload => L10n.current.downloadStatusFailDownloadMessage,
+    failDownloadAudio => L10n.current.downloadStatusFailDownloadAudioMessage,
+    failDanmaku => L10n.current.downloadStatusFailDanmakuMessage,
+    failPlayUrl => L10n.current.downloadStatusFailPlayUrlMessage,
+    pause => L10n.current.paused,
+    wait => L10n.current.waiting,
+  };
 
   bool get isDownloading => index <= 3;
 }

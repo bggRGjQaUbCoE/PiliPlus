@@ -5,6 +5,7 @@ import 'dart:ffi';
 
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:get/get_rx/get_rx.dart';
@@ -147,18 +148,34 @@ class MpvConvertWebp {
 }
 
 enum WebpPreset {
-  none('none', '无', '不使用预设'),
-  def('default', '默认', '默认预设'),
-  picture('picture', '图片', '数码照片，如人像、室内拍摄'),
-  photo('photo', '照片', '户外摄影，自然光环境'),
-  drawing('drawing', '绘图', '手绘或线稿，高对比度细节'),
-  icon('icon', '图标', '小型彩色图像'),
-  text('text', '文本', '文字类'),
+  none('none'),
+  def('default'),
+  picture('picture'),
+  photo('photo'),
+  drawing('drawing'),
+  icon('icon'),
+  text('text'),
   ;
 
   final String flag;
-  final String name;
-  final String desc;
+  String get name => switch (this) {
+    none => L10n.current.webpPresetNoneName,
+    def => L10n.current.defaultOption,
+    picture => L10n.current.image,
+    photo => L10n.current.webpPresetPhotoName,
+    drawing => L10n.current.webpPresetDrawingName,
+    icon => L10n.current.webpPresetIconName,
+    text => L10n.current.text,
+  };
+  String get desc => switch (this) {
+    none => L10n.current.webpPresetNoneDesc,
+    def => L10n.current.webpPresetDefDesc,
+    picture => L10n.current.webpPresetPictureDesc,
+    photo => L10n.current.webpPresetPhotoDesc,
+    drawing => L10n.current.webpPresetDrawingDesc,
+    icon => L10n.current.webpPresetIconDesc,
+    text => L10n.current.webpPresetTextDesc,
+  };
 
-  const WebpPreset(this.flag, this.name, this.desc);
+  const WebpPreset(this.flag);
 }

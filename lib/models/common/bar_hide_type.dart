@@ -1,11 +1,14 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 
 enum BarHideType with EnumWithLabel {
-  instant('即时'),
-  sync('同步'),
+  instant,
+  sync,
   ;
 
   @override
-  final String label;
-  const BarHideType(this.label);
+  String get label => switch (this) {
+    instant => L10n.current.barHideTypeInstantLabel,
+    sync => L10n.current.barHideTypeSyncLabel,
+  };
 }

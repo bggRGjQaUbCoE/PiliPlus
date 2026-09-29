@@ -3,6 +3,7 @@ import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/fav/fav_note/list.dart';
 import 'package:PiliPlus/pages/fav/note/controller.dart';
 import 'package:PiliPlus/pages/fav/note/widget/item.dart';
@@ -76,7 +77,7 @@ class _FavNoteChildPageState extends State<FavNoteChildPage>
                 const SizedBox(width: 16),
                 iconButton(
                   size: 32,
-                  tooltip: '取消',
+                  tooltip: L10n.current.cancel,
                   context: context,
                   icon: const Icon(Icons.clear),
                   onPressed: _favNoteController.onDisable,
@@ -99,13 +100,13 @@ class _FavNoteChildPageState extends State<FavNoteChildPage>
                     checked: !_favNoteController.allSelected.value,
                     disableSelect: false,
                   ),
-                  child: const Padding(
-                    padding: EdgeInsets.only(
+                  child: Padding(
+                    padding: const EdgeInsets.only(
                       top: 14,
                       bottom: 14,
                       right: 12,
                     ),
-                    child: Text('全选'),
+                    child: Text(L10n.current.multiSelectAppBarWidgetChild),
                   ),
                 ),
                 const Spacer(),
@@ -118,12 +119,12 @@ class _FavNoteChildPageState extends State<FavNoteChildPage>
                     if (_favNoteController.checkedCount != 0) {
                       showConfirmDialog(
                         context: context,
-                        title: const Text('确定删除已选中的笔记吗？'),
+                        title: Text(L10n.current.favNoteChildPageTitle),
                         onConfirm: _favNoteController.onRemove,
                       );
                     }
                   },
-                  child: const Text('删除'),
+                  child: Text(L10n.current.delete),
                 ),
                 const SizedBox(width: 16),
               ],

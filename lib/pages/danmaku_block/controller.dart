@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:PiliPlus/http/danmaku_block.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/dm_block_type.dart';
 import 'package:PiliPlus/models/user/danmaku_block.dart';
 import 'package:archive/archive.dart' show getCrc32;
@@ -32,7 +33,9 @@ class DanmakuBlockController extends GetxController
   }
 
   Future<void> queryDanmakuFilter() async {
-    SmartDialog.showLoading(msg: '正在同步弹幕屏蔽规则……');
+    SmartDialog.showLoading(
+      msg: L10n.current.danmakuBlockControllerQueryDanmakuFilterMsg,
+    );
     final result = await DanmakuFilterHttp.danmakuFilter();
     SmartDialog.dismiss();
     if (result case Success(:final response)) {
@@ -48,12 +51,14 @@ class DanmakuBlockController extends GetxController
   }
 
   Future<void> danmakuFilterDel(int tabIndex, int itemIndex, int id) async {
-    SmartDialog.showLoading(msg: '正在删除弹幕屏蔽规则……');
+    SmartDialog.showLoading(
+      msg: L10n.current.danmakuBlockControllerDanmakuFilterDelMsg,
+    );
     final res = await DanmakuFilterHttp.danmakuFilterDel(ids: id);
     SmartDialog.dismiss();
     if (res.isSuccess) {
       rules[tabIndex].removeAt(itemIndex);
-      SmartDialog.showToast('删除成功');
+      SmartDialog.showToast(L10n.current.commonWhisperControllerOnRemoveText);
     } else {
       res.toast();
     }
@@ -66,7 +71,9 @@ class DanmakuBlockController extends GetxController
     if (type == 2) {
       filter = getCrc32(ascii.encode(filter), 0).toRadixString(16);
     }
-    SmartDialog.showLoading(msg: '正在添加弹幕屏蔽规则……');
+    SmartDialog.showLoading(
+      msg: L10n.current.danmakuBlockControllerDanmakuFilterAddMsg,
+    );
     final res = await DanmakuFilterHttp.danmakuFilterAdd(
       filter: filter,
       type: type,
@@ -74,7 +81,9 @@ class DanmakuBlockController extends GetxController
     SmartDialog.dismiss();
     if (res case Success(:final response)) {
       rules[type].add(response);
-      SmartDialog.showToast('添加成功');
+      SmartDialog.showToast(
+        L10n.current.danmakuBlockControllerDanmakuFilterAddText,
+      );
     } else {
       res.toast();
     }

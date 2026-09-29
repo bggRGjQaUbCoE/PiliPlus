@@ -1,3 +1,4 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/pages/setting/models/extra_settings.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/models/play_settings.dart';
@@ -7,18 +8,26 @@ import 'package:PiliPlus/pages/setting/models/style_settings.dart';
 import 'package:PiliPlus/pages/setting/models/video_settings.dart';
 
 enum SettingType {
-  privacySetting('隐私设置'),
-  recommendSetting('推荐流设置'),
-  videoSetting('音视频设置'),
-  playSetting('播放器设置'),
-  styleSetting('外观设置'),
-  extraSetting('其它设置'),
-  webdavSetting('WebDAV 设置'),
-  about('关于'),
+  privacySetting,
+  recommendSetting,
+  videoSetting,
+  playSetting,
+  styleSetting,
+  extraSetting,
+  webdavSetting,
+  about,
   ;
 
-  final String title;
-  const SettingType(this.title);
+  String get title => switch (this) {
+    privacySetting => L10n.current.privacySettings,
+    recommendSetting => L10n.current.recommendationSettings,
+    videoSetting => L10n.current.videoSettings,
+    playSetting => L10n.current.playerSettings,
+    styleSetting => L10n.current.appearanceSettings,
+    extraSetting => L10n.current.extraSettings,
+    webdavSetting => L10n.current.webdavSettings,
+    about => L10n.current.about,
+  };
 
   List<SettingsModel> get settings => switch (this) {
     .privacySetting => privacySettings,

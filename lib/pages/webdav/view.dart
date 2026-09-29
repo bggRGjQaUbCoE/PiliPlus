@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_insets_safe_area.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/pages/webdav/webdav.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -41,7 +42,9 @@ class _WebDavSettingPageState extends State<WebDavSettingPage> {
     final showAppBar = widget.showAppBar;
     final padding = MediaQuery.viewPaddingOf(context);
     return SimpleScaffold(
-      appBar: showAppBar ? AppBar(title: const Text('WebDAV 设置')) : null,
+      appBar: showAppBar
+          ? AppBar(title: Text(L10n.current.webdavSettings))
+          : null,
       body: ViewInsetsSafeArea(
         child: ListView(
           padding: padding.copyWith(
@@ -53,17 +56,17 @@ class _WebDavSettingPageState extends State<WebDavSettingPage> {
           children: [
             TextField(
               controller: _uriCtr,
-              decoration: const InputDecoration(
-                labelText: '地址',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: L10n.current.webDavSettingPageLabelText,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 20),
             TextField(
               controller: _usernameCtr,
-              decoration: const InputDecoration(
-                labelText: '用户',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: L10n.current.user,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 20),
@@ -71,7 +74,7 @@ class _WebDavSettingPageState extends State<WebDavSettingPage> {
               controller: _passwordCtr,
               autofillHints: const [AutofillHints.password],
               decoration: InputDecoration(
-                labelText: '密码',
+                labelText: L10n.current.loginPageLoginByPasswordLabelText2,
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   onPressed: () => setState(() => _obscureText = !_obscureText),
@@ -85,9 +88,9 @@ class _WebDavSettingPageState extends State<WebDavSettingPage> {
             const SizedBox(height: 20),
             TextField(
               controller: _directoryCtr,
-              decoration: const InputDecoration(
-                labelText: '路径',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: L10n.current.webDavSettingPageLabelText2,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 20),
@@ -101,7 +104,7 @@ class _WebDavSettingPageState extends State<WebDavSettingPage> {
                       ),
                     ),
                     onPressed: WebDav().backup,
-                    child: const Text('备份设置'),
+                    child: Text(L10n.current.webDavSettingPageChild),
                   ),
                 ),
                 const SizedBox(width: 20),
@@ -113,7 +116,7 @@ class _WebDavSettingPageState extends State<WebDavSettingPage> {
                       ),
                     ),
                     onPressed: WebDav().restore,
-                    child: const Text('恢复设置'),
+                    child: Text(L10n.current.webDavSettingPageChild2),
                   ),
                 ),
               ],
@@ -142,7 +145,9 @@ class _WebDavSettingPageState extends State<WebDavSettingPage> {
               try {
                 final res = await WebDav().init();
                 if (res.first) {
-                  SmartDialog.showToast('配置成功');
+                  SmartDialog.showToast(
+                    L10n.current.webDavSettingPageOnPressed,
+                  );
                 } else {
                   SmartDialog.showToast('配置失败: ${res.second}');
                 }

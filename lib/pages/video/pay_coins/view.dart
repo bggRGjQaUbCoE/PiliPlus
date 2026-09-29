@@ -5,6 +5,7 @@ import 'dart:math' show max;
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show tabBarScrollPhysics;
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
@@ -413,7 +414,7 @@ class _PayCoinsPageState extends State<PayCoinsPage>
                 const SizedBox(height: 10),
                 Center(
                   child: Text(
-                    '${_coins != null ? '硬币余额：${max(0.0, _coins.toDouble().toPrecision(1))}' : ''}${widget.hasCoin ? '${_coins != null ? '，' : ''}已投1枚硬币' : ''}',
+                    '${_coins != null ? L10n.current.payCoinsPageBuildBodyChild2(max(0.0, _coins.toDouble().toPrecision(1))) : ''}${widget.hasCoin ? L10n.current.payCoinsPageBuildBodyChild(_coins != null ? '，' : '') : ''}',
                     style: const TextStyle(color: Colors.white, fontSize: 13),
                   ),
                 ),
@@ -443,9 +444,9 @@ class _PayCoinsPageState extends State<PayCoinsPage>
                             color: Colors.white,
                           ),
                         ),
-                        const Text(
-                          ' 同时点赞',
-                          style: TextStyle(color: Colors.white),
+                        Text(
+                          L10n.current.payCoinsPageBuildBodyChildren,
+                          style: const TextStyle(color: Colors.white),
                         ),
                       ],
                     ),

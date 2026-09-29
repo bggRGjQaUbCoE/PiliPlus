@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/common/widgets/video_popup_menu.dart';
 import 'package:PiliPlus/http/search.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/home/rcmd/result.dart';
 import 'package:PiliPlus/models/model_rec_video_item.dart';
 import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
@@ -185,16 +186,16 @@ class VideoCardV extends StatelessWidget {
                     type: .secondary,
                   ),
                 if (videoItem.goto == 'picture')
-                  const PBadge(
-                    text: '动态',
+                  PBadge(
+                    text: L10n.current.dynamics,
                     isStack: false,
                     size: .small,
                     type: .line_primary,
                     fontSize: 9,
                   ),
                 if (videoItem.isFollowed)
-                  const PBadge(
-                    text: '已关注',
+                  PBadge(
+                    text: L10n.current.following,
                     isStack: false,
                     size: .small,
                     type: .secondary,

@@ -14,6 +14,7 @@ import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/dynamics/result.dart' show FilePicModel;
 import 'package:PiliPlus/pages/common/publish/common_rich_text_pub_page.dart';
 import 'package:PiliPlus/pages/dynamics_mention/controller.dart';
@@ -153,7 +154,8 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
             onSubmitted: onSubmitted,
             focusNode: focusNode,
             decoration: InputDecoration(
-              hintText: widget.hint ?? "输入回复内容",
+              hintText:
+                  widget.hint ?? L10n.current.replyPageBuildInputViewHintText2,
               border: InputBorder.none,
               hintStyle: const TextStyle(fontSize: 14),
             ),
@@ -174,14 +176,16 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
             if (widget.root == 0) ...[
               const SizedBox(width: 8),
               ToolbarIconButton(
-                tooltip: '图片',
+                tooltip: L10n.current.image,
                 selected: false,
                 icon: widget.canUploadPic
                     ? const Icon(Icons.image, size: 22)
                     : const Icon(Icons.image_not_supported, size: 22),
                 onPressed: widget.canUploadPic
                     ? onPickImage
-                    : () => SmartDialog.showToast('当前评论区不支持发送图片'),
+                    : () => SmartDialog.showToast(
+                        L10n.current.replyPageBuildInputViewOnPressed,
+                      ),
               ),
             ],
             const SizedBox(width: 8),
@@ -193,7 +197,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
             const SizedBox(width: 8),
             Obx(
               () => ToolbarIconButton(
-                tooltip: '转到动态',
+                tooltip: L10n.current.replyPageBuildInputViewTooltip2,
                 onPressed: _syncToDynamic.toggle,
                 icon: const Icon(
                   CustomIcons.repeat_rounded_rotate_90,
@@ -214,7 +218,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
                   ),
                   visualDensity: VisualDensity.compact,
                 ),
-                child: const Text('发送'),
+                child: Text(L10n.current.send),
               ),
             ),
           ],
@@ -297,7 +301,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
               }
             },
             icon: Icon(Icons.post_add, size: 28, color: color),
-            title: '插入内容',
+            title: L10n.current.replyPageBuildMorePanelTitle,
           ),
           if (heroTag != null) ...[
             // if (isRoot)
@@ -329,13 +333,17 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
                 }
               },
               icon: Icon(Icons.my_location, size: 28, color: color),
-              title: '视频进度',
+              title: L10n.current.replyPageBuildMorePanelTitle2,
             ),
             if (isRoot && widget.canUploadPic)
               item(
                 onTap: () async {
                   if (imageList.length >= limit) {
-                    SmartDialog.showToast('最多选择$limit张图片');
+                    SmartDialog.showToast(
+                      L10n.current.commonRichTextPubPageOnPickImageText(
+                        limit,
+                      ),
+                    );
                     return;
                   }
                   try {
@@ -367,7 +375,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
                   size: 28,
                   color: color,
                 ),
-                title: '视频截图',
+                title: L10n.current.replyPageBuildMorePanelTitle3,
               ),
           ],
         ],
@@ -390,7 +398,10 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
       root: widget.root,
       parent: widget.parent,
       message: widget.replyItem != null && widget.replyItem!.root != 0
-          ? ' 回复 @${widget.replyItem!.member.name} : $message'
+          ? L10n.current.resOnCustomPublishMessage(
+              widget.replyItem!.member.name,
+              message,
+            )
           : message,
       atNameToMid: atNameToMid,
       pictures: pictures,
@@ -398,7 +409,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
     );
     if (res case Success(:final response)) {
       hasPub = true;
-      SmartDialog.showToast('发送成功');
+      SmartDialog.showToast(L10n.current.replyPageOnCustomPublishText);
       Get.back(result: response);
     } else {
       res.toast();
@@ -410,7 +421,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
     return ToolbarIconButton(
       onPressed: latexOn ? _unlatexify : _latexify,
       icon: const Icon(Icons.functions, size: 22),
-      tooltip: '公式',
+      tooltip: L10n.current.replyPageLatexBtnTooltip,
       selected: latexOn,
     );
   });
@@ -426,8 +437,10 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
     if (spans.isEmpty) {
       SmartDialog.showToast(
         warnings.isEmpty
-            ? '未发现用 \$ 括起的公式'
-            : '公式未能识别：${warnings.join('、')}（已保留原文）',
+            ? L10n.current.replyPageLatexifyText
+            : L10n.current.replyPageLatexifyText3(
+                warnings.join('、'),
+              ),
       );
       return;
     }
@@ -436,7 +449,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
     _latexOn.value = true;
     if (warnings.isNotEmpty) {
       SmartDialog.showToast(
-        '无法识别：${warnings.join('、')}（已保留原文）',
+        L10n.current.replyPageLatexifyText2(warnings.join('、')),
       );
     }
   }

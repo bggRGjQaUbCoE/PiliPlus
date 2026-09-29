@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/progress_bar/video_progress_indicator.da
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/common/widgets/video_popup_menu.dart';
 import 'package:PiliPlus/http/search.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/horizontal_video_model.dart';
 import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
@@ -73,7 +74,7 @@ class VideoCardH extends StatelessWidget {
                             ),
                             if (videoItem.badge case final badge?)
                               PBadge(
-                                text: badge,
+                                text: videoItem.badgeLabel,
                                 top: 6.0,
                                 right: 6.0,
                                 type: switch (badge) {
@@ -84,7 +85,7 @@ class VideoCardH extends StatelessWidget {
                             if (progress != null && progress != 0) ...[
                               PBadge(
                                 text: progress == -1
-                                    ? '已看完'
+                                    ? L10n.current.watchedCompletely
                                     : '${DurationUtils.formatDuration(progress)}/${DurationUtils.formatDuration(videoItem.duration)}',
                                 right: 6,
                                 bottom: 8,

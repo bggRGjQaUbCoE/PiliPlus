@@ -1,7 +1,8 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 
 Widget moreTextButton({
-  String text = '查看更多',
+  String? text,
   required VoidCallback onTap,
   EdgeInsets? padding,
   Color? color,
@@ -11,7 +12,7 @@ Widget moreTextButton({
     strutStyle: const StrutStyle(leading: 0, height: 1),
     TextSpan(
       children: [
-        TextSpan(text: text),
+        TextSpan(text: text ?? L10n.current.showMore),
         WidgetSpan(
           alignment: PlaceholderAlignment.middle,
           child: Icon(

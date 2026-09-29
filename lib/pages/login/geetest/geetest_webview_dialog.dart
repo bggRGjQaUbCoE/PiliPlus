@@ -2,6 +2,7 @@ import 'dart:convert' show jsonDecode;
 import 'dart:io' show Platform;
 
 import 'package:PiliPlus/http/browser_ua.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/plugin/linux_webview.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -59,7 +60,7 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
 
     if (Platform.isLinux) {
       return AlertDialog(
-        title: const Text('验证码'),
+        title: Text(L10n.current.geetestWebviewDialogTitle),
         content: SizedBox(
           width: 300,
           height: 400,
@@ -157,7 +158,7 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
           child: IconButton(
             icon: const Icon(Icons.close),
             onPressed: Get.back,
-            tooltip: '关闭',
+            tooltip: L10n.current.close,
           ),
         ),
       ],

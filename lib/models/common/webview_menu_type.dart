@@ -1,12 +1,20 @@
+import 'package:PiliPlus/l10n/l10n.dart';
+
 enum WebviewMenuItem {
-  refresh('刷新'),
-  copy('复制链接'),
-  openInBrowser('浏览器中打开'),
-  clearCache('清除缓存'),
-  resetCookie('重新设置Cookie'),
-  goBack('返回'),
+  refresh,
+  copy,
+  openInBrowser,
+  clearCache,
+  resetCookie,
+  goBack,
   ;
 
-  final String title;
-  const WebviewMenuItem(this.title);
+  String get title => switch (this) {
+    refresh => L10n.current.refresh,
+    copy => L10n.current.copyLink,
+    openInBrowser => L10n.current.webviewMenuItemOpenInBrowserTitle,
+    clearCache => L10n.current.clearCache,
+    resetCookie => L10n.current.webviewMenuItemResetCookieTitle,
+    goBack => L10n.current.back,
+  };
 }

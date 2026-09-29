@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/services/logger.dart';
 import 'package:brotli/brotli.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -49,7 +50,7 @@ class PackageHeaderRes extends PackageHeader {
 
   static PackageHeaderRes? fromBytesData(Uint8List data) {
     if (data.length < 10) {
-      logger.w('数据不足以解析PackageHeader');
+      logger.w(L10n.current.packageHeaderResFromBytesDataText);
       return null;
     }
     final byteData = ByteData.sublistView(data);
@@ -244,7 +245,14 @@ class LiveMessageStream {
       close();
       return;
     }
-    if (kDebugMode) logger.i("$logTag 直播间信息流认证成功 $hashCode");
+    if (kDebugMode) {
+      logger.i(
+        L10n.current.liveMessageStreamHeartBeatText(
+          logTag,
+          hashCode,
+        ),
+      );
+    }
     int heartBeatCount = 1;
     _timer ??= Timer.periodic(const Duration(seconds: 30), (timer) {
       if (!_active) {

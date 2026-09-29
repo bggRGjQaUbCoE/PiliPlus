@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/self_sized_horizontal_list.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_index_condition/data.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_index_condition/sort.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_index_condition/value.dart';
@@ -47,7 +48,9 @@ class _PgcIndexPageState extends State<PgcIndexPage>
     final theme = Theme.of(context);
     return widget.indexType == null
         ? SimpleScaffold(
-            appBar: AppBar(title: const Text('索引')),
+            appBar: AppBar(
+              title: Text(L10n.current.pgcPageBuildRcmdTitleTitle),
+            ),
             body: Obx(() => _buildBody(theme, _ctr.conditionState.value)),
           )
         : Obx(() => _buildBody(theme, _ctr.conditionState.value));
@@ -204,7 +207,9 @@ class _PgcIndexPageState extends State<PgcIndexPage>
               mainAxisSize: .min,
               children: [
                 Text(
-                  _ctr.isExpand.value ? '收起' : '展开',
+                  _ctr.isExpand.value
+                      ? L10n.current.pgcIndexPageBuildSortsWidgetChildren
+                      : L10n.current.childBuildFoldItemText,
                   style: TextStyle(color: theme.colorScheme.outline),
                 ),
                 Icon(

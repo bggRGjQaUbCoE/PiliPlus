@@ -1,24 +1,28 @@
 import 'package:PiliPlus/http/api.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 
 enum PgcReviewType {
-  long(label: '长评', api: Api.pgcReviewL),
-  short(label: '短评', api: Api.pgcReviewS),
+  long(api: Api.pgcReviewL),
+  short(api: Api.pgcReviewS),
   ;
 
-  final String label;
+  String get label => switch (this) {
+    long => L10n.current.pgcReviewTypeLongLabel,
+    short => L10n.current.pgcReviewTypeShortLabel,
+  };
   final String api;
-  const PgcReviewType({
-    required this.label,
-    required this.api,
-  });
+  const PgcReviewType({required this.api});
 }
 
 enum PgcReviewSortType {
-  def('默认', 0),
-  latest('最新', 1),
+  def(0),
+  latest(1),
   ;
 
   final int sort;
-  final String label;
-  const PgcReviewSortType(this.label, this.sort);
+  String get label => switch (this) {
+    def => L10n.current.defaultOption,
+    latest => L10n.current.newest,
+  };
+  const PgcReviewSortType(this.sort);
 }

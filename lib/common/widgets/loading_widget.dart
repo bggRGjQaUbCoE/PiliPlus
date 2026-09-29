@@ -1,16 +1,17 @@
 import 'package:PiliPlus/common/widgets/custom_arc.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 class LoadingWidget extends StatelessWidget {
   const LoadingWidget({
     super.key,
-    this.msg = 'loading...',
+    this.msg,
     required this.progress,
   });
 
   ///loading msg
-  final String msg;
+  final String? msg;
   final RxDouble progress;
 
   @override
@@ -37,7 +38,12 @@ class LoadingWidget extends StatelessWidget {
             ),
           ),
           //msg
-          Text(msg, style: TextStyle(color: onSurfaceVariant)),
+          Text(
+            msg == null || msg == 'loading...'
+                ? L10n.current.loadingMessage
+                : msg!,
+            style: TextStyle(color: onSurfaceVariant),
+          ),
         ],
       ),
     );

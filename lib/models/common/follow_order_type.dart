@@ -1,10 +1,15 @@
+import 'package:PiliPlus/l10n/l10n.dart';
+
 enum FollowOrderType {
-  def('', '最近关注'),
-  attention('attention', '最常访问'),
+  def(''),
+  attention('attention'),
   ;
 
   final String type;
-  final String title;
+  String get title => switch (this) {
+    def => L10n.current.followOrderTypeDefTitle,
+    attention => L10n.current.followOrderTypeAttentionTitle,
+  };
 
-  const FollowOrderType(this.type, this.title);
+  const FollowOrderType(this.type);
 }

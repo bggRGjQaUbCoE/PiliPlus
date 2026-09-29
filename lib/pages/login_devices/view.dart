@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/login_devices/device.dart';
 import 'package:PiliPlus/pages/login_devices/controller.dart';
 import 'package:PiliPlus/utils/extension/widget_ext.dart';
@@ -24,7 +25,7 @@ class LoginDevicesPageState extends State<LoginDevicesPage> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return SimpleScaffold(
-      appBar: AppBar(title: const Text('登录设备')),
+      appBar: AppBar(title: Text(L10n.current.loginDevicesPageTitle)),
       body: refreshIndicator(
         onRefresh: _controller.onRefresh,
         child: CustomScrollView(
@@ -84,7 +85,7 @@ class LoginDevicesPageState extends State<LoginDevicesPage> {
         style: style,
       ),
       trailing: item.isCurrentDevice == true
-          ? Text('(本机)', style: style)
+          ? Text(L10n.current.loginDevicesPageBuildItemTrailing, style: style)
           : null,
     );
   }

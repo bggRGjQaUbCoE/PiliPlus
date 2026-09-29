@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/space/space_fav/data.dart';
 import 'package:PiliPlus/pages/member_favorite/controller.dart';
 import 'package:PiliPlus/pages/member_favorite/widget/item.dart';
@@ -214,7 +215,7 @@ class _MemberFavoriteState extends State<MemberFavorite>
           height: 40,
           alignment: .center,
           child: Text(
-            '查看更多内容',
+            L10n.current.memberFavoriteBuildLoadMoreItemChild,
             textAlign: TextAlign.center,
             style: TextStyle(color: theme.colorScheme.primary),
           ),

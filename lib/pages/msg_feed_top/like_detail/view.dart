@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/msg/msg_like_detail/card.dart';
 import 'package:PiliPlus/models_new/msg/msg_like_detail/item.dart';
@@ -32,7 +33,7 @@ class _LikeDetailPageState extends State<LikeDetailPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return SimpleScaffold(
-      appBar: AppBar(title: const Text('点赞详情')),
+      appBar: AppBar(title: Text(L10n.current.likeDetailPageTitle)),
       body: refreshIndicator(
         onRefresh: _controller.onRefresh,
         child: CustomScrollView(
@@ -136,7 +137,7 @@ class _LikeDetailPageState extends State<LikeDetailPage> {
               ),
             ),
             TextSpan(
-              text: " 赞了我",
+              text: L10n.current.likeDetailPageBuildItemText,
               style: TextStyle(
                 fontSize: 13,
                 color: theme.colorScheme.onSurfaceVariant,

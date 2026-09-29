@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -93,7 +94,7 @@ class WebDav {
         await client.remove(path);
       } catch (_) {}
       await client.write(path, utf8.encode(data));
-      SmartDialog.showToast('备份成功');
+      SmartDialog.showToast(L10n.current.webDavBackupText);
     } catch (e) {
       SmartDialog.showToast('备份失败: $e');
     }
@@ -112,7 +113,7 @@ class WebDav {
       final path = '${config.directory}/${_getFileName()}';
       final data = await client.read(path);
       await GStorage.importAllSettings(utf8.decode(data));
-      SmartDialog.showToast('恢复成功');
+      SmartDialog.showToast(L10n.current.webDavRestoreText);
     } catch (e) {
       SmartDialog.showToast('恢复失败: $e');
     }

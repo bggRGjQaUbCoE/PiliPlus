@@ -1,6 +1,7 @@
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/msg.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
@@ -58,7 +59,7 @@ class DynamicsTabController
       loadingState
         ..value.data!.removeAt(index)
         ..refresh();
-      SmartDialog.showToast('删除成功');
+      SmartDialog.showToast(L10n.current.commonWhisperControllerOnRemoveText);
     } else {
       res.toast();
     }

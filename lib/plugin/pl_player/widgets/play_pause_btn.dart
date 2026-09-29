@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:media_kit/media_kit.dart';
@@ -57,7 +58,9 @@ class PlayOrPauseButtonState extends State<PlayOrPauseButton>
         onTap: widget.plPlayerController.onDoubleTapCenter,
         child: Center(
           child: AnimatedIcon(
-            semanticLabel: player.state.playing ? '暂停' : '播放',
+            semanticLabel: player.state.playing
+                ? L10n.current.pauseVideo
+                : L10n.current.playVideo,
             progress: controller,
             icon: AnimatedIcons.play_pause,
             color: Colors.white,

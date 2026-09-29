@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:collection/collection.dart';
@@ -63,7 +64,7 @@ class _SetDisplayModeState extends State<SetDisplayMode> {
   @override
   Widget build(BuildContext context) {
     return SimpleScaffold(
-      appBar: AppBar(title: const Text('屏幕帧率设置')),
+      appBar: AppBar(title: Text(L10n.current.setDisplayModeTitle)),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -72,7 +73,7 @@ class _SetDisplayModeState extends State<SetDisplayMode> {
                 MediaQuery.viewPaddingOf(context).copyWith(top: 0, bottom: 0) +
                 const EdgeInsets.only(left: 25, top: 10, bottom: 5),
             child: Text(
-              '没有生效？重启app试试',
+              L10n.current.setDisplayModeChild,
               style: TextStyle(color: Theme.of(context).colorScheme.outline),
             ),
           ),
@@ -94,8 +95,10 @@ class _SetDisplayModeState extends State<SetDisplayMode> {
                   return RadioListTile<DisplayMode>(
                     value: mode,
                     title: mode == DisplayMode.auto
-                        ? const Text('自动')
-                        : Text('$mode${mode == active ? '  [系统]' : ''}'),
+                        ? Text(L10n.current.automatic)
+                        : Text(
+                            '$mode${mode == active ? L10n.current.setDisplayModeTitle2 : ''}',
+                          ),
                   );
                 },
               ),

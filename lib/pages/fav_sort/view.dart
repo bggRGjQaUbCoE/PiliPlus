@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/widgets/reorder_mixin.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/fav/fav_detail/media.dart';
 import 'package:PiliPlus/pages/fav_detail/controller.dart';
 import 'package:PiliPlus/pages/fav_detail/widget/fav_video_card.dart';
@@ -49,7 +50,11 @@ class _FavSortPageState extends State<FavSortPage> with ReorderMixin {
   Widget build(BuildContext context) {
     return SimpleScaffold(
       appBar: AppBar(
-        title: Text('排序: ${_favDetailController.folderInfo.value.title}'),
+        title: Text(
+          L10n.current.favSortPageTitle(
+            _favDetailController.folderInfo.value.title,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () {
@@ -62,7 +67,9 @@ class _FavSortPageState extends State<FavSortPage> with ReorderMixin {
                 sort: sort.join(','),
               ).then((res) {
                 if (res.isSuccess) {
-                  SmartDialog.showToast('排序完成');
+                  SmartDialog.showToast(
+                    L10n.current.favFolderSortPageOnPressed,
+                  );
                   _favDetailController.loadingState.value = Success(sortList);
                   if (mounted) {
                     Get.back();
@@ -72,7 +79,7 @@ class _FavSortPageState extends State<FavSortPage> with ReorderMixin {
                 }
               });
             },
-            child: const Text('完成'),
+            child: Text(L10n.current.done),
           ),
           const SizedBox(width: 16),
         ],

@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/skeleton/skeleton.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -87,19 +88,24 @@ class DynamicCardSkeleton extends StatelessWidget {
             if (GlobalData().dynamicsWaterfallFlow) const Spacer(),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: const ['转发', '评论', '点赞']
-                  .map(
-                    (e) => TextButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(
-                        Icons.radio_button_unchecked_outlined,
-                        size: 20,
-                      ),
-                      style: buttonStyle,
-                      label: Text(e),
-                    ),
-                  )
-                  .toList(),
+              children:
+                  [
+                        L10n.current.repost,
+                        L10n.current.comments,
+                        L10n.current.like,
+                      ]
+                      .map(
+                        (e) => TextButton.icon(
+                          onPressed: () {},
+                          icon: const Icon(
+                            Icons.radio_button_unchecked_outlined,
+                            size: 20,
+                          ),
+                          style: buttonStyle,
+                          label: Text(e),
+                        ),
+                      )
+                      .toList(),
             ),
           ],
         ),

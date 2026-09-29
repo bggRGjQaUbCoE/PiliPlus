@@ -5,6 +5,7 @@ import 'dart:typed_data' show Uint8List;
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/extension/file_ext.dart';
@@ -58,15 +59,15 @@ abstract final class ImageUtils {
         status == PermissionStatus.permanentlyDenied) {
       SmartDialog.show(
         builder: (context) => AlertDialog(
-          title: const Text('提示'),
-          content: const Text('存储权限未授权'),
+          title: Text(L10n.current.notice),
+          content: Text(L10n.current.imageUtilsRequestPerContent),
           actions: [
             TextButton(
               onPressed: () {
                 SmartDialog.dismiss();
                 openAppSettings();
               },
-              child: const Text('去授权'),
+              child: Text(L10n.current.imageUtilsRequestPerChild),
             ),
           ],
         ),
@@ -98,7 +99,9 @@ abstract final class ImageUtils {
       if (PlatformUtils.isMobile && !await checkPermissionDependOnSdkInt()) {
         return false;
       }
-      if (!silentDownImg) SmartDialog.showLoading(msg: '正在下载');
+      if (!silentDownImg) {
+        SmartDialog.showLoading(msg: L10n.current.downloading);
+      }
 
       String videoName = "video_${Utils.getFileName(liveUrl)}";
       String videoPath = '$tmpDirPath/$videoName';
@@ -110,7 +113,7 @@ abstract final class ImageUtils {
         final imageFile = await CacheManager.manager.getSingleFile(
           url.http2https,
         );
-        if (!silentDownImg) SmartDialog.showLoading(msg: '正在保存');
+        if (!silentDownImg) SmartDialog.showLoading(msg: L10n.current.saving);
         bool success = await LivePhotoMaker.create(
           coverImage: imageFile.path,
           imagePath: null,
@@ -119,13 +122,13 @@ abstract final class ImageUtils {
           height: height,
         ).whenComplete(File(videoPath).tryDel);
         if (success) {
-          SmartDialog.showToast(' 已保存 ');
+          SmartDialog.showToast(L10n.current.imageUtilsDownloadLivePhotoText);
         } else {
           SmartDialog.showToast('保存失败');
           return false;
         }
       } else {
-        if (!silentDownImg) SmartDialog.showLoading(msg: '正在保存');
+        if (!silentDownImg) SmartDialog.showLoading(msg: L10n.current.saving);
         await saveFileImg(
           filePath: videoPath,
           fileName: videoName,
@@ -147,7 +150,7 @@ abstract final class ImageUtils {
       return false;
     }
     if (!silentDownImg) {
-      SmartDialog.showLoading(msg: '正在下载原图');
+      SmartDialog.showLoading(msg: L10n.current.imageUtilsDownloadImgMsg);
     }
     final futures = imgList.map((url) async {
       final name = Utils.getFileName(url);
@@ -181,7 +184,7 @@ abstract final class ImageUtils {
       } else {
         final dst = await FilePicker.getDirectoryPath();
         if (dst == null) {
-          SmartDialog.showToast('取消保存');
+          SmartDialog.showToast(L10n.current.imageUtilsDownloadImgText);
           return false;
         }
         await Future.wait([
@@ -189,7 +192,7 @@ abstract final class ImageUtils {
             src.moveOrCopy(path.join(dst, name)),
         ]);
       }
-      SmartDialog.showToast(' 已保存 ');
+      SmartDialog.showToast(L10n.current.imageUtilsDownloadLivePhotoText);
       return true;
     } finally {
       if (!silentDownImg) SmartDialog.dismiss(status: .loading);
@@ -242,7 +245,7 @@ abstract final class ImageUtils {
     SaveResult? res;
     fileName += '.$ext';
     if (PlatformUtils.isMobile) {
-      if (showLoading) SmartDialog.showLoading(msg: '正在保存');
+      if (showLoading) SmartDialog.showLoading(msg: L10n.current.saving);
       res = await SaverGallery.saveImage(
         bytes,
         fileName: fileName,
@@ -251,7 +254,7 @@ abstract final class ImageUtils {
       );
       SmartDialog.dismiss();
       if (res.isSuccess) {
-        SmartDialog.showToast(' 已保存 ');
+        SmartDialog.showToast(L10n.current.imageUtilsDownloadLivePhotoText);
       } else {
         SmartDialog.showToast('保存失败，${res.errorMessage}');
       }
@@ -263,11 +266,11 @@ abstract final class ImageUtils {
         bytes: Uint8List(0),
       );
       if (savePath == null) {
-        SmartDialog.showToast("取消保存");
+        SmartDialog.showToast(L10n.current.imageUtilsDownloadImgText);
         return null;
       }
       await File(savePath.toFilePath()).writeAsBytes(bytes);
-      SmartDialog.showToast(' 已保存 ');
+      SmartDialog.showToast(L10n.current.imageUtilsDownloadLivePhotoText);
       res = SaveResult(true, null);
     }
     return res;
@@ -299,7 +302,7 @@ abstract final class ImageUtils {
         bytes: Uint8List(0),
       );
       if (savePath == null) {
-        SmartDialog.showToast("取消保存");
+        SmartDialog.showToast(L10n.current.imageUtilsDownloadImgText);
         return;
       }
       await file.moveOrCopy(savePath.toFilePath());
@@ -307,7 +310,7 @@ abstract final class ImageUtils {
     }
     if (needToast) {
       if (res.isSuccess) {
-        SmartDialog.showToast(' 已保存 ');
+        SmartDialog.showToast(L10n.current.imageUtilsDownloadLivePhotoText);
       } else {
         SmartDialog.showToast('保存失败，${res.errorMessage}');
       }

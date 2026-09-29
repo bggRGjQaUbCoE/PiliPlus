@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/pages/member_search/child/view.dart';
 import 'package:PiliPlus/pages/member_search/controller.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -26,7 +27,7 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
       appBar: AppBar(
         actions: [
           IconButton(
-            tooltip: '搜索',
+            tooltip: L10n.current.search,
             onPressed: _controller.submit,
             icon: const Icon(Icons.search, size: 22),
           ),
@@ -39,11 +40,11 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
           textInputAction: TextInputAction.search,
           textAlignVertical: TextAlignVertical.center,
           decoration: InputDecoration(
-            hintText: '搜索',
+            hintText: L10n.current.search,
             visualDensity: .standard,
             border: InputBorder.none,
             suffixIcon: IconButton(
-              tooltip: '清空',
+              tooltip: L10n.current.clearAll,
               icon: const Icon(Icons.clear, size: 22),
               onPressed: _controller.onClear,
             ),
@@ -70,14 +71,22 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
                       tabs: [
                         Obx(
                           () => Tab(
-                            text:
-                                '视频 ${_controller.counts[0] != -1 ? _controller.counts[0] : ''}',
+                            text: L10n.current.memberSearchPageText(
+                              (_controller.counts[0] != -1
+                                      ? _controller.counts[0]
+                                      : '')
+                                  .toString(),
+                            ),
                           ),
                         ),
                         Obx(
                           () => Tab(
-                            text:
-                                '动态 ${_controller.counts[1] != -1 ? _controller.counts[1] : ''}',
+                            text: L10n.current.memberSearchPageText2(
+                              (_controller.counts[1] != -1
+                                      ? _controller.counts[1]
+                                      : '')
+                                  .toString(),
+                            ),
                           ),
                         ),
                       ],
@@ -116,7 +125,9 @@ class _MemberSearchPageState extends State<MemberSearchPage> {
                   : Align(
                       alignment: const Alignment(0, -0.5),
                       child: Text(
-                        '搜索「${_controller.uname}」的动态、视频',
+                        L10n.current.memberSearchPageChild(
+                          _controller.uname.toString(),
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ),

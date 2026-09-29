@@ -9,6 +9,7 @@ import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/grpc/bilibili/app/im/v1.pbenum.dart'
     show IMSettingType;
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/msg/msg_at/item.dart';
 import 'package:PiliPlus/pages/msg_feed_top/at_me/controller.dart';
@@ -34,7 +35,7 @@ class _AtMePageState extends State<AtMePage> {
     final theme = Theme.of(context);
     return SimpleScaffold(
       appBar: AppBar(
-        title: const Text('@我的'),
+        title: Text(L10n.current.atMePageTitle),
         actions: [
           IconButton(
             onPressed: () => Get.to(
@@ -100,7 +101,7 @@ class _AtMePageState extends State<AtMePage> {
               final item = response[index];
               void onLongPress() => showConfirmDialog(
                 context: context,
-                title: const Text('确定删除该通知?'),
+                title: Text(L10n.current.atMePageOnLongPressTitle),
                 onConfirm: () => _atMeController.onRemove(item.id!, index),
               );
               return ListTile(
@@ -135,7 +136,9 @@ class _AtMePageState extends State<AtMePage> {
                         ),
                       ),
                       TextSpan(
-                        text: " 在${item.item?.business}中@了我",
+                        text: L10n.current.atMePageBuildBodyText(
+                          (item.item?.business).toString(),
+                        ),
                         style: theme.textTheme.titleSmall!.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),

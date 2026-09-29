@@ -1,3 +1,4 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/pages/fav/article/view.dart';
 import 'package:PiliPlus/pages/fav/cheese/view.dart';
 import 'package:PiliPlus/pages/fav/note/view.dart';
@@ -7,16 +8,24 @@ import 'package:PiliPlus/pages/fav/video/view.dart';
 import 'package:material_ui/material_ui.dart';
 
 enum FavTabType {
-  video('视频', FavVideoPage()),
-  bangumi('追番', FavPgcPage(type: 1)),
-  cinema('追剧', FavPgcPage(type: 2)),
-  article('专栏', FavArticlePage()),
-  note('笔记', FavNotePage()),
-  topic('话题', FavTopicPage()),
-  cheese('课堂', FavCheesePage()),
+  video(FavVideoPage()),
+  bangumi(FavPgcPage(type: 1)),
+  cinema(FavPgcPage(type: 2)),
+  article(FavArticlePage()),
+  note(FavNotePage()),
+  topic(FavTopicPage()),
+  cheese(FavCheesePage()),
   ;
 
-  final String title;
+  String get title => switch (this) {
+    video => L10n.current.video,
+    bangumi => L10n.current.favTabTypeBangumiTitle,
+    cinema => L10n.current.favTabTypeCinemaTitle,
+    article => L10n.current.article,
+    note => L10n.current.favTabTypeNoteTitle,
+    topic => L10n.current.favTabTypeTopicTitle,
+    cheese => L10n.current.favTabTypeCheeseTitle,
+  };
   final Widget page;
-  const FavTabType(this.title, this.page);
+  const FavTabType(this.page);
 }

@@ -19,7 +19,9 @@ void showReplyCopyDialog(
               buttonItems.insertOrAdd(
                 3,
                 ContextMenuButtonItem(
-                  label: showEmote ? '文本' : '表情',
+                  label: showEmote
+                      ? L10n.current.text
+                      : L10n.current.buttonItemsDynTextMenuBuilderLabel,
                   onPressed: () {
                     state.hideAndClear();
                     showEmote = !showEmote;
@@ -38,7 +40,11 @@ void showReplyCopyDialog(
 
                     showConfirmDialog(
                       context: context,
-                      title: const Text('是否确认评论过滤的变更：'),
+                      title: Text(
+                        L10n
+                            .current
+                            .commonWidgetsContextMenuReplyMenuHelperShowReplyCopyDialogTitle,
+                      ),
                       content: Text.rich(
                         TextSpan(
                           text: ReplyGrpc.replyRegExp.pattern,
@@ -64,11 +70,13 @@ void showReplyCopyDialog(
                           SettingBoxKey.banWordForReply,
                           filter,
                         );
-                        SmartDialog.showToast('已保存');
+                        SmartDialog.showToast(L10n.current.saved);
                       },
                     );
                   },
-                  label: '加入过滤',
+                  label: L10n
+                      .current
+                      .commonWidgetsContextMenuReplyMenuHelperShowReplyCopyDialogLabel,
                 ),
               );
             }

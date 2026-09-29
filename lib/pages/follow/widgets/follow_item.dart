@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/follow/list.dart';
 import 'package:PiliPlus/pages/share/view.dart' show UserModel;
 import 'package:PiliPlus/utils/feed_back.dart';
@@ -41,7 +42,7 @@ class FollowItem extends StatelessWidget {
           backgroundColor: isFollow ? colorScheme.onInverseSurface : null,
         ),
         child: Text(
-          '${isFollow ? '已' : ''}关注',
+          L10n.current.followItemChild2(isFollow.toString()),
           style: const TextStyle(fontSize: 12),
         ),
       );

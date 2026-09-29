@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/grpc/bilibili/app/im/v1.pb.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/pages/whisper/controller.dart';
 import 'package:PiliPlus/pages/whisper/widgets/item.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
@@ -30,10 +31,10 @@ class _WhisperPageState extends State<WhisperPage> {
     final padding = MediaQuery.viewPaddingOf(context);
     return SimpleScaffold(
       appBar: AppBar(
-        title: const Text('消息'),
+        title: Text(L10n.current.messages),
         actions: [
           IconButton(
-            tooltip: '新增粉丝',
+            tooltip: L10n.current.whisperPageTooltip,
             onPressed: () => Get.toNamed(
               '/webview',
               parameters: {
@@ -205,7 +206,9 @@ class _WhisperPageState extends State<WhisperPage> {
               ),
               onTap: () {
                 if (!item.enabled) {
-                  SmartDialog.showToast('已禁用');
+                  SmartDialog.showToast(
+                    L10n.current.whisperPageBuildTopItemsOnTap,
+                  );
                   return;
                 }
                 _controller.unreadCounts[index] = 0;

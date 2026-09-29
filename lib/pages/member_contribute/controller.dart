@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/space/space/tab2.dart';
 import 'package:PiliPlus/pages/member/controller.dart';
 import 'package:get/get.dart';
@@ -15,7 +16,17 @@ class MemberContributeCtr extends GetxController
   final int? initialIndex;
 
   TabController? tabController;
-  List<Tab>? tabs;
+  List<Tab>? get tabs => tabController == null
+      ? null
+      : items!
+            .map(
+              (item) => Tab(
+                text: item.param == 'ugcSeason'
+                    ? L10n.current.memberContributeCtrOnInitTitle
+                    : _ctr.tabTitle(item.param, item.title),
+              ),
+            )
+            .toList();
   late final _ctr = Get.find<MemberController>(tag: heroTag);
   List<SpaceTab2Item>? items;
 
@@ -31,9 +42,13 @@ class MemberContributeCtr extends GetxController
       if (contribute.items!.length > 1) {
         // show if exist
         if (_ctr.hasSeasonOrSeries == true) {
-          items.add(const SpaceTab2Item(param: 'ugcSeason', title: '全部合集/列表'));
+          items.add(
+            SpaceTab2Item(
+              param: 'ugcSeason',
+              title: L10n.current.memberContributeCtrOnInitTitle,
+            ),
+          );
         }
-        tabs = items.map((item) => Tab(text: item.title)).toList();
         tabController = TabController(
           vsync: this,
           length: items.length,

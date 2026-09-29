@@ -1,3 +1,4 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:flutter/gestures.dart' show TapGestureRecognizer;
 import 'package:flutter/rendering.dart'
     show
@@ -52,7 +53,7 @@ class RenderParagraphMore extends RenderParagraph {
 
   TextSpan _moreTextSpan([TextStyle? style]) => TextSpan(
     style: (style ?? text.style!).copyWith(color: _primary),
-    text: '查看更多',
+    text: L10n.current.renderParagraphMoreMoreTextSpanText,
     recognizer: _tapGestureRecognizer,
   );
   TextPainter? _morePainter;

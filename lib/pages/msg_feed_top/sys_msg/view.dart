@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/msg/msg_sys/data.dart';
 import 'package:PiliPlus/pages/msg_feed_top/sys_msg/controller.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
@@ -35,7 +36,7 @@ class _SysMsgPageState extends State<SysMsgPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return SimpleScaffold(
-      appBar: AppBar(title: const Text('系统通知')),
+      appBar: AppBar(title: Text(L10n.current.msgUnReadTypeSysMsgTitle)),
       body: refreshIndicator(
         onRefresh: _sysMsgController.onRefresh,
         child: CustomScrollView(
@@ -89,7 +90,7 @@ class _SysMsgPageState extends State<SysMsgPage> {
               final item = response[index];
               void onLongPress() => showConfirmDialog(
                 context: context,
-                title: const Text('确定删除该通知?'),
+                title: Text(L10n.current.atMePageOnLongPressTitle),
                 onConfirm: () => _sysMsgController.onRemove(item.id, index),
               );
               return ListTile(
@@ -203,7 +204,7 @@ class _SysMsgPageState extends State<SysMsgPage> {
               ..add(const TextSpan(text: '（'))
               ..add(
                 TextSpan(
-                  text: '查看动态',
+                  text: L10n.current.sysMsgPageBuildContentText,
                   style: TextStyle(color: theme.colorScheme.primary),
                   recognizer: NoDeadlineTapGestureRecognizer()
                     ..onTap = () {
@@ -220,7 +221,7 @@ class _SysMsgPageState extends State<SysMsgPage> {
         } else {
           spanChildren.add(
             TextSpan(
-              text: '\u{1F517}网页链接',
+              text: L10n.current.sysMsgPageBuildContentText2,
               style: TextStyle(color: theme.colorScheme.primary),
               recognizer: NoDeadlineTapGestureRecognizer()
                 ..onTap = () {

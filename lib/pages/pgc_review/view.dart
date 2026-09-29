@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/pgc_review_type.dart';
 import 'package:PiliPlus/pages/pgc_review/child/controller.dart';
 import 'package:PiliPlus/pages/pgc_review/child/view.dart';
@@ -120,7 +121,10 @@ class _PgcReviewPageState extends State<PgcReviewPage>
               contentPadding: const EdgeInsets.symmetric(vertical: 12),
               children: [
                 DialogOption(
-                  child: const Text('写短评', style: TextStyle(fontSize: 14)),
+                  child: Text(
+                    L10n.current.pgcReviewPageChild,
+                    style: const TextStyle(fontSize: 14),
+                  ),
                   onPressed: () {
                     Get.back();
                     showModalBottomSheet(
@@ -137,7 +141,10 @@ class _PgcReviewPageState extends State<PgcReviewPage>
                   },
                 ),
                 DialogOption(
-                  child: const Text('写长评', style: TextStyle(fontSize: 14)),
+                  child: Text(
+                    L10n.current.pgcReviewPageChild2,
+                    style: const TextStyle(fontSize: 14),
+                  ),
                   onPressed: () => Get
                     ..back()
                     ..toNamed(

@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/widgets/radio_widget.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/login.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/models/login/model.dart';
 import 'package:PiliPlus/pages/login/geetest/geetest_webview_dialog.dart';
@@ -37,7 +38,11 @@ class LoginPageController extends GetxController
   late final RxInt qrCodeLeftTime = 180.obs;
   late final RxString statusQRCode = ''.obs;
 
-  late var selectedCountryCodeId = Login.dialPrefix.first;
+  int _countryId = 1;
+  ({int id, String cname, int countryId}) get selectedCountryCodeId =>
+      Login.dialPrefix.firstWhere((country) => country.id == _countryId);
+  set selectedCountryCodeId(({int id, String cname, int countryId}) country) =>
+      _countryId = country.id;
   late String captchaKey = '';
   late final RxInt smsSendCooldown = 0.obs;
   late int smsSendTimestamp = 0;
@@ -79,7 +84,8 @@ class LoginPageController extends GetxController
         final left = 180 - t.tick;
         if (left <= 0) {
           t.cancel();
-          statusQRCode.value = '二维码已过期，请刷新';
+          statusQRCode.value =
+              L10n.current.loginPageControllerRefreshQRCodeText2;
           qrCodeLeftTime.value = 0;
           return;
         }
@@ -91,7 +97,8 @@ class LoginPageController extends GetxController
           _isReq = false;
           if (value['status']) {
             t.cancel();
-            statusQRCode.value = '扫码成功';
+            statusQRCode.value =
+                L10n.current.loginPageControllerRefreshQRCodeText;
             await setAccount(
               value['data'],
               value['data']['cookie_info']['cookies'],
@@ -131,7 +138,7 @@ class LoginPageController extends GetxController
             challenge: res['geetest_challenge'],
             gt: geeGt,
           );
-        SmartDialog.showToast('验证成功');
+        SmartDialog.showToast(L10n.current.loginPageControllerGetCaptchaText);
         onSuccess();
       }
     });
@@ -154,7 +161,7 @@ class LoginPageController extends GetxController
   // cookie登录
   Future<void> loginByCookie() async {
     if (cookieTextController.text.isEmpty) {
-      SmartDialog.showToast('cookie不能为空');
+      SmartDialog.showToast(L10n.current.loginPageControllerLoginByCookieText2);
       return;
     }
     try {
@@ -182,13 +189,17 @@ class LoginPageController extends GetxController
             null,
           ).onChange();
           if (!Accounts.main.isLogin) await switchAccountDialog(Get.context!);
-          SmartDialog.showToast('登录成功');
+          SmartDialog.showToast(
+            L10n.current.loginPageControllerLoginByCookieText,
+          );
           Get.back();
         } catch (e) {
           SmartDialog.showToast("登录失败: $e");
         }
       } else {
-        SmartDialog.showToast("哔哩哔哩登录已失效，请重新登录");
+        SmartDialog.showToast(
+          L10n.current.loginPageControllerLoginByCookieText3,
+        );
       }
     } catch (e) {
       SmartDialog.showToast("获取哔哩哔哩用户信息失败，可前往账号管理重试");
@@ -200,7 +211,9 @@ class LoginPageController extends GetxController
     String username = usernameTextController.text;
     String password = passwordTextController.text;
     if (username.isEmpty || password.isEmpty) {
-      SmartDialog.showToast('用户名或密码不能为空');
+      SmartDialog.showToast(
+        L10n.current.loginPageControllerLoginByPasswordText,
+      );
       return;
     }
     // if ((passwordFormKey.currentState as FormState).validate()) {
@@ -249,7 +262,9 @@ class LoginPageController extends GetxController
           "hindMail": safeCenterRes['data']['account_info']!["hide_mail"],
         };
         if (!safeCenterRes['data']['account_info']!['tel_verify']) {
-          SmartDialog.showToast("当前账号未支持手机号验证，请尝试其它登录方式");
+          SmartDialog.showToast(
+            L10n.current.loginPageControllerLoginByPasswordText2,
+          );
           return;
         }
 
@@ -269,15 +284,16 @@ class LoginPageController extends GetxController
               horizontal: 16,
               vertical: 12,
             ),
-            title: const Text(
-              "本次登录需要验证您的手机号",
+            title: Text(
+              L10n.current.loginPageControllerLoginByPasswordTitle,
               textAlign: TextAlign.center,
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  accountInfo['hindTel'] ?? '未能获取手机号',
+                  accountInfo['hindTel'] ??
+                      L10n.current.loginPageControllerLoginByPasswordChildren,
                   style: const TextStyle(fontSize: 18),
                 ),
                 // 带有清空按钮的输入框
@@ -286,7 +302,8 @@ class LoginPageController extends GetxController
                   controller: textFieldController,
                   textAlign: TextAlign.center,
                   decoration: InputDecoration(
-                    hintText: "请输入短信验证码",
+                    hintText:
+                        L10n.current.loginPageControllerLoginByPasswordHintText,
                     hintStyle: const TextStyle(fontSize: 15),
                     suffixIcon: iconButton(
                       icon: const Icon(Icons.clear),
@@ -303,7 +320,9 @@ class LoginPageController extends GetxController
             ),
             actions: <Widget>[
               TextButton(
-                child: const Text("发送验证码"),
+                child: Text(
+                  L10n.current.loginPageControllerLoginByPasswordChild,
+                ),
                 onPressed: () async {
                   final preCaptureRes = await LoginHttp.preCapture();
                   if (!preCaptureRes['status'] ||
@@ -318,8 +337,11 @@ class LoginPageController extends GetxController
                   captchaData.token = preCaptureRes['data']['recaptcha_token'];
                   if (!isGeeArgumentValid(geeGt, geeChallenge)) {
                     SmartDialog.showToast(
-                      "获取极验参数为空，请尝试其它登录方式\n"
-                      "(${preCaptureRes['code']}) ${preCaptureRes['msg']} ${preCaptureRes['data']}",
+                      L10n.current.loginPageControllerLoginByPasswordOnPressed4(
+                        (preCaptureRes['code']).toString(),
+                        (preCaptureRes['msg']).toString(),
+                        (preCaptureRes['data']).toString(),
+                      ),
                     );
                     return;
                   }
@@ -344,7 +366,11 @@ class LoginPageController extends GetxController
                         );
                         return;
                       }
-                      SmartDialog.showToast("短信验证码已发送，请查收");
+                      SmartDialog.showToast(
+                        L10n
+                            .current
+                            .loginPageControllerLoginByPasswordOnPressed3,
+                      );
                       captchaKey =
                           safeCenterSendSmsCodeRes['data']['captcha_key'];
                     },
@@ -354,7 +380,7 @@ class LoginPageController extends GetxController
               TextButton(
                 onPressed: Get.back,
                 child: Text(
-                  "取消",
+                  L10n.current.cancel,
                   style: TextStyle(color: ThemeUtils.theme.colorScheme.outline),
                 ),
               ),
@@ -362,7 +388,9 @@ class LoginPageController extends GetxController
                 onPressed: () async {
                   String? code = textFieldController.text;
                   if (code.isEmpty) {
-                    SmartDialog.showToast("请输入短信验证码");
+                    SmartDialog.showToast(
+                      L10n.current.loginPageControllerLoginByPasswordHintText,
+                    );
                     return;
                   }
                   final safeCenterSmsVerifyRes =
@@ -381,7 +409,9 @@ class LoginPageController extends GetxController
                     );
                     return;
                   }
-                  SmartDialog.showToast("验证成功，正在登录");
+                  SmartDialog.showToast(
+                    L10n.current.loginPageControllerLoginByPasswordOnPressed2,
+                  );
                   final oauth2AccessTokenRes =
                       await LoginHttp.oauth2AccessToken(
                         code: safeCenterSmsVerifyRes['data']['code'],
@@ -401,7 +431,9 @@ class LoginPageController extends GetxController
                     );
                     return;
                   }
-                  SmartDialog.showToast('正在保存身份信息');
+                  SmartDialog.showToast(
+                    L10n.current.loginPageControllerLoginByPasswordOnPressed,
+                  );
                   await setAccount(
                     data['token_info'],
                     data['cookie_info']['cookies'],
@@ -410,7 +442,7 @@ class LoginPageController extends GetxController
                     ..back()
                     ..back();
                 },
-                child: const Text("确认"),
+                child: Text(L10n.current.confirm),
               ),
             ],
           ),
@@ -424,7 +456,9 @@ class LoginPageController extends GetxController
         );
         return;
       }
-      SmartDialog.showToast('正在保存身份信息');
+      SmartDialog.showToast(
+        L10n.current.loginPageControllerLoginByPasswordOnPressed,
+      );
       await setAccount(data['token_info'], data['cookie_info']['cookies']);
       Get.back();
     } else {
@@ -454,20 +488,26 @@ class LoginPageController extends GetxController
   // 短信验证码登录
   Future<void> loginBySmsCode() async {
     if (telTextController.text.isEmpty) {
-      SmartDialog.showToast('手机号不能为空');
+      SmartDialog.showToast(L10n.current.loginPageControllerLoginBySmsCodeText);
       return;
     }
     if (captchaKey.isEmpty) {
-      SmartDialog.showToast('请先点击获取验证码');
+      SmartDialog.showToast(
+        L10n.current.loginPageControllerLoginBySmsCodeText3,
+      );
       return;
     }
     if (smsCodeTextController.text.isEmpty) {
-      SmartDialog.showToast('验证码不能为空');
+      SmartDialog.showToast(
+        L10n.current.loginPageControllerLoginBySmsCodeText2,
+      );
       return;
     }
     if (DateTime.now().millisecondsSinceEpoch - smsSendTimestamp >
         1000 * 60 * 5) {
-      SmartDialog.showToast('验证码已过期，请重新获取');
+      SmartDialog.showToast(
+        L10n.current.loginPageControllerLoginBySmsCodeText4,
+      );
       return;
     }
     final webKeyRes = await LoginHttp.getWebKey();
@@ -484,7 +524,7 @@ class LoginPageController extends GetxController
       key: key,
     );
     if (res['status']) {
-      SmartDialog.showToast('登录成功');
+      SmartDialog.showToast(L10n.current.loginPageControllerLoginByCookieText);
       final data = res['data'];
       await setAccount(data['token_info'], data['cookie_info']['cookies']);
       Get.back();
@@ -496,7 +536,7 @@ class LoginPageController extends GetxController
   // app端验证码
   Future<void> sendSmsCode() async {
     if (telTextController.text.isEmpty) {
-      SmartDialog.showToast('手机号不能为空');
+      SmartDialog.showToast(L10n.current.loginPageControllerLoginBySmsCodeText);
       return;
     }
     // String? guestId;
@@ -551,7 +591,7 @@ class LoginPageController extends GetxController
       recaptchaToken: captchaData.token,
     );
     if (res['status']) {
-      SmartDialog.showToast('发送成功');
+      SmartDialog.showToast(L10n.current.replyPageOnCustomPublishText);
       smsSendTimestamp = DateTime.now().millisecondsSinceEpoch;
       smsSendCooldown.value = 60;
       captchaKey = res['data']['captcha_key'];
@@ -631,16 +671,18 @@ class LoginPageController extends GetxController
       }
     }
     if (Accounts.main.isLogin) {
-      SmartDialog.showToast('登录成功');
+      SmartDialog.showToast(L10n.current.loginPageControllerLoginByCookieText);
     } else {
-      SmartDialog.showToast('登录成功, 请先设置账号模式');
+      SmartDialog.showToast(L10n.current.loginPageControllerSetAccountText);
       await switchAccountDialog(Get.context!);
     }
   }
 
   static Future<void>? switchAccountDialog(BuildContext context) {
     if (Accounts.account.isEmpty) {
-      SmartDialog.showToast('请先登录');
+      SmartDialog.showToast(
+        L10n.current.loginPageControllerSwitchAccountDialogText,
+      );
       return Get.toNamed('/loginPage');
     }
     final colorScheme = ColorScheme.of(context);
@@ -663,9 +705,15 @@ class LoginPageController extends GetxController
               style: const TextStyle(height: 1.5),
               TextSpan(
                 children: [
-                  const TextSpan(text: '账号切换'),
                   TextSpan(
-                    text: '\nmid为0时使用匿名',
+                    text: L10n
+                        .current
+                        .loginPageControllerSwitchAccountDialogText2,
+                  ),
+                  TextSpan(
+                    text: L10n
+                        .current
+                        .loginPageControllerSwitchAccountDialogText3,
                     style: TextStyle(fontSize: 14, color: colorScheme.outline),
                   ),
                 ],
@@ -680,7 +728,11 @@ class LoginPageController extends GetxController
                 quickSelect = !quickSelect;
                 (context as Element).markNeedsBuild();
               },
-              child: Text(quickSelect ? '详细' : '快速'),
+              child: Text(
+                quickSelect
+                    ? L10n.current.loginPageControllerSwitchAccountDialogChild
+                    : L10n.current.loginPageControllerSwitchAccountDialogChild2,
+              ),
             ),
           ],
         ),
@@ -742,7 +794,10 @@ class LoginPageController extends GetxController
         actions: [
           TextButton(
             onPressed: Get.back,
-            child: Text('取消', style: TextStyle(color: colorScheme.outline)),
+            child: Text(
+              L10n.current.cancel,
+              style: TextStyle(color: colorScheme.outline),
+            ),
           ),
           TextButton(
             onPressed: () {
@@ -757,7 +812,7 @@ class LoginPageController extends GetxController
                 }
               }
             },
-            child: const Text('确定'),
+            child: Text(L10n.current.ok),
           ),
         ],
       ),

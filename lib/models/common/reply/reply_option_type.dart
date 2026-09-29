@@ -1,14 +1,18 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
 enum ReplyOptionType {
-  allow('允许评论'),
-  close('关闭评论'),
-  choose('精选评论'),
+  allow,
+  close,
+  choose,
   ;
 
-  final String title;
-  const ReplyOptionType(this.title);
+  String get title => switch (this) {
+    allow => L10n.current.replyOptionTypeAllowTitle,
+    close => L10n.current.replyOptionTypeCloseTitle,
+    choose => L10n.current.replySortTypeSelectDesc,
+  };
 
   IconData get iconData => switch (this) {
     ReplyOptionType.allow => MdiIcons.commentTextOutline,

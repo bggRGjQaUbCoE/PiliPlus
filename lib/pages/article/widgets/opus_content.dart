@@ -9,6 +9,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
 import 'package:PiliPlus/http/constants.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/dynamics/article_content_model.dart'
     show ArticleContentModel, Rich, Style, Word, Node;
@@ -488,7 +489,10 @@ class OpusContent extends StatelessWidget {
                           children: [
                             Text(opus.title!),
                             Text(
-                              '${opus.authorName} · ${opus.statView ?? 0}阅读',
+                              L10n.current.opusContentChildren3(
+                                opus.authorName.toString(),
+                                opus.statView ?? 0,
+                              ),
                               style: TextStyle(
                                 fontSize: 13,
                                 color: colorScheme.outline,
@@ -523,7 +527,9 @@ class OpusContent extends StatelessWidget {
                           children: [
                             Text(vote.desc!),
                             Text(
-                              '${vote.joinNum}人参与',
+                              L10n.current.opusContentChildren2(
+                                vote.joinNum,
+                              ),
                               style: TextStyle(
                                 fontSize: 13,
                                 color: colorScheme.outline,
@@ -599,7 +605,9 @@ class OpusContent extends StatelessWidget {
                                     ),
                                   if (e.price?.isNotEmpty == true)
                                     Text(
-                                      '${e.price!}起',
+                                      L10n.current.opusContentChildren(
+                                        e.price!,
+                                      ),
                                       style: TextStyle(
                                         fontSize: 13,
                                         color: colorScheme.outline,
@@ -653,14 +661,16 @@ class OpusContent extends StatelessWidget {
                                           null,
                                         );
                                       },
-                                      child: const Text('视频'),
+                                      child: Text(L10n.current.video),
                                     ),
                                     DialogOption(
                                       onPressed: () {
                                         Get.back();
                                         PageUtils.pushDynFromId(id: card.oid!);
                                       },
-                                      child: const Text('动态/专栏'),
+                                      child: Text(
+                                        L10n.current.opusContentChild,
+                                      ),
                                     ),
                                   ],
                                 ),

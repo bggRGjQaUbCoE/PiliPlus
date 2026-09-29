@@ -2,6 +2,7 @@ import 'package:PiliPlus/grpc/bilibili/app/im/v1.pb.dart'
     show Offset, Session, SessionMainReply, SessionPageType, ThreeDotItem;
 import 'package:PiliPlus/grpc/im.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/msg/msgfeed_unread.dart';
 import 'package:PiliPlus/pages/common/common_whisper_controller.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -21,7 +22,32 @@ class WhisperController extends CommonWhisperController<SessionMainReply> {
   @override
   SessionPageType sessionPageType = SessionPageType.SESSION_PAGE_TYPE_HOME;
 
-  late final List<MsgFeedTopItem> msgFeedTopItems;
+  List<MsgFeedTopItem> get msgFeedTopItems => [
+    (
+      name: L10n.current.msgUnReadTypeReplyTitle,
+      icon: Icons.message_outlined,
+      route: "/replyMe",
+      enabled: true,
+    ),
+    (
+      name: L10n.current.msgUnReadTypeAtTitle,
+      icon: Icons.alternate_email_outlined,
+      route: "/atMe",
+      enabled: true,
+    ),
+    (
+      name: L10n.current.msgUnReadTypeLikeTitle,
+      icon: Icons.favorite_border_outlined,
+      route: "/likeMe",
+      enabled: !disableLikeMsg,
+    ),
+    (
+      name: L10n.current.msgUnReadTypeSysMsgTitle,
+      icon: Icons.notifications_none_outlined,
+      route: "/sysMsg",
+      enabled: true,
+    ),
+  ];
   final disableLikeMsg = Pref.disableLikeMsg;
   late final RxList<int> unreadCounts;
 
@@ -33,32 +59,6 @@ class WhisperController extends CommonWhisperController<SessionMainReply> {
   @override
   void onInit() {
     super.onInit();
-    msgFeedTopItems = [
-      const (
-        name: "回复我的",
-        icon: Icons.message_outlined,
-        route: "/replyMe",
-        enabled: true,
-      ),
-      const (
-        name: "@我",
-        icon: Icons.alternate_email_outlined,
-        route: "/atMe",
-        enabled: true,
-      ),
-      (
-        name: "收到的赞",
-        icon: Icons.favorite_border_outlined,
-        route: "/likeMe",
-        enabled: !disableLikeMsg,
-      ),
-      const (
-        name: "系统通知",
-        icon: Icons.notifications_none_outlined,
-        route: "/sysMsg",
-        enabled: true,
-      ),
-    ];
     unreadCounts = List.filled(msgFeedTopItems.length, 0).obs;
     queryMsgFeedUnread();
     queryData();

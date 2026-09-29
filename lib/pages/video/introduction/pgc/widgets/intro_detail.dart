@@ -3,6 +3,7 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show tabBarScrollPhysics;
 import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/models_new/video/video_tag/data.dart';
@@ -63,9 +64,9 @@ class _IntroDetailState extends State<PgcIntroPanel>
                   isScrollable: true,
                   tabAlignment: TabAlignment.start,
                   dividerColor: Colors.transparent,
-                  tabs: const [
-                    Tab(text: '详情'),
-                    Tab(text: '点评'),
+                  tabs: [
+                    Tab(text: L10n.current.details),
+                    Tab(text: L10n.current.introDetailBuildPageText2),
                   ],
                   onTap: (index) {
                     if (!_tabController.indexIsChanging) {
@@ -77,7 +78,7 @@ class _IntroDetailState extends State<PgcIntroPanel>
                 ),
               ),
               IconButton(
-                tooltip: '关闭',
+                tooltip: L10n.current.close,
                 icon: const Icon(Icons.close, size: 20),
                 onPressed: Get.back,
               ),
@@ -166,7 +167,7 @@ class _IntroDetailState extends State<PgcIntroPanel>
         if (widget.item.evaluate?.isNotEmpty == true) ...[
           const SizedBox(height: 20),
           Text(
-            '简介：',
+            L10n.current.introDetailBuildInfoChildren,
             style: theme.textTheme.titleMedium,
           ),
           const SizedBox(height: 4),
@@ -178,7 +179,7 @@ class _IntroDetailState extends State<PgcIntroPanel>
         if (widget.item.actors?.isNotEmpty == true) ...[
           const SizedBox(height: 20),
           Text(
-            '演职人员：',
+            L10n.current.introDetailBuildInfoChildren2,
             style: theme.textTheme.titleMedium,
           ),
           const SizedBox(height: 4),

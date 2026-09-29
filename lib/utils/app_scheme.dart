@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pbenum.dart'
     show PlaylistSource;
 import 'package:PiliPlus/http/search.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/fav_type.dart';
 import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/pages/audio/view.dart';
@@ -379,7 +380,7 @@ abstract final class PiliScheme {
           case 'livearea':
             Get.to(
               SimpleScaffold(
-                appBar: AppBar(title: const Text('直播')),
+                appBar: AppBar(title: Text(L10n.current.live)),
                 body: const ViewSafeArea(child: LivePage()),
               ),
             );
@@ -387,7 +388,7 @@ abstract final class PiliScheme {
           case 'rank':
             Get.to(
               SimpleScaffold(
-                appBar: AppBar(title: const Text('排行榜')),
+                appBar: AppBar(title: Text(L10n.current.hotPageTitle)),
                 body: const ViewSafeArea(child: RankPage()),
               ),
             );
@@ -416,7 +417,9 @@ abstract final class PiliScheme {
           default:
             if (!selfHandle) {
               // if (kDebugMode) debugPrint('$uri');
-              SmartDialog.showToast('未知路径:$uri，请截图反馈给开发者');
+              SmartDialog.showToast(
+                L10n.current.piliSchemeRoutePushText(uri.toString()),
+              );
             }
             return false;
         }
@@ -440,7 +443,9 @@ abstract final class PiliScheme {
         }
         if (!selfHandle) {
           // if (kDebugMode) debugPrint('$uri');
-          SmartDialog.showToast('未知路径:$uri，请截图反馈给开发者');
+          SmartDialog.showToast(
+            L10n.current.piliSchemeRoutePushText(uri.toString()),
+          );
         }
         return false;
     }
@@ -651,7 +656,7 @@ abstract final class PiliScheme {
                 // title: res.title,
                 extraArguments: {
                   'sourceType': SourceType.playlist,
-                  'favTitle': '播放列表',
+                  'favTitle': L10n.current.playlist,
                   'mediaId': mediaId,
                   'desc': true,
                   'isContinuePlaying': true,
@@ -902,7 +907,9 @@ abstract final class PiliScheme {
       aid ??= IdUtils.bv2av(bvid!);
       bvid ??= IdUtils.av2bv(aid);
       if (showDialog) {
-        SmartDialog.showLoading<dynamic>(msg: '获取中...');
+        SmartDialog.showLoading<dynamic>(
+          msg: L10n.current.piliSchemeVideoPushMsg,
+        );
       }
       final res = await SearchHttp.ab2cWithDimension(
         bvid: bvid,

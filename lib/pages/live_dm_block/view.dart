@@ -3,6 +3,7 @@ import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/live/live_dm_block/shield_user_list.dart';
 import 'package:PiliPlus/pages/live_dm_block/controller.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
@@ -31,9 +32,9 @@ class _LiveDmBlockPageState extends State<LiveDmBlockPage> {
     padding = MediaQuery.viewPaddingOf(context);
     Widget tabBar = TabBar(
       controller: _controller.tabController,
-      tabs: const [
-        Tab(text: '关键词'),
-        Tab(text: '用户'),
+      tabs: [
+        Tab(text: L10n.current.dmBlockTypeKeywordLabel),
+        Tab(text: L10n.current.user),
       ],
     );
 
@@ -51,7 +52,7 @@ class _LiveDmBlockPageState extends State<LiveDmBlockPage> {
     );
 
     return SimpleScaffold(
-      appBar: AppBar(title: const Text('弹幕屏蔽')),
+      appBar: AppBar(title: Text(L10n.current.danmakuBlockPageTitle)),
       body: Padding(
         padding: .only(left: padding.left, right: padding.right),
         child: Column(
@@ -67,7 +68,7 @@ class _LiveDmBlockPageState extends State<LiveDmBlockPage> {
           bottom: kFloatingActionButtonMargin + padding.bottom,
         ),
         child: FloatingActionButton(
-          tooltip: '添加',
+          tooltip: L10n.current.add,
           onPressed: _addShieldKeyword,
           child: const Icon(Icons.add),
         ),
@@ -95,7 +96,7 @@ class _LiveDmBlockPageState extends State<LiveDmBlockPage> {
               text: e is ShieldUserList ? e.uname : e as String,
               onTap: (value) => showConfirmDialog(
                 context: context,
-                title: const Text('确定删除该规则？'),
+                title: Text(L10n.current.childTabViewBuilderTitle),
                 onConfirm: () => _controller.onRemove(i, e),
               ),
             );
@@ -110,7 +111,11 @@ class _LiveDmBlockPageState extends State<LiveDmBlockPage> {
     String value = '';
     showConfirmDialog(
       context: context,
-      title: Text('${isKeyword ? '关键词' : '用户'}屏蔽'),
+      title: Text(
+        L10n.current.liveDmBlockPageAddShieldKeywordTitle(
+          isKeyword ? L10n.current.dmBlockTypeKeywordLabel : L10n.current.user,
+        ),
+      ),
       content: TextFormField(
         autofocus: true,
         initialValue: value,

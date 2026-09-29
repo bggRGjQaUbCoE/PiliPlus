@@ -8,6 +8,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/pgc.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart';
@@ -38,9 +39,13 @@ class PgcIntroController extends CommonIntroController {
   int? seasonId;
   int? epId;
 
-  late final String pgcType = pgcItem.type == 1 || pgcItem.type == 4
-      ? '追番'
-      : '追剧';
+  String get pgcType => pgcItem.type == 1 || pgcItem.type == 4
+      ? L10n.current.favTabTypeBangumiTitle
+      : L10n.current.favTabTypeCinemaTitle;
+
+  String get followAction => pgcItem.type == 1 || pgcItem.type == 4
+      ? L10n.current.followAnime
+      : L10n.current.followDrama;
 
   late final bool isPgc;
   late final PgcInfoModel pgcItem;
@@ -107,7 +112,9 @@ class PgcIntroController extends CommonIntroController {
     final newVal = !hasLike.value;
     final result = await VideoHttp.likeVideo(bvid: bvid, type: newVal);
     if (result case Success(:final response)) {
-      SmartDialog.showToast(newVal ? response : '取消赞');
+      SmartDialog.showToast(
+        newVal ? response : L10n.current.articleControllerOnLikeText,
+      );
       pgcItem.stat?.like += newVal ? 1 : -1;
       hasLike.value = newVal;
     } else {
@@ -130,14 +137,20 @@ class PgcIntroController extends CommonIntroController {
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
         children: [
           DialogOption(
-            child: const Text('复制链接', style: TextStyle(fontSize: 14)),
+            child: Text(
+              L10n.current.copyLink,
+              style: const TextStyle(fontSize: 14),
+            ),
             onPressed: () {
               Get.back();
               Utils.copyText(videoUrl);
             },
           ),
           DialogOption(
-            child: const Text('其它app打开', style: TextStyle(fontSize: 14)),
+            child: Text(
+              L10n.current.audioControllerActionShareVideoChild3,
+              style: const TextStyle(fontSize: 14),
+            ),
             onPressed: () {
               Get.back();
               PiliAndroidHelper.openUrl(videoUrl);
@@ -145,7 +158,10 @@ class PgcIntroController extends CommonIntroController {
           ),
           if (PlatformUtils.isMobile)
             DialogOption(
-              child: const Text('分享视频', style: TextStyle(fontSize: 14)),
+              child: Text(
+                L10n.current.audioControllerActionShareVideoChild,
+                style: const TextStyle(fontSize: 14),
+              ),
               onPressed: () {
                 final item = pgcItem.episodes?.firstWhereOrNull(
                   (item) => item.epId == epId,
@@ -159,7 +175,10 @@ class PgcIntroController extends CommonIntroController {
             ),
           if (isLogin)
             DialogOption(
-              child: const Text('分享至动态', style: TextStyle(fontSize: 14)),
+              child: Text(
+                L10n.current.audioControllerActionShareVideoChild2,
+                style: const TextStyle(fontSize: 14),
+              ),
               onPressed: () {
                 Get.back();
                 final item = pgcItem.episodes?.firstWhereOrNull(
@@ -198,9 +217,9 @@ class PgcIntroController extends CommonIntroController {
             ),
           if (isLogin)
             DialogOption(
-              child: const Text(
-                '分享至消息',
-                style: TextStyle(fontSize: 14),
+              child: Text(
+                L10n.current.articlePageBuildAppBarChildren,
+                style: const TextStyle(fontSize: 14),
               ),
               onPressed: () {
                 Get.back();
@@ -221,13 +240,13 @@ class PgcIntroController extends CommonIntroController {
                       "source": 16,
                       "thumb": item.cover,
                       "source_desc": switch (pgcItem.type) {
-                        1 => '番剧',
-                        2 => '电影',
-                        3 => '纪录片',
-                        4 => '国创',
-                        5 => '电视剧',
-                        6 => '漫画',
-                        7 => '综艺',
+                        1 => L10n.current.bangumi,
+                        2 => L10n.current.videoZoneTypeMovieLabel,
+                        3 => L10n.current.downloadPageBuildItemText2,
+                        4 => L10n.current.videoZoneTypeGuochuangLabel,
+                        5 => L10n.current.downloadPageBuildItemText3,
+                        6 => L10n.current.memberHomeBuildBodyTitle2,
+                        7 => L10n.current.rankTypeVarietyLabel,
                         _ => null,
                       },
                     },
@@ -390,7 +409,7 @@ class PgcIntroController extends CommonIntroController {
     }
     if (hasLike.value && hasCoin && hasFav.value) {
       // 已点赞、投币、收藏
-      SmartDialog.showToast('已三连');
+      SmartDialog.showToast(L10n.current.pgcIntroControllerActionTripleText);
       return;
     }
     final result = await VideoHttp.pgcTriple(epId: epId!, seasonId: seasonId);
@@ -412,7 +431,7 @@ class PgcIntroController extends CommonIntroController {
       if (!hasCoin) {
         SmartDialog.showToast('投币失败');
       } else {
-        SmartDialog.showToast('三连成功');
+        SmartDialog.showToast(L10n.current.audioControllerActionTripleText);
       }
     } else {
       result.toast();
@@ -472,7 +491,9 @@ class PgcIntroController extends CommonIntroController {
         : await FavHttp.addFavPugv(seasonId!);
     if (res.isSuccess) {
       this.isFav.toggle();
-      SmartDialog.showToast('${isFav ? '取消' : ''}收藏成功');
+      SmartDialog.showToast(
+        L10n.current.articleControllerOnFavText(isFav.toString()),
+      );
     } else {
       res.toast();
     }

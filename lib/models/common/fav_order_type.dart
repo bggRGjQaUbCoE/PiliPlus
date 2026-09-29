@@ -1,10 +1,14 @@
+import 'package:PiliPlus/l10n/l10n.dart';
+
 enum FavOrderType {
-  mtime('最近收藏'),
-  view('最多播放'),
-  pubtime('最近投稿'),
+  mtime,
+  view,
+  pubtime,
   ;
 
-  final String label;
-
-  const FavOrderType(this.label);
+  String get label => switch (this) {
+    mtime => L10n.current.favOrderTypeMtimeLabel,
+    view => L10n.current.archiveOrderTypeWebClickLabel,
+    pubtime => L10n.current.favOrderTypePubtimeLabel,
+  };
 }

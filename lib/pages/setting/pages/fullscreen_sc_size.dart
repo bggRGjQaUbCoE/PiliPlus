@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/extra_hittest_stack.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/live/live_superchat/item.dart';
 import 'package:PiliPlus/pages/live_room/superchat/superchat_card.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
@@ -72,9 +73,16 @@ class _FullScreenScSizeState extends State<FullScreenScSize> {
   Widget build(BuildContext context) {
     return SimpleScaffold(
       appBar: AppBar(
-        title: const Text('全屏 SC 大小设置'),
+        title: Text(L10n.current.fullScreenScSizeTitle),
         actions: [
-          TextButton(onPressed: _onReset, child: const Text('重置')),
+          TextButton(
+            onPressed: _onReset,
+            child: Text(
+              L10n
+                  .current
+                  .pagesSettingModelsExtraSettingsShowDownPathDialogChild2,
+            ),
+          ),
         ],
       ),
       body: Padding(padding: _padding, child: _buildBody),

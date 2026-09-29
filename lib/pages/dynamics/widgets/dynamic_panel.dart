@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/widgets/avatars.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/action_panel.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/author_panel.dart';
@@ -220,7 +221,9 @@ class DynamicPanel extends StatelessWidget {
       ),
       TextSpan(
         children: [
-          TextSpan(text: moduleFold.statement ?? '展开'),
+          TextSpan(
+            text: moduleFold.statement ?? L10n.current.childBuildFoldItemText,
+          ),
           WidgetSpan(
             alignment: PlaceholderAlignment.middle,
             child: Icon(

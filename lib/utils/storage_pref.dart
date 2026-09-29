@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recogniz
     show deviceTouchSlop;
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/http/constants.dart';
+import 'package:PiliPlus/l10n/app_language.dart';
 import 'package:PiliPlus/models/common/bar_hide_type.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
@@ -52,6 +53,10 @@ abstract final class Pref {
   static final Box _setting = GStorage.setting;
   static final Box _video = GStorage.video;
   static final Box _localCache = GStorage.localCache;
+
+  static AppLanguage get appLanguage => AppLanguage.fromCode(
+    _setting.get(SettingBoxKey.appLanguage),
+  );
 
   static UserInfoData? get userInfoCache =>
       GStorage.userInfo.get('userInfoCache');

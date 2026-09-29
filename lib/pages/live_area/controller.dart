@@ -1,5 +1,6 @@
 import 'package:PiliPlus/http/live.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/live/live_area_list/area_item.dart';
 import 'package:PiliPlus/models_new/live/live_area_list/area_list.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
@@ -62,7 +63,7 @@ class LiveAreaController extends CommonListController<List<AreaList>?, AreaList>
       );
       if (res.isSuccess) {
         isEditing.toggle();
-        SmartDialog.showToast('设置成功');
+        SmartDialog.showToast(L10n.current.settingsSaved);
       } else {
         res.toast();
       }

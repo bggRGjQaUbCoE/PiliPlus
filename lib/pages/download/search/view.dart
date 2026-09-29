@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/pages/common/search/common_search_page.dart';
 import 'package:PiliPlus/pages/download/detail/widgets/item.dart';
@@ -38,7 +39,7 @@ class _DownloadSearchPageState
   @override
   List<Widget>? get extraActions => [
     IconButton(
-      tooltip: '多选',
+      tooltip: L10n.current.downloadDetailPageTooltip,
       onPressed: () {
         if (controller.loadingState.value is! Success) {
           return;
@@ -69,13 +70,13 @@ class _DownloadSearchPageState
         controller.handleSelect();
         final res = await Future.wait(future);
         if (res.every((e) => e)) {
-          SmartDialog.showToast('更新成功');
+          SmartDialog.showToast(L10n.current.downloadDetailPageOnPressed);
         } else {
           SmartDialog.showToast('更新失败');
         }
       },
       child: Text(
-        '更新',
+        L10n.current.downloadDetailPageChild,
         style: TextStyle(color: ColorScheme.of(context).onSurface),
       ),
     ),

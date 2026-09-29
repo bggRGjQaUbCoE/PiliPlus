@@ -1,3 +1,4 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -17,7 +18,7 @@ Future<bool> showConfirmDialog({
             TextButton(
               onPressed: Get.back,
               child: Text(
-                '取消',
+                L10n.current.cancel,
                 style: TextStyle(color: ColorScheme.of(context).outline),
               ),
             ),
@@ -26,7 +27,7 @@ Future<bool> showConfirmDialog({
                 Get.back(result: true);
                 onConfirm?.call();
               },
-              child: const Text('确认'),
+              child: Text(L10n.current.confirm),
             ),
           ],
         ),
@@ -45,7 +46,7 @@ Widget _statusItem({
     title: Padding(
       padding: const EdgeInsets.only(left: 10),
       child: Text(
-        '标记为 $text',
+        L10n.current.markAsStatus(text),
         style: const TextStyle(fontSize: 14),
       ),
     ),
@@ -66,10 +67,10 @@ void showPgcFollowDialog({
       clipBehavior: Clip.hardEdge,
       contentPadding: const EdgeInsets.symmetric(vertical: 12),
       children: [
-        ...const [
-          (followStatus: 3, title: '看过'),
-          (followStatus: 2, title: '在看'),
-          (followStatus: 1, title: '想看'),
+        ...[
+          (followStatus: 3, title: L10n.current.watched),
+          (followStatus: 2, title: L10n.current.watching),
+          (followStatus: 1, title: L10n.current.wantToWatch),
         ].map(
           (item) => _statusItem(
             enabled: followStatus != item.followStatus,
@@ -85,7 +86,7 @@ void showPgcFollowDialog({
           title: Padding(
             padding: const EdgeInsets.only(left: 10),
             child: Text(
-              '取消$type',
+              L10n.current.cancelFollow(type),
               style: const TextStyle(fontSize: 14),
             ),
           ),

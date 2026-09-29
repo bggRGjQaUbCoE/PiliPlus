@@ -8,6 +8,7 @@ import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart';
 import 'package:PiliPlus/http/live.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/super_chat_type.dart';
 import 'package:PiliPlus/models/common/video/live_quality.dart';
 import 'package:PiliPlus/models/model_owner.dart';
@@ -92,7 +93,11 @@ class LiveRoomController extends GetxController {
         liveTime * 1000,
         DateTime.now().millisecondsSinceEpoch,
       );
-      text += duration.isEmpty ? '刚刚开播' : '开播$duration';
+      text += duration.isEmpty
+          ? L10n.current.liveRoomControllerTimeWidgetText
+          : L10n.current.liveRoomControllerTimeWidgetText2(
+              duration,
+            );
     }
     if (text.isEmpty) {
       return const SizedBox.shrink();
@@ -240,7 +245,7 @@ class LiveRoomController extends GetxController {
     );
     if (res case Success(:final response)) {
       if (response.liveStatus != 1) {
-        _showDialog('当前直播间未开播');
+        _showDialog(L10n.current.liveRoomControllerQueryLiveUrlText);
         return;
       }
       final playurl = response.playurlInfo?.playurl;
@@ -357,7 +362,7 @@ class LiveRoomController extends GetxController {
           TextButton(
             onPressed: Get.back,
             child: Text(
-              '关闭',
+              L10n.current.close,
               style: TextStyle(color: ThemeUtils.theme.colorScheme.outline),
             ),
           ),
@@ -370,7 +375,7 @@ class LiveRoomController extends GetxController {
                 ..back()
                 ..back();
             },
-            child: const Text('退出'),
+            child: Text(L10n.current.exit),
           ),
         ],
       ),
@@ -719,7 +724,7 @@ class LiveRoomController extends GetxController {
       anchorId: roomInfoH5.value?.roomInfo?.uid,
     );
     if (res.isSuccess) {
-      SmartDialog.showToast('点赞成功');
+      SmartDialog.showToast(L10n.current.articleControllerOnLikeText2);
     } else {
       res.toast();
     }

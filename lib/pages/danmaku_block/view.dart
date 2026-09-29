@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/dm_block_type.dart';
 import 'package:PiliPlus/models/user/danmaku_block.dart';
 import 'package:PiliPlus/models/user/danmaku_rule.dart';
@@ -51,7 +52,7 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
   @override
   Widget build(BuildContext context) {
     return SimpleScaffold(
-      appBar: AppBar(title: const Text('弹幕屏蔽')),
+      appBar: AppBar(title: Text(L10n.current.danmakuBlockPageTitle)),
       body: Column(
         children: [
           TabBar(
@@ -89,7 +90,7 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
           bottom: kFloatingActionButtonMargin + padding.bottom,
         ),
         child: FloatingActionButton(
-          tooltip: '添加',
+          tooltip: L10n.current.add,
           onPressed: () => _showAddDialog(
             DmBlockType.values[_controller.tabController.index],
           ),
@@ -110,11 +111,11 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
         final SimpleRule item = list[itemIndex];
         final child = iconButton(
           iconSize: 20,
-          tooltip: '删除',
+          tooltip: L10n.current.delete,
           icon: const Icon(Icons.delete_outlined),
           onPressed: () => showConfirmDialog(
             context: context,
-            title: const Text('确定删除该规则？'),
+            title: Text(L10n.current.childTabViewBuilderTitle),
             onConfirm: () => _controller.danmakuFilterDel(
               tabIndex,
               itemIndex,
@@ -134,7 +135,7 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
                   children: [
                     iconButton(
                       iconSize: 20,
-                      tooltip: '编辑',
+                      tooltip: L10n.current.edit,
                       icon: const Icon(Icons.edit_outlined),
                       onPressed: () => _showAddDialog(
                         DmBlockType.values[_controller.tabController.index],
@@ -160,15 +161,22 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
     assert((itemIndex == null) == (itemId == null));
     String filter = initFilter;
     final hintText = switch (type) {
-      DmBlockType.keyword => '输入过滤的关键词，其它类别请切换标签页后添加',
-      DmBlockType.regex => '输入//之间的正则表达式，无需包含头尾的"/"',
-      DmBlockType.uid => '输入用户UID',
+      DmBlockType.keyword => L10n.current.hintTextShowAddDialogText2,
+      DmBlockType.regex => L10n.current.hintTextShowAddDialogText3,
+      DmBlockType.uid => L10n.current.hintTextShowAddDialogText,
     };
     final isUid = type == DmBlockType.uid;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('${itemId != null ? "编辑" : "添加新的"}${type.label}规则'),
+        title: Text(
+          L10n.current.danmakuBlockPageShowAddDialogTitle2(
+            itemId != null
+                ? L10n.current.edit
+                : L10n.current.danmakuBlockPageShowAddDialogTitle,
+            type.label,
+          ),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,12 +197,12 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
           TextButton(
             onPressed: Get.back,
             child: Text(
-              '取消',
+              L10n.current.cancel,
               style: TextStyle(color: Theme.of(context).colorScheme.outline),
             ),
           ),
           TextButton(
-            child: const Text('确定'),
+            child: Text(L10n.current.ok),
             onPressed: () async {
               if (filter != initFilter) {
                 Get.back();
@@ -211,7 +219,11 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
                 );
               } else {
                 SmartDialog.showToast(
-                  '输入内容${filter.isEmpty ? "不能为空" : "与上次相同"}',
+                  L10n.current.danmakuBlockPageShowAddDialogOnPressed3(
+                    filter.isEmpty
+                        ? L10n.current.danmakuBlockPageShowAddDialogOnPressed
+                        : L10n.current.danmakuBlockPageShowAddDialogOnPressed2,
+                  ),
                 );
               }
             },

@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/selection_text.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/services/logger.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -80,8 +81,8 @@ class _LogsPageState extends State<LogsPage> {
     );
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('复制成功'),
+        SnackBar(
+          content: Text(L10n.current.logsPageCopyLogsContent),
           duration: _snackBarDisplayDuration,
         ),
       );
@@ -92,8 +93,8 @@ class _LogsPageState extends State<LogsPage> {
     if (await LoggerUtils.clearLogs()) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('已清空'),
+          SnackBar(
+            content: Text(L10n.current.laterControllerToViewClearOnConfirm),
             duration: _snackBarDisplayDuration,
           ),
         );
@@ -108,7 +109,7 @@ class _LogsPageState extends State<LogsPage> {
     final padding = MediaQuery.viewPaddingOf(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('日志'),
+        title: Text(L10n.current.logsPageTitle),
         actions: [
           PopupMenuButton(
             itemBuilder: (_) => [
@@ -124,7 +125,7 @@ class _LogsPageState extends State<LogsPage> {
                       }
                     },
                   ),
-                  child: const Text('引发错误'),
+                  child: Text(L10n.current.logsPageChild),
                 ),
               PopupMenuItem(
                 onTap: () {
@@ -132,25 +133,31 @@ class _LogsPageState extends State<LogsPage> {
                   GStorage.setting.put(SettingBoxKey.enableLog, enableLog);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('已${enableLog ? '开启' : '关闭'}，重启生效'),
+                      content: Text(
+                        L10n.current.logsPageContent(enableLog.toString()),
+                      ),
                       duration: _snackBarDisplayDuration,
                     ),
                   );
                 },
-                child: Text('${enableLog ? '关闭' : '开启'}日志'),
+                child: Text(
+                  L10n.current.logsPageChild5(
+                    enableLog ? L10n.current.close : L10n.current.enable,
+                  ),
+                ),
               ),
               PopupMenuItem(
                 onTap: copyLogs,
-                child: const Text('复制日志'),
+                child: Text(L10n.current.logsPageChild2),
               ),
               PopupMenuItem(
                 onTap: () =>
                     PageUtils.launchURL('${Constants.sourceCodeUrl}/issues'),
-                child: const Text('错误反馈'),
+                child: Text(L10n.current.logsPageChild3),
               ),
               PopupMenuItem(
                 onTap: clearLogs,
-                child: const Text('清空日志'),
+                child: Text(L10n.current.logsPageChild4),
               ),
             ],
           ),
@@ -249,10 +256,10 @@ class _InfoCard extends StatelessWidget {
             color: colorScheme.primary,
           ),
           const SizedBox(width: 8),
-          const Expanded(
+          Expanded(
             child: Text(
-              '相关信息',
-              style: TextStyle(fontWeight: .bold, fontSize: 15),
+              L10n.current.infoCardChild,
+              style: const TextStyle(fontWeight: .bold, fontSize: 15),
               maxLines: 1,
               overflow: .ellipsis,
             ),
@@ -260,7 +267,7 @@ class _InfoCard extends StatelessWidget {
           iconButton(
             size: 34,
             iconSize: 22,
-            tooltip: '复制',
+            tooltip: L10n.current.copy,
             onPressed: () {
               final report = Report(
                 '',
@@ -273,8 +280,8 @@ class _InfoCard extends StatelessWidget {
               ).formatInfo();
               Utils.copyText('```\n$report```', needToast: false);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('已将相关信息复制至剪贴板'),
+                SnackBar(
+                  content: Text(L10n.current.infoCardContent),
                   duration: _snackBarDisplayDuration,
                 ),
               );
@@ -284,7 +291,9 @@ class _InfoCard extends StatelessWidget {
           iconButton(
             size: 34,
             iconSize: 22,
-            tooltip: info.isExpanded ? '收起' : '展开',
+            tooltip: info.isExpanded
+                ? L10n.current.pgcIndexPageBuildSortsWidgetChildren
+                : L10n.current.childBuildFoldItemText,
             icon: Icon(
               info.isExpanded ? Icons.expand_less : Icons.expand_more,
             ),
@@ -296,9 +305,21 @@ class _InfoCard extends StatelessWidget {
         ],
       ),
       if (info.isExpanded) ...[
-        _buildMapSection(colorScheme.primary, '设备信息', info.item.$1),
-        _buildMapSection(colorScheme.primary, '应用信息', info.item.$2),
-        _buildMapSection(colorScheme.primary, '编译信息', info.item.$3),
+        _buildMapSection(
+          colorScheme.primary,
+          L10n.current.infoCardText,
+          info.item.$1,
+        ),
+        _buildMapSection(
+          colorScheme.primary,
+          L10n.current.infoCardText2,
+          info.item.$2,
+        ),
+        _buildMapSection(
+          colorScheme.primary,
+          L10n.current.infoCardText3,
+          info.item.$3,
+        ),
       ],
     ]);
   }
@@ -346,12 +367,14 @@ class _ReportCard extends StatelessWidget {
           iconButton(
             size: 34,
             iconSize: 22,
-            tooltip: '复制',
+            tooltip: L10n.current.copy,
             onPressed: () {
               Utils.copyText('```\n$report```', needToast: false);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('已将 $dateTime 复制至剪贴板'),
+                  content: Text(
+                    L10n.current.reportCardContent(dateTime),
+                  ),
                   duration: _snackBarDisplayDuration,
                 ),
               );
@@ -361,7 +384,9 @@ class _ReportCard extends StatelessWidget {
           iconButton(
             size: 34,
             iconSize: 22,
-            tooltip: report.isExpanded ? '收起' : '展开',
+            tooltip: report.isExpanded
+                ? L10n.current.pgcIndexPageBuildSortsWidgetChildren
+                : L10n.current.childBuildFoldItemText,
             icon: Icon(
               report.isExpanded ? Icons.expand_less : Icons.expand_more,
             ),
@@ -375,7 +400,7 @@ class _ReportCard extends StatelessWidget {
       if (report.isExpanded) ...[
         const SizedBox(height: 16),
         Text(
-          '错误详情',
+          L10n.current.reportCardText,
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: colorScheme.error,
@@ -402,7 +427,7 @@ class _ReportCard extends StatelessWidget {
         if (stackTrace != null && stackTrace.isNotEmpty) ...[
           const SizedBox(height: 16),
           Text(
-            '堆栈跟踪',
+            L10n.current.reportCardText2,
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: colorScheme.error,

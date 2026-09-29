@@ -7,6 +7,7 @@ import 'package:PiliPlus/grpc/im.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/msg.dart';
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/msg/im_user_infos/datum.dart';
 import 'package:PiliPlus/models_new/msg/msg_dnd/uid_setting.dart';
 import 'package:PiliPlus/models_new/msg/session_ss/data.dart';
@@ -65,8 +66,8 @@ class WhisperLinkSettingController extends GetxController {
     if (isPush) {
       showConfirmDialog(
         context: Get.context!,
-        title: const Text('确认关闭内容推送吗？'),
-        content: const Text('若关闭此开关，你将不再收到该账号的图文消息与稿件推送，但通知类消息不受影响'),
+        title: Text(L10n.current.whisperLinkSettingControllerSetPushTitle),
+        content: Text(L10n.current.whisperLinkSettingControllerSetPushContent),
         onConfirm: () => _setPush(isPush),
       );
       return;
@@ -133,8 +134,8 @@ class WhisperLinkSettingController extends GetxController {
     } else {
       showConfirmDialog(
         context: Get.context!,
-        title: const Text('确认拉黑该用户'),
-        content: const Text('加入黑名单后，将自动解除关注关系和对该用户的合集订阅关系，禁止该用户与我互动或查看我的空间'),
+        title: Text(L10n.current.whisperLinkSettingControllerSetBlockTitle),
+        content: Text(L10n.current.whisperLinkSettingControllerSetBlockContent),
         onConfirm: () async {
           final res = await VideoHttp.relationMod(
             mid: talkerUid,

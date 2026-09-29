@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/member.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/member/tags.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
@@ -60,7 +61,7 @@ class _GroupPanelState extends State<GroupPanel> {
       tags.isEmpty ? '0' : tags.join(','),
     );
     if (res.isSuccess) {
-      SmartDialog.showToast('保存成功');
+      SmartDialog.showToast(L10n.current.groupPanelOnSaveText);
       Get.back(result: tags);
     } else {
       res.toast();
@@ -131,17 +132,17 @@ class _GroupPanelState extends State<GroupPanel> {
         AppBar(
           backgroundColor: Colors.transparent,
           leading: IconButton(
-            tooltip: '关闭',
+            tooltip: L10n.current.close,
             onPressed: Get.back,
             icon: const Icon(Icons.close_outlined),
           ),
-          title: const Text('设置关注分组'),
+          title: Text(L10n.current.groupPanelTitle),
           actions: [
             TextButton.icon(
               onPressed: () =>
                   RequestUtils.createFavTag(context, _onCreateFavTag),
               icon: Icon(Icons.add, color: theme.colorScheme.primary),
-              label: const Text('新建分组'),
+              label: Text(L10n.current.followPageBuildAppBarTooltip),
               style: const ButtonStyle(
                 visualDensity: .compact,
                 padding: WidgetStatePropertyAll(
@@ -166,7 +167,13 @@ class _GroupPanelState extends State<GroupPanel> {
           child: FilledButton.tonal(
             onPressed: onSave,
             style: const ButtonStyle(visualDensity: .compact),
-            child: Obx(() => Text(showDefaultBtn.value ? '保存至默认分组' : '保存')),
+            child: Obx(
+              () => Text(
+                showDefaultBtn.value
+                    ? L10n.current.groupPanelChild
+                    : L10n.current.save,
+              ),
+            ),
           ),
         ),
       ],

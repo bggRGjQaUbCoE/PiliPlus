@@ -8,6 +8,7 @@ import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
@@ -320,7 +321,7 @@ abstract final class PageUtils {
 
       case 'DYNAMIC_TYPE_PGC':
         // if (kDebugMode) debugPrint('番剧');
-        SmartDialog.showToast('暂未支持的类型，请联系开发者');
+        SmartDialog.showToast(L10n.current.pageUtilsPushDynDetailText);
         break;
 
       case 'DYNAMIC_TYPE_LIVE':
@@ -609,7 +610,7 @@ abstract final class PageUtils {
     bool off = false,
   }) async {
     try {
-      SmartDialog.showLoading(msg: '资源获取中');
+      SmartDialog.showLoading(msg: L10n.current.pageUtilsViewPgcMsg);
       final res = await SearchHttp.pgcInfo(seasonId: seasonId, epId: epId);
       SmartDialog.dismiss();
       if (res case Success(:final response)) {
@@ -711,7 +712,7 @@ abstract final class PageUtils {
     bool off = false,
   }) async {
     try {
-      SmartDialog.showLoading(msg: '资源获取中');
+      SmartDialog.showLoading(msg: L10n.current.pageUtilsViewPgcMsg);
       final res = await SearchHttp.pugvInfo(seasonId: seasonId, epId: epId);
       SmartDialog.dismiss();
       if (res case Success(:final response)) {

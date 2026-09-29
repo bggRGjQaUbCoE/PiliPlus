@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/upower_rank/rank_info.dart';
 import 'package:PiliPlus/pages/member_upower_rank/controller.dart';
@@ -89,7 +90,12 @@ class _UpowerRankPageState extends State<UpowerRankPage>
     if (widget.privilegeType == null) {
       return SimpleScaffold(
         appBar: AppBar(
-          title: Text('$_name的充电排行榜${_count == null ? '' : '($_count)'}'),
+          title: Text(
+            L10n.current.upowerRankPageTitle(
+              _name.toString(),
+              _count == null ? '' : '($_count)',
+            ),
+          ),
           actions: [
             TextButton(
               onPressed: () => Get.toNamed(
@@ -100,7 +106,7 @@ class _UpowerRankPageState extends State<UpowerRankPage>
                 },
               ),
               style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-              child: const Text('充电'),
+              child: Text(L10n.current.chargeCreator),
             ),
             const SizedBox(width: 12),
           ],
@@ -238,9 +244,9 @@ class _UpowerRankPageState extends State<UpowerRankPage>
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const TextSpan(
-                              text: ' 天',
-                              style: TextStyle(fontSize: 13),
+                            TextSpan(
+                              text: L10n.current.upowerRankPageBuildBodyText,
+                              style: const TextStyle(fontSize: 13),
                             ),
                           ],
                         ),

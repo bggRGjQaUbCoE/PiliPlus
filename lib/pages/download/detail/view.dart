@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart'
     show BaseMultiSelectMixin;
@@ -114,13 +115,15 @@ class _DownloadDetailPageState extends State<DownloadDetailPage>
                   handleSelect();
                   final res = await Future.wait(futures);
                   if (res.every((e) => e)) {
-                    SmartDialog.showToast('更新成功');
+                    SmartDialog.showToast(
+                      L10n.current.downloadDetailPageOnPressed,
+                    );
                   } else {
                     SmartDialog.showToast('更新失败');
                   }
                 },
                 child: Text(
-                  '更新',
+                  L10n.current.downloadDetailPageChild,
                   style: TextStyle(color: colorScheme.onSurface),
                 ),
               ),
@@ -129,7 +132,7 @@ class _DownloadDetailPageState extends State<DownloadDetailPage>
               title: Text(widget.title),
               actions: [
                 IconButton(
-                  tooltip: '多选',
+                  tooltip: L10n.current.downloadDetailPageTooltip,
                   onPressed: () {
                     if (enableMultiSelect) {
                       handleSelect();
@@ -194,7 +197,7 @@ class _DownloadDetailPageState extends State<DownloadDetailPage>
   void onRemove() {
     showConfirmDialog(
       context: context,
-      title: const Text('确定删除选中视频？'),
+      title: Text(L10n.current.downloadPageControllerOnRemoveTitle),
       onConfirm: () async {
         SmartDialog.showLoading();
         final allChecked = this.allChecked.toList();

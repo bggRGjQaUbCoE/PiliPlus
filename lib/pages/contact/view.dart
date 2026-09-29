@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/pages/fan/view.dart';
 import 'package:PiliPlus/pages/follow/child/child_view.dart';
 import 'package:PiliPlus/pages/follow_search/view.dart';
@@ -42,7 +43,7 @@ class _ContactPageState extends State<ContactPage>
   Widget build(BuildContext context) {
     return SimpleScaffold(
       appBar: AppBar(
-        title: const Text('通讯录'),
+        title: Text(L10n.current.contactPageTitle),
         actions: [
           IconButton(
             onPressed: () async {
@@ -67,9 +68,9 @@ class _ContactPageState extends State<ContactPage>
         children: [
           TabBar(
             controller: _controller,
-            tabs: const [
-              Tab(text: '我的关注'),
-              Tab(text: '我的粉丝'),
+            tabs: [
+              Tab(text: L10n.current.contactPageText),
+              Tab(text: L10n.current.contactPageText2),
             ],
           ),
           Expanded(

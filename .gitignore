@@ -150,3 +150,12 @@ pili_release.json
 dist
 
 test*
+
+# Generated localisation output
+/lib/l10n/generated/
+/lib/l10n/untranslated.json
+
+!/test/
+/test/*
+!/test/l10n/
+!/test/l10n/**

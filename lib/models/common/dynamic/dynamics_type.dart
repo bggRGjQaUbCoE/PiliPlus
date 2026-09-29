@@ -1,14 +1,20 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 
 enum DynamicsTabType implements EnumWithLabel {
-  all('全部'),
-  video('投稿'),
-  pgc('番剧'),
-  article('专栏'),
-  up('UP'),
+  all,
+  video,
+  pgc,
+  article,
+  up,
   ;
 
   @override
-  final String label;
-  const DynamicsTabType(this.label);
+  String get label => switch (this) {
+    all => L10n.current.all,
+    video => L10n.current.dynamicsTabTypeVideoLabel,
+    pgc => L10n.current.bangumi,
+    article => L10n.current.article,
+    up => L10n.current.dynamicsTabTypeUpLabel,
+  };
 }

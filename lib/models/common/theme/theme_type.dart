@@ -1,16 +1,20 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
 enum ThemeType implements EnumWithLabel {
-  light('浅色'),
-  dark('深色'),
-  system('跟随系统'),
+  light,
+  dark,
+  system,
   ;
 
   @override
-  final String label;
-  const ThemeType(this.label);
+  String get label => switch (this) {
+    light => L10n.current.themeTypeLightLabel,
+    dark => L10n.current.themeTypeDarkLabel,
+    system => L10n.current.languageSystem,
+  };
 
   ThemeMode get toThemeMode => switch (this) {
     ThemeType.light => ThemeMode.light,

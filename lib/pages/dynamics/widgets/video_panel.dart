@@ -3,6 +3,7 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/svg/play_icon.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
@@ -107,9 +108,19 @@ Widget videoSeasonWidget(
                           const SizedBox(width: 6),
                         ],
                         if (video.stat case final stat?) ...[
-                          Text('${NumUtils.numFormat(stat.play)}播放'),
+                          Text(
+                            L10n.current
+                                .pagesDynamicsWidgetsVideoPanelVideoSeasonWidgetChildren(
+                                  NumUtils.numFormat(stat.play),
+                                ),
+                          ),
                           const SizedBox(width: 6),
-                          Text('${NumUtils.numFormat(stat.danmu)}弹幕'),
+                          Text(
+                            L10n.current
+                                .pagesDynamicsWidgetsVideoPanelVideoSeasonWidgetChildren2(
+                                  NumUtils.numFormat(stat.danmu),
+                                ),
+                          ),
                         ],
                         const Spacer(),
                         const PlayIcon(size: 50),

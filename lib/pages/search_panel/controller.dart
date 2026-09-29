@@ -2,6 +2,7 @@ import 'dart:async' show StreamSubscription;
 
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/search.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/search/article_search_type.dart';
 import 'package:PiliPlus/models/common/search/search_type.dart';
 import 'package:PiliPlus/models/common/search/user_search_type.dart';
@@ -51,9 +52,11 @@ class SearchPanelController<R extends SearchNumData<T>, T>
     if (getBack) Get.back();
     SmartDialog.dismiss();
     if (label != null) {
-      SmartDialog.showToast("「$label」的筛选结果");
+      SmartDialog.showToast(
+        L10n.current.searchPanelControllerOnSortSearchText(label),
+      );
     }
-    SmartDialog.showLoading(msg: 'loading');
+    SmartDialog.showLoading(msg: L10n.current.loading);
     onReload().whenComplete(SmartDialog.dismiss);
   }
 

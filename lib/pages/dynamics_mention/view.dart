@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:PiliPlus/common/widgets/view_insets_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_mention/group.dart';
 import 'package:PiliPlus/pages/dynamics_mention/controller.dart';
 import 'package:PiliPlus/pages/dynamics_mention/widgets/item.dart';
@@ -117,7 +118,7 @@ class _DynMentionPanelState
               isDense: true,
               filled: true,
               fillColor: theme.colorScheme.onInverseSurface,
-              hintText: '输入你想@的人',
+              hintText: L10n.current.dynMentionPanelHintText,
               hintStyle: const TextStyle(fontSize: 14),
               prefixIcon: const Padding(
                 padding: EdgeInsets.only(left: 12, right: 4),

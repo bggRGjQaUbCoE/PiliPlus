@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/space/space_fav/list.dart';
 import 'package:PiliPlus/pages/subscription_detail/view.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
@@ -73,16 +74,16 @@ class MemberFavItem extends StatelessWidget {
                     ),
                   ),
                   if (item.type == 21)
-                    const PBadge(
+                    PBadge(
                       right: 6,
                       top: 6,
-                      text: '合集',
+                      text: L10n.current.collection,
                     )
                   else if (item.type == 11)
-                    const PBadge(
+                    PBadge(
                       right: 6,
                       top: 6,
-                      text: '收藏夹',
+                      text: L10n.current.favouriteFolder,
                     ),
                 ],
               ),
@@ -100,12 +101,24 @@ class MemberFavItem extends StatelessWidget {
                     const Spacer(),
                     Text(
                       item.type == 0
-                          ? '${item.mediaCount}个内容 · ${BiliUtils.isPublicFavText(item.attr)}'
+                          ? L10n.current.memberFavItemChildren2(
+                              item.mediaCount.toString(),
+                              BiliUtils.isPublicFavText(item.attr),
+                            )
                           : item.type == 11
-                          ? '${item.mediaCount}个内容 · ${item.upper?.name}'
+                          ? L10n.current.memberFavItemChildren(
+                              item.mediaCount.toString(),
+                              (item.upper?.name).toString(),
+                            )
                           : item.type == 21
-                          ? '创建者: ${item.upper?.name}\n${item.mediaCount}个视频 · ${NumUtils.numFormat(item.viewCount)}播放'
-                          : '${item.mediaCount}个内容',
+                          ? L10n.current.memberFavItemChildren3(
+                              (item.upper?.name).toString(),
+                              item.mediaCount.toString(),
+                              NumUtils.numFormat(item.viewCount),
+                            )
+                          : L10n.current.favVideoItemContentChildren(
+                              item.mediaCount.toString(),
+                            ),
                       style: TextStyle(
                         fontSize: 12,
                         color: theme.colorScheme.outline,

@@ -13,6 +13,7 @@ import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/common/widgets/translucent_column.dart';
 import 'package:PiliPlus/http/sponsor_block.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/video/video_ai_conclusion/model_result.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/desc_v2.dart';
@@ -166,7 +167,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                                   videoDetailCtr.queryVideoUrl();
                                 }
                               },
-                              label: const Text("点此重新加载"),
+                              label: Text(L10n.current.ugcIntroPanelLabel),
                             ),
                           ),
                   ),
@@ -388,7 +389,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
           ],
           if (videoDetail.isUpowerExclusive == true) ...[
             _labelWidget(
-              '充电专属',
+              L10n.current.episodePanelBuildEpisodeItemText,
               colorScheme.isDark
                   ? colorScheme.error
                   : colorScheme.errorContainer,
@@ -399,7 +400,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
             const TextSpan(text: ' '),
           ] else if (videoDetail.rights?.isSteinGate == 1) ...[
             _labelWidget(
-              '互动视频',
+              L10n.current.textSpanChildChildren,
               colorScheme.secondaryContainer,
               colorScheme.onSecondaryContainer,
             ),
@@ -446,12 +447,12 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
           ),
           child: Text(
             switch (attr) {
-              1 => '悄悄关注',
-              2 => '已关注',
-              4 || 6 => '已互关',
-              128 => '已拉黑',
-              -10 => '特别关注',
-              _ => ' 关注 ',
+              1 => L10n.current.userInfoCardBuildRightText3,
+              2 => L10n.current.following,
+              4 || 6 => L10n.current.userInfoCardBuildRightText,
+              128 => L10n.current.ugcIntroPanelFollowButtonChild,
+              -10 => L10n.current.userInfoCardBuildRightText4,
+              _ => L10n.current.ugcIntroPanelFollowButtonChild2,
             },
             style: const TextStyle(fontSize: 13),
           ),
@@ -466,8 +467,8 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
     UgcIntroController introController,
     VideoStat? stat,
   ) {
-    return SizedBox(
-      height: 48,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 48),
       child: Row(
         crossAxisAlignment: .start,
         children: [
@@ -477,7 +478,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
               icon: const Icon(FontAwesomeIcons.thumbsUp),
               selectIcon: const Icon(FontAwesomeIcons.solidThumbsUp),
               selectStatus: introController.hasLike.value,
-              semanticsLabel: '点赞',
+              semanticsLabel: L10n.current.like,
               text: !isLoading ? NumUtils.numFormat(stat!.like) : null,
               onStartTriple: introController.onStartTriple,
               onCancelTriple: introController.onCancelTriple,
@@ -491,8 +492,8 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                 introController.actionDislikeVideo,
               ),
               selectStatus: introController.hasDislike.value,
-              semanticsLabel: '点踩',
-              text: "点踩",
+              semanticsLabel: L10n.current.videoPopupMenuChild2,
+              text: L10n.current.videoPopupMenuChild2,
             ),
           ),
           Obx(
@@ -502,7 +503,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
               selectIcon: const Icon(FontAwesomeIcons.b),
               onTap: introController.actionCoinVideo,
               selectStatus: introController.hasCoin,
-              semanticsLabel: '投币',
+              semanticsLabel: L10n.current.giveCoins,
               text: !isLoading ? NumUtils.numFormat(stat!.coin) : null,
             ),
           ),
@@ -517,7 +518,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                 isLongPress: true,
               ),
               selectStatus: introController.hasFav.value,
-              semanticsLabel: '收藏',
+              semanticsLabel: L10n.current.favourite,
               text: !isLoading ? NumUtils.numFormat(stat!.favorite) : null,
             ),
           ),
@@ -528,15 +529,15 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
               onTap: () =>
                   introController.handleAction(introController.viewLater),
               selectStatus: introController.hasLater.value,
-              semanticsLabel: '再看',
-              text: '再看',
+              semanticsLabel: L10n.current.pgcIntroPageActionGridSemanticsLabel,
+              text: L10n.current.pgcIntroPageActionGridSemanticsLabel,
             ),
           ),
           ActionItem(
             icon: const Icon(FontAwesomeIcons.shareFromSquare),
             onTap: () => introController.actionShareVideo(context),
             selectStatus: false,
-            semanticsLabel: '分享',
+            semanticsLabel: L10n.current.share,
             text: !isLoading ? NumUtils.numFormat(stat!.share!) : null,
           ),
         ],
@@ -602,9 +603,19 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                               if (!mounted) return;
                               final confirmed = await showConfirmDialog(
                                 context: context,
-                                title: const Text('空降助手：搬运视频同步'),
+                                title: Text(
+                                  L10n.current.confirmedBuildDescTitle,
+                                ),
                                 content: Text(
-                                  '${hasPortVideo ? "" : "是否将"}该视频${hasPortVideo ? "已" : ""}绑定到此YouTube视频($ytbId)',
+                                  L10n.current.confirmedBuildDescContent2(
+                                    hasPortVideo
+                                        ? ""
+                                        : L10n
+                                              .current
+                                              .confirmedBuildDescContent,
+                                    hasPortVideo.toString(),
+                                    ytbId,
+                                  ),
                                 ),
                               );
                               if (!hasPortVideo && confirmed) {
@@ -615,7 +626,11 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                                   videoDuration: (duration / 1000).round(),
                                 );
                                 SmartDialog.showToast(
-                                  '提交搬运视频${res.isSuccess ? "成功" : "失败: $res"}',
+                                  L10n.current.spanChildrenBuildDescRecognizer(
+                                    res.isSuccess
+                                        ? L10n.current.success
+                                        : "失败: $res",
+                                  ),
                                 );
                                 return;
                               }
@@ -922,7 +937,12 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                   ),
                 ),
                 Text(
-                  '${NumUtils.numFormat(userStat.follower)}粉丝    ${'${NumUtils.numFormat(userStat.archiveCount)}视频'}',
+                  L10n.current.ugcIntroPanelBuildAvatarChildren2(
+                    NumUtils.numFormat(userStat.follower),
+                    L10n.current.ugcIntroPanelBuildAvatarChildren(
+                      (NumUtils.numFormat(userStat.archiveCount)).toString(),
+                    ),
+                  ),
                   style: TextStyle(fontSize: 12, color: colorScheme.outline),
                 ),
               ],
@@ -959,12 +979,14 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
             MdiIcons.incognito,
             size: 15,
             color: colorScheme.outline,
-            semanticLabel: '无痕',
+            semanticLabel: L10n.current.ugcIntroPanelBuildInfoSemanticLabel,
           ),
         if (introController.isShowOnlineTotal)
           Obx(
             () => Text(
-              '${introController.total.value}人在看',
+              L10n.current.ugcIntroPanelBuildInfoChildren(
+                introController.total.value,
+              ),
               style: TextStyle(fontSize: 12, color: colorScheme.outline),
             ),
           ),
@@ -988,12 +1010,12 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
             if (summary?.isNotEmpty == true || outline?.isNotEmpty == true) {
               widget.showAiBottomSheet();
             } else {
-              SmartDialog.showToast("当前视频不支持AI视频总结");
+              SmartDialog.showToast(L10n.current.ugcIntroPanelAiBtnOnTap);
             }
           }
         },
         child: Image.asset(
-          semanticLabel: 'AI总结',
+          semanticLabel: L10n.current.videoPopupMenuItemBuilder3,
           Assets.ai,
           height: 18,
           width: 18,

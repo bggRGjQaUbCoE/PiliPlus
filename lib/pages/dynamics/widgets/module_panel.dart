@@ -3,6 +3,7 @@ import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pbenum.dart'
     show PlaylistSource;
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/audio/view.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/forward_panel.dart';
@@ -26,7 +27,7 @@ Widget noneWidget(ThemeData theme, String? tips) => Row(
       color: theme.colorScheme.outline,
     ),
     Text(
-      tips ?? '已失效',
+      tips ?? L10n.current.pagesDynamicsWidgetsModulePanelNoneWidgetChildren,
       style: TextStyle(color: theme.colorScheme.outline),
     ),
   ],
@@ -315,7 +316,12 @@ Widget module(
         padding: floor == 1
             ? const EdgeInsets.symmetric(horizontal: 12)
             : EdgeInsets.zero,
-        child: Text('暂未支持的类型: \n${item.idStr}\n${item.type}'),
+        child: Text(
+          L10n.current.pagesDynamicsWidgetsModulePanelModuleChild(
+            item.idStr.toString(),
+            item.type.toString(),
+          ),
+        ),
       );
   }
 }

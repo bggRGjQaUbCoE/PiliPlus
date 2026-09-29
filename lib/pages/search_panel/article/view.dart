@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/pages/search_panel/article/controller.dart';
 import 'package:PiliPlus/pages/search_panel/article/widgets/item.dart';
@@ -53,7 +54,9 @@ class _SearchArticlePanelState
           children: [
             Obx(
               () => Text(
-                '排序: ${controller.articleOrderType.value.label}',
+                L10n.current.searchArticlePanelBuildHeaderChildren(
+                  controller.articleOrderType.value.label,
+                ),
                 maxLines: 1,
                 style: TextStyle(color: colorScheme.outline),
               ),
@@ -61,7 +64,9 @@ class _SearchArticlePanelState
             const Spacer(),
             Obx(
               () => Text(
-                '分区: ${controller.articleZoneType!.value.label}',
+                L10n.current.searchArticlePanelBuildHeaderChildren2(
+                  controller.articleZoneType!.value.label,
+                ),
                 maxLines: 1,
                 style: TextStyle(color: colorScheme.outline),
               ),
@@ -71,7 +76,7 @@ class _SearchArticlePanelState
               width: 32,
               height: 32,
               child: IconButton(
-                tooltip: '筛选',
+                tooltip: L10n.current.searchArticlePanelBuildHeaderTooltip,
                 style: const ButtonStyle(
                   padding: WidgetStatePropertyAll(EdgeInsets.zero),
                 ),

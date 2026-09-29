@@ -8,6 +8,8 @@ import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/common/widgets/scale_app.dart';
 import 'package:PiliPlus/common/widgets/scroll_behavior.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/l10n/app_language.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/router/app_pages.dart';
@@ -100,6 +102,10 @@ void main() async {
     if (kDebugMode) debugPrint('GStorage init error: $e');
     exit(0);
   }
+  L10n.initialise(
+    Pref.appLanguage,
+    WidgetsBinding.instance.platformDispatcher.locales,
+  );
   ScaledWidgetsFlutterBinding.instance.scaleFactor = Pref.uiScale;
   await Future.wait([
     _initDownPath(),
@@ -205,12 +211,12 @@ void main() async {
 
     Catcher2(
       [?fileHandler, const ConsoleHandler()],
-      const MyApp(),
+      const AppLanguageObserver(child: MyApp()),
       logger: logger,
       customParameters: customParameters,
     );
   } else {
-    runApp(const MyApp());
+    runApp(const AppLanguageObserver(child: MyApp()));
   }
 }
 
@@ -286,10 +292,10 @@ class MyApp extends StatelessWidget {
       theme: light,
       darkTheme: dark,
       themeMode: ThemeUtils.themeMode = Pref.themeMode,
-      localizationsDelegates: GlobalMaterialLocalizations.delegates,
-      locale: const Locale("zh", "CN"),
-      fallbackLocale: const Locale("zh", "CN"),
-      supportedLocales: const [Locale("zh", "CN"), Locale("en", "US")],
+      localizationsDelegates: L10n.delegates,
+      locale: L10n.locale,
+      fallbackLocale: AppLanguage.simplifiedChinese.locale,
+      supportedLocales: AppLanguage.supportedLocales,
       initialRoute: '/',
       getPages: Routes.getPages,
       defaultTransition: Pref.pageTransition,

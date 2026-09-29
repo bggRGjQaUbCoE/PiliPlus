@@ -1,3 +1,4 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -16,7 +17,11 @@ extension SelectableRegionStateExt on SelectableRegionState {
       buttonItems.insertOrAdd(
         index,
         ContextMenuButtonItem(
-          label: isScheme ? '打开' : '站内搜索',
+          label: isScheme
+              ? L10n.current.open
+              : L10n
+                    .current
+                    .utilsExtensionSelectableRegionExtAddLaunchMenuIfNeededLabel,
           onPressed: () => onMenuPressed(
             isScheme
                 ? PageUtils.handleWebview

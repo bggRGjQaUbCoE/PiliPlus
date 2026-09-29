@@ -1,6 +1,7 @@
 import 'dart:convert' show JsonEncoder, base64;
 import 'dart:math' show Random;
 
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:catcher_2/catcher_2.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -32,7 +33,7 @@ abstract final class Utils {
     String? toastText,
   }) {
     if (needToast) {
-      SmartDialog.showToast(toastText ?? '已复制');
+      SmartDialog.showToast(toastText ?? L10n.current.copied);
     }
     return Clipboard.setData(ClipboardData(text: text));
   }

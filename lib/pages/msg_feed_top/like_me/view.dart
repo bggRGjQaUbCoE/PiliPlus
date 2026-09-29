@@ -11,6 +11,7 @@ import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/grpc/bilibili/app/im/v1.pbenum.dart'
     show IMSettingType;
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/msg/msg_like/item.dart';
 import 'package:PiliPlus/pages/msg_feed_top/like_me/controller.dart';
@@ -36,7 +37,7 @@ class _LikeMePageState extends State<LikeMePage> {
     final theme = Theme.of(context);
     return SimpleScaffold(
       appBar: AppBar(
-        title: const Text('收到的赞'),
+        title: Text(L10n.current.msgUnReadTypeLikeTitle),
         actions: [
           IconButton(
             onPressed: () => Get.to(
@@ -98,7 +99,7 @@ class _LikeMePageState extends State<LikeMePage> {
               return SliverMainAxisGroup(
                 slivers: [
                   if (latest.isNotEmpty) ...[
-                    _buildHeader(theme, '最新'),
+                    _buildHeader(theme, L10n.current.newest),
                     SliverList.separated(
                       itemBuilder: (context, index) {
                         if (total.isEmpty && index == latest.length - 1) {
@@ -113,7 +114,10 @@ class _LikeMePageState extends State<LikeMePage> {
                     ),
                   ],
                   if (total.isNotEmpty) ...[
-                    _buildHeader(theme, '累计'),
+                    _buildHeader(
+                      theme,
+                      L10n.current.likeMePageBuildBodySlivers,
+                    ),
                     SliverList.separated(
                       itemBuilder: (context, index) {
                         if (index == total.length - 1) {
@@ -212,12 +216,15 @@ class _LikeMePageState extends State<LikeMePage> {
                 Get.back();
                 showConfirmDialog(
                   context: context,
-                  title: const Text('删除'),
-                  content: const Text('该条通知删除后，当有新点赞时会重新出现在列表，是否继续？'),
+                  title: Text(L10n.current.delete),
+                  content: Text(L10n.current.likeMePageOnLongPressContent),
                   onConfirm: () => onRemove(item.id),
                 );
               },
-              child: const Text('删除', style: TextStyle(fontSize: 14)),
+              child: Text(
+                L10n.current.delete,
+                style: const TextStyle(fontSize: 14),
+              ),
             ),
             DialogOption(
               onPressed: () {
@@ -225,8 +232,8 @@ class _LikeMePageState extends State<LikeMePage> {
                 if (isNotice) {
                   showConfirmDialog(
                     context: context,
-                    title: const Text('不再通知'),
-                    content: const Text('这条内容的点赞将不再通知，但仍可在列表内查看，是否继续？'),
+                    title: Text(L10n.current.likeMePageOnLongPressTitle),
+                    content: Text(L10n.current.likeMePageOnLongPressContent2),
                     onConfirm: () =>
                         _likeMeController.onSetNotice(item, isNotice),
                   );
@@ -235,7 +242,9 @@ class _LikeMePageState extends State<LikeMePage> {
                 }
               },
               child: Text(
-                isNotice ? '不再通知' : '接收通知',
+                isNotice
+                    ? L10n.current.likeMePageOnLongPressTitle
+                    : L10n.current.likeMePageOnLongPressChild,
                 style: const TextStyle(fontSize: 14),
               ),
             ),
@@ -280,14 +289,18 @@ class _LikeMePageState extends State<LikeMePage> {
             ),
             if (item.counts! > 1)
               TextSpan(
-                text: ' 等${item.counts}人',
+                text: L10n.current.likeMePageBuildItemText(
+                  item.counts.toString(),
+                ),
                 style: theme.textTheme.titleSmall!.copyWith(
                   fontSize: 12,
                   height: 1.5,
                 ),
               ),
             TextSpan(
-              text: ' 赞了我的${item.item?.business}',
+              text: L10n.current.likeMePageBuildItemText2(
+                (item.item?.business).toString(),
+              ),
               style: theme.textTheme.titleSmall!.copyWith(
                 height: 1.5,
                 color: theme.colorScheme.onSurfaceVariant,

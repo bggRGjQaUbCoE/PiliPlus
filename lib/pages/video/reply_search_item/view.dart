@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/reply/reply_search_type.dart';
 import 'package:PiliPlus/pages/video/reply_search_item/child/view.dart';
 import 'package:PiliPlus/pages/video/reply_search_item/controller.dart';
@@ -40,7 +41,7 @@ class _ReplySearchPageState extends State<ReplySearchPage> {
       appBar: AppBar(
         actions: [
           IconButton(
-            tooltip: '搜索',
+            tooltip: L10n.current.search,
             onPressed: _controller.submit,
             icon: const Icon(Icons.search, size: 22),
           ),
@@ -53,11 +54,11 @@ class _ReplySearchPageState extends State<ReplySearchPage> {
           textInputAction: TextInputAction.search,
           textAlignVertical: TextAlignVertical.center,
           decoration: InputDecoration(
-            hintText: '搜索',
+            hintText: L10n.current.search,
             visualDensity: .standard,
             border: InputBorder.none,
             suffixIcon: IconButton(
-              tooltip: '清空',
+              tooltip: L10n.current.clearAll,
               icon: const Icon(Icons.clear, size: 22),
               onPressed: _controller.onClear,
             ),
@@ -70,9 +71,9 @@ class _ReplySearchPageState extends State<ReplySearchPage> {
           children: [
             TabBar(
               controller: _controller.tabController,
-              tabs: const [
-                Tab(text: '视频'),
-                Tab(text: '专栏'),
+              tabs: [
+                Tab(text: L10n.current.video),
+                Tab(text: L10n.current.article),
               ],
               onTap: (index) {
                 if (!_controller.tabController.indexIsChanging) {

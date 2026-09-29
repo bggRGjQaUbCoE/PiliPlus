@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
 import 'package:PiliPlus/models/dynamics/up.dart';
@@ -35,7 +36,7 @@ class _DynamicsPageState extends CommonPageState<DynamicsPage>
         height: 34,
         margin: isRight ? const .only(right: 16) : const .only(left: 16),
         child: IconButton(
-          tooltip: '发布动态',
+          tooltip: L10n.current.dynamicsPageCreateDynamicBtnTooltip,
           style: ButtonStyle(
             padding: const WidgetStatePropertyAll(EdgeInsets.zero),
             backgroundColor: WidgetStatePropertyAll(

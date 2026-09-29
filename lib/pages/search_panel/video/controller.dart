@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/search/video_search_type.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
@@ -168,7 +169,10 @@ class SearchVideoController
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 10),
-                const Text('发布时间', style: TextStyle(fontSize: 16)),
+                Text(
+                  L10n.current.searchVideoControllerOnShowFilterDialogChildren2,
+                  style: const TextStyle(fontSize: 16),
+                ),
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
@@ -228,12 +232,20 @@ class SearchVideoController
                   spacing: 8,
                   children: [
                     Expanded(child: dateWidget()),
-                    const Text('至', style: TextStyle(fontSize: 13)),
+                    Text(
+                      L10n
+                          .current
+                          .searchVideoControllerOnShowFilterDialogChildren,
+                      style: const TextStyle(fontSize: 13),
+                    ),
                     Expanded(child: dateWidget(false)),
                   ],
                 ),
                 const SizedBox(height: 20),
-                const Text('内容时长', style: TextStyle(fontSize: 16)),
+                Text(
+                  L10n.current.searchVideoControllerOnShowFilterDialogChildren3,
+                  style: const TextStyle(fontSize: 16),
+                ),
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
@@ -258,7 +270,10 @@ class SearchVideoController
                   ).toList(),
                 ),
                 const SizedBox(height: 20),
-                const Text('内容分区', style: TextStyle(fontSize: 16)),
+                Text(
+                  L10n.current.searchVideoControllerOnShowFilterDialogChildren4,
+                  style: const TextStyle(fontSize: 16),
+                ),
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,

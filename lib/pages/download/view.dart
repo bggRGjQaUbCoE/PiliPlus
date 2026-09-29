@@ -10,6 +10,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/select_mask.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models_new/download/download_info.dart';
 import 'package:PiliPlus/pages/download/controller.dart';
@@ -78,22 +79,24 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                   _controller.handleSelect();
                   final res = await Future.wait(future);
                   if (res.every((e) => e)) {
-                    SmartDialog.showToast('更新成功');
+                    SmartDialog.showToast(
+                      L10n.current.downloadDetailPageOnPressed,
+                    );
                   } else {
                     SmartDialog.showToast('更新失败');
                   }
                 },
                 child: Text(
-                  '更新',
+                  L10n.current.downloadDetailPageChild,
                   style: TextStyle(color: theme.colorScheme.onSurface),
                 ),
               ),
             ],
             child: AppBar(
-              title: const Text('离线缓存'),
+              title: Text(L10n.current.offlineDownload),
               actions: [
                 IconButton(
-                  tooltip: '搜索',
+                  tooltip: L10n.current.search,
                   onPressed: () async {
                     await _downloadService.waitForInitialization;
                     if (!mounted) return;
@@ -102,7 +105,7 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                   icon: const Icon(Icons.search),
                 ),
                 IconButton(
-                  tooltip: '多选',
+                  tooltip: L10n.current.downloadDetailPageTooltip,
                   onPressed: () {
                     if (enableMultiSelect) {
                       _controller.handleSelect();
@@ -133,7 +136,9 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                           padding: const EdgeInsets.only(left: 12, bottom: 7),
                           sliver: SliverToBoxAdapter(
                             child: Text(
-                              '正在缓存 (${_downloadService.waitDownloadQueue.length})',
+                              L10n.current.downloadPageChild2(
+                                _downloadService.waitDownloadQueue.length,
+                              ),
                             ),
                           ),
                         ),
@@ -167,8 +172,8 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                                 ? 0
                                 : 7,
                           ),
-                          sliver: const SliverToBoxAdapter(
-                            child: Text('已缓存视频'),
+                          sliver: SliverToBoxAdapter(
+                            child: Text(L10n.current.downloadPageChild),
                           ),
                         ),
                         SliverGrid.builder(
@@ -237,7 +242,7 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                     Get.back();
                     showConfirmDialog(
                       context: context,
-                      title: const Text('确定删除？'),
+                      title: Text(L10n.current.confirmDeletion),
                       onConfirm: () async {
                         await GStorage.watchProgress.deleteAll(
                           pageInfo.entries.map((e) => e.cid.toString()),
@@ -248,7 +253,10 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                       },
                     );
                   },
-                  child: const Text('删除', style: TextStyle(fontSize: 14)),
+                  child: Text(
+                    L10n.current.delete,
+                    style: const TextStyle(fontSize: 14),
+                  ),
                 ),
                 DialogOption(
                   onPressed: () async {
@@ -262,12 +270,17 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                       ),
                     );
                     if (res.every((e) => e)) {
-                      SmartDialog.showToast('更新成功');
+                      SmartDialog.showToast(
+                        L10n.current.downloadDetailPageOnPressed,
+                      );
                     } else {
                       SmartDialog.showToast('更新失败');
                     }
                   },
-                  child: const Text('更新弹幕', style: TextStyle(fontSize: 14)),
+                  child: Text(
+                    L10n.current.detailItemOnLongPressChild,
+                    style: const TextStyle(fontSize: 14),
+                  ),
                 ),
               ],
             ),
@@ -313,7 +326,9 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                     ),
                   ),
                   PBadge(
-                    text: '${pageInfo.entries.length}个视频',
+                    text: L10n.current.downloadPageBuildItemText4(
+                      pageInfo.entries.length,
+                    ),
                     right: 6.0,
                     bottom: 6.0,
                     isBold: false,
@@ -322,13 +337,13 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                   if (pageInfo.seasonType case final pgcType?)
                     PBadge(
                       text: switch (pgcType) {
-                        -1 => '课程',
-                        1 => '番剧',
-                        2 => '电影',
-                        3 => '纪录片',
-                        4 => '国创',
-                        5 => '电视剧',
-                        7 => '综艺',
+                        -1 => L10n.current.downloadPageBuildItemText,
+                        1 => L10n.current.bangumi,
+                        2 => L10n.current.videoZoneTypeMovieLabel,
+                        3 => L10n.current.downloadPageBuildItemText2,
+                        4 => L10n.current.videoZoneTypeGuochuangLabel,
+                        5 => L10n.current.downloadPageBuildItemText3,
+                        7 => L10n.current.rankTypeVarietyLabel,
                         _ => null,
                       },
                       right: 6.0,

@@ -1,14 +1,20 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 
 enum UpPanelPosition implements EnumWithLabel {
-  top('顶部'),
-  leftFixed('左侧常驻'),
-  rightFixed('右侧常驻'),
-  leftDrawer('左侧抽屉'),
-  rightDrawer('右侧抽屉'),
+  top,
+  leftFixed,
+  rightFixed,
+  leftDrawer,
+  rightDrawer,
   ;
 
   @override
-  final String label;
-  const UpPanelPosition(this.label);
+  String get label => switch (this) {
+    top => L10n.current.upPanelPositionTopLabel,
+    leftFixed => L10n.current.upPanelPositionLeftFixedLabel,
+    rightFixed => L10n.current.upPanelPositionRightFixedLabel,
+    leftDrawer => L10n.current.upPanelPositionLeftDrawerLabel,
+    rightDrawer => L10n.current.upPanelPositionRightDrawerLabel,
+  };
 }

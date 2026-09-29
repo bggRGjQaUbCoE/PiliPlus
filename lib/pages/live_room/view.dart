@@ -15,6 +15,7 @@ import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show tabBarScrollPhysics;
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/live/live_contribution_rank_type.dart';
 import 'package:PiliPlus/models_new/live/live_room_info_h5/data.dart';
 import 'package:PiliPlus/models_new/live/live_superchat/item.dart';
@@ -311,7 +312,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                     ..fsSC.value = item
                     ..addDm(item);
                 },
-                child: const Text('add superchat'),
+                child: Text(L10n.current.addSuperChat),
               ),
             ),
             Positioned(
@@ -321,7 +322,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                 onPressed: () {
                   _liveRoomController.fsSC.value = null;
                 },
-                child: const Text('remove superchat'),
+                child: Text(L10n.current.removeSuperChat),
               ),
             ),
           ],
@@ -509,7 +510,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
     child: Obx(() {
       if (_liveRoomController.onlineCount.value case final onlineCount?) {
         return Text(
-          '高能观众($onlineCount)',
+          L10n.current.liveRoomPageOnlineWidgetChild(onlineCount),
           style: const TextStyle(fontSize: 12, color: Colors.white),
         );
       }
@@ -620,35 +621,35 @@ class _LiveRoomPageState extends State<LiveRoomPage>
             return <PopupMenuEntry>[
               PopupMenuItem(
                 onTap: () => Utils.copyText(liveUrl),
-                child: const Row(
+                child: Row(
                   spacing: 10,
                   mainAxisSize: .min,
                   children: [
-                    Icon(Icons.copy, size: 19),
-                    Text('复制链接'),
+                    const Icon(Icons.copy, size: 19),
+                    Text(L10n.current.copyLink),
                   ],
                 ),
               ),
               if (PlatformUtils.isMobile)
                 PopupMenuItem(
                   onTap: () => ShareUtils.shareText(liveUrl),
-                  child: const Row(
+                  child: Row(
                     spacing: 10,
                     mainAxisSize: .min,
                     children: [
-                      Icon(Icons.share, size: 19),
-                      Text('分享直播间'),
+                      const Icon(Icons.share, size: 19),
+                      Text(L10n.current.liveRoomPageBuildAppBarChildren),
                     ],
                   ),
                 ),
               PopupMenuItem(
                 onTap: () => PageUtils.inAppWebview(liveUrl, off: true),
-                child: const Row(
+                child: Row(
                   spacing: 10,
                   mainAxisSize: .min,
                   children: [
-                    Icon(Icons.open_in_browser, size: 19),
-                    Text('浏览器打开'),
+                    const Icon(Icons.open_in_browser, size: 19),
+                    Text(L10n.current.articlePageBuildAppBarTooltip),
                   ],
                 ),
               ),
@@ -675,12 +676,12 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                       SmartDialog.showToast(e.toString());
                     }
                   },
-                  child: const Row(
+                  child: Row(
                     spacing: 10,
                     mainAxisSize: .min,
                     children: [
-                      Icon(Icons.forward_to_inbox, size: 19),
-                      Text('分享至消息'),
+                      const Icon(Icons.forward_to_inbox, size: 19),
+                      Text(L10n.current.articlePageBuildAppBarChildren),
                     ],
                   ),
                 ),
@@ -821,8 +822,11 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                     );
                   },
                 ),
-                const Expanded(
-                  child: Text('发送弹幕', style: TextStyle(color: baseWhite)),
+                Expanded(
+                  child: Text(
+                    L10n.current.childBuildInputWidgetChild,
+                    style: const TextStyle(color: baseWhite),
+                  ),
                 ),
                 Builder(
                   builder: (context) {

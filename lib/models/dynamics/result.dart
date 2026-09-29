@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
 import 'package:PiliPlus/models/dynamics/article_content_model.dart';
 import 'package:PiliPlus/models/model_avatar.dart';
@@ -774,8 +775,8 @@ class ReserveBtn {
   ReserveBtn.fromJson(Map<String, dynamic> json) {
     status = safeToInt(json['status']);
     type = safeToInt(json['type']);
-    checkText = json['check']?['text'] ?? '已预约';
-    uncheckText = json['uncheck']?['text'] ?? '预约';
+    checkText = json['check']?['text'] ?? L10n.current.reserved;
+    uncheckText = json['uncheck']?['text'] ?? L10n.current.reserve;
     disable = safeToInt(json['uncheck']?['disable']);
     jumpText = json['jump_style']?['text'];
     jumpUrl = json['jump_url'];

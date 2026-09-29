@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/live/live_area_list/area_item.dart';
 import 'package:PiliPlus/models_new/live/live_area_list/area_list.dart';
@@ -33,7 +34,7 @@ class _LiveAreaPageState extends State<LiveAreaPage> {
     final padding = MediaQuery.viewPaddingOf(context);
     return SimpleScaffold(
       appBar: AppBar(
-        title: const Text('全部标签'),
+        title: Text(L10n.current.livePageBuildTopTooltip3),
         actions: _controller.isLogin
             ? [
                 TextButton(
@@ -42,7 +43,11 @@ class _LiveAreaPageState extends State<LiveAreaPage> {
                     visualDensity: VisualDensity.compact,
                   ),
                   child: Obx(
-                    () => Text(_controller.isEditing.value ? '完成' : '编辑'),
+                    () => Text(
+                      _controller.isEditing.value
+                          ? L10n.current.done
+                          : L10n.current.edit,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -174,9 +179,9 @@ class _LiveAreaPageState extends State<LiveAreaPage> {
             Text.rich(
               TextSpan(
                 children: [
-                  const TextSpan(text: '我的常用标签  '),
+                  TextSpan(text: L10n.current.liveAreaPageBuildFavWidgetText2),
                   TextSpan(
-                    text: '点击进入标签',
+                    text: L10n.current.liveAreaPageBuildFavWidgetText,
                     style: TextStyle(
                       fontSize: 13,
                       color: theme.colorScheme.outline,

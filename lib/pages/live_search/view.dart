@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/pages/live_search/child/view.dart';
 import 'package:PiliPlus/pages/live_search/controller.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -26,7 +27,7 @@ class _LiveSearchPageState extends State<LiveSearchPage> {
       appBar: AppBar(
         actions: [
           IconButton(
-            tooltip: '搜索',
+            tooltip: L10n.current.search,
             onPressed: _controller.submit,
             icon: const Icon(Icons.search, size: 22),
           ),
@@ -39,11 +40,11 @@ class _LiveSearchPageState extends State<LiveSearchPage> {
           textInputAction: TextInputAction.search,
           textAlignVertical: TextAlignVertical.center,
           decoration: InputDecoration(
-            hintText: '搜索房间或主播',
+            hintText: L10n.current.liveSearchPageHintText,
             visualDensity: .standard,
             border: InputBorder.none,
             suffixIcon: IconButton(
-              tooltip: '清空',
+              tooltip: L10n.current.clearAll,
               icon: const Icon(Icons.clear, size: 22),
               onPressed: _controller.onClear,
             ),
@@ -67,14 +68,22 @@ class _LiveSearchPageState extends State<LiveSearchPage> {
                   tabs: [
                     Obx(
                       () => Tab(
-                        text:
-                            '正在直播 ${_controller.counts[0] != -1 ? _controller.counts[0] : ''}',
+                        text: L10n.current.liveSearchPageText2(
+                          (_controller.counts[0] != -1
+                                  ? _controller.counts[0]
+                                  : '')
+                              .toString(),
+                        ),
                       ),
                     ),
                     Obx(
                       () => Tab(
-                        text:
-                            '主播 ${_controller.counts[1] != -1 ? _controller.counts[1] : ''}',
+                        text: L10n.current.liveSearchPageText(
+                          (_controller.counts[1] != -1
+                                  ? _controller.counts[1]
+                                  : '')
+                              .toString(),
+                        ),
                       ),
                     ),
                   ],

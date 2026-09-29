@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/login.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/setting_type.dart';
 import 'package:PiliPlus/pages/about/view.dart';
 import 'package:PiliPlus/pages/login/controller.dart';
@@ -42,42 +43,42 @@ class _SettingPageState extends State<SettingPage> {
   late bool _isPortrait;
   late ThemeData theme;
 
-  static const List<_SettingsModel> _items = [
+  List<_SettingsModel> get _items => [
     _SettingsModel(
       type: SettingType.privacySetting,
-      subtitle: '黑名单',
-      icon: Icon(Icons.privacy_tip_outlined),
+      subtitle: L10n.current.blacklist,
+      icon: const Icon(Icons.privacy_tip_outlined),
     ),
     _SettingsModel(
       type: SettingType.recommendSetting,
-      subtitle: '推荐来源（web/app）、刷新保留内容、过滤器',
-      icon: Icon(Icons.explore_outlined),
+      subtitle: L10n.current.recommendationSettingsSummary,
+      icon: const Icon(Icons.explore_outlined),
     ),
     _SettingsModel(
       type: SettingType.videoSetting,
-      subtitle: '画质、音质、解码、缓冲、音频输出等',
-      icon: Icon(Icons.video_settings_outlined),
+      subtitle: L10n.current.videoSettingsSummary,
+      icon: const Icon(Icons.video_settings_outlined),
     ),
     _SettingsModel(
       type: SettingType.playSetting,
-      subtitle: '双击/长按、全屏、后台播放、弹幕、字幕、底部进度条等',
-      icon: Icon(Icons.touch_app_outlined),
+      subtitle: L10n.current.playerSettingsSummary,
+      icon: const Icon(Icons.touch_app_outlined),
     ),
     _SettingsModel(
       type: SettingType.styleSetting,
-      subtitle: '横屏适配（平板）、侧栏、列宽、首页、动态红点、主题、字号、图片、帧率等',
-      icon: Icon(Icons.style_outlined),
+      subtitle: L10n.current.appearanceSettingsSummary,
+      icon: const Icon(Icons.style_outlined),
     ),
     _SettingsModel(
       type: SettingType.extraSetting,
-      subtitle: '震动、搜索、收藏、ai、评论、动态、代理、更新检查等',
-      icon: Icon(Icons.extension_outlined),
+      subtitle: L10n.current.extraSettingsSummary,
+      icon: const Icon(Icons.extension_outlined),
     ),
-    _SettingsModel(
+    const _SettingsModel(
       type: SettingType.webdavSetting,
       icon: Icon(MdiIcons.databaseCogOutline),
     ),
-    _SettingsModel(
+    const _SettingsModel(
       type: SettingType.about,
       icon: Icon(Icons.info_outline),
     ),
@@ -95,7 +96,7 @@ class _SettingPageState extends State<SettingPage> {
   Widget build(BuildContext context) {
     return SimpleScaffold(
       appBar: AppBar(
-        title: _isPortrait ? const Text('设置') : Text(_type.title),
+        title: _isPortrait ? Text(L10n.current.settings) : Text(_type.title),
       ),
       body: ViewSafeArea(
         child: _isPortrait
@@ -195,7 +196,7 @@ class _SettingPageState extends State<SettingPage> {
         ListTile(
           onTap: () => LoginPageController.switchAccountDialog(context),
           leading: const Icon(Icons.switch_account_outlined),
-          title: Text('切换账号', style: titleStyle),
+          title: Text(L10n.current.switchAccount, style: titleStyle),
         ),
         Obx(
           () => _noAccount.value
@@ -203,7 +204,7 @@ class _SettingPageState extends State<SettingPage> {
               : ListTile(
                   leading: const Icon(Icons.logout_outlined),
                   onTap: () => _logoutDialog(context),
-                  title: Text('退出登录', style: titleStyle),
+                  title: Text(L10n.current.logout, style: titleStyle),
                 ),
         ),
         ListTile(
@@ -235,7 +236,7 @@ class _SettingPageState extends State<SettingPage> {
     final result = await showDialog<Set<LoginAccount>>(
       context: context,
       builder: (context) => MultiSelectDialog<LoginAccount>(
-        title: '选择要登出的账号uid',
+        title: L10n.current.logoutSelectAccounts,
         initValues: const Iterable.empty(),
         values: {
           for (final i in Accounts.account.values) i: i.mid.toString(),
@@ -248,15 +249,17 @@ class _SettingPageState extends State<SettingPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('提示'),
+          title: Text(L10n.current.notice),
           content: Text(
-            "确认要退出以下账号登录吗\n\n${result.map((i) => i.mid).join('\n')}",
+            L10n.current.logoutConfirmation(
+              result.map((i) => i.mid).join('\n'),
+            ),
           ),
           actions: [
             TextButton(
               onPressed: Get.back,
               child: Text(
-                '点错了',
+                L10n.current.cancelMistake,
                 style: TextStyle(color: theme.colorScheme.outline),
               ),
             ),
@@ -266,7 +269,7 @@ class _SettingPageState extends State<SettingPage> {
                 _removeAccounts(result);
               },
               child: Text(
-                '仅登出',
+                L10n.current.logoutLocally,
                 style: TextStyle(color: theme.colorScheme.error),
               ),
             ),
@@ -289,7 +292,7 @@ class _SettingPageState extends State<SettingPage> {
                   }
                 }
               },
-              child: const Text('确认'),
+              child: Text(L10n.current.confirm),
             ),
           ],
         );
@@ -309,21 +312,17 @@ class _SettingPageState extends State<SettingPage> {
       child: InkWell(
         onTap: () => Get.toNamed('/settingsSearch'),
         borderRadius: const BorderRadius.all(Radius.circular(50)),
-        child: const Padding(
-          padding: EdgeInsets.symmetric(vertical: 8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
           child: Center(
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  size: 18,
-                  applyTextScaling: true,
-                  Icons.search,
-                ),
+                const Icon(size: 18, applyTextScaling: true, Icons.search),
                 Text(
-                  ' 搜索',
-                  style: TextStyle(height: 1),
-                  strutStyle: StrutStyle(height: 1, leading: 0),
+                  ' ${L10n.current.search}',
+                  style: const TextStyle(height: 1),
+                  strutStyle: const StrutStyle(height: 1, leading: 0),
                 ),
               ],
             ),

@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/widgets/reorder_mixin.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/http/follow.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/member/tags.dart';
 import 'package:PiliPlus/pages/follow/controller.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
@@ -39,7 +40,7 @@ class _FollowTagSortPageState extends State<FollowTagSortPage>
   Widget build(BuildContext context) {
     return SimpleScaffold(
       appBar: AppBar(
-        title: const Text('关注分组排序'),
+        title: Text(L10n.current.followTagSortPageTitle),
         actions: _customTags.isNotEmpty
             ? [
                 TextButton(
@@ -48,7 +49,9 @@ class _FollowTagSortPageState extends State<FollowTagSortPage>
                       tagids: _customTags.map((e) => e.tagid).join(','),
                     );
                     if (res.isSuccess) {
-                      SmartDialog.showToast('排序完成');
+                      SmartDialog.showToast(
+                        L10n.current.favFolderSortPageOnPressed,
+                      );
                       final tabs = _defTags + _customTags;
                       widget.controller
                         ..tabs.value = tabs
@@ -61,7 +64,7 @@ class _FollowTagSortPageState extends State<FollowTagSortPage>
                       res.toast();
                     }
                   },
-                  child: const Text('完成'),
+                  child: Text(L10n.current.done),
                 ),
                 const SizedBox(width: 16),
               ]

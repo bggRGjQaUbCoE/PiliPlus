@@ -4,6 +4,7 @@ import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
@@ -133,7 +134,7 @@ abstract class CommonIntroController extends GetxController
       selectLike: coinWithLike ? 1 : 0,
     );
     if (res.isSuccess) {
-      SmartDialog.showToast('投币成功');
+      SmartDialog.showToast(L10n.current.commonIntroControllerOnPayCoinText);
       coinNum.value += coin;
       GlobalData().afterCoin(coin);
       stat.coin += coin;
@@ -228,7 +229,9 @@ mixin FavMixin on TripleMixin {
     final (rid, type) = getFavRidType;
     // 收藏至默认文件夹
     if (isQuick) {
-      SmartDialog.showLoading(msg: '请求中');
+      SmartDialog.showLoading(
+        msg: L10n.current.pagesCommonCommonIntroControllerActionFavVideoMsg,
+      );
       queryVideoInFolder().then((res) async {
         if (res.isSuccess) {
           final hasFav = this.hasFav.value;
@@ -242,7 +245,9 @@ mixin FavMixin on TripleMixin {
           if (result.isSuccess) {
             updateFavCount(hasFav ? -1 : 1);
             this.hasFav.toggle();
-            SmartDialog.showToast('${hasFav ? '取消' : ''}收藏成功');
+            SmartDialog.showToast(
+              L10n.current.articleControllerOnFavText(hasFav.toString()),
+            );
           } else {
             res.toast();
           }
@@ -271,7 +276,9 @@ mixin FavMixin on TripleMixin {
     } catch (e) {
       if (kDebugMode) debugPrint(e.toString());
     }
-    SmartDialog.showLoading(msg: '请求中');
+    SmartDialog.showLoading(
+      msg: L10n.current.pagesCommonCommonIntroControllerActionFavVideoMsg,
+    );
     final result = await FavHttp.favVideo(
       resources: '$rid:$type',
       addIds: addMediaIdsNew.join(','),
@@ -286,7 +293,9 @@ mixin FavMixin on TripleMixin {
         updateFavCount(newVal ? 1 : -1);
         hasFav.value = newVal;
       }
-      SmartDialog.showToast('${newVal ? '' : '取消'}收藏成功');
+      SmartDialog.showToast(
+        L10n.current.articleControllerOnFavText((!newVal).toString()),
+      );
     } else {
       result.toast();
     }

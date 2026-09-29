@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/live/live_follow/item.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -121,7 +122,9 @@ class LiveCardVFollow extends StatelessWidget {
           ),
           if (liveItem.textSmall case final textSmall?)
             Text(
-              '$textSmall围观',
+              L10n.current.liveCardVFollowVideoStatChildren(
+                textSmall,
+              ),
               style: const TextStyle(fontSize: 11, color: Colors.white),
             ),
         ],

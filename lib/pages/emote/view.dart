@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show tabBarView, platformClampingPhysics;
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/emote/emote.dart';
 import 'package:PiliPlus/models_new/emote/package.dart';
@@ -191,7 +192,7 @@ class _EmotePanelState extends State<EmotePanel>
     child: TextButton.icon(
       onPressed: _emotePanelController.onReload,
       icon: const Icon(Icons.refresh),
-      label: Text(errMsg ?? '没有数据'),
+      label: Text(errMsg ?? L10n.current.noData),
     ),
   );
 }

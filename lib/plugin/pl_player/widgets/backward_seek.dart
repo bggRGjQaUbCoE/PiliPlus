@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 
 class BackwardSeekIndicator extends StatefulWidget {
@@ -77,7 +78,9 @@ class BackwardSeekIndicatorState extends State<BackwardSeekIndicator> {
               ),
               const SizedBox(height: 8.0),
               Text(
-                '快退${duration.inSeconds}秒',
+                L10n.current.backwardSeekIndicatorChildren(
+                  duration.inSeconds,
+                ),
                 style: const TextStyle(
                   fontSize: 12.0,
                   color: Colors.white,

@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/blacklist/list.dart';
 import 'package:PiliPlus/pages/blacklist/controller.dart';
@@ -40,7 +41,11 @@ class _BlackListPageState extends State<BlackListPage> {
       appBar: AppBar(
         title: Obx(
           () => Text(
-            '黑名单管理${_blackListController.total.value == -1 ? '' : ': ${_blackListController.total.value}'}',
+            L10n.current.blackListPageTitle(
+              _blackListController.total.value == -1
+                  ? ''
+                  : ': ${_blackListController.total.value}',
+            ),
           ),
         ),
       ),
@@ -99,7 +104,12 @@ class _BlackListPageState extends State<BlackListPage> {
                       style: const TextStyle(fontSize: 14),
                     ),
                     subtitle: Text(
-                      '添加时间: ${DateFormatUtils.format(item.mtime, format: DateFormatUtils.longFormatDs)}',
+                      L10n.current.blackListPageBuildBodySubtitle(
+                        DateFormatUtils.format(
+                          item.mtime,
+                          format: DateFormatUtils.longFormatDs,
+                        ),
+                      ),
                       maxLines: 1,
                       style: style,
                       overflow: TextOverflow.ellipsis,
@@ -112,7 +122,7 @@ class _BlackListPageState extends State<BlackListPage> {
                         item.uname,
                         item.mid,
                       ),
-                      child: const Text('移除'),
+                      child: Text(L10n.current.remove),
                     ),
                   );
                 },

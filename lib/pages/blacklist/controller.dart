@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/http/black.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/blacklist/data.dart';
 import 'package:PiliPlus/models_new/blacklist/list.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
@@ -35,7 +36,9 @@ class BlackListController
   void onRemove(BuildContext context, int index, name, mid) {
     showConfirmDialog(
       context: context,
-      title: Text('确定将 $name 移出黑名单？'),
+      title: Text(
+        L10n.current.blackListControllerOnRemoveTitle(name.toString()),
+      ),
       onConfirm: () async {
         final result = await VideoHttp.relationMod(mid: mid, act: 6, reSrc: 11);
         if (result.isSuccess) {
@@ -43,7 +46,9 @@ class BlackListController
             ..value.data!.removeAt(index)
             ..refresh();
           total.value -= 1;
-          SmartDialog.showToast('移除成功');
+          SmartDialog.showToast(
+            L10n.current.blackListControllerOnRemoveOnConfirm,
+          );
         }
       },
     );

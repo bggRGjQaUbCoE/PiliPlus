@@ -1,0 +1,4 @@
+"NSPhotoLibraryUsageDescription" = "请允许APP保存图片到相册";
+"NSCameraUsageDescription" = "App需要您的同意,才能访问相册";
+"NSAppleMusicUsageDescription" = "App需要您的同意,才能访问媒体资料库";
+"NSLocalNetworkUsageDescription" = "需要访问本地网络以发现和连接 DLNA 投屏设备";

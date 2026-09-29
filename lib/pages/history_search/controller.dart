@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/user.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/history/data.dart';
 import 'package:PiliPlus/models_new/history/list.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
@@ -36,7 +37,7 @@ class HistorySearchController
       loadingState
         ..value.data!.removeAt(index)
         ..refresh();
-      SmartDialog.showToast('已删除');
+      SmartDialog.showToast(L10n.current.historyControllerOnDeleteText);
     } else {
       res.toast();
     }
@@ -46,10 +47,12 @@ class HistorySearchController
   void onRemove() {
     showConfirmDialog(
       context: Get.context!,
-      title: const Text('提示'),
-      content: const Text('确认删除所选历史记录吗？'),
+      title: Text(L10n.current.notice),
+      content: Text(L10n.current.historyControllerOnRemoveContent),
       onConfirm: () async {
-        SmartDialog.showLoading(msg: '请求中');
+        SmartDialog.showLoading(
+          msg: L10n.current.pagesCommonCommonIntroControllerActionFavVideoMsg,
+        );
         final removeList = allChecked.toSet();
         final response = await UserHttp.delHistory(
           removeList
@@ -59,7 +62,7 @@ class HistorySearchController
         );
         if (response.isSuccess) {
           afterDelete(removeList);
-          SmartDialog.showToast('已删除');
+          SmartDialog.showToast(L10n.current.historyControllerOnDeleteText);
         } else {
           response.toast();
         }

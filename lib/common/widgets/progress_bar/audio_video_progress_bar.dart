@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
@@ -768,8 +769,9 @@ class RenderProgressBar extends RenderBox implements MouseTrackerAnnotation {
     // description
     config
       ..textDirection = TextDirection.ltr
-      ..label =
-          '进度条' //'Progress bar';
+      ..label = L10n
+          .current
+          .renderProgressBarDescribeSemanticsConfigurationText //'Progress bar';
       ..value = '${(_thumbValue * 100).round()}%'
       // increase action
       ..onIncrease = increaseAction;

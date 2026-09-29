@@ -1,0 +1,7 @@
+arb-dir: lib/l10n
+template-arb-file: app_zh.arb
+output-dir: lib/l10n/generated
+output-localization-file: app_localizations.dart
+nullable-getter: false
+untranslated-messages-file: lib/l10n/untranslated.json
+use-escaping: true

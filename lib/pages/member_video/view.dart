@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show ReloadScrollPhysics;
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/member/contribute_type.dart';
 import 'package:PiliPlus/models_new/space/space_archive/item.dart';
 import 'package:PiliPlus/pages/common/fab_mixin.dart';
@@ -186,7 +187,7 @@ class _MemberVideoState extends State<MemberVideo>
                           _jumpToIndex(locatedIndex);
                         }
                       },
-                      label: const Text('定位至上次观看'),
+                      label: Text(L10n.current.memberVideoLabel),
                     ),
                   ),
                 )
@@ -264,7 +265,7 @@ class _MemberVideoState extends State<MemberVideo>
     final count = _controller.count;
     if (count != null) {
       return Text(
-        '共$count视频',
+        L10n.current.memberVideoBuildCountText(count),
         style: const TextStyle(fontSize: 13),
       );
     }
@@ -287,7 +288,7 @@ class _MemberVideoState extends State<MemberVideo>
             color: theme.colorScheme.secondary,
           ),
           label: Text(
-            episodicButton?.text ?? '播放全部',
+            episodicButton?.text ?? L10n.current.playAll,
             style: TextStyle(
               fontSize: 13,
               color: theme.colorScheme.secondary,

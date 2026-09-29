@@ -9,6 +9,7 @@ import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/pages/common/fab_mixin.dart';
 import 'package:PiliPlus/pages/video/reply/controller.dart';
 import 'package:PiliPlus/pages/video/reply/vote/reply_vote_item.dart';
@@ -136,7 +137,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
                     replyType: _videoReplyController.videoType.replyType,
                   );
                 },
-                tooltip: '发表评论',
+                tooltip: L10n.current.videoReplyPanelTooltip,
                 child: const Icon(Icons.reply),
               ),
             ),
@@ -180,7 +181,11 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
                   alignment: .center,
                   margin: .only(bottom: bottom),
                   child: Text(
-                    _videoReplyController.isEnd ? '没有更多了' : '加载中...',
+                    _videoReplyController.isEnd
+                        ? L10n.current.noMore
+                        : L10n
+                              .current
+                              .pagesCommonDynCommonDynPageReplyListChild2,
                     textAlign: .center,
                     style: TextStyle(fontSize: 12, color: colorScheme.outline),
                   ),
@@ -210,7 +215,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
         }
 
         final child = HttpError(
-          errMsg: '还没有评论',
+          errMsg: L10n.current.noComments,
           onReload: _videoReplyController.onReload,
         );
         if (_videoReplyController.voteCard case final voteCard?) {

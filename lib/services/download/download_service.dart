@@ -5,6 +5,7 @@ import 'dart:io' show Directory, File;
 import 'package:PiliPlus/grpc/dm.dart';
 import 'package:PiliPlus/http/download.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/models_new/download/bili_download_media_file_info.dart';
@@ -132,7 +133,7 @@ class DownloadService extends GetxService {
       width: 0,
       height: 0,
       rotate: 0,
-      downloadTitle: '视频已缓存完成',
+      downloadTitle: L10n.current.pageDataDownloadVideoDownloadTitle,
       downloadSubtitle: videoDetail?.title ?? videoArc!.title,
     );
     final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;

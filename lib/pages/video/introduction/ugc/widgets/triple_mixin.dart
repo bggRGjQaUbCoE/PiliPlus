@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/pages/video/pay_coins/view.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -44,12 +45,16 @@ mixin TripleMixin on GetxController, TickerProvider {
     final copyright = this.copyright;
     final hasCopyright = isHasCopyright(copyright);
     if (reachCoinLimit(hasCopyright, coinNum)) {
-      SmartDialog.showToast('达到投币上限啦~');
+      SmartDialog.showToast(
+        L10n
+            .current
+            .pagesVideoIntroductionUgcWidgetsTripleMixinActionCoinVideoText,
+      );
       return;
     }
 
     if (GlobalData().coins != null && GlobalData().coins! < 1) {
-      SmartDialog.showToast('硬币不足');
+      SmartDialog.showToast(L10n.current.editProfilePageBuildBodyOnTap);
       // return;
     }
 
@@ -94,7 +99,11 @@ mixin TripleMixin on GetxController, TickerProvider {
     _timer ??= Timer(_duration, () {
       HapticFeedback.lightImpact();
       if (hasTriple) {
-        SmartDialog.showToast('已完成三连');
+        SmartDialog.showToast(
+          L10n
+              .current
+              .pagesVideoIntroductionUgcWidgetsTripleMixinOnStartTripleText,
+        );
       } else {
         tripleAnimCtr.forward().whenComplete(() {
           tripleAnimCtr.reset();

@@ -7,6 +7,7 @@ import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/error_msg.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/member/archive_order_type_app.dart';
 import 'package:PiliPlus/models/common/member/archive_order_type_web.dart';
 import 'package:PiliPlus/models/common/member/archive_sort_type_app.dart';
@@ -55,7 +56,9 @@ abstract final class MemberHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['status'] == true) {
-      SmartDialog.showToast('举报成功');
+      SmartDialog.showToast(
+        L10n.current.commonWidgetsDialogReportAutoWrapReportDialogOnPressed,
+      );
     } else {
       SmartDialog.showToast('举报失败');
     }

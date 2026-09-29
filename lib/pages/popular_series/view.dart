@@ -9,6 +9,7 @@ import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/common/widgets/video_card/video_card_h.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models/model_hot_video_item.dart';
 import 'package:PiliPlus/models_new/popular/popular_series_one/config.dart';
@@ -37,7 +38,7 @@ class _PopularSeriesPageState extends State<PopularSeriesPage> with GridMixin {
           if (config != null) {
             return Text(config.name!);
           }
-          return const Text('每周必看');
+          return Text(L10n.current.hotPageTitle2);
         }),
       ),
       body: refreshIndicator(
@@ -76,7 +77,10 @@ class _PopularSeriesPageState extends State<PopularSeriesPage> with GridMixin {
                     dimension: item.dimension,
                     extraArguments: {
                       'sourceType': SourceType.playlist,
-                      'favTitle': '每周必看 ${config?.label ?? ''}',
+                      'favTitle': L10n.current
+                          .popularSeriesPageBuildBodyExtraArguments(
+                            config?.label ?? '',
+                          ),
                       'mediaId': config?.mediaId,
                       'desc': true,
                       'oid': item.aid,

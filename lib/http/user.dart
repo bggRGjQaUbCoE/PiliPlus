@@ -1,6 +1,7 @@
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/user/info.dart';
 import 'package:PiliPlus/models/user/stat.dart';
 import 'package:PiliPlus/models_new/coin_log/data.dart';
@@ -181,7 +182,7 @@ abstract final class UserHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      SmartDialog.showToast('yeah！稍后再看');
+      SmartDialog.showToast(L10n.current.userHttpToViewLaterText);
       return const Success(null);
     } else {
       SmartDialog.showToast(res.data['message'].toString());
@@ -201,7 +202,7 @@ abstract final class UserHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      SmartDialog.showToast('yeah！成功移除');
+      SmartDialog.showToast(L10n.current.userHttpToViewDelText);
       return const Success(null);
     } else {
       SmartDialog.showToast(res.data['message'].toString());

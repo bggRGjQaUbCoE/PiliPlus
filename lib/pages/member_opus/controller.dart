@@ -1,5 +1,6 @@
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/member.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/space/space/tab2.dart';
 import 'package:PiliPlus/models_new/space/space_opus/data.dart';
 import 'package:PiliPlus/models_new/space/space_opus/item.dart';
@@ -19,11 +20,11 @@ class MemberOpusController
   final int mid;
 
   String offset = '';
-  Rx<SpaceTabFilter> type = const SpaceTabFilter(
-    text: "全部图文",
-    meta: "all",
-    tabName: "图文",
-  ).obs;
+  static const _defaultType = SpaceTabFilter();
+  Rx<SpaceTabFilter> type = _defaultType.obs;
+  String get typeLabel => identical(type.value, _defaultType)
+      ? L10n.current.typeText
+      : type.value.text ?? type.value.tabName!;
   List<SpaceTabFilter>? filter;
 
   @override

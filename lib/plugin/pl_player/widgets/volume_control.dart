@@ -31,6 +31,9 @@ class VolumeControl extends StatefulWidget {
 class _VolumeControlState extends State<VolumeControl>
     with WidgetsBindingObserver {
   final OverlayPortalController _controller = OverlayPortalController();
+
+  /// 音量浮层与按钮共用同一 tap 组：组外任意位置点击即收起
+  static const int _volumeTapGroup = 7;
   double _lastVolume = 1.0;
 
   @override
@@ -101,91 +104,101 @@ class _VolumeControlState extends State<VolumeControl>
   @override
   Widget build(BuildContext context) {
     final ctr = widget.plPlayerController;
-    return OverlayPortal.overlayChildLayoutBuilder(
-      controller: _controller,
-      overlayChildBuilder: (context, info) {
-        final offset = MatrixUtils.transformPoint(
-          info.childPaintTransform,
-          info.childSize.topCenter(const Offset(0, -6)),
-        );
-        return _VolumePanel(
-          offset: offset,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: _closePanel,
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(4, 7, 4, 3),
-              decoration: const BoxDecoration(
-                color: Color(0xE6202020),
-                borderRadius: BorderRadius.all(Radius.circular(6)),
-              ),
-              child: SliderTheme(
-                data: const SliderThemeData(
-                  trackHeight: 4,
-                  overlayColor: Colors.transparent,
-                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 6),
-                ),
-                child: Obx(
-                  () {
-                    final volume = ctr.volume.value;
-                    return Column(
-                      spacing: 2,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '${(volume * 100).round()}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                          ),
-                        ),
-                        Expanded(
-                          child: VerticalSlider(
-                            year2023: true,
-                            min: 0.0,
-                            max: ctr.maxVolume,
-                            value: volume.clamp(0.0, ctr.maxVolume).toDouble(),
-                            showValueIndicator: .never,
-                            activeColor: Colors.white,
-                            inactiveColor: Colors.white38,
-                            onChanged: (value) {
-                              ctr
-                                ..setVolume(value)
-                                ..isMuted = value == 0;
-                            },
-                          ),
-                        ),
-                      ],
-                    );
-                  },
+    return TapRegion(
+      groupId: _volumeTapGroup,
+      onTapOutside: (_) => _closePanel(),
+      child: OverlayPortal.overlayChildLayoutBuilder(
+        controller: _controller,
+        overlayChildBuilder: (context, info) {
+          final offset = MatrixUtils.transformPoint(
+            info.childPaintTransform,
+            info.childSize.topCenter(const Offset(0, -6)),
+          );
+          return _VolumePanel(
+            offset: offset,
+            child: TapRegion(
+              groupId: _volumeTapGroup,
+              onTapOutside: (_) => _closePanel(),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: _closePanel,
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(4, 7, 4, 3),
+                  decoration: const BoxDecoration(
+                    color: Color(0xE6202020),
+                    borderRadius: BorderRadius.all(Radius.circular(6)),
+                  ),
+                  child: SliderTheme(
+                    data: const SliderThemeData(
+                      trackHeight: 4,
+                      overlayColor: Colors.transparent,
+                      thumbShape: RoundSliderThumbShape(enabledThumbRadius: 6),
+                    ),
+                    child: Obx(
+                      () {
+                        final volume = ctr.volume.value;
+                        return Column(
+                          spacing: 2,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${(volume * 100).round()}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                            ),
+                            Expanded(
+                              child: VerticalSlider(
+                                year2023: true,
+                                min: 0.0,
+                                max: ctr.maxVolume,
+                                value: volume
+                                    .clamp(0.0, ctr.maxVolume)
+                                    .toDouble(),
+                                showValueIndicator: .never,
+                                activeColor: Colors.white,
+                                inactiveColor: Colors.white38,
+                                onChanged: (value) {
+                                  ctr
+                                    ..setVolume(value)
+                                    ..isMuted = value == 0;
+                                },
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ),
             ),
+          );
+        },
+        child: MouseRegion(
+          onEnter: (_) => _setAwake(true),
+          child: Obx(
+            () {
+              final volume = ctr.volume.value;
+              return ComBtn(
+                width: widget.width,
+                height: 30,
+                tooltip: _controller.isShowing ? '收起音量（右键静音）' : '音量（右键静音）',
+                icon: Icon(
+                  volume <= 0
+                      ? Icons.volume_off
+                      : volume / ctr.maxVolume < 0.5
+                      ? Icons.volume_down
+                      : Icons.volume_up,
+                  size: 24,
+                  color: Colors.white,
+                ),
+                onTap: _togglePanel,
+                onSecondaryTap: _toggleMute,
+              );
+            },
           ),
-        );
-      },
-      child: MouseRegion(
-        onEnter: (_) => _setAwake(true),
-        child: Obx(
-          () {
-            final volume = ctr.volume.value;
-            return ComBtn(
-              width: widget.width,
-              height: 30,
-              tooltip: _controller.isShowing ? '收起音量（右键静音）' : '音量（右键静音）',
-              icon: Icon(
-                volume <= 0
-                    ? Icons.volume_off
-                    : volume / ctr.maxVolume < 0.5
-                    ? Icons.volume_down
-                    : Icons.volume_up,
-                size: 24,
-                color: Colors.white,
-              ),
-              onTap: _togglePanel,
-              onSecondaryTap: _toggleMute,
-            );
-          },
         ),
       ),
     );

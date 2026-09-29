@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/desktop/desktop_content.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
@@ -33,7 +34,11 @@ class _PopularPreciousPageState extends State<PopularPreciousPage>
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             ViewSliverSafeArea(
-              sliver: Obx(() => _buildBody(_controller.loadingState.value)),
+              // 桌面端内容限宽居中（超宽屏下不再横向铺满）
+              sliver: desktopLimitSliver(
+                Obx(() => _buildBody(_controller.loadingState.value)),
+                maxWidth: 1200,
+              ),
             ),
           ],
         ),
@@ -51,23 +56,25 @@ class _PopularPreciousPageState extends State<PopularPreciousPage>
           itemCount: response!.length,
           itemBuilder: (context, index) {
             final item = response[index];
-            return VideoCardH(
-              videoItem: item,
-              onTap: () {
-                PageUtils.toVideoPage(
-                  bvid: item.bvid,
-                  cid: item.cid!,
-                  dimension: item.dimension,
-                  extraArguments: {
-                    'sourceType': SourceType.playlist,
-                    'favTitle': '入站必刷',
-                    'mediaId': _controller.mediaId,
-                    'desc': true,
-                    'oid': item.aid,
-                    'isContinuePlaying': index != 0,
-                  },
-                );
-              },
+            return desktopCard(
+              VideoCardH(
+                videoItem: item,
+                onTap: () {
+                  PageUtils.toVideoPage(
+                    bvid: item.bvid,
+                    cid: item.cid!,
+                    dimension: item.dimension,
+                    extraArguments: {
+                      'sourceType': SourceType.playlist,
+                      'favTitle': '入站必刷',
+                      'mediaId': _controller.mediaId,
+                      'desc': true,
+                      'oid': item.aid,
+                      'isContinuePlaying': index != 0,
+                    },
+                  );
+                },
+              ),
             );
           },
         );

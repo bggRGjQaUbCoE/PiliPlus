@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:PiliPlus/common/widgets/desktop/desktop_content.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
@@ -46,7 +47,11 @@ class _PopularSeriesPageState extends State<PopularSeriesPage> with GridMixin {
           physics: ReloadScrollPhysics(controller: _controller),
           slivers: [
             ViewSliverSafeArea(
-              sliver: Obx(() => _buildBody(_controller.loadingState.value)),
+              // 桌面端内容限宽居中（超宽屏下不再横向铺满）
+              sliver: desktopLimitSliver(
+                Obx(() => _buildBody(_controller.loadingState.value)),
+                maxWidth: 1200,
+              ),
             ),
           ],
         ),
@@ -66,24 +71,26 @@ class _PopularSeriesPageState extends State<PopularSeriesPage> with GridMixin {
             itemCount: response.length,
             itemBuilder: (context, index) {
               final item = response[index];
-              return VideoCardH(
-                videoItem: item,
-                onTap: () {
-                  final config = _controller.config.value;
-                  PageUtils.toVideoPage(
-                    bvid: item.bvid,
-                    cid: item.cid!,
-                    dimension: item.dimension,
-                    extraArguments: {
-                      'sourceType': SourceType.playlist,
-                      'favTitle': '每周必看 ${config?.label ?? ''}',
-                      'mediaId': config?.mediaId,
-                      'desc': true,
-                      'oid': item.aid,
-                      'isContinuePlaying': index != 0,
-                    },
-                  );
-                },
+              return desktopCard(
+                VideoCardH(
+                  videoItem: item,
+                  onTap: () {
+                    final config = _controller.config.value;
+                    PageUtils.toVideoPage(
+                      bvid: item.bvid,
+                      cid: item.cid!,
+                      dimension: item.dimension,
+                      extraArguments: {
+                        'sourceType': SourceType.playlist,
+                        'favTitle': '每周必看 ${config?.label ?? ''}',
+                        'mediaId': config?.mediaId,
+                        'desc': true,
+                        'oid': item.aid,
+                        'isContinuePlaying': index != 0,
+                      },
+                    );
+                  },
+                ),
               );
             },
           );

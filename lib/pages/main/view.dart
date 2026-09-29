@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/desktop/desktop_search_panel.dart';
+import 'package:PiliPlus/common/widgets/desktop/desktop_top_bar.dart';
 import 'package:PiliPlus/common/widgets/floating_navigation_bar.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -47,6 +49,9 @@ class _MainAppState extends PopScopeState<MainApp>
   late EdgeInsets _padding;
   late ColorScheme _colorScheme;
   Brightness? _brightness;
+
+  /// 桌面顶栏的搜索历史面板是否展开
+  bool _searchPanelOpen = false;
 
   @override
   bool get initCanPop => false;
@@ -517,11 +522,77 @@ class _MainAppState extends PopScopeState<MainApp>
       padding = .only(top: _padding.top, right: _padding.right);
     }
 
+    // 桌面顶栏：桌面 + 宽窗口（沿用既有 showNavbar = width > 800，不新增断点）
+    // 时在内容区上方插入全局工具条（后退/刷新/标题 + 唯一搜索入口）；
+    // 搜索历史面板在顶栏下方就地展开，不跳转搜索页。
+    final Widget body = PlatformUtils.isDesktop && context.showNavbar
+        ? Stack(
+            fit: StackFit.expand,
+            children: [
+              Column(
+                children: [
+                  DesktopTopBar(
+                    mainController: _mainController,
+                    colorScheme: _colorScheme,
+                    searchPanelOpen: _searchPanelOpen,
+                    onOpenSearch: () => setState(() => _searchPanelOpen = true),
+                    onCloseSearch: () =>
+                        setState(() => _searchPanelOpen = false),
+                  ),
+                  const Divider(height: 1),
+                  Expanded(child: child),
+                ],
+              ),
+              if (_searchPanelOpen) ...[
+                // 透明遮罩：覆盖整个背景，但**挖空搜索框**所在矩形。
+                // 点搜索框不取消；点「搜索历史」面板不取消（面板自身吸收点击）；
+                // 点其余任何位置都取消搜索状态。
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: DesktopTopBar.searchTop,
+                  child: _searchDismissBarrier(),
+                ),
+                Positioned(
+                  top: DesktopTopBar.searchTop + DesktopTopBar.searchHeight,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: _searchDismissBarrier(),
+                ),
+                Positioned(
+                  top: DesktopTopBar.searchTop,
+                  left: 0,
+                  right: DesktopTopBar.searchWidth + DesktopTopBar.paddingH,
+                  height: DesktopTopBar.searchHeight,
+                  child: _searchDismissBarrier(),
+                ),
+                Positioned(
+                  top: DesktopTopBar.searchTop,
+                  right: 0,
+                  width: DesktopTopBar.paddingH,
+                  height: DesktopTopBar.searchHeight,
+                  child: _searchDismissBarrier(),
+                ),
+                // 搜索历史面板：锚定在顶栏搜索框正下方，右对齐
+                Positioned(
+                  top: DesktopTopBar.height + 1,
+                  right: DesktopTopBar.paddingH,
+                  child: DesktopSearchPanel(
+                    onClose: () => setState(() => _searchPanelOpen = false),
+                  ),
+                ),
+              ],
+            ],
+          )
+        : child;
+
     child = Material(
       child: MainLayout(
         sideBar: sideBar,
         bottomNav: bottomNav,
-        body: Padding(padding: padding, child: child),
+        body: Padding(padding: padding, child: body),
       ),
     );
 
@@ -542,6 +613,12 @@ class _MainAppState extends PopScopeState<MainApp>
     return child;
   }
 
+  /// 点击即退出搜索状态的透明遮罩（覆盖搜索框与历史面板之外的背景）
+  Widget _searchDismissBarrier() => GestureDetector(
+    behavior: HitTestBehavior.opaque,
+    onTap: () => setState(() => _searchPanelOpen = false),
+  );
+
   Widget _buildIcon({required NavigationBarType type, bool selected = false}) {
     final icon = selected ? type.selectIcon : type.icon;
     return type == .dynamics
@@ -561,20 +638,13 @@ class _MainAppState extends PopScopeState<MainApp>
         : icon;
   }
 
+  /// 侧栏上方的用户区（搜索入口已统一到桌面顶栏，此处不再提供搜索）
   Widget userAndSearchVertical() {
     return Column(
       children: [
         userAvatar(colorScheme: _colorScheme, mainController: _mainController),
         const SizedBox(height: 8),
         msgBadge(_mainController),
-        IconButton(
-          tooltip: '搜索',
-          icon: const Icon(
-            Icons.search_outlined,
-            semanticLabel: '搜索',
-          ),
-          onPressed: () => Get.toNamed('/search'),
-        ),
       ],
     );
   }

@@ -330,6 +330,23 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     );
   }
 
+  // 窗口尺寸变化（如双击标题栏最大化/进全屏）后，若指针事件中断导致「长按倍速」
+  // 状态残留，立即复位并做延迟兜底，避免视频停在长按倍速。
+  void _resetLongPressResidue() {
+    if (!plPlayerController.longPressStatus.value) return;
+    if (mounted) {
+      plPlayerController.setLongPressStatus(false);
+    }
+  }
+
+  @override
+  void didChangeMetrics() {
+    super.didChangeMetrics();
+    _resetLongPressResidue();
+    // 兜底：全屏/最大化过渡可能先于长按结束发生，稍后再复查一次。
+    Timer(const Duration(milliseconds: 800), _resetLongPressResidue);
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (!plPlayerController.continuePlayInBackground.value) {
@@ -1201,8 +1218,15 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
               ? const Duration(milliseconds: 300)
               : null,
         )
-        ..onLongPressStart = ((_) =>
-            plPlayerController.setLongPressStatus(true))
+        ..onLongPressStart = ((_) {
+          // 桌面鼠标「按住=长按倍速」停用：桌面全屏/最大化时系统可能产生
+          // “有按下无抬起”的孤儿指针被误判为长按导致自动倍速；
+          // 键盘方向键长按与移动端长按语义保留。
+          if (PlatformUtils.isDesktop) {
+            return;
+          }
+          plPlayerController.setLongPressStatus(true);
+        })
         ..onLongPressEnd = ((_) => plPlayerController.setLongPressStatus(false))
         ..onLongPressCancel = (() =>
             plPlayerController.setLongPressStatus(false));
@@ -1229,6 +1253,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   (bool, bool)? _pendingFullScreenToggle;
 
   void _onPointerDown(PointerDownEvent event) {
+    // 全屏/最大化可能吞掉长按结束事件导致残留；任何新的按下都先清理。
+    if (plPlayerController.longPressStatus.value) {
+      plPlayerController.setLongPressStatus(false);
+    }
     if (PlatformUtils.isDesktop) {
       final buttons = event.buttons;
       final isSecondaryBtn = buttons == kSecondaryMouseButton;
@@ -1744,7 +1772,38 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                           thumbColor: primary,
                           thumbGlowColor: thumbGlowColor,
                           barHeight: 3.5,
-                          thumbRadius: 2.5,
+                          // 桌面端控制栏收起时，迷你进度条可直接 hover/拖拽 seek；
+                          // 缩略点放大便于抓取。移动端保持原样（不可拖）。
+                          thumbRadius: PlatformUtils.isDesktop ? 6.5 : 2.5,
+                          onDragStart: PlatformUtils.isDesktop
+                              ? (d) {
+                                  feedBack();
+                                  plPlayerController
+                                    ..position.value = d.seconds
+                                    ..isSeeking.value = true;
+                                }
+                              : null,
+                          onDragUpdate: PlatformUtils.isDesktop
+                              ? (d) {
+                                  if (!plPlayerController.isFileSource &&
+                                      plPlayerController.showSeekPreview) {
+                                    plPlayerController.updatePreviewIndex(
+                                      d.seconds,
+                                    );
+                                  }
+                                  plPlayerController.position.value = d.seconds;
+                                }
+                              : null,
+                          onSeek: PlatformUtils.isDesktop
+                              ? (ms) {
+                                  plPlayerController
+                                    ..onSeekEnd()
+                                    ..seekTo(
+                                      Duration(milliseconds: ms),
+                                      isSeek: false,
+                                    );
+                                }
+                              : null,
                         ),
                       ),
                       if (plPlayerController.enableBlock &&
@@ -2001,8 +2060,15 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           cursor: !plPlayerController.showControls.value && isFullScreen
               ? SystemMouseCursors.none
               : MouseCursor.defer,
-          onEnter: (_) => plPlayerController.controls = true,
-          onHover: (_) => plPlayerController.controls = true,
+          onEnter: (_) {
+            plPlayerController.controls = true;
+            // 鼠标移动即视为未在长按，清理可能残留的长按倍速。
+            _resetLongPressResidue();
+          },
+          onHover: (_) {
+            plPlayerController.controls = true;
+            _resetLongPressResidue();
+          },
           onExit: (_) => plPlayerController.controls =
               widget.videoDetailController?.showSteinEdgeInfo.value ?? false,
           child: child,

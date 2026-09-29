@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/desktop/desktop_content.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -110,8 +111,12 @@ class _HotPageState extends State<HotPage>
             ),
           SliverPadding(
             padding: const EdgeInsets.only(top: 7, bottom: 100),
-            sliver: Obx(
-              () => _buildBody(controller.loadingState.value),
+            // 桌面端内容限宽居中（超宽屏下不再横向铺满）
+            sliver: desktopLimitSliver(
+              Obx(
+                () => _buildBody(controller.loadingState.value),
+              ),
+              maxWidth: 1200,
             ),
           ),
         ],
@@ -130,11 +135,13 @@ class _HotPageState extends State<HotPage>
                   if (index == response.length - 1) {
                     controller.onLoadMore();
                   }
-                  return VideoCardH(
-                    videoItem: response[index],
-                    onRemove: () => controller.loadingState
-                      ..value.data!.removeAt(index)
-                      ..refresh(),
+                  return desktopCard(
+                    VideoCardH(
+                      videoItem: response[index],
+                      onRemove: () => controller.loadingState
+                        ..value.data!.removeAt(index)
+                        ..refresh(),
+                    ),
                   );
                 },
                 itemCount: response.length,

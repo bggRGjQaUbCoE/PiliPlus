@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/skeleton/video_card_v.dart';
 import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/desktop/desktop_content.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/video_card/video_card_v.dart';
@@ -41,8 +42,12 @@ class _RcmdPageState extends State<RcmdPage>
           slivers: [
             SliverPadding(
               padding: const .only(top: Style.cardSpace, bottom: 100),
-              sliver: Obx(
-                () => _buildBody(colorScheme, controller.loadingState.value),
+              // 桌面端内容限宽居中（超宽屏下不再横向铺满）
+              sliver: desktopLimitSliver(
+                Obx(
+                  () => _buildBody(colorScheme, controller.loadingState.value),
+                ),
+                maxWidth: 1560,
               ),
             ),
           ],
@@ -97,25 +102,29 @@ class _RcmdPageState extends State<RcmdPage>
                     final actualIndex = index > controller.lastRefreshAt!
                         ? index - 1
                         : index;
-                    return VideoCardV(
-                      videoItem: response[actualIndex],
-                      onRemove: () {
-                        if (controller.lastRefreshAt != null &&
-                            actualIndex < controller.lastRefreshAt!) {
-                          controller.lastRefreshAt =
-                              controller.lastRefreshAt! - 1;
-                        }
-                        controller.loadingState
-                          ..value.data!.removeAt(actualIndex)
-                          ..refresh();
-                      },
+                    return desktopCard(
+                      VideoCardV(
+                        videoItem: response[actualIndex],
+                        onRemove: () {
+                          if (controller.lastRefreshAt != null &&
+                              actualIndex < controller.lastRefreshAt!) {
+                            controller.lastRefreshAt =
+                                controller.lastRefreshAt! - 1;
+                          }
+                          controller.loadingState
+                            ..value.data!.removeAt(actualIndex)
+                            ..refresh();
+                        },
+                      ),
                     );
                   } else {
-                    return VideoCardV(
-                      videoItem: response[index],
-                      onRemove: () => controller.loadingState
-                        ..value.data!.removeAt(index)
-                        ..refresh(),
+                    return desktopCard(
+                      VideoCardV(
+                        videoItem: response[index],
+                        onRemove: () => controller.loadingState
+                          ..value.data!.removeAt(index)
+                          ..refresh(),
+                      ),
                     );
                   }
                 },

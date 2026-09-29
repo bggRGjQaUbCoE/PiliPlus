@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/desktop/desktop_content.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/video_card/video_card_h.dart';
@@ -46,7 +47,11 @@ class _ZonePageState extends State<ZonePage>
         slivers: [
           SliverPadding(
             padding: const EdgeInsets.only(top: 7, bottom: 100),
-            sliver: Obx(() => _buildBody(controller.loadingState.value)),
+            // 桌面端内容限宽居中（超宽屏下不再横向铺满）
+            sliver: desktopLimitSliver(
+              Obx(() => _buildBody(controller.loadingState.value)),
+              maxWidth: 1200,
+            ),
           ),
         ],
       ),
@@ -63,14 +68,16 @@ class _ZonePageState extends State<ZonePage>
                 itemBuilder: (context, index) {
                   final item = response[index];
                   if (item is HotVideoItemModel) {
-                    return VideoCardH(
-                      videoItem: item,
-                      onRemove: () => controller.loadingState
-                        ..value.data!.removeAt(index)
-                        ..refresh(),
+                    return desktopCard(
+                      VideoCardH(
+                        videoItem: item,
+                        onRemove: () => controller.loadingState
+                          ..value.data!.removeAt(index)
+                          ..refresh(),
+                      ),
                     );
                   }
-                  return PgcRankItem(item: item);
+                  return desktopCard(PgcRankItem(item: item));
                 },
                 itemCount: response.length,
               )

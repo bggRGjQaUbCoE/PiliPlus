@@ -3,6 +3,7 @@ import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/button/more_btn.dart';
+import 'package:PiliPlus/common/widgets/desktop/desktop_content.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -65,11 +66,15 @@ class _LivePageState extends State<LivePage>
                 top: Style.cardSpace,
                 bottom: 100,
               ),
-              sliver: SliverMainAxisGroup(
-                slivers: [
-                  Obx(() => _buildTop(theme, controller.topState.value)),
-                  Obx(() => _buildBody(theme, controller.loadingState.value)),
-                ],
+              // 桌面端内容限宽居中（超宽屏下不再横向铺满）
+              sliver: desktopLimitSliver(
+                SliverMainAxisGroup(
+                  slivers: [
+                    Obx(() => _buildTop(theme, controller.topState.value)),
+                    Obx(() => _buildBody(theme, controller.loadingState.value)),
+                  ],
+                ),
+                maxWidth: 1280,
               ),
             ),
           ],
@@ -240,14 +245,18 @@ class _LivePageState extends State<LivePage>
                     }
                     final item = response[index];
                     if (item is LiveCardList) {
-                      return LiveCardVApp(
-                        item: item.cardData!.smallCardV1!,
-                        showFirstFrame: controller.showFirstFrame,
+                      return desktopCard(
+                        LiveCardVApp(
+                          item: item.cardData!.smallCardV1!,
+                          showFirstFrame: controller.showFirstFrame,
+                        ),
                       );
                     }
-                    return LiveCardVApp(
-                      item: item,
-                      showFirstFrame: controller.showFirstFrame,
+                    return desktopCard(
+                      LiveCardVApp(
+                        item: item,
+                        showFirstFrame: controller.showFirstFrame,
+                      ),
                     );
                   },
                   itemCount: response.length,

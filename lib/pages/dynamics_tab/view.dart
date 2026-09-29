@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:PiliPlus/common/widgets/desktop/desktop_content.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -58,8 +59,12 @@ class _DynamicsTabPageState extends State<DynamicsTabPage>
         slivers: [
           SliverPadding(
             padding: const EdgeInsets.only(bottom: 100),
-            sliver: buildPage(
-              Obx(() => _buildBody(controller.loadingState.value)),
+            // 桌面端内容限宽居中（超宽屏下不再横向铺满）
+            sliver: desktopLimitSliver(
+              buildPage(
+                Obx(() => _buildBody(controller.loadingState.value)),
+              ),
+              maxWidth: 1280,
             ),
           ),
         ],

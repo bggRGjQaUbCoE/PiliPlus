@@ -53,7 +53,8 @@ class _LivePageState extends State<LivePage>
     final ThemeData theme = Theme.of(context);
     return Container(
       clipBehavior: Clip.hardEdge,
-      margin: const EdgeInsets.symmetric(horizontal: Style.safeSpace),
+      // 只保留左边距：让滚动视口右缘与其它页面一致，右侧滚动条专用车道才能对齐
+      margin: const EdgeInsets.only(left: Style.safeSpace),
       decoration: const BoxDecoration(borderRadius: Style.mdRadius),
       child: refreshIndicator(
         onRefresh: controller.onRefresh,

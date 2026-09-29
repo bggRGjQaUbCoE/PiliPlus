@@ -1400,11 +1400,6 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     if (_fsProcessing) return;
     _fsProcessing = true;
     this.isManualFS = isManualFS;
-    // 进入/退出全屏前复位「长按倍速」，避免窗口几何剧变期间指针事件中断
-    // 导致 longPressStatus 卡 true → 视频停在长按倍速。
-    if (longPressStatus.value) {
-      await setLongPressStatus(false);
-    }
     try {
       if (status) {
         if (PlatformUtils.isMobile) {

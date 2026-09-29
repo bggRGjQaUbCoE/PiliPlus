@@ -11,7 +11,6 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:flutter/services.dart'
     show KeyDownEvent, KeyUpEvent, LogicalKeyboardKey, HardwareKeyboard;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 class PlayerFocus extends StatelessWidget {
@@ -170,28 +169,6 @@ class PlayerFocus extends StatelessWidget {
             inAppFullScreen: HardwareKeyboard.instance.isShiftPressed,
           );
           return true;
-
-        // 桌面 Esc 显式接管（退出全屏 → 退出桌面画中画 → 返回），
-        // F11 与 F 等效切换全屏。仅桌面捕获；移动/平板不拦截。
-        case LogicalKeyboardKey.f11:
-          if (PlatformUtils.isDesktop) {
-            plPlayerController.triggerFullScreen(status: !isFullScreen);
-            return true;
-          }
-          break;
-
-        case LogicalKeyboardKey.escape:
-          if (PlatformUtils.isDesktop) {
-            if (isFullScreen) {
-              plPlayerController.triggerFullScreen(status: false);
-            } else if (plPlayerController.isDesktopPip) {
-              plPlayerController.exitDesktopPip();
-            } else {
-              Get.back();
-            }
-            return true;
-          }
-          break;
 
         case LogicalKeyboardKey.keyD:
           final newVal = !plPlayerController.enableShowDanmakuAdaptive.value;

@@ -1,4 +1,3 @@
-import 'dart:async' show StreamSubscription;
 import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/flutter/vertical_slider.dart';
@@ -31,23 +30,7 @@ class VolumeControl extends StatefulWidget {
 
 class _VolumeControlState extends State<VolumeControl> {
   final OverlayPortalController _controller = OverlayPortalController();
-  StreamSubscription<bool>? _controlsSubscription;
   double _lastVolume = 1.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _controlsSubscription = widget.plPlayerController.showControls.listen(
-      (visible) {
-        // 控制栏被外部强制隐藏（锁定控制栏、退出全屏等）时同步收起浮层
-        if (!visible && _controller.isShowing) {
-          _controller.hide();
-          widget.plPlayerController.volumePanelShowing = false;
-          if (mounted) setState(() {});
-        }
-      },
-    );
-  }
 
   void _togglePanel() {
     if (_controller.isShowing) {
@@ -89,7 +72,6 @@ class _VolumeControlState extends State<VolumeControl> {
 
   @override
   void dispose() {
-    _controlsSubscription?.cancel();
     widget.plPlayerController.volumePanelShowing = false;
     if (_controller.isShowing) {
       _controller.hide();

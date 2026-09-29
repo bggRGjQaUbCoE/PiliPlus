@@ -1235,6 +1235,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   set controls(bool visible) {
+    // 音量调节状态下禁止隐藏控制栏
+    if (!visible && _volumePanelShowing) return;
     showControls.value = visible;
     _timer?.cancel();
     if (visible) {

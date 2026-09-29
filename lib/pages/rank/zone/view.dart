@@ -75,6 +75,7 @@ class _ZonePageState extends State<ZonePage>
                           ..value.data!.removeAt(index)
                           ..refresh(),
                       ),
+                      prefetchBvid: item.bvid,
                     );
                   }
                   return desktopCard(PgcRankItem(item: item));

@@ -91,6 +91,7 @@ class _PopularSeriesPageState extends State<PopularSeriesPage> with GridMixin {
                     );
                   },
                 ),
+                prefetchBvid: item.bvid,
               );
             },
           );

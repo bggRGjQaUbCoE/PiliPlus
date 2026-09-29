@@ -142,6 +142,7 @@ class _HotPageState extends State<HotPage>
                         ..value.data!.removeAt(index)
                         ..refresh(),
                     ),
+                    prefetchBvid: response[index].bvid,
                   );
                 },
                 itemCount: response.length,

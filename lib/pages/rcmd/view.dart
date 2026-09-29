@@ -116,6 +116,7 @@ class _RcmdPageState extends State<RcmdPage>
                             ..refresh();
                         },
                       ),
+                      prefetchBvid: response[actualIndex].bvid,
                     );
                   } else {
                     return desktopCard(
@@ -125,6 +126,7 @@ class _RcmdPageState extends State<RcmdPage>
                           ..value.data!.removeAt(index)
                           ..refresh(),
                       ),
+                      prefetchBvid: response[index].bvid,
                     );
                   }
                 },

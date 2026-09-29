@@ -75,6 +75,7 @@ class _PopularPreciousPageState extends State<PopularPreciousPage>
                   );
                 },
               ),
+              prefetchBvid: item.bvid,
             );
           },
         );

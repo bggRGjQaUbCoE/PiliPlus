@@ -5,6 +5,7 @@
 // =============================================================
 import 'package:PiliPlus/common/widgets/desktop/hover_card.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_constrained_cross_axis.dart';
+import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -14,6 +15,14 @@ Widget desktopLimitSliver(Widget sliver, {double maxWidth = 1280}) =>
     ? CenteredSliverConstrainedCrossAxis(maxExtent: maxWidth, sliver: sliver)
     : sliver;
 
-/// 桌面端为卡片加 hover 反馈；非桌面原样返回。
-Widget desktopCard(Widget card) =>
-    PlatformUtils.isDesktop ? HoverCard(child: card) : card;
+/// 桌面端为卡片加 hover 反馈（视觉 + 可选悬停预取详情）；非桌面原样返回。
+/// [prefetchBvid] 非空时，鼠标在卡片上停留约 400ms 后预取该视频详情。
+Widget desktopCard(Widget card, {String? prefetchBvid}) =>
+    PlatformUtils.isDesktop
+    ? HoverCard(
+        onHoverDelay: prefetchBvid == null
+            ? null
+            : () => PageUtils.prefetchVideoDetail(prefetchBvid),
+        child: card,
+      )
+    : card;

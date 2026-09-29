@@ -12,6 +12,7 @@ import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart';
+import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
@@ -518,6 +519,29 @@ abstract final class PageUtils {
       preventDuplicates: off,
     );
   }
+
+  /// 桌面端卡片悬停预取：只预取「视频详情」（标题/简介/分P 等），
+  /// 不预取播放地址，避免带宽与风控风险。
+  /// 同一个 bvid 只会保有一个在途请求；容量满时按插入顺序淘汰最早的。
+  static final Map<String, Future<LoadingState<VideoDetailData>>>
+  _videoDetailPrefetch = {};
+  static const int _videoDetailPrefetchMax = 8;
+
+  /// 预取视频详情（幂等；仅桌面端悬停触发时调用）
+  static void prefetchVideoDetail(String bvid) {
+    if (bvid.isEmpty || _videoDetailPrefetch.containsKey(bvid)) {
+      return;
+    }
+    if (_videoDetailPrefetch.length >= _videoDetailPrefetchMax) {
+      _videoDetailPrefetch.remove(_videoDetailPrefetch.keys.first);
+    }
+    _videoDetailPrefetch[bvid] = VideoHttp.videoIntro(bvid: bvid);
+  }
+
+  /// 取走预取结果（一次性消费；未预取时返回 null）
+  static Future<LoadingState<VideoDetailData>>? takeVideoDetailPrefetch(
+    String bvid,
+  ) => _videoDetailPrefetch.remove(bvid);
 
   static Future<void>? toVideoPage({
     VideoType videoType = VideoType.ugc,

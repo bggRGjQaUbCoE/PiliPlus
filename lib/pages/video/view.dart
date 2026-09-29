@@ -468,7 +468,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     final minVideoHeight = shortestSide / Style.aspectRatio16x9;
     final maxVideoHeight = max(size.longestSide * 0.65, shortestSide);
     videoDetailController
-      ..isPortrait = isPortrait = maxHeight >= maxWidth
+      // 桌面端粘滞：始终保持横屏(桌面)布局，不因窗口变竖切回竖屏分支
+      ..isPortrait = isPortrait =
+          !PlatformUtils.isDesktop && maxHeight >= maxWidth
       ..minVideoHeight = minVideoHeight
       ..maxVideoHeight = maxVideoHeight
       ..videoHeight = videoDetailController.isVertical.value

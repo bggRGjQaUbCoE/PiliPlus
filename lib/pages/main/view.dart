@@ -93,7 +93,9 @@ class _MainAppState extends PopScopeState<MainApp>
       }
     }
     if (!_mainController.useSideBar) {
-      _mainController.useBottomNav = MediaQuery.sizeOf(context).isPortrait;
+      // 桌面端粘滞：不因窗口变竖切到底部导航（移动端壳层）
+      _mainController.useBottomNav =
+          !context.isDesktopLayout && MediaQuery.sizeOf(context).isPortrait;
     }
   }
 

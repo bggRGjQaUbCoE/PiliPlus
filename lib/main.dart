@@ -168,9 +168,8 @@ void main() async {
     await windowManager.ensureInitialized();
 
     final windowOptions = WindowOptions(
-      // 最小窗口 983x635 逻辑：内容区 973x635（≈ 1521x992 物理，本机 DPR 1.5625）
-      // 加上右侧 10 逻辑px 滚动条专用车道 → 983x635 逻辑（≈ 1536x992 物理）
-      minimumSize: const Size(983, 635),
+      // 最小窗口 = 程序默认窗口尺寸（windows/runner 默认 1280x720 逻辑，即默认值）
+      minimumSize: const Size(1280, 720),
       skipTaskbar: false,
       titleBarStyle: Pref.showWindowTitleBar
           ? TitleBarStyle.normal

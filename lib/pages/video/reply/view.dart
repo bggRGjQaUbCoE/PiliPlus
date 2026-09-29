@@ -15,7 +15,6 @@ import 'package:PiliPlus/pages/video/reply/vote/reply_vote_item.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/pages/video/reply_reply/view.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -96,55 +95,21 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
                           sortType.desc,
                           style: const TextStyle(fontSize: 13),
                         ),
-                        // M8-28：桌面“发表评论”常驻工具栏（替代右下 FAB）。
-                        Row(
-                          mainAxisSize: .min,
-                          children: [
-                            if (PlatformUtils.isDesktop) ...[
-                              TextButton.icon(
-                                style: Style.buttonStyle,
-                                onPressed: () {
-                                  feedBack();
-                                  _videoReplyController.onReply(
-                                    null,
-                                    oid: _videoReplyController.aid,
-                                    replyType: _videoReplyController
-                                        .videoType
-                                        .replyType,
-                                  );
-                                },
-                                icon: Icon(
-                                  Icons.reply,
-                                  size: 16,
-                                  color: colorScheme.secondary,
-                                ),
-                                label: Text(
-                                  '评论',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: colorScheme.secondary,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                            ],
-                            TextButton.icon(
-                              style: Style.buttonStyle,
-                              onPressed: _videoReplyController.queryBySort,
-                              icon: Icon(
-                                Icons.sort,
-                                size: 16,
-                                color: colorScheme.secondary,
-                              ),
-                              label: Text(
-                                sortType.descShort,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: colorScheme.secondary,
-                                ),
-                              ),
+                        TextButton.icon(
+                          style: Style.buttonStyle,
+                          onPressed: _videoReplyController.queryBySort,
+                          icon: Icon(
+                            Icons.sort,
+                            size: 16,
+                            color: colorScheme.secondary,
+                          ),
+                          label: Text(
+                            sortType.descShort,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: colorScheme.secondary,
                             ),
-                          ],
+                          ),
                         ),
                       ],
                     );
@@ -154,31 +119,28 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
               Obx(() => _buildBody(_videoReplyController.loadingState.value)),
             ],
           ),
-          // M8-28：桌面用顶部“评论”工具栏按钮，隐藏右下 FAB；移动端保留 FAB。
-          fab: PlatformUtils.isDesktop
-              ? null
-              : SlideTransition(
-                  position: fabAnimation,
-                  child: Padding(
-                    padding: .only(
-                      right: kFloatingActionButtonMargin,
-                      bottom: kFloatingActionButtonMargin + bottom,
-                    ),
-                    child: FloatingActionButton(
-                      heroTag: null,
-                      onPressed: () {
-                        feedBack();
-                        _videoReplyController.onReply(
-                          null,
-                          oid: _videoReplyController.aid,
-                          replyType: _videoReplyController.videoType.replyType,
-                        );
-                      },
-                      tooltip: '发表评论',
-                      child: const Icon(Icons.reply),
-                    ),
-                  ),
-                ),
+          fab: SlideTransition(
+            position: fabAnimation,
+            child: Padding(
+              padding: .only(
+                right: kFloatingActionButtonMargin,
+                bottom: kFloatingActionButtonMargin + bottom,
+              ),
+              child: FloatingActionButton(
+                heroTag: null,
+                onPressed: () {
+                  feedBack();
+                  _videoReplyController.onReply(
+                    null,
+                    oid: _videoReplyController.aid,
+                    replyType: _videoReplyController.videoType.replyType,
+                  );
+                },
+                tooltip: '发表评论',
+                child: const Icon(Icons.reply),
+              ),
+            ),
+          ),
         ),
       ),
     );

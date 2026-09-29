@@ -97,40 +97,25 @@ class ReplyItemGrpc extends StatelessWidget {
   static bool enableWordRe = Pref.enableWordRe;
   static int? replyLengthLimit = Pref.replyLengthLimit;
 
-  /// 打开评论“更多”底部弹层（长按/右键/文本选择工具条共用入口）。
-  void _showReplyMenu(
-    BuildContext context, {
-    required ReplyInfo item,
-    required VoidCallback onDelete,
-    required bool isSubReply,
-  }) {
-    showModalBottomSheet(
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = ColorScheme.of(context);
+
+    void showMore() => showModalBottomSheet(
       context: context,
       useSafeArea: true,
       isScrollControlled: true,
       constraints: BoxConstraints(
         maxWidth: min(640, context.mediaQueryShortestSide),
       ),
-      builder: (sheetContext) {
+      builder: (context) {
         return morePanel(
-          context: sheetContext,
-          item: item,
-          onDelete: onDelete,
-          isSubReply: isSubReply,
+          context: context,
+          item: replyItem,
+          onDelete: () => onDelete?.call(replyItem, null),
+          isSubReply: false,
         );
       },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = ColorScheme.of(context);
-
-    void showMore() => _showReplyMenu(
-      context,
-      item: replyItem,
-      onDelete: () => onDelete?.call(replyItem, null),
-      isSubReply: false,
     );
 
     Widget child = Padding(
@@ -151,28 +136,12 @@ class ReplyItemGrpc extends StatelessWidget {
         ],
       );
     }
-    // M8-17/18：桌面悬停评论行 → 右上浮出 复制全文 / 自由复制。
-    if (PlatformUtils.isDesktop) {
-      final message = replyItem.content.message;
-      child = _CommentHoverCopy(
-        message: message,
-        freeCopy: () => showReplyCopyDialog(
-          context,
-          message,
-          replyItem.content.emotes,
-        ),
-        child: child,
-      );
-    }
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
         onTap: () => replyReply?.call(replyItem, null),
-        // M8-19：桌面取消“长按弹窗”；右键交给可选中正文（原生复制菜单）。
-        onLongPress: PlatformUtils.isDesktop ? null : showMore,
-        onSecondaryTap: PlatformUtils.isMobile || PlatformUtils.isDesktop
-            ? null
-            : showMore,
+        onLongPress: showMore,
+        onSecondaryTap: PlatformUtils.isMobile ? null : showMore,
         child: child,
       ),
     );
@@ -370,11 +339,13 @@ class ReplyItemGrpc extends StatelessWidget {
             padding: padding,
             child: _buildVoteOption(colorScheme, replyControl.voteOption),
           ),
-        // M8-19：桌面 → 原生可选中富文本（按住左键拖动框选任意连续文本，
-        // 松开右键出复制/全选，Ctrl+C 也可用；行内表情支持）。
-        Builder(
-          builder: (context) {
-            final replyTextSpan = TextSpan(
+        Padding(
+          padding: padding,
+          child: TextMore.rich(
+            primary: colorScheme.primary,
+            style: const TextStyle(height: 1.75, fontSize: 14),
+            maxLines: replyLevel == 1 ? replyLengthLimit : null,
+            TextSpan(
               children: [
                 if (replyControl.isUpTop) ...[
                   const WidgetSpan(
@@ -399,22 +370,8 @@ class ReplyItemGrpc extends StatelessWidget {
                   replyControl,
                 ),
               ],
-            );
-            return Padding(
-              padding: padding,
-              child: PlatformUtils.isDesktop
-                  ? SelectableText.rich(
-                      replyTextSpan,
-                      style: const TextStyle(height: 1.75, fontSize: 14),
-                    )
-                  : TextMore.rich(
-                      primary: colorScheme.primary,
-                      style: const TextStyle(height: 1.75, fontSize: 14),
-                      maxLines: replyLevel == 1 ? replyLengthLimit : null,
-                      replyTextSpan,
-                    ),
-            );
-          },
+            ),
+          ),
         ),
         if (replyItem.content.pictures.isNotEmpty) ...[
           Padding(
@@ -638,93 +595,80 @@ class ReplyItemGrpc extends StatelessWidget {
                     padding = const .fromLTRB(8, 4, 8, 4);
                   }
                 }
-                void showMore() => _showReplyMenu(
-                  context,
-                  item: childReply,
-                  onDelete: () => onDelete?.call(replyItem, index),
-                  isSubReply: true,
+                void showMore() => showModalBottomSheet(
+                  context: context,
+                  useSafeArea: true,
+                  isScrollControlled: true,
+                  constraints: BoxConstraints(
+                    maxWidth: min(640, context.mediaQueryShortestSide),
+                  ),
+                  builder: (context) {
+                    return morePanel(
+                      context: context,
+                      item: childReply,
+                      onDelete: () => onDelete?.call(replyItem, index),
+                      isSubReply: true,
+                    );
+                  },
                 );
                 return InkWell(
                   borderRadius: borderRadius,
                   onTap: () =>
                       replyReply?.call(replyItem, childReply.id.toInt()),
-                  onLongPress: PlatformUtils.isDesktop ? null : showMore,
-                  onSecondaryTap:
-                      PlatformUtils.isMobile || PlatformUtils.isDesktop
-                      ? null
-                      : showMore,
-                  // M8-19：桌面可框选复制（楼中楼回复，原生选中文本）。
+                  onLongPress: showMore,
+                  onSecondaryTap: PlatformUtils.isMobile ? null : showMore,
                   child: Padding(
                     padding: padding,
-                    child: Builder(
-                      builder: (context) {
-                        final childTextSpan = TextSpan(
-                          children: [
-                            TextSpan(
-                              text: childReply.member.name,
-                              style: TextStyle(color: colorScheme.primary),
-                              recognizer: NoDeadlineTapGestureRecognizer()
-                                ..onTap = () {
-                                  feedBack();
-                                  Get.toNamed(
-                                    '/member?mid=${childReply.member.mid}',
-                                  );
-                                },
-                            ),
-                            if (childReply.mid == upMid) ...[
-                              const TextSpan(text: ' '),
-                              const WidgetSpan(
-                                alignment: .middle,
-                                child: PBadge(
-                                  text: 'UP',
-                                  size: .small,
-                                  isStack: false,
-                                  fontSize: 9,
-                                  textScaleFactor: 1,
-                                ),
+                    child: TextEllipsis.rich(
+                      style: TextStyle(
+                        height: 1.6,
+                        fontSize: 14,
+                        color: colorScheme.onSurface.withValues(alpha: 0.85),
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: childReply.member.name,
+                            style: TextStyle(color: colorScheme.primary),
+                            recognizer: NoDeadlineTapGestureRecognizer()
+                              ..onTap = () {
+                                feedBack();
+                                Get.toNamed(
+                                  '/member?mid=${childReply.member.mid}',
+                                );
+                              },
+                          ),
+                          if (childReply.mid == upMid) ...[
+                            const TextSpan(text: ' '),
+                            const WidgetSpan(
+                              alignment: .middle,
+                              child: PBadge(
+                                text: 'UP',
+                                size: .small,
+                                isStack: false,
+                                fontSize: 9,
+                                textScaleFactor: 1,
                               ),
-                              const TextSpan(text: ' '),
-                            ],
-                            TextSpan(
-                              text: childReply.root == childReply.parent
-                                  ? ': '
-                                  : childReply.mid == upMid
-                                  ? ''
-                                  : ' ',
                             ),
-                            _buildMessage(
-                              context,
-                              colorScheme,
-                              childReply.content,
-                              childReply.replyControl,
-                            ),
+                            const TextSpan(text: ' '),
                           ],
-                        );
-                        return PlatformUtils.isDesktop
-                            ? SelectableText.rich(
-                                childTextSpan,
-                                style: TextStyle(
-                                  height: 1.6,
-                                  fontSize: 14,
-                                  color: colorScheme.onSurface.withValues(
-                                    alpha: 0.85,
-                                  ),
-                                ),
-                                maxLines: 2,
-                              )
-                            : TextEllipsis.rich(
-                                style: TextStyle(
-                                  height: 1.6,
-                                  fontSize: 14,
-                                  color: colorScheme.onSurface.withValues(
-                                    alpha: 0.85,
-                                  ),
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 2,
-                                childTextSpan,
-                              );
-                      },
+                          TextSpan(
+                            text: childReply.root == childReply.parent
+                                ? ': '
+                                : childReply.mid == upMid
+                                ? ''
+                                : ' ',
+                          ),
+                          _buildMessage(
+                            context,
+                            colorScheme,
+                            childReply.content,
+                            childReply.replyControl,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -1285,99 +1229,6 @@ class ReplyItemGrpc extends StatelessWidget {
               minLeadingWidth: 0,
               leading: const Icon(CustomIcons.shield_reply, size: 19),
               title: Text('检查评论', style: style),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-/// M8-17/18：桌面评论行悬浮工具：悬停显示 复制全文 / 自由复制 两个入口。
-class _CommentHoverCopy extends StatefulWidget {
-  const _CommentHoverCopy({
-    required this.message,
-    this.freeCopy,
-    required this.child,
-  });
-
-  final String message;
-  final VoidCallback? freeCopy;
-  final Widget child;
-
-  @override
-  State<_CommentHoverCopy> createState() => _CommentHoverCopyState();
-}
-
-class _CommentHoverCopyState extends State<_CommentHoverCopy> {
-  bool _hover = false;
-
-  void _copy() {
-    Utils.copyText(widget.message);
-    setState(() => _hover = false);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = ColorScheme.of(context);
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hover = true),
-      onExit: (_) => setState(() => _hover = false),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          widget.child,
-          if (_hover)
-            Positioned(
-              top: 6,
-              right: 10,
-              child: Material(
-                color: colorScheme.surfaceContainerHigh.withValues(alpha: 0.92),
-                borderRadius: const BorderRadius.all(Radius.circular(6)),
-                clipBehavior: Clip.antiAlias,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Tooltip(
-                      message: '复制评论',
-                      child: InkWell(
-                        onTap: _copy,
-                        child: Padding(
-                          padding: const EdgeInsets.all(6),
-                          child: Icon(
-                            Icons.copy,
-                            size: 15,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                    ),
-                    if (widget.freeCopy != null) ...[
-                      Container(
-                        width: 1,
-                        height: 16,
-                        color: colorScheme.outline.withValues(alpha: 0.2),
-                      ),
-                      Tooltip(
-                        message: '自由复制（框选部分文本）',
-                        child: InkWell(
-                          onTap: () {
-                            setState(() => _hover = false);
-                            widget.freeCopy!();
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(6),
-                            child: Icon(
-                              Icons.content_cut,
-                              size: 15,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
             ),
         ],
       ),

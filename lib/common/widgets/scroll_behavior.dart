@@ -33,6 +33,9 @@ class CustomScrollBehavior extends MaterialScrollBehavior {
     if (!context.showNavbar) return child;
     final controller = details.controller;
     if (controller == null) return child;
+    // 右侧「专用车道」：为滚动条预留固定宽度（10 逻辑 px），滚动条画在车道内，
+    // 不覆盖内容、也不改变内容自身排版（仅视口整体让出这条带）。
+    const laneWidth = 10.0;
     return ScrollbarTheme(
       data: ScrollbarThemeData(
         thumbVisibility: const WidgetStatePropertyAll(true),
@@ -44,7 +47,13 @@ class CustomScrollBehavior extends MaterialScrollBehavior {
           ColorScheme.of(context).outline.withValues(alpha: .55),
         ),
       ),
-      child: Scrollbar(controller: controller, child: child),
+      child: Scrollbar(
+        controller: controller,
+        child: Padding(
+          padding: const EdgeInsets.only(right: laneWidth),
+          child: child,
+        ),
+      ),
     );
   }
 

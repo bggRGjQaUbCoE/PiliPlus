@@ -354,6 +354,14 @@ class VideoPopupMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 桌面端不再显示卡片右下角「三点菜单」按钮：卡片操作改由右键菜单提供，
+    // 交互回到「点卡片进详情」；移动端保持原样。
+    final platform = Theme.of(context).platform;
+    if (platform == TargetPlatform.windows ||
+        platform == TargetPlatform.macOS ||
+        platform == TargetPlatform.linux) {
+      return const SizedBox.shrink();
+    }
     return PopupMenuButton(
       padding: EdgeInsets.zero,
       icon: Icon(

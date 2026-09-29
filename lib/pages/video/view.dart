@@ -1265,13 +1265,13 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     Widget child;
     if (videoDetailController.plPlayerController.isPipMode) {
       child = plPlayer(width: maxWidth, height: maxHeight, isPipMode: true);
-    } else if (!videoDetailController.horizontalScreen) {
-      child = childWhenDisabled;
     } else if (PlatformUtils.isDesktop) {
-      // 桌面端统一横向布局（所有窗口尺寸）：
+      // 桌面端统一横向布局（所有窗口尺寸，且不受「横屏适配」开关影响）：
       // 播放器按窗口高度放大并靠左，标题/简介/评论进右列 —— 播放器顶部与
       // 标题顶部水平对齐；下方功能区在右列内滚动，可完整查看、不被裁切遮挡。
       child = childWhenDisabledLandscape;
+    } else if (!videoDetailController.horizontalScreen) {
+      child = childWhenDisabled;
     } else if (maxWidth / maxHeight >= kScreenRatio) {
       child = childWhenDisabledLandscape;
     } else if (maxWidth / Style.aspectRatio16x9 < 0.4 * maxHeight) {

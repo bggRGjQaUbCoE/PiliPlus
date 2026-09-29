@@ -168,9 +168,9 @@ void main() async {
     await windowManager.ensureInitialized();
 
     final windowOptions = WindowOptions(
-      // 最小窗口 981x635 逻辑（≈ 1533x992 物理，按本机 DPR 1.5625 折算）
-      // 其中宽度已计入右侧 10px 滚动条专用车道
-      minimumSize: const Size(981, 635),
+      // 最小窗口 983x635 逻辑：内容区 973x635（≈ 1521x992 物理，本机 DPR 1.5625）
+      // 加上右侧 10 逻辑px 滚动条专用车道 → 983x635 逻辑（≈ 1536x992 物理）
+      minimumSize: const Size(983, 635),
       skipTaskbar: false,
       titleBarStyle: Pref.showWindowTitleBar
           ? TitleBarStyle.normal

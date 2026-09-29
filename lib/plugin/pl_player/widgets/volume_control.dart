@@ -51,11 +51,20 @@ class _VolumeControlState extends State<VolumeControl> {
 
   void _togglePanel() {
     if (_controller.isShowing) {
-      _controller.hide();
+      _closePanel();
     } else {
       _controller.show();
+      // 进入音量调节状态：底部控制栏常驻，禁用自动隐藏
+      widget.plPlayerController.volumePanelShowing = true;
+      setState(() {});
     }
-    setState(() {});
+  }
+
+  /// 退出音量调节状态：关闭滑块并恢复控制栏原有的自动隐藏机制
+  void _closePanel() {
+    _controller.hide();
+    widget.plPlayerController.volumePanelShowing = false;
+    if (mounted) setState(() {});
   }
 
   /// 指针在音量按钮/滑块浮层内时唤醒控制栏；移开后交还原自动隐藏机制
@@ -100,9 +109,9 @@ class _VolumeControlState extends State<VolumeControl> {
         );
         return _VolumePanel(
           offset: offset,
-          child: MouseRegion(
-            onEnter: (_) => _setAwake(true),
-            onExit: (_) => _setAwake(false),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _closePanel,
             child: Container(
               padding: const EdgeInsets.fromLTRB(4, 7, 4, 3),
               decoration: const BoxDecoration(
@@ -156,7 +165,6 @@ class _VolumeControlState extends State<VolumeControl> {
       },
       child: MouseRegion(
         onEnter: (_) => _setAwake(true),
-        onExit: (_) => _setAwake(false),
         child: Obx(
           () {
             final volume = ctr.volume.value;

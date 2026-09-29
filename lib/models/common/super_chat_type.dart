@@ -1,12 +1,16 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 
 enum SuperChatType implements EnumWithLabel {
-  valid('有效时间内显示'),
-  persist('常驻显示'),
-  disable('不显示'),
+  valid,
+  persist,
+  disable,
   ;
 
   @override
-  final String label;
-  const SuperChatType(this.label);
+  String get label => switch (this) {
+    valid => L10n.current.superChatTypeValidLabel,
+    persist => L10n.current.superChatTypePersistLabel,
+    disable => L10n.current.superChatTypeDisableLabel,
+  };
 }

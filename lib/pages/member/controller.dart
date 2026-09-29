@@ -4,6 +4,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/member.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/member/tab_type.dart';
 import 'package:PiliPlus/models/model_owner.dart';
 import 'package:PiliPlus/models_new/space/space/data.dart';
@@ -45,7 +46,28 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
 
   SpaceSetting? spaceSetting;
   List<SpaceTab2>? tab2;
-  late List<Tab> tabs;
+  bool _usesFallbackTabs = false;
+  String? tabTitle(String? param, String? title) => _usesFallbackTabs
+      ? switch (param) {
+          'dynamic' => L10n.current.dynamics,
+          'contribute' => L10n.current.dynamicsTabTypeVideoLabel,
+          'video' => L10n.current.video,
+          'favorite' => L10n.current.favourite,
+          'bangumi' => L10n.current.favTabTypeBangumiTitle,
+          _ => title,
+        }
+      : title;
+  List<Tab> get tabs => tab2!
+      .map(
+        (item) => Tab(
+          child: Text(
+            tabTitle(item.param, item.title) ?? '',
+            softWrap: false,
+            overflow: .fade,
+          ),
+        ),
+      )
+      .toList();
   TabController? tabController;
   RxInt contributeInitialIndex = 0.obs;
 
@@ -134,17 +156,7 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
             return item.param == data.defaultTab;
           });
         }
-        tabs = tab2!
-            .map(
-              (item) => Tab(
-                child: Text(
-                  item.title ?? '',
-                  softWrap: false,
-                  overflow: .fade,
-                ),
-              ),
-            )
-            .toList();
+        _usesFallbackTabs = false;
         tabController?.dispose();
         tabController = TabController(
           vsync: this,
@@ -162,17 +174,17 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
 
   @override
   bool handleError(String? errMsg) {
-    tab2 = const [
-      SpaceTab2(title: '动态', param: 'dynamic'),
+    tab2 = [
+      SpaceTab2(title: L10n.current.dynamics, param: 'dynamic'),
       SpaceTab2(
-        title: '投稿',
+        title: L10n.current.dynamicsTabTypeVideoLabel,
         param: 'contribute',
-        items: [SpaceTab2Item(title: '视频', param: 'video')],
+        items: [SpaceTab2Item(title: L10n.current.video, param: 'video')],
       ),
-      SpaceTab2(title: '收藏', param: 'favorite'),
-      SpaceTab2(title: '追番', param: 'bangumi'),
+      SpaceTab2(title: L10n.current.favourite, param: 'favorite'),
+      SpaceTab2(title: L10n.current.favTabTypeBangumiTitle, param: 'bangumi'),
     ];
-    tabs = tab2!.map((item) => Tab(text: item.title)).toList();
+    _usesFallbackTabs = true;
     tabController?.dispose();
     tabController = TabController(
       vsync: this,
@@ -197,13 +209,17 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('提示'),
-        content: Text(relation.value != 128 ? '确定拉黑UP主?' : '从黑名单移除UP主'),
+        title: Text(L10n.current.notice),
+        content: Text(
+          relation.value != 128
+              ? L10n.current.memberControllerBlockUserContent
+              : L10n.current.memberControllerBlockUserContent2,
+        ),
         actions: [
           TextButton(
             onPressed: Get.back,
             child: Text(
-              '点错了',
+              L10n.current.cancelMistake,
               style: TextStyle(color: Theme.of(context).colorScheme.outline),
             ),
           ),
@@ -212,7 +228,7 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
               Get.back();
               _onBlock();
             },
-            child: const Text('确认'),
+            child: Text(L10n.current.confirm),
           ),
         ],
       ),
@@ -267,7 +283,7 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
       if (relation.value == 4) {
         relation.value = 2;
       }
-      SmartDialog.showToast('移除成功');
+      SmartDialog.showToast(L10n.current.blackListControllerOnRemoveOnConfirm);
     } else {
       res.toast();
     }
@@ -282,7 +298,7 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
   Future<void> vipExpAdd() async {
     final res = await UserHttp.vipExpAdd();
     if (res.isSuccess) {
-      SmartDialog.showToast('领取成功');
+      SmartDialog.showToast(L10n.current.memberControllerVipExpAddText);
     } else {
       res.toast();
     }

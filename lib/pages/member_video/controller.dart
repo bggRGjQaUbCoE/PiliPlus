@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart' show ReloadMixin;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/member.dart';
 import 'package:PiliPlus/http/search.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/member/archive_order_type_app.dart';
 import 'package:PiliPlus/models/common/member/archive_sort_type_app.dart';
 import 'package:PiliPlus/models/common/member/contribute_type.dart';
@@ -191,7 +192,7 @@ class MemberVideoCtr
               'mediaId': seasonId ?? seriesId ?? mid,
               'oid': oid,
               'favTitle':
-                  '$username: ${title ?? episodicButton.text ?? '播放全部'}',
+                  '$username: ${title ?? episodicButton.text ?? L10n.current.playAll}',
               if (seriesId == null) 'count': ?count,
               if (seasonId != null || seriesId != null)
                 'mediaType': params['page_type'],
@@ -233,7 +234,7 @@ class MemberVideoCtr
               'mediaId': seasonId ?? seriesId ?? mid,
               'oid': IdUtils.bv2av(element.bvid!),
               'favTitle':
-                  '$username: ${title ?? episodicButton.text ?? '播放全部'}',
+                  '$username: ${title ?? episodicButton.text ?? L10n.current.playAll}',
               if (seriesId == null) 'count': ?count,
               if (seasonId != null || seriesId != null)
                 'mediaType': Uri.parse(

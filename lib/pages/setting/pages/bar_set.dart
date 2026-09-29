@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/common/widgets/reorder_mixin.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -52,13 +53,13 @@ class _BarSetPageState extends State<BarSetPage> with ReorderMixin {
       key,
       list.where((e) => e.second).map((e) => e.first.index).toList(),
     );
-    SmartDialog.showToast('保存成功，下次启动时生效');
+    SmartDialog.showToast(L10n.current.barSetPageSaveEditText);
   }
 
   void onReset() {
     Get.back();
     GStorage.setting.delete(key);
-    SmartDialog.showToast('重置成功，下次启动时生效');
+    SmartDialog.showToast(L10n.current.barSetPageOnResetText);
   }
 
   void onReorderItem(int oldIndex, int newIndex) {
@@ -70,10 +71,17 @@ class _BarSetPageState extends State<BarSetPage> with ReorderMixin {
   Widget build(BuildContext context) {
     return SimpleScaffold(
       appBar: AppBar(
-        title: Text('$title编辑'),
+        title: Text(L10n.current.barSetPageTitle(title)),
         actions: [
-          TextButton(onPressed: onReset, child: const Text('重置')),
-          TextButton(onPressed: saveEdit, child: const Text('保存')),
+          TextButton(
+            onPressed: onReset,
+            child: Text(
+              L10n
+                  .current
+                  .pagesSettingModelsExtraSettingsShowDownPathDialogChild2,
+            ),
+          ),
+          TextButton(onPressed: saveEdit, child: Text(L10n.current.save)),
           const SizedBox(width: 12),
         ],
       ),
@@ -82,9 +90,9 @@ class _BarSetPageState extends State<BarSetPage> with ReorderMixin {
         proxyDecorator: proxyDecorator,
         footer: Padding(
           padding: padding,
-          child: const Align(
+          child: Align(
             alignment: Alignment.centerRight,
-            child: Text('*长按拖动排序'),
+            child: Text(L10n.current.barSetPageChild),
           ),
         ),
         children: list

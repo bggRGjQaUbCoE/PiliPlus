@@ -3,6 +3,7 @@ import 'dart:convert' show utf8, jsonDecode;
 
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/storage_utils.dart';
@@ -80,18 +81,26 @@ Future<void> importFromClipBoard<T>(
             result.render(renderer);
           }
           return AlertDialog(
-            title: Text('是否导入如下$title？'),
+            title: Text(
+              L10n.current
+                  .commonWidgetsDialogExportImportImportFromClipBoardTitle(
+                    title,
+                  ),
+            ),
             content: SingleChildScrollView(
               child: Text.rich(renderer.span!),
             ),
             actions: [
               TextButton(
                 onPressed: Get.back,
-                child: Text('取消', style: TextStyle(color: colorScheme.outline)),
+                child: Text(
+                  L10n.current.cancel,
+                  style: TextStyle(color: colorScheme.outline),
+                ),
               ),
               TextButton(
                 onPressed: () => Get.back(result: true),
-                child: const Text('确定'),
+                child: Text(L10n.current.ok),
               ),
             ],
           );
@@ -103,13 +112,17 @@ Future<void> importFromClipBoard<T>(
     if (executeImport ?? false) {
       try {
         await onImport(json);
-        SmartDialog.showToast('导入成功');
+        SmartDialog.showToast(
+          L10n.current.commonWidgetsDialogExportImportImportFromClipBoardText,
+        );
       } catch (e) {
         SmartDialog.showToast('导入失败：$e');
       }
     }
   } else {
-    SmartDialog.showToast('剪贴板无数据');
+    SmartDialog.showToast(
+      L10n.current.commonWidgetsDialogExportImportImportFromClipBoardText2,
+    );
     return;
   }
 }
@@ -132,7 +145,9 @@ Future<void> importFromLocalFile<T>({
     }
     try {
       await onImport(json);
-      SmartDialog.showToast('导入成功');
+      SmartDialog.showToast(
+        L10n.current.commonWidgetsDialogExportImportImportFromClipBoardText,
+      );
     } catch (e) {
       SmartDialog.showToast('导入失败：$e');
     }
@@ -151,7 +166,11 @@ void importFromInput<T>(
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text('输入$title'),
+      title: Text(
+        L10n.current.commonWidgetsDialogExportImportImportFromInputTitle(
+          title,
+        ),
+      ),
       constraints: Style.dialogFixedConstraints,
       content: TextFormField(
         key: key,
@@ -176,7 +195,7 @@ void importFromInput<T>(
         TextButton(
           onPressed: Get.back,
           child: Text(
-            '取消',
+            L10n.current.cancel,
             style: TextStyle(
               color: ColorScheme.of(context).outline,
             ),
@@ -188,7 +207,11 @@ void importFromInput<T>(
               try {
                 await onImport(json);
                 Get.back();
-                SmartDialog.showToast('导入成功');
+                SmartDialog.showToast(
+                  L10n
+                      .current
+                      .commonWidgetsDialogExportImportImportFromClipBoardText,
+                );
                 return;
               } catch (e) {
                 forceErrorText = '导入失败：$e';
@@ -197,7 +220,7 @@ void importFromInput<T>(
               forceErrorText = null;
             }
           },
-          child: const Text('确定'),
+          child: Text(L10n.current.ok),
         ),
       ],
     ),
@@ -216,17 +239,31 @@ Future<void> showImportExportDialog<T>(
     const style = TextStyle(fontSize: 15);
     return SimpleDialog(
       clipBehavior: .hardEdge,
-      title: Text('导入/导出$title'),
+      title: Text(
+        L10n.current.commonWidgetsDialogExportImportShowImportExportDialogTitle(
+          title,
+        ),
+      ),
       children: [
         DialogOption(
-          child: const Text('导出至剪贴板', style: style),
+          child: Text(
+            L10n
+                .current
+                .commonWidgetsDialogExportImportShowImportExportDialogChild2,
+            style: style,
+          ),
           onPressed: () {
             Get.back();
             exportToClipBoard(onExport: onExport);
           },
         ),
         DialogOption(
-          child: const Text('导出文件至本地', style: style),
+          child: Text(
+            L10n
+                .current
+                .commonWidgetsDialogExportImportShowImportExportDialogChild4,
+            style: style,
+          ),
           onPressed: () {
             Get.back();
             exportToLocalFile(onExport: onExport, localFileName: localFileName);
@@ -237,14 +274,24 @@ Future<void> showImportExportDialog<T>(
           color: ColorScheme.of(context).outline.withValues(alpha: 0.1),
         ),
         DialogOption(
-          child: const Text('输入', style: style),
+          child: Text(
+            L10n
+                .current
+                .commonWidgetsDialogExportImportShowImportExportDialogChild,
+            style: style,
+          ),
           onPressed: () {
             Get.back();
             importFromInput<T>(context, title: title, onImport: onImport);
           },
         ),
         DialogOption(
-          child: const Text('从剪贴板导入', style: style),
+          child: Text(
+            L10n
+                .current
+                .commonWidgetsDialogExportImportShowImportExportDialogChild3,
+            style: style,
+          ),
           onPressed: () {
             Get.back();
             importFromClipBoard<T>(
@@ -256,7 +303,12 @@ Future<void> showImportExportDialog<T>(
           },
         ),
         DialogOption(
-          child: const Text('从本地文件导入', style: style),
+          child: Text(
+            L10n
+                .current
+                .commonWidgetsDialogExportImportShowImportExportDialogChild5,
+            style: style,
+          ),
           onPressed: () {
             Get.back();
             importFromLocalFile<T>(onImport: onImport);

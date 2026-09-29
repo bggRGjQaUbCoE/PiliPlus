@@ -1,13 +1,20 @@
 // ignore_for_file: constant_identifier_names
 
+import 'package:PiliPlus/l10n/l10n.dart';
+
 enum LiveContributionRankType {
-  online_rank('在线榜', 'contribution_rank'),
-  daily_rank('日榜', 'today_rank'),
-  weekly_rank('周榜', 'current_week_rank'),
-  monthly_rank('月榜', 'current_month_rank'),
+  online_rank('contribution_rank'),
+  daily_rank('today_rank'),
+  weekly_rank('current_week_rank'),
+  monthly_rank('current_month_rank'),
   ;
 
-  final String title;
+  String get title => switch (this) {
+    online_rank => L10n.current.liveContributionRankTypeOnlineRankTitle,
+    daily_rank => L10n.current.liveContributionRankTypeDailyRankTitle,
+    weekly_rank => L10n.current.liveContributionRankTypeWeeklyRankTitle,
+    monthly_rank => L10n.current.liveContributionRankTypeMonthlyRankTitle,
+  };
   final String sw1tch;
-  const LiveContributionRankType(this.title, this.sw1tch);
+  const LiveContributionRankType(this.sw1tch);
 }

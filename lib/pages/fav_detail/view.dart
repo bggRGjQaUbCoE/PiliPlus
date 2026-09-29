@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/fav_order_type.dart';
 import 'package:PiliPlus/models_new/fav/fav_detail/media.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
@@ -90,7 +91,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                                 _favDetailController.setIsPlayAll(true);
                               }
                             },
-                            label: const Text('播放全部'),
+                            label: Text(L10n.current.playAll),
                             icon: const Icon(Icons.playlist_play),
                           ),
                         ),
@@ -136,14 +137,16 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
               mainAxisSize: .min,
               children: [
                 IconButton(
-                  tooltip: '取消',
+                  tooltip: L10n.current.cancel,
                   onPressed: _favDetailController.handleSelect,
                   icon: const Icon(Icons.close_outlined),
                 ),
                 Obx(
                   () {
                     return Text(
-                      '已选: ${_favDetailController.checkedCount}',
+                      L10n.current.multiSelectAppBarWidgetTitle(
+                        _favDetailController.checkedCount,
+                      ),
                       style: const TextStyle(fontSize: 15),
                     );
                   },
@@ -163,7 +166,9 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                   style: theme.textTheme.titleMedium,
                 ),
                 Text(
-                  '共${_favDetailController.folderInfo.value.mediaCount}条视频',
+                  L10n.current.favDetailPageBuildHeaderChildren(
+                    _favDetailController.folderInfo.value.mediaCount.toString(),
+                  ),
                   style: theme.textTheme.labelMedium,
                 ),
               ],
@@ -176,7 +181,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
   List<Widget> _actions(ThemeData theme) {
     return [
       IconButton(
-        tooltip: '搜索',
+        tooltip: L10n.current.search,
         onPressed: () {
           final folderInfo = _favDetailController.folderInfo.value;
           Get.toNamed(
@@ -198,7 +203,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
             ? const SizedBox.shrink()
             : IconButton(
                 iconSize: 22,
-                tooltip: '分享',
+                tooltip: L10n.current.share,
                 onPressed: () => ShareUtils.shareText(
                   'https://www.bilibili.com/medialist/detail/ml${_favDetailController.mediaId}',
                 ),
@@ -211,14 +216,20 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
               ? const Icon(MdiIcons.sortNumericDescending)
               : const Icon(MdiIcons.sortNumericAscending),
           initialValue: _favDetailController.pageDesc,
-          tooltip: '页码顺序',
+          tooltip: L10n.current.favDetailPageActionsTooltip,
           onSelected: (value) {
             _favDetailController.updatePageOrder(value);
             (context as Element).markNeedsBuild();
           },
-          itemBuilder: (context) => const [
-            PopupMenuItem(value: false, child: Text('正序')),
-            PopupMenuItem(value: true, child: Text('倒序')),
+          itemBuilder: (context) => [
+            PopupMenuItem(
+              value: false,
+              child: Text(L10n.current.pagesAudioViewTitleText2),
+            ),
+            PopupMenuItem(
+              value: true,
+              child: Text(L10n.current.archiveSortTypeAppAscLabel),
+            ),
           ],
         ),
       ),
@@ -227,7 +238,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
           return PopupMenuButton<FavOrderType>(
             icon: const Icon(Icons.sort),
             initialValue: _favDetailController.order.value,
-            tooltip: '排序方式',
+            tooltip: L10n.current.favDetailPageActionsTooltip2,
             onSelected: (value) => _favDetailController
               ..order.value = value
               ..onReload(),
@@ -252,7 +263,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
               if (isOwner) ...[
                 PopupMenuItem(
                   onTap: _favDetailController.onSort,
-                  child: const Text('排序'),
+                  child: Text(L10n.current.sort),
                 ),
                 PopupMenuItem(
                   onTap: () =>
@@ -264,13 +275,17 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                           _favDetailController.folderInfo.value = res;
                         }
                       }),
-                  child: const Text('编辑信息'),
+                  child: Text(L10n.current.favDetailPageActionsChild),
                 ),
               ] else
                 PopupMenuItem(
                   onTap: () =>
                       _favDetailController.onFav(folderInfo.favState == 1),
-                  child: Text('${folderInfo.favState == 1 ? '取消' : ''}收藏'),
+                  child: Text(
+                    L10n.current.dynTopicPageBuildAppBarChild(
+                      (folderInfo.favState == 1).toString(),
+                    ),
+                  ),
                 ),
               if (BiliUtils.isPublicFav(folderInfo.attr))
                 PopupMenuItem(
@@ -286,23 +301,29 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                       uname: folderInfo.upper?.name,
                     ),
                   ),
-                  child: const Text('分享至动态'),
+                  child: Text(
+                    L10n.current.audioControllerActionShareVideoChild2,
+                  ),
                 ),
               if (isOwner) ...<PopupMenuEntry>[
                 PopupMenuItem(
                   onTap: _favDetailController.cleanFav,
-                  child: const Text('清除失效内容'),
+                  child: Text(L10n.current.favDetailPageActionsChild2),
                 ),
                 if (!BiliUtils.isDefaultFav(folderInfo.attr)) ...[
                   const PopupMenuDivider(height: 12),
                   PopupMenuItem(
                     onTap: () => showConfirmDialog(
                       context: context,
-                      title: const Text('确定删除该收藏夹?'),
-                      onConfirm: () =>
-                          FavHttp.deleteFolder(mediaIds: mediaId).then((res) {
+                      title: Text(L10n.current.favDetailPageActionsTitle),
+                      onConfirm: () => FavHttp.deleteFolder(mediaIds: mediaId)
+                          .then((res) {
                             if (res.isSuccess) {
-                              SmartDialog.showToast('删除成功');
+                              SmartDialog.showToast(
+                                L10n
+                                    .current
+                                    .commonWhisperControllerOnRemoveText,
+                              );
                               Get.back(result: true);
                             } else {
                               res.toast();
@@ -310,7 +331,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                           }),
                     ),
                     child: Text(
-                      '删除',
+                      L10n.current.delete,
                       style: TextStyle(
                         color: theme.colorScheme.error,
                       ),
@@ -332,7 +353,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
       TextButton(
         style: btnStyle,
         onPressed: () => _favDetailController.handleSelect(checked: true),
-        child: const Text('全选'),
+        child: Text(L10n.current.multiSelectAppBarWidgetChild),
       ),
       TextButton(
         style: btnStyle,
@@ -343,7 +364,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
           mediaId: _favDetailController.mediaId,
           mid: _favDetailController.account.mid,
         ),
-        child: Text('复制', style: textStyle),
+        child: Text(L10n.current.copy, style: textStyle),
       ),
       TextButton(
         style: btnStyle,
@@ -354,13 +375,16 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
           mediaId: _favDetailController.mediaId,
           mid: _favDetailController.account.mid,
         ),
-        child: Text('移动', style: textStyle),
+        child: Text(
+          L10n.current.favDetailPageSelectActionsChild2,
+          style: textStyle,
+        ),
       ),
       TextButton(
         style: btnStyle,
         onPressed: _favDetailController.onRemove,
         child: Text(
-          '删除',
+          L10n.current.delete,
           style: TextStyle(color: theme.colorScheme.error),
         ),
       ),
@@ -415,7 +439,9 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                           return iconButton(
                             size: 28,
                             iconSize: 18,
-                            tooltip: '${isFav ? '取消' : ''}收藏',
+                            tooltip: L10n.current.dynTopicPageBuildAppBarChild(
+                              isFav.toString(),
+                            ),
                             onPressed: () => _favDetailController.onFav(isFav),
                             icon: isFav
                                 ? const Icon(Icons.favorite)
@@ -469,8 +495,10 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                             const SizedBox(height: 4),
                           ],
                           Text(
-                            '共${folderInfo.mediaCount}条视频 · '
-                            '${BiliUtils.isPublicFavText(folderInfo.attr)}',
+                            L10n.current.favDetailPageFlexibleSpaceChildren(
+                              folderInfo.mediaCount,
+                              BiliUtils.isPublicFavText(folderInfo.attr),
+                            ),
                             style: style,
                           ),
                         ],
@@ -503,7 +531,11 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                       height: 60,
                       alignment: Alignment.center,
                       child: Text(
-                        _favDetailController.isEnd ? '没有更多了' : '加载中...',
+                        _favDetailController.isEnd
+                            ? L10n.current.noMore
+                            : L10n
+                                  .current
+                                  .pagesCommonDynCommonDynPageReplyListChild2,
                         style: TextStyle(
                           color: theme.colorScheme.outline,
                           fontSize: 13,

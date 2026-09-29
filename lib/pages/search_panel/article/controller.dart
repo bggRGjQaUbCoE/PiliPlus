@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/search/article_search_type.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
@@ -65,7 +66,7 @@ class SearchArticleController
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 10),
-              const Text('排序', style: TextStyle(fontSize: 16)),
+              Text(L10n.current.sort, style: const TextStyle(fontSize: 16)),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 8,
@@ -91,7 +92,10 @@ class SearchArticleController
                 ).toList(),
               ),
               const SizedBox(height: 20),
-              const Text('分区', style: TextStyle(fontSize: 16)),
+              Text(
+                L10n.current.categories,
+                style: const TextStyle(fontSize: 16),
+              ),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 8,

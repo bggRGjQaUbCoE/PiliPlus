@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/widgets/select_mask.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pbenum.dart'
     show PlaylistSource;
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/fav/fav_detail/media.dart';
@@ -117,8 +118,8 @@ class FavVideoCardH extends StatelessWidget {
                           type: PBadgeType.gray,
                         ),
                         if (item.type == 12)
-                          const PBadge(
-                            text: '音频',
+                          PBadge(
+                            text: L10n.current.favVideoCardHText,
                             top: 6.0,
                             right: 6.0,
                             type: PBadgeType.gray,
@@ -213,18 +214,18 @@ class FavVideoCardH extends StatelessWidget {
               bottom: -8,
               child: iconButton(
                 icon: const Icon(Icons.clear),
-                tooltip: '取消收藏',
+                tooltip: L10n.current.unfavourite,
                 iconColor: colorScheme.outline,
                 onPressed: () => showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
-                    title: const Text('提示'),
-                    content: const Text('要取消收藏吗?'),
+                    title: Text(L10n.current.notice),
+                    content: Text(L10n.current.favVideoCardHContentContent),
                     actions: [
                       TextButton(
                         onPressed: Get.back,
                         child: Text(
-                          '取消',
+                          L10n.current.cancel,
                           style: TextStyle(color: colorScheme.outline),
                         ),
                       ),
@@ -233,7 +234,7 @@ class FavVideoCardH extends StatelessWidget {
                           Get.back();
                           ctr!.onCancelFav(index!, item.id!, item.type!);
                         },
-                        child: const Text('确定取消'),
+                        child: Text(L10n.current.favVideoCardHContentChild),
                       ),
                     ],
                   ),

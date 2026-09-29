@@ -3,6 +3,7 @@ import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
@@ -48,7 +49,12 @@ class _ViewPointsPageState extends State<ViewPointsPage>
         child: Row(
           children: [
             const SizedBox(width: 16),
-            const Expanded(child: Text('分段信息', style: TextStyle(fontSize: 16))),
+            Expanded(
+              child: Text(
+                L10n.current.viewPointsPageBuildPageChild,
+                style: const TextStyle(fontSize: 16),
+              ),
+            ),
             Obx(
               () => Transform.scale(
                 alignment: Alignment.centerLeft,
@@ -63,7 +69,7 @@ class _ViewPointsPageState extends State<ViewPointsPage>
               context: context,
               size: 30,
               icon: const Icon(Icons.clear),
-              tooltip: '关闭',
+              tooltip: L10n.current.close,
               onPressed: Get.back,
             ),
             const SizedBox(width: 16),

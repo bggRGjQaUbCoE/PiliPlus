@@ -1,3 +1,4 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, debugPrint;
 
@@ -41,23 +42,36 @@ abstract final class NumUtils {
       }
     }
 
-    String format(first, second) {
-      double result = ((number / first) as double).toPrecision(1);
-      int intRes = result.toInt();
-      if (result == intRes) {
-        return '$intRes$second';
-      } else {
-        return '$result$second';
-      }
+    if (L10n.locale.languageCode == 'zh') {
+      if (number < 10000) return number.toString();
+
+      final hundredMillion = number >= 100000000;
+      final result = ((number / (hundredMillion ? 100000000 : 10000)) as double)
+          .toPrecision(1);
+      final text = result == result.toInt()
+          ? result.toInt().toString()
+          : result.toString();
+      final traditional = L10n.locale.scriptCode == 'Hant';
+      final unit = hundredMillion
+          ? (traditional ? '億' : '亿')
+          : (traditional ? '萬' : '万');
+      return '$text$unit';
     }
 
-    if (number >= 100000000) {
-      return format(100000000, '亿');
-    } else if (number >= 10000) {
-      return format(10000, '万');
-    } else {
-      return number.toString();
+    if (number < 1000) return number.toString();
+
+    const units = ['K', 'M', 'B'];
+    double result = number / 1000;
+    var unit = 0;
+    while (result.toPrecision(1) >= 1000 && unit < units.length - 1) {
+      result /= 1000;
+      unit++;
     }
+    result = result.toPrecision(1);
+    final text = result == result.toInt()
+        ? result.toInt().toString()
+        : result.toString();
+    return '$text${units[unit]}';
   }
 
   static String formatPositiveDecimal(int number) {

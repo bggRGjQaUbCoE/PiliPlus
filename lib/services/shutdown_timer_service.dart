@@ -3,6 +3,7 @@
 import 'dart:async' show Timer;
 import 'dart:io' show exit;
 
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/menu_row.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
@@ -20,13 +21,15 @@ const _kSqueeze = 1.25;
 const _kItemExtent = 38.0;
 
 enum _ShutdownType with EnumWithLabel {
-  pause('暂停视频'),
-  exit('退出APP'),
+  pause,
+  exit,
   ;
 
   @override
-  final String label;
-  const _ShutdownType(this.label);
+  String get label => switch (this) {
+    pause => L10n.current.shutdownTypePauseLabel,
+    exit => L10n.current.shutdownTypeExitLabel,
+  };
 }
 
 final shutdownTimerService = ShutdownTimerService._internal();
@@ -65,10 +68,16 @@ class ShutdownTimerService {
   void _startShutdownTimer(int durationInMinutes) {
     reset(durationInMinutes);
     if (durationInMinutes == 0) {
-      SmartDialog.showToast('取消定时关闭');
+      SmartDialog.showToast(
+        L10n.current.shutdownTimerServiceStartShutdownTimerText,
+      );
       return;
     }
-    SmartDialog.showToast('设置 ${_format(durationInMinutes)} 后定时关闭');
+    SmartDialog.showToast(
+      L10n.current.shutdownTimerServiceStartShutdownTimerText2(
+        _format(durationInMinutes),
+      ),
+    );
     _deadline = DateTime.now().add(Duration(minutes: durationInMinutes));
     _shutdownTimer = Timer(
       Duration(minutes: durationInMinutes),
@@ -88,7 +97,9 @@ class ShutdownTimerService {
           } else {
             _durationInMinutes = 0;
             (onPause ?? player?.pause)?.call();
-            SmartDialog.showToast('定时时间已到，已暂停');
+            SmartDialog.showToast(
+              L10n.current.shutdownTimerServiceHandleShutdownText,
+            );
           }
         }
       case .exit:
@@ -111,7 +122,9 @@ class ShutdownTimerService {
       case .pause:
         _isWaiting = false;
         _durationInMinutes = 0;
-        SmartDialog.showToast('定时时间已到，已暂停');
+        SmartDialog.showToast(
+          L10n.current.shutdownTimerServiceHandleShutdownText,
+        );
       case .exit:
         _syncProgressAndExit();
     }
@@ -136,14 +149,17 @@ class ShutdownTimerService {
       (minutes ~/ 60, minutes % 60);
 
   static String _format(int minutes) {
-    if (minutes == 60) return '60分钟';
+    if (minutes == 60) return L10n.current.shutdownTimerServiceFormatText;
     final (int hour, int minute) = _parseMinutes(minutes);
     if (hour > 0 && minute > 0) {
-      return '$hour小时$minute分钟';
+      return L10n.current.shutdownTimerServiceFormatText4(
+        hour,
+        minute,
+      );
     } else if (hour > 0) {
-      return '$hour小时';
+      return L10n.current.shutdownTimerServiceFormatText2(hour);
     } else {
-      return '$minute分钟';
+      return L10n.current.shutdownTimerServiceFormatText3(minute);
     }
   }
 
@@ -197,7 +213,7 @@ class ShutdownTimerService {
                 onSelectedItemChanged: (value) => hour = value,
               ),
             ),
-            const Text('时'),
+            Text(L10n.current.shutdownTimerServiceShowTimePickerDialogChildren),
             const SizedBox(width: 10),
             Expanded(
               child: _pickerBuider(
@@ -206,14 +222,16 @@ class ShutdownTimerService {
                 onSelectedItemChanged: (value) => minute = value,
               ),
             ),
-            const Text('分'),
+            Text(
+              L10n.current.shutdownTimerServiceShowTimePickerDialogChildren2,
+            ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              '取消',
+              L10n.current.cancel,
               style: TextStyle(color: ColorScheme.of(context).outline),
             ),
           ),
@@ -224,7 +242,7 @@ class ShutdownTimerService {
               onCountdown();
               setState(() {});
             },
-            child: const Text('确认'),
+            child: Text(L10n.current.confirm),
           ),
         ],
       ),
@@ -261,7 +279,7 @@ class ShutdownTimerService {
                   alignment: .center,
                   clipBehavior: .none,
                   children: [
-                    const Text('定时关闭', style: titleStyle),
+                    Text(L10n.current.sleepTimer, style: titleStyle),
                     Positioned(top: 0, bottom: 0, right: 16, child: countdown),
                   ],
                 ),
@@ -277,7 +295,7 @@ class ShutdownTimerService {
                         },
                         title: Text(
                           switch (minutes) {
-                            0 => '禁用',
+                            0 => L10n.current.disable,
                             _ => _format(minutes),
                           },
                           style: titleStyle,
@@ -295,7 +313,7 @@ class ShutdownTimerService {
                   dense: true,
                   onTap: () =>
                       _showTimePickerDialog(context, onCountdown, setState),
-                  title: const Text('自定义', style: titleStyle),
+                  title: Text(L10n.current.custom, style: titleStyle),
                 ),
                 if (!isLive) ...[
                   Builder(
@@ -308,7 +326,10 @@ class ShutdownTimerService {
                       return ListTile(
                         dense: true,
                         onTap: onChanged,
-                        title: const Text('额外等待视频播放完毕', style: titleStyle),
+                        title: Text(
+                          L10n.current.childShowScheduleExitDialogTitle,
+                          style: titleStyle,
+                        ),
                         trailing: Transform.scale(
                           alignment: .centerRight,
                           scale: 0.8,
@@ -329,7 +350,10 @@ class ShutdownTimerService {
                       return Row(
                         spacing: 12,
                         children: [
-                          const Text('倒计时结束:', style: titleStyle),
+                          Text(
+                            L10n.current.childShowScheduleExitDialogChildren,
+                            style: titleStyle,
+                          ),
                           ..._ShutdownType.values.map(
                             (e) => ActionRowLineItem(
                               onTap: () {
@@ -413,7 +437,9 @@ mixin ShutdownMixin<T extends StatefulWidget> on State<T> {
 
   bool _updateCountdownText([_]) {
     if (shutdownTimerService.isWaiting) {
-      _updateCountdownTextEnd('当前播放结束后关闭');
+      _updateCountdownTextEnd(
+        L10n.current.servicesShutdownTimerServiceUpdateCountdownTextText,
+      );
       return false;
     }
     final deadline = shutdownTimerService.deadline;

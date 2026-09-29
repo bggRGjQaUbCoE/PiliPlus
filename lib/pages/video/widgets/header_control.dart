@@ -15,6 +15,7 @@ import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/live.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/super_resolution_type.dart';
 import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/models/common/video/cdn_type.dart';
@@ -196,7 +197,9 @@ class HeaderControl extends StatefulWidget {
 
   static Future<bool> likeDanmaku(VideoDanmaku extra, int cid) async {
     if (!Accounts.main.isLogin) {
-      SmartDialog.showToast('请先登录');
+      SmartDialog.showToast(
+        L10n.current.loginPageControllerSwitchAccountDialogText,
+      );
       return false;
     }
     final isLike = !extra.isLike;
@@ -212,7 +215,9 @@ class HeaderControl extends StatefulWidget {
       } else {
         extra.like--;
       }
-      SmartDialog.showToast('${isLike ? '' : '取消'}点赞成功');
+      SmartDialog.showToast(
+        L10n.current.headerControlLikeDanmakuText((!isLike).toString()),
+      );
       return true;
     } else {
       res.toast();
@@ -236,7 +241,7 @@ class HeaderControl extends StatefulWidget {
       id: id,
     );
     if (res.isSuccess) {
-      SmartDialog.showToast('删除成功');
+      SmartDialog.showToast(L10n.current.commonWhisperControllerOnRemoveText);
       return true;
     } else {
       res.toast();
@@ -273,7 +278,9 @@ class HeaderControl extends StatefulWidget {
         },
       );
     } else {
-      return SmartDialog.showToast('请先登录');
+      return SmartDialog.showToast(
+        L10n.current.loginPageControllerSwitchAccountDialogText,
+      );
     }
   }
 
@@ -319,7 +326,9 @@ class HeaderControl extends StatefulWidget {
         },
       );
     } else {
-      return SmartDialog.showToast('请先登录');
+      return SmartDialog.showToast(
+        L10n.current.loginPageControllerSwitchAccountDialogText,
+      );
     }
   }
 }
@@ -384,7 +393,10 @@ class HeaderControlState extends State<HeaderControl>
                     introController.viewLater();
                   },
                   leading: const Icon(Icons.watch_later_outlined, size: 20),
-                  title: const Text('添加至「稍后再看」', style: titleStyle),
+                  title: Text(
+                    L10n.current.headerControlShowSettingSheetTitle9,
+                    style: titleStyle,
+                  ),
                 ),
                 if (videoDetailCtr.epId == null)
                   ListTile(
@@ -394,7 +406,7 @@ class HeaderControlState extends State<HeaderControl>
                       videoDetailCtr.showNoteList(context);
                     },
                     leading: const Icon(Icons.note_alt_outlined, size: 20),
-                    title: const Text('查看笔记', style: titleStyle),
+                    title: Text(L10n.current.viewNotes, style: titleStyle),
                   ),
                 if (!isFileSource)
                   ListTile(
@@ -407,7 +419,10 @@ class HeaderControlState extends State<HeaderControl>
                       MdiIcons.folderDownloadOutline,
                       size: 20,
                     ),
-                    title: const Text('离线缓存', style: titleStyle),
+                    title: Text(
+                      L10n.current.offlineDownload,
+                      style: titleStyle,
+                    ),
                   ),
                 if (widget.videoDetailCtr.cover.value.isNotEmpty)
                   ListTile(
@@ -419,7 +434,7 @@ class HeaderControlState extends State<HeaderControl>
                       ]);
                     },
                     leading: const Icon(Icons.image_outlined, size: 20),
-                    title: const Text('保存封面', style: titleStyle),
+                    title: Text(L10n.current.saveCover, style: titleStyle),
                   ),
                 ListTile(
                   dense: true,
@@ -431,11 +446,17 @@ class HeaderControlState extends State<HeaderControl>
                     );
                   },
                   leading: const Icon(Icons.hourglass_top_outlined, size: 20),
-                  title: const Text('定时关闭', style: titleStyle),
+                  title: Text(L10n.current.sleepTimer, style: titleStyle),
                   subtitle: shutdownTimerService.isActive
                       ? ShutdownPanel(
-                          buildCountdownText: (text) =>
-                              Text(text == null ? '已结束' : '剩余 $text'),
+                          buildCountdownText: (text) => Text(
+                            text == null
+                                ? L10n.current.ended
+                                : L10n.current
+                                      .headerControlShowSettingSheetBuildCountdownText(
+                                        text,
+                                      ),
+                          ),
                           builder: (
                             context,
                             countdown,
@@ -456,7 +477,7 @@ class HeaderControlState extends State<HeaderControl>
                       Icons.link,
                       size: 20,
                     ),
-                    title: const Text('播放地址', style: titleStyle),
+                    title: Text(L10n.current.playbackUrl, style: titleStyle),
                   ),
                   ListTile(
                     dense: true,
@@ -465,7 +486,7 @@ class HeaderControlState extends State<HeaderControl>
                       videoDetailCtr.queryVideoUrl(fromReset: true);
                     },
                     leading: const Icon(Icons.refresh_outlined, size: 20),
-                    title: const Text('重载视频', style: titleStyle),
+                    title: Text(L10n.current.reloadVideo, style: titleStyle),
                   ),
                 ],
                 PopupListTile<SuperResolutionType>(
@@ -474,7 +495,12 @@ class HeaderControlState extends State<HeaderControl>
                     Icons.stay_current_landscape_outlined,
                     size: 20,
                   ),
-                  title: const Text('超分辨率', style: titleStyle),
+                  title: Text(
+                    L10n
+                        .current
+                        .pagesSettingModelsExtraSettingsExtraSettingsTitle5,
+                    style: titleStyle,
+                  ),
                   titleStyle: theme.textTheme.bodyLarge,
                   value: () {
                     final value = plPlayerController.superResolutionType.value;
@@ -497,9 +523,15 @@ class HeaderControlState extends State<HeaderControl>
                       builder: (context) => ListTile(
                         dense: true,
                         leading: const Icon(Icons.volume_up, size: 20),
-                        title: const Text('播放器音量'),
+                        title: Text(
+                          L10n
+                              .current
+                              .pagesSettingModelsPlaySettingsPlaySettingsTitle4,
+                        ),
                         subtitle: Text(
-                          '当前: ${Pref.playerVolume.toStringAsFixed(0)}%',
+                          L10n.current.headerControlShowSettingSheetSubtitle3(
+                            Pref.playerVolume.toStringAsFixed(0),
+                          ),
                         ),
                         onTap: () => showPlayerVolumeDialog(
                           context,
@@ -511,10 +543,17 @@ class HeaderControlState extends State<HeaderControl>
                 if (!isFileSource)
                   ListTile(
                     dense: true,
-                    title: const Text('CDN 设置', style: titleStyle),
+                    title: Text(
+                      L10n
+                          .current
+                          .pagesSettingModelsVideoSettingsVideoSettingsTitle8,
+                      style: titleStyle,
+                    ),
                     leading: const Icon(MdiIcons.cloudPlusOutline, size: 20),
                     subtitle: Text(
-                      '当前：${VideoUtils.cdnService.desc}，无法播放请切换',
+                      L10n.current.headerControlShowSettingSheetSubtitle(
+                        VideoUtils.cdnService.desc,
+                      ),
                       style: subTitleStyle,
                     ),
                     onTap: () async {
@@ -528,7 +567,11 @@ class HeaderControlState extends State<HeaderControl>
                       if (result != null) {
                         VideoUtils.cdnService = result;
                         setting.put(SettingBoxKey.CDNService, result.name);
-                        SmartDialog.showToast('已设置为 ${result.desc}，正在重载视频');
+                        SmartDialog.showToast(
+                          L10n.current.headerControlShowSettingSheetOnTap(
+                            result.desc,
+                          ),
+                        );
                         videoDetailCtr.queryVideoUrl(fromReset: true);
                       }
                     },
@@ -546,7 +589,8 @@ class HeaderControlState extends State<HeaderControl>
                             iconData: Icons.flip,
                             onTap: () =>
                                 plPlayerController.flipX.value = !flipX,
-                            text: " 左右翻转 ",
+                            text:
+                                L10n.current.headerControlShowSettingSheetText2,
                             selectStatus: flipX,
                           );
                         },
@@ -565,7 +609,8 @@ class HeaderControlState extends State<HeaderControl>
                             onTap: () {
                               plPlayerController.flipY.value = !flipY;
                             },
-                            text: " 上下翻转 ",
+                            text:
+                                L10n.current.headerControlShowSettingSheetText3,
                             selectStatus: flipY,
                           );
                         },
@@ -596,7 +641,9 @@ class HeaderControlState extends State<HeaderControl>
                                   );
                                 }
                               },
-                              text: " 听视频 ",
+                              text: L10n
+                                  .current
+                                  .headerControlShowSettingSheetText,
                               selectStatus: onlyPlayAudio,
                             );
                           },
@@ -607,7 +654,8 @@ class HeaderControlState extends State<HeaderControl>
                             iconData: Icons.play_circle_outline,
                             onTap:
                                 plPlayerController.setContinuePlayInBackground,
-                            text: " 后台播放 ",
+                            text:
+                                L10n.current.headerControlShowSettingSheetText4,
                             selectStatus: plPlayerController
                                 .continuePlayInBackground
                                 .value,
@@ -624,9 +672,14 @@ class HeaderControlState extends State<HeaderControl>
                       showSetVideoQa();
                     },
                     leading: const Icon(Icons.play_circle_outline, size: 20),
-                    title: const Text('选择画质', style: titleStyle),
+                    title: Text(
+                      L10n.current.headerControlShowSettingSheetTitle2,
+                      style: titleStyle,
+                    ),
                     subtitle: Text(
-                      '当前画质 ${videoDetailCtr.currentVideoQa.value?.desc}',
+                      L10n.current.headerControlShowSettingSheetSubtitle4(
+                        (videoDetailCtr.currentVideoQa.value?.desc).toString(),
+                      ),
                       style: subTitleStyle,
                     ),
                   ),
@@ -638,9 +691,14 @@ class HeaderControlState extends State<HeaderControl>
                         showSetAudioQa();
                       },
                       leading: const Icon(Icons.album_outlined, size: 20),
-                      title: const Text('选择音质', style: titleStyle),
+                      title: Text(
+                        L10n.current.headerControlShowSettingSheetTitle3,
+                        style: titleStyle,
+                      ),
                       subtitle: Text(
-                        '当前音质 ${videoDetailCtr.currentAudioQa!.desc}',
+                        L10n.current.headerControlShowSettingSheetSubtitle2(
+                          videoDetailCtr.currentAudioQa!.desc,
+                        ),
                         style: subTitleStyle,
                       ),
                     ),
@@ -651,9 +709,14 @@ class HeaderControlState extends State<HeaderControl>
                       showSetDecodeFormats();
                     },
                     leading: const Icon(Icons.av_timer_outlined, size: 20),
-                    title: const Text('解码格式', style: titleStyle),
+                    title: Text(
+                      L10n.current.headerControlShowSettingSheetTitle4,
+                      style: titleStyle,
+                    ),
                     subtitle: Text(
-                      '当前解码格式 ${videoDetailCtr.currentDecodeFormats.description}',
+                      L10n.current.headerControlShowSettingSheetSubtitle5(
+                        videoDetailCtr.currentDecodeFormats.description,
+                      ),
                       style: subTitleStyle,
                     ),
                   ),
@@ -661,7 +724,7 @@ class HeaderControlState extends State<HeaderControl>
                 PopupListTile(
                   dense: true,
                   leading: const Icon(Icons.repeat, size: 20),
-                  title: const Text('播放顺序', style: titleStyle),
+                  title: Text(L10n.current.playOrder, style: titleStyle),
                   titleStyle: theme.textTheme.bodyLarge,
                   value: () {
                     final value = plPlayerController.playRepeat;
@@ -682,7 +745,10 @@ class HeaderControlState extends State<HeaderControl>
                     showDanmakuPool();
                   },
                   leading: const Icon(CustomIcons.dm_on, size: 20),
-                  title: const Text('弹幕列表', style: titleStyle),
+                  title: Text(
+                    L10n.current.headerControlShowSettingSheetTitle5,
+                    style: titleStyle,
+                  ),
                 ),
                 ListTile(
                   dense: true,
@@ -691,7 +757,7 @@ class HeaderControlState extends State<HeaderControl>
                     showSetDanmaku();
                   },
                   leading: const Icon(CustomIcons.dm_settings, size: 20),
-                  title: const Text('弹幕设置', style: titleStyle),
+                  title: Text(L10n.current.danmakuSettings, style: titleStyle),
                 ),
                 ListTile(
                   dense: true,
@@ -700,7 +766,10 @@ class HeaderControlState extends State<HeaderControl>
                     showSetSubtitle();
                   },
                   leading: const Icon(Icons.subtitles_outlined, size: 20),
-                  title: const Text('字幕设置', style: titleStyle),
+                  title: Text(
+                    L10n.current.headerControlShowSettingSheetTitle6,
+                    style: titleStyle,
+                  ),
                 ),
                 ListTile(
                   dense: true,
@@ -762,7 +831,10 @@ class HeaderControlState extends State<HeaderControl>
                     }
                   },
                   leading: const Icon(Icons.file_open_outlined, size: 20),
-                  title: const Text('加载字幕', style: titleStyle),
+                  title: Text(
+                    L10n.current.headerControlShowSettingSheetTitle7,
+                    style: titleStyle,
+                  ),
                 ),
                 if (!videoDetailCtr.isFileSource &&
                     videoDetailCtr.subtitles.isNotEmpty)
@@ -773,12 +845,18 @@ class HeaderControlState extends State<HeaderControl>
                       onExportSubtitle();
                     },
                     leading: const Icon(Icons.download_outlined, size: 20),
-                    title: const Text('保存字幕', style: titleStyle),
+                    title: Text(
+                      L10n.current.headerControlShowSettingSheetTitle8,
+                      style: titleStyle,
+                    ),
                   ),
                 if (plPlayerController.videoPlayerController case final player?)
                   ListTile(
                     dense: true,
-                    title: const Text('播放信息', style: titleStyle),
+                    title: Text(
+                      L10n.current.playbackInformation,
+                      style: titleStyle,
+                    ),
                     leading: const Icon(Icons.info_outline, size: 20),
                     onTap: () => showPlayerInfo(context, player: player),
                   ),
@@ -793,7 +871,7 @@ class HeaderControlState extends State<HeaderControl>
                     PageUtils.reportVideo(videoDetailCtr.aid);
                   },
                   leading: const Icon(Icons.error_outline, size: 20),
-                  title: const Text('举报', style: titleStyle),
+                  title: Text(L10n.current.report, style: titleStyle),
                 ),
               ],
             ),
@@ -815,7 +893,7 @@ class HeaderControlState extends State<HeaderControl>
         final state = player.state;
         final colorScheme = ColorScheme.of(context);
         return AlertDialog(
-          title: const Text('播放信息'),
+          title: Text(L10n.current.playbackInformation),
           contentPadding: const EdgeInsets.only(top: 16),
           content: Material(
             type: MaterialType.transparency,
@@ -826,7 +904,7 @@ class HeaderControlState extends State<HeaderControl>
                   children: [
                     ListTile(
                       dense: true,
-                      title: const Text("Resolution"),
+                      title: Text(L10n.current.videoResolution),
                       subtitle: Text('${state.width}x${state.height}'),
                       onTap: () => Utils.copyText(
                         'Resolution\n${state.width}x${state.height}',
@@ -834,53 +912,53 @@ class HeaderControlState extends State<HeaderControl>
                     ),
                     ListTile(
                       dense: true,
-                      title: const Text("VideoParams"),
+                      title: Text(L10n.current.videoParameters),
                       subtitle: Text(state.videoParams.toString()),
                       onTap: () =>
                           Utils.copyText('VideoParams\n${state.videoParams}'),
                     ),
                     ListTile(
                       dense: true,
-                      title: const Text("AudioParams"),
+                      title: Text(L10n.current.audioParameters),
                       subtitle: Text(state.audioParams.toString()),
                       onTap: () =>
                           Utils.copyText('AudioParams\n${state.audioParams}'),
                     ),
                     ListTile(
                       dense: true,
-                      title: const Text("Media"),
+                      title: Text(L10n.current.media),
                       subtitle: Text(state.playlist.toString()),
                       onTap: () => Utils.copyText('Media\n${state.playlist}'),
                     ),
                     ListTile(
                       dense: true,
-                      title: const Text("AudioTrack"),
+                      title: Text(L10n.current.audioTrack),
                       subtitle: Text(state.track.audio.toString()),
                       onTap: () =>
                           Utils.copyText('AudioTrack\n${state.track.audio}'),
                     ),
                     ListTile(
                       dense: true,
-                      title: const Text("VideoTrack"),
+                      title: Text(L10n.current.videoTrack),
                       subtitle: Text(state.track.video.toString()),
                       onTap: () =>
                           Utils.copyText('VideoTrack\n${state.track.video}'),
                     ),
                     ListTile(
                       dense: true,
-                      title: const Text("rate"),
+                      title: Text(L10n.current.playbackRate),
                       subtitle: Text(state.rate.toString()),
                       onTap: () => Utils.copyText('rate\n${state.rate}'),
                     ),
                     ListTile(
                       dense: true,
-                      title: const Text("Volume"),
+                      title: Text(L10n.current.volume),
                       subtitle: Text(volume),
                       onTap: () => Utils.copyText('Volume\n$volume'),
                     ),
                     ListTile(
                       dense: true,
-                      title: const Text('hwdec'),
+                      title: Text(L10n.current.hardwareDecoding),
                       subtitle: Text(hwdec),
                       onTap: () => Utils.copyText('hwdec\n$hwdec'),
                     ),
@@ -893,7 +971,7 @@ class HeaderControlState extends State<HeaderControl>
             TextButton(
               onPressed: Get.back,
               child: Text(
-                '确定',
+                L10n.current.ok,
                 style: TextStyle(color: colorScheme.outline),
               ),
             ),
@@ -906,7 +984,7 @@ class HeaderControlState extends State<HeaderControl>
   /// 选择画质
   void showSetVideoQa() {
     if (videoInfo.dash == null) {
-      SmartDialog.showToast('当前视频不支持选择画质');
+      SmartDialog.showToast(L10n.current.headerControlShowSetVideoQaText);
       return;
     }
     final VideoQuality? currentVideoQa = videoDetailCtr.currentVideoQa.value;
@@ -931,13 +1009,16 @@ class HeaderControlState extends State<HeaderControl>
                     height: 45,
                     child: GestureDetector(
                       onTap: () => SmartDialog.showToast(
-                        '标灰画质需要bilibili会员（已是会员？请关闭无痕模式）；4k和杜比视界播放效果可能不佳',
+                        L10n.current.headerControlShowSetVideoQaOnTap2,
                       ),
                       child: Row(
                         spacing: 8,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text('选择画质', style: titleStyle),
+                          Text(
+                            L10n.current.headerControlShowSettingSheetTitle2,
+                            style: titleStyle,
+                          ),
                           Icon(
                             Icons.info_outline,
                             size: 16,
@@ -967,7 +1048,11 @@ class HeaderControlState extends State<HeaderControl>
                           ..currentVideoQa.value = newQa
                           ..updatePlayer();
 
-                        SmartDialog.showToast("画质已变为：${newQa.desc}");
+                        SmartDialog.showToast(
+                          L10n.current.headerControlShowSetVideoQaOnTap(
+                            newQa.desc,
+                          ),
+                        );
 
                         // update
                         if (!plPlayerController.tempPlayerConf) {
@@ -1020,11 +1105,14 @@ class HeaderControlState extends State<HeaderControl>
             borderRadius: const BorderRadius.all(Radius.circular(12)),
             child: CustomScrollView(
               slivers: [
-                const SliverToBoxAdapter(
+                SliverToBoxAdapter(
                   child: SizedBox(
                     height: 45,
                     child: Center(
-                      child: Text('选择音质', style: titleStyle),
+                      child: Text(
+                        L10n.current.headerControlShowSettingSheetTitle3,
+                        style: titleStyle,
+                      ),
                     ),
                   ),
                 ),
@@ -1047,7 +1135,11 @@ class HeaderControlState extends State<HeaderControl>
                           ..currentAudioQa = newQa
                           ..updatePlayer();
 
-                        SmartDialog.showToast("音质已变为：${newQa.desc}");
+                        SmartDialog.showToast(
+                          L10n.current.headerControlShowSetAudioQaOnTap(
+                            newQa.desc,
+                          ),
+                        );
 
                         // update
                         if (!plPlayerController.tempPlayerConf) {
@@ -1092,7 +1184,7 @@ class HeaderControlState extends State<HeaderControl>
 
     final list = videoFormat.firstWhere((e) => e.quality == firstCode).codecs;
     if (list == null) {
-      SmartDialog.showToast('当前视频不支持选择解码格式');
+      SmartDialog.showToast(L10n.current.headerControlShowSetDecodeFormatsText);
       return;
     }
 
@@ -1109,10 +1201,13 @@ class HeaderControlState extends State<HeaderControl>
             borderRadius: const BorderRadius.all(Radius.circular(12)),
             child: Column(
               children: [
-                const SizedBox(
+                SizedBox(
                   height: 45,
                   child: Center(
-                    child: Text('选择解码格式', style: titleStyle),
+                    child: Text(
+                      L10n.current.headerControlShowSetDecodeFormatsChild,
+                      style: titleStyle,
+                    ),
                   ),
                 ),
                 Expanded(
@@ -1132,7 +1227,12 @@ class HeaderControlState extends State<HeaderControl>
                               videoDetailCtr
                                 ..currentDecodeFormats = format
                                 ..updatePlayer();
-                              SmartDialog.showToast("解码已变为：${format.name}");
+                              SmartDialog.showToast(
+                                L10n.current
+                                    .headerControlShowSetDecodeFormatsOnTap(
+                                      format.name,
+                                    ),
+                              );
                             },
                             contentPadding: const .symmetric(horizontal: 20),
                             title: Text(format.description),
@@ -1167,8 +1267,13 @@ class HeaderControlState extends State<HeaderControl>
           titlePadding: const .fromLTRB(20, 20, 20, 12),
           title: Row(
             children: [
-              const Expanded(child: Text('保存字幕')),
-              const Text('格式: ', style: TextStyle(fontSize: 14)),
+              Expanded(
+                child: Text(L10n.current.headerControlShowSettingSheetTitle8),
+              ),
+              Text(
+                L10n.current.headerControlOnExportSubtitleChildren,
+                style: const TextStyle(fontSize: 14),
+              ),
               Builder(
                 builder: (context) => PopupMenuButton<SubtitleFormat>(
                   tooltip: '',
@@ -1370,16 +1475,23 @@ class HeaderControlState extends State<HeaderControl>
                 child: ListView(
                   padding: EdgeInsets.zero,
                   children: [
-                    const SizedBox(
+                    SizedBox(
                       height: 45,
-                      child: Center(child: Text('字幕设置', style: titleStyle)),
+                      child: Center(
+                        child: Text(
+                          L10n.current.headerControlShowSettingSheetTitle6,
+                          style: titleStyle,
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 10),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '字体大小 ${(subtitleFontScale * 100).toStringAsFixed(1)}%',
+                          L10n.current.headerControlShowSetSubtitleChildren5(
+                            (subtitleFontScale * 100).toStringAsFixed(1),
+                          ),
                         ),
                         resetBtn(theme, '100.0%', () => updateFontScale(1.0)),
                       ],
@@ -1400,7 +1512,9 @@ class HeaderControlState extends State<HeaderControl>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '全屏字体大小 ${(subtitleFontScaleFS * 100).toStringAsFixed(1)}%',
+                          L10n.current.headerControlShowSetSubtitleChildren7(
+                            (subtitleFontScaleFS * 100).toStringAsFixed(1),
+                          ),
                         ),
                         resetBtn(theme, '150.0%', () => updateFontScaleFS(1.5)),
                       ],
@@ -1420,7 +1534,11 @@ class HeaderControlState extends State<HeaderControl>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('字体粗细 ${subtitleFontWeight + 1}（可能无法精确调节）'),
+                        Text(
+                          L10n.current.headerControlShowSetSubtitleChildren4(
+                            subtitleFontWeight + 1,
+                          ),
+                        ),
                         resetBtn(theme, 6, () => updateFontWeight(5)),
                       ],
                     ),
@@ -1438,7 +1556,11 @@ class HeaderControlState extends State<HeaderControl>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('描边粗细 $subtitleStrokeWidth'),
+                        Text(
+                          L10n.current.headerControlShowSetSubtitleChildren3(
+                            subtitleStrokeWidth,
+                          ),
+                        ),
                         resetBtn(theme, 2.0, () => updateStrokeWidth(2.0)),
                       ],
                     ),
@@ -1456,7 +1578,11 @@ class HeaderControlState extends State<HeaderControl>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('左右边距 $subtitlePaddingH'),
+                        Text(
+                          L10n.current.headerControlShowSetSubtitleChildren(
+                            subtitlePaddingH,
+                          ),
+                        ),
                         resetBtn(theme, 24, () => updateHorizontalPadding(24)),
                       ],
                     ),
@@ -1474,7 +1600,11 @@ class HeaderControlState extends State<HeaderControl>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('底部边距 $subtitlePaddingB'),
+                        Text(
+                          L10n.current.headerControlShowSetSubtitleChildren2(
+                            subtitlePaddingB,
+                          ),
+                        ),
                         resetBtn(theme, 24, () => updateBottomPadding(24)),
                       ],
                     ),
@@ -1493,7 +1623,9 @@ class HeaderControlState extends State<HeaderControl>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '背景不透明度 ${(subtitleBgOpacity * 100).toStringAsFixed(1)}%',
+                          L10n.current.headerControlShowSetSubtitleChildren6(
+                            (subtitleBgOpacity * 100).toStringAsFixed(1),
+                          ),
                         ),
                         resetBtn(theme, '67%', () => updateOpacity(0.67)),
                       ],
@@ -1544,7 +1676,7 @@ class HeaderControlState extends State<HeaderControl>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('弹幕列表'),
+                  Text(L10n.current.headerControlShowSettingSheetTitle5),
                   iconButton(
                     onPressed: () => setState(() {}),
                     icon: const Icon(Icons.refresh),
@@ -1707,7 +1839,9 @@ class HeaderControlState extends State<HeaderControl>
             title,
             Obx(
               () => Text(
-                '${introController.total.value}人正在看',
+                L10n.current.headerControlChildren(
+                  introController.total.value,
+                ),
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 11,
@@ -1737,7 +1871,7 @@ class HeaderControlState extends State<HeaderControl>
                 width: btnWidth,
                 height: btnHeight,
                 child: IconButton(
-                  tooltip: '返回',
+                  tooltip: L10n.current.back,
                   style: btnStyle,
                   icon: const Icon(
                     FontAwesomeIcons.arrowLeft,
@@ -1754,7 +1888,8 @@ class HeaderControlState extends State<HeaderControl>
                   width: btnWidth,
                   height: btnHeight,
                   child: IconButton(
-                    tooltip: '返回主页',
+                    tooltip:
+                        L10n.current.videoDetailPageVBuildOverlayToolBarTooltip,
                     style: btnStyle,
                     icon: const Icon(
                       FontAwesomeIcons.house,
@@ -1775,7 +1910,9 @@ class HeaderControlState extends State<HeaderControl>
                     height: btnHeight,
                     child: IconButton(
                       style: btnStyle,
-                      tooltip: '${isAlwaysOnTop ? '取消' : ''}置顶',
+                      tooltip: L10n.current.authorPanelMorePanelTitle16(
+                        isAlwaysOnTop.toString(),
+                      ),
                       onPressed: () =>
                           plPlayerController.setAlwaysOnTop(!isAlwaysOnTop),
                       icon: isAlwaysOnTop
@@ -1799,7 +1936,7 @@ class HeaderControlState extends State<HeaderControl>
                       width: btnWidth,
                       height: btnHeight,
                       child: IconButton(
-                        tooltip: '听音频',
+                        tooltip: L10n.current.videoDetailPageVMoreBtnChild,
                         style: btnStyle,
                         onPressed: videoDetailCtr.toAudioPage,
                         icon: const Icon(
@@ -1813,7 +1950,7 @@ class HeaderControlState extends State<HeaderControl>
                     width: btnWidth,
                     height: btnHeight,
                     child: IconButton(
-                      tooltip: '投屏',
+                      tooltip: L10n.current.dLNAPageTitle,
                       style: btnStyle,
                       onPressed: videoDetailCtr.onCast,
                       icon: const Icon(
@@ -1829,7 +1966,7 @@ class HeaderControlState extends State<HeaderControl>
                     width: btnWidth,
                     height: btnHeight,
                     child: IconButton(
-                      tooltip: '提交片段',
+                      tooltip: L10n.current.postPanelBuildPageChild,
                       style: btnStyle,
                       onPressed: () => videoDetailCtr.onBlock(context),
                       icon: const Icon(
@@ -1845,7 +1982,7 @@ class HeaderControlState extends State<HeaderControl>
                           width: btnWidth,
                           height: btnHeight,
                           child: IconButton(
-                            tooltip: '片段信息',
+                            tooltip: L10n.current.audioPageTooltip3,
                             style: btnStyle,
                             onPressed: videoDetailCtr.showSBDetail,
                             icon: const Icon(
@@ -1863,7 +2000,7 @@ class HeaderControlState extends State<HeaderControl>
                   width: btnWidth,
                   height: btnHeight,
                   child: IconButton(
-                    tooltip: '发弹幕',
+                    tooltip: L10n.current.liveHeaderControlTooltip,
                     style: btnStyle,
                     onPressed: videoDetailCtr.showShootDanmakuSheet,
                     icon: const Icon(
@@ -1881,7 +2018,12 @@ class HeaderControlState extends State<HeaderControl>
                       final enableShowDanmaku =
                           plPlayerController.enableShowDanmaku.value;
                       return IconButton(
-                        tooltip: "${enableShowDanmaku ? '关闭' : '开启'}弹幕",
+                        tooltip: L10n.current
+                            .pagesDynamicsWidgetsVideoPanelVideoSeasonWidgetChildren2(
+                              enableShowDanmaku
+                                  ? L10n.current.close
+                                  : L10n.current.enable,
+                            ),
                         style: btnStyle,
                         onPressed: () {
                           final newVal = !enableShowDanmaku;
@@ -1913,7 +2055,7 @@ class HeaderControlState extends State<HeaderControl>
                 width: btnWidth,
                 height: btnHeight,
                 child: IconButton(
-                  tooltip: '弹幕设置',
+                  tooltip: L10n.current.danmakuSettings,
                   style: btnStyle,
                   onPressed: showSetDanmaku,
                   icon: const Icon(
@@ -1929,7 +2071,7 @@ class HeaderControlState extends State<HeaderControl>
                   width: btnWidth,
                   height: btnHeight,
                   child: IconButton(
-                    tooltip: '画中画',
+                    tooltip: L10n.current.liveHeaderControlTooltip2,
                     style: btnStyle,
                     onPressed: () {
                       if (PlatformUtils.isDesktop) {
@@ -1951,7 +2093,8 @@ class HeaderControlState extends State<HeaderControl>
                 width: btnWidth,
                 height: btnHeight,
                 child: IconButton(
-                  tooltip: "更多设置",
+                  tooltip:
+                      L10n.current.videoDetailPageVBuildOverlayToolBarTooltip2,
                   style: btnStyle,
                   onPressed: showSettingSheet,
                   icon: const Icon(
@@ -1980,7 +2123,7 @@ class HeaderControlState extends State<HeaderControl>
                       ),
                       selectIcon: const Icon(FontAwesomeIcons.solidThumbsUp),
                       selectStatus: introController.hasLike.value,
-                      semanticsLabel: '点赞',
+                      semanticsLabel: L10n.current.like,
                       animation: introController.tripleAnimation,
                       onStartTriple: () {
                         plPlayerController.tripling = true;
@@ -2011,7 +2154,7 @@ class HeaderControlState extends State<HeaderControl>
                         ),
                         onTap: () => ugc.handleAction(ugc.actionDislikeVideo),
                         selectStatus: ugc.hasDislike.value,
-                        semanticsLabel: '点踩',
+                        semanticsLabel: L10n.current.videoPopupMenuChild2,
                       ),
                     ),
                   ),
@@ -2029,7 +2172,7 @@ class HeaderControlState extends State<HeaderControl>
                       selectIcon: const Icon(FontAwesomeIcons.b),
                       onTap: introController.actionCoinVideo,
                       selectStatus: introController.hasCoin,
-                      semanticsLabel: '投币',
+                      semanticsLabel: L10n.current.giveCoins,
                     ),
                   ),
                 ),
@@ -2051,7 +2194,7 @@ class HeaderControlState extends State<HeaderControl>
                         isLongPress: true,
                       ),
                       selectStatus: introController.hasFav.value,
-                      semanticsLabel: '收藏',
+                      semanticsLabel: L10n.current.favourite,
                     ),
                   ),
                 ),
@@ -2065,7 +2208,7 @@ class HeaderControlState extends State<HeaderControl>
                       color: Colors.white,
                     ),
                     onTap: () => introController.actionShareVideo(context),
-                    semanticsLabel: '分享',
+                    semanticsLabel: L10n.current.share,
                   ),
                 ),
               ],

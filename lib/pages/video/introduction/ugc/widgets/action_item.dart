@@ -78,6 +78,7 @@ class ActionItem extends StatelessWidget {
         onTapCancel: _isThumbsUp ? onCancelTriple : null,
         child: expand
             ? Column(
+                mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [child, _buildText(theme)],
               )
@@ -92,6 +93,7 @@ class ActionItem extends StatelessWidget {
     final child = Text(
       hasText ? text! : '-',
       key: hasText ? ValueKey(text!) : null,
+      textAlign: TextAlign.center,
       style: TextStyle(
         color: selectStatus
             ? theme.colorScheme.primary

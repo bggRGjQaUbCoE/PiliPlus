@@ -1,9 +1,14 @@
+import 'package:PiliPlus/l10n/l10n.dart';
+
 enum EpisodeType {
-  part('分P'),
-  season('合集'),
-  pgc('剧集'),
+  part,
+  season,
+  pgc,
   ;
 
-  final String title;
-  const EpisodeType(this.title);
+  String get title => switch (this) {
+    part => L10n.current.episodeTypePartTitle,
+    season => L10n.current.collection,
+    pgc => L10n.current.rankTypeTvLabel,
+  };
 }

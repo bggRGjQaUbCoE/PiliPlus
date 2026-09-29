@@ -13,6 +13,7 @@ import 'package:PiliPlus/grpc/bilibili/im/interfaces/v1.pb.dart'
     show EmotionInfo;
 import 'package:PiliPlus/grpc/bilibili/im/type.pb.dart' show Msg, MsgType;
 import 'package:PiliPlus/http/search.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
@@ -116,7 +117,7 @@ class ChatItem extends StatelessWidget {
                 isPic ? const SizedBox(height: 7) : const SizedBox(height: 2),
                 if (item.msgStatus == 1)
                   Text(
-                    '  已撤回',
+                    L10n.current.chatItemChildren,
                     style: theme.textTheme.labelSmall!.copyWith(
                       color: theme.colorScheme.onErrorContainer,
                     ),
@@ -128,7 +129,7 @@ class ChatItem extends StatelessWidget {
                     color: theme.colorScheme.outline.withValues(alpha: 0.2),
                   ),
                   Text(
-                    '此条消息为自动回复',
+                    L10n.current.chatItemChildren2,
                     style: theme.textTheme.labelMedium!.copyWith(
                       color: theme.colorScheme.outline,
                     ),
@@ -229,7 +230,9 @@ class ChatItem extends StatelessWidget {
             ),
             const SizedBox(height: 1),
             Text(
-              '${content['author']} · 直播',
+              L10n.current.chatItemMsgTypeCommonShareCardChildren(
+                (content['author']).toString(),
+              ),
               style: TextStyle(
                 letterSpacing: 0.6,
                 height: 1.5,
@@ -347,7 +350,7 @@ class ChatItem extends StatelessWidget {
                       SmartDialog.showToast(err.toString());
                     }
                   } else {
-                    SmartDialog.showToast('未匹配到 BV 号');
+                    SmartDialog.showToast(L10n.current.chatItemMsgTypeOnTap);
                     PageUtils.handleWebview(i['jump_url']);
                   }
                 },
@@ -469,7 +472,9 @@ class ChatItem extends StatelessWidget {
                       vertical: 8,
                     ),
                     child: Text(
-                      content['times'] == 0 ? '内容已失效' : content['title'],
+                      content['times'] == 0
+                          ? L10n.current.chatItemMsgTypeVideoCardChild
+                          : content['title'],
                       style: TextStyle(
                         letterSpacing: 0.6,
                         height: 1.5,
@@ -507,13 +512,13 @@ class ChatItem extends StatelessWidget {
     switch (content['source']) {
       // album
       case 2:
-        type = '相簿';
+        type = L10n.current.chatItemMsgTypeShareV2Text;
         onTap = () => PageUtils.pushDynFromId(rid: content['id']);
         break;
 
       // video
       case 5:
-        type = '视频';
+        type = L10n.current.video;
         onTap = () async {
           dynamic aid = content['id'];
           if (aid is String) {
@@ -545,7 +550,7 @@ class ChatItem extends StatelessWidget {
 
       // article
       case 6:
-        type = '专栏';
+        type = L10n.current.article;
         onTap = () => Get.toNamed(
           '/articlePage',
           parameters: {
@@ -557,7 +562,7 @@ class ChatItem extends StatelessWidget {
 
       // dynamic
       case 11:
-        type = '动态';
+        type = L10n.current.dynamics;
         onTap = () => PageUtils.pushDynFromId(id: content['id']);
         break;
 
@@ -740,7 +745,7 @@ class ChatItem extends StatelessWidget {
             behavior: HitTestBehavior.opaque,
             onTap: () => PiliScheme.routePushFromUrl(uri),
             child: Text(
-              text != null && text.isNotEmpty ? text : '查看详情',
+              text != null && text.isNotEmpty ? text : L10n.current.viewDetails,
             ),
           ),
         ];

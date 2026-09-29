@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 
 class ForwardSeekIndicator extends StatefulWidget {
@@ -76,7 +77,9 @@ class ForwardSeekIndicatorState extends State<ForwardSeekIndicator> {
               ),
               const SizedBox(height: 8.0),
               Text(
-                '快进${duration.inSeconds}秒',
+                L10n.current.forwardSeekIndicatorChildren(
+                  duration.inSeconds,
+                ),
                 style: const TextStyle(
                   fontSize: 12.0,
                   color: Colors.white,

@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/route_aware_mixin.dart'
     show routeObserver;
 import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/http/browser_ua.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/main.dart' show webViewEnvironment;
 import 'package:PiliPlus/models/common/webview_menu_type.dart';
 import 'package:PiliPlus/plugin/linux_webview.dart';
@@ -199,11 +200,14 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
             await LinuxCookieManager.deleteAllCookies();
             await LinuxWebviewPlugin.clearCache();
             _linuxController?.reload();
-            SmartDialog.showToast('已清理缓存并刷新', alignment: Alignment.topCenter);
+            SmartDialog.showToast(
+              L10n.current.webviewPageHandleMenuItemText2,
+              alignment: Alignment.topCenter,
+            );
           } else {
             await InAppWebViewController.clearAllCache();
             await _webViewController?.clearHistory();
-            SmartDialog.showToast('已清理');
+            SmartDialog.showToast(L10n.current.webviewPageHandleMenuItemText);
           }
         } catch (e) {
           SmartDialog.showToast(e.toString());
@@ -230,10 +234,13 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
             }
           }
           _linuxController?.reload();
-          SmartDialog.showToast('设置成功，正在刷新网页', alignment: Alignment.topCenter);
+          SmartDialog.showToast(
+            L10n.current.webviewPageHandleMenuItemText3,
+            alignment: Alignment.topCenter,
+          );
         } else {
           await LoginUtils.setWebCookie();
-          SmartDialog.showToast('设置成功，刷新或重新打开网页');
+          SmartDialog.showToast(L10n.current.webviewPageHandleMenuItemText4);
         }
         break;
     }
@@ -496,7 +503,9 @@ document.styleSheets[0].insertRule('#app__display-area > div.control-panel {disp
                             final url = request.url.toString();
                             return AlertDialog(
                               title: Text(
-                                '下载文件: $suggestedFilename ?',
+                                L10n.current.webviewPageTitle(
+                                  suggestedFilename,
+                                ),
                                 style: const TextStyle(fontSize: 18),
                               ),
                               content: SelectionText(url),
@@ -504,7 +513,7 @@ document.styleSheets[0].insertRule('#app__display-area > div.control-panel {disp
                                 TextButton(
                                   onPressed: Get.back,
                                   child: Text(
-                                    '取消',
+                                    L10n.current.cancel,
                                     style: TextStyle(
                                       color: Theme.of(context)
                                           .colorScheme
@@ -517,7 +526,11 @@ document.styleSheets[0].insertRule('#app__display-area > div.control-panel {disp
                                     Get.back();
                                     PageUtils.launchURL(url);
                                   },
-                                  child: Text('确定 ($fileSize)'),
+                                  child: Text(
+                                    L10n.current.webviewPageChild(
+                                      fileSize,
+                                    ),
+                                  ),
                                 ),
                               ],
                             );
@@ -567,9 +580,9 @@ document.styleSheets[0].insertRule('#app__display-area > div.control-panel {disp
                       final snackBar = SnackBar(
                         persist: false,
                         showCloseIcon: true,
-                        content: const Text('当前网页将要打开外部链接，是否打开'),
+                        content: Text(L10n.current.snackBarContent),
                         action: SnackBarAction(
-                          label: '打开',
+                          label: L10n.current.open,
                           onPressed: () => PageUtils.launchURL(url),
                         ),
                       );

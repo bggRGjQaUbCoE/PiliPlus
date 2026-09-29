@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 
 Widget selectMask(
@@ -29,7 +30,8 @@ Widget selectMask(
           child: Icon(
             Icons.done_all_outlined,
             color: colorScheme.primary,
-            semanticLabel: '取消选择',
+            semanticLabel:
+                L10n.current.commonWidgetsSelectMaskSelectMaskSemanticLabel,
           ),
         ),
       ),

@@ -1,4 +1,5 @@
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/pages/rcmd/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/utils/recommend_filter.dart';
@@ -8,17 +9,17 @@ import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 List<SettingsModel> get recommendSettings => [
-  const SwitchModel(
-    title: '首页使用app端推荐',
-    subtitle: '若web端推荐不太符合预期，可尝试切换至app端推荐',
-    leading: Icon(Icons.model_training_outlined),
+  SwitchModel(
+    title: L10n.current.appRcmdRecommendSettingsTitle,
+    subtitle: L10n.current.appRcmdRecommendSettingsSubtitle,
+    leading: const Icon(Icons.model_training_outlined),
     setKey: SettingBoxKey.appRcmd,
     defaultVal: true,
     needReboot: true,
   ),
   SwitchModel(
-    title: '保留首页推荐刷新',
-    subtitle: '下拉刷新时保留上次内容',
+    title: L10n.current.enableSaveLastDataRecommendSettingsTitle,
+    subtitle: L10n.current.enableSaveLastDataRecommendSettingsSubtitle,
     leading: const Icon(Icons.refresh),
     setKey: SettingBoxKey.enableSaveLastData,
     defaultVal: true,
@@ -33,8 +34,8 @@ List<SettingsModel> get recommendSettings => [
     },
   ),
   SwitchModel(
-    title: '显示上次看到位置提示',
-    subtitle: '保留上次推荐时，在上次刷新位置显示提示',
+    title: L10n.current.savedRcmdTipRecommendSettingsTitle,
+    subtitle: L10n.current.savedRcmdTipRecommendSettingsSubtitle,
     leading: const Icon(Icons.tips_and_updates_outlined),
     setKey: SettingBoxKey.savedRcmdTip,
     defaultVal: true,
@@ -49,14 +50,16 @@ List<SettingsModel> get recommendSettings => [
     },
   ),
   getVideoFilterSelectModel(
-    title: '点赞率',
+    title:
+        L10n.current.pagesSettingModelsRecommendSettingsRecommendSettingsTitle,
     suffix: '%',
     key: SettingBoxKey.minLikeRatioForRecommend,
     values: [0, 1, 2, 3, 4],
     onChanged: (value) => RecommendFilter.minLikeRatioForRecommend = value,
   ),
   getBanWordModel(
-    title: '标题关键词过滤',
+    title:
+        L10n.current.pagesSettingModelsRecommendSettingsRecommendSettingsTitle4,
     key: SettingBoxKey.banWordForRecommend,
     onChanged: (value) {
       RecommendFilter.rcmdRegExp = value;
@@ -64,7 +67,8 @@ List<SettingsModel> get recommendSettings => [
     },
   ),
   getBanWordModel(
-    title: 'App推荐/热门/排行榜: 视频分区关键词过滤',
+    title:
+        L10n.current.pagesSettingModelsRecommendSettingsRecommendSettingsTitle5,
     key: SettingBoxKey.banWordForZone,
     onChanged: (value) {
       VideoHttp.zoneRegExp = value;
@@ -72,29 +76,31 @@ List<SettingsModel> get recommendSettings => [
     },
   ),
   getVideoFilterSelectModel(
-    title: '视频时长',
+    title:
+        L10n.current.pagesSettingModelsRecommendSettingsRecommendSettingsTitle3,
     suffix: 's',
     key: SettingBoxKey.minDurationForRcmd,
     values: [0, 30, 60, 90, 120],
     onChanged: (value) => RecommendFilter.minDurationForRcmd = value,
   ),
   getVideoFilterSelectModel(
-    title: '播放量',
+    title:
+        L10n.current.pagesSettingModelsRecommendSettingsRecommendSettingsTitle2,
     key: SettingBoxKey.minPlayForRcmd,
     values: [0, 50, 100, 500, 1000],
     onChanged: (value) => RecommendFilter.minPlayForRcmd = value,
   ),
   SwitchModel(
-    title: '已关注UP豁免推荐过滤',
-    subtitle: '推荐中已关注用户发布的内容不会被过滤',
+    title: L10n.current.exemptFilterForFollowedRecommendSettingsTitle,
+    subtitle: L10n.current.exemptFilterForFollowedRecommendSettingsSubtitle,
     leading: const Icon(Icons.favorite_border_outlined),
     setKey: SettingBoxKey.exemptFilterForFollowed,
     defaultVal: true,
     onChanged: (value) => RecommendFilter.exemptFilterForFollowed = value,
   ),
   SwitchModel(
-    title: '过滤器也应用于详情页相关视频',
-    subtitle: '其它（如热门视频、搜索等）均不受过滤器影响，无法豁免相关视频中的已关注UP',
+    title: L10n.current.applyFilterToRelatedVideosRecommendSettingsTitle,
+    subtitle: L10n.current.applyFilterToRelatedVideosRecommendSettingsSubtitle,
     leading: const Icon(Icons.explore_outlined),
     setKey: SettingBoxKey.applyFilterToRelatedVideos,
     defaultVal: true,

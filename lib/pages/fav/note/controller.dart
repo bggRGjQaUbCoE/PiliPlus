@@ -1,5 +1,6 @@
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/fav/fav_note/list.dart';
 import 'package:PiliPlus/pages/common/multi_select/multi_select_controller.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -44,7 +45,7 @@ class FavNoteController
     );
     if (res.isSuccess) {
       afterDelete(removeList);
-      SmartDialog.showToast('删除成功');
+      SmartDialog.showToast(L10n.current.commonWhisperControllerOnRemoveText);
     } else {
       res.toast();
     }

@@ -1,3 +1,4 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 
@@ -24,10 +25,12 @@ class UserInfo {
       Duration(minutes: minutesSaved.round()),
     );
     if (minutes.isEmpty) {
-      minutes = '0分钟';
+      minutes = L10n.current.userInfoToStringText;
     }
-    return ('您提交了 ${NumUtils.formatPositiveDecimal(segmentCount)} 片段\n'
-        '您为大家节省了 ${NumUtils.formatPositiveDecimal(viewCount)} 片段\n'
-        '($minutes 的生命)');
+    return (L10n.current.userInfoToStringText2(
+      NumUtils.formatPositiveDecimal(segmentCount),
+      NumUtils.formatPositiveDecimal(viewCount),
+      minutes,
+    ));
   }
 }

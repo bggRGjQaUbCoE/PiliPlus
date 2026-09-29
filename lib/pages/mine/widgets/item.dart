@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:get/get.dart';
@@ -64,7 +65,10 @@ class FavFolderItem extends StatelessWidget {
             maxLines: 1,
           ),
           Text(
-            ' 共${item.mediaCount}条视频 · ${BiliUtils.isPublicFavText(item.attr)}',
+            L10n.current.favFolderItemChildren(
+              item.mediaCount,
+              BiliUtils.isPublicFavText(item.attr),
+            ),
             style: theme.textTheme.labelSmall!.copyWith(
               color: theme.colorScheme.outline,
             ),

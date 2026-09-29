@@ -13,6 +13,7 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart'
 import 'package:PiliPlus/grpc/bilibili/im/type.pb.dart' show Msg;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/msg.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/pages/common/publish/common_rich_text_pub_page.dart';
 import 'package:PiliPlus/pages/emote/view.dart';
@@ -106,7 +107,7 @@ class _WhisperDetailPageState
         ),
         actions: [
           IconButton(
-            tooltip: '设置',
+            tooltip: L10n.current.settings,
             onPressed: () => Get.to(
               WhisperLinkSettingPage(
                 talkerUid: _whisperDetailController.talkerId,
@@ -206,13 +207,19 @@ class _WhisperDetailPageState
               msgType: .EN_MSG_TYPE_DRAW_BACK,
               index: index,
             ),
-            child: const Text('撤回', style: TextStyle(fontSize: 14)),
+            child: Text(
+              L10n.current.recall,
+              style: const TextStyle(fontSize: 14),
+            ),
           )
         else
           PopupMenuItem(
             height: 42,
             onTap: () => onReport(item),
-            child: const Text('举报', style: TextStyle(fontSize: 14)),
+            child: Text(
+              L10n.current.report,
+              style: const TextStyle(fontSize: 14),
+            ),
           ),
       ],
     );
@@ -250,7 +257,10 @@ class _WhisperDetailPageState
                   );
                 },
                 dense: true,
-                title: const Text('撤回', style: TextStyle(fontSize: 14)),
+                title: Text(
+                  L10n.current.recall,
+                  style: const TextStyle(fontSize: 14),
+                ),
               )
             : ListTile(
                 onTap: () {
@@ -258,7 +268,10 @@ class _WhisperDetailPageState
                   onReport(item);
                 },
                 dense: true,
-                title: const Text('举报', style: TextStyle(fontSize: 14)),
+                title: Text(
+                  L10n.current.report,
+                  style: const TextStyle(fontSize: 14),
+                ),
               ),
       ),
     );
@@ -278,7 +291,7 @@ class _WhisperDetailPageState
             onPressed: () =>
                 updatePanelType(panelType.value == .emoji ? .keyboard : .emoji),
             icon: const Icon(Icons.emoji_emotions),
-            tooltip: '表情',
+            tooltip: L10n.current.buttonItemsDynTextMenuBuilderLabel,
           ),
           Expanded(
             child: Obx(
@@ -294,7 +307,8 @@ class _WhisperDetailPageState
                 textInputAction: TextInputAction.newline,
                 decoration: InputDecoration(
                   filled: true,
-                  hintText: '发个消息聊聊呗~',
+                  hintText:
+                      L10n.current.whisperDetailPageBuildInputViewHintText,
                   fillColor: theme.colorScheme.surface,
                   border: const OutlineInputBorder(
                     borderSide: BorderSide.none,
@@ -329,7 +343,9 @@ class _WhisperDetailPageState
                       );
                       if (pickedFile != null) {
                         final path = pickedFile.path;
-                        SmartDialog.showLoading(msg: '正在上传图片');
+                        SmartDialog.showLoading(
+                          msg: L10n.current.whisperDetailPageBuildInputViewMsg2,
+                        );
                         final result = await MsgHttp.uploadBfs(
                           path: path,
                           biz: 'im',
@@ -348,7 +364,10 @@ class _WhisperDetailPageState
                             'original': 1,
                             'size': response.imgSize,
                           };
-                          SmartDialog.showLoading(msg: '正在发送');
+                          SmartDialog.showLoading(
+                            msg:
+                                L10n.current.whisperDetailPageBuildInputViewMsg,
+                          );
                           await _whisperDetailController
                               .sendMsg(
                                 picMsg: picMsg,
@@ -375,7 +394,7 @@ class _WhisperDetailPageState
                       ? Icons.send
                       : Icons.add_photo_alternate_outlined,
                 ),
-                tooltip: enablePublish ? '发送' : '图片',
+                tooltip: enablePublish ? L10n.current.send : L10n.current.image,
               );
             },
           ),

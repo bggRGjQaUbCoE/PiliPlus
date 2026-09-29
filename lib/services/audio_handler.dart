@@ -3,6 +3,7 @@ import 'dart:ui' show PlatformDispatcher;
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart' show DetailItem;
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/models_new/live/live_room_info_h5/data.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart';
@@ -21,14 +22,17 @@ import 'package:path/path.dart' as path;
 Future<VideoPlayerServiceHandler> initAudioService() {
   return AudioService.init(
     builder: VideoPlayerServiceHandler.new,
-    config: const AudioServiceConfig(
+    config: AudioServiceConfig(
       androidNotificationChannelId: 'com.example.piliplus.audio',
-      androidNotificationChannelName: 'Audio Service ${Constants.appName}',
+      androidNotificationChannelName: L10n.current.audioNotificationChannel(
+        Constants.appName,
+      ),
       androidNotificationOngoing: true,
       androidStopForegroundOnPause: true,
-      fastForwardInterval: Duration(seconds: 10),
-      rewindInterval: Duration(seconds: 10),
-      androidNotificationChannelDescription: 'Media notification channel',
+      fastForwardInterval: const Duration(seconds: 10),
+      rewindInterval: const Duration(seconds: 10),
+      androidNotificationChannelDescription:
+          L10n.current.audioNotificationDescription,
       androidNotificationIcon: 'drawable/ic_notification_icon',
     ),
   );
@@ -144,27 +148,27 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
         speed: speed,
         controls: [
           if (!isLive)
-            const MediaControl(
+            MediaControl(
               androidIcon: 'drawable/ic_player_rewind_10s',
-              label: 'Rewind',
+              label: L10n.current.rewind,
               action: .rewind,
             ),
           if (playing)
-            const MediaControl(
+            MediaControl(
               androidIcon: 'drawable/ic_player_pause',
-              label: 'Pause',
+              label: L10n.current.pause,
               action: .pause,
             )
           else
-            const MediaControl(
+            MediaControl(
               androidIcon: 'drawable/ic_player_play',
-              label: 'Play',
+              label: L10n.current.play,
               action: .play,
             ),
           if (!isLive)
-            const MediaControl(
+            MediaControl(
               androidIcon: 'drawable/ic_player_fast_forward_10s',
-              label: 'Fast Forward',
+              label: L10n.current.fastForward,
               action: .fastForward,
             ),
         ],

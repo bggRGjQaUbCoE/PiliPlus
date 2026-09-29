@@ -1,6 +1,7 @@
 import 'package:PiliPlus/grpc/bilibili/app/im/v1.pb.dart';
 import 'package:PiliPlus/grpc/im.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -38,7 +39,9 @@ class WhisperBlockController
         ..value.data!.add(KeywordBlockingItem(keyword: keyword))
         ..refresh();
       count.value += 1;
-      SmartDialog.showToast('添加成功');
+      SmartDialog.showToast(
+        L10n.current.danmakuBlockControllerDanmakuFilterAddText,
+      );
     } else {
       res.toast();
     }
@@ -51,7 +54,7 @@ class WhisperBlockController
         ..value.data!.remove(item)
         ..refresh();
       count.value -= 1;
-      SmartDialog.showToast('删除成功');
+      SmartDialog.showToast(L10n.current.commonWhisperControllerOnRemoveText);
     } else {
       res.toast();
     }

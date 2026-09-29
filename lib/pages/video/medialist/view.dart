@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/media_list/media_list.dart';
@@ -81,13 +82,15 @@ class _MediaListPanelState extends State<MediaListPanel>
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
-                    widget.panelTitle ?? '稍后再看',
+                    widget.panelTitle ?? L10n.current.watchLater,
                     style: const TextStyle(fontSize: 16),
                   ),
                 ),
                 iconButton(
                   iconSize: 20,
-                  tooltip: widget.desc ? '顺序播放' : '倒序播放',
+                  tooltip: widget.desc
+                      ? L10n.current.playSequentially
+                      : L10n.current.playReverse,
                   icon: widget.desc
                       ? const Icon(MdiIcons.sortAscending)
                       : const Icon(MdiIcons.sortDescending),
@@ -98,7 +101,7 @@ class _MediaListPanelState extends State<MediaListPanel>
                 ),
                 iconButton(
                   iconSize: 20,
-                  tooltip: '关闭',
+                  tooltip: L10n.current.close,
                   icon: const Icon(Icons.close),
                   onPressed: Get.back,
                 ),
@@ -176,7 +179,9 @@ class _MediaListPanelState extends State<MediaListPanel>
           child: InkWell(
             onTap: () {
               if (item.type != 2) {
-                SmartDialog.showToast('不支持播放该类型视频');
+                SmartDialog.showToast(
+                  L10n.current.mediaListPanelBuildItemOnTap,
+                );
                 return;
               }
               Get.back();
@@ -292,7 +297,7 @@ class _MediaListPanelState extends State<MediaListPanel>
                       customBorder: const CircleBorder(),
                       onTap: () => showConfirmDialog(
                         context: context,
-                        title: const Text('确定移除该视频？'),
+                        title: Text(L10n.current.mediaListPanelBuildItemTitle),
                         onConfirm: () => widget.onDelete!(item, index),
                       ),
                       onLongPress: () => widget.onDelete!(item, index),

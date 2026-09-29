@@ -1,12 +1,16 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 
 enum SuperResolutionType with EnumWithLabel {
-  disable('禁用'),
-  efficiency('效率'),
-  quality('画质'),
+  disable,
+  efficiency,
+  quality,
   ;
 
   @override
-  final String label;
-  const SuperResolutionType(this.label);
+  String get label => switch (this) {
+    disable => L10n.current.disable,
+    efficiency => L10n.current.superResolutionTypeEfficiencyLabel,
+    quality => L10n.current.videoQuality,
+  };
 }

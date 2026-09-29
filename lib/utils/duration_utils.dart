@@ -1,5 +1,7 @@
 import 'dart:math' show pow;
 
+import 'package:PiliPlus/l10n/l10n.dart';
+
 abstract final class DurationUtils {
   static String formatDuration(num? seconds) {
     if (seconds == null || seconds == 0) {
@@ -42,14 +44,12 @@ abstract final class DurationUtils {
     final hours = duration.inHours % 24;
     final minutes = duration.inMinutes % 60;
 
-    final format = StringBuffer();
-
-    if (years > 0) format.write('$years年');
-    if (months > 0) format.write('$months月');
-    if (days > 0) format.write('$days天');
-    if (hours > 0) format.write('$hours小时');
-    if (minutes > 0) format.write('$minutes分钟');
-
-    return format.toString();
+    return [
+      if (years > 0) L10n.current.durationYears(years),
+      if (months > 0) L10n.current.durationMonths(months),
+      if (days > 0) L10n.current.durationDays(days),
+      if (hours > 0) L10n.current.durationHours(hours),
+      if (minutes > 0) L10n.current.durationMinutes(minutes),
+    ].join(L10n.current.durationSeparator);
   }
 }

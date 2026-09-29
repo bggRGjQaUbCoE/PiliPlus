@@ -3,6 +3,7 @@ import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/http/search.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models_new/space/space_archive/item.dart';
 import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
@@ -125,14 +126,14 @@ class VideoCardVMemberHome extends StatelessWidget {
                               : PBadgeType.primary,
                         )
                       else if (videoItem.isCooperation == true)
-                        const PBadge(
-                          text: '合作',
+                        PBadge(
+                          text: L10n.current.videoCardHLaterText,
                           top: 6,
                           right: 6,
                         )
                       else if (videoItem.isSteins == true)
-                        const PBadge(
-                          text: '互动',
+                        PBadge(
+                          text: L10n.current.memberCoinLikeItemText,
                           top: 6,
                           right: 6,
                         ),

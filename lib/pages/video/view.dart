@@ -17,6 +17,7 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart'
 import 'package:PiliPlus/common/widgets/simple_app_bar.dart';
 import 'package:PiliPlus/common/widgets/sliver/video_header.dart';
 import 'package:PiliPlus/common/widgets/svg/play_icon.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/episode_panel_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
@@ -611,13 +612,13 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     final String playStat;
     if (videoDetailController.playedTime == null) {
       icon = Icons.play_arrow_rounded;
-      playStat = '立即';
+      playStat = L10n.current.playImmediately;
     } else if (plPlayerController!.isCompleted) {
       icon = CustomIcons.replay_rounded;
-      playStat = '重新';
+      playStat = L10n.current.replayVideo;
     } else {
       icon = Icons.play_arrow_rounded;
-      playStat = '继续';
+      playStat = L10n.current.resumeVideo;
     }
     final playBtn = Row(
       spacing: 2,
@@ -625,7 +626,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       children: [
         Icon(icon, color: colorScheme.primary),
         Text(
-          '$playStat播放',
+          playStat,
           style: TextStyle(color: colorScheme.primary),
         ),
       ],
@@ -649,7 +650,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                       width: 42,
                       height: 34,
                       child: IconButton(
-                        tooltip: '返回',
+                        tooltip: L10n.current.back,
                         icon: Icon(
                           FontAwesomeIcons.arrowLeft,
                           size: 15,
@@ -662,7 +663,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                       width: 42,
                       height: 34,
                       child: IconButton(
-                        tooltip: '返回主页',
+                        tooltip: L10n
+                            .current
+                            .videoDetailPageVBuildOverlayToolBarTooltip,
                         icon: Icon(
                           FontAwesomeIcons.house,
                           size: 15,
@@ -684,7 +687,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                         width: 42,
                         height: 34,
                         child: IconButton(
-                          tooltip: "更多设置",
+                          tooltip: L10n
+                              .current
+                              .videoDetailPageVBuildOverlayToolBarTooltip2,
                           style: const ButtonStyle(
                             padding: WidgetStatePropertyAll(EdgeInsets.zero),
                           ),
@@ -942,7 +947,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   buildTabBar(
-                    introText: '相关视频',
+                    introText: L10n.current.relatedVideos,
                     showIntro: videoDetailController.isFileSource
                         ? true
                         : showIntro,
@@ -1089,7 +1094,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                   width: 42,
                   height: 34,
                   child: IconButton(
-                    tooltip: '返回',
+                    tooltip: L10n.current.back,
                     icon: const Icon(
                       FontAwesomeIcons.arrowLeft,
                       size: 15,
@@ -1108,7 +1113,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                   width: 42,
                   height: 34,
                   child: IconButton(
-                    tooltip: '返回主页',
+                    tooltip:
+                        L10n.current.videoDetailPageVBuildOverlayToolBarTooltip,
                     icon: const Icon(
                       FontAwesomeIcons.house,
                       size: 15,
@@ -1158,28 +1164,28 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     itemBuilder: (BuildContext context) => <PopupMenuEntry>[
       PopupMenuItem(
         onTap: introController.viewLater,
-        child: const Text('稍后再看'),
+        child: Text(L10n.current.watchLater),
       ),
       if (videoDetailController.epId == null)
         PopupMenuItem(
           onTap: () => videoDetailController.showNoteList(context),
-          child: const Text('查看笔记'),
+          child: Text(L10n.current.viewNotes),
         ),
       if (!videoDetailController.isFileSource)
         PopupMenuItem(
           onTap: () => videoDetailController.onDownload(this.context),
-          child: const Text('缓存视频'),
+          child: Text(L10n.current.videoDetailPageVMoreBtnChild3),
         ),
       if (videoDetailController.cover.value.isNotEmpty)
         PopupMenuItem(
           onTap: () =>
               ImageUtils.downloadImg([videoDetailController.cover.value]),
-          child: const Text('保存封面'),
+          child: Text(L10n.current.saveCover),
         ),
       if (!videoDetailController.isFileSource && videoDetailController.isUgc)
         PopupMenuItem(
           onTap: videoDetailController.toAudioPage,
-          child: const Text('听音频'),
+          child: Text(L10n.current.videoDetailPageVMoreBtnChild),
         ),
       PopupMenuItem(
         onTap: () {
@@ -1189,7 +1195,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
             PageUtils.reportVideo(videoDetailController.aid);
           }
         },
-        child: const Text('举报'),
+        child: Text(L10n.current.report),
       ),
     ],
   );
@@ -1295,9 +1301,11 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   }) {
     final tabs = [
       if (showIntro)
-        videoDetailController.isFileSource ? '离线视频' : introText ?? '简介',
-      if (videoDetailController.showReply) '评论',
-      if (_shouldShowSeasonPanel) '播放列表',
+        videoDetailController.isFileSource
+            ? L10n.current.tabsBuildTabBarText
+            : introText ?? L10n.current.introduction,
+      if (videoDetailController.showReply) L10n.current.comments,
+      if (_shouldShowSeasonPanel) L10n.current.playlist,
     ];
     if (videoDetailController.tabCtr.length != tabs.length) {
       videoDetailController.tabCtr.dispose();
@@ -1313,9 +1321,11 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     Widget tabBar() {
       final flag = !needIndicator || tabs.length == 1;
       return TabBar(
+        isScrollable: true,
+        tabAlignment: TabAlignment.start,
         padding: .zero,
         dividerHeight: 0,
-        labelPadding: .zero,
+        labelPadding: const EdgeInsets.symmetric(horizontal: 12),
         dividerColor: Colors.transparent,
         controller: videoDetailController.tabCtr,
         indicator: flag ? const BoxDecoration() : null,
@@ -1331,10 +1341,10 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
             }
             String text = tabs[value];
             if (videoDetailController.isFileSource ||
-                text == '简介' ||
-                text == '相关视频') {
+                text == L10n.current.introduction ||
+                text == L10n.current.relatedVideos) {
               videoDetailController.introScrollCtr?.animToTop();
-            } else if (text.startsWith('评论')) {
+            } else if (text.startsWith(L10n.current.comments)) {
               _videoReplyController.animateToTop();
             }
           }
@@ -1346,12 +1356,14 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
           }
         },
         tabs: tabs.map((text) {
-          if (text == '评论') {
+          if (text == L10n.current.comments) {
             return Obx(() {
               final count = _videoReplyController.count.value;
               return Tab(
                 child: Text(
-                  '评论${count == -1 ? '' : ' ${NumUtils.numFormat(count)}'}',
+                  L10n.current.videoDetailPageVTabBarChild(
+                    count == -1 ? '' : ' ${NumUtils.numFormat(count)}',
+                  ),
                   softWrap: false,
                   overflow: .visible,
                 ),
@@ -1384,10 +1396,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
               Expanded(
                 child: Align(
                   alignment: .centerLeft,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: 96.0 * tabs.length),
-                    child: tabBar(),
-                  ),
+                  child: tabBar(),
                 ),
               ),
             SizedBox(
@@ -1398,7 +1407,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                 ),
                 onPressed: videoDetailController.showShootDanmakuSheet,
                 child: Text(
-                  '发弹幕',
+                  L10n.current.liveHeaderControlTooltip,
                   style: TextStyle(
                     fontSize: 12,
                     color: colorScheme.onSurfaceVariant,
@@ -1927,7 +1936,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   void onReversePlay({required bool isSeason}) {
     if (isSeason && videoDetailController.isPlayAll) {
-      SmartDialog.showToast('当前为播放全部，合集不支持倒序');
+      SmartDialog.showToast(L10n.current.videoDetailPageVOnReversePlayText);
       return;
     }
 

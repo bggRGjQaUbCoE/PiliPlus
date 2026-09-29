@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:PiliPlus/common/assets.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
@@ -110,10 +111,12 @@ class _PagesPanelState extends State<PagesPanel> {
             child: Row(
               mainAxisAlignment: .spaceBetween,
               children: [
-                const Text('视频选集 '),
+                Text(L10n.current.pagesPanelChildren),
                 Expanded(
                   child: Text(
-                    ' 正在播放：${pages[pageIndex].part}',
+                    L10n.current.pgcPanelChild2(
+                      pages[pageIndex].part.toString(),
+                    ),
                     overflow: .ellipsis,
                     style: TextStyle(fontSize: 12, color: colorScheme.outline),
                   ),
@@ -134,7 +137,7 @@ class _PagesPanelState extends State<PagesPanel> {
                       cid,
                     ),
                     child: Text(
-                      '共${pages.length}集',
+                      L10n.current.pagesPanelChild(pages.length),
                       style: const TextStyle(fontSize: 13),
                     ),
                   ),
@@ -248,7 +251,9 @@ class _PagesPanelState extends State<PagesPanel> {
                                           cacheHeight: 12.cacheSize(
                                             context,
                                           ),
-                                          semanticLabel: "正在播放：",
+                                          semanticLabel: L10n
+                                              .current
+                                              .episodePanelBuildEpisodeItemSemanticLabel,
                                         ),
                                       ),
                                     )

@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/common/widgets/video_card/video_card_h.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/search/video_search_type.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
@@ -91,7 +92,7 @@ mixin SearchVideoPanelMixin<S extends SearchVideoPanel>
               width: 32,
               height: 32,
               child: IconButton(
-                tooltip: '筛选',
+                tooltip: L10n.current.searchArticlePanelBuildHeaderTooltip,
                 style: const ButtonStyle(
                   padding: WidgetStatePropertyAll(EdgeInsets.zero),
                 ),

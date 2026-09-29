@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/video_progress_indicator.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/common/widgets/video_popup_menu.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/space/space_archive/item.dart';
@@ -96,16 +97,16 @@ class VideoCardHMemberVideo extends StatelessWidget {
                               height: maxHeight,
                             ),
                             if (fromViewAid == videoItem.param)
-                              const Positioned.fill(
+                              Positioned.fill(
                                 child: DecoratedBox(
-                                  decoration: BoxDecoration(
+                                  decoration: const BoxDecoration(
                                     borderRadius: Style.mdRadius,
                                     color: Colors.black54,
                                   ),
                                   child: Center(
                                     child: Text(
-                                      '上次观看',
-                                      style: TextStyle(
+                                      L10n.current.videoCardHMemberVideoChild,
+                                      style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 15,
                                         letterSpacing: 5,
@@ -155,7 +156,7 @@ class VideoCardHMemberVideo extends StatelessWidget {
                                       text:
                                           videoItem.history!.progress ==
                                               videoItem.history!.duration
-                                          ? '已看完'
+                                          ? L10n.current.watchedCompletely
                                           : '${DurationUtils.formatDuration(videoItem.history!.progress)}/${DurationUtils.formatDuration(videoItem.history!.duration)}',
                                       right: 6.0,
                                       bottom: 6.0,

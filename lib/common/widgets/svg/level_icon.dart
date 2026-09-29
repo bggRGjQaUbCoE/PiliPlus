@@ -1,6 +1,7 @@
 // dart format width=120
 import 'dart:ui';
 
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:flutter/semantics.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -91,7 +92,10 @@ class RenderLevel extends RenderBox {
     super.describeSemanticsConfiguration(config);
     config
       ..textDirection = .ltr
-      ..label = '${_flash ? "硬核" : ""}$_level级';
+      ..label = L10n.current.renderLevelDescribeSemanticsConfigurationText2(
+        _flash ? L10n.current.renderLevelDescribeSemanticsConfigurationText : "",
+        _level,
+      );
   }
 
   static Color lookupBackgroundColor(int level) {

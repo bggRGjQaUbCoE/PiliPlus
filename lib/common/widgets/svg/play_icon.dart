@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:flutter/semantics.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -61,7 +62,7 @@ class RenderPlay extends RenderBox {
     super.describeSemanticsConfiguration(config);
     config
       ..textDirection = .ltr
-      ..label = '播放';
+      ..label = L10n.current.playVideo;
   }
 
   /// [SvgPicture] can not parse mask filter

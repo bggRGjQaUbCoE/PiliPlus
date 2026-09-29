@@ -1,5 +1,6 @@
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show VoteCard;
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:material_ui/material_ui.dart';
@@ -34,7 +35,10 @@ Widget buildVoteCard(
               children: [
                 Text(voteCard.title, maxLines: 1, overflow: .ellipsis),
                 Text(
-                  '${NumUtils.numFormat(voteCard.count.toInt())}人参与',
+                  L10n.current
+                      .pagesDynamicsWidgetsAdditionalPanelAddWidgetChildren(
+                        NumUtils.numFormat(voteCard.count.toInt()),
+                      ),
                   maxLines: 1,
                   overflow: .ellipsis,
                   style: TextStyle(fontSize: 13, color: colorScheme.outline),

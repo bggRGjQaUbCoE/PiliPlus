@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/fav_type.dart';
 import 'package:PiliPlus/pages/fav/article/controller.dart';
 import 'package:PiliPlus/pages/fav/cheese/controller.dart';
@@ -54,7 +55,7 @@ class _FavPageState extends State<FavPage> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     return SimpleScaffold(
       appBar: AppBar(
-        title: const Text('我的收藏'),
+        title: Text(L10n.current.myFavourites),
         actions: [
           Obx(
             () => _showVideoFavMenu.value
@@ -74,7 +75,7 @@ class _FavPageState extends State<FavPage> with SingleTickerProviderStateMixin {
                       },
                     ),
                     icon: const Icon(Icons.add),
-                    tooltip: '新建收藏夹',
+                    tooltip: L10n.current.favPageTooltip,
                   )
                 : const SizedBox.shrink(),
           ),
@@ -84,7 +85,7 @@ class _FavPageState extends State<FavPage> with SingleTickerProviderStateMixin {
                     onPressed: () {
                       if (_favController.loadingState.value.isSuccess) {
                         if (!_favController.isEnd) {
-                          SmartDialog.showToast('加载全部收藏夹再排序');
+                          SmartDialog.showToast(L10n.current.favPageOnPressed);
                           return;
                         }
                         Get.to(
@@ -93,7 +94,7 @@ class _FavPageState extends State<FavPage> with SingleTickerProviderStateMixin {
                       }
                     },
                     icon: const Icon(Icons.sort),
-                    tooltip: '收藏夹排序',
+                    tooltip: L10n.current.favPageTooltip2,
                   )
                 : const SizedBox.shrink(),
           ),
@@ -120,7 +121,7 @@ class _FavPageState extends State<FavPage> with SingleTickerProviderStateMixin {
                       }
                     },
                     icon: const Icon(Icons.search_outlined),
-                    tooltip: '搜索',
+                    tooltip: L10n.current.search,
                   )
                 : const SizedBox.shrink(),
           ),

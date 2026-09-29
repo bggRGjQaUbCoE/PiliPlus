@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/sub/sub/list.dart';
 import 'package:PiliPlus/models_new/sub/sub_detail/media.dart';
 import 'package:PiliPlus/pages/subscription_detail/controller.dart';
@@ -146,7 +147,9 @@ class _SubDetailPageState extends State<SubDetailPage> with GridMixin {
             style: theme.textTheme.titleMedium,
           ),
           Text(
-            '共${info.mediaCount}条视频',
+            L10n.current.favDetailPageBuildHeaderChildren(
+              info.mediaCount.toString(),
+            ),
             style: theme.textTheme.labelMedium,
           ),
         ],
@@ -195,10 +198,19 @@ class _SubDetailPageState extends State<SubDetailPage> with GridMixin {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text('共${info.mediaCount}条视频', style: style),
+                    Text(
+                      L10n.current.favDetailPageBuildHeaderChildren(
+                        info.mediaCount.toString(),
+                      ),
+                      style: style,
+                    ),
                     const SizedBox(height: 4),
                     Text(
-                      '${NumUtils.numFormat(info.viewCount ?? info.cntInfo?.play)}次播放',
+                      L10n.current.subDetailPageBuildAppBarChildren(
+                        NumUtils.numFormat(
+                          info.viewCount ?? info.cntInfo?.play,
+                        ),
+                      ),
                       style: style,
                     ),
                   ],

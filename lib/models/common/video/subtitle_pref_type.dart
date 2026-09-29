@@ -1,10 +1,16 @@
+import 'package:PiliPlus/l10n/l10n.dart';
+
 enum SubtitlePrefType {
-  off('默认不显示字幕'),
-  on('优先选择非自动生成(ai)字幕'),
-  withoutAi('跳过自动生成(ai)字幕，选择第一个可用字幕'),
-  auto('静音时等同第二项，非静音时等同第三项'),
+  off,
+  on,
+  withoutAi,
+  auto,
   ;
 
-  final String desc;
-  const SubtitlePrefType(this.desc);
+  String get desc => switch (this) {
+    off => L10n.current.subtitlePrefTypeOffDesc,
+    on => L10n.current.subtitlePrefTypeOnDesc,
+    withoutAi => L10n.current.subtitlePrefTypeWithoutAiDesc,
+    auto => L10n.current.subtitlePrefTypeAutoDesc,
+  };
 }

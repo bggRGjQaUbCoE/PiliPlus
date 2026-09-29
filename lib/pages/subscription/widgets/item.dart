@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/sub/sub/list.dart';
 import 'package:PiliPlus/pages/subscription_detail/view.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -23,9 +24,9 @@ class SubItem extends StatelessWidget {
   Widget build(BuildContext context) {
     String heroTag = Utils.makeHeroTag(item.id);
     final type = switch (item.type) {
-      11 => '收藏夹',
-      21 => '合集',
-      _ => '其它(${item.type})',
+      11 => L10n.current.favouriteFolder,
+      21 => L10n.current.collection,
+      _ => L10n.current.typeText2(item.type.toString()),
     };
     void onLongPress() => imageSaveDialog(
       title: item.title,
@@ -36,7 +37,7 @@ class SubItem extends StatelessWidget {
       child: InkWell(
         onTap: () {
           if (item.state == 1) {
-            SmartDialog.showToast('该$type已失效');
+            SmartDialog.showToast(L10n.current.subItemOnTap(type));
             return;
           }
           if (item.type == 11) {
@@ -123,7 +124,9 @@ class SubItem extends StatelessWidget {
                 ),
               ),
               Text(
-                'UP主: ${item.upper!.name!}',
+                L10n.current.subItemContentChildren2(
+                  item.upper!.name!,
+                ),
                 textAlign: TextAlign.start,
                 style: style,
                 maxLines: 1,
@@ -131,7 +134,9 @@ class SubItem extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '${item.mediaCount}个视频',
+                L10n.current.subItemContentChildren(
+                  item.mediaCount.toString(),
+                ),
                 textAlign: TextAlign.start,
                 style: style,
               ),

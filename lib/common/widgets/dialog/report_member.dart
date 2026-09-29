@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/http/member.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -7,9 +8,20 @@ import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
-const _reason = ['头像违规', '昵称违规', '签名违规'];
+List<String> get _reason => [
+  L10n.current.reasonText,
+  L10n.current.reasonText2,
+  L10n.current.reasonText3,
+];
 
-const _reasonV2 = ['色情低俗', '不实信息', '违禁', '人身攻击', '赌博诈骗', '违规引流外链'];
+List<String> get _reasonV2 => [
+  L10n.current.reportOptionsDanmakuReportText3,
+  L10n.current.reasonV2Text2,
+  L10n.current.reasonV2Text,
+  L10n.current.reportOptionsCommentReportText11,
+  L10n.current.reportOptionsCommentReportText9,
+  L10n.current.reasonV2Text3,
+];
 
 Future<void> showMemberReportDialog(
   BuildContext context, {
@@ -36,7 +48,10 @@ Future<void> showMemberReportDialog(
                 crossAxisAlignment: .start,
                 children: [
                   Text(
-                    '举报: $name',
+                    L10n.current
+                        .commonWidgetsDialogReportMemberShowMemberReportDialogChildren(
+                          name.toString(),
+                        ),
                     style: const TextStyle(fontSize: 18),
                   ),
                   Text('uid: $mid'),
@@ -45,7 +60,9 @@ Future<void> showMemberReportDialog(
             ),
             iconButton(
               iconSize: 21,
-              tooltip: '网页举报',
+              tooltip: L10n
+                  .current
+                  .commonWidgetsDialogReportAutoWrapReportDialogTooltip,
               onPressed: () => Get.toNamed(
                 '/webview',
                 parameters: {
@@ -62,9 +79,13 @@ Future<void> showMemberReportDialog(
             mainAxisSize: .min,
             crossAxisAlignment: .start,
             children: [
-              const Padding(
-                padding: .only(left: 18),
-                child: Text('举报内容（必选，可多选）'),
+              Padding(
+                padding: const .only(left: 18),
+                child: Text(
+                  L10n
+                      .current
+                      .commonWidgetsDialogReportMemberShowMemberReportDialogChild,
+                ),
               ),
               ...List.generate(
                 3,
@@ -108,9 +129,13 @@ Future<void> showMemberReportDialog(
                   },
                 ),
               ),
-              const Padding(
-                padding: .only(left: 18),
-                child: Text('举报理由（单选，非必选）'),
+              Padding(
+                padding: const .only(left: 18),
+                child: Text(
+                  L10n
+                      .current
+                      .commonWidgetsDialogReportMemberShowMemberReportDialogChild2,
+                ),
               ),
               Builder(
                 builder: (context) => Column(
@@ -164,14 +189,18 @@ Future<void> showMemberReportDialog(
           TextButton(
             onPressed: Get.back,
             child: Text(
-              '取消',
+              L10n.current.cancel,
               style: TextStyle(color: theme.colorScheme.outline),
             ),
           ),
           TextButton(
             onPressed: () {
               if (reason.isEmpty) {
-                SmartDialog.showToast('至少选择一项作为举报内容');
+                SmartDialog.showToast(
+                  L10n
+                      .current
+                      .commonWidgetsDialogReportMemberShowMemberReportDialogOnPressed,
+                );
               } else {
                 Get.back();
                 MemberHttp.reportMember(
@@ -181,7 +210,7 @@ Future<void> showMemberReportDialog(
                 );
               }
             },
-            child: const Text('确定'),
+            child: Text(L10n.current.ok),
           ),
         ],
       );

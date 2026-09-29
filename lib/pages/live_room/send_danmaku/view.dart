@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/text_field.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/live.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/publish_panel_type.dart';
 import 'package:PiliPlus/pages/common/publish/common_rich_text_pub_page.dart';
 import 'package:PiliPlus/pages/live_emote/controller.dart';
@@ -101,7 +102,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<LiveSendDmPanel> {
             () {
               final isEmoji = panelType.value == .emoji;
               return iconButton(
-                tooltip: '表情',
+                tooltip: L10n.current.buttonItemsDynTextMenuBuilderLabel,
                 onPressed: () => updatePanelType(isEmoji ? .keyboard : .emoji),
                 iconSize: 22,
                 icon: const Icon(Icons.emoji_emotions_outlined),
@@ -123,10 +124,10 @@ class _ReplyPageState extends CommonRichTextPubPageState<LiveSendDmPanel> {
                 onChanged: onChanged,
                 onSubmitted: onSubmitted,
                 focusNode: focusNode,
-                decoration: const InputDecoration(
-                  hintText: "输入弹幕内容",
+                decoration: InputDecoration(
+                  hintText: L10n.current.replyPageBuildInputViewHintText,
                   border: InputBorder.none,
-                  hintStyle: TextStyle(fontSize: 14),
+                  hintStyle: const TextStyle(fontSize: 14),
                 ),
                 style: theme.textTheme.bodyLarge,
                 // inputFormatters: [LengthLimitingTextInputFormatter(20)],
@@ -149,7 +150,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<LiveSendDmPanel> {
           const SizedBox(width: 12),
           Obx(
             () => iconButton(
-              tooltip: '发送',
+              tooltip: L10n.current.send,
               iconSize: 22,
               iconColor: enablePublish.value
                   ? theme.colorScheme.primary
@@ -198,7 +199,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<LiveSendDmPanel> {
       liveRoomController
         ..savedDanmaku?.clear()
         ..savedDanmaku = null;
-      SmartDialog.showToast('发送成功');
+      SmartDialog.showToast(L10n.current.replyPageOnCustomPublishText);
     } else {
       res.toast();
     }

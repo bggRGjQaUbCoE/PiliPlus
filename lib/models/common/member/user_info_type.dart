@@ -1,13 +1,18 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart' show Alignment;
 
 enum UserInfoType {
-  fan('粉丝', .centerLeft),
-  follow('关注', .center),
-  like('获赞', .centerRight),
+  fan(.centerLeft),
+  follow(.center),
+  like(.centerRight),
   ;
 
-  final String title;
+  String get title => switch (this) {
+    fan => L10n.current.followers,
+    follow => L10n.current.follow,
+    like => L10n.current.userInfoTypeLikeTitle,
+  };
   final Alignment alignment;
 
-  const UserInfoType(this.title, this.alignment);
+  const UserInfoType(this.alignment);
 }

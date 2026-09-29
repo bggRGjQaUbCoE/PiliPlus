@@ -14,6 +14,7 @@ import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/episode_panel_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart' as pgc;
@@ -436,10 +437,16 @@ class _EpisodePanelState extends State<EpisodePanel>
               if (episode.badge == "会员" &&
                   Accounts.mainEqVideo &&
                   vipStatus != 1) {
-                SmartDialog.showToast('需要大会员');
+                SmartDialog.showToast(
+                  L10n.current.episodePanelBuildEpisodeItemOnTap,
+                );
                 // return;
               }
-              SmartDialog.showToast('切换到：$title');
+              SmartDialog.showToast(
+                L10n.current.episodePanelBuildEpisodeItemOnTap2(
+                  title,
+                ),
+              );
               widget.onClose?.call();
 
               widget.onChangeEpisode(episode).then((res) {
@@ -509,8 +516,8 @@ class _EpisodePanelState extends State<EpisodePanel>
                             ),
                           )
                         else if (isCharging == true)
-                          const PBadge(
-                            text: '充电专属',
+                          PBadge(
+                            text: L10n.current.episodePanelBuildEpisodeItemText,
                             top: 6,
                             right: 6,
                             type: .error,
@@ -534,7 +541,9 @@ class _EpisodePanelState extends State<EpisodePanel>
                       color: primary,
                       height: 12,
                       cacheHeight: 12.cacheSize(context),
-                      semanticLabel: "正在播放：",
+                      semanticLabel: L10n
+                          .current
+                          .episodePanelBuildEpisodeItemSemanticLabel,
                     ),
                   Expanded(
                     child: Column(
@@ -602,7 +611,9 @@ class _EpisodePanelState extends State<EpisodePanel>
     return switch (loadingState) {
       Success(:final response) => iconButton(
         iconSize: 22,
-        tooltip: response ? '取消订阅' : '订阅',
+        tooltip: response
+            ? L10n.current.episodePanelBuildFavBtnTooltip2
+            : L10n.current.episodePanelBuildFavBtnTooltip,
         icon: response
             ? const Icon(Icons.notifications_off_outlined)
             : const Icon(Icons.notifications_active_outlined),
@@ -612,7 +623,11 @@ class _EpisodePanelState extends State<EpisodePanel>
             seasonId: widget.seasonId,
           );
           if (res.isSuccess) {
-            SmartDialog.showToast('${response ? '取消' : ''}订阅成功');
+            SmartDialog.showToast(
+              L10n.current.episodePanelBuildFavBtnOnPressed(
+                response.toString(),
+              ),
+            );
             _favState!.value = Success(!response);
             widget.ugcIntroController?.seasonFavState[widget.seasonId] =
                 !response;
@@ -627,7 +642,9 @@ class _EpisodePanelState extends State<EpisodePanel>
 
   Widget get _buildReverseBtn => iconButton(
     iconSize: 22,
-    tooltip: widget.isReversed == true ? '正序播放' : '倒序播放',
+    tooltip: widget.isReversed == true
+        ? L10n.current.episodePanelBuildReverseBtnTooltip
+        : L10n.current.playReverse,
     icon: widget.isReversed == true
         ? const Icon(MdiIcons.sortDescending)
         : const Icon(MdiIcons.sortAscending),
@@ -664,19 +681,19 @@ class _EpisodePanelState extends State<EpisodePanel>
         if (_favState != null) Obx(() => _buildFavBtn(_favState!.value)),
         iconButton(
           iconSize: 22,
-          tooltip: '跳至顶部',
+          tooltip: L10n.current.episodePanelBuildToolbarTooltip2,
           icon: const Icon(Icons.vertical_align_top),
           onPressed: _animToTopOrBottom,
         ),
         iconButton(
           iconSize: 22,
-          tooltip: '跳至底部',
+          tooltip: L10n.current.episodePanelBuildToolbarTooltip3,
           icon: const Icon(Icons.vertical_align_bottom),
           onPressed: () => _animToTopOrBottom(top: false),
         ),
         iconButton(
           iconSize: 22,
-          tooltip: '跳至当前',
+          tooltip: L10n.current.episodePanelBuildToolbarTooltip4,
           icon: const Icon(Icons.my_location),
           onPressed: () async {
             final currentTabIndex = _currentTabIndex.value;
@@ -704,7 +721,9 @@ class _EpisodePanelState extends State<EpisodePanel>
             final currentTabIndex = _currentTabIndex.value;
             return iconButton(
               iconSize: 22,
-              tooltip: _isReversed[currentTabIndex] ? '顺序' : '倒序',
+              tooltip: _isReversed[currentTabIndex]
+                  ? L10n.current.episodePanelBuildToolbarTooltip
+                  : L10n.current.archiveSortTypeAppAscLabel,
               icon: !_isReversed[currentTabIndex]
                   ? const Icon(MdiIcons.sortNumericAscending)
                   : const Icon(MdiIcons.sortNumericDescending),
@@ -717,7 +736,7 @@ class _EpisodePanelState extends State<EpisodePanel>
         if (widget.onClose != null)
           iconButton(
             iconSize: 22,
-            tooltip: '关闭',
+            tooltip: L10n.current.close,
             icon: const Icon(Icons.close),
             onPressed: widget.onClose,
           ),

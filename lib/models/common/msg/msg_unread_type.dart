@@ -1,11 +1,18 @@
+import 'package:PiliPlus/l10n/l10n.dart';
+
 enum MsgUnReadType {
-  pm('私信'),
-  reply('回复我的'),
-  at('@我'),
-  like('收到的赞'),
-  sysMsg('系统通知'),
+  pm,
+  reply,
+  at,
+  like,
+  sysMsg,
   ;
 
-  final String title;
-  const MsgUnReadType(this.title);
+  String get title => switch (this) {
+    pm => L10n.current.privateMessage,
+    reply => L10n.current.msgUnReadTypeReplyTitle,
+    at => L10n.current.msgUnReadTypeAtTitle,
+    like => L10n.current.msgUnReadTypeLikeTitle,
+    sysMsg => L10n.current.msgUnReadTypeSysMsgTitle,
+  };
 }

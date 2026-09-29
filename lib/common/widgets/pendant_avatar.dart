@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/extra_hittest_stack.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/avatar_badge_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -126,7 +127,7 @@ class PendantAvatar extends StatelessWidget {
                 color: colorScheme.onSecondaryContainer,
               ),
               Text(
-                '直播中',
+                L10n.current.pendantAvatarBuildLiveChildren,
                 style: TextStyle(
                   height: 1,
                   fontSize: fontSize,

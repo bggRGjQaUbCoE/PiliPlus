@@ -1,3 +1,4 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -67,7 +68,7 @@ class _MultiSelectDialogState<T> extends State<MultiSelectDialog<T>> {
         TextButton(
           onPressed: Get.back,
           child: Text(
-            '取消',
+            L10n.current.cancel,
             style: TextStyle(
               color: theme.colorScheme.outline,
             ),
@@ -75,7 +76,7 @@ class _MultiSelectDialogState<T> extends State<MultiSelectDialog<T>> {
         ),
         TextButton(
           onPressed: () => Get.back(result: _tempValues),
-          child: const Text('确定'),
+          child: Text(L10n.current.ok),
         ),
       ],
     );

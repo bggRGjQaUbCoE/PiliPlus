@@ -9,6 +9,7 @@ import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/pages/common/fab_mixin.dart';
 import 'package:PiliPlus/pages/main_reply/controller.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
@@ -60,7 +61,7 @@ class _MainReplyPageState extends State<MainReplyPage>
   Widget build(BuildContext context) {
     final colorScheme = ColorScheme.of(context);
     return SimpleScaffold(
-      appBar: AppBar(title: const Text('查看评论')),
+      appBar: AppBar(title: Text(L10n.current.mainReplyPageTitle)),
       body: fabAnimWrapper(
         child: refreshIndicator(
           onRefresh: _controller.onRefresh,
@@ -100,7 +101,7 @@ class _MainReplyPageState extends State<MainReplyPage>
                 );
               } catch (_) {}
             },
-            tooltip: '评论',
+            tooltip: L10n.current.comments,
             child: const Icon(Icons.reply),
           ),
         ),
@@ -132,7 +133,11 @@ class _MainReplyPageState extends State<MainReplyPage>
                       margin: EdgeInsets.only(bottom: padding.bottom),
                       height: 125,
                       child: Text(
-                        _controller.isEnd ? '没有更多了' : '加载中...',
+                        _controller.isEnd
+                            ? L10n.current.noMore
+                            : L10n
+                                  .current
+                                  .pagesCommonDynCommonDynPageReplyListChild2,
                         style: TextStyle(
                           fontSize: 12,
                           color: colorScheme.outline,
@@ -161,7 +166,7 @@ class _MainReplyPageState extends State<MainReplyPage>
                 },
               )
             : HttpError(
-                errMsg: '还没有评论',
+                errMsg: L10n.current.noComments,
                 onReload: _controller.onReload,
               ),
       Error(:final errMsg) => HttpError(
@@ -184,7 +189,11 @@ class _MainReplyPageState extends State<MainReplyPage>
               () {
                 final count = _controller.count.value;
                 return Text(
-                  '${count == -1 ? 0 : NumUtils.numFormat(count)}条回复',
+                  L10n.current
+                      .pagesCommonDynCommonDynPageBuildReplyHeaderChildren(
+                        (count == -1 ? 0 : NumUtils.numFormat(count))
+                            .toString(),
+                      ),
                 );
               },
             ),
@@ -217,7 +226,9 @@ class _MainReplyPageState extends State<MainReplyPage>
       Get.to(
         SimpleScaffold(
           appBar: AppBar(
-            title: const Text('评论详情'),
+            title: Text(
+              L10n.current.pagesCommonDynCommonDynPageReplyReplyPageTitle,
+            ),
             shape: Border(
               bottom: BorderSide(
                 color: colorScheme.outline.withValues(alpha: 0.1),

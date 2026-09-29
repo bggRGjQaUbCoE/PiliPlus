@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/grpc/bilibili/app/interfaces/v1.pb.dart' show Arc;
 import 'package:PiliPlus/http/user.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
@@ -87,8 +88,8 @@ class SearchArchiveGrpc extends StatelessWidget {
                               height: maxHeight,
                             ),
                             if (item.isPugv)
-                              const PBadge(
-                                text: '课堂',
+                              PBadge(
+                                text: L10n.current.favTabTypeCheeseTitle,
                                 top: 6.0,
                                 right: 6.0,
                               ),
@@ -140,11 +141,14 @@ class SearchArchiveGrpc extends StatelessWidget {
                 PopupMenuItem(
                   height: 45,
                   onTap: () => UserHttp.toViewLater(bvid: bvid),
-                  child: const Row(
+                  child: Row(
                     spacing: 6,
                     children: [
-                      Icon(MdiIcons.clockTimeEightOutline, size: 16),
-                      Text('稍后再看', style: TextStyle(fontSize: 13)),
+                      const Icon(MdiIcons.clockTimeEightOutline, size: 16),
+                      Text(
+                        L10n.current.watchLater,
+                        style: const TextStyle(fontSize: 13),
+                      ),
                     ],
                   ),
                 ),

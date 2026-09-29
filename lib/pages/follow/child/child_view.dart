@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/button/more_btn.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/follow/list.dart';
 import 'package:PiliPlus/pages/follow/child/child_controller.dart';
 import 'package:PiliPlus/pages/follow/controller.dart';
@@ -161,7 +162,9 @@ class _FollowChildPageState extends State<FollowChildPage>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '我们的共同关注',
+                            L10n
+                                .current
+                                .followChildPageBuildSameFollowingChildren,
                             style: TextStyle(
                               color: colorScheme.onSurfaceVariant,
                             ),
@@ -190,7 +193,7 @@ class _FollowChildPageState extends State<FollowChildPage>
                         bottom: 6,
                       ),
                       child: Text(
-                        '全部关注',
+                        L10n.current.followChildPageBuildSameFollowingChild,
                         style: TextStyle(
                           color: colorScheme.onSurfaceVariant,
                         ),

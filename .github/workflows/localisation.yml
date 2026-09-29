@@ -1,0 +1,30 @@
+name: Localisation
+
+on:
+  pull_request:
+    paths:
+      - 'lib/**'
+      - 'test/l10n/**'
+      - 'l10n.yaml'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - '.github/workflows/localisation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  localisation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+          cache: true
+      - run: flutter pub get
+      - run: flutter gen-l10n
+      - run: flutter analyze --no-pub lib/l10n test/l10n
+      - run: flutter test --no-pub test/l10n

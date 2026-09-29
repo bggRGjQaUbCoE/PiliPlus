@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/search/user_search_type.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
@@ -45,7 +46,10 @@ class SearchUserController
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 10),
-              const Text('用户粉丝数及等级排序顺序', style: TextStyle(fontSize: 16)),
+              Text(
+                L10n.current.searchUserControllerOnShowFilterDialogChildren2,
+                style: const TextStyle(fontSize: 16),
+              ),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 8,
@@ -71,7 +75,10 @@ class SearchUserController
                 ).toList(),
               ),
               const SizedBox(height: 20),
-              const Text('用户分类', style: TextStyle(fontSize: 16)),
+              Text(
+                L10n.current.searchUserControllerOnShowFilterDialogChildren,
+                style: const TextStyle(fontSize: 16),
+              ),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 8,

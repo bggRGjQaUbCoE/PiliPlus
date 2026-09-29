@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:PiliPlus/common/assets.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/new_ep.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart'
@@ -98,10 +99,12 @@ class _PgcPanelState extends State<PgcPanel> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('合集 '),
+              Text(L10n.current.pgcPanelChildren),
               Expanded(
                 child: Text(
-                  ' 正在播放：${currEpisode.longTitle ?? currEpisode.title}',
+                  L10n.current.pgcPanelChild2(
+                    (currEpisode.longTitle ?? currEpisode.title).toString(),
+                  ),
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 12, color: theme.outline),
                 ),
@@ -123,8 +126,14 @@ class _PgcPanelState extends State<PgcPanel> {
                   ),
                   child: Text(
                     widget.newEp?.desc?.contains('连载') == true
-                        ? '连载中，更新至${Utils.isStringNumeric(widget.newEp!.title!) ? '第${widget.newEp!.title}话' : '${widget.newEp!.title}'}'
-                        : widget.newEp?.desc ?? '查看全部',
+                        ? L10n.current.pgcPanelChild3(
+                            Utils.isStringNumeric(widget.newEp!.title!)
+                                ? L10n.current.pgcPanelChild(
+                                    (widget.newEp!.title).toString(),
+                                  )
+                                : '${widget.newEp!.title}',
+                          )
+                        : widget.newEp?.desc ?? L10n.current.viewAll,
                     style: const TextStyle(fontSize: 13),
                   ),
                 ),
@@ -166,7 +175,9 @@ class _PgcPanelState extends State<PgcPanel> {
           borderRadius: const BorderRadius.all(Radius.circular(6)),
           onTap: () {
             if (item.badge == '会员' && Accounts.mainEqVideo && vipStatus) {
-              SmartDialog.showToast('需要大会员');
+              SmartDialog.showToast(
+                L10n.current.episodePanelBuildEpisodeItemOnTap,
+              );
             }
             widget.onChangeEpisode(item);
           },
@@ -193,12 +204,18 @@ class _PgcPanelState extends State<PgcPanel> {
                                     color: theme.primary,
                                     height: 12,
                                     cacheHeight: 12.cacheSize(context),
-                                    semanticLabel: "正在播放：",
+                                    semanticLabel: L10n
+                                        .current
+                                        .episodePanelBuildEpisodeItemSemanticLabel,
                                   ),
                                 ),
                               ),
                             TextSpan(
-                              text: item.title ?? '第${index + 1}话',
+                              text:
+                                  item.title ??
+                                  L10n.current.pgcPanelBuildItemText(
+                                    index + 1,
+                                  ),
                               style: TextStyle(
                                 fontSize: 13,
                                 color: color,
@@ -214,7 +231,7 @@ class _PgcPanelState extends State<PgcPanel> {
                         SvgPicture.asset(
                           Assets.vipIcon,
                           height: 16,
-                          semanticsLabel: "大会员",
+                          semanticsLabel: L10n.current.premiumMember,
                         )
                       else
                         Text(

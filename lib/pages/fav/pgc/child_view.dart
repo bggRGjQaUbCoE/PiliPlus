@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/fav/fav_pgc/list.dart';
 import 'package:PiliPlus/pages/fav/pgc/controller.dart';
 import 'package:PiliPlus/pages/fav/pgc/pgc_layout.dart';
@@ -83,7 +84,7 @@ class _FavPgcChildPageState extends State<FavPgcChildPage>
                 const SizedBox(width: 16),
                 iconButton(
                   size: 32,
-                  tooltip: '取消',
+                  tooltip: L10n.current.cancel,
                   context: context,
                   icon: const Icon(Icons.clear),
                   onPressed: _favPgcController.onDisable,
@@ -106,20 +107,20 @@ class _FavPgcChildPageState extends State<FavPgcChildPage>
                     checked: !_favPgcController.allSelected.value,
                     disableSelect: false,
                   ),
-                  child: const Padding(
-                    padding: EdgeInsets.only(
+                  child: Padding(
+                    padding: const EdgeInsets.only(
                       top: 14,
                       bottom: 14,
                       right: 12,
                     ),
-                    child: Text('全选'),
+                    child: Text(L10n.current.multiSelectAppBarWidgetChild),
                   ),
                 ),
                 const Spacer(),
-                ...const [
-                      (followStatus: 1, title: '想看'),
-                      (followStatus: 2, title: '在看'),
-                      (followStatus: 3, title: '看过'),
+                ...[
+                      (followStatus: 1, title: L10n.current.wantToWatch),
+                      (followStatus: 2, title: L10n.current.watching),
+                      (followStatus: 3, title: L10n.current.watched),
                     ]
                     .where(
                       (item) => item.followStatus != widget.followStatus,
@@ -142,7 +143,9 @@ class _FavPgcChildPageState extends State<FavPgcChildPage>
                               horizontal: 5,
                             ),
                             child: Text(
-                              '标记为${item.title}',
+                              L10n.current.favPgcChildPageChild(
+                                item.title,
+                              ),
                               style: TextStyle(
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
@@ -184,7 +187,9 @@ class _FavPgcChildPageState extends State<FavPgcChildPage>
                     onSelect: () => _favPgcController.onSelect(item),
                     onUpdateStatus: () => showPgcFollowDialog(
                       context: context,
-                      type: widget.type == 0 ? '追番' : '追剧',
+                      type: widget.type == 0
+                          ? L10n.current.favTabTypeBangumiTitle
+                          : L10n.current.favTabTypeCinemaTitle,
                       followStatus: widget.followStatus,
                       onUpdateStatus: (followStatus) {
                         if (followStatus == -1) {

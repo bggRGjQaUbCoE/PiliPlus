@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/time_picker.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/pages/dynamics_create_reserve/controller.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -48,7 +49,7 @@ class _CreateReservePageState extends State<CreateReservePage> {
       const SizedBox(height: 10),
     ];
     return SimpleScaffold(
-      appBar: AppBar(title: const Text('添加直播预约')),
+      appBar: AppBar(title: Text(L10n.current.createReservePageTitle)),
       body: ListView(
         padding: EdgeInsets.only(
           top: 16,
@@ -62,7 +63,10 @@ class _CreateReservePageState extends State<CreateReservePage> {
             children: [
               SizedBox(
                 width: 65,
-                child: Text('类型', style: _leadingStyle),
+                child: Text(
+                  L10n.current.createReservePageChild,
+                  style: _leadingStyle,
+                ),
               ),
               Obx(
                 () => PopupMenuButton(
@@ -70,19 +74,21 @@ class _CreateReservePageState extends State<CreateReservePage> {
                   initialValue: _controller.subType.value,
                   onSelected: _controller.subType.call,
                   itemBuilder: (context) {
-                    return const [
+                    return [
                       PopupMenuItem(
                         value: 0,
-                        child: Text('公开直播'),
+                        child: Text(L10n.current.createReservePageChild2),
                       ),
                       PopupMenuItem(
                         value: 1,
-                        child: Text('大航海直播'),
+                        child: Text(L10n.current.createReservePageChild4),
                       ),
                     ];
                   },
                   child: Text(
-                    _controller.subType.value == 0 ? '公开直播' : '大航海直播',
+                    _controller.subType.value == 0
+                        ? L10n.current.createReservePageChild2
+                        : L10n.current.createReservePageChild4,
                   ),
                 ),
               ),
@@ -94,7 +100,7 @@ class _CreateReservePageState extends State<CreateReservePage> {
             children: [
               SizedBox(
                 width: 65,
-                child: Text('时间', style: _leadingStyle),
+                child: Text(L10n.current.time, style: _leadingStyle),
               ),
               Expanded(
                 child: GestureDetector(
@@ -126,7 +132,9 @@ class _CreateReservePageState extends State<CreateReservePage> {
                             const Duration(minutes: 5)) {
                           _controller.date.value = newEndtime;
                         } else {
-                          SmartDialog.showToast('至少选择5分钟之后');
+                          SmartDialog.showToast(
+                            L10n.current.createReservePageOnTap,
+                          );
                         }
                       }
                     }
@@ -154,8 +162,8 @@ class _CreateReservePageState extends State<CreateReservePage> {
               onChanged: (value) => _controller
                 ..title.value = value
                 ..updateCanCreate(),
-              desc: '标题',
-              hintText: '请填写标题，最多14字',
+              desc: L10n.current.title,
+              hintText: L10n.current.createReservePageHintText,
               inputFormatters: [LengthLimitingTextInputFormatter(14)],
             ),
           ),
@@ -166,7 +174,7 @@ class _CreateReservePageState extends State<CreateReservePage> {
               onPressed: _controller.canCreate.value
                   ? _controller.onCreate
                   : null,
-              child: const Text('添加预约'),
+              child: Text(L10n.current.createReservePageChild3),
             );
           }),
         ],

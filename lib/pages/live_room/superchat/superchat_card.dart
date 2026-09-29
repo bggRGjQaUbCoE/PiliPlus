@@ -2,6 +2,7 @@ import 'dart:async' show Timer;
 
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/selection_text.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/live/live_superchat/item.dart';
 import 'package:PiliPlus/pages/member/widget/medal_widget.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
@@ -112,16 +113,18 @@ class _SuperChatCardState extends State<SuperChatCard> {
           height: 38,
           onTap: () => Get.toNamed('/member?mid=${item.uid}'),
           child: Text(
-            '访问: ${item.userInfo.uname}',
+            L10n.current.superChatCardShowMenuChild3(
+              item.userInfo.uname,
+            ),
             style: const TextStyle(fontSize: 13),
           ),
         ),
         PopupMenuItem(
           height: 38,
           onTap: () => Utils.copyText(Utils.jsonEncoder.convert(item.toJson())),
-          child: const Text(
-            '复制 SC 信息',
-            style: TextStyle(fontSize: 13),
+          child: Text(
+            L10n.current.superChatCardShowMenuChild2,
+            style: const TextStyle(fontSize: 13),
           ),
         ),
         PopupMenuItem(
@@ -130,17 +133,17 @@ class _SuperChatCardState extends State<SuperChatCard> {
             if (!mounted) return;
             _screenShot(context, item);
           },
-          child: const Text(
-            '保存为图片',
-            style: TextStyle(fontSize: 13),
+          child: Text(
+            L10n.current.superChatCardShowMenuChild,
+            style: const TextStyle(fontSize: 13),
           ),
         ),
         PopupMenuItem(
           height: 38,
           onTap: widget.onReport,
-          child: const Text(
-            '举报',
-            style: TextStyle(fontSize: 13),
+          child: Text(
+            L10n.current.report,
+            style: const TextStyle(fontSize: 13),
           ),
         ),
       ],

@@ -259,6 +259,7 @@ flutter_native_splash:
   image_dark: assets/images/logo/logo_2.png
 
 flutter:
+  generate: true
   uses-material-design: true
 
   assets:

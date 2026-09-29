@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/http/live.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/live/live_feed_index/card_data_list_item.dart';
 import 'package:PiliPlus/models_new/live/live_feed_index/feedback.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
@@ -81,7 +82,9 @@ class LiveCardVApp extends StatelessWidget {
                   text: r.name!,
                   onTap: (_) async {
                     Get.back();
-                    SmartDialog.showLoading(msg: '正在提交');
+                    SmartDialog.showLoading(
+                      msg: L10n.current.videoPopupMenuActionButtonMsg,
+                    );
                     final res = await LiveHttp.liveFeedback(
                       item.roomid!,
                       r.id!,
@@ -89,7 +92,9 @@ class LiveCardVApp extends StatelessWidget {
                     );
                     SmartDialog.dismiss();
                     if (res.isSuccess) {
-                      SmartDialog.showToast('提交成功');
+                      SmartDialog.showToast(
+                        L10n.current.liveCardVAppActionButtonOnTap,
+                      );
                     } else {
                       res.toast();
                     }
@@ -135,7 +140,7 @@ class LiveCardVApp extends StatelessWidget {
                             style: FilledButton.styleFrom(
                               visualDensity: VisualDensity.compact,
                             ),
-                            child: const Text('取消'),
+                            child: Text(L10n.current.cancel),
                           ),
                         ),
                       ],

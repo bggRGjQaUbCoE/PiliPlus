@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/widgets/reorder_mixin.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
 import 'package:PiliPlus/pages/fav/video/controller.dart';
 import 'package:PiliPlus/pages/fav/video/widgets/item.dart';
@@ -30,7 +31,7 @@ class _FavFolderSortPageState extends State<FavFolderSortPage>
   Widget build(BuildContext context) {
     return SimpleScaffold(
       appBar: AppBar(
-        title: const Text('收藏夹排序'),
+        title: Text(L10n.current.favPageTooltip2),
         actions: [
           TextButton(
             onPressed: () async {
@@ -38,7 +39,7 @@ class _FavFolderSortPageState extends State<FavFolderSortPage>
                 sort: sortList.map((item) => item.id).join(','),
               );
               if (res.isSuccess) {
-                SmartDialog.showToast('排序完成');
+                SmartDialog.showToast(L10n.current.favFolderSortPageOnPressed);
                 _favController.loadingState.value = Success(sortList);
                 if (mounted) {
                   Get.back();
@@ -47,7 +48,7 @@ class _FavFolderSortPageState extends State<FavFolderSortPage>
                 res.toast();
               }
             },
-            child: const Text('完成'),
+            child: Text(L10n.current.done),
           ),
           const SizedBox(width: 16),
         ],
@@ -58,7 +59,7 @@ class _FavFolderSortPageState extends State<FavFolderSortPage>
 
   void onReorderItem(int oldIndex, int newIndex) {
     if (oldIndex == 0 || newIndex == 0) {
-      SmartDialog.showToast('默认收藏夹不支持排序');
+      SmartDialog.showToast(L10n.current.favFolderSortPageOnReorderItemText);
       return;
     }
 
@@ -86,7 +87,9 @@ class _FavFolderSortPageState extends State<FavFolderSortPage>
             heroTag: key,
             item: item,
             onLongPress: index == 0
-                ? () => SmartDialog.showToast('默认收藏夹不支持排序')
+                ? () => SmartDialog.showToast(
+                    L10n.current.favFolderSortPageOnReorderItemText,
+                  )
                 : null,
           ),
         );

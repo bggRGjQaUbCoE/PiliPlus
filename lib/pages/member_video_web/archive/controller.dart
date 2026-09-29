@@ -1,5 +1,6 @@
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/member.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/member/archive_order_type_web.dart';
 import 'package:PiliPlus/models_new/member/search_archive/data.dart';
 import 'package:PiliPlus/models_new/member/search_archive/slist.dart';
@@ -44,7 +45,14 @@ class MemberVideoWebCtr
       final tags = data.list?.tags;
       if (tags?.isNotEmpty ?? false) {
         this.tags = tags!
-          ..insert(0, ListTag(tid: 0, name: '全部类型', count: _totalCount));
+          ..insert(
+            0,
+            ListTag(
+              tid: 0,
+              name: L10n.current.memberVideoWebCtrCustomHandleResponseName,
+              count: _totalCount,
+            ),
+          );
       }
     }
     return false;

@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/self_sized_horizontal_list.dart';
 import 'package:PiliPlus/common/widgets/view_insets_safe_area.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/pages/contact/view.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
@@ -88,11 +89,11 @@ class _SharePanelState extends State<SharePanel> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('分享给'),
+                Text(L10n.current.sharePanelChildren),
                 iconButton(
                   size: 32,
                   iconSize: 18,
-                  tooltip: '关闭',
+                  tooltip: L10n.current.close,
                   icon: const Icon(Icons.clear),
                   onPressed: Get.back,
                 ),
@@ -211,7 +212,10 @@ class _SharePanelState extends State<SharePanel> {
                           ),
                         ),
                         const SizedBox(height: 2),
-                        const Text('更多', style: TextStyle(fontSize: 12)),
+                        Text(
+                          L10n.current.more,
+                          style: const TextStyle(fontSize: 12),
+                        ),
                       ],
                     ),
                   ),
@@ -229,7 +233,7 @@ class _SharePanelState extends State<SharePanel> {
                     maxLines: 2,
                     textInputAction: TextInputAction.newline,
                     decoration: InputDecoration(
-                      hintText: '说说你的想法吧...',
+                      hintText: L10n.current.sharePanelHintText,
                       visualDensity: .standard,
                       hintStyle: const TextStyle(fontSize: 14),
                       border: const OutlineInputBorder(
@@ -257,7 +261,7 @@ class _SharePanelState extends State<SharePanel> {
                       vertical: -1,
                     ),
                   ),
-                  child: const Text('发送'),
+                  child: Text(L10n.current.send),
                 ),
               ],
             ),
@@ -270,7 +274,7 @@ class _SharePanelState extends State<SharePanel> {
   Future<void> _onSend() async {
     final list = _userList.where((user) => user.selected);
     if (list.isEmpty) {
-      SmartDialog.showToast('请选择分享的用户');
+      SmartDialog.showToast(L10n.current.sharePanelOnSendText2);
       return;
     }
     SmartDialog.showLoading();
@@ -286,7 +290,7 @@ class _SharePanelState extends State<SharePanel> {
     SmartDialog.dismiss();
     if (res.every((e) => e)) {
       Get.back();
-      SmartDialog.showToast('分享成功');
+      SmartDialog.showToast(L10n.current.sharePanelOnSendText);
     } else if (res.every((e) => !e)) {
       SmartDialog.showToast('分享失败');
     } else {

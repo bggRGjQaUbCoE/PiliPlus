@@ -1,3 +1,4 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -10,13 +11,16 @@ List<SettingsModel> get privacySettings => [
   NormalModel(
     onTap: (context, setState) {
       if (!Accounts.main.isLogin) {
-        SmartDialog.showToast('登录后查看');
+        SmartDialog.showToast(
+          L10n.current.pagesSettingModelsPrivacySettingsPrivacySettingsOnTap,
+        );
         return;
       }
       Get.toNamed('/blackListPage');
     },
-    title: '黑名单管理',
-    subtitle: '已拉黑用户',
+    title: L10n.current.followPageBuildAppBarChildren,
+    subtitle:
+        L10n.current.pagesSettingModelsPrivacySettingsPrivacySettingsSubtitle,
     leading: const Icon(Icons.block),
   ),
   NormalModel(
@@ -24,7 +28,9 @@ List<SettingsModel> get privacySettings => [
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('账号模式详情'),
+          title: Text(
+            L10n.current.pagesSettingModelsPrivacySettingsPrivacySettingsTitle,
+          ),
           content: SelectionArea(
             child: SingleChildScrollView(
               child: _getAccountDetail(context),
@@ -33,15 +39,16 @@ List<SettingsModel> get privacySettings => [
           actions: [
             TextButton(
               onPressed: Get.back,
-              child: const Text('确认'),
+              child: Text(L10n.current.confirm),
             ),
           ],
         ),
       );
     },
     leading: const Icon(Icons.flag_outlined),
-    title: '了解账号模式',
-    subtitle: '查看各个账号模式作用的API列表',
+    title: L10n.current.pagesSettingModelsPrivacySettingsPrivacySettingsTitle2,
+    subtitle:
+        L10n.current.pagesSettingModelsPrivacySettingsPrivacySettingsSubtitle2,
   ),
 ];
 

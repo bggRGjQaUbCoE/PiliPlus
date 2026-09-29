@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/user.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/history/data.dart';
 import 'package:PiliPlus/models_new/history/list.dart';
 import 'package:PiliPlus/models_new/history/tab.dart';
@@ -103,12 +104,16 @@ class HistoryController
     if (viewedList != null && viewedList.isNotEmpty) {
       _onDelete(viewedList);
     } else {
-      SmartDialog.showToast('无已看记录');
+      SmartDialog.showToast(
+        L10n.current.historyControllerOnDelViewedHistoryText,
+      );
     }
   }
 
   Future<void> _onDelete(Set<HistoryItemModel> removeList) async {
-    SmartDialog.showLoading(msg: '请求中');
+    SmartDialog.showLoading(
+      msg: L10n.current.pagesCommonCommonIntroControllerActionFavVideoMsg,
+    );
     final res = await UserHttp.delHistory(
       removeList
           .map((item) => '${item.history.business}_${item.kid}')
@@ -118,7 +123,7 @@ class HistoryController
     SmartDialog.dismiss();
     if (res.isSuccess) {
       afterDelete(removeList);
-      SmartDialog.showToast('已删除');
+      SmartDialog.showToast(L10n.current.historyControllerOnDeleteText);
     } else {
       res.toast();
     }
@@ -129,8 +134,8 @@ class HistoryController
   void onRemove() {
     showConfirmDialog(
       context: Get.context!,
-      title: const Text('提示'),
-      content: const Text('确认删除所选历史记录吗？'),
+      title: Text(L10n.current.notice),
+      content: Text(L10n.current.historyControllerOnRemoveContent),
       onConfirm: () => _onDelete(allChecked.toSet()),
     );
   }

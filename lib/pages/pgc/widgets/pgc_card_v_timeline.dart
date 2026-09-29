@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_timeline/episode.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -49,8 +50,8 @@ class PgcCardVTimeline extends StatelessWidget {
                         height: maxHeight,
                       ),
                       if (item.follow == 1)
-                        const PBadge(
-                          text: '已追番',
+                        PBadge(
+                          text: L10n.current.pgcCardVTimelineText,
                           right: 6,
                           top: 6,
                         ),

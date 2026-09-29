@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/radio_widget.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -44,7 +45,7 @@ Future<void> autoWrapReportDialog(
     }
   }
 
-  Widget title = const Text('举报');
+  Widget title = Text(L10n.current.report);
   if (reportUrl != null) {
     title = Row(
       mainAxisAlignment: .spaceBetween,
@@ -52,7 +53,8 @@ Future<void> autoWrapReportDialog(
         title,
         iconButton(
           iconSize: 21,
-          tooltip: '网页举报',
+          tooltip:
+              L10n.current.commonWidgetsDialogReportAutoWrapReportDialogTooltip,
           onPressed: () =>
               Get.toNamed('/webview', parameters: {'url': reportUrl}),
           icon: const Icon(MdiIcons.web, size: 22),
@@ -80,9 +82,13 @@ Future<void> autoWrapReportDialog(
                   builder: (context) => Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Padding(
-                        padding: .only(left: 22, right: 22, bottom: 5),
-                        child: Text('请选择举报的理由：'),
+                      Padding(
+                        padding: const .only(left: 22, right: 22, bottom: 5),
+                        child: Text(
+                          L10n
+                              .current
+                              .commonWidgetsDialogReportAutoWrapReportDialogChild,
+                        ),
                       ),
                       RadioGroup(
                         onChanged: (value) {
@@ -109,17 +115,21 @@ Future<void> autoWrapReportDialog(
                             maxLines: 4,
                             initialValue: reasonDesc,
                             autofocus: isContentRequired,
-                            decoration: const InputDecoration(
-                              labelText: '为帮助审核人员更快处理，请补充问题类型和出现位置等详细信息',
-                              border: OutlineInputBorder(),
-                              contentPadding: .all(10),
-                              labelStyle: TextStyle(fontSize: 14),
-                              floatingLabelStyle: TextStyle(fontSize: 14),
+                            decoration: InputDecoration(
+                              labelText: L10n
+                                  .current
+                                  .commonWidgetsDialogReportAutoWrapReportDialogLabelText,
+                              border: const OutlineInputBorder(),
+                              contentPadding: const .all(10),
+                              labelStyle: const TextStyle(fontSize: 14),
+                              floatingLabelStyle: const TextStyle(fontSize: 14),
                             ),
                             onChanged: (value) => reasonDesc = value,
                             validator: (value) =>
                                 isContentRequired && value.isNullOrEmpty
-                                ? '理由不能为空'
+                                ? L10n
+                                      .current
+                                      .commonWidgetsDialogReportAutoWrapReportDialogValidator
                                 : null,
                           ),
                         ),
@@ -133,7 +143,9 @@ Future<void> autoWrapReportDialog(
             Padding(
               padding: const EdgeInsets.only(left: 14, top: 6),
               child: CheckBoxText(
-                text: '拉黑该用户',
+                text: L10n
+                    .current
+                    .commonWidgetsDialogReportAutoWrapReportDialogText,
                 onChanged: (value) => banUid = value,
               ),
             ),
@@ -143,7 +155,7 @@ Future<void> autoWrapReportDialog(
         TextButton(
           onPressed: Get.back,
           child: Text(
-            '取消',
+            L10n.current.cancel,
             style: TextStyle(color: ColorScheme.of(context).outline),
           ),
         ),
@@ -163,7 +175,11 @@ Future<void> autoWrapReportDialog(
               SmartDialog.dismiss();
               if (res.isSuccess) {
                 Get.back();
-                SmartDialog.showToast('举报成功');
+                SmartDialog.showToast(
+                  L10n
+                      .current
+                      .commonWidgetsDialogReportAutoWrapReportDialogOnPressed,
+                );
               } else {
                 res.toast();
               }
@@ -173,7 +189,7 @@ Future<void> autoWrapReportDialog(
               Utils.reportError(e, s);
             }
           },
-          child: const Text('确定'),
+          child: Text(L10n.current.ok),
         ),
       ],
     ),
@@ -242,81 +258,96 @@ class _CheckBoxTextState extends State<CheckBoxText> {
 
 abstract final class ReportOptions {
   // from https://s1.hdslb.com/bfs/seed/jinkela/comment-h5/static/js/605.chunks.js
-  static Map<String, Map<int, String>> get commentReport => const {
-    '违反法律法规': {9: '违法违规', 2: '色情', 10: '低俗', 12: '赌博诈骗', 23: '违法信息外链'},
-    '谣言类不实信息': {19: '涉政谣言', 22: '虚假不实信息*', 20: '涉社会事件谣言'},
-    '侵犯个人权益': {7: '人身攻击', 15: '侵犯隐私'},
-    '有害社区环境': {
-      1: '垃圾广告',
-      4: '引战',
-      5: '剧透',
-      3: '刷屏',
-      8: '视频不相关',
-      18: '违规抽奖',
-      17: '青少年不良信息',
+  static Map<String, Map<int, String>> get commentReport => {
+    L10n.current.reportOptionsCommentReportText16: {
+      9: L10n.current.reportOptionsCommentReportText8,
+      2: L10n.current.reportOptionsCommentReportText,
+      10: L10n.current.reportOptionsCommentReportText2,
+      12: L10n.current.reportOptionsCommentReportText9,
+      23: L10n.current.reportOptionsCommentReportText17,
     },
-    '其他': {0: '其他*'},
+    L10n.current.reportOptionsCommentReportText20: {
+      19: L10n.current.reportOptionsCommentReportText10,
+      22: L10n.current.reportOptionsCommentReportText21,
+      20: L10n.current.reportOptionsCommentReportText22,
+    },
+    L10n.current.reportOptionsCommentReportText18: {
+      7: L10n.current.reportOptionsCommentReportText11,
+      15: L10n.current.reportOptionsCommentReportText12,
+    },
+    L10n.current.reportOptionsCommentReportText19: {
+      1: L10n.current.reportOptionsCommentReportText13,
+      4: L10n.current.reportOptionsCommentReportText3,
+      5: L10n.current.reportOptionsCommentReportText4,
+      3: L10n.current.reportOptionsCommentReportText5,
+      8: L10n.current.reportOptionsCommentReportText15,
+      18: L10n.current.reportOptionsCommentReportText14,
+      17: L10n.current.reportOptionsCommentReportText23,
+    },
+    L10n.current.reportOptionsCommentReportText6: {
+      0: L10n.current.reportOptionsCommentReportText7,
+    },
   };
   static bool withContentReply(int? reasonType) => reasonType != null;
   static bool contentRequiredReply(int? reasonType) =>
       reasonType == 0 || reasonType == 22;
 
-  static Map<String, Map<int, String>> get dynamicReport => const {
+  static Map<String, Map<int, String>> get dynamicReport => {
     '': {
-      4: '垃圾广告',
-      8: '引战',
-      1: '色情',
-      5: '人身攻击',
-      3: '违法信息',
-      9: '涉政谣言',
-      10: '涉社会事件谣言',
-      12: '虚假不实信息',
-      13: '违法信息外链',
-      0: '其他*',
+      4: L10n.current.reportOptionsCommentReportText13,
+      8: L10n.current.reportOptionsCommentReportText3,
+      1: L10n.current.reportOptionsCommentReportText,
+      5: L10n.current.reportOptionsCommentReportText11,
+      3: L10n.current.reportOptionsDynamicReportText,
+      9: L10n.current.reportOptionsCommentReportText10,
+      10: L10n.current.reportOptionsCommentReportText22,
+      12: L10n.current.reportOptionsDynamicReportText2,
+      13: L10n.current.reportOptionsCommentReportText17,
+      0: L10n.current.reportOptionsCommentReportText7,
     },
   };
 
-  static Map<String, Map<int, String>> get danmakuReport => const {
+  static Map<String, Map<int, String>> get danmakuReport => {
     '': {
-      1: '违法违禁',
-      2: '色情低俗',
-      3: '赌博诈骗',
-      4: '人身攻击',
-      5: '侵犯隐私',
-      6: '垃圾广告',
-      7: '引战',
-      8: '剧透',
-      9: '恶意刷屏',
-      10: '视频无关',
-      12: '青少年不良信息',
-      13: '违法信息外链',
-      11: '其它*',
+      1: L10n.current.reportOptionsDanmakuReportText2,
+      2: L10n.current.reportOptionsDanmakuReportText3,
+      3: L10n.current.reportOptionsCommentReportText9,
+      4: L10n.current.reportOptionsCommentReportText11,
+      5: L10n.current.reportOptionsCommentReportText12,
+      6: L10n.current.reportOptionsCommentReportText13,
+      7: L10n.current.reportOptionsCommentReportText3,
+      8: L10n.current.reportOptionsCommentReportText4,
+      9: L10n.current.reportOptionsDanmakuReportText4,
+      10: L10n.current.reportOptionsDanmakuReportText5,
+      12: L10n.current.reportOptionsCommentReportText23,
+      13: L10n.current.reportOptionsCommentReportText17,
+      11: L10n.current.reportOptionsDanmakuReportText,
     },
   };
   static bool danmakuReportCheck(int? reasonType) => reasonType == 11;
 
-  static Map<String, Map<int, String>> get liveDanmakuReport => const {
+  static Map<String, Map<int, String>> get liveDanmakuReport => {
     '': {
-      1: '违法违规',
-      2: '低俗色情',
-      3: '垃圾广告',
-      4: '辱骂引战',
-      5: '政治敏感',
-      6: '青少年不良信息',
-      0: '其他',
+      1: L10n.current.reportOptionsCommentReportText8,
+      2: L10n.current.reportOptionsLiveDanmakuReportText,
+      3: L10n.current.reportOptionsCommentReportText13,
+      4: L10n.current.reportOptionsLiveDanmakuReportText2,
+      5: L10n.current.reportOptionsLiveDanmakuReportText3,
+      6: L10n.current.reportOptionsCommentReportText23,
+      0: L10n.current.reportOptionsCommentReportText6,
     },
   };
   static bool liveDanmakuReportCheck(int? _) => false;
 
-  static Map<String, Map<int, String>> get imMsgReport => const {
+  static Map<String, Map<int, String>> get imMsgReport => {
     '': {
-      1: '色情低俗',
-      2: '政治敏感',
-      3: '违法有害',
-      4: '广告骚扰',
-      5: '人身攻击',
-      6: '诈骗',
-      0: '其他问题*',
+      1: L10n.current.reportOptionsDanmakuReportText3,
+      2: L10n.current.reportOptionsLiveDanmakuReportText3,
+      3: L10n.current.reportOptionsImMsgReportText2,
+      4: L10n.current.reportOptionsImMsgReportText3,
+      5: L10n.current.reportOptionsCommentReportText11,
+      6: L10n.current.reportOptionsImMsgReportText,
+      0: L10n.current.reportOptionsImMsgReportText4,
     },
   };
 }

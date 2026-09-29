@@ -2,6 +2,7 @@ import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/dynamics/article_content_model.dart'
     show ArticleContentModel;
@@ -193,7 +194,9 @@ class ArticleController extends CommonDynController {
         ..status = !isFav
         ..count = (favorite.count ?? 0) + (isFav ? -1 : 1);
       stats.refresh();
-      SmartDialog.showToast('${isFav ? '取消' : ''}收藏成功');
+      SmartDialog.showToast(
+        L10n.current.articleControllerOnFavText(isFav.toString()),
+      );
     } else {
       res.toast();
     }
@@ -212,7 +215,11 @@ class ArticleController extends CommonDynController {
         ..status = !isLike
         ..count = (like.count ?? 0) + (isLike ? -1 : 1);
       stats.refresh();
-      SmartDialog.showToast(!isLike ? '点赞成功' : '取消赞');
+      SmartDialog.showToast(
+        !isLike
+            ? L10n.current.articleControllerOnLikeText2
+            : L10n.current.articleControllerOnLikeText,
+      );
     } else {
       res.toast();
     }

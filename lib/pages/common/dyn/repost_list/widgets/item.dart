@@ -11,6 +11,7 @@ import 'package:PiliPlus/grpc/bilibili/app/dynamic/v2.pb.dart'
         Description,
         ModuleOpusSummary,
         TextNode;
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
@@ -242,7 +243,10 @@ List<InlineSpan> _parseSummary(
                 )
                 ..add(
                   TextSpan(
-                    text: '投票：${e.rawText}',
+                    text: L10n.current
+                        .pagesCommonDynRepostListWidgetsItemParseSummaryText(
+                          e.rawText,
+                        ),
                     style: TextStyle(color: colorScheme.primary),
                     recognizer: (NoDeadlineTapGestureRecognizer()
                       ..onTap = () => showVoteDialog(

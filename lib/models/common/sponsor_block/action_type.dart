@@ -1,10 +1,16 @@
+import 'package:PiliPlus/l10n/l10n.dart';
+
 enum ActionType {
-  skip('跳过'),
-  mute('静音'),
-  full('整个视频'),
-  poi('精彩时刻'),
+  skip,
+  mute,
+  full,
+  poi,
   ;
 
-  final String title;
-  const ActionType(this.title);
+  String get title => switch (this) {
+    skip => L10n.current.actionTypeSkipTitle,
+    mute => L10n.current.actionTypeMuteTitle,
+    full => L10n.current.actionTypeFullTitle,
+    poi => L10n.current.actionTypePoiTitle,
+  };
 }

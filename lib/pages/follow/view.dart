@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/member/tags.dart';
 import 'package:PiliPlus/pages/common/fab_mixin.dart';
 import 'package:PiliPlus/pages/follow/child/child_controller.dart';
@@ -90,10 +91,14 @@ class _FollowPageState extends State<FollowPage>
 
   PreferredSizeWidget get _buildAppBar => AppBar(
     title: _followController.isOwner
-        ? const Text('我的关注')
+        ? Text(L10n.current.contactPageText)
         : Obx(() {
             final name = _followController.name.value;
-            if (name != null) return Text('$name的关注');
+            if (name != null) {
+              return Text(
+                L10n.current.followPageBuildAppBarTitle(name),
+              );
+            }
             return const SizedBox.shrink();
           }),
     actions: _followController.isOwner
@@ -104,7 +109,7 @@ class _FollowPageState extends State<FollowPage>
                 _followController.onCreateFavTag,
               ),
               icon: const Icon(Icons.add),
-              tooltip: '新建分组',
+              tooltip: L10n.current.followPageBuildAppBarTooltip,
             ),
             IconButton(
               onPressed: () {
@@ -114,7 +119,7 @@ class _FollowPageState extends State<FollowPage>
                 Get.to(FollowTagSortPage(controller: _followController));
               },
               icon: const Icon(Icons.sort),
-              tooltip: '分组排序',
+              tooltip: L10n.current.followPageBuildAppBarTooltip2,
             ),
             IconButton(
               onPressed: () => Get.toNamed(
@@ -124,19 +129,19 @@ class _FollowPageState extends State<FollowPage>
                 },
               ),
               icon: const Icon(Icons.search_outlined),
-              tooltip: '搜索',
+              tooltip: L10n.current.search,
             ),
             PopupMenuButton(
               icon: const Icon(Icons.more_vert),
               itemBuilder: (context) => [
                 PopupMenuItem(
                   onTap: () => Get.toNamed('/blackListPage'),
-                  child: const Row(
+                  child: Row(
                     spacing: 10,
                     mainAxisSize: .min,
                     children: [
-                      Icon(Icons.block, size: 19),
-                      Text('黑名单管理'),
+                      const Icon(Icons.block, size: 19),
+                      Text(L10n.current.followPageBuildAppBarChildren),
                     ],
                   ),
                 ),
@@ -183,7 +188,7 @@ class _FollowPageState extends State<FollowPage>
                         child: Row(
                           children: [
                             Text(
-                              '${item.name}${count != null ? '($count)' : ''} ',
+                              '${item.tagid == null ? L10n.current.followChildPageBuildSameFollowingChild : item.name}${count != null ? '($count)' : ''} ',
                             ),
                             const Icon(Icons.menu, size: 18),
                           ],
@@ -192,7 +197,8 @@ class _FollowPageState extends State<FollowPage>
                     );
                   }
                   return Tab(
-                    text: '${item.name}${count != null ? '($count)' : ''}',
+                    text:
+                        '${item.tagid == null ? L10n.current.followChildPageBuildSameFollowingChild : item.name}${count != null ? '($count)' : ''}',
                   );
                 });
               }),
@@ -236,7 +242,7 @@ class _FollowPageState extends State<FollowPage>
               String tagName = item.name!;
               showConfirmDialog(
                 context: context,
-                title: const Text('编辑分组名称'),
+                title: Text(L10n.current.followPageOnHandleTagTitle2),
                 content: TextFormField(
                   autofocus: true,
                   initialValue: tagName,
@@ -253,19 +259,25 @@ class _FollowPageState extends State<FollowPage>
                 },
               );
             },
-            child: const Text('修改名称', style: TextStyle(fontSize: 14)),
+            child: Text(
+              L10n.current.followPageOnHandleTagChild,
+              style: const TextStyle(fontSize: 14),
+            ),
           ),
           DialogOption(
             onPressed: () {
               Get.back();
               showConfirmDialog(
                 context: context,
-                title: const Text('删除分组'),
-                content: const Text('删除后，该分组下的用户依旧保留？'),
+                title: Text(L10n.current.followPageOnHandleTagTitle),
+                content: Text(L10n.current.followPageOnHandleTagContent),
                 onConfirm: () => _followController.onDelTag(index, item.tagid!),
               );
             },
-            child: const Text('删除分组', style: TextStyle(fontSize: 14)),
+            child: Text(
+              L10n.current.followPageOnHandleTagTitle,
+              style: const TextStyle(fontSize: 14),
+            ),
           ),
         ],
       ),

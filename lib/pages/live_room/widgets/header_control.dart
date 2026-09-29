@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/draggable_sheet/dyn.dart';
 import 'package:PiliPlus/common/widgets/marquee.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/video/live_quality.dart';
 import 'package:PiliPlus/pages/live_room/controller.dart';
 import 'package:PiliPlus/pages/setting/models/play_settings.dart'
@@ -119,7 +120,7 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
           if (isFullScreen || plPlayerController.isDesktopPip)
             ComBtn(
               height: btnHeight,
-              tooltip: '返回',
+              tooltip: L10n.current.back,
               icon: const Icon(FontAwesomeIcons.arrowLeft, size: 15),
               onTap: () {
                 if (plPlayerController.isDesktopPip) {
@@ -137,7 +138,9 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
               final isAlwaysOnTop = plPlayerController.isAlwaysOnTop.value;
               return ComBtn(
                 height: btnHeight,
-                tooltip: '${isAlwaysOnTop ? '取消' : ''}置顶',
+                tooltip: L10n.current.authorPanelMorePanelTitle16(
+                  isAlwaysOnTop.toString(),
+                ),
                 icon: isAlwaysOnTop
                     ? const Icon(
                         size: 18,
@@ -155,7 +158,7 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
           if (isFullScreen || PlatformUtils.isDesktop)
             ComBtn(
               height: btnHeight,
-              tooltip: '发弹幕',
+              tooltip: L10n.current.liveHeaderControlTooltip,
               icon: const Icon(
                 size: 18,
                 Icons.comment_outlined,
@@ -166,7 +169,7 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
           if (Platform.isAndroid || (PlatformUtils.isDesktop && !isFullScreen))
             ComBtn(
               height: btnHeight,
-              tooltip: '画中画',
+              tooltip: L10n.current.liveHeaderControlTooltip2,
               onTap: () {
                 if (PlatformUtils.isDesktop) {
                   plPlayerController.toggleDesktopPip();
@@ -185,7 +188,7 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
           Obx(
             () => ComBtn(
               height: btnHeight,
-              tooltip: '仅播放音频',
+              tooltip: L10n.current.liveHeaderControlTooltip3,
               onTap: () {
                 plPlayerController.onlyPlayAudio.toggle();
                 widget.onPlayAudio();
@@ -209,7 +212,9 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
                   plPlayerController.continuePlayInBackground.value;
               return ComBtn(
                 height: btnHeight,
-                tooltip: '${continuePlayInBackground ? '关闭' : ''}后台播放',
+                tooltip: L10n.current.liveHeaderControlTooltip4(
+                  continuePlayInBackground ? L10n.current.close : '',
+                ),
                 onTap: plPlayerController.setContinuePlayInBackground,
                 icon: continuePlayInBackground
                     ? const Icon(
@@ -226,7 +231,7 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
             }),
           ComBtn(
             height: btnHeight,
-            tooltip: '定时关闭',
+            tooltip: L10n.current.sleepTimer,
             onTap: () => shutdownTimerService.showScheduleExitDialog(
               context,
               isFullScreen: isFullScreen,
@@ -249,21 +254,27 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
                   PopupMenuItem(
                     height: 35,
                     onTap: _showLiveStreamDialog,
-                    child: const Row(
+                    child: Row(
                       spacing: 8,
                       children: [
-                        Icon(Icons.alt_route, size: 17),
-                        Text('切换路线', style: TextStyle(fontSize: 14)),
+                        const Icon(Icons.alt_route, size: 17),
+                        Text(
+                          L10n.current.liveHeaderControlChildren,
+                          style: const TextStyle(fontSize: 14),
+                        ),
                       ],
                     ),
                   ),
                   PopupMenuItem(
                     height: 35,
-                    child: const Row(
+                    child: Row(
                       spacing: 8,
                       children: [
-                        Icon(Icons.info_outline, size: 17),
-                        Text('播放信息', style: TextStyle(fontSize: 14)),
+                        const Icon(Icons.info_outline, size: 17),
+                        Text(
+                          L10n.current.playbackInformation,
+                          style: const TextStyle(fontSize: 14),
+                        ),
                       ],
                     ),
                     onTap: () => HeaderControlState.showPlayerInfo(
@@ -279,7 +290,9 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
                         children: [
                           const Icon(Icons.volume_up, size: 17),
                           Text(
-                            '播放器音量: ${player.getProperty('volume').subLength(3)}%',
+                            L10n.current.audioPageShowMoreTitle2(
+                              player.getProperty('volume').subLength(3),
+                            ),
                             style: const TextStyle(fontSize: 14),
                           ),
                         ],

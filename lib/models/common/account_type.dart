@@ -1,10 +1,16 @@
+import 'package:PiliPlus/l10n/l10n.dart';
+
 enum AccountType {
-  main('主账号'),
-  heartbeat('记录观看'),
-  recommend('推荐'),
-  video('视频取流'),
+  main,
+  heartbeat,
+  recommend,
+  video,
   ;
 
-  final String title;
-  const AccountType(this.title);
+  String get title => switch (this) {
+    main => L10n.current.accountTypeMainTitle,
+    heartbeat => L10n.current.accountTypeHeartbeatTitle,
+    recommend => L10n.current.recommended,
+    video => L10n.current.accountTypeVideoTitle,
+  };
 }

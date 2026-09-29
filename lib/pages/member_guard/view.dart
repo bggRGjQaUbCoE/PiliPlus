@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/member_guard/guard_top_list.dart';
 import 'package:PiliPlus/pages/member_guard/controller.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
@@ -57,7 +58,12 @@ class _MemberGuardState extends State<MemberGuard> {
   Widget build(BuildContext context) {
     return SimpleScaffold(
       appBar: AppBar(
-        title: Text('$_userName的舰队${_count == null ? '' : '($_count)'}'),
+        title: Text(
+          L10n.current.memberGuardTitle(
+            _userName,
+            _count == null ? '' : '($_count)',
+          ),
+        ),
       ),
       body: refreshIndicator(
         onRefresh: _controller.onRefresh,

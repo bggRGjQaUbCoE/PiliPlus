@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:PiliPlus/common/assets.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
 import 'package:PiliPlus/models_new/video/video_detail/section.dart';
@@ -120,7 +121,9 @@ class _SeasonPanelState extends State<SeasonPanel> {
               children: <Widget>[
                 Expanded(
                   child: Text(
-                    '合集：${videoDetail.ugcSeason!.title!}',
+                    L10n.current.seasonPanelChild(
+                      videoDetail.ugcSeason!.title!,
+                    ),
                     style: theme.textTheme.labelMedium,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -131,22 +134,25 @@ class _SeasonPanelState extends State<SeasonPanel> {
                   color: theme.colorScheme.primary,
                   height: 12,
                   cacheHeight: 12.cacheSize(context),
-                  semanticLabel: "正在播放：",
+                  semanticLabel:
+                      L10n.current.episodePanelBuildEpisodeItemSemanticLabel,
                 ),
                 const SizedBox(width: 10),
                 Obx(
                   () => Text(
                     '${currentIndex.value + 1}/${episodes.length}',
                     style: theme.textTheme.labelMedium,
-                    semanticsLabel:
-                        '第${currentIndex.value + 1}集，共${episodes.length}集',
+                    semanticsLabel: L10n.current.seasonPanelSemanticsLabel(
+                      currentIndex.value + 1,
+                      episodes.length,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 6),
-                const Icon(
+                Icon(
                   Icons.arrow_forward_ios_outlined,
                   size: 13,
-                  semanticLabel: '查看',
+                  semanticLabel: L10n.current.viewTypeText,
                 ),
               ],
             ),

@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/svg/level_icon.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:material_ui/material_ui.dart';
 
 abstract final class BiliUtils {
@@ -13,7 +14,9 @@ abstract final class BiliUtils {
     if (attr == null) {
       return '';
     }
-    return isPublicFav(attr) ? '公开' : '私密';
+    return isPublicFav(attr)
+        ? L10n.current.createFavPageBuildBodyLeading2
+        : L10n.current.memberFavItemChildren4;
   }
 
   static bool isPublicFav(int attr) {

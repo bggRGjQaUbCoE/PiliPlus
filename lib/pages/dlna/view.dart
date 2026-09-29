@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:dlna_dart/dlna.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -73,10 +74,10 @@ class _DLNAPageState extends State<DLNAPage> {
     final colorScheme = ColorScheme.of(context);
     return SimpleScaffold(
       appBar: AppBar(
-        title: const Text('投屏'),
+        title: Text(L10n.current.dLNAPageTitle),
         actions: [
           IconButton(
-            tooltip: '搜索',
+            tooltip: L10n.current.search,
             onPressed: _onSearch,
             icon: const Icon(Icons.refresh),
           ),
@@ -95,7 +96,7 @@ class _DLNAPageState extends State<DLNAPage> {
   Widget _buildBody(ColorScheme colorScheme) {
     if (!_isSearching && _deviceList.isEmpty) {
       return HttpError(
-        errMsg: '没有设备',
+        errMsg: L10n.current.noDevices,
         onReload: _onSearch,
       );
     }

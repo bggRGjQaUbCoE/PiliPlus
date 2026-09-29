@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/user.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/models/common/theme/theme_type.dart';
 import 'package:PiliPlus/models/user/info.dart';
@@ -41,15 +42,15 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
   static RxBool anonymity =
       (Accounts.account.isNotEmpty && !Accounts.heartbeat.isLogin).obs;
 
-  late final list = <({IconData icon, String title, VoidCallback onTap})>[
+  List<({IconData icon, String title, VoidCallback onTap})> get list => [
     (
       icon: CustomIcons.folderDownloadOutline,
-      title: '离线缓存',
+      title: L10n.current.offlineDownload,
       onTap: () => Get.toNamed('/download'),
     ),
     (
       icon: CustomIcons.history,
-      title: '观看记录',
+      title: L10n.current.watchHistory,
       onTap: () {
         if (isLogin) {
           Get.toNamed('/history');
@@ -58,7 +59,7 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
     ),
     (
       icon: CustomIcons.subscriptions_outlined,
-      title: '我的订阅',
+      title: L10n.current.listTitle,
       onTap: () {
         if (isLogin) {
           Get.toNamed('/subscription');
@@ -67,7 +68,7 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
     ),
     (
       icon: CustomIcons.watch_later_outlined,
-      title: '稍后再看',
+      title: L10n.current.watchLater,
       onTap: () {
         if (isLogin) {
           Get.toNamed('/later');
@@ -148,7 +149,9 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
 
   static void onChangeAnonymity() {
     if (Accounts.account.isEmpty) {
-      SmartDialog.showToast('请先登录');
+      SmartDialog.showToast(
+        L10n.current.loginPageControllerSwitchAccountDialogText,
+      );
       return;
     }
     final newVal = !anonymity.value;
@@ -182,17 +185,15 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
                     children: <Widget>[
                       const Icon(MdiIcons.incognito, size: 20),
                       const SizedBox(width: 10),
-                      Text('已进入无痕模式', style: theme.textTheme.titleMedium),
+                      Text(
+                        L10n.current.mineControllerOnChangeAnonymityChildren,
+                        style: theme.textTheme.titleMedium,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    '搜索不携带身份信息\n'
-                    '不产生查询或播放记录\n'
-                    '点赞等其它操作不受影响\n'
-                    '播放进度信息跟随视频取流\n'
-                    '上次观看分p信息跟随主账号\n'
-                    '(前往隐私设置了解详情)',
+                    L10n.current.mineControllerOnChangeAnonymityChildren3,
                     style: theme.textTheme.bodySmall,
                   ),
                   Row(
@@ -201,17 +202,31 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
                       TextButton(
                         onPressed: () {
                           SmartDialog.dismiss(result: true);
-                          SmartDialog.showToast('已设为永久无痕模式');
+                          SmartDialog.showToast(
+                            L10n
+                                .current
+                                .mineControllerOnChangeAnonymityOnPressed,
+                          );
                         },
-                        child: Text('保存为永久', style: style),
+                        child: Text(
+                          L10n.current.mineControllerOnChangeAnonymityChild,
+                          style: style,
+                        ),
                       ),
                       const SizedBox(width: 10),
                       TextButton(
                         onPressed: () {
                           SmartDialog.dismiss();
-                          SmartDialog.showToast('已设为临时无痕模式');
+                          SmartDialog.showToast(
+                            L10n
+                                .current
+                                .mineControllerOnChangeAnonymityOnPressed2,
+                          );
                         },
-                        child: Text('仅本次（默认）', style: style),
+                        child: Text(
+                          L10n.current.mineControllerOnChangeAnonymityChild2,
+                          style: style,
+                        ),
                       ),
                     ],
                   ),
@@ -252,7 +267,10 @@ class MineController extends CommonDataController<FavFolderData, FavFolderData>
                 children: [
                   const Icon(MdiIcons.incognitoOff, size: 20),
                   const SizedBox(width: 10),
-                  Text('已退出无痕模式', style: theme.textTheme.titleMedium),
+                  Text(
+                    L10n.current.mineControllerOnChangeAnonymityChildren2,
+                    style: theme.textTheme.titleMedium,
+                  ),
                 ],
               ),
             ),

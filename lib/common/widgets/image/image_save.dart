@@ -3,6 +3,7 @@ import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/http/user.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -66,7 +67,7 @@ void imageSaveDialog({
                       if (aid != null || bvid != null)
                         iconButton(
                           iconSize: _iconSize,
-                          tooltip: '稍后再看',
+                          tooltip: L10n.current.watchLater,
                           onPressed: () => {
                             Get.back(),
                             UserHttp.toViewLater(aid: aid, bvid: bvid),
@@ -77,7 +78,7 @@ void imageSaveDialog({
                         if (PlatformUtils.isMobile)
                           iconButton(
                             iconSize: _iconSize,
-                            tooltip: '分享',
+                            tooltip: L10n.current.share,
                             onPressed: () {
                               Get.back();
                               ImageUtils.onShareImg(cover);
@@ -87,7 +88,7 @@ void imageSaveDialog({
                         else
                           iconButton(
                             iconSize: 18,
-                            tooltip: '复制链接',
+                            tooltip: L10n.current.copyLink,
                             onPressed: () {
                               Get.back();
                               Utils.copyText(cover);
@@ -96,7 +97,9 @@ void imageSaveDialog({
                           ),
                         iconButton(
                           iconSize: _iconSize,
-                          tooltip: '保存封面图',
+                          tooltip: L10n
+                              .current
+                              .commonWidgetsImageImageSaveImageSaveDialogTooltip3,
                           onPressed: () async {
                             bool saveStatus = await ImageUtils.downloadImg([
                               cover,

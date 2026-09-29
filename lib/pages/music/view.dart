@@ -13,6 +13,7 @@ import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_to_box_adapter.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/music.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/music/bgm_detail.dart';
@@ -299,7 +300,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                 Expanded(
                   child: textIconButton(
                     icon: CustomIcons.share_node,
-                    text: '分享',
+                    text: L10n.current.share,
                     onPressed: () => ShareUtils.shareText(controller.shareUrl),
                   ),
                 ),
@@ -308,12 +309,16 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                     builder: (context) => textIconButton(
                       icon: FontAwesomeIcons.thumbsUp,
                       activatedIcon: FontAwesomeIcons.solidThumbsUp,
-                      text: '点赞',
+                      text: L10n.current.like,
                       count: item.wishCount,
                       status: item.wishListen ?? false,
                       onPressed: () async {
                         if (!Accounts.main.isLogin) {
-                          SmartDialog.showToast('请先登录');
+                          SmartDialog.showToast(
+                            L10n
+                                .current
+                                .loginPageControllerSwitchAccountDialogText,
+                          );
                           return;
                         }
                         final hasLike = item.wishListen ?? false;
@@ -466,7 +471,9 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                                 _buildArtist(artist, textTheme.bodySmall),
                             if (!item.musicPublish.isNullOrEmpty)
                               Text(
-                                '发行日期：${item.musicPublish}',
+                                L10n.current.musicDetailPageBuildCardChildren7(
+                                  item.musicPublish.toString(),
+                                ),
                                 style: textTheme.bodySmall!.copyWith(
                                   color: theme.colorScheme.outline,
                                 ),
@@ -515,7 +522,9 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                                               .onSecondaryContainer,
                                         ),
                                         Text(
-                                          '看MV',
+                                          L10n
+                                              .current
+                                              .audioPageBuildActionsSemanticsLabel2,
                                           style: TextStyle(
                                             color: theme
                                                 .colorScheme
@@ -548,21 +557,35 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
                 [
                   if (!(item.originArtist ?? item.originArtistList)
                       .isNullOrEmpty)
-                    '原唱：${item.originArtist ?? item.originArtistList}',
-                  if (!item.album.isNullOrEmpty) '专辑：${item.album}',
-                  if (!item.musicSource.isNullOrEmpty) '出处：${item.musicSource}',
+                    L10n.current.musicDetailPageBuildCardChildren8(
+                      (item.originArtist ?? item.originArtistList).toString(),
+                    ),
+                  if (!item.album.isNullOrEmpty)
+                    L10n.current.musicDetailPageBuildCardChildren5(
+                      item.album.toString(),
+                    ),
+                  if (!item.musicSource.isNullOrEmpty)
+                    L10n.current.musicDetailPageBuildCardChildren6(
+                      item.musicSource.toString(),
+                    ),
                 ].join('\n'),
               ),
               const Divider(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('热歌榜排名'),
-                  _buildRank(item.hotSongHeat?.lastHeat, '热度'),
-                  _buildRank(item.listenPv, '总播放量'),
+                  Text(L10n.current.musicDetailPageBuildCardChildren3),
+                  _buildRank(
+                    item.hotSongHeat?.lastHeat,
+                    L10n.current.musicDetailPageBuildCardChildren,
+                  ),
+                  _buildRank(
+                    item.listenPv,
+                    L10n.current.musicDetailPageBuildCardChildren2,
+                  ),
                   _buildRank(
                     item.musicRelation,
-                    '使用稿件量',
+                    L10n.current.musicDetailPageBuildCardChildren4,
                     () => Get.to(
                       const MusicRecommendPage(),
                       arguments: (id: controller.musicId, item: item),
@@ -593,7 +616,12 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
       child: Column(
         spacing: 8,
         children: [
-          Text('近${heat.length}日热度趋势', style: theme.textTheme.titleMedium),
+          Text(
+            L10n.current.musicDetailPageBuildChartChildren(
+              heat.length,
+            ),
+            style: theme.textTheme.titleMedium,
+          ),
           SizedBox(
             width: maxWidth,
             height: maxWidth * 0.5,

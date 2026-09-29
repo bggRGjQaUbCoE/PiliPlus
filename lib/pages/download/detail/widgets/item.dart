@@ -8,6 +8,7 @@ import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/video_progress_indicator.dart';
 import 'package:PiliPlus/common/widgets/select_mask.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
@@ -72,11 +73,14 @@ class DetailItem extends StatelessWidget {
                     Get.back();
                     showConfirmDialog(
                       context: context,
-                      title: const Text('确定删除该视频？'),
+                      title: Text(L10n.current.detailItemOnLongPressTitle),
                       onConfirm: onDelete,
                     );
                   },
-                  child: const Text('删除', style: TextStyle(fontSize: 14)),
+                  child: Text(
+                    L10n.current.delete,
+                    style: const TextStyle(fontSize: 14),
+                  ),
                 ),
                 DialogOption(
                   onPressed: () async {
@@ -86,12 +90,17 @@ class DetailItem extends StatelessWidget {
                       isUpdate: true,
                     );
                     if (res) {
-                      SmartDialog.showToast('更新成功');
+                      SmartDialog.showToast(
+                        L10n.current.downloadDetailPageOnPressed,
+                      );
                     } else {
                       SmartDialog.showToast('更新失败');
                     }
                   },
-                  child: const Text('更新弹幕', style: TextStyle(fontSize: 14)),
+                  child: Text(
+                    L10n.current.detailItemOnLongPressChild,
+                    style: const TextStyle(fontSize: 14),
+                  ),
                 ),
               ],
             ),
@@ -227,7 +236,7 @@ class DetailItem extends StatelessWidget {
                                   child: PBadge(
                                     isStack: false,
                                     text: progress >= entry.totalTimeMilli - 400
-                                        ? '已看完'
+                                        ? L10n.current.watchedCompletely
                                         : '${DurationUtils.formatDuration(
                                                 progress ~/ 1000,
                                               )}/'

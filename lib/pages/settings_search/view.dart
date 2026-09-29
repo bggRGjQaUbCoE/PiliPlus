@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_insets_safe_area.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/pages/search/controller.dart' show DebounceStreamState;
 import 'package:PiliPlus/pages/setting/models/extra_settings.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
@@ -28,7 +29,7 @@ class _SettingsSearchPageState
     extends DebounceStreamState<SettingsSearchPage, String> {
   final _textEditingController = TextEditingController();
   final RxList<SettingsModel> _list = <SettingsModel>[].obs;
-  late final _settings = [
+  List<SettingsModel> get _settings => [
     ...extraSettings,
     ...privacySettings,
     ...recommendSettings,
@@ -36,6 +37,14 @@ class _SettingsSearchPageState
     ...playSettings,
     ...styleSettings,
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    L10n.changes.addListener(_onLanguageChanged);
+  }
+
+  void _onLanguageChanged() => onValueChanged(_textEditingController.text);
 
   @override
   void onValueChanged(String value) {
@@ -55,6 +64,7 @@ class _SettingsSearchPageState
 
   @override
   void dispose() {
+    L10n.changes.removeListener(_onLanguageChanged);
     _textEditingController.dispose();
     super.dispose();
   }
@@ -82,9 +92,9 @@ class _SettingsSearchPageState
           controller: _textEditingController,
           textAlignVertical: TextAlignVertical.center,
           onChanged: ctr!.add,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             isDense: true,
-            hintText: '搜索',
+            hintText: L10n.current.search,
             visualDensity: .standard,
             border: InputBorder.none,
           ),

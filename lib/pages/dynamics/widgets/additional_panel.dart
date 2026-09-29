@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
@@ -355,9 +356,11 @@ Widget? addWidget(
                                         color: theme.colorScheme.primary,
                                       ),
                                     ),
-                                    const TextSpan(
-                                      text: ' 起',
-                                      style: TextStyle(fontSize: 12),
+                                    TextSpan(
+                                      text: L10n
+                                          .current
+                                          .pagesDynamicsWidgetsAdditionalPanelAddWidgetText,
+                                      style: const TextStyle(fontSize: 12),
                                     ),
                                   ],
                                 ),
@@ -444,7 +447,10 @@ Widget? addWidget(
                           overflow: TextOverflow.ellipsis,
                         ),
                       Text(
-                        '${NumUtils.numFormat(vote.joinNum)}人参与',
+                        L10n.current
+                            .pagesDynamicsWidgetsAdditionalPanelAddWidgetChildren(
+                              NumUtils.numFormat(vote.joinNum),
+                            ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -477,7 +483,11 @@ Widget? addWidget(
                     ),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  child: const Text('参与'),
+                  child: Text(
+                    L10n
+                        .current
+                        .pagesDynamicsWidgetsAdditionalPanelAddWidgetChild,
+                  ),
                 ),
               ],
             ),

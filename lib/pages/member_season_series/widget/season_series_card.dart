@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/space/space_season_series/season.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -52,7 +53,7 @@ class SeasonSeriesCard extends StatelessWidget {
                         ),
                         PBadge(
                           text:
-                              '${item.meta!.seasonId != null ? '合集' : '列表'}: ${item.meta!.total}',
+                              '${item.meta!.seasonId != null ? L10n.current.collection : L10n.current.seasonSeriesCardText}: ${item.meta!.total}',
                           bottom: 6.0,
                           right: 6.0,
                         ),

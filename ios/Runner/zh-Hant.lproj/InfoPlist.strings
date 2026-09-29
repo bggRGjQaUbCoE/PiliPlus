@@ -1,0 +1,4 @@
+"NSPhotoLibraryUsageDescription" = "請允許應用程式將圖片儲存至相簿";
+"NSCameraUsageDescription" = "應用程式需要您的同意才能存取相簿";
+"NSAppleMusicUsageDescription" = "應用程式需要您的同意才能存取媒體資料庫";
+"NSLocalNetworkUsageDescription" = "需要存取區域網路以探索並連線至 DLNA 投放裝置";

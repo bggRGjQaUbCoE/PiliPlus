@@ -1,3 +1,4 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models_new/later/data.dart';
 import 'package:PiliPlus/models_new/later/list.dart';
@@ -46,7 +47,7 @@ class _LaterSearchPageState
           mediaId: null,
           mid: controller.mid,
         ),
-        child: Text('复制', style: textStyle),
+        child: Text(L10n.current.copy, style: textStyle),
       ),
       TextButton(
         style: btnStyle,
@@ -57,7 +58,10 @@ class _LaterSearchPageState
           mediaId: null,
           mid: controller.mid,
         ),
-        child: Text('移动', style: textStyle),
+        child: Text(
+          L10n.current.favDetailPageSelectActionsChild2,
+          style: textStyle,
+        ),
       ),
     ];
   }
@@ -87,7 +91,7 @@ class _LaterSearchPageState
                       'oid': item.aid,
                       'sourceType': SourceType.watchLater,
                       'count': controller.count,
-                      'favTitle': '稍后再看',
+                      'favTitle': L10n.current.watchLater,
                       'mediaId': controller.mid,
                       'desc': false,
                       'isContinuePlaying': index != 0,

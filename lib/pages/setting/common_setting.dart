@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/setting_type.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:material_ui/material_ui.dart';
@@ -29,6 +30,15 @@ class _CommonSettingState extends State<CommonSetting> {
   void initState() {
     super.initState();
     _initSetting();
+    L10n.changes.addListener(_onLanguageChanged);
+  }
+
+  void _onLanguageChanged() => setState(_initSetting);
+
+  @override
+  void dispose() {
+    L10n.changes.removeListener(_onLanguageChanged);
+    super.dispose();
   }
 
   @override

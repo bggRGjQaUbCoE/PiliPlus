@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/grpc/bilibili/app/im/v1.pb.dart'
     show ThreeDotItem, ThreeDotItemType, IMSettingType;
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/pages/common/common_whisper_controller.dart';
 import 'package:PiliPlus/pages/contact/view.dart';
 import 'package:PiliPlus/pages/whisper_settings/view.dart';
@@ -47,15 +48,15 @@ extension ThreeDotItemTypeExt on ThreeDotItemType {
       case ThreeDotItemType.THREE_DOT_ITEM_TYPE_READ_ALL:
         showConfirmDialog(
           context: context,
-          title: const Text('一键已读'),
-          content: const Text('是否清除全部新消息提醒？'),
+          title: Text(L10n.current.utilsExtensionThreeDotExtActionTitle),
+          content: Text(L10n.current.utilsExtensionThreeDotExtActionContent),
           onConfirm: controller.onClearUnread,
         );
       case ThreeDotItemType.THREE_DOT_ITEM_TYPE_CLEAR_LIST:
         showConfirmDialog(
           context: context,
-          title: const Text('清空列表'),
-          content: const Text('清空后所有消息将被删除，无法恢复'),
+          title: Text(L10n.current.utilsExtensionThreeDotExtActionTitle2),
+          content: Text(L10n.current.utilsExtensionThreeDotExtActionContent2),
           onConfirm: controller.onDeleteList,
         );
       case ThreeDotItemType.THREE_DOT_ITEM_TYPE_MSG_SETTING:

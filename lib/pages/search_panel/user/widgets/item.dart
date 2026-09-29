@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
@@ -59,7 +60,10 @@ class SearchUserItem extends StatelessWidget {
                   ],
                 ),
                 Text(
-                  '粉丝：${NumUtils.numFormat(item.fans)}  视频：${NumUtils.numFormat(item.videos)}',
+                  L10n.current.searchUserItemChildren(
+                    NumUtils.numFormat(item.fans),
+                    NumUtils.numFormat(item.videos),
+                  ),
                   style: style,
                 ),
                 if (item.officialVerify?.desc?.isNotEmpty == true)

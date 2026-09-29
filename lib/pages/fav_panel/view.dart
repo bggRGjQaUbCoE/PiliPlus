@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
@@ -71,7 +72,10 @@ class _FavPanelState extends State<FavPanel> {
                     minLeadingWidth: 0,
                     title: Text(item.title),
                     subtitle: Text(
-                      '${item.mediaCount}个内容 . ${BiliUtils.isPublicFavText(item.attr)}',
+                      L10n.current.favPanelBuildBodySubtitle(
+                        item.mediaCount,
+                        BiliUtils.isPublicFavText(item.attr),
+                      ),
                     ),
                     trailing: Transform.scale(
                       scale: 0.9,
@@ -103,11 +107,11 @@ class _FavPanelState extends State<FavPanel> {
         AppBar(
           backgroundColor: Colors.transparent,
           leading: IconButton(
-            tooltip: '关闭',
+            tooltip: L10n.current.close,
             onPressed: Get.back,
             icon: const Icon(Icons.close_outlined),
           ),
-          title: const Text('添加到收藏夹'),
+          title: Text(L10n.current.favPanelTitle),
           actions: [
             TextButton.icon(
               onPressed: () => Get.toNamed('/createFav')?.then((data) {
@@ -122,7 +126,7 @@ class _FavPanelState extends State<FavPanel> {
                 }
               }),
               icon: Icon(Icons.add, color: theme.primary),
-              label: const Text('新建收藏夹'),
+              label: Text(L10n.current.favPageTooltip),
               style: const ButtonStyle(
                 visualDensity: .compact,
                 padding: WidgetStatePropertyAll(
@@ -156,7 +160,7 @@ class _FavPanelState extends State<FavPanel> {
                   foregroundColor: theme.outline,
                   backgroundColor: theme.onInverseSurface,
                 ),
-                child: const Text('取消'),
+                child: Text(L10n.current.cancel),
               ),
               FilledButton.tonal(
                 onPressed: () {
@@ -164,7 +168,7 @@ class _FavPanelState extends State<FavPanel> {
                   widget.ctr.actionFavVideo();
                 },
                 style: const ButtonStyle(visualDensity: .compact),
-                child: const Text('完成'),
+                child: Text(L10n.current.done),
               ),
             ],
           ),

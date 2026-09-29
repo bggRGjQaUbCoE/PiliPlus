@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/custom_height_widget.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/pages/common/common_page.dart';
 import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
@@ -169,7 +170,7 @@ class _HomePageState extends CommonPageState<HomePage>
                 Icon(
                   Icons.search_outlined,
                   color: _colorScheme.onSecondaryContainer,
-                  semanticLabel: '搜索',
+                  semanticLabel: L10n.current.search,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -197,7 +198,7 @@ Widget userAvatar({
   required MainController mainController,
 }) {
   return Semantics(
-    label: "我的",
+    label: L10n.current.mine,
     child: Obx(
       () {
         if (mainController.accountService.isLogin.value) {
@@ -251,7 +252,7 @@ Widget userAvatar({
           width: 38,
           height: 38,
           child: IconButton(
-            tooltip: '点击登录',
+            tooltip: L10n.current.loginPrompt,
             style: IconButton.styleFrom(
               padding: .zero,
               backgroundColor: colorScheme.onInverseSurface,
@@ -276,7 +277,7 @@ Widget msgBadge(MainController mainController) {
         final count = mainController.msgUnReadCount.value;
         final isNumBadge = mainController.msgBadgeMode == .number;
         return IconButton(
-          tooltip: '消息',
+          tooltip: L10n.current.messages,
           onPressed: () {
             mainController
               ..clearUnreadMsg()

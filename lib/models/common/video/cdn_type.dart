@@ -3,34 +3,58 @@
 //https://github.com/yujincheng08/BiliRoaming/blob/master/app/src/main/res/values/strings_raw.xml
 //https://github.com/yujincheng08/BiliRoaming/blob/master/app/src/main/res/values/arrays.xml
 
+import 'package:PiliPlus/l10n/l10n.dart';
+
 enum CDNService {
-  baseUrl('基础URL（不推荐）'),
-  backupUrl('备用URL'),
-  ali('ali（阿里云）', 'upos-sz-mirrorali.bilivideo.com'),
-  alib('alib（阿里云）', 'upos-sz-mirroralib.bilivideo.com'),
-  alio1('alio1（阿里云）', 'upos-sz-mirroralio1.bilivideo.com'),
-  cos('cos（腾讯云）', 'upos-sz-mirrorcos.bilivideo.com'),
-  cosb('cosb（腾讯云，VOD加速类型）', 'upos-sz-mirrorcosb.bilivideo.com'),
-  coso1('coso1（腾讯云）', 'upos-sz-mirrorcoso1.bilivideo.com'),
-  hw('hw（华为云，融合CDN）', 'upos-sz-mirrorhw.bilivideo.com'),
-  hwb('hwb（华为云，融合CDN）', 'upos-sz-mirrorhwb.bilivideo.com'),
-  hwo1('hwo1（华为云，融合CDN）', 'upos-sz-mirrorhwo1.bilivideo.com'),
-  hw_08c('08c（华为云，融合CDN）', 'upos-sz-mirror08c.bilivideo.com'),
-  hw_08h('08h（华为云，融合CDN）', 'upos-sz-mirror08h.bilivideo.com'),
-  hw_08ct('08ct（华为云，融合CDN）', 'upos-sz-mirror08ct.bilivideo.com'),
-  tf_hw('tf_hw（华为云）', 'upos-tf-all-hw.bilivideo.com'),
-  tf_tx('tf_tx（腾讯云）', 'upos-tf-all-tx.bilivideo.com'),
-  akamai('akamai（Akamai海外）', 'upos-hz-mirrorakam.akamaized.net'),
-  aliov('aliov（阿里云海外）', 'upos-sz-mirroraliov.bilivideo.com'),
-  cosov('cosov（腾讯云海外）', 'upos-sz-mirrorcosov.bilivideo.com'),
-  hwov('hwov（华为云海外）', 'upos-sz-mirrorhwov.bilivideo.com'),
-  hk_bcache('hk_bcache（Bilibili海外）', 'cn-hk-eq-bcache-01.bilivideo.com'),
+  baseUrl,
+  backupUrl,
+  ali('upos-sz-mirrorali.bilivideo.com'),
+  alib('upos-sz-mirroralib.bilivideo.com'),
+  alio1('upos-sz-mirroralio1.bilivideo.com'),
+  cos('upos-sz-mirrorcos.bilivideo.com'),
+  cosb('upos-sz-mirrorcosb.bilivideo.com'),
+  coso1('upos-sz-mirrorcoso1.bilivideo.com'),
+  hw('upos-sz-mirrorhw.bilivideo.com'),
+  hwb('upos-sz-mirrorhwb.bilivideo.com'),
+  hwo1('upos-sz-mirrorhwo1.bilivideo.com'),
+  hw_08c('upos-sz-mirror08c.bilivideo.com'),
+  hw_08h('upos-sz-mirror08h.bilivideo.com'),
+  hw_08ct('upos-sz-mirror08ct.bilivideo.com'),
+  tf_hw('upos-tf-all-hw.bilivideo.com'),
+  tf_tx('upos-tf-all-tx.bilivideo.com'),
+  akamai('upos-hz-mirrorakam.akamaized.net'),
+  aliov('upos-sz-mirroraliov.bilivideo.com'),
+  cosov('upos-sz-mirrorcosov.bilivideo.com'),
+  hwov('upos-sz-mirrorhwov.bilivideo.com'),
+  hk_bcache('cn-hk-eq-bcache-01.bilivideo.com'),
   ;
 
-  final String desc;
+  String get desc => switch (this) {
+    baseUrl => L10n.current.cDNServiceBaseUrlDesc,
+    backupUrl => L10n.current.cDNServiceBackupUrlDesc,
+    ali => L10n.current.cDNServiceAliDesc,
+    alib => L10n.current.cDNServiceAlibDesc,
+    alio1 => L10n.current.cDNServiceAlio1Desc,
+    cos => L10n.current.cDNServiceCosDesc,
+    cosb => L10n.current.cDNServiceCosbDesc,
+    coso1 => L10n.current.cDNServiceCoso1Desc,
+    hw => L10n.current.cDNServiceHwDesc,
+    hwb => L10n.current.cDNServiceHwbDesc,
+    hwo1 => L10n.current.cDNServiceHwo1Desc,
+    hw_08c => L10n.current.cDNServiceHwCDesc,
+    hw_08h => L10n.current.cDNServiceHwHDesc,
+    hw_08ct => L10n.current.cDNServiceHwCtDesc,
+    tf_hw => L10n.current.cDNServiceTfHwDesc,
+    tf_tx => L10n.current.cDNServiceTfTxDesc,
+    akamai => L10n.current.cDNServiceAkamaiDesc,
+    aliov => L10n.current.cDNServiceAliovDesc,
+    cosov => L10n.current.cDNServiceCosovDesc,
+    hwov => L10n.current.cDNServiceHwovDesc,
+    hk_bcache => L10n.current.cDNServiceHkBcacheDesc,
+  };
   final String? host;
 
-  const CDNService(this.desc, [this.host]);
+  const CDNService([this.host]);
 }
 
 // from https://rec.danmuji.org/dev/cdn-info/

@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
@@ -111,7 +112,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
         spacing: 16,
         children: [
           Text(
-            '最高画质',
+            L10n.current.downloadPanelBuildHeaderChildren,
             style: textStyle,
           ),
           Builder(
@@ -157,8 +158,13 @@ class _DownloadPanelState extends State<DownloadPanel> {
                 if (snapshot.data case final data?) {
                   final network = data.contains(ConnectivityResult.wifi)
                       ? 'WIFI'
-                      : '数据';
-                  return Text('当前网络：$network', style: textStyle);
+                      : L10n.current.networkBuildHeaderBuilder;
+                  return Text(
+                    L10n.current.downloadPanelBuildHeaderBuilder(
+                      network,
+                    ),
+                    style: textStyle,
+                  );
                 }
                 return const SizedBox.shrink();
               },
@@ -250,7 +256,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
 
     if (cidSet.contains(cid)) {
       if (kDebugMode) {
-        SmartDialog.showToast('downloaded');
+        SmartDialog.showToast(L10n.current.alreadyDownloaded);
       }
       return false;
     }
@@ -258,7 +264,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
     if (kReleaseMode && episode.badge == '会员' && Accounts.mainEqVideo) {
       if (vipStatus != 1) {
         if (!isDownloadAll) {
-          SmartDialog.showToast('需要大会员');
+          SmartDialog.showToast(L10n.current.episodePanelBuildEpisodeItemOnTap);
         }
         return false;
       }
@@ -424,8 +430,10 @@ class _DownloadPanelState extends State<DownloadPanel> {
                                 type: PBadgeType.gray,
                               ),
                             if (isCharging == true)
-                              const PBadge(
-                                text: '充电专属',
+                              PBadge(
+                                text: L10n
+                                    .current
+                                    .episodePanelBuildEpisodeItemText,
                                 top: 6,
                                 right: 6,
                                 type: PBadgeType.error,
@@ -449,7 +457,9 @@ class _DownloadPanelState extends State<DownloadPanel> {
                           color: primary,
                           height: 12,
                           cacheHeight: 12.cacheSize(context),
-                          semanticLabel: '正在播放：',
+                          semanticLabel: L10n
+                              .current
+                              .episodePanelBuildEpisodeItemSemanticLabel,
                         ),
                       Expanded(
                         child: Stack(
@@ -541,11 +551,11 @@ class _DownloadPanelState extends State<DownloadPanel> {
       child: Row(
         children: [
           _buildBottomBtn(
-            text: '缓存全部',
+            text: L10n.current.downloadPanelBuildFooterText,
             onTap: () {
               showConfirmDialog(
                 context: context,
-                title: const Text('确定缓存全部？'),
+                title: Text(L10n.current.downloadPanelBuildFooterTitle),
                 onConfirm: () {
                   for (int i = 0; i < widget.episodes.length; i++) {
                     _onDownload(
@@ -567,7 +577,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
             ),
           ),
           _buildBottomBtn(
-            text: '查看缓存',
+            text: L10n.current.downloadPanelBuildFooterText2,
             onTap: () => Navigator.of(context).push(
               GetPageRoute(page: () => const DownloadPage()),
             ),

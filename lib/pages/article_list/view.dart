@@ -3,6 +3,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/article/article_list/article.dart';
 import 'package:PiliPlus/models_new/article/article_list/list.dart';
@@ -161,12 +162,22 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
                     TextSpan(
                       children: [
                         TextSpan(
-                          text: '${NumUtils.numFormat(item.articlesCount)}篇专栏',
+                          text: L10n.current.articleListPageBuildHeaderText4(
+                            NumUtils.numFormat(item.articlesCount),
+                          ),
                         ),
                         divider,
-                        TextSpan(text: '${NumUtils.numFormat(item.words)}个字'),
+                        TextSpan(
+                          text: L10n.current.articleListPageBuildHeaderText2(
+                            NumUtils.numFormat(item.words),
+                          ),
+                        ),
                         divider,
-                        TextSpan(text: '${NumUtils.numFormat(item.read)}次阅读'),
+                        TextSpan(
+                          text: L10n.current.articleListPageBuildHeaderText3(
+                            NumUtils.numFormat(item.read),
+                          ),
+                        ),
                       ],
                       style: style,
                     ),
@@ -175,11 +186,16 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
                     TextSpan(
                       children: [
                         TextSpan(
-                          text:
-                              '${DateFormatUtils.dateFormat(item.updateTime)}更新',
+                          text: L10n.current.articleListPageBuildHeaderText5(
+                            DateFormatUtils.dateFormat(item.updateTime),
+                          ),
                         ),
                         divider,
-                        TextSpan(text: '文集号: ${item.id}'),
+                        TextSpan(
+                          text: L10n.current.articleListPageBuildHeaderText(
+                            item.id.toString(),
+                          ),
+                        ),
                       ],
                       style: style,
                     ),
@@ -192,7 +208,7 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
       ),
       actions: [
         IconButton(
-          tooltip: '浏览器打开',
+          tooltip: L10n.current.articlePageBuildAppBarTooltip,
           onPressed: () => PageUtils.inAppWebview(
             '${HttpString.baseUrl}/read/mobile-readlist/rl${_controller.id}',
           ),

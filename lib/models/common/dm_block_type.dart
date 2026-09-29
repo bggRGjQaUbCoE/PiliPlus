@@ -1,9 +1,14 @@
+import 'package:PiliPlus/l10n/l10n.dart';
+
 enum DmBlockType {
-  keyword('关键词'),
-  regex('正则'),
-  uid('用户'),
+  keyword,
+  regex,
+  uid,
   ;
 
-  final String label;
-  const DmBlockType(this.label);
+  String get label => switch (this) {
+    keyword => L10n.current.dmBlockTypeKeywordLabel,
+    regex => L10n.current.dmBlockTypeRegexLabel,
+    uid => L10n.current.user,
+  };
 }

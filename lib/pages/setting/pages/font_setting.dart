@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/utils/extension/box_ext.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
@@ -132,7 +133,7 @@ class _FontSettingPageState extends State<FontSettingPage> {
             trailing: iconButton(
               size: 38,
               iconSize: 22,
-              tooltip: '移除',
+              tooltip: L10n.current.remove,
               onPressed: () {
                 if (_selectedFont == font) {
                   _appFont = (fontFamily: null, isCustom: false);
@@ -150,7 +151,9 @@ class _FontSettingPageState extends State<FontSettingPage> {
     }
     return SimpleScaffold(
       appBar: AppBar(
-        title: const Text('App字体设置'),
+        title: Text(
+          L10n.current.pagesSettingModelsStyleSettingsStyleSettingsTitle12,
+        ),
         actions: [
           TextButton(
             onPressed: () => setState(() {
@@ -158,11 +161,15 @@ class _FontSettingPageState extends State<FontSettingPage> {
               _selectedWeight = _normalFontWeight;
               _selectedScale = 1;
             }),
-            child: const Text('重置'),
+            child: Text(
+              L10n
+                  .current
+                  .pagesSettingModelsExtraSettingsShowDownPathDialogChild2,
+            ),
           ),
           TextButton(
             onPressed: _saveFontSetting,
-            child: const Text('确定'),
+            child: Text(L10n.current.ok),
           ),
           const SizedBox(width: 12),
         ],
@@ -176,15 +183,13 @@ class _FontSettingPageState extends State<FontSettingPage> {
               flex: isPortrait ? 1 : 2,
               child: Center(
                 child: Text(
-                  'abcdefghijklmnopqrstuvwxyz\n'
-                  'ABCDEFGHIJKLMNOPQRSTUVWXYZ\n'
-                  '1234567890.:,;\'"(!?)+-*/=\n'
-                  '${Platform.isWindows
-                      ? "中国智造，惠及全球"
-                      : Platform.isMacOS || Platform.isIOS
-                      ? "汉体书写信息技术标准相容"
-                      : "我能吞下玻璃而不伤身体"}\n\n'
-                  '注：部分字体可能无法应用',
+                  L10n.current.fontSettingPageChild6(
+                    Platform.isWindows
+                        ? L10n.current.fontSettingPageChild3
+                        : Platform.isMacOS || Platform.isIOS
+                        ? L10n.current.fontSettingPageChild5
+                        : L10n.current.fontSettingPageChild4,
+                  ),
                   style: TextStyle(
                     fontFamily: _selectedFont ?? '',
                     fontWeight: .values[_selectedWeight],
@@ -212,15 +217,18 @@ class _FontSettingPageState extends State<FontSettingPage> {
                       onTap: scrollController.jumpToTop,
                       child: Row(
                         children: [
-                          const Text(
-                            '字体：',
-                            style: TextStyle(fontWeight: .bold, fontSize: 15),
+                          Text(
+                            L10n.current.fontSettingPageChildren,
+                            style: const TextStyle(
+                              fontWeight: .bold,
+                              fontSize: 15,
+                            ),
                           ),
                           Expanded(
                             child: Text(
                               _appFont.isCustom
                                   ? _selectedFont!.split('/').last
-                                  : _selectedFont ?? '默认',
+                                  : _selectedFont ?? L10n.current.defaultOption,
                               style: TextStyle(
                                 fontSize: 15,
                                 fontFamily: _selectedFont ?? '',
@@ -232,7 +240,7 @@ class _FontSettingPageState extends State<FontSettingPage> {
                             child: iconButton(
                               size: 32,
                               iconSize: 20,
-                              tooltip: '导入',
+                              tooltip: L10n.current.importData,
                               context: context,
                               onPressed: () async {
                                 SmartDialog.showLoading();
@@ -266,7 +274,7 @@ class _FontSettingPageState extends State<FontSettingPage> {
                               minTileHeight: _tileHeight,
                               tileColor: _tileColor(null),
                               onTap: () => _onFontChanged(null),
-                              title: const Text('默认'),
+                              title: Text(L10n.current.defaultOption),
                             ),
                           ),
                           if (FontUtils.isCustom)
@@ -307,7 +315,10 @@ class _FontSettingPageState extends State<FontSettingPage> {
                   _buildItem(
                     Row(
                       children: [
-                        const Text('字重：', style: TextStyle(fontWeight: .bold)),
+                        Text(
+                          L10n.current.fontSettingPageChildren2,
+                          style: const TextStyle(fontWeight: .bold),
+                        ),
                         const SizedBox(
                           width: 40,
                           child: Text(
@@ -345,10 +356,16 @@ class _FontSettingPageState extends State<FontSettingPage> {
                   _buildItem(
                     Row(
                       children: [
-                        const Text('字号：', style: TextStyle(fontWeight: .bold)),
-                        const SizedBox(
+                        Text(
+                          L10n.current.fontSettingPageChildren3,
+                          style: const TextStyle(fontWeight: .bold),
+                        ),
+                        SizedBox(
                           width: 40,
-                          child: Text('小', style: TextStyle(fontSize: 11.9)),
+                          child: Text(
+                            L10n.current.fontSettingPageChild,
+                            style: const TextStyle(fontSize: 11.9),
+                          ),
                         ),
                         Expanded(
                           child: Slider(
@@ -359,18 +376,21 @@ class _FontSettingPageState extends State<FontSettingPage> {
                             divisions: 15,
                             secondaryTrackValue: 1,
                             label: _selectedScale == 1.0
-                                ? '默认'
+                                ? L10n.current.defaultOption
                                 : _selectedScale.toStringAsFixed(2),
                             onChanged: (value) => setState(
                               () => _selectedScale = value.toPrecision(2),
                             ),
                           ),
                         ),
-                        const SizedBox(
+                        SizedBox(
                           width: 50,
                           child: Align(
                             alignment: .centerRight,
-                            child: Text('大', style: TextStyle(fontSize: 22.4)),
+                            child: Text(
+                              L10n.current.fontSettingPageChild2,
+                              style: const TextStyle(fontSize: 22.4),
+                            ),
                           ),
                         ),
                       ],

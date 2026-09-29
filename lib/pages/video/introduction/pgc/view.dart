@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
@@ -157,7 +158,9 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
         ),
         if (item.rating != null)
           PBadge(
-            text: '评分 ${item.rating!.score!}',
+            text: L10n.current.pgcIntroPageBuildCoverText(
+              item.rating!.score!,
+            ),
             top: null,
             right: 6,
             bottom: 6,
@@ -172,7 +175,9 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
               return iconButton(
                 size: 28,
                 iconSize: 26,
-                tooltip: '${isFav ? '取消' : ''}收藏',
+                tooltip: L10n.current.dynTopicPageBuildAppBarChild(
+                  isFav.toString(),
+                ),
                 onPressed: () => introController.onFavPugv(isFav),
                 icon: isFav
                     ? const Icon(Icons.star_rounded)
@@ -235,8 +240,10 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
                   },
             child: Text(
               isFollowed
-                  ? '已${introController.pgcType}'
-                  : introController.pgcType,
+                  ? L10n.current.pgcIntroPageSubBtnChild(
+                      introController.pgcType,
+                    )
+                  : introController.followAction,
             ),
           );
         },
@@ -301,7 +308,9 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
               const SizedBox(height: 5),
               Expanded(
                 child: Text(
-                  '简介：${item.evaluate}',
+                  L10n.current.pgcIntroPageBuildInfoPanelChild(
+                    item.evaluate.toString(),
+                  ),
                   style: TextStyle(fontSize: 13, color: colorScheme.outline),
                 ),
               ),
@@ -385,8 +394,8 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
   }
 
   Widget actionGrid(PgcStat stat, PgcIntroController introController) {
-    return SizedBox(
-      height: 48,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 48),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -396,7 +405,7 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
               icon: const Icon(FontAwesomeIcons.thumbsUp),
               selectIcon: const Icon(FontAwesomeIcons.solidThumbsUp),
               selectStatus: introController.hasLike.value,
-              semanticsLabel: '点赞',
+              semanticsLabel: L10n.current.like,
               text: NumUtils.numFormat(stat.like),
               onStartTriple: introController.onStartTriple,
               onCancelTriple: introController.onCancelTriple,
@@ -409,7 +418,7 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
               selectIcon: const Icon(FontAwesomeIcons.b),
               onTap: introController.actionCoinVideo,
               selectStatus: introController.hasCoin,
-              semanticsLabel: '投币',
+              semanticsLabel: L10n.current.giveCoins,
               text: NumUtils.numFormat(stat.coin),
             ),
           ),
@@ -424,7 +433,7 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
                 isLongPress: true,
               ),
               selectStatus: introController.hasFav.value,
-              semanticsLabel: '收藏',
+              semanticsLabel: L10n.current.favourite,
               text: NumUtils.numFormat(stat.favorite),
             ),
           ),
@@ -435,15 +444,15 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
               onTap: () =>
                   introController.handleAction(introController.viewLater),
               selectStatus: introController.hasLater.value,
-              semanticsLabel: '再看',
-              text: '再看',
+              semanticsLabel: L10n.current.pgcIntroPageActionGridSemanticsLabel,
+              text: L10n.current.pgcIntroPageActionGridSemanticsLabel,
             ),
           ),
           ActionItem(
             icon: const Icon(FontAwesomeIcons.shareFromSquare),
             onTap: () => introController.actionShareVideo(context),
             selectStatus: false,
-            semanticsLabel: '转发',
+            semanticsLabel: L10n.current.repost,
             text: NumUtils.numFormat(stat.share),
           ),
         ],

@@ -17,6 +17,7 @@ import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart'
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/audio_normalization.dart';
 import 'package:PiliPlus/models/video/play/url.dart' as http_model show Volume;
 import 'package:PiliPlus/pages/common/common_intro_controller.dart'
@@ -530,7 +531,7 @@ class AudioController extends GetxController
       if (!hasCoin) {
         SmartDialog.showToast('投币失败');
       } else {
-        SmartDialog.showToast('三连成功');
+        SmartDialog.showToast(L10n.current.audioControllerActionTripleText);
       }
     } else {
       res.toast();
@@ -607,14 +608,20 @@ class AudioController extends GetxController
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
         children: [
           DialogOption(
-            child: const Text('复制链接', style: TextStyle(fontSize: 14)),
+            child: Text(
+              L10n.current.copyLink,
+              style: const TextStyle(fontSize: 14),
+            ),
             onPressed: () {
               Get.back();
               Utils.copyText(audioUrl);
             },
           ),
           DialogOption(
-            child: const Text('其它app打开', style: TextStyle(fontSize: 14)),
+            child: Text(
+              L10n.current.audioControllerActionShareVideoChild3,
+              style: const TextStyle(fontSize: 14),
+            ),
             onPressed: () {
               Get.back();
               PiliAndroidHelper.openUrl(audioUrl);
@@ -622,7 +629,10 @@ class AudioController extends GetxController
           ),
           if (PlatformUtils.isMobile)
             DialogOption(
-              child: const Text('分享视频', style: TextStyle(fontSize: 14)),
+              child: Text(
+                L10n.current.audioControllerActionShareVideoChild,
+                style: const TextStyle(fontSize: 14),
+              ),
               onPressed: () {
                 Get.back();
                 if (audioItem.value case DetailItem(
@@ -630,16 +640,21 @@ class AudioController extends GetxController
                   :final owner,
                 )) {
                   ShareUtils.shareText(
-                    '${arc.title} '
-                    'UP主: ${owner.name}'
-                    ' - $audioUrl',
+                    L10n.current.audioControllerActionShareVideoOnPressed(
+                      arc.title,
+                      owner.name,
+                      audioUrl,
+                    ),
                   );
                 }
               },
             ),
           if (isLogin)
             DialogOption(
-              child: const Text('分享至动态', style: TextStyle(fontSize: 14)),
+              child: Text(
+                L10n.current.audioControllerActionShareVideoChild2,
+                style: const TextStyle(fontSize: 14),
+              ),
               onPressed: () {
                 Get.back();
                 if (audioItem.value case DetailItem(
@@ -663,7 +678,10 @@ class AudioController extends GetxController
             ),
           if (isUgc && isLogin)
             DialogOption(
-              child: const Text('分享至消息', style: TextStyle(fontSize: 14)),
+              child: Text(
+                L10n.current.articlePageBuildAppBarChildren,
+                style: const TextStyle(fontSize: 14),
+              ),
               onPressed: () {
                 Get.back();
                 if (audioItem.value case DetailItem(

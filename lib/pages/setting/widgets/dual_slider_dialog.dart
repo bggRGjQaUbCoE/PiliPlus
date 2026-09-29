@@ -1,3 +1,4 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -95,13 +96,13 @@ class _DualSliderDialogState extends State<DualSliderDialog> {
         TextButton(
           onPressed: Navigator.of(context).pop,
           child: Text(
-            '取消',
+            L10n.current.cancel,
             style: TextStyle(color: Theme.of(context).colorScheme.outline),
           ),
         ),
         TextButton(
           onPressed: () => Navigator.pop(context, (_tempValue1, _tempValue2)),
-          child: const Text('确定'),
+          child: Text(L10n.current.ok),
         ),
       ],
     );

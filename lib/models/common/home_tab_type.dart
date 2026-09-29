@@ -1,3 +1,4 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/pages/common/common_controller.dart';
 import 'package:PiliPlus/pages/hot/controller.dart';
@@ -14,17 +15,23 @@ import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 enum HomeTabType implements EnumWithLabel {
-  live('直播'),
-  rcmd('推荐'),
-  hot('热门'),
-  rank('分区'),
-  bangumi('番剧'),
-  cinema('影视'),
+  live,
+  rcmd,
+  hot,
+  rank,
+  bangumi,
+  cinema,
   ;
 
   @override
-  final String label;
-  const HomeTabType(this.label);
+  String get label => switch (this) {
+    live => L10n.current.live,
+    rcmd => L10n.current.recommended,
+    hot => L10n.current.popular,
+    rank => L10n.current.categories,
+    bangumi => L10n.current.bangumi,
+    cinema => L10n.current.cinema,
+  };
 
   ScrollOrRefreshMixin Function() get ctr => switch (this) {
     HomeTabType.live => Get.find<LiveController>,

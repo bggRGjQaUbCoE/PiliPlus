@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show platformClampingPhysics;
 import 'package:PiliPlus/http/live.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/live/live_danmaku/danmaku_msg.dart';
 import 'package:PiliPlus/models_new/live/live_superchat/item.dart';
 import 'package:PiliPlus/pages/live_room/controller.dart';
@@ -150,7 +151,7 @@ class LiveRoomChatPanel extends StatelessWidget {
                   ..superChatMsg.insert(0, item)
                   ..addDm(item);
               },
-              child: const Text('add superchat'),
+              child: Text(L10n.current.addSuperChat),
             ),
           ),
           Positioned(
@@ -162,7 +163,7 @@ class LiveRoomChatPanel extends StatelessWidget {
                   liveRoomController.superChatMsg.removeLast();
                 }
               },
-              child: const Text('remove superchat'),
+              child: Text(L10n.current.removeSuperChat),
             ),
           ),
         ],
@@ -223,7 +224,7 @@ class LiveRoomChatPanel extends StatelessWidget {
                   child: ElevatedButton.icon(
                     style: const ButtonStyle(visualDensity: .comfortable),
                     icon: const Icon(Icons.arrow_downward_rounded, size: 20),
-                    label: const Text('回到底部'),
+                    label: Text(L10n.current.liveRoomChatPanelLabel),
                     onPressed: liveRoomController.handleJumpToBottom,
                   ),
                 )
@@ -330,18 +331,27 @@ class LiveRoomChatPanel extends StatelessWidget {
         PopupMenuItem(
           height: 38,
           onTap: () => Utils.copyText(Utils.jsonEncoder.convert(item.toJson())),
-          child: const Text('复制弹幕信息', style: TextStyle(fontSize: 13)),
+          child: Text(
+            L10n.current.liveRoomChatPanelShowMsgMenuChild2,
+            style: const TextStyle(fontSize: 13),
+          ),
         ),
         PopupMenuItem(
           height: 38,
           onTap: () => Get.toNamed('/member?mid=${item.extra.mid}'),
-          child: const Text('去TA的个人空间', style: TextStyle(fontSize: 13)),
+          child: Text(
+            L10n.current.liveRoomChatPanelShowMsgMenuChild4,
+            style: const TextStyle(fontSize: 13),
+          ),
         ),
         if (liveRoomController.isLogin) ...[
           PopupMenuItem(
             height: 38,
             onTap: () => liveRoomController.onAtUser(item),
-            child: const Text('@TA', style: TextStyle(fontSize: 13)),
+            child: Text(
+              L10n.current.mentionUser,
+              style: const TextStyle(fontSize: 13),
+            ),
           ),
           PopupMenuItem(
             height: 38,
@@ -352,12 +362,17 @@ class LiveRoomChatPanel extends StatelessWidget {
                 type: 1,
               );
               if (res.isSuccess) {
-                SmartDialog.showToast('屏蔽成功');
+                SmartDialog.showToast(
+                  L10n.current.liveRoomChatPanelShowMsgMenuOnTap,
+                );
               } else {
                 res.toast();
               }
             },
-            child: const Text('屏蔽发送者', style: TextStyle(fontSize: 13)),
+            child: Text(
+              L10n.current.liveRoomChatPanelShowMsgMenuChild,
+              style: const TextStyle(fontSize: 13),
+            ),
           ),
           PopupMenuItem(
             height: 38,
@@ -367,7 +382,10 @@ class LiveRoomChatPanel extends StatelessWidget {
               msg: item.text,
               extra: item.extra,
             ),
-            child: const Text('举报选中弹幕', style: TextStyle(fontSize: 13)),
+            child: Text(
+              L10n.current.liveRoomChatPanelShowMsgMenuChild3,
+              style: const TextStyle(fontSize: 13),
+            ),
           ),
         ],
       ],

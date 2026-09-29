@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/video/cdn_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
@@ -246,7 +247,7 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
   @override
   Widget build(BuildContext context) {
     return SelectDialog<CDNService>(
-      title: 'CDN 设置',
+      title: L10n.current.pagesSettingModelsVideoSettingsVideoSettingsTitle8,
       values: CDNService.values.map((i) => (i, i.desc)).toList(),
       value: VideoUtils.cdnService,
       subtitleBuilder: _cdnSpeedTest

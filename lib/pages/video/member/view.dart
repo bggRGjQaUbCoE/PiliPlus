@@ -11,6 +11,7 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show platformAlwaysClampingPhysics;
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models/common/member/user_info_type.dart';
@@ -189,7 +190,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
     final count = _controller.count;
     if (count != null) {
       return Text(
-        '共$count视频',
+        L10n.current.memberVideoBuildCountText(count),
         style: const TextStyle(fontSize: 13),
       );
     }
@@ -314,7 +315,9 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
       ),
       const SizedBox(height: 4),
       Obx(
-        () => Row(
+        () => Wrap(
+          spacing: 12,
+          runSpacing: 4,
           children: UserInfoType.values
               .map(
                 (e) => _buildChildInfo(
@@ -323,18 +326,6 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
                   memberInfoModel: memberInfoModel,
                 ),
               )
-              .expand((child) sync* {
-                yield SizedBox(
-                  height: 10,
-                  width: 20,
-                  child: VerticalDivider(
-                    width: 1,
-                    color: colorScheme.outline,
-                  ),
-                );
-                yield child;
-              })
-              .skip(1)
               .toList(),
         ),
       ),
@@ -377,10 +368,10 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
               },
               child: Text(
                 widget.mid == account.mid
-                    ? '编辑资料'
+                    ? L10n.current.userInfoCardBuildRightText2
                     : memberInfoModel.isFollowed == true
-                    ? '已关注'
-                    : '关注',
+                    ? L10n.current.following
+                    : L10n.current.follow,
                 maxLines: 1,
                 style: const TextStyle(fontSize: 14),
               ),
@@ -394,10 +385,10 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
                 visualDensity: const VisualDensity(vertical: -2),
               ),
               onPressed: () => Get.toNamed('/member?mid=${widget.mid}'),
-              child: const Text(
-                '查看主页',
+              child: Text(
+                L10n.current.horizontalMemberPageBuildInfoChild,
                 maxLines: 1,
-                style: TextStyle(fontSize: 14),
+                style: const TextStyle(fontSize: 14),
               ),
             ),
           ),
@@ -436,7 +427,7 @@ class _HorizontalMemberPageState extends State<HorizontalMemberPage> {
     return GestureDetector(
       onTap: onTap,
       child: Text(
-        '$num${type.title}',
+        '$num ${type.title}',
         style: TextStyle(
           fontSize: 14,
           color: colorScheme.outline,

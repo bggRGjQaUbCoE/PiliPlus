@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/msg/im_user_infos/datum.dart';
 import 'package:PiliPlus/models_new/msg/msg_dnd/uid_setting.dart';
 import 'package:PiliPlus/models_new/msg/session_ss/data.dart';
@@ -48,7 +49,7 @@ class _WhisperLinkSettingPageState extends State<WhisperLinkSettingPage> {
       color: theme.colorScheme.outline.withValues(alpha: 0.1),
     );
     return SimpleScaffold(
-      appBar: AppBar(title: const Text('聊天设置')),
+      appBar: AppBar(title: Text(L10n.current.whisperLinkSettingPageTitle)),
       body: ListView(
         padding: EdgeInsets.only(
           bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
@@ -78,7 +79,10 @@ class _WhisperLinkSettingPageState extends State<WhisperLinkSettingPage> {
           ListTile(
             dense: true,
             onTap: _controller.report,
-            title: const Text('举报', style: TextStyle(fontSize: 14)),
+            title: Text(
+              L10n.current.report,
+              style: const TextStyle(fontSize: 14),
+            ),
             trailing: Icon(
               Icons.keyboard_arrow_right,
               color: theme.colorScheme.outline,
@@ -94,7 +98,10 @@ class _WhisperLinkSettingPageState extends State<WhisperLinkSettingPage> {
     return ListTile(
       dense: true,
       onTap: () => _controller.setBlock(isBlocked),
-      title: const Text('加入黑名单', style: TextStyle(fontSize: 14)),
+      title: Text(
+        L10n.current.memberPageActionsChildren5,
+        style: const TextStyle(fontSize: 14),
+      ),
       trailing: Transform.scale(
         alignment: Alignment.centerRight,
         scale: 0.8,
@@ -191,9 +198,12 @@ class _WhisperLinkSettingPageState extends State<WhisperLinkSettingPage> {
                 ListTile(
                   dense: true,
                   onTap: () => _controller.setPush(response.pushSetting == 0),
-                  title: const Text('接收消息推送', style: TextStyle(fontSize: 14)),
+                  title: Text(
+                    L10n.current.whisperLinkSettingPageBuildSessionSsTitle2,
+                    style: const TextStyle(fontSize: 14),
+                  ),
                   subtitle: Text(
-                    '若关闭此开关，你将不再收到该账号的图文消息与稿件推送，但通知类消息不受影响',
+                    L10n.current.whisperLinkSettingControllerSetPushContent,
                     style: subTitleS,
                   ),
                   trailing: Transform.scale(
@@ -211,7 +221,10 @@ class _WhisperLinkSettingPageState extends State<WhisperLinkSettingPage> {
                 () => ListTile(
                   dense: true,
                   onTap: _controller.setPin,
-                  title: const Text('置顶聊天', style: TextStyle(fontSize: 14)),
+                  title: Text(
+                    L10n.current.whisperLinkSettingPageBuildSessionSsTitle,
+                    style: const TextStyle(fontSize: 14),
+                  ),
                   trailing: Transform.scale(
                     alignment: Alignment.centerRight,
                     scale: 0.8,
@@ -241,7 +254,10 @@ class _WhisperLinkSettingPageState extends State<WhisperLinkSettingPage> {
             ? ListTile(
                 dense: true,
                 onTap: () => _controller.setMute(response.first.setting == 1),
-                title: const Text('消息免打扰', style: TextStyle(fontSize: 14)),
+                title: Text(
+                  L10n.current.whisperLinkSettingPageBuildMuteItemTitle,
+                  style: const TextStyle(fontSize: 14),
+                ),
                 trailing: Transform.scale(
                   alignment: Alignment.centerRight,
                   scale: 0.8,

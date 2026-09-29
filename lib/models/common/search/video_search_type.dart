@@ -1,69 +1,109 @@
+import 'package:PiliPlus/l10n/l10n.dart';
+
 enum VideoPubTimeType {
-  all('不限'),
-  day('最近一天'),
-  week('最近一周'),
-  halfYear('最近半年'),
+  all,
+  day,
+  week,
+  halfYear,
   ;
 
-  final String label;
-  const VideoPubTimeType(this.label);
+  String get label => switch (this) {
+    all => L10n.current.videoPubTimeTypeAllLabel,
+    day => L10n.current.videoPubTimeTypeDayLabel,
+    week => L10n.current.videoPubTimeTypeWeekLabel,
+    halfYear => L10n.current.videoPubTimeTypeHalfYearLabel,
+  };
 }
 
 enum VideoDurationType {
-  all('全部时长'),
-  tenMins('0-10分钟'),
-  halfHour('10-30分钟'),
-  hour('30-60分钟'),
-  hourPlus('60分钟+'),
+  all,
+  tenMins,
+  halfHour,
+  hour,
+  hourPlus,
   ;
 
-  final String label;
-  const VideoDurationType(this.label);
+  String get label => switch (this) {
+    all => L10n.current.videoDurationTypeAllLabel,
+    tenMins => L10n.current.videoDurationTypeTenMinsLabel,
+    halfHour => L10n.current.videoDurationTypeHalfHourLabel,
+    hour => L10n.current.videoDurationTypeHourLabel,
+    hourPlus => L10n.current.videoDurationTypeHourPlusLabel,
+  };
 }
 
 enum VideoZoneType {
-  all('全部'),
-  douga('动画', tids: 1),
-  anime('番剧', tids: 13),
-  guochuang('国创', tids: 167),
-  music('音乐', tids: 3),
-  dance('舞蹈', tids: 129),
-  game('游戏', tids: 4),
-  knowledge('知识', tids: 36),
-  tech('科技', tids: 188),
-  sports('运动', tids: 234),
-  car('汽车', tids: 223),
-  life('生活', tids: 160),
-  food('美食', tids: 221),
-  animal('动物', tids: 217),
-  kichiku('鬼畜', tids: 119),
-  fashion('时尚', tids: 115),
-  info('资讯', tids: 202),
-  ent('娱乐', tids: 5),
-  cinephile('影视', tids: 181),
-  documentary('记录', tids: 177),
-  movie('电影', tids: 23),
-  tv('电视', tids: 11),
+  all,
+  douga(tids: 1),
+  anime(tids: 13),
+  guochuang(tids: 167),
+  music(tids: 3),
+  dance(tids: 129),
+  game(tids: 4),
+  knowledge(tids: 36),
+  tech(tids: 188),
+  sports(tids: 234),
+  car(tids: 223),
+  life(tids: 160),
+  food(tids: 221),
+  animal(tids: 217),
+  kichiku(tids: 119),
+  fashion(tids: 115),
+  info(tids: 202),
+  ent(tids: 5),
+  cinephile(tids: 181),
+  documentary(tids: 177),
+  movie(tids: 23),
+  tv(tids: 11),
   ;
 
-  final String label;
+  String get label => switch (this) {
+    all => L10n.current.all,
+    douga => L10n.current.videoZoneTypeDougaLabel,
+    anime => L10n.current.bangumi,
+    guochuang => L10n.current.videoZoneTypeGuochuangLabel,
+    music => L10n.current.videoZoneTypeMusicLabel,
+    dance => L10n.current.videoZoneTypeDanceLabel,
+    game => L10n.current.videoZoneTypeGameLabel,
+    knowledge => L10n.current.videoZoneTypeKnowledgeLabel,
+    tech => L10n.current.videoZoneTypeTechLabel,
+    sports => L10n.current.videoZoneTypeSportsLabel,
+    car => L10n.current.videoZoneTypeCarLabel,
+    life => L10n.current.videoZoneTypeLifeLabel,
+    food => L10n.current.videoZoneTypeFoodLabel,
+    animal => L10n.current.videoZoneTypeAnimalLabel,
+    kichiku => L10n.current.videoZoneTypeKichikuLabel,
+    fashion => L10n.current.videoZoneTypeFashionLabel,
+    info => L10n.current.videoZoneTypeInfoLabel,
+    ent => L10n.current.videoZoneTypeEntLabel,
+    cinephile => L10n.current.cinema,
+    documentary => L10n.current.videoZoneTypeDocumentaryLabel,
+    movie => L10n.current.videoZoneTypeMovieLabel,
+    tv => L10n.current.videoZoneTypeTvLabel,
+  };
   final int? tids;
-  const VideoZoneType(this.label, {this.tids});
+  const VideoZoneType({this.tids});
 }
 
 // 搜索类型为视频、专栏及相簿时
 enum ArchiveFilterType {
-  totalrank('默认排序'),
-  click('播放多'),
-  pubdate('新发布'),
-  dm('弹幕多'),
-  stow('收藏多'),
-  scores('评论多'),
+  totalrank,
+  click,
+  pubdate,
+  dm,
+  stow,
+  scores,
   ;
 
   // 专栏
   // attention('最多喜欢'),
 
-  final String desc;
-  const ArchiveFilterType(this.desc);
+  String get desc => switch (this) {
+    totalrank => L10n.current.archiveFilterTypeTotalrankDesc,
+    click => L10n.current.archiveFilterTypeClickDesc,
+    pubdate => L10n.current.archiveFilterTypePubdateDesc,
+    dm => L10n.current.archiveFilterTypeDmDesc,
+    stow => L10n.current.archiveFilterTypeStowDesc,
+    scores => L10n.current.archiveFilterTypeScoresDesc,
+  };
 }

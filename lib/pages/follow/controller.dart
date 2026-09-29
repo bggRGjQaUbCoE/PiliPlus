@@ -1,5 +1,6 @@
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/member.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/follow_order_type.dart';
 import 'package:PiliPlus/models/member/tags.dart';
 import 'package:PiliPlus/pages/follow/child/child_controller.dart';
@@ -64,7 +65,11 @@ class FollowController extends GetxController with GetTickerProviderStateMixin {
     final res = await MemberHttp.followUpTags();
     if (res case Success(:final response)) {
       tabs
-        ..assign(MemberTagItemModel(name: '全部关注'))
+        ..assign(
+          MemberTagItemModel(
+            name: L10n.current.followChildPageBuildSameFollowingChild,
+          ),
+        )
         ..addAll(response);
       onInitTab();
       followState.value = Success(tabs.hashCode);
@@ -103,7 +108,7 @@ class FollowController extends GetxController with GetTickerProviderStateMixin {
     if (res.isSuccess) {
       item.name = tagName;
       tabs.refresh();
-      SmartDialog.showToast('修改成功');
+      SmartDialog.showToast(L10n.current.followControllerOnUpdateTagText);
     } else {
       res.toast();
     }
@@ -115,7 +120,7 @@ class FollowController extends GetxController with GetTickerProviderStateMixin {
       tabs.removeAt(index);
       onInitTab();
       followState.refresh();
-      SmartDialog.showToast('删除成功');
+      SmartDialog.showToast(L10n.current.commonWhisperControllerOnRemoveText);
     } else {
       res.toast();
     }

@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -39,7 +40,7 @@ abstract final class Update {
           DateTime.parse(data['created_at']).millisecondsSinceEpoch ~/ 1000;
       if (BuildConfig.buildTime >= latest) {
         if (!isAuto) {
-          SmartDialog.showToast('已是最新版本');
+          SmartDialog.showToast(L10n.current.updateCheckUpdateText);
         }
       } else {
         SmartDialog.show(
@@ -51,7 +52,7 @@ abstract final class Update {
               child: Text(text),
             );
             return AlertDialog(
-              title: const Text('🎉 发现新版本 '),
+              title: Text(L10n.current.updateCheckUpdateTitle),
               content: SizedBox(
                 height: 280,
                 child: SingleChildScrollView(
@@ -69,7 +70,7 @@ abstract final class Update {
                           '${Constants.sourceCodeUrl}/commits/main',
                         ),
                         child: Text(
-                          "点此查看完整更新(即commit)内容",
+                          L10n.current.updateCheckUpdateChild2,
                           style: TextStyle(color: colorScheme.primary),
                         ),
                       ),
@@ -85,14 +86,14 @@ abstract final class Update {
                       GStorage.setting.put(SettingBoxKey.autoUpdate, false);
                     },
                     child: Text(
-                      '不再提醒',
+                      L10n.current.dontRemindAgain,
                       style: TextStyle(color: colorScheme.outline),
                     ),
                   ),
                 TextButton(
                   onPressed: SmartDialog.dismiss,
                   child: Text(
-                    '取消',
+                    L10n.current.cancel,
                     style: TextStyle(color: colorScheme.outline),
                   ),
                 ),

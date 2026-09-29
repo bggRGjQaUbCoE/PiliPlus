@@ -1,3 +1,4 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/fav_order_type.dart';
 import 'package:PiliPlus/models_new/fav/fav_detail/data.dart';
 import 'package:PiliPlus/models_new/fav/fav_detail/media.dart';
@@ -44,7 +45,7 @@ class _FavSearchPageState
           mediaId: controller.mediaId,
           mid: Accounts.main.mid,
         ),
-        child: Text('复制', style: textStyle),
+        child: Text(L10n.current.copy, style: textStyle),
       ),
       TextButton(
         style: btnStyle,
@@ -55,7 +56,10 @@ class _FavSearchPageState
           mediaId: controller.mediaId,
           mid: Accounts.main.mid,
         ),
-        child: Text('移动', style: textStyle),
+        child: Text(
+          L10n.current.favDetailPageSelectActionsChild2,
+          style: textStyle,
+        ),
       ),
     ];
   }
@@ -68,7 +72,7 @@ class _FavSearchPageState
           icon: const Icon(Icons.sort),
           requestFocus: false,
           initialValue: controller.order.value,
-          tooltip: '排序方式',
+          tooltip: L10n.current.favDetailPageActionsTooltip2,
           onSelected: (value) => controller
             ..order.value = value
             ..onReload(),

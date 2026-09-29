@@ -3,6 +3,8 @@ import 'dart:io' show Platform;
 import 'package:PiliPlus/common/widgets/animated_height.dart';
 import 'package:PiliPlus/common/widgets/color_palette.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
+import 'package:PiliPlus/l10n/option_labels.dart';
 import 'package:PiliPlus/main.dart' show MyApp;
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
@@ -51,7 +53,7 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
   Future<void> _onChanged([bool? val]) async {
     val ??= !ctr.dynamicColor.value;
     if (val && !await MyApp.initPlatformState()) {
-      SmartDialog.showToast('设备可能不支持动态取色');
+      SmartDialog.showToast(L10n.current.colorSelectPageOnChangedText);
       if (kReleaseMode) {
         return;
       }
@@ -80,7 +82,7 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
       context,
     ).copyWith(top: 0, bottom: 0);
     return SimpleScaffold(
-      appBar: AppBar(title: const Text('选择应用主题')),
+      appBar: AppBar(title: Text(L10n.current.colorSelectPageTitle2)),
       body: ListView(
         padding: .only(
           bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
@@ -91,7 +93,9 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
               final result = await showDialog<ThemeType>(
                 context: context,
                 builder: (context) => SelectDialog<ThemeType>(
-                  title: '主题模式',
+                  title: L10n
+                      .current
+                      .pagesSettingModelsStyleSettingsStyleSettingsTitle3,
                   value: ctr.themeType.value,
                   values: ThemeType.values.map((e) => (e, e.label)).toList(),
                 ),
@@ -106,10 +110,15 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
               }
             },
             leading: const Icon(Icons.flashlight_on_outlined),
-            title: Text('主题模式', style: titleStyle),
+            title: Text(
+              L10n.current.pagesSettingModelsStyleSettingsStyleSettingsTitle3,
+              style: titleStyle,
+            ),
             subtitle: Obx(
               () => Text(
-                '当前模式：${ctr.themeType.value.label}',
+                L10n.current.colorSelectPageSubtitle(
+                  ctr.themeType.value.label,
+                ),
                 style: subTitleStyle,
               ),
             ),
@@ -118,12 +127,11 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
             () => PopupListTile<FlexSchemeVariant>(
               enabled: !ctr.dynamicColor.value,
               leading: const Icon(Icons.palette_outlined),
-              title: const Text('调色板风格'),
-              value: () =>
-                  (_dynamicSchemeVariant, _dynamicSchemeVariant.variantName),
+              title: Text(L10n.current.colorSelectPageTitle),
+              value: () => (_dynamicSchemeVariant, _dynamicSchemeVariant.label),
               itemBuilder: (_) => FlexSchemeVariant.values
                   .map(
-                    (e) => PopupMenuItem(value: e, child: Text(e.variantName)),
+                    (e) => PopupMenuItem(value: e, child: Text(e.label)),
                   )
                   .toList(),
               onSelected: (value, setState) {
@@ -137,7 +145,11 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
           if (!Platform.isIOS)
             Obx(
               () => ListTile(
-                title: const Text('动态取色'),
+                title: Text(
+                  L10n
+                      .current
+                      .pagesSettingModelsStyleSettingsStyleSettingsGetSubtitle,
+                ),
                 leading: ExcludeFocus(
                   child: Checkbox(
                     value: ctr.dynamicColor.value,
@@ -209,7 +221,7 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
                     builder: (context) => AlertDialog(
                       clipBehavior: .hardEdge,
                       contentPadding: const .symmetric(vertical: 16),
-                      title: const Text('Color Picker'),
+                      title: Text(L10n.current.colourPicker),
                       content: SlideColorPicker(
                         color: color,
                         onChanged: (Color? color) {
@@ -236,7 +248,7 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
                       selected: isCurr,
                     ),
                     Text(
-                      '自定义',
+                      L10n.current.custom,
                       style: TextStyle(
                         fontSize: 12,
                         color: isCurr

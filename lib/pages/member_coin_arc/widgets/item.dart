@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/common/widgets/video_card/video_card_v.dart';
 import 'package:PiliPlus/http/search.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/member/coin_like_arc/item.dart';
@@ -75,14 +76,14 @@ class MemberCoinLikeItem extends StatelessWidget {
                         borderRadius: const .vertical(top: .circular(12)),
                       ),
                       if (item.isCooperation == true)
-                        const PBadge(
-                          text: '合作',
+                        PBadge(
+                          text: L10n.current.videoCardHLaterText,
                           top: 6,
                           right: 6,
                         )
                       else if (item.isSteins == true)
-                        const PBadge(
-                          text: '互动',
+                        PBadge(
+                          text: L10n.current.memberCoinLikeItemText,
                           top: 6,
                           right: 6,
                         ),

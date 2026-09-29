@@ -1,6 +1,7 @@
 import 'package:PiliPlus/http/fan.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/follow/data.dart';
 import 'package:PiliPlus/pages/follow_type/controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -46,7 +47,7 @@ class FansController extends FollowTypeController {
       loadingState
         ..value.data!.removeAt(index)
         ..refresh();
-      SmartDialog.showToast('移除成功');
+      SmartDialog.showToast(L10n.current.blackListControllerOnRemoveOnConfirm);
     } else {
       res.toast();
     }

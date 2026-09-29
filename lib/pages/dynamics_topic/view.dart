@@ -10,6 +10,7 @@ import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_pinned_header.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_feed/fold_card_item.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_feed/item.dart';
@@ -163,7 +164,7 @@ class _DynTopicPageState extends State<DynTopicPage>
               }
             },
             icon: const Icon(CustomIcons.topic_tag, size: 20),
-            label: const Text('参与话题'),
+            label: Text(L10n.current.dynTopicPageLabel),
           ),
         ),
       ),
@@ -227,7 +228,7 @@ class _DynTopicPageState extends State<DynTopicPage>
                         ),
                       ),
                       Text(
-                        ' 发起',
+                        L10n.current.dynTopicPageBuildAppBarChildren,
                         style: TextStyle(color: colorScheme.outline),
                       ),
                     ],
@@ -250,7 +251,10 @@ class _DynTopicPageState extends State<DynTopicPage>
               Row(
                 children: [
                   Text(
-                    '${NumUtils.numFormat(response.topicItem!.view)}浏览 · ${NumUtils.numFormat(response.topicItem!.discuss)}讨论',
+                    L10n.current.dynTopicItemChild(
+                      NumUtils.numFormat(response.topicItem!.view),
+                      NumUtils.numFormat(response.topicItem!.discuss),
+                    ),
                     style: TextStyle(
                       fontSize: 13,
                       color: colorScheme.outline,
@@ -327,11 +331,13 @@ class _DynTopicPageState extends State<DynTopicPage>
                 PopupMenuItem(
                   onTap: _controller.onFav,
                   child: Text(
-                    '${_controller.isFav.value ? '取消' : ''}收藏',
+                    L10n.current.dynTopicPageBuildAppBarChild(
+                      _controller.isFav.value.toString(),
+                    ),
                   ),
                 ),
                 PopupMenuItem(
-                  child: const Text('举报'),
+                  child: Text(L10n.current.report),
                   onTap: () {
                     if (!_controller.isLogin) {
                       SmartDialog.showToast('账号未登录');

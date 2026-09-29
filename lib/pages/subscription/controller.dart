@@ -1,6 +1,7 @@
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/user.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models_new/sub/sub/data.dart';
 import 'package:PiliPlus/models_new/sub/sub/list.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
@@ -32,13 +33,13 @@ class SubController extends CommonListController<SubData, SubItemModel> {
     showDialog(
       context: Get.context!,
       builder: (context) => AlertDialog(
-        title: const Text('提示'),
-        content: const Text('确定取消订阅吗？'),
+        title: Text(L10n.current.notice),
+        content: Text(L10n.current.subControllerCancelSubContent),
         actions: [
           TextButton(
             onPressed: Get.back,
             child: Text(
-              '取消',
+              L10n.current.cancel,
               style: TextStyle(color: Theme.of(context).colorScheme.outline),
             ),
           ),
@@ -52,13 +53,15 @@ class SubController extends CommonListController<SubData, SubItemModel> {
                 loadingState
                   ..value.data!.remove(subFolderItem)
                   ..refresh();
-                SmartDialog.showToast('取消订阅成功');
+                SmartDialog.showToast(
+                  L10n.current.subControllerCancelSubOnPressed,
+                );
               } else {
                 res.toast();
               }
               Get.back();
             },
-            child: const Text('确定'),
+            child: Text(L10n.current.ok),
           ),
         ],
       ),

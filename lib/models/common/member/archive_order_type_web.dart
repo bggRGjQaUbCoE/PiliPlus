@@ -1,12 +1,16 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 
 enum ArchiveOrderTypeWeb with EnumWithLabel {
-  pubdate('最新发布'),
-  click('最多播放'),
-  stow('最多收藏'),
+  pubdate,
+  click,
+  stow,
   ;
 
   @override
-  final String label;
-  const ArchiveOrderTypeWeb(this.label);
+  String get label => switch (this) {
+    pubdate => L10n.current.archiveOrderTypeWebPubdateLabel,
+    click => L10n.current.archiveOrderTypeWebClickLabel,
+    stow => L10n.current.archiveOrderTypeWebStowLabel,
+  };
 }

@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/widgets/progress_bar/video_progress_indicator.da
 import 'package:PiliPlus/common/widgets/select_mask.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/http/user.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models_new/history/list.dart';
 import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
@@ -66,7 +67,7 @@ class HistoryItem extends StatelessWidget {
                   if (item.liveStatus == 1) {
                     PageUtils.toLiveRoom(item.history.oid);
                   } else {
-                    SmartDialog.showToast('直播未开播');
+                    SmartDialog.showToast(L10n.current.historyItemOnTap);
                   }
                 } else if (business == 'pgc') {
                   PageUtils.viewPgc(
@@ -142,15 +143,15 @@ class HistoryItem extends StatelessWidget {
                             if (hasDuration)
                               PBadge(
                                 text: item.progress == -1
-                                    ? '已看完'
+                                    ? L10n.current.watchedCompletely
                                     : '${DurationUtils.formatDuration(item.progress)}/${DurationUtils.formatDuration(item.duration)}',
                                 right: 6.0,
                                 bottom: 8.0,
                                 type: PBadgeType.gray,
                               ),
                             if (item.isFav == 1)
-                              const PBadge(
-                                text: '已收藏',
+                              PBadge(
+                                text: L10n.current.favourited,
                                 top: 6.0,
                                 right: 6.0,
                                 type: PBadgeType.gray,
@@ -203,7 +204,7 @@ class HistoryItem extends StatelessWidget {
               height: 29,
               child: PopupMenuButton(
                 padding: EdgeInsets.zero,
-                tooltip: '功能菜单',
+                tooltip: L10n.current.historyItemTooltip,
                 icon: Icon(
                   Icons.more_vert_outlined,
                   color: theme.colorScheme.outline,
@@ -224,7 +225,9 @@ class HistoryItem extends StatelessWidget {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            '访问：${item.authorName}',
+                            L10n.current.historyItemChildren2(
+                              item.authorName.toString(),
+                            ),
                             style: const TextStyle(fontSize: 13),
                           ),
                         ],
@@ -239,22 +242,28 @@ class HistoryItem extends StatelessWidget {
                       onTap: () =>
                           UserHttp.toViewLater(bvid: item.history.bvid),
                       height: 38,
-                      child: const Row(
+                      child: Row(
                         children: [
-                          Icon(Icons.watch_later_outlined, size: 16),
-                          SizedBox(width: 6),
-                          Text('稍后再看', style: TextStyle(fontSize: 13)),
+                          const Icon(Icons.watch_later_outlined, size: 16),
+                          const SizedBox(width: 6),
+                          Text(
+                            L10n.current.watchLater,
+                            style: const TextStyle(fontSize: 13),
+                          ),
                         ],
                       ),
                     ),
                   PopupMenuItem(
                     onTap: () => onDelete(item.kid!, business!),
                     height: 38,
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(Icons.close_outlined, size: 16),
-                        SizedBox(width: 6),
-                        Text('删除记录', style: TextStyle(fontSize: 13)),
+                        const Icon(Icons.close_outlined, size: 16),
+                        const SizedBox(width: 6),
+                        Text(
+                          L10n.current.historyItemChildren,
+                          style: const TextStyle(fontSize: 13),
+                        ),
                       ],
                     ),
                   ),

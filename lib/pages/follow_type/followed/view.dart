@@ -1,3 +1,4 @@
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/pages/follow_type/followed/controller.dart';
 import 'package:PiliPlus/pages/follow_type/view.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
@@ -35,7 +36,10 @@ class _FollowedPageState extends FollowTypePageState<FollowedPage> {
   PreferredSizeWidget get appBar => AppBar(
     title: Obx(
       () => Text(
-        '我关注的${controller.total.value}人也关注了${controller.name.value ?? 'TA'}',
+        L10n.current.followedPageAppBarTitle(
+          controller.total.value,
+          controller.name.value ?? L10n.current.unknownPerson,
+        ),
       ),
     ),
   );

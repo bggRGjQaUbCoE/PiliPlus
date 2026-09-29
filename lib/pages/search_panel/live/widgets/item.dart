@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/l10n/l10n.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -123,7 +124,9 @@ class LiveItem extends StatelessWidget {
             style: const TextStyle(fontSize: 11, color: Colors.white),
           ),
           Text(
-            '${NumUtils.numFormat(online)}围观',
+            L10n.current.liveItemLiveStatChildren(
+              NumUtils.numFormat(online),
+            ),
             style: const TextStyle(fontSize: 11, color: Colors.white),
           ),
         ],

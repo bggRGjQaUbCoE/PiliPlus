@@ -28,9 +28,24 @@ class VolumeControl extends StatefulWidget {
   State<VolumeControl> createState() => _VolumeControlState();
 }
 
-class _VolumeControlState extends State<VolumeControl> {
+class _VolumeControlState extends State<VolumeControl>
+    with WidgetsBindingObserver {
   final OverlayPortalController _controller = OverlayPortalController();
   double _lastVolume = 1.0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  /// 窗口缩放 / 进入退出全屏后重新计算浮层锚点，避免滑块错位或停留在旧位置
+  @override
+  void didChangeMetrics() {
+    if (_controller.isShowing && mounted) {
+      setState(() {});
+    }
+  }
 
   void _togglePanel() {
     if (_controller.isShowing) {
@@ -72,6 +87,7 @@ class _VolumeControlState extends State<VolumeControl> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     widget.plPlayerController.volumePanelShowing = false;
     if (_controller.isShowing) {
       _controller.hide();
@@ -186,12 +202,27 @@ class _VolumePanel extends SingleChildRenderObjectWidget {
   RenderObject createRenderObject(BuildContext context) {
     return _RenderVolumePanel(offset: offset);
   }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderVolumePanel renderObject,
+  ) {
+    renderObject.offset = offset;
+  }
 }
 
 class _RenderVolumePanel extends RenderProxyBox {
-  _RenderVolumePanel({required this.offset});
+  _RenderVolumePanel({required Offset offset}) : _inputOffset = offset;
 
-  final Offset offset;
+  Offset _inputOffset;
+
+  set offset(Offset value) {
+    if (_inputOffset == value) return;
+    _inputOffset = value;
+    markNeedsLayout();
+  }
+
   late Offset _offset;
 
   @override
@@ -204,8 +235,11 @@ class _RenderVolumePanel extends RenderProxyBox {
             .size;
     size = constraints.biggest;
     _offset = Offset(
-      math.min(offset.dx - (childSize.width / 2), size.width - childSize.width),
-      math.min(offset.dy, size.height) - childSize.height,
+      math.min(
+        _inputOffset.dx - (childSize.width / 2),
+        size.width - childSize.width,
+      ),
+      math.min(_inputOffset.dy, size.height) - childSize.height,
     );
   }
 

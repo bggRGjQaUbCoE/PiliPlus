@@ -887,10 +887,12 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   }
 
   Widget _childWhenDisabledLandscapeInner(bool isFullScreen) {
+    // 桌面端放宽播放器：比例上限 0.7→0.76、最小收缩 280→240 —— 播放器更宽、
+    // 高度随之更大，右列仍保留约 240 逻辑px 可用宽度。
     double width =
-        clampDouble(maxHeight / maxWidth * 1.08, 0.5, 0.7) * maxWidth;
+        clampDouble(maxHeight / maxWidth * 1.08, 0.5, 0.76) * maxWidth;
     if (maxWidth >= 560) {
-      width = maxWidth - clampDouble(maxWidth - width, 280, 425);
+      width = maxWidth - clampDouble(maxWidth - width, 240, 425);
     }
     final videoWidth = isFullScreen ? maxWidth : width;
     // 为左侧「标题区域」预留高度：播放器底边与标题上沿对齐，

@@ -589,6 +589,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                     child: tabBarView(
                       hitTestBehavior: .translucent,
                       controller: videoDetailController.tabCtr,
+                      physics: const NeverScrollableScrollPhysics(),
                       children: [
                         videoIntro(isHorizontal: false, needCtr: false),
                         if (videoDetailController.showReply)
@@ -799,6 +800,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                   Expanded(
                     child: tabBarView(
                       controller: videoDetailController.tabCtr,
+                      physics: const NeverScrollableScrollPhysics(),
                       children: [
                         videoIntro(
                           width: introWidth,
@@ -862,6 +864,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                         Expanded(
                           child: tabBarView(
                             controller: videoDetailController.tabCtr,
+                            physics: const NeverScrollableScrollPhysics(),
                             children: [
                               if (videoDetailController.showReply)
                                 videoReplyPanel(),
@@ -950,6 +953,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                   Expanded(
                     child: tabBarView(
                       controller: videoDetailController.tabCtr,
+                      physics: const NeverScrollableScrollPhysics(),
                       children: [
                         if (videoDetailController.isFileSource)
                           localIntroPanel()

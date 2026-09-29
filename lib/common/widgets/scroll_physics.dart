@@ -7,9 +7,10 @@ Widget tabBarView({
   required List<Widget> children,
   TabController? controller,
   HitTestBehavior hitTestBehavior = .opaque,
+  ScrollPhysics? physics,
 }) => TabBarView(
   controller: controller,
-  physics: tabBarScrollPhysics,
+  physics: physics ?? tabBarScrollPhysics,
   hitTestBehavior: hitTestBehavior,
   horizontalDragGestureRecognizer: CustomHorizontalDragGestureRecognizer.new,
   children: children,

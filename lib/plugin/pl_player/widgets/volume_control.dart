@@ -1,3 +1,4 @@
+import 'dart:async' show Timer;
 import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/flutter/vertical_slider.dart';
@@ -9,6 +10,7 @@ import 'package:material_ui/material_ui.dart';
 
 /// 桌面底部控制栏音量控件：
 /// 默认只显示音量按钮；点击后在按钮**正上方**展开竖直音量滑块，再次点击收起；
+/// 鼠标离开按钮/浮层也会自动收起（这样播放器控制栏才能照常自动隐藏）；
 /// 右键按钮静音 / 取消静音（同步 isMuted，与 M 键行为保持一致）。
 class VolumeControl extends StatefulWidget {
   const VolumeControl({
@@ -26,9 +28,26 @@ class VolumeControl extends StatefulWidget {
 
 class _VolumeControlState extends State<VolumeControl> {
   final OverlayPortalController _controller = OverlayPortalController();
+  Timer? _timer;
   double _lastVolume = 1.0;
 
+  void _stopTimer() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  /// 鼠标离开按钮或浮层后短暂延迟再收起，避免从按钮移到滑块时闪断
+  void _scheduleDismiss() {
+    _timer ??= Timer(const Duration(milliseconds: 150), () {
+      _timer = null;
+      if (!mounted || !_controller.isShowing) return;
+      _controller.hide();
+      setState(() {});
+    });
+  }
+
   void _togglePanel() {
+    _stopTimer();
     if (_controller.isShowing) {
       _controller.hide();
     } else {
@@ -53,6 +72,15 @@ class _VolumeControlState extends State<VolumeControl> {
   }
 
   @override
+  void dispose() {
+    _stopTimer();
+    if (_controller.isShowing) {
+      _controller.hide();
+    }
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final ctr = widget.plPlayerController;
     return OverlayPortal.overlayChildLayoutBuilder(
@@ -64,69 +92,84 @@ class _VolumeControlState extends State<VolumeControl> {
         );
         return _VolumePanel(
           offset: offset,
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(6, 8, 6, 2),
-            decoration: const BoxDecoration(
-              color: Color(0xE6202020),
-              borderRadius: BorderRadius.all(Radius.circular(6)),
-            ),
-            child: Obx(
-              () {
-                final volume = ctr.volume.value;
-                return Column(
-                  spacing: 2,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '${(volume * 100).round()}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                      ),
-                    ),
-                    Expanded(
-                      child: VerticalSlider(
-                        year2023: true,
-                        min: 0.0,
-                        max: ctr.maxVolume,
-                        value: volume.clamp(0.0, ctr.maxVolume).toDouble(),
-                        showValueIndicator: .never,
-                        activeColor: Colors.white,
-                        inactiveColor: Colors.white38,
-                        onChanged: (value) {
-                          ctr
-                            ..setVolume(value)
-                            ..isMuted = value == 0;
-                        },
-                      ),
-                    ),
-                  ],
-                );
-              },
+          child: MouseRegion(
+            onEnter: (_) => _stopTimer(),
+            onExit: (_) => _scheduleDismiss(),
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(3, 6, 3, 2),
+              decoration: const BoxDecoration(
+                color: Color(0xE6202020),
+                borderRadius: BorderRadius.all(Radius.circular(6)),
+              ),
+              child: SliderTheme(
+                data: const SliderThemeData(
+                  trackHeight: 4,
+                  overlayColor: Colors.transparent,
+                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 5),
+                ),
+                child: Obx(
+                  () {
+                    final volume = ctr.volume.value;
+                    return Column(
+                      spacing: 2,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${(volume * 100).round()}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                          ),
+                        ),
+                        Expanded(
+                          child: VerticalSlider(
+                            year2023: true,
+                            min: 0.0,
+                            max: ctr.maxVolume,
+                            value: volume.clamp(0.0, ctr.maxVolume).toDouble(),
+                            showValueIndicator: .never,
+                            activeColor: Colors.white,
+                            inactiveColor: Colors.white38,
+                            onChanged: (value) {
+                              ctr
+                                ..setVolume(value)
+                                ..isMuted = value == 0;
+                            },
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
             ),
           ),
         );
       },
-      child: Obx(
-        () {
-          final volume = ctr.volume.value;
-          return ComBtn(
-            width: widget.width,
-            height: 30,
-            tooltip: _controller.isShowing ? '收起音量（右键静音）' : '音量（右键静音）',
-            icon: Icon(
-              volume <= 0
-                  ? Icons.volume_off
-                  : volume / ctr.maxVolume < 0.5
-                  ? Icons.volume_down
-                  : Icons.volume_up,
-              size: 24,
-              color: Colors.white,
-            ),
-            onTap: _togglePanel,
-            onSecondaryTap: _toggleMute,
-          );
-        },
+      child: MouseRegion(
+        onEnter: (_) => _stopTimer(),
+        onExit: (_) => _scheduleDismiss(),
+        child: Obx(
+          () {
+            final volume = ctr.volume.value;
+            return ComBtn(
+              width: widget.width,
+              height: 30,
+              tooltip: _controller.isShowing ? '收起音量（右键静音）' : '音量（右键静音）',
+              icon: Icon(
+                volume <= 0
+                    ? Icons.volume_off
+                    : volume / ctr.maxVolume < 0.5
+                    ? Icons.volume_down
+                    : Icons.volume_up,
+                size: 24,
+                color: Colors.white,
+              ),
+              onTap: _togglePanel,
+              onSecondaryTap: _toggleMute,
+            );
+          },
+        ),
       ),
     );
   }
@@ -157,7 +200,7 @@ class _RenderVolumePanel extends RenderProxyBox {
   void performLayout() {
     final childSize =
         (child!..layout(
-              const BoxConstraints(maxWidth: 40, maxHeight: 170),
+              const BoxConstraints(maxWidth: 20, maxHeight: 85),
               parentUsesSize: true,
             ))
             .size;

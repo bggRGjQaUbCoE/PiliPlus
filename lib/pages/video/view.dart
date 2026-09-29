@@ -887,19 +887,19 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   }
 
   Widget _childWhenDisabledLandscapeInner(bool isFullScreen) {
-    double width =
-        clampDouble(maxHeight / maxWidth * 1.08, 0.5, 0.7) * maxWidth;
-    if (maxWidth >= 560) {
-      width = maxWidth - clampDouble(maxWidth - width, 280, 425);
+    // 播放器尺寸由「窗口高度」驱动（桌面标准）：
+    //   高度 = 可用高度 − 左侧标题区预留；宽度 = 高度 × 16:9
+    // 于是：横向拉伸窗口时播放器**完全不变**（多出的宽度全部给右列），
+    //       只有竖向拉伸才按 16:9 整体缩放。
+    const titleAreaReserve = 96.0;
+    double height = maxHeight - titleAreaReserve - padding.top;
+    double width = height * Style.aspectRatio16x9;
+    if (!isFullScreen && width > maxWidth) {
+      // 窗口很窄时退回按宽度约束，保持 16:9 不溢出
+      width = maxWidth;
+      height = width / Style.aspectRatio16x9;
     }
     final videoWidth = isFullScreen ? maxWidth : width;
-    // 为左侧「标题区域」预留高度：播放器底边与标题上沿对齐，
-    // 保证标题（及下方内容）完整可见、不被裁切；大窗口下通常不触发。
-    const titleAreaReserve = 96.0;
-    final double height = min(
-      width / Style.aspectRatio16x9,
-      maxHeight - titleAreaReserve - padding.top,
-    );
     final videoHeight = isFullScreen
         ? maxHeight - (isWindowMode && !isPortrait ? 0 : padding.top)
         : height;

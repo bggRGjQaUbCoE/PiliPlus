@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/desktop/desktop_search_panel.dart';
+import 'package:PiliPlus/common/widgets/desktop/desktop_shortcuts.dart';
 import 'package:PiliPlus/common/widgets/desktop/desktop_top_bar.dart';
 import 'package:PiliPlus/common/widgets/floating_navigation_bar.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
@@ -606,6 +607,16 @@ class _MainAppState extends PopScopeState<MainApp>
           systemNavigationBarColor: Colors.transparent,
           systemNavigationBarIconBrightness: _colorScheme.brightness.reverse,
         ),
+        child: child,
+      );
+    }
+
+    // 桌面壳层快捷键：Ctrl+1/2/3 切主入口、Ctrl+K 展开搜索面板
+    // （沿用既有 showNavbar = width > 800，不新增断点）
+    if (PlatformUtils.isDesktop && context.showNavbar) {
+      child = DesktopShortcuts(
+        mainController: _mainController,
+        onSearch: () => setState(() => _searchPanelOpen = true),
         child: child,
       );
     }

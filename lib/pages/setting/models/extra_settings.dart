@@ -25,6 +25,7 @@ import 'package:PiliPlus/models/dynamics/result.dart'
 import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/pages/home/controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
+import 'package:PiliPlus/pages/setting/models/breeze_settings.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/slider_dialog.dart';
@@ -94,6 +95,7 @@ List<SettingsModel> get extraSettings => [
       onTap: (context) => Get.toNamed('/sponsorBlock'),
     ),
   ),
+  breezeEntry,
   PopupModel<SkipType>(
     title: '番剧片头/片尾跳过类型',
     leading: const Icon(MdiIcons.debugStepOver),

@@ -2,10 +2,13 @@ import 'package:PiliPlus/common/widgets/avatars.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
+import 'package:PiliPlus/pages/breeze/breeze_fold.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/action_panel.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/author_panel.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/dyn_content.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/interaction.dart';
+import 'package:PiliPlus/services/breeze/breeze_content.dart';
+import 'package:PiliPlus/services/breeze/breeze_rules.dart' show BreezeKind;
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -60,7 +63,7 @@ class DynamicPanel extends StatelessWidget {
 
     void showMore() => _imageSaveDialog(context, authorWidget.morePanel);
 
-    final child = Material(
+    Widget child = Material(
       type: MaterialType.transparency,
       child: InkWell(
         onTap:
@@ -123,6 +126,14 @@ class DynamicPanel extends StatelessWidget {
     );
     if (isSave || (isDetail && !isDetailPortraitW)) {
       return child;
+    }
+    if (!isDetail) {
+      child = BreezeFold(
+        kind: BreezeKind.dynamic,
+        source: item,
+        raw: () => BreezeContent.fromDynamic(item),
+        child: child,
+      );
     }
     return DecoratedBox(
       decoration: BoxDecoration(

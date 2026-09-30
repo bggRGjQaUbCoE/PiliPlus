@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:PiliPlus/models/model_owner.dart';
 import 'package:PiliPlus/models/user/danmaku_rule_adapter.dart';
 import 'package:PiliPlus/models/user/info.dart';
+import 'package:PiliPlus/services/breeze/breeze_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account_adapter.dart';
 import 'package:PiliPlus/utils/accounts/account_type_adapter.dart';
@@ -62,6 +63,7 @@ abstract final class GStorage {
           return deletedEntries > 4;
         },
       ).then((res) => watchProgress = res),
+      BreezeService.init(),
     ]);
 
     if (Pref.saveReply) {
@@ -90,10 +92,12 @@ abstract final class GStorage {
   static Future<List<void>> importAllJsonSettings(
     Map<String, dynamic> map,
   ) {
-    return Future.wait([
-      setting.clear().then((_) => setting.putAll(map[setting.name])),
-      video.clear().then((_) => video.putAll(map[video.name])),
-    ]);
+    return BreezeService.replaceData(
+      () => Future.wait([
+        setting.clear().then((_) => setting.putAll(map[setting.name])),
+        video.clear().then((_) => video.putAll(map[video.name])),
+      ]),
+    );
   }
 
   static void regAdapter() {
@@ -118,6 +122,7 @@ abstract final class GStorage {
       Accounts.account.compact(),
       watchProgress.compact(),
       ?reply?.compact(),
+      for (final box in BreezeService.boxes) box.compact(),
     ]);
   }
 
@@ -131,20 +136,24 @@ abstract final class GStorage {
       Accounts.account.close(),
       watchProgress.close(),
       ?reply?.close(),
+      for (final box in BreezeService.boxes) box.close(),
     ]);
   }
 
   static Future<List<void>> clear() {
-    return Future.wait([
-      userInfo.clear(),
-      historyWord.clear(),
-      localCache.clear(),
-      setting.clear(),
-      video.clear(),
-      Accounts.clear(),
-      watchProgress.clear(),
-      ?reply?.clear(),
-    ]);
+    return BreezeService.replaceData(
+      () => Future.wait([
+        userInfo.clear(),
+        historyWord.clear(),
+        localCache.clear(),
+        setting.clear(),
+        video.clear(),
+        Accounts.clear(),
+        watchProgress.clear(),
+        ?reply?.clear(),
+        for (final box in BreezeService.boxes) box.clear(),
+      ]),
+    );
   }
 
   static int _intStrDescKeyComparator(dynamic k1, dynamic k2) {

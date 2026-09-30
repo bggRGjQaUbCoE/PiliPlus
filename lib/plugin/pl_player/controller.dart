@@ -54,7 +54,7 @@ import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/services.dart'
-    show DeviceOrientation, HapticFeedback, KeyDownEvent, LogicalKeyboardKey;
+    show DeviceOrientation, HapticFeedback, KeyDownEvent;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:get/get.dart';
@@ -1746,77 +1746,82 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     videoShot = await VideoHttp.videoshot(bvid: bvid, cid: cid!);
   }
 
+  int _screenshotState = 0;
   Future<void> takeScreenshot() async {
+    if (_screenshotState > 0) return;
+    _screenshotState = 1;
     SmartDialog.showToast('截图中');
     final image = await videoPlayerController?.screenshot();
-    if (image == null) {
-      SmartDialog.showToast('截图失败');
-      return;
-    }
-
-    var saved = false;
-    Future<void> save() async {
-      if (saved) return;
-      saved = true;
-      Get.back(result: false);
-      final bytes = await image.toByteData(format: .png);
-      image.dispose();
-      if (bytes != null) {
-        final time = DurationUtils.formatDuration(
-          positionInMilliseconds / 1000,
-        ).replaceAll(':', '-');
-        ImageUtils.saveByteImg(
-          bytes: bytes.buffer.asUint8List(),
-          fileName: 'screenshot_${cid}_$time',
-        );
-      } else {
-        SmartDialog.showToast('保存失败');
-      }
-    }
-
-    SmartDialog.showToast('点击弹窗或按 Enter 保存截图');
-    final dispose = await showDialog<bool>(
-      context: Get.context!,
-      builder: (context) => Focus(
-        autofocus: true,
-        onKeyEvent: (node, event) {
-          if (event is KeyDownEvent &&
-              (event.logicalKey == LogicalKeyboardKey.enter ||
-                  event.logicalKey == LogicalKeyboardKey.numpadEnter)) {
-            save();
-            return KeyEventResult.handled;
+    if (image != null) {
+      SmartDialog.showToast('点击弹窗保存截图');
+      await showDialog(
+        context: Get.context!,
+        requestFocus: true,
+        builder: (context) {
+          Future<void> save() async {
+            if (_screenshotState > 1) return;
+            _screenshotState = 2;
+            final bytes = await image.toByteData(format: .png);
+            if (bytes != null) {
+              final time = DurationUtils.formatDuration(
+                positionInMilliseconds / 1000,
+              ).replaceAll(':', '-');
+              ImageUtils.saveByteImg(
+                bytes: bytes.buffer.asUint8List(),
+                fileName: 'screenshot_${cid}_$time',
+              );
+            } else {
+              SmartDialog.showToast('保存失败');
+            }
+            Get.back();
           }
-          return KeyEventResult.ignored;
-        },
-        child: GestureDetector(
-          onTap: save,
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: min(MediaQuery.widthOf(context) / 3, 350),
-                ),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      width: 5,
-                      color: ColorScheme.of(context).surface,
+
+          return Focus(
+            autofocus: true,
+            onKeyEvent: (node, event) {
+              if (event is KeyDownEvent) {
+                final key = event.logicalKey;
+                if (key == .keyS || key == .enter || key == .numpadEnter) {
+                  save();
+                  return .handled;
+                }
+              }
+              return .ignored;
+            },
+            child: GestureDetector(
+              onTap: save,
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: min(MediaQuery.widthOf(context) / 3, 350),
                     ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: RawImage(image: image),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          width: 5,
+                          color: ColorScheme.of(context).surface,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: RawImage(image: image),
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ),
-      ),
-    );
-    if (dispose ?? true) image.dispose();
+          );
+        },
+      );
+      image.dispose();
+    } else {
+      SmartDialog.showToast('截图失败');
+    }
+    _screenshotState = 0;
   }
 
   void onPopInvokedWithResult(bool didPop, Object? result) {

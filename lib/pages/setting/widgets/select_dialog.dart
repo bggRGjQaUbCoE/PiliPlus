@@ -7,6 +7,9 @@ import 'package:PiliPlus/models/common/video/cdn_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
+import 'package:PiliPlus/services/video_accelerator/accelerator_config.dart';
+import 'package:PiliPlus/services/video_accelerator/cdn_probe.dart';
+import 'package:PiliPlus/services/video_accelerator/playback_source_adapter.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:dio/dio.dart';
@@ -87,11 +90,16 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
   late final List<ValueNotifier<String?>> _cdnResList;
   late final List<CancelToken?> _tokens;
   late final bool _cdnSpeedTest;
+  bool _useAcceleratorProbe = false;
+  final _probeTokens = <int, ProbeCancellation>{};
 
   @override
   void initState() {
     _cdnSpeedTest = Pref.cdnSpeedTest;
     if (_cdnSpeedTest) {
+      // PiliBoost Accelerator integration point: a single probe implementation.
+      _useAcceleratorProbe = Pref.acceleratorMode != AcceleratorMode.off;
+      if (_useAcceleratorProbe) CdnProbe.manualTesting++;
       _dio =
           Dio(
               BaseOptions(
@@ -117,6 +125,11 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
   @override
   void dispose() {
     if (_cdnSpeedTest) {
+      if (_useAcceleratorProbe) CdnProbe.manualTesting--;
+      for (final token in _probeTokens.values) {
+        token.cancel();
+      }
+      _probeTokens.clear();
       for (final e in _tokens) {
         e?.cancel();
       }
@@ -163,6 +176,27 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
         videoItem.playUrls,
         defaultCDNService: item,
       );
+      if (_useAcceleratorProbe) {
+        final token = ProbeCancellation();
+        _probeTokens[item.index] = token;
+        try {
+          final result = await PlaybackSourceAdapter.createProbe().run(
+            Uri.parse(cdnUrl),
+            const AcceleratorConfig(),
+            token,
+          );
+          if (!mounted) return;
+          if (!result.ok) throw StateError(result.error ?? 'probe-failed');
+          _updateSpeedResult(
+            item.index,
+            result.bytes,
+            result.elapsed.inMicroseconds,
+          );
+        } finally {
+          _probeTokens.remove(item.index);
+        }
+        return;
+      }
       await _measureDownloadSpeed(cdnUrl, item.index);
     } catch (e) {
       _handleSpeedTestError(e, item.index);

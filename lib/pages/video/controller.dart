@@ -52,6 +52,7 @@ import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
+import 'package:PiliPlus/services/video_accelerator/playback_source_adapter.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
@@ -133,6 +134,7 @@ class VideoDetailController extends GetxController
   late VideoItem firstVideo;
   String? videoUrl;
   String? audioUrl;
+  String? _acceleratorRefreshKey;
   Duration? defaultST;
   Duration? playedTime;
   String playedTimePos(bool hasParams) {
@@ -725,6 +727,33 @@ class VideoDetailController extends GetxController
     Duration? seek = defaultST ?? playedTime;
     if (seek == .zero) seek = null;
     seek ??= getFirstSegment();
+    // PiliBoost Accelerator integration point: only selected network DASH.
+    // Keep page URLs remote for downloads/DLNA; OFF uses the original source.
+    final accelerator = !isFileSource && data.dash != null
+        ? PlaybackSourceAdapter.prepare(
+            video: firstVideo,
+            audio: data.dash?.audio
+                ?.where((item) => item.id == currentAudioQa?.code)
+                .firstOrNull,
+            videoUrl: videoUrl!,
+            audioUrl: audioUrl,
+            durationSeconds: data.timeLength == null
+                ? null
+                : data.timeLength! / 1000,
+          )
+        : null;
+    if (accelerator != null) {
+      final refreshKey =
+          '$aid:${cid.value}:${firstVideo.id}:${firstVideo.codecs}:${currentAudioQa?.code}';
+      accelerator.onRefreshRequired = () {
+        if (isClosed || isQuerying || _acceleratorRefreshKey == refreshKey) {
+          return;
+        }
+        _acceleratorRefreshKey = refreshKey;
+        playedTime = plPlayerController.videoPlayerController?.state.position;
+        unawaited(queryVideoUrl(fromReset: true));
+      };
+    }
     await plPlayerController.setDataSource(
       isFileSource
           ? FileSource(
@@ -738,6 +767,7 @@ class VideoDetailController extends GetxController
               audioSource: audioUrl,
             ),
       seekTo: seek,
+      accelerator: accelerator,
       duration: data.timeLength == null
           ? null
           : Duration(milliseconds: data.timeLength!),
@@ -1263,6 +1293,7 @@ class VideoDetailController extends GetxController
   }
 
   void onReset({bool isStein = false}) {
+    _acceleratorRefreshKey = null;
     if (isFileSource) {
       cacheLocalProgress();
     }

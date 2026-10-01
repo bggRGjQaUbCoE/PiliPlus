@@ -1,6 +1,8 @@
 // ignore_for_file: constant_identifier_names
 
 abstract final class SettingBoxKey {
+  // PiliBoost Accelerator integration point. Unknown mode defaults to OFF.
+  static const String acceleratorMode = 'piliBoostAcceleratorMode';
   static const String btmProgressBehavior = 'btmProgressBehavior',
       defaultVideoQa = 'defaultVideoQa',
       defaultVideoQaCellular = 'defaultVideoQaCellular',

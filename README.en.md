@@ -3,6 +3,17 @@
     <h1>PiliPlus</h1>
 </div>
 
+## PiliBoost Streaming Accelerator (experimental V1a)
+
+New fork features use the PiliBoost name. The accelerator is OFF by default;
+select Auto or Smart CDN under Audio/Video Settings → Streaming Accelerator.
+V1a keeps existing CDN preferences and DASH EDL playback, uses bounded media
+Range probes only during sustained low buffering, and applies EWMA, switching
+gain thresholds and cooldown. Failures return to the original source.
+Multi-Range, parallel Multi-CDN and live acceleration are not implemented in V1a.
+See `docs/accelerator/V1.md` for implementation/test status and `NOTICE` for
+algorithm references and attribution.
+
 <div align="center">
 
 [中文](README.md) | English
@@ -58,3 +69,7 @@ Thank you for using PiliPlus.
    <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=bggRGjQaUbCoE/PiliPlus&type=Date" />
  </picture>
 </a>
+
+### V1c local Range relay (experimental)
+
+Streaming Accelerator now has a separate, opt-in single-upstream Proxy mode. DASH video uses a loopback relay; audio stays direct. It streams player GET/HEAD/single-range requests, supports seeking, and reports forwarded video bytes and an approximately three-second rate window. It does not probe/switch CDNs, prefetch, cache, or download in parallel. Existing Auto/Smart CDN behavior is unchanged; OFF remains the default. Relay errors attempt original-source recovery and bypass the relay for that session. See `docs/accelerator/V1C.md` for verification and device-test boundaries.

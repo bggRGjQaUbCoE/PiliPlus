@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:PiliPlus/services/video_accelerator/accelerator_config.dart';
+
 import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart'
     show deviceTouchSlop;
 import 'package:PiliPlus/common/widgets/pair.dart';
@@ -280,6 +282,11 @@ abstract final class Pref {
     }
     return CDNService.backupUrl;
   }
+
+  // PiliBoost Accelerator integration point; old CDN preferences stay intact.
+  static AcceleratorMode get acceleratorMode => AcceleratorConfig.parseMode(
+    _setting.get(SettingBoxKey.acceleratorMode),
+  );
 
   static String get banWordForRecommend =>
       _setting.get(SettingBoxKey.banWordForRecommend, defaultValue: '');

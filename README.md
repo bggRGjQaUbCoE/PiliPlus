@@ -1,6 +1,16 @@
 <div align="center">
+<!-- PiliBoost Accelerator integration point: fork-specific documentation. -->
     <img width="200" height="200" src="assets/images/logo/logo.png">
 </div>
+
+## PiliBoost Streaming Accelerator（实验性 V1a）
+
+本 fork 的新功能统一命名为 PiliBoost。播放加速默认关闭；音视频设置中的
+“播放加速 / Streaming Accelerator”可选择 Auto 或 CDN 优选。V1a 保留原
+CDN 设置与 DASH EDL 播放链路，持续低缓冲时才执行有限媒体 Range 测速，
+使用 EWMA、切换收益门槛与冷却选择线路，失败绕回原源。
+V1a 不实现多 Range、多 CDN 并发、直播加速或无限预读；多线程模式尚未开放。
+详细实施/测试状态见 `docs/accelerator/V1.md`，算法参考与署名见 `NOTICE`。
 
 
 
@@ -253,3 +263,7 @@
    <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=bggRGjQaUbCoE/PiliPlus&type=Date" />
  </picture>
 </a>
+
+### V1c 本地 Range 代理（实验）
+
+播放加速设置新增独立的单连接 Proxy 模式。只代理 DASH 视频，音频保持原路径；透传播放器 GET/HEAD/单 Range 请求，支持 seek，诊断显示实际视频转发字节及约 3 秒窗口速率。该模式不做 CDN 探测切换、不增加缓存/预读，不是多线程加速；原 Auto/CDN 优选行为保持不变，默认仍 OFF。错误尝试恢复远端原源并停用本会话代理。开发验证与实机边界见 `docs/accelerator/V1C.md`。

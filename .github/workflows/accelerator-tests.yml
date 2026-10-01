@@ -1,0 +1,37 @@
+name: PiliBoost Accelerator Tests
+on:
+  pull_request:
+    paths:
+      - 'lib/services/video_accelerator/**'
+      - 'lib/pages/setting/**'
+      - 'lib/pages/video/controller.dart'
+      - 'lib/plugin/pl_player/controller.dart'
+      - 'lib/utils/storage*'
+      - 'test/**'
+      - 'tool/phase1/**'
+      - '.github/workflows/accelerator-tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    if: github.repository == 'jyh9521/PiliBoost'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+          cache: true
+      - run: flutter pub get
+      - name: Prepare dedicated runner SDK using original common patches
+        shell: pwsh
+        run: tool/phase1/prepare_test_environment.ps1 -FlutterRoot $env:FLUTTER_ROOT
+      - name: Analyze V1 files (no inherited info suppression changes)
+        run: |
+          dart analyze lib/services/video_accelerator
+          dart analyze lib/pages/setting/pages/streaming_accelerator.dart
+          dart analyze test/services/video_accelerator
+      - run: flutter analyze --no-pub --no-fatal-infos
+      - run: flutter test --no-pub

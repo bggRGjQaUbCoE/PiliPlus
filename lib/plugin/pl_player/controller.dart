@@ -1,4 +1,4 @@
-import 'dart:async' show StreamSubscription, Timer;
+import 'dart:async' show StreamSubscription, Timer, unawaited;
 import 'dart:convert' show ascii, utf8;
 import 'dart:io' show Platform;
 import 'dart:math' show max, min;
@@ -29,6 +29,10 @@ import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/services/service_locator.dart';
+import 'package:PiliPlus/services/video_accelerator/accelerator_session.dart';
+import 'package:PiliPlus/services/video_accelerator/local_stream_server.dart';
+import 'package:PiliPlus/services/video_accelerator/playback_source_adapter.dart';
+import 'package:PiliPlus/services/video_accelerator/media_source_rewriter.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
@@ -146,6 +150,10 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   late final tryLook = !Accounts.get(AccountType.video).isLogin && Pref.p1080;
 
   late DataSource dataSource;
+  // PiliBoost Accelerator integration point; final player disposal owns lease.
+  AcceleratorBinding? _acceleratorBinding;
+  bool _acceleratorSwitching = false;
+  bool _acceleratorRecoveryPending = false;
 
   Timer? _timer;
   StreamSubscription? _subForSeek;
@@ -582,6 +590,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   // 初始化资源
   Future<void> setDataSource(
     DataSource dataSource, {
+    AcceleratorSession? accelerator,
     bool isLive = false,
     bool autoplay = true,
     // 初始化播放位置
@@ -606,6 +615,9 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     bool autoFullScreenFlag = false,
   }) async {
     try {
+      _acceleratorBinding?.dispose();
+      _acceleratorBinding = null;
+      _acceleratorRecoveryPending = false;
       _processing = true;
       this.isLive = isLive;
       _videoType = videoType ?? VideoType.ugc;
@@ -636,8 +648,48 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       if (_playerCount == 0) {
         return;
       }
+      // PiliBoost Accelerator integration point: experimental video relay only.
+      final remoteSource = dataSource;
+      if (accelerator != null &&
+          !isLive &&
+          dataSource is NetworkSource &&
+          !onlyPlayAudio.value) {
+        await accelerator.startProxy(
+          create: (source, failure) => LocalStreamServer(
+            source: source,
+            headers: {
+              'user-agent': BrowserUa.pc,
+              'referer': HttpString.baseUrl,
+            },
+            clientFactory: PlaybackSourceAdapter.createClient,
+            onFailure: failure,
+          ),
+        );
+        final proxy = accelerator.proxy;
+        if (proxy != null && accelerator.enabled) {
+          dataSource = NetworkSource(
+            videoSource: proxy.uri.toString(),
+            audioSource: dataSource.audioSource,
+          );
+          this.dataSource = dataSource;
+        }
+      }
       // 配置Player 音轨、字幕等等
-      await _createVideoController(dataSource, seekTo, volume);
+      try {
+        await _createVideoController(dataSource, seekTo, volume);
+        if (accelerator?.bypassed == true &&
+            !identical(dataSource, remoteSource)) {
+          dataSource = remoteSource;
+          this.dataSource = dataSource;
+          await _createVideoController(dataSource, seekTo, volume);
+        }
+      } catch (_) {
+        if (identical(dataSource, remoteSource)) rethrow;
+        await accelerator?.restoreOriginal();
+        dataSource = remoteSource;
+        this.dataSource = dataSource;
+        await _createVideoController(dataSource, seekTo, volume);
+      }
 
       if (_playerCount == 0) {
         _removeListeners();
@@ -657,6 +709,32 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       }
 
       await _initializePlayer();
+      if (accelerator != null && !isLive && dataSource is NetworkSource) {
+        accelerator.onSwitch = (video, audio) =>
+            _switchAcceleratorSource(accelerator, video, audio);
+        _acceleratorBinding = AcceleratorBinding(accelerator, () {
+          final player = _videoPlayerController;
+          if (player == null || _processing || _acceleratorSwitching) return;
+          final native = player;
+          final bytesPerSecond =
+              double.tryParse(native.getProperty('cache-speed')) ?? 0;
+          unawaited(
+            accelerator.observe(
+              bufferAheadSeconds:
+                  (player.state.buffer - player.state.position).inMicroseconds /
+                  1e6,
+              // Audio stays direct; the video relay metric is reported separately.
+              throughputBps: accelerator.proxy != null && !accelerator.bypassed
+                  ? accelerator.proxy!.throughputBps
+                  : bytesPerSecond * 8,
+              playing:
+                  native.getProperty('pause') == 'no' &&
+                  !player.state.completed,
+              speed: player.state.rate,
+            ),
+          );
+        });
+      }
       onInit?.call();
     } catch (err, stackTrace) {
       dataStatus.value = DataStatus.error;
@@ -666,6 +744,89 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       }
     } finally {
       _processing = false;
+      if (!identical(_acceleratorBinding?.session, accelerator)) {
+        accelerator?.dispose();
+      }
+    }
+  }
+
+  Future<bool> _switchAcceleratorSource(
+    AcceleratorSession session,
+    String video,
+    String? audio,
+  ) async {
+    if (!identical(_acceleratorBinding?.session, session) ||
+        _processing ||
+        _acceleratorSwitching ||
+        isLive ||
+        dataSource is! NetworkSource) {
+      return false;
+    }
+    final player = _videoPlayerController;
+    if (player == null || player.current.isEmpty) return false;
+    final previous = dataSource;
+    if (previous.videoSource == video && previous.audioSource == audio) {
+      return true;
+    }
+    _acceleratorSwitching = true;
+    final generation = session.generation;
+    final position = player.state.position;
+    final rate = player.state.rate;
+    final subtitle = player.state.track.subtitle;
+    final audioTrack = player.state.track.audio;
+    final playing = player.getProperty('pause') == 'no';
+    final media = player.current.last;
+    try {
+      final uri = rewriteMediaSource(
+        media.uri,
+        previous.videoSource,
+        previous.audioSource,
+        video,
+        audio,
+      );
+      await player
+          .open(
+            media.copyWith(uri: uri, start: position),
+            play: playing,
+          )
+          .timeout(session.config.sourceSwitchTimeout);
+      if (!identical(_acceleratorBinding?.session, session) ||
+          generation != session.generation) {
+        throw StateError('Accelerator source transition invalidated');
+      }
+      await player.setRate(rate);
+      await player.setSubtitleTrack(subtitle);
+      await player.setAudioTrack(audioTrack);
+      if (!identical(_acceleratorBinding?.session, session) ||
+          generation != session.generation) {
+        throw StateError('Accelerator source transition invalidated');
+      }
+      dataSource = NetworkSource(videoSource: video, audioSource: audio);
+      return true;
+    } catch (_) {
+      // Reopen original media immediately; the session then bypasses itself.
+      if (identical(_acceleratorBinding?.session, session)) {
+        try {
+          await player
+              .open(
+                media.copyWith(
+                  start: generation == session.generation
+                      ? position
+                      : player.state.position,
+                ),
+                play: playing,
+              )
+              .timeout(session.config.sourceSwitchTimeout);
+        } catch (_) {}
+      }
+      return false;
+    } finally {
+      _acceleratorSwitching = false;
+      final recover = _acceleratorRecoveryPending;
+      _acceleratorRecoveryPending = false;
+      if (recover && identical(_acceleratorBinding?.session, session)) {
+        unawaited(session.restoreOriginal());
+      }
     }
   }
 
@@ -829,6 +990,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   Future<void>? refreshPlayer() {
+    if (_acceleratorSwitching) return null;
     if (dataSource is FileSource) {
       return null;
     }
@@ -984,6 +1146,21 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
           }
         })),
       stream.error.listen((String event) {
+        // PiliBoost Accelerator integration point: one recovery owner.
+        final accelerator = _acceleratorBinding?.session;
+        if (!isLive &&
+            accelerator != null &&
+            (accelerator.enabled || _acceleratorSwitching) &&
+            (event.startsWith('Failed to open http') ||
+                event.startsWith('Can not open external file http') ||
+                event.startsWith('tcp: ffurl_read returned '))) {
+          if (_acceleratorSwitching) {
+            _acceleratorRecoveryPending = true;
+          } else {
+            unawaited(accelerator.restoreOriginal());
+          }
+          return;
+        }
         if (dataSource is FileSource &&
             event.startsWith("Failed to open file")) {
           return;
@@ -1055,6 +1232,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   Future<void> seek(Duration position, {bool isSeek = false}) async {
+    _acceleratorBinding?.session.invalidate();
     if (isSeek) {
       /// 拖动进度条调节时，不等待第一帧，防止抖动
       await _videoPlayerController?.stream.buffer.first;
@@ -1547,6 +1725,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     }
 
     _playerCount = 0;
+    _acceleratorBinding?.dispose();
+    _acceleratorBinding = null;
     if (removeSafeArea) {
       showSystemBar();
     }

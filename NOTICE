@@ -1,0 +1,12 @@
+PiliBoost continues the GPL-3.0 license of PiliPlus.
+
+PiliBoost Accelerator inspiration and algorithm references:
+- realzza/bilibili-accelerator (MIT), Copyright (c) 2026 realzza
+  https://github.com/realzza/bilibili-accelerator
+- MrTangLuyao/Bilibili-thread-ripper (MIT),
+  Copyright (c) 2026 Bilibili-thread-ripper contributors
+  https://github.com/MrTangLuyao/Bilibili-thread-ripper
+
+The V1 Dart modules are independently implemented. No JavaScript runtime,
+userscript or browser player is bundled. Preserve the corresponding full MIT
+license notices if directly porting or substantially adapting source in future.

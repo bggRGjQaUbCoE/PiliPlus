@@ -23,10 +23,12 @@ class LiveRoomChatPanel extends StatelessWidget {
     super.key,
     required this.liveRoomController,
     required this.isPP,
+    this.onMention,
   });
 
   final LiveRoomController liveRoomController;
   final bool isPP;
+  final ValueChanged<DanmakuMsg>? onMention;
 
   bool get disableAutoScroll => liveRoomController.disableAutoScroll.value;
 
@@ -340,7 +342,7 @@ class LiveRoomChatPanel extends StatelessWidget {
         if (liveRoomController.isLogin) ...[
           PopupMenuItem(
             height: 38,
-            onTap: () => liveRoomController.onAtUser(item),
+            onTap: () => (onMention ?? liveRoomController.onAtUser)(item),
             child: const Text('@TA', style: TextStyle(fontSize: 13)),
           ),
           PopupMenuItem(

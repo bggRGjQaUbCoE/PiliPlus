@@ -79,19 +79,21 @@ class SuperChatItem {
 
   factory SuperChatItem.fromJson(Map<String, dynamic> json, int roomid) =>
       SuperChatItem(
-        id: safeToInt(json['id']) ?? Utils.random.nextInt(2147483647),
-        uid: safeToInt(json['uid'])!,
-        price: json['price'],
+        // Missing server IDs cannot be deduplicated or deleted reliably.
+        // The timeline rejects zero; random IDs are only for explicit demos.
+        id: safeToInt(json['id']) ?? 0,
+        uid: safeToInt(json['uid']) ?? 0,
+        price: safeToInt(json['price']) ?? 0,
         backgroundImage: nonNullOrEmptyString(json['background_image']),
         backgroundColor: json['background_color'] ?? '#EDF5FF',
         backgroundBottomColor: json['background_bottom_color'] ?? '#2A60B2',
         backgroundPriceColor: json['background_price_color'] ?? '#7497CD',
         messageFontColor: json['message_font_color'] ?? '#FFFFFF',
-        startSime: safeToInt(json['start_time'])!,
-        endTime: safeToInt(json['end_time'])!,
-        message: json['message'],
-        token: json['token'],
-        ts: safeToInt(json['ts'])!,
+        startSime: safeToInt(json['start_time']) ?? 0,
+        endTime: safeToInt(json['end_time']) ?? 0,
+        message: json['message']?.toString() ?? '',
+        token: json['token']?.toString() ?? '',
+        ts: safeToInt(json['ts']) ?? safeToInt(json['start_time']) ?? 0,
         userInfo: UserInfo.fromJson(json['user_info'] as Map<String, dynamic>),
         medalInfo: !GlobalData().showMedal || json['uinfo']?['medal'] == null
             ? null
@@ -114,26 +116,30 @@ class SuperChatItem {
     int? ts,
     UserInfo? userInfo,
     bool? expired,
+    bool? deleted,
     UinfoMedal? medalInfo,
   }) {
     return SuperChatItem(
-      id: id ?? this.id,
-      uid: uid ?? this.uid,
-      price: price ?? this.price,
-      backgroundColor: backgroundColor ?? this.backgroundColor,
-      backgroundBottomColor:
-          backgroundBottomColor ?? this.backgroundBottomColor,
-      backgroundPriceColor: backgroundPriceColor ?? this.backgroundPriceColor,
-      messageFontColor: messageFontColor ?? this.messageFontColor,
-      startSime: startSime ?? this.startSime,
-      endTime: endTime ?? this.endTime,
-      message: message ?? this.message,
-      token: token ?? this.token,
-      ts: ts ?? this.ts,
-      userInfo: userInfo ?? this.userInfo,
-      medalInfo: medalInfo ?? this.medalInfo,
-      roomid: roomid,
-    );
+        id: id ?? this.id,
+        uid: uid ?? this.uid,
+        price: price ?? this.price,
+        backgroundImage: backgroundImage,
+        backgroundColor: backgroundColor ?? this.backgroundColor,
+        backgroundBottomColor:
+            backgroundBottomColor ?? this.backgroundBottomColor,
+        backgroundPriceColor: backgroundPriceColor ?? this.backgroundPriceColor,
+        messageFontColor: messageFontColor ?? this.messageFontColor,
+        startSime: startSime ?? this.startSime,
+        endTime: endTime ?? this.endTime,
+        message: message ?? this.message,
+        token: token ?? this.token,
+        ts: ts ?? this.ts,
+        userInfo: userInfo ?? this.userInfo,
+        medalInfo: medalInfo ?? this.medalInfo,
+        roomid: roomid,
+      )
+      ..expired = expired ?? this.expired
+      ..deleted = deleted ?? this.deleted;
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{

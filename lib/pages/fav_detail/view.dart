@@ -13,11 +13,14 @@ import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/pages/fav_detail/controller.dart';
 import 'package:PiliPlus/pages/fav_detail/widget/fav_video_card.dart';
+import 'package:PiliPlus/pages/temporary_queue/batch_dialog.dart';
+import 'package:PiliPlus/services/temporary_queue_batch.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -33,6 +36,26 @@ class FavDetailPage extends StatefulWidget {
 class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
   late final FavDetailController _favDetailController;
   late String mediaId;
+
+  Future<void> _addAllToTemporaryQueue() async {
+    final count = _favDetailController.folderInfo.value.mediaCount;
+    if (count <= 0) {
+      SmartDialog.showToast('收藏列表为空');
+      return;
+    }
+    await showTemporaryQueueBatchDialog(
+      context,
+      title: '全部添加至临时播放列表',
+      work: (cancelled, onProgress) => TemporaryQueueBatch.addFavoriteFolder(
+        mediaId: _favDetailController.mediaId,
+        count: count,
+        order: _favDetailController.order.value,
+        reversePages: _favDetailController.pageDesc,
+        cancelled: cancelled,
+        onProgress: onProgress,
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -242,13 +265,18 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
           );
         },
       ),
-      if (_favDetailController.account.isLogin)
+      if (_favDetailController.account.isLogin || Pref.enableTemporaryQueue)
         PopupMenuButton(
           icon: const Icon(Icons.more_vert),
           itemBuilder: (context) {
             final isOwner = _favDetailController.isOwner;
             final folderInfo = _favDetailController.folderInfo.value;
             return [
+              if (Pref.enableTemporaryQueue)
+                PopupMenuItem(
+                  onTap: _addAllToTemporaryQueue,
+                  child: const Text('全部添加至临时播放列表'),
+                ),
               if (isOwner) ...[
                 PopupMenuItem(
                   onTap: _favDetailController.onSort,

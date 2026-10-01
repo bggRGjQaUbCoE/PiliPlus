@@ -341,7 +341,10 @@ class AudioController extends GetxController
           (e) => e.id <= cacheAudioQa,
           (a, b) => a.id > b.id ? a : b,
         );
-        _onOpenMedia(VideoUtils.getCdnUrl(audio.playUrls), volume: volume);
+        _onOpenMedia(
+          VideoUtils.getCdnUrl(audio.playUrls),
+          volume: volume,
+        );
       } else if (playInfo.hasPlayUrl()) {
         final playUrl = playInfo.playUrl;
         final durls = playUrl.durl;
@@ -350,7 +353,10 @@ class AudioController extends GetxController
         }
         final durl = durls.first;
         position.value = 0;
-        _onOpenMedia(VideoUtils.getCdnUrl(durl.playUrls), volume: volume);
+        _onOpenMedia(
+          VideoUtils.getCdnUrl(durl.playUrls),
+          volume: volume,
+        );
       }
     }
   }

@@ -6,9 +6,12 @@ import 'package:PiliPlus/models_new/sub/sub/list.dart';
 import 'package:PiliPlus/models_new/sub/sub_detail/media.dart';
 import 'package:PiliPlus/pages/subscription_detail/controller.dart';
 import 'package:PiliPlus/pages/subscription_detail/widget/sub_video_card.dart';
+import 'package:PiliPlus/pages/temporary_queue/batch_dialog.dart';
+import 'package:PiliPlus/services/temporary_queue_batch.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -136,6 +139,33 @@ class _SubDetailPageState extends State<SubDetailPage> with GridMixin {
     return SliverAppBar.medium(
       expandedHeight: kToolbarHeight + 132,
       pinned: true,
+      actions: [
+        if (Pref.enableTemporaryQueue)
+          PopupMenuButton<String>(
+            tooltip: '更多',
+            onSelected: (value) {
+              if (value != 'queue' ||
+                  info.mediaCount == null ||
+                  info.mediaCount! <= 0) {
+                return;
+              }
+              showTemporaryQueueBatchDialog(
+                context,
+                title: '全部添加至临时播放列表',
+                work: (cancelled, onProgress) =>
+                    TemporaryQueueBatch.addSubscription(
+                      seasonId: _subDetailController.id,
+                      count: info.mediaCount!,
+                      cancelled: cancelled,
+                      onProgress: onProgress,
+                    ),
+              );
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(value: 'queue', child: Text('全部添加至临时播放列表')),
+            ],
+          ),
+      ],
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

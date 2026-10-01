@@ -6,6 +6,8 @@ import 'dart:ui' as ui;
 
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/http/browser_ua.dart';
+import 'package:PiliPlus/http/cdn_playback_proxy.dart';
+import 'package:PiliPlus/http/cdn_origin_policy.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
@@ -33,6 +35,7 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/asset_utils.dart';
+import 'package:PiliPlus/utils/cdn_startup_trace.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/box_ext.dart';
@@ -61,6 +64,7 @@ import 'package:media_kit_video/media_kit_video.dart';
 import 'package:native_device_orientation/native_device_orientation.dart';
 import 'package:path/path.dart' as path;
 import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
+import 'package:synchronized/synchronized.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -69,10 +73,16 @@ typedef PlayCallback = Future<void>? Function();
 class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   Player? _videoPlayerController;
   VideoController? _videoController;
+  final _mediaSourceLock = Lock();
+  int _mediaSourceGeneration = 0;
+  CdnPlaybackProxy? _cdnPlaybackProxy;
+  CdnPlaybackProxy? _pendingCdnPlaybackProxy;
 
   static PlPlayerController? _instance;
 
   PlayerStatus playerStatus = .paused;
+  bool _hasStartedPlayback = false;
+  bool get hasStartedPlayback => _hasStartedPlayback;
 
   final Rx<DataStatus> dataStatus = Rx(.none);
 
@@ -573,6 +583,20 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       .._playerCount += 1;
   }
 
+  /// Keep the existing media session alive while its detail route is removed.
+  /// The mini-player owns a reference, not another Player or media source.
+  void retainForInAppMiniPlayer() => _playerCount += 1;
+
+  /// Transfer or release the mini-player's reference without resetting player
+  /// settings that a still-mounted detail page may be using.
+  void releaseFromInAppMiniPlayer() {
+    if (_playerCount > 1) {
+      _playerCount -= 1;
+    } else {
+      dispose();
+    }
+  }
+
   bool _processing = false;
   bool get processing => _processing;
 
@@ -604,7 +628,11 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     VoidCallback? onInit,
     Volume? volume,
     bool autoFullScreenFlag = false,
+    CdnStartupTrace? startupTrace,
   }) async {
+    final sourceGeneration = ++_mediaSourceGeneration;
+    _hasStartedPlayback = false;
+    startupTrace?.mark(CdnStartupStage.playerSourceQueued);
     try {
       _processing = true;
       this.isLive = isLive;
@@ -633,17 +661,24 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
         await pause(notify: false);
       }
 
-      if (_playerCount == 0) {
+      if (!_isCurrentMediaSource(sourceGeneration)) {
+        startupTrace?.mark(CdnStartupStage.cancelled);
         return;
       }
       // 配置Player 音轨、字幕等等
-      await _createVideoController(dataSource, seekTo, volume);
+      if (!await _createVideoController(
+        dataSource,
+        seekTo,
+        volume,
+        sourceGeneration,
+        startupTrace,
+      )) {
+        startupTrace?.mark(CdnStartupStage.cancelled);
+        return;
+      }
 
-      if (_playerCount == 0) {
-        _removeListeners();
-        _videoPlayerController?.dispose();
-        _videoPlayerController = null;
-        _videoController = null;
+      if (!_isCurrentMediaSource(sourceGeneration)) {
+        startupTrace?.mark(CdnStartupStage.cancelled);
         return;
       }
 
@@ -656,16 +691,21 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
         triggerFullScreen(status: true);
       }
 
-      await _initializePlayer();
-      onInit?.call();
+      await _initializePlayer(sourceGeneration, startupTrace);
+      if (_isCurrentMediaSource(sourceGeneration)) onInit?.call();
     } catch (err, stackTrace) {
-      dataStatus.value = DataStatus.error;
+      startupTrace?.mark(CdnStartupStage.sourceError);
+      if (_isCurrentMediaSource(sourceGeneration)) {
+        dataStatus.value = DataStatus.error;
+      }
       if (kDebugMode) {
         debugPrint(stackTrace.toString());
         debugPrint('plPlayer err:  $err');
       }
     } finally {
-      _processing = false;
+      if (sourceGeneration == _mediaSourceGeneration) {
+        _processing = false;
+      }
     }
   }
 
@@ -763,12 +803,30 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   late final buffer = Pref.initBuffer(_playbackSpeed.value);
   late final liveBuffer = Pref.initLiveBuffer();
 
-  // 配置播放器
-  Future<void> _createVideoController(
+  bool _isCurrentMediaSource(int generation) =>
+      _playerCount != 0 && generation == _mediaSourceGeneration;
+
+  Future<void> _closeCdnPlaybackProxy(CdnPlaybackProxy? proxy) async {
+    if (proxy == null) return;
+    try {
+      await proxy.close();
+    } catch (_) {
+      // Cleanup must not turn a successful source replacement into an error.
+      if (kDebugMode) debugPrint('CDN playback proxy cleanup failed');
+    }
+  }
+
+  // Serialize preparation so a superseded source cannot replace a newer one.
+  Future<bool> _createVideoController(
     DataSource dataSource,
     Duration? seekTo,
     Volume? volume,
-  ) async {
+    int sourceGeneration,
+    CdnStartupTrace? startupTrace,
+  ) => _mediaSourceLock.synchronized(() async {
+    if (!_isCurrentMediaSource(sourceGeneration)) return false;
+    startupTrace?.mark(CdnStartupStage.playerSourceStart);
+    final sourceIsLive = isLive;
     isBuffering.value = false;
     _heartDuration = 0;
     danmakuController?.clear();
@@ -777,72 +835,202 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
     if (player == null) {
       player = await _initPlayer();
+      startupTrace?.mark(CdnStartupStage.playerCreated);
       if (_playerCount == 0) {
         _removeListeners();
         player.dispose();
         player = null;
         _videoController = null;
-        return;
+        return false;
       }
       _videoPlayerController = player;
       if (isAnim && superResolutionType.value != .disable) {
         await setShader();
       }
+    } else {
+      startupTrace?.mark(CdnStartupStage.playerReused);
     }
+    if (!_isCurrentMediaSource(sourceGeneration)) return false;
 
     final Map<String, String> extras = {
       if (dataSource is FileSource)
         'cache': 'no'
-      else if (isLive)
+      else if (sourceIsLive)
         ...liveBuffer
       else
         ...buffer,
     };
 
-    String video = dataSource.videoSource;
-    if (dataSource.audioSource case final audio? when (audio.isNotEmpty)) {
-      if (onlyPlayAudio.value) {
-        video = audio;
-      } else {
-        // dely_open need provide length
-        video =
-            ('edl://'
-            '!no_chapters;'
-            // '!delay_open,media_type=video;'
-            '%${isFileSource ? utf8.encode(video).length : video.length}%$video;'
-            '!new_stream;!no_chapters;'
-            // '!delay_open,media_type=audio;'
-            '%${isFileSource ? utf8.encode(audio).length : audio.length}%$audio');
+    final parallelPlayback =
+        (Pref.cdnParallelLoading || Pref.cdnAutoSelect) &&
+        dataSource is NetworkSource &&
+        !sourceIsLive;
+    // Always bypass manual CDN rewriting while this feature is enabled,
+    // including direct playback when a system proxy prevents local proxying.
+    final directVideo = Pref.cdnAutoSelect && parallelPlayback
+        ? dataSource.originalVideoSource
+        : dataSource.videoSource;
+    final directAudio = Pref.cdnAutoSelect && parallelPlayback
+        ? dataSource.originalAudioSource
+        : dataSource.audioSource;
+    String video = directVideo;
+    String? audio = directAudio;
+    CdnPlaybackProxy? nextProxy;
+    if (parallelPlayback &&
+        !Pref.enableSystemProxy &&
+        (dataSource.originalVideoUrls.isNotEmpty ||
+            (audio != null && audio.isNotEmpty))) {
+      try {
+        nextProxy = await CdnPlaybackProxy.start(
+          concurrency: Pref.cdnAdaptive || !Pref.cdnParallelLoading
+              ? 8
+              : Pref.cdnParallelConnections,
+          durationSeconds: dataSource.durationSeconds?.toDouble(),
+          autoSelect: Pref.cdnAutoSelect,
+          adaptive: Pref.cdnAdaptive,
+          parallel: Pref.cdnParallelLoading,
+          originResolver: Pref.cdnAutoSelect
+              ? null
+              : (urls) => [CdnOrigin(urls.first)],
+          chunkSize: Pref.cdnParallelChunkSizeKiB * 1024,
+          trace: startupTrace,
+        );
+        startupTrace?.mark(CdnStartupStage.proxyStarted);
+        _pendingCdnPlaybackProxy = nextProxy;
+        if (!_isCurrentMediaSource(sourceGeneration)) {
+          await _closeCdnPlaybackProxy(nextProxy);
+          _pendingCdnPlaybackProxy = null;
+          return false;
+        }
+        const headers = {
+          'User-Agent': BrowserUa.pc,
+          'Referer': HttpString.baseUrl,
+        };
+        video = nextProxy.register(
+          video,
+          alternatives: Pref.cdnAutoSelect
+              ? dataSource.originalVideoUrls.skip(1)
+              : const [],
+          headers: headers,
+          track: CdnStartupTrack.video,
+        );
+        if (video != directVideo) {
+          startupTrace?.mark(
+            CdnStartupStage.proxyRegistered,
+            track: CdnStartupTrack.video,
+          );
+        }
+        if (audio != null && audio.isNotEmpty) {
+          audio = nextProxy.register(
+            audio,
+            alternatives: Pref.cdnAutoSelect
+                ? dataSource.originalAudioUrls.skip(1)
+                : const [],
+            headers: headers,
+            track: CdnStartupTrack.audio,
+          );
+          if (audio != directAudio) {
+            startupTrace?.mark(
+              CdnStartupStage.proxyRegistered,
+              track: CdnStartupTrack.audio,
+            );
+          }
+        }
+        if (video == directVideo && audio == directAudio) {
+          await _closeCdnPlaybackProxy(nextProxy);
+          _pendingCdnPlaybackProxy = null;
+          nextProxy = null;
+          startupTrace?.mark(CdnStartupStage.proxyBypassed);
+        }
+      } catch (_) {
+        await _closeCdnPlaybackProxy(nextProxy);
+        _pendingCdnPlaybackProxy = null;
+        nextProxy = null;
+        video = directVideo;
+        audio = directAudio;
+        startupTrace?.mark(CdnStartupStage.fallback);
+        if (kDebugMode) {
+          debugPrint('CDN playback proxy unavailable; using original URLs');
+        }
       }
-      audioFilterExtras(volume, map: extras);
+    } else if (parallelPlayback) {
+      startupTrace?.mark(CdnStartupStage.proxyBypassed);
     }
+    if (!_isCurrentMediaSource(sourceGeneration)) {
+      await _closeCdnPlaybackProxy(nextProxy);
+      _pendingCdnPlaybackProxy = null;
+      return false;
+    }
+    if (nextProxy != null) {
+      // This loadfile-local option lets geographic failover and identity checks
+      // finish before mpv's usual 5-second network timeout. It does not change
+      // direct playback's timeout on the next media source.
+      extras['network-timeout'] = '60';
+    }
+    try {
+      if (audio != null && audio.isNotEmpty) {
+        if (onlyPlayAudio.value) {
+          video = audio;
+        } else {
+          // dely_open need provide length
+          video =
+              ('edl://'
+              '!no_chapters;'
+              // '!delay_open,media_type=video;'
+              '%${dataSource is FileSource ? utf8.encode(video).length : video.length}%$video;'
+              '!new_stream;!no_chapters;'
+              // '!delay_open,media_type=audio;'
+              '%${dataSource is FileSource ? utf8.encode(audio).length : audio.length}%$audio');
+        }
+        audioFilterExtras(volume, map: extras);
+      }
 
-    assert(!isLive || seekTo == null);
-    await player.open(
-      Media(
-        video,
-        start: seekTo,
-        extras: extras.isEmpty ? null : extras,
-      ),
-      play: false,
-    );
-  }
+      assert(!sourceIsLive || seekTo == null);
+      startupTrace?.mark(CdnStartupStage.openStart);
+      await player.open(
+        Media(video, start: seekTo, extras: extras.isEmpty ? null : extras),
+        play: false,
+      );
+      startupTrace?.mark(CdnStartupStage.openReturned);
+    } catch (_) {
+      await _closeCdnPlaybackProxy(nextProxy);
+      _pendingCdnPlaybackProxy = null;
+      rethrow;
+    }
+    _pendingCdnPlaybackProxy = null;
+    if (_playerCount == 0 || !identical(_videoPlayerController, player)) {
+      await _closeCdnPlaybackProxy(nextProxy);
+      return false;
+    }
+    // Keep the old server alive until mpv has replaced its media source.
+    final previousProxy = _cdnPlaybackProxy;
+    _cdnPlaybackProxy = nextProxy;
+    await _closeCdnPlaybackProxy(previousProxy);
+    return _isCurrentMediaSource(sourceGeneration);
+  });
 
   Future<void>? refreshPlayer() {
     if (dataSource is FileSource) {
       return null;
     }
-    if (_videoPlayerController case final ctr? when (ctr.current.isNotEmpty)) {
-      var media = ctr.current.last;
-      if (!isLive) media = media.copyWith(start: ctr.state.position);
-      return ctr.open(media, play: true);
-    }
-    return null;
+    final sourceGeneration = _mediaSourceGeneration;
+    return _mediaSourceLock.synchronized(() async {
+      if (!_isCurrentMediaSource(sourceGeneration)) return;
+      if (_videoPlayerController case final ctr?
+          when (ctr.current.isNotEmpty)) {
+        var media = ctr.current.last;
+        if (!isLive) media = media.copyWith(start: ctr.state.position);
+        await ctr.open(media, play: true);
+      }
+    });
   }
 
   // 开始播放
-  Future<void> _initializePlayer() async {
-    if (_instance == null) return;
+  Future<void> _initializePlayer(
+    int sourceGeneration,
+    CdnStartupTrace? startupTrace,
+  ) async {
+    if (!_isCurrentMediaSource(sourceGeneration)) return;
     // 设置倍速
     if (_videoPlayerController != null) {
       final speed = isLive ? 1.0 : playbackSpeed;
@@ -850,10 +1038,17 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
         await setPlaybackSpeed(speed);
       }
     }
+    if (!_isCurrentMediaSource(sourceGeneration)) return;
     _initVideoFit();
 
     // 自动播放
     if (_autoPlay) {
+      startupTrace?.mark(CdnStartupStage.playRequested);
+      // The current media_kit callbacks do not provide per-source first video
+      // frame or first audible sample. In particular, stream.playing reports a
+      // command state and cannot be used as either playback milestone.
+      startupTrace?.mark(CdnStartupStage.firstFrameUnavailable);
+      startupTrace?.mark(CdnStartupStage.firstAudioUnavailable);
       playIfExists();
     }
   }
@@ -902,6 +1097,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       stream.playing.listen((bool playing) {
         if (playing) {
           playerStatus = .playing;
+          _hasStartedPlayback = true;
           _stopWakeLockTimer();
           _updatePlaybackState();
           WakelockPlus.enable();
@@ -996,16 +1192,25 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
           }
           return;
         }
+        final isCdnProxyOpenError =
+            (_cdnPlaybackProxy != null || _pendingCdnPlaybackProxy != null) &&
+            (event.startsWith('Failed to open http://127.0.0.1:') ||
+                event.startsWith(
+                  'Can not open external file http://127.0.0.1:',
+                ));
         if (event.startsWith("Failed to open https://") ||
             event.startsWith("Can not open external file https://") ||
+            isCdnProxyOpenError ||
             //tcp: ffurl_read returned 0xdfb9b0bb
             //tcp: ffurl_read returned 0xffffff99
             event.startsWith('tcp: ffurl_read returned ')) {
+          final sourceGeneration = _mediaSourceGeneration;
           EasyThrottle.throttle(
             'controllerStream.error.listen',
             const Duration(milliseconds: 10000),
             () {
               Timer(const Duration(milliseconds: 3000), () {
+                if (!_isCurrentMediaSource(sourceGeneration)) return;
                 // if (kDebugMode) {
                 //   debugPrint("isBuffering.value: ${isBuffering.value}");
                 // }
@@ -1547,6 +1752,13 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     }
 
     _playerCount = 0;
+    _hasStartedPlayback = false;
+    _mediaSourceGeneration += 1;
+    _processing = false;
+    _closeCdnPlaybackProxy(_cdnPlaybackProxy);
+    _closeCdnPlaybackProxy(_pendingCdnPlaybackProxy);
+    _cdnPlaybackProxy = null;
+    _pendingCdnPlaybackProxy = null;
     if (removeSafeArea) {
       showSystemBar();
     }

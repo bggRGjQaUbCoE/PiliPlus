@@ -28,6 +28,7 @@ import 'package:PiliPlus/pages/video/related/controller.dart';
 import 'package:PiliPlus/pages/video/reply/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/services/service_locator.dart';
+import 'package:PiliPlus/services/dynamic_unread_notifier.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
@@ -86,6 +87,8 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   // 获取视频简介&分p
   @override
   Future<void> queryVideoIntro() async {
+    // 视频可从推荐、搜索或动态进入；固定主账号并在详情成功后发送精确视频已读事件。
+    final readAccountMid = Accounts.main.mid;
     queryVideoTags();
     final res = await VideoHttp.videoIntro(bvid: bvid);
     if (res case Success(:final response)) {
@@ -113,6 +116,18 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
           ..isPageReversed = videoDetail.value.isPageReversed;
       }
       videoDetail.value = response;
+      if (!isClosed) {
+        DynamicUnreadNotifier.markContentRead(
+          DynamicReadEvent(
+            accountMid: readAccountMid,
+            viewedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+            mid: response.owner?.mid,
+            videoAid: response.aid,
+            videoBvid: response.bvid ?? bvid,
+            publishedAt: response.pubdate,
+          ),
+        );
+      }
       try {
         if (videoDetailCtr.cover.value.isEmpty ||
             (videoDetailCtr.videoUrl.isNullOrEmpty &&

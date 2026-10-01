@@ -7,21 +7,50 @@ import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/models_new/download/bili_download_media_file_info.dart';
+import 'package:PiliPlus/models_new/sponsor_block/segment_item.dart';
+import 'package:PiliPlus/models_new/sponsor_block/snapshot.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:collection/collection.dart';
+import 'package:dio/dio.dart';
 
 abstract final class DownloadHttp {
   static const String referer = "https://www.bilibili.com/";
   static const String userAgent = "Bilibili Freedoooooom/MarkII";
+
+  static Future<List<SegmentItemModel>> getPgcSkipSegments(
+    SponsorBlockTarget target,
+    CancelToken cancelToken,
+  ) async {
+    final isLogin = Accounts.get(AccountType.video).isLogin;
+    final result = await VideoHttp.videoUrl(
+      bvid: target.bvid,
+      cid: target.cid,
+      epid: target.epid,
+      seasonId: target.seasonId,
+      qn: VideoQuality.hdrVivid.code,
+      tryLook: !isLogin && Pref.p1080,
+      videoType: target.videoType == .pgc && !isLogin ? .ugc : target.videoType,
+      cancelToken: cancelToken,
+    );
+    return switch (result) {
+      Success(:final response) => response.clipInfoList ?? [],
+      Error(:final code) => throw SponsorBlockFetchException(
+        '获取片头片尾信息失败',
+        code: code,
+      ),
+      _ => throw const SponsorBlockFetchException('获取片头片尾信息失败'),
+    };
+  }
 
   static Future<BiliDownloadMediaInfo> getVideoUrl({
     required BiliDownloadEntryInfo entry,
     SourceInfo? source,
     PageInfo? pageData,
     EpInfo? ep,
+    void Function(List<SegmentItemModel>)? onSkipSegments,
   }) async {
     final isLogin = Accounts.get(AccountType.video).isLogin;
     final res = await VideoHttp.videoUrl(
@@ -39,6 +68,7 @@ abstract final class DownloadHttp {
       },
     );
     if (res case Success(:final response)) {
+      onSkipSegments?.call(response.clipInfoList ?? []);
       final dash = response.dash;
       if (dash != null) {
         final targetVideoQa = response.findAvailableVideoQuality(

@@ -6,7 +6,9 @@ import 'package:PiliPlus/http/sponsor_block.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
 import 'package:PiliPlus/models_new/sponsor_block/user_info.dart';
+import 'package:PiliPlus/pages/download/widgets/sponsor_block_update.dart';
 import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
+import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/accounts/account_manager/account_mgr.dart';
 import 'package:PiliPlus/utils/filtering_text.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -512,6 +514,33 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
           sliverDivider,
           SliverToBoxAdapter(
             child: _blockServerItem(theme, titleStyle, subTitleStyle),
+          ),
+          SliverToBoxAdapter(
+            child: SwitchListTile(
+              title: const Text('缓存视频时保存空降信息'),
+              subtitle: const Text('随视频保存社区标记或番剧片头片尾信息，使用对应的跳过设置。'),
+              value: Pref.cacheSponsorBlock,
+              onChanged: (value) async {
+                await setting.put(SettingBoxKey.cacheSponsorBlock, value);
+                if (mounted) setState(() {});
+              },
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: ListTile(
+              title: const Text('补齐已有缓存的空降信息'),
+              subtitle: const Text('处理当前缓存目录中的全部已完成视频'),
+              onTap: () async {
+                final service = Get.find<DownloadService>();
+                await service.waitForInitialization;
+                if (!context.mounted) return;
+                await showSponsorBlockUpdate(
+                  context,
+                  service,
+                  service.downloadList.toList(),
+                );
+              },
+            ),
           ),
           dividerL,
           SliverToBoxAdapter(child: _aboutItem(titleStyle, subTitleStyle)),

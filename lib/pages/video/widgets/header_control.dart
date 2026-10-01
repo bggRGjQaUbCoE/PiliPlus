@@ -1858,6 +1858,21 @@ class HeaderControlState extends State<HeaderControl>
                       : const SizedBox.shrink(),
                 ),
               ],
+              if (isFileSource)
+                SizedBox(
+                  width: btnWidth,
+                  height: btnHeight,
+                  child: IconButton(
+                    tooltip: '空降信息',
+                    style: btnStyle,
+                    onPressed: videoDetailCtr.showSBDetail,
+                    icon: const Icon(
+                      MdiIcons.advertisements,
+                      size: 19,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
               if (!isPortrait || isFullScreen || PlatformUtils.isDesktop) ...[
                 SizedBox(
                   width: btnWidth,

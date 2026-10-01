@@ -19,6 +19,16 @@ class SegmentItemModel {
     this.votes,
   });
 
+  Map<String, dynamic> toJson() => {
+    'cid': cid,
+    'category': category,
+    'actionType': actionType,
+    'segment': [for (final value in segment) value / 1000],
+    'UUID': uuid,
+    'videoDuration': videoDuration == null ? null : videoDuration! / 1000,
+    'votes': votes,
+  };
+
   factory SegmentItemModel.fromJson(Map<String, dynamic> json) =>
       SegmentItemModel(
         cid: json["cid"],

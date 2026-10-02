@@ -344,6 +344,7 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
           null,
           oid: controller.oid,
           replyType: controller.replyType,
+          mentionItem: controller.mentionItem,
         );
       } catch (_) {}
     },

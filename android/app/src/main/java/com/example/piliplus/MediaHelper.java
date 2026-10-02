@@ -17,34 +17,17 @@
 package com.example.piliplus;
 
 import android.app.PendingIntent;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.media.session.PlaybackState;
 import android.os.Build;
-import android.util.Log;
 import android.view.KeyEvent;
 
-import java.util.List;
-
 class MediaHelper {
-    private static final String TAG = "MediaButtonReceiver";
-
-    static PendingIntent buildMediaButtonPendingIntent(Context context, ComponentName mbrComponent, int action) {
-        if (mbrComponent == null) {
-            Log.w(TAG, "The component name of media button receiver should be provided.");
-            return null;
-        }
+    static PendingIntent buildMediaButtonPendingIntent(Context context, int action) {
         int keyCode = PlaybackStateCompat_toKeyCode(action);
-        if (keyCode == KeyEvent.KEYCODE_UNKNOWN) {
-            Log.w(TAG,
-                    "Cannot build a media button pending intent with the given action: " + action);
-            return null;
-        }
-        Intent intent = new Intent(Intent.ACTION_MEDIA_BUTTON);
-        intent.setComponent(mbrComponent);
+        Intent intent = new Intent(context, com.ryanheise.audioservice.MediaButtonReceiver.class);
+        intent.setAction(Intent.ACTION_MEDIA_BUTTON);
         intent.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_DOWN, keyCode));
         intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
         return PendingIntent.getBroadcast(context, keyCode, intent,
@@ -65,19 +48,4 @@ class MediaHelper {
         };
     }
 
-    static ComponentName getMediaButtonReceiverComponent(Context context) {
-        Intent queryIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
-        queryIntent.setPackage(context.getPackageName());
-        PackageManager pm = context.getPackageManager();
-        List<ResolveInfo> resolveInfos = pm.queryBroadcastReceivers(queryIntent, 0);
-        if (resolveInfos.size() == 1) {
-            ResolveInfo resolveInfo = resolveInfos.get(0);
-            return new ComponentName(resolveInfo.activityInfo.packageName,
-                    resolveInfo.activityInfo.name);
-        } else if (resolveInfos.size() > 1) {
-            Log.w(TAG, "More than one BroadcastReceiver that handles "
-                    + Intent.ACTION_MEDIA_BUTTON + " was found, returning null.");
-        }
-        return null;
-    }
 }

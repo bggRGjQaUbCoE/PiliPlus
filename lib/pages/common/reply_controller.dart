@@ -5,6 +5,7 @@ import 'package:PiliPlus/grpc/bilibili/pagination.pb.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/reply.dart';
 import 'package:PiliPlus/models/common/reply/reply_sort_type.dart';
+import 'package:PiliPlus/models_new/dynamic/dyn_mention/item.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/pages/video/reply_new/view.dart';
@@ -129,6 +130,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
     ReplyInfo? replyItem, {
     int? oid,
     int? replyType,
+    MentionItem? mentionItem,
   }) {
     if (loadingState.value case Error(:final errMsg, :final code)) {
       if (errMsg != null && (code == 12061 || code == 12002)) {
@@ -156,6 +158,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
                 parent: oid != null ? 0 : replyItem!.id.toInt(),
                 replyType: replyItem?.type.toInt() ?? replyType!,
                 replyItem: replyItem,
+                mentionItem: mentionItem,
                 items: savedReplies[key],
 
                 /// hd api deprecated

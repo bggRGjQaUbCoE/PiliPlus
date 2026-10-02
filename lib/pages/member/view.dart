@@ -147,6 +147,7 @@ class _MemberPageState extends State<MemberPage> {
                           SizedBox(
                             height: 45,
                             child: TabBar(
+                              labelPadding: .zero,
                               controller: _userController.tabController,
                               tabs: _userController.tabs,
                               onTap: _userController.onTapTab,

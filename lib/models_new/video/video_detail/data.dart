@@ -35,6 +35,12 @@ class VideoDetailData {
   String? redirectUrl;
   bool isPageReversed = false;
 
+  bool get hasSeason => ugcSeason != null;
+
+  bool get hasParts => pages != null && pages!.length > 1;
+
+  bool get hasSeasonOrParts => hasSeason || hasParts;
+
   VideoDetailData({
     this.bvid,
     this.aid,

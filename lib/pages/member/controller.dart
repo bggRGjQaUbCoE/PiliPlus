@@ -134,7 +134,17 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
             return item.param == data.defaultTab;
           });
         }
-        tabs = tab2!.map((item) => Tab(text: item.title ?? '')).toList();
+        tabs = tab2!
+            .map(
+              (item) => Tab(
+                child: Text(
+                  item.title ?? '',
+                  softWrap: false,
+                  overflow: .fade,
+                ),
+              ),
+            )
+            .toList();
         tabController?.dispose();
         tabController = TabController(
           vsync: this,

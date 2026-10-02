@@ -18,7 +18,6 @@ class SearchEsportsItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = ColorScheme.of(context);
-    final configInfo = item.configInfo;
     final contest = item.contest.first;
 
     Widget buildTeamWidget(EsportsTeam team) {
@@ -104,10 +103,11 @@ class SearchEsportsItem extends StatelessWidget {
           child: Column(
             mainAxisSize: .min,
             children: [
-              Text(
-                configInfo.esportTitle,
-                style: const TextStyle(fontWeight: .bold, fontSize: 16),
-              ),
+              if (contest.title != null)
+                Text(
+                  contest.title!,
+                  style: const TextStyle(fontWeight: .bold, fontSize: 16),
+                ),
               Padding(
                 padding: const .only(top: 4),
                 child: Text.rich(
@@ -115,7 +115,10 @@ class SearchEsportsItem extends StatelessWidget {
                     children: [
                       if (contest.gameStage != null)
                         TextSpan(text: contest.gameStage),
-                      if (contest.contestStatus == 1 && contest.stime != null)
+                      if (contest.contestStatus == 3)
+                        const TextSpan(text: '  已结束')
+                      else if (contest.contestStatus == 1 &&
+                          contest.stime != null)
                         TextSpan(
                           text: '  ${DateFormatUtils.format(contest.stime)}',
                         ),
@@ -136,7 +139,7 @@ class SearchEsportsItem extends StatelessWidget {
                   Text(
                     contest.contestStatus == 1
                         ? 'VS'
-                        : '${contest.homeScore} : ${contest.awayScore}',
+                        : '${contest.homeScore ?? 0} : ${contest.awayScore ?? 0}',
                     style: const TextStyle(
                       fontSize: 25,
                       fontWeight: .bold,

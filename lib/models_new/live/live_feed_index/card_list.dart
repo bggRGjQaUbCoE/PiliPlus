@@ -1,10 +1,10 @@
 import 'package:PiliPlus/models_new/live/live_feed_index/card_data.dart';
 
 class LiveCardList {
-  String? cardType;
-  CardData? cardData;
+  final String? cardType;
+  final CardData? cardData;
 
-  LiveCardList({this.cardType, this.cardData});
+  const LiveCardList({this.cardType, this.cardData});
 
   factory LiveCardList.fromJson(Map<String, dynamic> json) => LiveCardList(
     cardType: json['card_type'] as String?,
@@ -12,4 +12,6 @@ class LiveCardList {
         ? null
         : CardData.fromJson(json['card_data'] as Map<String, dynamic>),
   );
+
+  static const kAreaEntrance = LiveCardList(cardData: CardData.kAreaEntrance);
 }

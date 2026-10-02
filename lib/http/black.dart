@@ -10,7 +10,7 @@ abstract final class BlackHttp {
     int ps = 50,
   }) async {
     final res = await Request().get(
-      Api.blackLst,
+      Api.blackList,
       queryParameters: {
         'pn': pn,
         'ps': ps,

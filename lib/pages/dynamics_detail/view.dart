@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:PiliPlus/common/style.dart';
@@ -247,7 +248,7 @@ class _DynamicDetailPageState
         repostDynId: item.orig?.idStr,
       ),
       onSuccess: () {
-        Future.delayed(
+        Timer(
           const Duration(milliseconds: 500),
           () async {
             if (!mounted) return;
@@ -537,7 +538,8 @@ class _DynamicDetailPageState
       );
     }
 
-    final moduleStat = controller.dynItem.modules.moduleStat;
+    final dynItem = controller.dynItem;
+    final moduleStat = dynItem.modules.moduleStat;
     return Padding(
       padding: .only(left: padding.left, right: padding.right),
       child: Column(
@@ -576,7 +578,7 @@ class _DynamicDetailPageState
                           isScrollControlled: true,
                           useSafeArea: true,
                           builder: (context) => RepostPanel(
-                            item: controller.dynItem,
+                            item: dynItem,
                             onSuccess: () {
                               if (forward != null) {
                                 int count = forward.count ?? 0;
@@ -586,6 +588,12 @@ class _DynamicDetailPageState
                                 }
                               }
                             },
+                            replyInfo: (
+                              oid: controller.oid,
+                              replyType: controller.replyType,
+                            ),
+                            mentionItem:
+                                dynItem.modules.moduleAuthor?.mentionItem,
                           ),
                         ),
                       );
@@ -619,7 +627,7 @@ class _DynamicDetailPageState
                         text: '点赞',
                         stat: moduleStat?.like,
                         onPressed: (iconColor) => RequestUtils.onLikeDynamic(
-                          controller.dynItem,
+                          dynItem,
                           iconColor == primary,
                           () {
                             if (context.mounted) {

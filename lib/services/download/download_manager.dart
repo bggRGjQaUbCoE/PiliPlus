@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
+import 'package:PiliPlus/services/download/download_resume.dart';
 import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:dio/dio.dart';
@@ -39,13 +40,11 @@ class DownloadManager {
       received = 0;
     }
 
-    final sink = file.openWrite(
-      mode: received == 0 ? FileMode.writeOnly : FileMode.writeOnlyAppend,
-    );
+    IOSink? sink;
 
     Future<void> onError(Object e, {bool delete = false}) async {
       try {
-        await sink.close();
+        await sink?.close();
       } catch (_) {}
       if (_status == DownloadStatus.downloading) {
         _status = DownloadStatus.failDownload;
@@ -56,32 +55,74 @@ class DownloadManager {
       onDone(e);
     }
 
-    Response<ResponseBody> response;
+    Future<Response<ResponseBody>> request([int? rangeStart]) =>
+        Request.http11Dio.get<ResponseBody>(
+          url.http2https,
+          options: Options(
+            headers: {
+              if (rangeStart != null) 'range': 'bytes=$rangeStart-',
+            },
+            responseType: ResponseType.stream,
+            validateStatus: (status) =>
+                status == 200 || status == 206 || status == 416,
+          ),
+          cancelToken: _cancelToken,
+        );
+
     try {
-      response = await Request.http11Dio.get<ResponseBody>(
-        url.http2https,
-        options: Options(
-          headers: {'range': 'bytes=$received-'},
-          responseType: ResponseType.stream,
-          validateStatus: (status) =>
-              status != null &&
-              (status == 416 || (status >= 200 && status < 300)),
-        ),
-        cancelToken: _cancelToken,
+      var response = await request(received);
+      var data = response.data;
+      if (data == null) {
+        throw StateError('Download response has no body');
+      }
+      var plan = DownloadResumePolicy.fromResponse(
+        statusCode: response.statusCode!,
+        localLength: received,
+        contentLength: data.contentLength,
+        contentRange: response.headers.value('content-range'),
       );
-    } on DioException catch (e) {
-      await onError(e, delete: true);
-      return;
-    }
-    final data = response.data!;
-    final contentLength = data.contentLength + received;
 
-    if (received == 0) {
-      onReceiveProgress?.call(0, contentLength);
-    }
+      if (plan.mode == DownloadWriteMode.retryWithoutRange) {
+        await data.stream.drain<void>();
+        response = await request();
+        data = response.data;
+        if (data == null) {
+          throw StateError('Download retry response has no body');
+        }
+        plan = DownloadResumePolicy.fromResponse(
+          statusCode: response.statusCode!,
+          localLength: 0,
+          contentLength: data.contentLength,
+          contentRange: response.headers.value('content-range'),
+        );
+        if (plan.mode == DownloadWriteMode.retryWithoutRange) {
+          throw StateError('Server rejected a full download request');
+        }
+      }
 
-    int? last;
-    try {
+      if (plan.mode == DownloadWriteMode.complete) {
+        await data.stream.drain<void>();
+        plan.validateCompletedLength(received);
+        onReceiveProgress?.call(received, plan.expectedLength ?? 0);
+        _status = DownloadStatus.completed;
+        onDone();
+        return;
+      }
+
+      if (plan.mode == DownloadWriteMode.overwrite) {
+        received = 0;
+      }
+      sink = file.openWrite(
+        mode: plan.mode == DownloadWriteMode.append
+            ? FileMode.writeOnlyAppend
+            : FileMode.writeOnly,
+      );
+      final contentLength = plan.expectedLength ?? 0;
+      if (received == 0) {
+        onReceiveProgress?.call(0, contentLength);
+      }
+
+      int? last;
       await for (final chunk in data.stream) {
         sink.add(chunk);
         received += chunk.length;
@@ -92,10 +133,13 @@ class DownloadManager {
         }
       }
       await sink.close();
+      sink = null;
+      plan.validateCompletedLength(received);
+      onReceiveProgress?.call(received, contentLength);
       _status = DownloadStatus.completed;
       onDone();
     } catch (e) {
-      await onError(e);
+      await onError(e, delete: e is FormatException);
       return;
     }
   }

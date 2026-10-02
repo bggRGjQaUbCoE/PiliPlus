@@ -54,6 +54,11 @@ class _SettingPageState extends State<SettingPage> {
       icon: Icon(Icons.explore_outlined),
     ),
     _SettingsModel(
+      type: SettingType.dynamicsSetting,
+      subtitle: '关键词过滤、屏蔽用户、带货动态屏蔽',
+      icon: Icon(Icons.dynamic_feed_outlined),
+    ),
+    _SettingsModel(
       type: SettingType.videoSetting,
       subtitle: '画质、音质、解码、缓冲、音频输出等',
       icon: Icon(Icons.video_settings_outlined),
@@ -70,7 +75,7 @@ class _SettingPageState extends State<SettingPage> {
     ),
     _SettingsModel(
       type: SettingType.extraSetting,
-      subtitle: '震动、搜索、收藏、ai、评论、动态、代理、更新检查等',
+      subtitle: '震动、搜索、收藏、ai、评论、代理、更新检查等',
       icon: Icon(Icons.extension_outlined),
     ),
     _SettingsModel(
@@ -116,6 +121,7 @@ class _SettingPageState extends State<SettingPage> {
                     child: switch (_type) {
                       .privacySetting ||
                       .recommendSetting ||
+                      .dynamicsSetting ||
                       .videoSetting ||
                       .playSetting ||
                       .styleSetting ||
@@ -147,6 +153,7 @@ class _SettingPageState extends State<SettingPage> {
         () => switch (type) {
           .privacySetting ||
           .recommendSetting ||
+          .dynamicsSetting ||
           .videoSetting ||
           .playSetting ||
           .styleSetting ||

@@ -6,6 +6,7 @@
 #endif
 
 #include "flutter/generated_plugin_registrant.h"
+#include "plugins/linux_webview_plugin.h"
 
 struct _MyApplication {
   GtkApplication parent_instance;
@@ -45,7 +46,7 @@ static void my_application_activate(GApplication *application) {
 
   const gboolean use_header_bar = [window]() -> gboolean {
     if (g_file_test(g_build_filename(g_get_user_data_dir(),
-                                     "com.example.piliplus", "use_ssd", NULL),
+                                     "com.example.pilinara", "use_ssd", NULL),
                     G_FILE_TEST_EXISTS))
       return FALSE;
 
@@ -64,11 +65,11 @@ static void my_application_activate(GApplication *application) {
   if (use_header_bar) {
     GtkHeaderBar *header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
     gtk_widget_show(GTK_WIDGET(header_bar));
-    gtk_header_bar_set_title(header_bar, "piliplus");
+    gtk_header_bar_set_title(header_bar, "pilinara");
     gtk_header_bar_set_show_close_button(header_bar, TRUE);
     gtk_window_set_titlebar(window, GTK_WIDGET(header_bar));
   } else {
-    gtk_window_set_title(window, "piliplus");
+    gtk_window_set_title(window, "pilinara");
   }
 
   gtk_window_set_default_size(window, 1280, 720);
@@ -86,7 +87,11 @@ static void my_application_activate(GApplication *application) {
   gdk_rgba_parse(&background_color, "#000000");
   fl_view_set_background_color(view, &background_color);
   gtk_widget_show(GTK_WIDGET(view));
-  gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(view));
+
+  GtkWidget* overlay = gtk_overlay_new();
+  gtk_widget_show(overlay);
+  gtk_container_add(GTK_CONTAINER(window), overlay);
+  gtk_container_add(GTK_CONTAINER(overlay), GTK_WIDGET(view));
 
   // Show the window when Flutter renders.
   // Requires the view to be realized so we can start rendering.
@@ -95,6 +100,7 @@ static void my_application_activate(GApplication *application) {
   gtk_widget_realize(GTK_WIDGET(view));
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
+  LinuxWebviewPluginRegister(view, GTK_OVERLAY(overlay));
 
   gtk_widget_grab_focus(GTK_WIDGET(view));
 }

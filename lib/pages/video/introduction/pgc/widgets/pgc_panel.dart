@@ -29,7 +29,8 @@ class PgcPanel extends StatefulWidget {
 
   final List<EpisodeItem> pages;
   final int? cid;
-  final ValueChanged<BaseEpisodeItem> onChangeEpisode;
+  final Future<bool> Function(BaseEpisodeItem episode, {bool manual})
+  onChangeEpisode;
   final Function showEpisodes;
   final String heroTag;
   final NewEp? newEp;
@@ -168,7 +169,7 @@ class _PgcPanelState extends State<PgcPanel> {
             if (item.badge == '会员' && Accounts.mainEqVideo && vipStatus) {
               SmartDialog.showToast('需要大会员');
             }
-            widget.onChangeEpisode(item);
+            widget.onChangeEpisode(item, manual: true);
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),

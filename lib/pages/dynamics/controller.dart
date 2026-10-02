@@ -95,18 +95,30 @@ class DynamicsController
 
   @override
   Future<void> onRefresh() {
-    final controller = this.controller;
-    if (controller != null) {
-      singleRefresh();
-      return controller.onRefresh();
-    }
-    return singleRefresh();
+    return _showRefreshFor(controller);
   }
 
   @override
-  void animateToTop() {
-    controller?.animateToTop();
-    scrollController.animToTop();
+  Future<void> showRefresh() =>
+      _showRefreshFor(controller);
+
+  Future<void> _showRefreshFor(DynamicsTabController? ctr) {
+    final refreshState = ctr?.refreshKey.currentState;
+    if (refreshState != null) {
+      return refreshState.show();
+    }
+    return Future.wait([
+      singleRefresh(),
+      if (ctr case final tabCtr?) tabCtr.onRefresh(),
+    ]);
+  }
+
+  @override
+  Future<void> animateToTop() {
+    return Future.wait([
+      if (controller case final ctr?) ctr.animateToTop(),
+      scrollController.animToTop(),
+    ]);
   }
 
   @override
@@ -129,6 +141,27 @@ class DynamicsController
     } else {
       super.toTopOrRefresh();
     }
+  }
+
+  @override
+  void toTopAndRefresh() {
+    EasyThrottle.throttle(
+      topAndRefreshThrottleKey,
+      const Duration(milliseconds: 500),
+      () async {
+        final ctr = controller;
+        final shouldScrollChild =
+            ctr?.scrollController.hasClients == true &&
+            ctr!.scrollController.position.pixels != 0;
+        final shouldScrollParent =
+            scrollController.hasClients &&
+            scrollController.position.pixels != 0;
+        if (shouldScrollChild || shouldScrollParent) {
+          await animateToTop();
+        }
+        await _showRefreshFor(ctr);
+      },
+    );
   }
 
   @override

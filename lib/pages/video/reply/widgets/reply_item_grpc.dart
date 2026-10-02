@@ -24,6 +24,7 @@ import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/pages/member/widget/medal_widget.dart';
 import 'package:PiliPlus/pages/save_panel/view.dart';
+import 'package:PiliPlus/pages/audio/controller.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/zan_grpc.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -179,7 +180,7 @@ class ReplyItemGrpc extends StatelessWidget {
                   children: [
                     Flexible(
                       child: Text(
-                        member.name,
+                        remarkedName(member.mid.toInt(), member.name),
                         maxLines: 1,
                         overflow: .ellipsis,
                         style: TextStyle(
@@ -630,7 +631,10 @@ class ReplyItemGrpc extends StatelessWidget {
                       TextSpan(
                         children: [
                           TextSpan(
-                            text: childReply.member.name,
+                            text: remarkedName(
+                              childReply.member.mid.toInt(),
+                              childReply.member.name,
+                            ),
                             style: TextStyle(color: colorScheme.primary),
                             recognizer: NoDeadlineTapGestureRecognizer()
                               ..onTap = () {
@@ -874,15 +878,26 @@ class ReplyItemGrpc extends StatelessWidget {
         } else if (_timeRegExp.hasMatch(matchStr)) {
           matchStr = matchStr.replaceAll('：', ':');
           bool isValid = false;
+          final heroTag = getTag?.call() ?? Get.arguments?['heroTag'];
+          if (kDebugMode) {
+            debugPrint('Validating timestamp: $matchStr with tag: $heroTag');
+          }
           try {
-            final ctr = Get.find<VideoDetailController>(
-              tag: getTag?.call() ?? Get.arguments['heroTag'],
-            );
+            final ctr = Get.find<AudioController>(tag: heroTag);
             isValid =
                 DurationUtils.parseDuration(matchStr) * 1000 <=
-                ctr.data.timeLength!;
-          } catch (e) {
-            if (kDebugMode) debugPrint('failed to validate: $e');
+                ctr.duration.value * 1000;
+            if (kDebugMode) debugPrint('Found AudioController, isValid: $isValid');
+          } catch (_) {
+            try {
+              final ctr = Get.find<VideoDetailController>(tag: heroTag);
+              isValid =
+                  DurationUtils.parseDuration(matchStr) * 1000 <=
+                  ctr.data.timeLength!;
+              if (kDebugMode) debugPrint('Found VideoDetailController, isValid: $isValid');
+            } catch (e) {
+              if (kDebugMode) debugPrint('No controller found for tag: $heroTag, error: $e');
+            }
           }
           spanChildren.add(
             TextSpan(
@@ -893,17 +908,33 @@ class ReplyItemGrpc extends StatelessWidget {
                       ..onTap = () {
                         // 跳转到指定位置
                         try {
-                          SmartDialog.showToast('跳转至：$matchStr');
-                          Get.find<VideoDetailController>(
-                            tag: Get.arguments['heroTag'],
-                          ).plPlayerController.seekTo(
-                            Duration(
-                              seconds: DurationUtils.parseDuration(matchStr),
-                            ),
-                            isSeek: false,
+                          final heroTag =
+                              getTag?.call() ?? Get.arguments?['heroTag'];
+                          final duration = Duration(
+                            seconds: DurationUtils.parseDuration(matchStr),
                           );
+                          SmartDialog.showToast('跳转至：$matchStr');
+                          if (kDebugMode) {
+                            debugPrint('Seeking to $duration with tag: $heroTag');
+                          }
+                          try {
+                            final ctr = Get.find<AudioController>(tag: heroTag);
+                            if (kDebugMode) debugPrint('Seeking AudioController');
+                            ctr.seekTo(
+                              duration,
+                              isSeek: false,
+                            );
+                          } catch (_) {
+                            final ctr = Get.find<VideoDetailController>(tag: heroTag);
+                            if (kDebugMode) debugPrint('Seeking VideoDetailController');
+                            ctr.plPlayerController.seekTo(
+                              duration,
+                              isSeek: false,
+                            );
+                          }
                         } catch (e) {
                           SmartDialog.showToast('跳转失败: $e');
+                          if (kDebugMode) debugPrint('Seek error: $e');
                         }
                       })
                   : null,
@@ -1179,6 +1210,23 @@ class ReplyItemGrpc extends StatelessWidget {
               minLeadingWidth: 0,
               leading: Icon(Icons.error_outline, color: errorColor, size: 19),
               title: Text('举报', style: style.copyWith(color: errorColor)),
+            ),
+          if (item.member.mid != Int64.ZERO)
+            ListTile(
+              onTap: () {
+                final mid = item.member.mid.toInt();
+                final rawName = item.member.name.trim();
+                final name = rawName.isEmpty ? 'UID:$mid' : rawName;
+                final mids = Map<int, String>.from(Pref.replyBlockedMids);
+                mids[mid] = name;
+                Pref.replyBlockedMids = mids;
+                ReplyGrpc.replyBlockedMids = mids;
+                Get.back();
+                SmartDialog.showToast('已屏蔽 $name');
+              },
+              minLeadingWidth: 0,
+              leading: const Icon(Icons.person_off_outlined, size: 19),
+              title: Text('屏蔽用户', style: style),
             ),
           if (replyLevel == 1 && !isSubReply && ownerMid == upMid)
             ListTile(

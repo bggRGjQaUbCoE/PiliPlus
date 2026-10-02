@@ -95,9 +95,24 @@ abstract final class ReplyUtils {
 
     // CommAntifraud
     if (!isManual) {
-      await Future.delayed(const Duration(seconds: 8));
+      await Future.pause(const Duration(seconds: 8));
     }
-    void showReplyCheckResult(String message, {bool isBan = false}) {
+    void showReplyCheckResult(
+      String message, {
+      bool isBan = false,
+      bool isWarning = false,
+    }) {
+      if (!isBan) {
+        if (isWarning) {
+          SmartDialog.showNotify(
+            msg: message,
+            notifyType: .warning,
+          );
+        } else {
+          SmartDialog.showToast('评论检查通过：无账号状态下可见');
+        }
+        return;
+      }
       showDialog(
         context: Get.context!,
         barrierDismissible: isManual,
@@ -238,6 +253,7 @@ https://api.bilibili.com/x/v2/reply/reply?oid=$oid&pn=1&ps=20&root=$id&type=$typ
 获取你的评论，疑似评论区被戒严或者这是你的视频。
 
 你的评论：$message''',
+                isWarning: !isManual,
               );
             }
           }

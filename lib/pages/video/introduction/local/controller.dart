@@ -1,7 +1,9 @@
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
+import 'package:PiliPlus/models_new/download/download_collection.dart';
 import 'package:PiliPlus/models_new/video/video_detail/stat_detail.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
-import 'package:PiliPlus/pages/download/controller.dart';
+import 'package:PiliPlus/services/download/download_collection_service.dart';
+import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -40,10 +42,13 @@ class LocalIntroController extends CommonIntroController {
 
   late final Set<String> aidSet = {};
 
+  // 是否正在进入应用内小窗
+  bool isEnteringPip = false;
+
   @override
   void onClose() {
+    if (isEnteringPip) return;
     aidSet.clear();
-    videoPlayerServiceHandler?.onVideoDetailDispose(heroTag);
     super.onClose();
   }
 
@@ -51,24 +56,33 @@ class LocalIntroController extends CommonIntroController {
   void onInit() {
     super.onInit();
     videoDetail.value.title = videoDetailCtr.args['title'];
-    final controller = Get.find<DownloadPageController>();
-    final list = <BiliDownloadEntryInfo>[];
-    for (final e in controller.pages) {
-      final items = e.entries..sort((a, b) => a.sortKey.compareTo(b.sortKey));
-      final completed = items.where((e) => e.isCompleted);
-      list.addAllIf(completed.isNotEmpty, completed);
-      if (completed.length == 1) {
-        aidSet.add(e.pageId);
-      }
+    final downloadService = Get.find<DownloadService>();
+    final collectionService = Get.find<DownloadCollectionService>();
+    final playContext = DownloadVideoPlayContext.fromArguments(
+      videoDetailCtr.args,
+    );
+    final list = switch (playContext?.scope) {
+      DownloadPlaylistScope.folder => collectionService.resolveFolderEntries(
+        playContext!.folderId!,
+        downloadService.downloadList,
+      ),
+      DownloadPlaylistScope.all => collectionService.resolveAllEntries(
+        downloadService.downloadList,
+      ),
+      null => List<BiliDownloadEntryInfo>.from(downloadService.downloadList)
+        ..sort((a, b) => b.timeUpdateStamp.compareTo(a.timeUpdateStamp)),
+    };
+    for (final entry in list) {
+      aidSet.add(entry.pageId);
     }
     this.list.value = list;
     final currCid = videoDetailCtr.cid.value;
     final index = list.indexWhere((e) => e.cid == currCid);
-    this.index.value = index;
-    if (PlatformUtils.isMobile) {
-      onVideoDetailChange(list[index]);
+    this.index.value = index == -1 ? 0 : index;
+    if (list.isNotEmpty && PlatformUtils.isMobile) {
+      onVideoDetailChange(list[this.index.value]);
     }
-    if (index != 0) {
+    if (this.index.value != 0) {
       SchedulerBinding.instance.addPostFrameCallback((_) {
         try {
           final state = videoDetailCtr.scrollKey.currentState;
@@ -92,7 +106,7 @@ class LocalIntroController extends CommonIntroController {
   final list = RxList<BiliDownloadEntryInfo>();
 
   @override
-  bool nextPlay() {
+  bool nextPlay({bool manual = false}) {
     final next = index.value + 1;
     if (next < list.length) {
       playIndex(next);
@@ -114,7 +128,7 @@ class LocalIntroController extends CommonIntroController {
   }
 
   @override
-  bool prevPlay() {
+  bool prevPlay({bool manual = false}) {
     final prev = index.value - 1;
     if (prev >= 0) {
       playIndex(prev);

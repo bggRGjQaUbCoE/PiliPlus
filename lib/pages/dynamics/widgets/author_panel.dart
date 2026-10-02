@@ -14,6 +14,7 @@ import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/controller.dart';
 import 'package:PiliPlus/pages/save_panel/view.dart';
+import 'package:PiliPlus/pages/setting/dynamics_setting.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/color_utils.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
@@ -21,9 +22,12 @@ import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
+import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/user_whitelist.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -104,18 +108,34 @@ class AuthorPanel extends StatelessWidget {
         child: Column(
           crossAxisAlignment: .start,
           children: [
-            Text(
-              moduleAuthor.name!,
+            Text.rich(
               maxLines: 1,
               overflow: .ellipsis,
-              style: TextStyle(
-                color:
-                    moduleAuthor.vip != null &&
-                        moduleAuthor.vip!.status > 0 &&
-                        moduleAuthor.vip!.type == 2
-                    ? theme.colorScheme.vipColor
-                    : theme.colorScheme.onSurface,
-                fontSize: theme.textTheme.titleSmall!.fontSize,
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: remarkedName(moduleAuthor.mid, moduleAuthor.name!),
+                    style: TextStyle(
+                      color:
+                          moduleAuthor.vip != null &&
+                              moduleAuthor.vip!.status > 0 &&
+                              moduleAuthor.vip!.type == 2
+                          ? theme.colorScheme.vipColor
+                          : theme.colorScheme.onSurface,
+                      fontSize: theme.textTheme.titleSmall!.fontSize,
+                    ),
+                  ),
+                  if (!GlobalData().remarkReplaceName &&
+                      remarkOf(moduleAuthor.mid) != null)
+                    TextSpan(
+                      text: '（${remarkOf(moduleAuthor.mid)}）',
+                      style: TextStyle(
+                        color: theme.colorScheme.primary,
+                        fontSize:
+                            (theme.textTheme.titleSmall!.fontSize ?? 14) - 1,
+                      ),
+                    ),
+                ],
               ),
             ),
             ?pubTs,
@@ -388,6 +408,65 @@ class AuthorPanel extends StatelessWidget {
                 },
                 minLeadingWidth: 0,
               ),
+              ListTile(
+                title: Text(
+                  '永久屏蔽：${moduleAuthor.name}',
+                  style: theme.textTheme.titleSmall,
+                ),
+                leading: const Icon(Icons.block_outlined, size: 19),
+                onTap: () {
+                  Get.back();
+                  onBlock?.call();
+                  try {
+                    final mid = moduleAuthor.mid!;
+                    final blockedMids = Pref.dynamicsBlockedMids;
+                    blockedMids.add(mid);
+                    Pref.dynamicsBlockedMids = blockedMids;
+                    GlobalData().dynamicsBlockedMids = blockedMids;
+                    DynamicsDataModel.dynamicsBlockedMids = blockedMids;
+                    SmartDialog.showToast(
+                      '已永久屏蔽${moduleAuthor.name}(${mid})，可在动态流设置中管理',
+                    );
+                  } catch (_) {}
+                },
+                minLeadingWidth: 0,
+              ),
+              ListTile(
+                title: Text(
+                  '关键词屏蔽设置',
+                  style: theme.textTheme.titleSmall,
+                ),
+                leading: const Icon(Icons.filter_alt_outlined, size: 19),
+                onTap: () {
+                  Get.back();
+                  Get.to(
+                    () => const DynamicsSetting(autoOpenKeywordFilter: true),
+                  );
+                },
+                minLeadingWidth: 0,
+              ),
+              ListTile(
+                title: Text(
+                  '加入白名单：${moduleAuthor.name}',
+                  style: theme.textTheme.titleSmall,
+                ),
+                leading: const Icon(Icons.person_add_alt_1_outlined, size: 19),
+                onTap: () {
+                  Get.back();
+                  try {
+                    final mid = moduleAuthor.mid!;
+                    UserWhitelist.add(mid: mid, name: moduleAuthor.name ?? '');
+                    try {
+                      Get.find<DynamicsController>().tempBannedList.remove(mid);
+                    } catch (_) {}
+                    SmartDialog.showToast(
+                      '已将${moduleAuthor.name}(${mid})加入白名单',
+                    );
+                  } catch (_) {}
+                },
+                minLeadingWidth: 0,
+              ),
+
               if (kDebugMode || moduleAuthor.mid == Accounts.main.mid) ...[
                 ListTile(
                   onTap: () {

@@ -4,17 +4,21 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:PiliPlus/pages/common/common_page.dart';
 import 'package:PiliPlus/pages/home/controller.dart';
+import 'package:PiliPlus/pages/home/home_preview_scope.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({super.key, this.preview = false});
+
+  final bool preview;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -59,7 +63,11 @@ class _HomePageState extends CommonPageState<HomePage>
             onTap: (_) {
               feedBack();
               if (!_homeController.tabController.indexIsChanging) {
-                _homeController.animateToTop();
+                if (Pref.enableCurrentPageRefresh) {
+                  _homeController.toTopAndRefresh();
+                } else {
+                  _homeController.animateToTop();
+                }
               }
             },
           ),
@@ -75,21 +83,24 @@ class _HomePageState extends CommonPageState<HomePage>
     } else {
       tabBar = const SizedBox(height: 6);
     }
-    return Column(
-      children: [
-        if (!_mainController.useSideBar &&
-            MediaQuery.sizeOf(context).isPortrait)
-          customAppBar(),
-        tabBar,
-        Expanded(
-          child: onBuild(
-            tabBarView(
-              controller: _homeController.tabController,
-              children: _homeController.tabs.map((e) => e.page).toList(),
+    return HomePreviewScope(
+      enabled: widget.preview,
+      child: Column(
+        children: [
+          if (!_mainController.useSideBar &&
+              MediaQuery.sizeOf(context).isPortrait)
+            customAppBar(),
+          tabBar,
+          Expanded(
+            child: onBuild(
+              tabBarView(
+                controller: _homeController.tabController,
+                children: _homeController.tabs.map((e) => e.page).toList(),
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

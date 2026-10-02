@@ -15,6 +15,7 @@ import 'package:PiliPlus/models_new/space/space/tab2.dart';
 import 'package:PiliPlus/pages/common/common_data_controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension/nested_scroll_ext.dart';
+import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -32,6 +33,8 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
   String? userAvatar;
 
   late final account = Accounts.main;
+
+  RxString remark = ''.obs;
 
   Live? live;
   int? silence;
@@ -134,7 +137,17 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
             return item.param == data.defaultTab;
           });
         }
-        tabs = tab2!.map((item) => Tab(text: item.title ?? '')).toList();
+        tabs = tab2!
+            .map(
+              (item) => Tab(
+                child: Text(
+                  item.title ?? '',
+                  softWrap: false,
+                  overflow: .fade,
+                ),
+              ),
+            )
+            .toList();
         tabController?.dispose();
         tabController = TabController(
           vsync: this,
@@ -146,6 +159,7 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
     if (mid == account.mid) {
       spaceSetting = data.setting;
     }
+    remark.value = GlobalData().remarkMids[mid] ?? '';
     loadingState.value = response;
     return true;
   }
@@ -178,6 +192,58 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
     mid: mid,
     fromViewAid: fromViewAid,
   );
+
+  void editRemark(BuildContext context) {
+    final textController = TextEditingController(text: remark.value);
+    showDialog(
+      context: context,
+      builder: (context) {
+        final theme = Theme.of(context);
+        return AlertDialog(
+          title: const Text('设置备注'),
+          content: TextField(
+            controller: textController,
+            minLines: 1,
+            maxLines: 3,
+            autofocus: true,
+            style: const TextStyle(fontSize: 14),
+            decoration: InputDecoration(
+              hintText: '留空则删除备注',
+              hintStyle: TextStyle(
+                fontSize: 14,
+                color: theme.colorScheme.outline,
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: Get.back,
+              child: Text(
+                '取消',
+                style: TextStyle(color: theme.colorScheme.outline),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                final newRemark = textController.text.trim();
+                final map = GlobalData().remarkMids;
+                if (newRemark.isEmpty) {
+                  map.remove(mid);
+                } else {
+                  map[mid] = newRemark;
+                }
+                Pref.remarkMids = map;
+                remark.value = newRemark;
+                GlobalData().remarkVersion.value++;
+                Get.back();
+              },
+              child: const Text('确定'),
+            ),
+          ],
+        );
+      },
+    ).whenComplete(textController.dispose);
+  }
 
   void blockUser(BuildContext context) {
     if (!account.isLogin) {

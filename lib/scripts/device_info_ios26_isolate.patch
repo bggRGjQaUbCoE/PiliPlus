@@ -1,0 +1,19 @@
+diff --git ios/device_info_plus/Sources/device_info_plus/FPPDeviceInfoPlusPlugin.m ios/device_info_plus/Sources/device_info_plus/FPPDeviceInfoPlusPlugin.m
+index 83a9a00..1c3b7f3 100644
+--- ios/device_info_plus/Sources/device_info_plus/FPPDeviceInfoPlusPlugin.m
++++ ios/device_info_plus/Sources/device_info_plus/FPPDeviceInfoPlusPlugin.m
+@@ -31,9 +31,11 @@ - (void)handleMethodCall:(FlutterMethodCall *)call
+       isiOSAppOnMac = [NSNumber numberWithBool:[info isiOSAppOnMac]];
+     }
+     NSNumber *isiOSAppOnVision = [NSNumber numberWithBool:NO];
+-    if (@available(iOS 26.1, *)) {
+-      isiOSAppOnVision = [NSNumber numberWithBool:[info isiOSAppOnVision]];
+-    }
++    // PiliNara fork: iOS 26 vision 检测在 Xcode 16.4 / iOS 18.5 SDK 不可用,固定为 NO。
++    // 上游(iOS 26 SDK)行为不变;升 Xcode 26 后移除本注释即可恢复。
++    // if (@available(iOS 26.1, *)) {
++    //   isiOSAppOnVision = [NSNumber numberWithBool:[info isiOSAppOnVision]];
++    // }
+     NSError *error = nil;
+     NSDictionary *fsAttributes = [[NSFileManager defaultManager] attributesOfFileSystemForPath:NSHomeDirectory() error:&error];
+     NSNumber *freeSize = [NSNumber numberWithInt:-1];

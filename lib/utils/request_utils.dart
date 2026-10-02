@@ -297,7 +297,7 @@ abstract final class RequestUtils {
   static Future<void> insertCreatedDyn(dynamic id) async {
     if (id != null) {
       try {
-        await Future.delayed(const Duration(milliseconds: 450));
+        await Future.pause(const Duration(milliseconds: 450));
         final res = await DynamicsHttp.dynamicDetail(id: id);
         if (res case final Success<DynamicItemModel> e) {
           final ctr = Get.find<DynamicsTabController>(tag: 'all');
@@ -323,13 +323,17 @@ abstract final class RequestUtils {
       try {
         if (id != null) {
           if (!isManual) {
-            await Future.delayed(const Duration(seconds: 5));
+            await Future.pause(const Duration(seconds: 5));
           }
           final res = await DynamicsHttp.dynamicDetail(
             id: id,
             clearCookie: true,
           );
           final isSuccess = res.isSuccess;
+          if (isSuccess) {
+            SmartDialog.showToast('动态检查通过');
+            return;
+          }
           showDialog(
             context: Get.context!,
             barrierDismissible: isManual,
@@ -484,7 +488,7 @@ abstract final class RequestUtils {
                     if (checkedId != null) {
                       final isFav = ctr is BaseFavController;
                       final removeList = isFav
-                          ? ctr.allChecked.toList().reversed
+                          ? ctr.allChecked.toList().reversed.toSet()
                           : ctr.allChecked.toSet();
                       SmartDialog.showLoading();
                       FavHttp.copyOrMoveFav(

@@ -149,4 +149,36 @@ pili_release.json
 
 dist
 
+test.dart
+
+docs/*
+!docs/danmaku_font_scaling.md
+!docs/inapp_pip_implementation.md
+test*.dart
+
+AGENTS.md
+
+CLAUDE.md
+
+CONTEXT.md
+
+.claude
+.vibeskills
+Payload
+outputs/runtime/vibe-sessions
 test*
+/pubspec_overrides.yaml
+.mindfs
+
+# >>> Comet managed artifacts >>>
+!docs/comet/
+!docs/comet/**
+# <<< Comet managed artifacts <<<
+
+.agents
+# >>> Comet managed project state >>>
+!/.comet/
+/.comet/*
+!/.comet/config.yaml
+# <<< Comet managed project state <<<
+docs/comet/.DS_Store

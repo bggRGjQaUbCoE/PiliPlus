@@ -18,7 +18,6 @@ class SearchEsportsItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = ColorScheme.of(context);
-    final configInfo = item.configInfo;
     final contest = item.contest.first;
 
     Widget buildTeamWidget(EsportsTeam team) {
@@ -104,10 +103,11 @@ class SearchEsportsItem extends StatelessWidget {
           child: Column(
             mainAxisSize: .min,
             children: [
-              Text(
-                configInfo.esportTitle,
-                style: const TextStyle(fontWeight: .bold, fontSize: 16),
-              ),
+              if (contest.title != null)
+                Text(
+                  contest.title!,
+                  style: const TextStyle(fontWeight: .bold, fontSize: 16),
+                ),
               Padding(
                 padding: const .only(top: 4),
                 child: Text.rich(

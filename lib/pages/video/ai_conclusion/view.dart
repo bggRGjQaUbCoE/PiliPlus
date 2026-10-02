@@ -138,6 +138,8 @@ class _AiDetailState extends State<AiConclusionPanel>
   Widget buildPage(ThemeData theme) {
     return Material(
       color: theme.colorScheme.surface,
+      clipBehavior: Clip.antiAlias,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       child: Column(
         children: [
           GestureDetector(

@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/skeleton/whisper_item.dart';
 import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
+import 'package:PiliPlus/common/widgets/flutter/popup_menu.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
@@ -66,7 +67,7 @@ class _WhisperPageState extends State<WhisperPage> {
           Obx(() {
             final threeDotItems = _controller.threeDotItems.value;
             if (threeDotItems != null && threeDotItems.isNotEmpty) {
-              return PopupMenuButton(
+              return StaticPopupMenuButton(
                 itemBuilder: (context) {
                   return threeDotItems
                       .map(

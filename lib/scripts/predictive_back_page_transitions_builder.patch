@@ -1,0 +1,19 @@
+diff --git a/packages/flutter/lib/src/material/predictive_back_page_transitions_builder.dart b/packages/flutter/lib/src/material/predictive_back_page_transitions_builder.dart
+index 49d457a1cc5..305dac2b948 100644
+--- a/packages/flutter/lib/src/material/predictive_back_page_transitions_builder.dart
++++ b/packages/flutter/lib/src/material/predictive_back_page_transitions_builder.dart
+@@ -492,7 +492,13 @@ class _PredictiveBackSharedElementPageTransitionState
+     if (widget.animation != oldWidget.animation) {
+       _updateCurvedAnimations();
+     }
+-    if (widget.phase != oldWidget.phase && widget.phase == _PredictiveBackPhase.commit) {
++    // This widget can stay mounted across gestures when its route was rebuilt
++    // while another route's back gesture was in progress (popGestureInProgress
++    // is navigator-wide), leaving _positionAnimation computed from a null back
++    // event. Recompute it when the swipe edge of a real gesture arrives.
++    if ((widget.phase != oldWidget.phase && widget.phase == _PredictiveBackPhase.commit) ||
++        (widget.currentBackEvent != null &&
++            widget.currentBackEvent?.swipeEdge != oldWidget.currentBackEvent?.swipeEdge)) {
+       _updateAnimations(MediaQuery.sizeOf(context));
+     }
+   }

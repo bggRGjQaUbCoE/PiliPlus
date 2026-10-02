@@ -1,51 +1,102 @@
 part of 'view.dart';
 
+const double desktopProgressHorizontalInset = 20.0;
+const double desktopProgressBarHeight = 3.5;
+const double desktopProgressHoverPadding = 10.0;
+const double desktopProgressThumbRadius = 7.0;
+const double desktopProgressInteractiveHeight =
+    desktopProgressHoverPadding * 2 + desktopProgressBarHeight;
+const double desktopProgressBarTopInset =
+    desktopProgressHoverPadding + desktopProgressBarHeight;
+const double desktopProgressDmChartOffset =
+    desktopProgressBarTopInset - 4.25;
+// 底部控制栏和进度条之间的基础留白。
+const double desktopProgressBottomPadding = 12.0;
+// 底部控制栏本身的高度。
+const double desktopProgressControlHeight = 30.0;
+// 控制栏和进度条之间的内层间距。
+const double desktopProgressInnerBottomPadding = 7.0;
+// 进度条和 Hover 浮层（时间指示器和预览窗口）整体之间的额外间距。
+const double desktopProgressOverlayGap = 9.0;
+// 时间指示器距离底部的总偏移基准。
+const double desktopProgressTimeIndicatorBottom =
+    desktopProgressBottomPadding +
+    desktopProgressControlHeight +
+    desktopProgressInnerBottomPadding +
+    desktopProgressInteractiveHeight +
+    desktopProgressOverlayGap;
+// 预览窗在时间指示器基准上再往上抬的距离。
+const double desktopProgressSeekPreviewBottom =
+    desktopProgressTimeIndicatorBottom + 40.0;
+
 Widget buildDmChart(
   Color color,
   List<double> dmTrend,
   VideoDetailController videoDetailController, [
   double offset = 0,
+  bool fixedLayoutHeight = false,
 ]) {
-  return IgnorePointer(
-    child: Container(
-      height: 12,
-      margin: EdgeInsets.only(
-        bottom:
-            videoDetailController.viewPointList.isNotEmpty &&
-                videoDetailController.showVP.value
-            ? 19.25 + offset
-            : 4.25 + offset,
-      ),
-      child: LineChart(
-        LineChartData(
-          titlesData: const FlTitlesData(show: false),
-          lineTouchData: const LineTouchData(enabled: false),
-          gridData: const FlGridData(show: false),
-          borderData: FlBorderData(show: false),
-          minX: 0,
-          maxX: (dmTrend.length - 1).toDouble(),
-          minY: 0,
-          maxY: dmTrend.max,
-          lineBarsData: [
-            LineChartBarData(
-              spots: List.generate(
-                dmTrend.length,
-                (index) => FlSpot(
-                  index.toDouble(),
-                  dmTrend[index],
-                ),
-              ),
-              isCurved: true,
-              barWidth: 1,
-              color: color,
-              dotData: const FlDotData(show: false),
-              belowBarData: BarAreaData(
-                show: true,
-                color: color.withValues(alpha: 0.4),
-              ),
+  final bottomMargin =
+      videoDetailController.viewPointList.isNotEmpty &&
+          videoDetailController.showVP.value
+      ? 19.25 + offset
+      : 4.25 + offset;
+  final chart = LineChart(
+    LineChartData(
+      titlesData: const FlTitlesData(show: false),
+      lineTouchData: const LineTouchData(enabled: false),
+      gridData: const FlGridData(show: false),
+      borderData: FlBorderData(show: false),
+      minX: 0,
+      maxX: (dmTrend.length - 1).toDouble(),
+      minY: 0,
+      maxY: dmTrend.max,
+      lineBarsData: [
+        LineChartBarData(
+          spots: List.generate(
+            dmTrend.length,
+            (index) => FlSpot(
+              index.toDouble(),
+              dmTrend[index],
             ),
-          ],
+          ),
+          isCurved: true,
+          barWidth: 1,
+          color: color,
+          dotData: const FlDotData(show: false),
+          belowBarData: BarAreaData(
+            show: true,
+            color: color.withValues(alpha: 0.4),
+          ),
         ),
+      ],
+    ),
+  );
+  if (!fixedLayoutHeight) {
+    return IgnorePointer(
+      child: Container(
+        height: 12,
+        margin: EdgeInsets.only(bottom: bottomMargin),
+        child: chart,
+      ),
+    );
+  }
+  return IgnorePointer(
+    child: SizedBox(
+      height: 12,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: bottomMargin,
+            child: SizedBox(
+              height: 12,
+              child: chart,
+            ),
+          ),
+        ],
       ),
     ),
   );
@@ -64,30 +115,70 @@ Widget buildSeekPreviewWidget(
       }
 
       try {
-        final data = plPlayerController.videoShot!.data;
+        final height = desktopSeekPreviewHeight(
+          plPlayerController,
+          maxHeight,
+        );
 
-        final double scale =
-            plPlayerController.isFullScreen.value &&
-                (PlatformUtils.isDesktop || !plPlayerController.isVertical)
-            ? 4
-            : 3;
-        double height = 27 * scale;
-        final compatHeight = maxHeight - 140;
-        if (compatHeight > 50) {
-          height = math.min(height, compatHeight);
+        Widget positionPreview(Widget child, double width) {
+          final previewValue =
+              plPlayerController.desktopProgressPreviewValue.value;
+          if (PlatformUtils.isDesktop &&
+              plPlayerController.showDesktopProgressFeedback.value &&
+              previewValue != null) {
+            return _DesktopProgressPreviewLayout(
+              maxWidth: maxWidth,
+              previewValue: previewValue,
+              anchorWidth: width,
+              bottom: desktopProgressSeekPreviewBottom,
+              child: child,
+            );
+          }
+          return Align(
+            alignment: Alignment.center,
+            child: child,
+          );
         }
 
+        final videoShot = plPlayerController.videoShot;
+        final data = videoShot?.dataOrNull;
+        if (data == null) {
+          final width = desktopSeekPreviewWidth(
+            plPlayerController,
+            maxHeight,
+          );
+          return positionPreview(
+            _SeekPreviewPlaceholder(
+              width: width,
+              height: height,
+            ),
+            width,
+          );
+        }
+
+        if (data.image.isEmpty) {
+          return const SizedBox.shrink();
+        }
         final int imgXLen = data.imgXLen;
         final int imgYLen = data.imgYLen;
         final int totalPerImage = data.totalPerImage;
         double imgXSize = data.imgXSize;
         double imgYSize = data.imgYSize;
+        final width = desktopSeekPreviewWidth(
+          plPlayerController,
+          maxHeight,
+        );
 
-        return Align(
-          alignment: Alignment.center,
-          child: Obx(
+        return positionPreview(
+          Obx(
             () {
-              final index = plPlayerController.previewIndex.value!;
+              final index = plPlayerController.previewIndex.value;
+              if (index == null) {
+                return _SeekPreviewPlaceholder(
+                  width: width,
+                  height: height,
+                );
+              }
               int pageIndex = (index ~/ totalPerImage).clamp(
                 0,
                 data.image.length - 1,
@@ -107,14 +198,21 @@ Widget buildSeekPreviewWidget(
                   imgYSize: imgYSize,
                   height: height,
                   imageCache: plPlayerController.previewCache,
-                  onSetSize: (xSize, ySize) => data
-                    ..imgXSize = imgXSize = xSize
-                    ..imgYSize = imgYSize = ySize,
+                  onSetSize: (xSize, ySize) {
+                    if (imgXSize == xSize && imgYSize == ySize) {
+                      return;
+                    }
+                    data
+                      ..imgXSize = imgXSize = xSize
+                      ..imgYSize = imgYSize = ySize;
+                    plPlayerController.refreshDesktopProgressPreviewLayout();
+                  },
                   isMounted: isMounted,
                 ),
               );
             },
           ),
+          width,
         );
       } catch (e) {
         if (kDebugMode) rethrow;
@@ -122,6 +220,216 @@ Widget buildSeekPreviewWidget(
       }
     },
   );
+}
+
+double desktopSeekPreviewHeight(
+  PlPlayerController plPlayerController,
+  double maxHeight,
+) {
+  final double scale =
+      plPlayerController.isFullScreen.value &&
+          (PlatformUtils.isDesktop || !plPlayerController.isVertical)
+      ? 4
+      : 3;
+  double height = 27 * scale;
+  final compatHeight = maxHeight - 140;
+  if (compatHeight > 50) {
+    height = math.min(height, compatHeight);
+  }
+  return height;
+}
+
+double desktopSeekPreviewWidth(
+  PlPlayerController plPlayerController,
+  double maxHeight,
+) {
+  plPlayerController.desktopProgressPreviewLayoutVersion.value;
+  final data = plPlayerController.videoShot?.dataOrNull;
+  if (data == null) {
+    return desktopSeekPreviewHeight(plPlayerController, maxHeight) * 16 / 9;
+  }
+  return desktopSeekPreviewWidthFromSize(
+    height: desktopSeekPreviewHeight(plPlayerController, maxHeight),
+    imgXSize: data.imgXSize,
+    imgYSize: data.imgYSize,
+  );
+}
+
+double desktopSeekPreviewWidthFromSize({
+  required double height,
+  required double imgXSize,
+  required double imgYSize,
+}) {
+  if (imgXSize <= 0 || imgYSize <= 0) {
+    return height * 16 / 9;
+  }
+  return height * imgXSize / imgYSize;
+}
+
+class _DesktopProgressPreviewLayout extends StatelessWidget {
+  const _DesktopProgressPreviewLayout({
+    required this.maxWidth,
+    required this.previewValue,
+    required this.anchorWidth,
+    required this.bottom,
+    required this.child,
+  });
+
+  static const double _margin = 12.0;
+
+  final double maxWidth;
+  final double previewValue;
+  final double anchorWidth;
+  final double bottom;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomSingleChildLayout(
+      delegate: _DesktopProgressPreviewLayoutDelegate(
+        maxWidth: maxWidth,
+        previewValue: previewValue,
+        anchorWidth: anchorWidth,
+        bottom: bottom,
+        margin: _margin,
+      ),
+      child: child,
+    );
+  }
+}
+
+class _DesktopProgressPreviewLayoutDelegate extends SingleChildLayoutDelegate {
+  const _DesktopProgressPreviewLayoutDelegate({
+    required this.maxWidth,
+    required this.previewValue,
+    required this.anchorWidth,
+    required this.bottom,
+    required this.margin,
+  });
+
+  final double maxWidth;
+  final double previewValue;
+  final double anchorWidth;
+  final double bottom;
+  final double margin;
+
+  @override
+  Size getSize(BoxConstraints constraints) {
+    final width = constraints.maxWidth.isFinite
+        ? constraints.maxWidth
+        : maxWidth;
+    final height = constraints.maxHeight.isFinite ? constraints.maxHeight : 0.0;
+    return Size(width, height);
+  }
+
+  @override
+  BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
+    return constraints.loosen();
+  }
+
+  @override
+  Offset getPositionForChild(Size size, Size childSize) {
+    final anchorCenter = _desktopPreviewAnchorCenter(
+      maxWidth: size.width,
+      previewValue: previewValue,
+      anchorWidth: anchorWidth,
+      margin: margin,
+    );
+    final maxLeft = math.max(margin, size.width - childSize.width - margin);
+    final left = (anchorCenter - childSize.width / 2)
+        .clamp(margin, maxLeft)
+        .toDouble();
+    final maxTop = math.max(margin, size.height - childSize.height - margin);
+    final top = (size.height - bottom - childSize.height)
+        .clamp(margin, maxTop)
+        .toDouble();
+    return Offset(left, top);
+  }
+
+  @override
+  bool shouldRelayout(
+    covariant _DesktopProgressPreviewLayoutDelegate oldDelegate,
+  ) {
+    return oldDelegate.maxWidth != maxWidth ||
+        oldDelegate.previewValue != previewValue ||
+        oldDelegate.anchorWidth != anchorWidth ||
+        oldDelegate.bottom != bottom ||
+        oldDelegate.margin != margin;
+  }
+}
+
+double _desktopPreviewAnchorCenter({
+  required double maxWidth,
+  required double previewValue,
+  required double anchorWidth,
+  required double margin,
+}) {
+  final availableWidth = math.max(0.0, maxWidth - margin * 2);
+  final width = anchorWidth.clamp(0.0, availableWidth).toDouble();
+  final maxLeft = math.max(margin, maxWidth - width - margin);
+  final anchorCenter = _desktopProgressHoverCenter(
+    maxWidth: maxWidth,
+    previewValue: previewValue,
+  );
+  final left = (anchorCenter - width / 2)
+      .clamp(margin, maxLeft)
+      .toDouble();
+  return left + width / 2;
+}
+
+double _desktopProgressHoverCenter({
+  required double maxWidth,
+  required double previewValue,
+}) {
+  final trackWidth = math.max(
+    0.0,
+    maxWidth - desktopProgressHorizontalInset * 2,
+  );
+  final availableWidth = math.max(
+    0.0,
+    trackWidth - desktopProgressBarHeight,
+  );
+  final value = previewValue.clamp(0.0, 1.0).toDouble();
+  return desktopProgressHorizontalInset +
+      desktopProgressBarHeight / 2 +
+      value * availableWidth;
+}
+
+class _SeekPreviewPlaceholder extends StatelessWidget {
+  const _SeekPreviewPlaceholder({
+    required this.width,
+    required this.height,
+  });
+
+  final double width;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = ColorScheme.of(context);
+    return ClipRRect(
+      borderRadius: Style.mdRadius,
+      child: Container(
+        width: width,
+        height: height,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.58),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.45),
+            width: 1.5,
+          ),
+        ),
+        child: SizedBox.square(
+          dimension: math.min(24, height * 0.28),
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: colorScheme.primary,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class VideoShotImage extends StatefulWidget {

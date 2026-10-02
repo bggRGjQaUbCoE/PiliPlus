@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
+import 'package:PiliPlus/common/widgets/dialog/export_import.dart';
 import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
@@ -11,6 +12,7 @@ import 'package:PiliPlus/pages/danmaku_block/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -51,7 +53,22 @@ class _DanmakuBlockPageState extends State<DanmakuBlockPage> {
   @override
   Widget build(BuildContext context) {
     return SimpleScaffold(
-      appBar: AppBar(title: const Text('弹幕屏蔽')),
+      appBar: AppBar(
+        title: const Text('弹幕屏蔽'),
+        actions: [
+          IconButton(
+            tooltip: '导入/导出',
+            icon: const Icon(Icons.import_export),
+            onPressed: () => showImportExportDialog<List<dynamic>>(
+              context,
+              title: '弹幕屏蔽规则',
+              onExport: () => Utils.jsonEncoder.convert(_controller.exportRules()),
+              onImport: _controller.importDanmakuFilter,
+              localFileName: () => 'danmaku_block',
+            ),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           TabBar(

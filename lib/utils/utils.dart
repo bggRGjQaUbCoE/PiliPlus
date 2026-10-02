@@ -1,12 +1,17 @@
 import 'dart:convert' show JsonEncoder, base64;
 import 'dart:math' show Random;
 
+import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/utils/storage_pref.dart' show Pref;
 import 'package:catcher_2/catcher_2.dart';
-import 'package:flutter/services.dart' show Clipboard, ClipboardData;
+import 'package:flutter/services.dart'
+    show Clipboard, ClipboardData, MethodChannel;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 abstract final class Utils {
   static final random = Random();
+
+  static const channel = MethodChannel(Constants.appName);
 
   static const jsonEncoder = JsonEncoder.withIndent('    ');
 
@@ -87,6 +92,10 @@ abstract final class Utils {
   /// `@pragma('vm:notify-debugger-on-exception')` to allow an attached debugger
   /// to treat the exception as unhandled.
   static void reportError(Object exception, [StackTrace? stack]) {
-    Catcher2.reportCheckedError(exception, stack);
+    if (Pref.enableLog) {
+      try {
+        Catcher2.reportCheckedError(exception, stack);
+      } catch (_) {}
+    }
   }
 }

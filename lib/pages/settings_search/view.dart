@@ -3,6 +3,7 @@ import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_insets_safe_area.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
 import 'package:PiliPlus/pages/search/controller.dart' show DebounceStreamState;
+import 'package:PiliPlus/pages/setting/models/dynamics_settings.dart';
 import 'package:PiliPlus/pages/setting/models/extra_settings.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/models/play_settings.dart';
@@ -32,6 +33,7 @@ class _SettingsSearchPageState
     ...extraSettings,
     ...privacySettings,
     ...recommendSettings,
+    ...dynamicsSettings,
     ...videoSettings,
     ...playSettings,
     ...styleSettings,

@@ -15,6 +15,8 @@ import 'package:PiliPlus/utils/extension/dimension_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/utils/global_data.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
@@ -123,6 +125,17 @@ class VideoCardV extends StatelessWidget {
                                 videoItem.duration,
                               ),
                             ),
+                          if (videoItem case RcmdVideoItemAppModel(
+                            :final canPlay,
+                          ) when canPlay != 1)
+                            const PBadge(
+                              text: '充电专属',
+                              top: 6,
+                              right: 6,
+                              size: .small,
+                              type: .error,
+                              fontSize: 10,
+                            ),
                         ],
                       );
                     },
@@ -177,7 +190,7 @@ class VideoCardV extends StatelessWidget {
                     type: .line_primary,
                     fontSize: 9,
                   ),
-                if (videoItem.rcmdReason != null)
+                if (Pref.showRcmdReason && videoItem.rcmdReason != null)
                   PBadge(
                     text: videoItem.rcmdReason,
                     isStack: false,
@@ -192,7 +205,7 @@ class VideoCardV extends StatelessWidget {
                     type: .line_primary,
                     fontSize: 9,
                   ),
-                if (videoItem.isFollowed)
+                if (Pref.showRcmdReason && videoItem.isFollowed)
                   const PBadge(
                     text: '已关注',
                     isStack: false,
@@ -202,10 +215,16 @@ class VideoCardV extends StatelessWidget {
                 Expanded(
                   flex: 1,
                   child: Text(
-                    videoItem.owner.name.toString(),
+                    remarkedName(
+                      videoItem.owner.mid,
+                      videoItem.owner.name.toString(),
+                    ),
                     maxLines: 1,
                     overflow: .clip,
-                    semanticsLabel: 'UP：${videoItem.owner.name}',
+                    semanticsLabel: 'UP：${remarkedName(
+                      videoItem.owner.mid,
+                      videoItem.owner.name.toString(),
+                    )}',
                     style: TextStyle(
                       height: 1.5,
                       fontSize: theme.textTheme.labelMedium!.fontSize,
@@ -252,6 +271,7 @@ class VideoCardV extends StatelessWidget {
                 videoItem.pubdate,
                 short: shortFormat,
                 long: longFormat,
+                showYesterdayTime: false,
               ),
             ),
           ),

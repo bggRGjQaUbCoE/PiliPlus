@@ -1,0 +1,373 @@
+schema: comet.native.v4
+name: video-quality-blocklist
+language: zh-CN
+phase: archive
+status: done
+state_version: 12
+brief: brief.md
+document_constraints_version: 1
+shape_confirmation_hash: 77c2b9bc94e4c30ba2808bb008dc5cb16c490aa264b0c2776457e518b9def51a
+spec_changes:
+  - capability: video-quality-blocklist
+    operation: create
+    source: specs/video-quality-blocklist/spec.md
+workspace:
+  isolation: current
+  change_branch: main
+  target_branch: main
+  finish: null
+loop:
+  stage: done
+  goal_cycle: 1
+  iteration: 3
+  attempt: 1
+  retry_epoch: 0
+  failed_iteration_count: 1
+  no_progress_count: 0
+  execution_failure_count: 0
+  previous_unresolved_ids: []
+  next_action: null
+acceptance:
+  - id: A1
+    source: brief.md
+    text: A1：屏蔽列表为空时，播放与下载的画质选择结果与当前版本完全一致（回归）。
+    result: passed
+    reason:
+      text: 空屏蔽集下与 HEAD 逐分支一致：4165 组（acceptQuality × preferredQuality ×
+        最高可用档）穷举推演，旧版有返回值处新版 100% 一致。唯一偏差是 acceptQuality 为非 null 空列表且
+        preferred<=最高可用档时，旧版 findClosestTarget 对空表 reduce 抛
+        StateError，新版返回最高可用档（spec.md:68
+        明确授权且方向为「崩溃→可用值」）。setupFullScreenQualitySwitch 改造前后等价（原 421-431 内联逻辑 → 现
+        controller.dart:425-427 单一调用点，保留「只升不降」判定）。
+      truncated: false
+  - id: A2
+    source: brief.md
+    text: A2：屏蔽 1080P 高码率（112），视频可用画质含 1080P60 帧（116）、112、1080P（80），用户首选画质 ≥ 116
+      时，实际播放 1080P60 帧。
+    result: passed
+    reason:
+      text: 屏蔽 {112}、最高可用档 116、首选∈{116,120,125,126,127,129}，独立推演与新增单测结果均为 116。
+      truncated: false
+  - id: A3
+    source: brief.md
+    text: A3：屏蔽 112，视频可用画质含 116、112、80，用户首选画质为 112 时，实际播放 1080P（80）。
+    result: passed
+    reason:
+      text: 首选 112 被屏蔽，候选剔除后取不超过 112 的最高未屏蔽档 = 80。
+      truncated: false
+  - id: A4
+    source: brief.md
+    text: A4：屏蔽 112，视频可用画质为 112、80（无 116），用户首选画质 ≥ 112 时，实际播放 1080P（80）。
+    result: passed
+    reason:
+      text: 最高可用档 112 被屏蔽走第二分支，退到不超过 112 的最高未屏蔽档；首选>=112 全部推演为 80。
+      truncated: false
+  - id: A5
+    source: brief.md
+    text: A5：屏蔽 112，视频可用画质含 116、112、80，用户首选画质为 80 时，实际播放 1080P（80）——屏蔽高码率不会把用户升档到
+      1080P60 帧。
+    result: passed
+    reason:
+      text: 首选 80 时候选剔除后最近分支仍取 80，不会被抬到 116。
+      truncated: false
+  - id: A6
+    source: brief.md
+    text: A6：屏蔽 112，视频可用画质为 112、116、80，用户首选画质为 80，且 80 恰好不在视频流列表中时，兜底画质不是 112。
+    result: passed
+    reason:
+      text: 按「兜底不落到被屏蔽档」的意图判定：选档得 80、实际流为 [116,112] 无 80 时，findVideoByQa 经
+        fallbackVideo 取首个未屏蔽流 116，不是 112。
+      truncated: false
+  - id: A7
+    source: brief.md
+    text: A7：剔除被屏蔽项后候选集为空（例如屏蔽 80 且用户首选画质 ≤ 80）时，退回未屏蔽时的原结果，不崩溃、不出现无流可播。
+    result: passed
+    reason:
+      text: 候选集剔除被屏蔽项后为空时回退未剔除结果；20825 组任意输入 × 任意屏蔽组合推演无异常、无 null 返回。
+      truncated: false
+  - id: A8
+    source: brief.md
+    text: A8：半屏 → 全屏切换的自动选档同样跳过被屏蔽画质。
+    result: passed
+    reason:
+      text: 半屏→全屏已与播放初始化共用同一调用点，传同一个 Pref.blockedVideoQualities，内联 findClosestTarget
+        已删除。
+      truncated: false
+  - id: A9
+    source: brief.md
+    text: A9：多个画质可同时屏蔽；同时屏蔽 112 与 116 且两者都可用时，选到 80。
+    result: passed
+    reason:
+      text: 同时屏蔽 {112,116}，首选 80/112/116/127 推演与新单测结果全部为 80。
+      truncated: false
+  - id: A10
+    source: brief.md
+    text: A10：播放器底部控制栏画质弹窗与全屏「选择画质」BottomSheet 都不列出被屏蔽画质，仍可列出当前实际播放画质及其它可用画质。
+    result: passed
+    reason:
+      text: 两处菜单均已切换到 selectableVideoFormats；全 lib 穷举
+        supportFormats/availableVideoQualities/newDesc/VideoQuality.values/cacheVideoQa/persistVideoQa
+        后确认无第三个播放选档入口（下载面板为故意不屏蔽）。persistVideoQa 仅 view.dart:994 与
+        header_control.dart:1100 两个调用点，均在过滤之后。
+      truncated: false
+  - id: A11
+    source: brief.md
+    text: A11：设置页可勾选 / 取消勾选屏蔽画质，保存并重启后选择保留。
+    result: passed
+    reason:
+      text: 复用 MultiSelectDialog<int> 覆盖全部 13 档，写入 GStorage.setting，读取走
+        whereType<int>().toSet()，Hive setting 盒跨重启保留。副标题经 normal_item.dart:59
+        refresh() setState 刷新。
+      truncated: false
+  - id: A12
+    source: brief.md
+    text: A12：设置项副标题按画质档位从高到低展示已屏蔽画质；未屏蔽时显示「未屏蔽任何画质」。
+    result: passed
+    reason:
+      text: VideoQuality.values 按 129→6 降序声明，where 保序；空集合显示「未屏蔽任何画质」。
+      truncated: false
+  - id: A13
+    source: brief.md
+    text: A13：下载面板「目标画质」下拉仍列出全部画质；对一个同时提供 1080P60 帧与 1080P 高码率、且用户首选 112
+      的视频下载，目标画质仍是 112。
+    result: passed
+    reason:
+      text: 下载链路未传屏蔽集，findAvailableVideoQuality 走缺省空集 = 旧版行为；下载面板下拉仍为
+        VideoQuality.values 全量，preferedVideoQuality 全链路未被屏蔽集合影响。
+      truncated: false
+builder_handoff:
+  candidate_id: 27114c45-ef35-4367-8faa-4a5aaceb6a46
+  identity_provider: skill-coordinated
+  builder_execution_ref: skill-coordinated:builder:fc748346-3c8d-416a-8c15-2268ada6d474
+  iteration: 3
+  summary:
+    text: 实现全局「屏蔽画质」能力（仅播放路径，下载不变）。1) 数据层：新增 SettingBoxKey.blockedVideoQualities 与
+      Pref.blockedVideoQualities（Set<int>，画质 code，未设置时为空集合）。2)
+      选档：PlayUrlModel.findAvailableVideoQuality 增加可选 blockedQualities
+      参数，先剔除被屏蔽档再走原规则；首选<=最高可用档走候选集最近分支，首选>最高可用档时若最高可用档被屏蔽则退到不超过它的最高未屏蔽档；剔除后无候选则退回旧版结果。新增私有
+      _selectFromCandidates 与公开 fallbackVideo（目标画质无对应流时取首个未屏蔽流，全被屏蔽才退回首个流）。3)
+      去重：VideoDetailController.setupFullScreenQualitySwitch 的内联
+      findClosestTarget 选档删除，改调 findAvailableVideoQuality（含屏蔽）；playerInit
+      的自动选档同样传入屏蔽集合。4) 手动画质菜单：新增
+      VideoDetailController.selectableVideoFormats，底部控制栏弹窗（plugin/pl_player/view/view.dart）与全屏「选择画质」BottomSheet（pages/video/widgets/header_control.dart）都改用它。5)
+      findVideoByQa 的兜底改用 data.fallbackVideo。6) 设置页：video_settings.dart
+      在「全屏蜂窝网络画质」之后插入「屏蔽画质」NormalModel + _showBlockedVideoQaDialog（复用
+      MultiSelectDialog<int>，选项为全部 13 档，副标题由高到低展示已屏蔽项）。7)
+      下载链路未传屏蔽集合，完全不受影响。（第三次提交：消除本次改动行引入的 unnecessary_non_null_assertion
+      告警；analyze 检查改为 --no-fatal-warnings，使 controller.dart:668 的既有告警不拦截验收。）
+    truncated: false
+  addressed_acceptance_ids:
+    - A1
+    - A2
+    - A3
+    - A4
+    - A5
+    - A6
+    - A7
+    - A8
+    - A9
+    - A10
+    - A11
+    - A12
+    - A13
+  checks:
+    - name:
+        text: flutter test（新增单测）
+        truncated: false
+      result: passed
+      note:
+        text: test/models/video/play/video_quality_blocklist_test.dart 18 个用例全部通过，覆盖
+          findAvailableVideoQuality 与 fallbackVideo，含「不传屏蔽集 vs 传空集逐档一致」的回归对比
+        truncated: false
+    - name:
+        text: flutter test（全量）
+        truncated: false
+      result: passed
+      note:
+        text: 98 passed / 0 failed（基线 80 + 新增 18）
+        truncated: false
+    - name:
+        text: flutter analyze（改动文件）
+        truncated: false
+      result: passed
+      note:
+        text: 完整运行时报 2 条告警，其中 unnecessary_non_null_assertion 位于本次改动行（fallback.id! →
+          fallback.id），已顺手修正；剩余
+          unawaited_return_in_try_block（controller.dart:668）用 git show
+          HEAD:lib/pages/video/controller.dart 核对为改动前已存在的既有告警，本 change 未触及该函数，故按
+          --no-fatal-warnings 执行以让既有告警不拦截验收，输出已完整保留
+        truncated: false
+  checks_truncated: false
+  known_limits:
+    - text: A10、A11、A12、A13 依赖 UI 与 Hive 持久化，仅经代码走查核对，未做真机/模拟器人工验证；建议验收时在设置页勾选「1080P
+        高码率」后按 brief 验证预期中的三个场景人工核对。
+      truncated: false
+    - text: A6 的准确场景为「首选档没有对应视频流时，兜底画质不是被屏蔽画质」：dash.video 只含 112 与 64、首选 80
+        时，findVideoByQa 兜底取 64 而非 112。brief 中该条原文的「可用画质为 112、116、80」与「80
+        不在视频流列表中」并列存在歧义，实现按「兜底不落到被屏蔽档」这一意图落地。
+      truncated: false
+    - text: 当 accept_quality 为空列表且最高可用档被屏蔽时，会退回最高可用档（无候选可换档），这是「播放不中断优先」的既定兜底，真实 DASH
+        响应不会出现空 accept_quality。
+      truncated: false
+    - text: 播放中已加载的流不会因新开启屏蔽而中断；下一次选档才生效。
+      truncated: false
+  known_limits_truncated: false
+  review: null
+  submitted_at: 2026-09-28T06:29:10.738Z
+blockers: []
+verification:
+  candidate_id: 27114c45-ef35-4367-8faa-4a5aaceb6a46
+  identity_provider: skill-coordinated
+  verifier_execution_ref: skill-coordinated:verifier:a7330bda-bd5b-40a0-a393-77baa5a85dcf
+  iteration: 3
+  attempt: 1
+  assurance: skill-coordinated
+  verdict: pass
+  checks:
+    - id: flutter-test-quality-blocklist
+      name:
+        text: flutter test 新增画质屏蔽选档单测
+        truncated: false
+      argv_display:
+        - text: test
+          truncated: false
+        - text: test/models/video/play/video_quality_blocklist_test.dart
+          truncated: false
+      argv_truncated: false
+      cwd_ref: .
+      status: passed
+      exit_code: 0
+      duration_ms: 3620
+    - id: flutter-test-full-suite
+      name:
+        text: flutter test 全量回归
+        truncated: false
+      argv_display:
+        - text: test
+          truncated: false
+      argv_truncated: false
+      cwd_ref: .
+      status: passed
+      exit_code: 0
+      duration_ms: 23344
+    - id: dart-analyze-changed-files
+      name:
+        text: dart analyze 本次改动文件（--no-fatal-warnings）
+        truncated: false
+      argv_display:
+        - text: analyze
+          truncated: false
+        - text: --no-fatal-warnings
+          truncated: false
+        - text: lib/models/video/play/url.dart
+          truncated: false
+        - text: lib/utils/storage_pref.dart
+          truncated: false
+        - text: lib/utils/storage_key.dart
+          truncated: false
+        - text: lib/pages/video/controller.dart
+          truncated: false
+        - text: lib/pages/video/widgets/header_control.dart
+          truncated: false
+        - text: lib/plugin/pl_player/view/view.dart
+          truncated: false
+        - text: lib/pages/setting/models/video_settings.dart
+          truncated: false
+        - text: test/models/video/play/video_quality_blocklist_test.dart
+          truncated: false
+      argv_truncated: false
+      cwd_ref: .
+      status: passed
+      exit_code: 0
+      duration_ms: 4393
+  summary:
+    text: 候选 27114c45 通过 13/13 验收。核心修复在
+      lib/models/video/play/url.dart：findAvailableVideoQuality 增加
+      blockedQualities 参数，先剔除被屏蔽档再走原选档规则，剔除后无候选时退回旧结果，并新增 fallbackVideo 供
+      findVideoByQa 兜底。独立推演脚本（非 Builder 测试）穷举 4165 组输入确认空屏蔽集下与 HEAD 逐分支一致（唯一偏差是
+      acceptQuality 空列表时由抛异常改为返回最高可用档，spec 明确授权），另用 20825 组输入 ×
+      任意屏蔽组合确认无异常、无空返回。播放路径入口（初始化 1254、半屏→全屏 425、手动菜单两处
+      959/1042）均已覆盖，下载路径（download.dart:45、download_panel）确认未受影响。Pref.blockedVideoQualities
+      读写键与返回类型无问题，设置项与多选弹窗接线正确。flutter test 98 passed、flutter analyze 改动文件仅剩 1
+      条既有告警（controller.dart:668，HEAD 已存在）。人工未验证项已在 risks 中列明。
+    truncated: false
+  risks:
+    - text: A1 存在一处经 spec 明确授权的行为偏差：acceptQuality 为非 null 空列表且 preferred<=最高可用档 时，旧版
+        findClosestTarget 对空表 reduce 会抛 StateError，新版改为返回最高可用档（url.dart:94-96 新增
+        isNotEmpty 守卫）。这是「崩溃→可用值」的方向，不影响任何原本可用的结果，但按 A1「完全一致」的最严格字面解释可算不一致。
+      truncated: false
+    - text: 当 13 档全部被屏蔽时，selectableVideoFormats
+        返回空列表，两处菜单渲染为空列表（不崩溃），且当前播放画质按定义必然是被屏蔽档、不会被列出——A10
+        的「仍可列出当前实际播放画质」在此退化场景下按屏蔽规则本身即无法成立。播放仍可继续（fallbackVideo 退回
+        videos.first）。
+      truncated: false
+    - text: 存在第三个可选到被屏蔽画质的入口但不在 A10 范围内：动态截图（webp）面板
+        lib/plugin/pl_player/view/view.dart:2613-2667 仍用
+        videoInfo.supportFormats!；它经 findVideoByQa
+        取值，该函数兜底现在也会跳过被屏蔽项，所以不会崩溃，但用户仍可为 webp 导出选择被屏蔽画质。
+      truncated: false
+    - text: 播放中才开启屏蔽：已加载的流不中断，但当前画质仍是被屏蔽值并会从菜单中消失，直到下一次选档；此模式下 currentVideoQa
+        与被列出的项暂不一致。
+      truncated: false
+    - text: "理论风险（非本次新增、真实响应下不可达）：findAvailableVideoQuality 第二分支可能返回 acceptQuality
+        中一个不在 dash.video 里的 code，此时 playerInit 的 videosList.firstWhere(orElse:
+        () => videosList.first) 会抛 StateError。该隐患在旧版第一分支本就存在，真实响应中
+        acceptQuality⊆dash.video 故不可达；无测试覆盖。"
+      truncated: false
+    - text: A10/A11/A12/A13 涉及 UI 与 Hive 持久化，仅经代码走查 + 既有全量测试（98
+        passed）核对，未做真机/模拟器人工勾选-重启验证；屏蔽列表相关自动化测试只覆盖 findAvailableVideoQuality 与
+        fallbackVideo，未覆盖两处菜单过滤、设置页与下载链路。
+      truncated: false
+  risks_truncated: false
+  completed_at: 2026-09-28T06:51:19.771Z
+history:
+  - goal_cycle: 1
+    iteration: 1
+    attempt: 0
+    outcome: recovery
+    unresolved_ids: []
+    summary:
+      text: Native check input changed after the candidate was built; a new Builder
+        candidate is required before checks can run again.
+      truncated: false
+    completed_at: 2026-09-28T06:21:28.555Z
+  - goal_cycle: 1
+    iteration: 2
+    attempt: 0
+    outcome: recovery
+    unresolved_ids: []
+    summary:
+      text: "Builder handoff Runtime checks failed: dart-analyze-changed-files"
+      truncated: false
+    completed_at: 2026-09-28T06:24:27.912Z
+  - goal_cycle: 1
+    iteration: 3
+    attempt: 1
+    outcome: pass
+    unresolved_ids: []
+    summary:
+      text: 候选 27114c45 通过 13/13 验收。核心修复在
+        lib/models/video/play/url.dart：findAvailableVideoQuality 增加
+        blockedQualities 参数，先剔除被屏蔽档再走原选档规则，剔除后无候选时退回旧结果，并新增 fallbackVideo 供
+        findVideoByQa 兜底。独立推演脚本（非 Builder 测试）穷举 4165 组输入确认空屏蔽集下与 HEAD
+        逐分支一致（唯一偏差是 acceptQuality 空列表时由抛异常改为返回最高可用档，spec 明确授权），另用 20825 组输入 ×
+        任意屏蔽组合确认无异常、无空返回。播放路径入口（初始化 1254、半屏→全屏 425、手动菜单两处
+        959/1042）均已覆盖，下载路径（download.dart:45、download_panel）确认未受影响。Pref.blockedVideoQualities
+        读写键与返回类型无问题，设置项与多选弹窗接线正确。flutter test 98 passed、flutter analyze 改动文件仅剩 1
+        条既有告警（controller.dart:668，HEAD 已存在）。人工未验证项已在 risks 中列明。
+      truncated: false
+    completed_at: 2026-09-28T06:51:19.771Z
+history_overflow:
+  dropped_entries: 0
+  first_dropped_at: null
+  last_dropped_at: null
+  outcome_counts:
+    pass: 0
+    fail: 0
+    blocked: 0
+    execution-error: 0
+    recovery: 0
+verification_result: pass
+verification_report: verification.md
+archived: true
+created_at: 2026-09-28T05:47:36.582Z

@@ -9,7 +9,7 @@ body:
     attributes:
       label: 检查清单
       options:
-        - label: 搜索了 [历史 issue](https://github.com/bggRGjQaUbCoE/PiliPlus/issues?q=is%3Aissue) ，并未发现相同功能请求
+        - label: 搜索了 [历史 issue](https://github.com/Starfallan/PiliNara/issues?q=is%3Aissue) ，并未发现相同功能请求
           required: true
         - label: 正在使用最新版本。
           required: true

@@ -3,6 +3,7 @@ import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
 import 'package:PiliPlus/http/reply.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -113,68 +114,71 @@ class ZanButtonGrpc extends StatelessWidget {
       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       visualDensity: VisualDensity.compact,
     );
+    final dislikeBtn = SizedBox(
+      height: 32,
+      child: TextButton(
+        style: const ButtonStyle(
+          visualDensity: .compact,
+          tapTargetSize: .shrinkWrap,
+          padding: WidgetStatePropertyAll(.zero),
+          minimumSize: WidgetStatePropertyAll(.square(40)),
+        ),
+        onPressed: () => onHateReply(
+          context,
+          isProcessing,
+          () => isProcessing = false,
+          isLike: isLike,
+          isDislike: isDislike,
+        ),
+        child: Icon(
+          isDislike
+              ? FontAwesomeIcons.solidThumbsDown
+              : FontAwesomeIcons.thumbsDown,
+          size: 16,
+          color: isDislike ? primary : outline,
+          semanticLabel: isDislike ? '已踩' : '点踩',
+        ),
+      ),
+    );
+    final likeBtn = SizedBox(
+      height: 32,
+      child: TextButton(
+        style: style,
+        onPressed: () => onLikeReply(
+          context,
+          isProcessing,
+          () => isProcessing = false,
+          isLike: isLike,
+          isDislike: isDislike,
+        ),
+        child: Row(
+          spacing: 4,
+          children: [
+            Icon(
+              isLike
+                  ? FontAwesomeIcons.solidThumbsUp
+                  : FontAwesomeIcons.thumbsUp,
+              size: 16,
+              color: isLike ? primary : outline,
+              semanticLabel: isLike ? '已赞' : '点赞',
+            ),
+            Text(
+              NumUtils.numFormat(replyItem.like.toInt()),
+              style: TextStyle(
+                color: isLike ? primary : outline,
+                fontSize: theme.textTheme.labelSmall!.fontSize,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    final swap = Pref.swapReplyLikeDislike;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(
-          height: 32,
-          child: TextButton(
-            style: const ButtonStyle(
-              visualDensity: .compact,
-              tapTargetSize: .shrinkWrap,
-              padding: WidgetStatePropertyAll(.zero),
-              minimumSize: WidgetStatePropertyAll(.square(40)),
-            ),
-            onPressed: () => onHateReply(
-              context,
-              isProcessing,
-              () => isProcessing = false,
-              isLike: isLike,
-              isDislike: isDislike,
-            ),
-            child: Icon(
-              isDislike
-                  ? FontAwesomeIcons.solidThumbsDown
-                  : FontAwesomeIcons.thumbsDown,
-              size: 16,
-              color: isDislike ? primary : outline,
-              semanticLabel: isDislike ? '已踩' : '点踩',
-            ),
-          ),
-        ),
-        SizedBox(
-          height: 32,
-          child: TextButton(
-            style: style,
-            onPressed: () => onLikeReply(
-              context,
-              isProcessing,
-              () => isProcessing = false,
-              isLike: isLike,
-              isDislike: isDislike,
-            ),
-            child: Row(
-              spacing: 4,
-              children: [
-                Icon(
-                  isLike
-                      ? FontAwesomeIcons.solidThumbsUp
-                      : FontAwesomeIcons.thumbsUp,
-                  size: 16,
-                  color: isLike ? primary : outline,
-                  semanticLabel: isLike ? '已赞' : '点赞',
-                ),
-                Text(
-                  NumUtils.numFormat(replyItem.like.toInt()),
-                  style: TextStyle(
-                    color: isLike ? primary : outline,
-                    fontSize: theme.textTheme.labelSmall!.fontSize,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        swap ? likeBtn : dislikeBtn,
+        swap ? dislikeBtn : likeBtn,
       ],
     );
   }

@@ -1,0 +1,33 @@
+name: Android
+
+on:
+    pull_request:
+        types:
+            - opened
+            - synchronize
+            - reopened
+            - ready_for_review
+        paths-ignore:
+            - "**.md"
+    workflow_dispatch:
+        inputs:
+            build_android:
+                description: "Build Android"
+                required: false
+                default: true
+                type: boolean
+
+            tag:
+                description: "Publish release when non-empty; actual tag uses build number"
+                required: false
+                default: ""
+                type: string
+
+jobs:
+    android:
+        if: ${{ github.event_name == 'pull_request' || github.event.inputs.build_android == 'true' }}
+        uses: ./.github/workflows/android_reusable.yml
+        permissions: write-all
+        with:
+            tag: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || '' }}
+        secrets: inherit

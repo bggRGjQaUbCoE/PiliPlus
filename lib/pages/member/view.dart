@@ -5,6 +5,7 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/dialog/report_member.dart';
 import 'package:PiliPlus/common/widgets/dynamic_sliver_app_bar/dynamic_sliver_app_bar.dart';
+import 'package:PiliPlus/common/widgets/flutter/popup_menu.dart';
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scroll_behavior.dart'
@@ -113,6 +114,9 @@ class _MemberPageState extends State<MemberPage> {
                         card: response.card!,
                         images: response.images!,
                         onFollow: () => _userController.onFollow(context),
+                        remark: _userController.remark.value,
+                        onEditRemark: () =>
+                            _userController.editRemark(context),
                         live: _userController.live,
                         silence: _userController.silence,
                         headerControllerBuilder: getHeaderController,
@@ -147,6 +151,7 @@ class _MemberPageState extends State<MemberPage> {
                           SizedBox(
                             height: 45,
                             child: TabBar(
+                              labelPadding: .zero,
                               controller: _userController.tabController,
                               tabs: _userController.tabs,
                               onTap: _userController.onTapTab,
@@ -342,11 +347,24 @@ class _MemberPageState extends State<MemberPage> {
       ),
       icon: const Icon(Icons.search_outlined),
     ),
-    PopupMenuButton(
+    StaticPopupMenuButton(
       icon: const Icon(Icons.more_vert),
       itemBuilder: (_) => <PopupMenuEntry>[
         if (_userController.account.isLogin &&
             _userController.account.mid != _mid) ...[
+          PopupMenuItem(
+            onTap: () => _userController.editRemark(context),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.edit_note, size: 19),
+                const SizedBox(width: 10),
+                Obx(() => Text(
+                  _userController.remark.value.isEmpty ? '添加备注' : '编辑备注',
+                )),
+              ],
+            ),
+          ),
           PopupMenuItem(
             onTap: () => _userController.blockUser(context),
             child: Row(

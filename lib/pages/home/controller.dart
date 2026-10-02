@@ -59,9 +59,14 @@ class HomeController extends GetxController
 
   @override
   Future<void> onRefresh() {
-    return controller.onRefresh().catchError((e) {
+    return controller.showRefresh().catchError((e) {
       if (kDebugMode) debugPrint(e.toString());
     });
+  }
+
+  @override
+  void toTopAndRefresh() {
+    controller.toTopAndRefresh();
   }
 
   void setTabConfig() {

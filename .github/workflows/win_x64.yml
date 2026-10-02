@@ -4,11 +4,17 @@ on:
   workflow_call:
     inputs:
       tag:
-        description: "tag"
+        description: "Publish release when non-empty; actual tag uses build number"
         required: false
         default: ""
         type: string
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Publish release when non-empty; actual tag uses build number"
+        required: false
+        default: ""
+        type: string
 
 jobs:
   build-windows-app:
@@ -50,36 +56,38 @@ jobs:
 
       - name: Prepare Upload
         run: |
-          mkdir -p Release/PiliPlus-Win
-          mkdir -p PiliPlus-Win-Setup
-          mv build/windows/x64/runner/Release/* Release/PiliPlus-Win/
-          mv dist/**/*.exe PiliPlus-Win-Setup/PiliPlus_windows_${{env.version}}_x64_setup.exe
+          mkdir -p Release/PiliNara-Win
+          mkdir -p PiliNara-Win-Setup
+          mv build/windows/x64/runner/Release/* Release/PiliNara-Win/
+          mv dist/**/*.exe PiliNara-Win-Setup/PiliNara_windows_${{env.version}}_x64_setup.exe
 
       - name: Compress
         run: |
-          Compress-Archive -Path "Release/PiliPlus-Win" -DestinationPath "PiliPlus_windows_${{env.version}}_x64_portable.zip"
+          Compress-Archive -Path "Release/PiliNara-Win" -DestinationPath "PiliNara_windows_${{env.version}}_x64_portable.zip"
         shell: pwsh
 
       - name: Release
-        if: ${{ github.event.inputs.tag != '' }}
+        if: ${{ inputs.tag != '' }}
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ github.event.inputs.tag }}
-          name: ${{ github.event.inputs.tag }}
+          tag_name: ${{ env.release_tag }}
+          name: ${{ env.release_tag }}
+          target_commitish: ${{ github.sha }}
           files: |
-            PiliPlus_windows_*.zip
-            PiliPlus-Win-Setup/PiliPlus_windows_*.exe
+            PiliNara_windows_*.zip
+            PiliNara-Win-Setup/PiliNara_windows_*.exe
+            release-manifest.json
 
       - name: Upload windows file release
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: Windows-file-x64-release
-          path: PiliPlus_windows_*.zip
+          path: PiliNara_windows_*.zip
 
       - name: Upload windows setup release
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: Windows-setup-x64-release
-          path: PiliPlus-Win-Setup/PiliPlus_windows_*.exe
+          path: PiliNara-Win-Setup/PiliNara_windows_*.exe

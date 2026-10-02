@@ -51,3 +51,14 @@ class LabelList {
     );
   }
 }
+
+enum MusicRecommendOrderType {
+  defaultOrder('默认排序'),
+  play('播放量'),
+  danmu('弹幕数量'),
+  duration('时长');
+
+  final String label;
+
+  const MusicRecommendOrderType(this.label);
+}

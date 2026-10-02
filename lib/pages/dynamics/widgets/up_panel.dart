@@ -7,10 +7,15 @@ import 'package:PiliPlus/pages/live_follow/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
+import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:get/get.dart';
+import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:get/get.dart';
+import 'package:hive_ce/hive.dart';
 
 class UpPanel extends StatefulWidget {
   const UpPanel({
@@ -104,17 +109,27 @@ class _UpPanelState extends State<UpPanel> {
         SliverToBoxAdapter(
           child: upItemBuild(theme, UpItem(face: '', uname: '全部动态', mid: -1)),
         ),
-        SliverToBoxAdapter(
-          child: Obx(
-            () => upItemBuild(
-              theme,
-              UpItem(
-                uname: '我',
-                face: controller.accountService.face.value,
-                mid: Accounts.main.mid,
-              ),
-            ),
+        StreamBuilder<BoxEvent>(
+          stream: GStorage.setting.watch().where(
+            (event) => event.key == SettingBoxKey.dynamicsShowSelfUp,
           ),
+          builder: (context, _) {
+            if (!Pref.dynamicsShowSelfUp) {
+              return const SliverToBoxAdapter(child: SizedBox.shrink());
+            }
+            return SliverToBoxAdapter(
+              child: Obx(
+                () => upItemBuild(
+                  theme,
+                  UpItem(
+                    uname: '我',
+                    face: controller.accountService.face.value,
+                    mid: Accounts.main.mid,
+                  ),
+                ),
+              ),
+            );
+          },
         ),
         if (upList != null && upList.isNotEmpty)
           SliverList.builder(
@@ -228,7 +243,7 @@ class _UpPanelState extends State<UpPanel> {
               Padding(
                 padding: const .symmetric(horizontal: 4),
                 child: Text(
-                  isTop ? '${item.uname}\n' : item.uname!,
+                  isTop ? '${remarkedName(item.mid, item.uname!)}\n' : remarkedName(item.mid, item.uname!),
                   maxLines: 2,
                   textAlign: .center,
                   style: TextStyle(

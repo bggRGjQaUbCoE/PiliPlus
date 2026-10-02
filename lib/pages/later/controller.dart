@@ -24,62 +24,31 @@ mixin BaseLaterController
         DeleteItemMixin<LaterData, LaterItemModel> {
   ValueChanged<int>? updateCount;
 
+  Future<void> _removeItems(Set<LaterItemModel> removeList) async {
+    if (removeList.isEmpty) {
+      return;
+    }
+    SmartDialog.showLoading(msg: '请求中');
+    final res = await UserHttp.toViewDel(
+      aids: removeList.map((item) => item.aid).join(','),
+    );
+    SmartDialog.dismiss();
+    if (res.isSuccess) {
+      updateCount?.call(removeList.length);
+      await afterDelete(removeList);
+      return;
+    }
+    res.toast();
+  }
+
   @override
   void onRemove() {
-    showConfirmDialog(
-      context: Get.context!,
-      title: const Text('提示'),
-      content: const Text('确认删除所选稍后再看吗？'),
-      onConfirm: () async {
-        final removeList = allChecked.toSet();
-        SmartDialog.showLoading(msg: '请求中');
-        final res = await UserHttp.toViewDel(
-          aids: removeList.map((item) => item.aid).join(','),
-        );
-        if (res.isSuccess) {
-          updateCount?.call(removeList.length);
-          afterDelete(removeList);
-        }
-        SmartDialog.dismiss();
-      },
-    );
+    _removeItems(allChecked.toSet());
   }
 
   // single
-  void toViewDel(
-    BuildContext context,
-    int index,
-    int? aid,
-  ) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('提示'),
-        content: const Text('即将移除该视频，确定是否移除'),
-        actions: [
-          TextButton(
-            onPressed: Get.back,
-            child: Text(
-              '取消',
-              style: TextStyle(color: Theme.of(context).colorScheme.outline),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              Get.back();
-              final res = await UserHttp.toViewDel(aids: aid.toString());
-              if (res.isSuccess) {
-                loadingState
-                  ..value.data!.removeAt(index)
-                  ..refresh();
-                updateCount?.call(1);
-              }
-            },
-            child: const Text('确认移除'),
-          ),
-        ],
-      ),
-    );
+  void toViewDel(LaterItemModel item) {
+    _removeItems({item});
   }
 }
 

@@ -1,0 +1,48 @@
+schema: comet.native.delta.v1
+capability: member-video-filter
+base_hash: 68943d4479493d51cc2419e9ef20a2b980f3513a0a378c3c9128656808198cf1
+base_version: 1
+legacy_hash: a0cadac05e90d352b4c2558ab69690a90a001c58c2a18d3ca8947233a300eacd
+base_requirements: {}
+operations:
+  - id: filtered-autofill
+    operation: add
+    title: 过滤结果不足一屏时自动翻页补载
+    body: |
+      过滤开启且作者视频尚未加载完毕时，只要过滤后可见内容不足以铺满当前页面，列表就自动请求下一页并重新过滤，无需用户上下滑动。
+
+      ### Scenario: 过滤后不足一屏时自动继续翻页
+
+      - GIVEN 播放量筛选已开启，且作者视频尚未加载完毕（`isEnd == false`）
+      - WHEN 过滤后可见内容不足以铺满当前页面
+      - THEN 列表自动请求下一页并按当前条件重新过滤，无需用户上下滑动
+
+      ### Scenario: 可见内容铺满页面后停止自动翻页
+
+      - GIVEN 自动补载正在进行
+      - WHEN 过滤后可见内容已铺满当前页面
+      - THEN 自动翻页停止，此后仅在用户手动上拉到列表尾部时才加载下一页
+
+      ### Scenario: 作者视频全部加载完毕时停止
+
+      - GIVEN 自动补载正在进行
+      - WHEN 作者视频已全部加载完毕（`isEnd`：视频类型 `hasNext == false` 或返回空列表，其他分页类型 `next == 0` 或返回空列表）
+      - THEN 自动翻页停止；若一条可见内容都没有，显示「没有更多了」并保留「调整过滤条件」入口
+
+      ### Scenario: 连续翻页达到安全上限后暂停
+
+      - GIVEN 一次自动补载已连续请求 50 页
+      - WHEN 可见内容仍未铺满当前页面且尚未到底
+      - THEN 自动翻页暂停并给出可理解的提示，不再继续自动请求；用户手动上拉后可继续加载
+
+      ### Scenario: 请求失败或无进展时停止
+
+      - GIVEN 自动补载正在进行
+      - WHEN 某一页请求失败，或该页没有带来新的视频数据
+      - THEN 自动翻页立即停止，不重复请求同一页，不形成请求风暴
+
+      ### Scenario: 过滤未开启时加载行为不变
+
+      - GIVEN 没有任何过滤条件生效
+      - WHEN 列表展示作者视频
+      - THEN 仍只在滚动到列表尾项时加载下一页，不自动连续翻页

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math' show max;
 
 import 'package:PiliPlus/models/common/publish_panel_type.dart';
+import 'package:PiliPlus/utils/extension/chat_bottom_panel_ext.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:chat_bottom_container/chat_bottom_container.dart';
@@ -100,7 +101,7 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
   }
 
   void _requestFocus({Duration duration = const Duration(microseconds: 200)}) {
-    Future.delayed(duration, _safeRequestFocus);
+    Timer(duration, _safeRequestFocus);
   }
 
   @override
@@ -108,6 +109,7 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
     if (state == .resumed) {
       if (_paused) {
         _paused = false;
+        controller.restoreChatPanel();
         final panelType = this.panelType.value;
         if (panelType == .keyboard || panelType == .none) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -122,6 +124,7 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
       }
     } else if (state == .paused) {
       _paused = true;
+      controller.keepChatPanel();
       if (focusNode.hasFocus) {
         focusNode.unfocus();
       }
@@ -166,7 +169,7 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
 
   Future<void> hidePanel([_]) async {
     if (focusNode.hasFocus) {
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future.pause(const Duration(milliseconds: 100));
       if (!mounted) return;
       focusNode.unfocus();
     }

@@ -9,7 +9,7 @@ body:
     attributes:
       label: 检查清单
       options:
-        - label: 搜索了 [历史 issue](https://github.com/bggRGjQaUbCoE/PiliPlus/issues?q=is%3Aissue) ，并未发现相同问题
+        - label: 搜索了 [历史 issue](https://github.com/Starfallan/PiliNara/issues?q=is%3Aissue) ，并未发现相同问题
           required: true
         - label: 正在使用最新版本。
           required: true
@@ -18,6 +18,8 @@ body:
         - label: 已排除账号问题
           required: true
         - label: 已排除设置问题
+          required: true
+        - label: 上游版本是否有相同的问题（有的话建议去[上游Issue](https://github.com/bggRGjQaUbCoE/PiliPlus/issues)进行反馈
           required: true
   
   - type: checkboxes

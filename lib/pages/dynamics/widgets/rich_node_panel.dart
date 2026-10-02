@@ -18,8 +18,6 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
-const _linkFoldedText = '网页链接';
-
 // 富文本
 TextSpan? richNode(
   BuildContext context, {
@@ -69,9 +67,6 @@ TextSpan? richNode(
       for (final i in richTextNodes) {
         switch (i.type) {
           case 'RICH_TEXT_NODE_TYPE_TEXT':
-            if (i.origText == _linkFoldedText) {
-              item.linkFolded = true;
-            }
             spanChildren.add(TextSpan(text: i.origText));
             break;
           // 表情
@@ -133,9 +128,6 @@ TextSpan? richNode(
           // 网页链接
           case 'RICH_TEXT_NODE_TYPE_WEB':
             final hasLink = i.jumpUrl?.isNotEmpty ?? false;
-            if (!hasLink) {
-              item.linkFolded = true;
-            }
             spanChildren
               ..add(
                 WidgetSpan(
@@ -264,7 +256,7 @@ TextSpan? richNode(
                             bvid: i.rid,
                             cid: cid,
                             dimension: res!.dimension,
-                            title: res.title,
+                            // title: res.title,
                           );
                         }
                       } catch (err) {

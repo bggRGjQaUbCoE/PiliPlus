@@ -7,6 +7,8 @@ import 'package:PiliPlus/utils/parse_string.dart';
 class RcmdVideoItemAppModel extends BaseRcmdVideoItemModel {
   int? get id => aid;
   String? talkBack;
+  String? tname;
+  int? canPlay;
 
   String? cardType;
   ThreePoint? threePoint;
@@ -21,8 +23,10 @@ class RcmdVideoItemAppModel extends BaseRcmdVideoItemModel {
     duration = json['player_args']?['duration'] ?? 0;
     //duration = json['cover_right_text'];
     title = json['title'];
-    owner = RcmdOwner.fromJson(json);
+    goto = json['card_goto'];
+    owner = RcmdOwner.fromJson(json, goto);
     rcmdReason = json['rcmd_reason'];
+    if (rcmdReason == '竖屏') rcmdReason = null;
     //     json['bottom_rcmd_reason'] ??
     //     json['top_rcmd_reason'];
     if (rcmdReason != null && rcmdReason!.contains('赞')) {
@@ -35,16 +39,17 @@ class RcmdVideoItemAppModel extends BaseRcmdVideoItemModel {
     // 如果是，就无需再显示推荐原因，交由view统一处理即可
     if (isFollowed) rcmdReason = null;
 
-    goto = json['goto'];
     param = int.parse(json['param']);
     uri = json['uri'];
     talkBack = json['talk_back'];
+    canPlay = json['can_play'];
 
-    if (json['goto'] == 'bangumi') {
+    if (goto == 'bangumi') {
       pgcBadge = json['cover_right_text'];
     }
 
     cardType = json['card_type'];
+    tname = json['args']?['tname'];
     threePoint = json['three_point_v2'] != null
         ? ThreePoint.fromJson(json['three_point_v2'])
         : null;
@@ -60,8 +65,8 @@ class RcmdStat extends BaseStat {
 }
 
 class RcmdOwner extends BaseOwner {
-  RcmdOwner.fromJson(Map<String, dynamic> json) {
-    name = json['goto'] == 'av'
+  RcmdOwner.fromJson(Map<String, dynamic> json, String? goto) {
+    name = goto == 'av'
         ? (json['args']?['up_name'] ?? '')
         : (json['desc_button']?['text'] ?? '');
     mid = json['args']?['up_id'] ?? 0;

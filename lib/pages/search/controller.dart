@@ -127,6 +127,7 @@ class SSearchController extends GetxController
     if (searchSuggestion) {
       subInit();
       searchSuggestList = <SearchSuggestItem>[].obs;
+      if (text != null) onValueChanged(text);
     }
 
     if (enableSearchRcmd) {
@@ -189,18 +190,23 @@ class SSearchController extends GetxController
       '/searchResult',
       parameters: {'tag': tag, 'keyword': text},
       arguments: {'initIndex': initIndex, 'fromSearch': true},
-    )?.whenComplete(searchFocusNode.requestFocus);
+    )?.then((val) {
+      searchFocusNode.requestFocus();
+      if (val is bool && val) {
+        onValueChanged(text);
+      }
+    });
   }
 
   Future<void> queryRecommendList() async {
     recommendData.value = await SearchHttp.searchRecommend();
   }
 
-  void onClickKeyword(String keyword) {
+  void onClickKeyword(String keyword, {bool clearSuggest = true}) {
     controller.text = keyword;
     validateUid();
 
-    if (searchSuggestion) searchSuggestList.clear();
+    if (searchSuggestion && clearSuggest) searchSuggestList.clear();
     submit();
   }
 

@@ -126,7 +126,7 @@ class _AboutPageState extends State<AboutPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  '使用Flutter开发的B站第三方客户端',
+                  '基于PiliPlus做了一些自用修改',
                   style: TextStyle(color: outline),
                   semanticsLabel: '与你一起，发现不一样的世界',
                 ),
@@ -177,6 +177,12 @@ Commit Hash: ${BuildConfig.commitHash}''',
             leading: const Icon(Icons.code),
             title: const Text('Source Code'),
             subtitle: Text(Constants.sourceCodeUrl, style: subTitleStyle),
+          ),
+          ListTile(
+            onTap: () => PageUtils.launchURL(Constants.upstreamCodeUrl),
+            leading: const Icon(Icons.code),
+            title: const Text('Upstream Code'),
+            subtitle: Text(Constants.upstreamCodeUrl, style: subTitleStyle),
           ),
           if (Platform.isAndroid)
             ListTile(

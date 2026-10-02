@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/flutter/popup_menu.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
@@ -75,40 +76,100 @@ class _MusicRecommendPageState extends State<MusicRecommendPage>
 
   Widget _buildAppBar(ThemeData theme, EdgeInsets padding) {
     final info = _controller.musicDetail;
-    return SliverAppBar(
-      pinned: true,
-      title: Row(
-        spacing: 12,
-        children: [
-          NetworkImgLayer(
-            width: 40,
-            height: 40,
-            src: info.mvCover,
-            type: ImageType.avatar,
-          ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                info.musicTitle!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleMedium,
+    return Obx(() {
+      final isSearch = _controller.isSearchMode.value;
+      return SliverAppBar(
+        pinned: true,
+        leading: isSearch
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  _controller.isSearchMode.value = false;
+                  _controller.searchController.clear();
+                },
+              )
+            : null,
+        title: isSearch
+            ? TextField(
+                autofocus: true,
+                focusNode: _controller.searchFocusNode,
+                controller: _controller.searchController,
+                textInputAction: TextInputAction.search,
+                textAlignVertical: TextAlignVertical.center,
+                decoration: InputDecoration(
+                  hintText: '搜索',
+                  visualDensity: VisualDensity.standard,
+                  border: InputBorder.none,
+                  suffixIcon: IconButton(
+                    tooltip: '清空',
+                    icon: const Icon(Icons.clear, size: 22),
+                    onPressed: () {
+                      _controller.searchController.clear();
+                      _controller.searchFocusNode.requestFocus();
+                    },
+                  ),
+                ),
+              )
+            : Row(
+                spacing: 12,
+                children: [
+                  NetworkImgLayer(
+                    width: 40,
+                    height: 40,
+                    src: info.mvCover,
+                    type: ImageType.avatar,
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        info.musicTitle!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleMedium,
+                      ),
+                      Obx(() {
+                        final count =
+                            _controller.loadingState.value.dataOrNull?.length;
+                        return count == null
+                            ? const SizedBox.shrink()
+                            : Text(
+                                '共$count条视频',
+                                style: theme.textTheme.labelMedium,
+                              );
+                      }),
+                    ],
+                  ),
+                ],
               ),
-              Obx(() {
-                final count = _controller.loadingState.value.dataOrNull?.length;
-                return count == null
-                    ? const SizedBox.shrink()
-                    : Text(
-                        '共$count条视频',
-                        style: theme.textTheme.labelMedium,
-                      );
-              }),
-            ],
-          ),
+        actions: [
+          if (!isSearch) ...[
+            IconButton(
+              tooltip: '搜索',
+              onPressed: () => _controller.isSearchMode.value = true,
+              icon: const Icon(Icons.search_outlined),
+            ),
+            StaticPopupMenuButton<MusicRecommendOrderType>(
+              icon: const Icon(Icons.sort),
+              initialValue: _controller.order.value,
+              tooltip: '排序方式',
+              onSelected: (value) => _controller
+                ..order.value = value
+                ..applySortAndFilter(),
+              itemBuilder: (context) => MusicRecommendOrderType.values
+                  .map(
+                    (e) => PopupMenuItem(
+                      value: e,
+                      child: Text(e.label),
+                    ),
+                  )
+                  .toList(),
+            ),
+            const SizedBox(width: 10),
+          ]
         ],
-      ),
-    );
+      );
+    });
   }
 }

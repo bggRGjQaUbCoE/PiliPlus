@@ -4,6 +4,7 @@ import 'dart:io' show File;
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/widgets/dialog/report.dart';
 import 'package:PiliPlus/common/widgets/flutter/chat_list_view.dart';
+import 'package:PiliPlus/common/widgets/flutter/popup_menu.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/text_field.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
@@ -196,9 +197,10 @@ class _WhisperDetailPageState
     showMenu(
       context: context,
       position: PageUtils.menuPosition(offset),
+      clipBehavior: Clip.antiAlias,
       items: [
         if (isOwner)
-          PopupMenuItem(
+          CustomPopupMenuItem<void>(
             height: 42,
             onTap: () => _whisperDetailController.sendMsg(
               message: '${item.msgKey}',
@@ -209,7 +211,7 @@ class _WhisperDetailPageState
             child: const Text('撤回', style: TextStyle(fontSize: 14)),
           )
         else
-          PopupMenuItem(
+          CustomPopupMenuItem<void>(
             height: 42,
             onTap: () => onReport(item),
             child: const Text('举报', style: TextStyle(fontSize: 14)),

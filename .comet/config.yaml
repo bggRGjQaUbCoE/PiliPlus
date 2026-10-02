@@ -1,0 +1,43 @@
+# Configuration schema used by Comet. Do not edit this value.
+schema: comet.project.v1
+# Default workflow entered by /comet. Must also appear in workflows.
+default_workflow: native
+# Workflows enabled in this project: native, classic, or both.
+workflows:
+  - native
+  - classic
+# Enables automatic recovery through the read-only Ambient Resume probe for both Native and Classic. Set false to disable it.
+# ambient_resume: true | false
+ambient_resume: true
+# Native workflow settings. They do not change Classic state or behavior.
+native:
+  # Root directory where Native stores Comet specs and changes. Runtime data stays under .comet.
+  artifact_root: docs
+  # Artifact language used by Native workflow documents.
+  # language: en | zh-CN
+  language: zh-CN
+  # Controls how Native asks clarifying questions: batch asks every currently answerable question per round (default), sequential asks one at a time.
+  # clarification_mode: batch | sequential
+  clarification_mode: batch
+  # Controls whether Native archives automatically after a successful preview or waits for explicit user confirmation.
+  # archive_confirmation: automatic | required
+  archive_confirmation: automatic
+  # Maximum failed Verify outcomes allowed for one confirmed acceptance target before Native stops the completion loop.
+  max_verify_failures: 5
+# Classic workflow settings. They do not change Native state or behavior.
+classic:
+  # Selects the Classic artifact layout. The default is docs; update preserves detected root-level legacy artifacts.
+  # artifact_layout: legacy | docs
+  artifact_layout: docs
+  # Artifact language used by Classic workflow documents.
+  # language: en | zh-CN
+  language: en
+  # Controls beta context compression for new Classic changes.
+  # context_compression: off | beta
+  context_compression: off
+  # Sets the default review depth for new Classic changes.
+  # review_mode: off | standard | thorough
+  review_mode: standard
+  # Automatically enters the next Classic phase after a phase passes.
+  # auto_transition: true | false
+  auto_transition: true

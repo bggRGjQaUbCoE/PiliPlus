@@ -1,6 +1,5 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
-import 'package:PiliPlus/utils/font_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoThemeData;
 import 'package:flutter/foundation.dart' show PlatformDispatcher;
@@ -33,7 +32,7 @@ abstract final class ThemeUtils {
     bool isDark = false,
   }) {
     final fontWeight = Pref.appFontWeight;
-    final fontFamily = FontUtils.fontFamily;
+    final fontFamily = Pref.appFont;
 
     TextTheme? textTheme;
     if (fontWeight != .normal) {
@@ -90,7 +89,29 @@ abstract final class ThemeUtils {
         ),
       ),
       popupMenuTheme: PopupMenuThemeData(
-        surfaceTintColor: isDark ? colorScheme.surfaceContainerHighest : null,
+        color: colorScheme.surfaceContainerLow,
+        elevation: 3,
+        shadowColor: colorScheme.shadow,
+        surfaceTintColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        ),
+        menuPadding: const EdgeInsets.symmetric(vertical: 4),
+        labelTextStyle: WidgetStatePropertyAll(
+          TextStyle(
+            color: colorScheme.onSurface,
+            fontSize: 14,
+            letterSpacing: 0.1,
+            fontWeight: FontWeight.w500,
+            fontFamily: fontFamily,
+          ),
+        ),
+      ),
+      listTileTheme: const ListTileThemeData(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+        ),
+        controlAffinity: .leading,
       ),
       cardTheme: CardThemeData(
         elevation: 1,
@@ -153,15 +174,16 @@ abstract final class ThemeUtils {
         shape: Border(),
         collapsedShape: Border(),
       ),
-      listTileTheme: const ListTileThemeData(controlAffinity: .leading),
       filledButtonTheme: const FilledButtonThemeData(
         style: ButtonStyle(
           shadowColor: WidgetStatePropertyAll(Colors.transparent),
         ),
       ),
-      pageTransitionsTheme: const PageTransitionsTheme(
+      pageTransitionsTheme: PageTransitionsTheme(
         builders: {
-          TargetPlatform.android: ZoomPageTransitionsBuilder(),
+          TargetPlatform.android: Pref.enablePredictiveBack
+              ? const PredictiveBackPageTransitionsBuilder()
+              : const ZoomPageTransitionsBuilder(),
         },
       ),
     );

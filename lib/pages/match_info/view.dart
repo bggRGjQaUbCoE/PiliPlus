@@ -209,6 +209,7 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
               isVideoDetail: false,
               replyType: controller.replyType,
               firstFloor: replyItem,
+              heroTag: arguments?['heroTag'],
             ),
           ).constraintWidth(),
         ),

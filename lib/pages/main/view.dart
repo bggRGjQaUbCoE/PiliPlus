@@ -12,7 +12,6 @@ import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/pages/home/view.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
@@ -22,6 +21,7 @@ import 'package:PiliPlus/utils/mobile_observer.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -68,7 +68,7 @@ class _MainAppState extends PopScopeState<MainApp>
         _handleTray();
       }
     }
-    if (PlatformUtils.isMobile || Platform.isLinux || Platform.isWindows) {
+    if (!Platform.isMacOS) {
       PiliScheme.init();
     }
   }
@@ -88,7 +88,12 @@ class _MainAppState extends PopScopeState<MainApp>
       }
     }
     if (!_mainController.useSideBar) {
-      _mainController.useBottomNav = MediaQuery.sizeOf(context).isPortrait;
+      final size = MediaQuery.sizeOf(context);
+      if (Pref.autoSideBar) {
+        _mainController.useBottomNav = size.width < Pref.sideBarThreshold;
+      } else {
+        _mainController.useBottomNav = size.isPortrait;
+      }
     }
   }
 
@@ -503,11 +508,7 @@ class _MainAppState extends PopScopeState<MainApp>
           child: bottomNav,
         );
       }
-      padding = .only(
-        top: _padding.top,
-        left: _padding.left,
-        right: _padding.right,
-      );
+      padding = _padding.copyWith(bottom: 0);
     } else {
       sideBar = DecoratedBox(
         decoration: BoxDecoration(
@@ -522,12 +523,17 @@ class _MainAppState extends PopScopeState<MainApp>
       padding = .only(top: _padding.top, right: _padding.right);
     }
 
+    final mainLayout = MainLayout(
+      sideBar: sideBar,
+      bottomNav: bottomNav,
+      body: Padding(padding: padding, child: child),
+    );
     child = Material(
-      child: MainLayout(
-        sideBar: sideBar,
-        bottomNav: bottomNav,
-        body: Padding(padding: padding, child: child),
-      ),
+      child: Pref.enableGradientBg
+          ? Stack(
+              children: [Positioned.fill(child: _gradientBg()), mainLayout],
+            )
+          : mainLayout,
     );
 
     if (PlatformUtils.isMobile) {
@@ -545,6 +551,26 @@ class _MainAppState extends PopScopeState<MainApp>
     }
 
     return child;
+  }
+
+  Widget _gradientBg() {
+    return Opacity(
+      opacity: .6,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              _colorScheme.primary.withValues(alpha: .6),
+              _colorScheme.primaryContainer.withValues(alpha: .6),
+              _colorScheme.surface,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            stops: const [.1, .4, .7],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildIcon({required NavigationBarType type, bool selected = false}) {

@@ -13,6 +13,7 @@ import 'package:PiliPlus/models/common/bar_hide_type.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
 import 'package:PiliPlus/models/common/home_tab_type.dart';
+import 'package:PiliPlus/models/common/mine_card_type.dart';
 import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
@@ -84,6 +85,14 @@ List<SettingsModel> get styleSettings => [
     defaultVal: false,
     needReboot: true,
   ),
+  SwitchModel(
+    title: '自动侧边栏切换',
+    subtitle: '屏幕较宽时（如折叠屏展开）自动改用侧边栏。点击自定义触发宽度。',
+    leading: const Icon(Icons.vertical_split_outlined),
+    setKey: SettingBoxKey.autoSideBar,
+    defaultVal: false,
+    onTap: _showSideBarThresholdDialog,
+  ),
   NormalModel(
     title: 'App字体设置',
     subtitle: '点击设置',
@@ -102,6 +111,15 @@ List<SettingsModel> get styleSettings => [
     getSubtitle: () => '当前：${Pref.pageTransition.name}',
     onTap: _showTransitionDialog,
   ),
+  if (Platform.isAndroid)
+    const SwitchModel(
+      title: '预测性返回动画',
+      subtitle: '开启后侧滑返回可原生预览上一页及桌面，需将页面过渡动画设为Native',
+      leading: Icon(Icons.swipe_left_outlined),
+      setKey: SettingBoxKey.enablePredictiveBack,
+      defaultVal: true,
+      needReboot: true,
+    ),
   const SwitchModel(
     title: '优化平板导航栏',
     leading: Icon(Icons.auto_fix_high),
@@ -115,6 +133,14 @@ List<SettingsModel> get styleSettings => [
     leading: Icon(Icons.design_services_outlined),
     setKey: SettingBoxKey.enableMYBar,
     defaultVal: true,
+    needReboot: true,
+  ),
+  const SwitchModel(
+    title: '首页背景渐变',
+    subtitle: '主框架背景由纯色改为渐变色',
+    leading: Icon(Icons.gradient_outlined),
+    setKey: SettingBoxKey.enableGradientBg,
+    defaultVal: false,
     needReboot: true,
   ),
   const SwitchModel(
@@ -162,6 +188,13 @@ List<SettingsModel> get styleSettings => [
           .whenComplete(setState);
       SmartDialog.showToast('重启生效');
     },
+  ),
+  const SwitchModel(
+    title: '动态页UP主列表显示“我”置顶',
+    subtitle: '用于快速查看个人的动态',
+    leading: Icon(Icons.push_pin_outlined),
+    setKey: SettingBoxKey.dynamicsShowSelfUp,
+    defaultVal: true,
   ),
   const SwitchModel(
     title: '动态页显示所有已关注UP主',
@@ -310,17 +343,26 @@ List<SettingsModel> get styleSettings => [
     leading: const Icon(Icons.color_lens_outlined),
     title: '应用主题',
     getSubtitle: () => '当前主题：${Pref.dynamicColor ? '动态取色' : '指定颜色'}',
-    getTrailing: (theme) => Pref.dynamicColor
-        ? Icon(Icons.color_lens_rounded, color: theme.colorScheme.primary)
-        : SizedBox.square(
-            dimension: 20,
-            child: ColorPalette(
-              colorScheme: colorThemeTypes[Pref.customColor].color
-                  .asColorSchemeSeed(Pref.schemeVariant, theme.brightness),
-              selected: false,
-              showBgColor: false,
-            ),
+    getTrailing: (theme) {
+      if (Pref.dynamicColor) {
+        return Icon(Icons.color_lens_rounded, color: theme.colorScheme.primary);
+      }
+      final customColor = Pref.customColor;
+      final color =
+          colorThemeTypes.elementAtOrNull(customColor)?.color ??
+          Color(customColor);
+      return SizedBox.square(
+        dimension: 20,
+        child: ColorPalette(
+          colorScheme: color.asColorSchemeSeed(
+            Pref.schemeVariant,
+            theme.brightness,
           ),
+          selected: false,
+          showBgColor: false,
+        ),
+      );
+    },
   ),
   PopupModel(
     leading: const Icon(Icons.home_outlined),
@@ -364,6 +406,30 @@ List<SettingsModel> get styleSettings => [
     title: 'Navbar编辑',
     subtitle: '删除或调换Navbar',
     leading: const Icon(Icons.toc_outlined),
+  ),
+  NormalModel(
+    onTap: (context, setState) => Get.toNamed(
+      '/barSetting',
+      arguments: {
+        'key': SettingBoxKey.mineCardSort,
+        'defaultBars': MineCardType.values,
+        'title': '我的页卡片',
+      },
+    ),
+    title: '我的页卡片编辑',
+    subtitle: '选择并排列「我的」页面显示的卡片板块',
+    leading: const Icon(Icons.person_outline),
+  ),
+  SwitchModel(
+    title: '备注替换昵称',
+    subtitle: '开启后备注首行将替换原昵称，建议首行填写为称呼；余下行仅在主页可见',
+    leading: const Icon(Icons.badge_outlined),
+    setKey: SettingBoxKey.remarkReplaceName,
+    defaultVal: false,
+    onChanged: (value) {
+      GlobalData().remarkReplaceName = value;
+      GlobalData().remarkVersion.value++;
+    },
   ),
   SwitchModel(
     title: '返回时直接退出',
@@ -683,6 +749,53 @@ Future<void> _showCardWidthDialog(
     SmartDialog.showToast('重启生效');
     setState();
   }
+}
+
+void _showSideBarThresholdDialog(BuildContext context) {
+  double threshold = Pref.sideBarThreshold;
+  showDialog(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setState) => AlertDialog(
+        title: const Text('自定义侧边栏触发宽度'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '当前屏幕宽度: ${MediaQuery.sizeOf(context).width.toStringAsFixed(1)}dp',
+            ),
+            const SizedBox(height: 8),
+            const Text('当屏幕宽度大于该阈值时，会自动切换为侧边栏。'),
+            Slider(
+              value: threshold,
+              min: 400,
+              max: 1000,
+              divisions: 60,
+              label: '${threshold.toStringAsFixed(1)}dp',
+              onChanged: (value) => setState(() => threshold = value),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => setState(() => threshold = 600),
+            child: const Text('恢复默认'),
+          ),
+          TextButton(
+            onPressed: () async {
+              await GStorage.setting.put(
+                SettingBoxKey.sideBarThreshold,
+                threshold,
+              );
+              Get.back();
+            },
+            child: const Text('确定'),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 void _setDynBadge(DynamicBadgeMode value, VoidCallback setState) {

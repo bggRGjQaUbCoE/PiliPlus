@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
+import 'package:PiliPlus/common/widgets/flutter/popup_menu.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/video_progress_indicator.dart';
 import 'package:PiliPlus/common/widgets/select_mask.dart';
@@ -201,7 +202,7 @@ class HistoryItem extends StatelessWidget {
               bottom: 0,
               width: 29,
               height: 29,
-              child: PopupMenuButton(
+              child: StaticPopupMenuButton(
                 padding: EdgeInsets.zero,
                 tooltip: '功能菜单',
                 icon: Icon(
@@ -209,7 +210,6 @@ class HistoryItem extends StatelessWidget {
                   color: theme.colorScheme.outline,
                   size: 18,
                 ),
-                position: PopupMenuPosition.under,
                 itemBuilder: (_) => [
                   if (item.authorMid != null &&
                       item.authorName?.isNotEmpty == true)

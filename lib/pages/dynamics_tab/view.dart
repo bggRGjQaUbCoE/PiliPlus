@@ -51,6 +51,7 @@ class _DynamicsTabPageState extends State<DynamicsTabPage>
   Widget build(BuildContext context) {
     super.build(context);
     return refreshIndicator(
+      key: controller.refreshKey,
       onRefresh: onRefresh,
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -103,6 +104,10 @@ class _DynamicsTabPageState extends State<DynamicsTabPage>
       onRemove: (idStr) => controller.onRemove(index, idStr),
       onBlock: () => controller.onBlock(index),
       onUnfold: () => controller.onUnfold(item, index),
+      onUpdate: (newItem) {
+        list[index] = newItem;
+        controller.loadingState.refresh();
+      },
     );
   }
 }

@@ -1,0 +1,139 @@
+schema: comet.capability-association.v1
+status: suggested
+workflow: native
+capability: member-video-filter
+current_spec: docs/comet/specs/member-video-filter/spec.md
+current_hash: 68943d4479493d51cc2419e9ef20a2b980f3513a0a378c3c9128656808198cf1
+confidence: high
+query: 播放量筛选后列表到底自动继续翻页直到作者视频加载完毕
+reason: 当前总 Spec 已命中，并找到 2 个历史来源；已核对当前能力文件，匹配 10 个查询词（high）
+historical_sources:
+  - docs/comet/archive/2026-08-22-member-video-filter/specs/member-video-filter/spec.md
+  - docs/comet/archive/2026-08-23-member-video-play-filter-slider/specs/member-video-filter/spec.md
+evidence:
+  - source: docs/comet/specs/member-video-filter/spec.md
+    kind: native-spec
+    title: 作者主页视频列表 · 播放量筛选（完整目标规格）
+    snippet: >-
+      # 作者主页视频列表 · 播放量筛选（完整目标规格）
+
+
+      本规格描述归档后 `member-video-filter` 能力的完整行为（修改后）。
+
+
+      ## 能力概述
+
+
+      在作者主页视频列表（`MemberVideo`，复用于 contribute 的 `video` / `charging_video` /
+      `season_video` / `series` 等 tab）的 header 筛选图标点击后，弹出一个
+      BottomSheet。用户通过触控滑块设置播放量区间（最小 /
+      最大），并通过显式确认按钮应用过滤；列表按条件在客户端本地过滤已加载的视频，过滤后为空时自动补载下一页。
+
+
+      ## 数据模型
+
+
+      `MemberVideoFilter`（`lib/pages/member_video/video_filter.dart`）保持字段不变：
+
+
+      - `bool enableMinPlay`：是否启用最小播放量阈值（隐藏低于阈值）。
+
+      - `int minPlay`：最小播放量阈值（原始整数，1万=10000）。
+
+      - `bool enableMaxPlay`：是否启用最大播放量阈值（隐藏高于阈值）。
+
+      - `int maxPlay`：最大播放量阈值（原始整数）。
+
+      - `bool hideCompleted`：隐藏已看完。
+
+      - `bool hideInProgress`：隐藏看过未看完。
+
+      - `
+  - source: docs/comet/archive/2026-08-22-member-video-filter/specs/member-video-filter/spec.md
+    kind: native-archive
+    title: 用户空间视频列表过滤
+    snippet: >-
+      # 用户空间视频列表过滤
+
+
+      ## 概述
+
+
+      `MemberVideo`
+      组件（覆盖投稿视频、充电专属、合集、系列四种列表）提供客户端本地过滤能力：按播放量区间与已观看状态隐藏视频，帮助用户快速定位未看的高播放量内容。
+
+
+      ## 过滤条件
+
+
+      ### 播放量过滤
+
+
+      - 最小播放量阈值与最大播放量阈值各自独立开关，默认均关闭。
+
+      - 阈值支持预设（1万 / 10万 / 50万 / 100万）与自定义输入。
+
+      - 播放量取 `SpaceArchiveItem.stat.view`（int）。
+
+      - 隐藏规则：播放量 < 最小阈值 或 播放量 > 最大阈值 的视频被隐藏。
+
+
+      ### 已观看过滤
+
+
+      - 两个独立开关，默认均关闭：
+        - 「隐藏已看完」：`history != null && history.progress == history.duration` 的视频被隐藏。
+        - 「隐藏看过未看完」：`history != null && progress != duration` 的视频被隐藏。
+      - 两开关同时开启时，所有存在 `history` 的视频（即所有看过部分或全部的视频）均被隐藏。
+
+
+      ### 过滤边界
+
+
+      - 所有开关均关闭时不做任何过滤，列表与现状完全一致。
+
+      - 缺失字段（如 `history == null`、进度数据异常）不视为已观看，不过滤。
+
+
+      ## 入口与交互
+
+
+      - 列表
+  - source: docs/comet/archive/2026-08-23-member-video-play-filter-slider/specs/member-video-filter/spec.md
+    kind: native-archive
+    title: 作者主页视频列表 · 播放量筛选（完整目标规格）
+    snippet: >-
+      # 作者主页视频列表 · 播放量筛选（完整目标规格）
+
+
+      本规格描述归档后 `member-video-filter` 能力的完整行为（修改后）。
+
+
+      ## 能力概述
+
+
+      在作者主页视频列表（`MemberVideo`，复用于 contribute 的 `video` / `charging_video` /
+      `season_video` / `series` 等 tab）的 header 筛选图标点击后，弹出一个
+      BottomSheet。用户通过触控滑块设置播放量区间（最小 /
+      最大），并通过显式确认按钮应用过滤；列表按条件在客户端本地过滤已加载的视频，过滤后为空时自动补载下一页。
+
+
+      ## 数据模型
+
+
+      `MemberVideoFilter`（`lib/pages/member_video/video_filter.dart`）保持字段不变：
+
+
+      - `bool enableMinPlay`：是否启用最小播放量阈值（隐藏低于阈值）。
+
+      - `int minPlay`：最小播放量阈值（原始整数，1万=10000）。
+
+      - `bool enableMaxPlay`：是否启用最大播放量阈值（隐藏高于阈值）。
+
+      - `int maxPlay`：最大播放量阈值（原始整数）。
+
+      - `bool hideCompleted`：隐藏已看完。
+
+      - `bool hideInProgress`：隐藏看过未看完。
+
+      - `

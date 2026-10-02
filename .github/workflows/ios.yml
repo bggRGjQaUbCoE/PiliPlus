@@ -3,12 +3,33 @@ name: Build for iOS
 on:
   workflow_call:
     inputs:
+      ref:
+        description: "Git ref to build"
+        required: false
+        default: ""
+        type: string
       tag:
-        description: "tag"
+        description: "Publish release when non-empty; actual tag uses build number"
+        required: false
+        default: ""
+        type: string
+      artifact_name:
+        description: "Artifact name"
+        required: false
+        default: "iOS-release"
+        type: string
+      file_suffix:
+        description: "Optional IPA filename suffix"
         required: false
         default: ""
         type: string
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Publish release when non-empty; actual tag uses build number"
+        required: false
+        default: ""
+        type: string
 
 jobs:
   build-macos-app:
@@ -18,6 +39,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
         with:
+          ref: ${{ inputs.ref != '' && inputs.ref || github.ref }}
           fetch-depth: 0
 
       - name: Setup flutter
@@ -33,6 +55,7 @@ jobs:
       - name: Apply Patch
         shell: pwsh
         run: lib/scripts/patch.ps1 iOS
+        continue-on-error: true
 
       - name: Build iOS
         run: |
@@ -40,20 +63,21 @@ jobs:
           ln -sf ./build/ios/iphoneos Payload
           # make AltSign happy...
           find Payload/Runner.app/Frameworks -type d -name "*.framework" -exec codesign --force --sign - --preserve-metadata=identifier,entitlements {} \;
-          zip -r9 PiliPlus_ios_${{env.version}}.ipa Payload/Runner.app
+          zip -r9 PiliNara_ios_${{env.version}}${{ inputs.file_suffix }}.ipa Payload/runner.app
 
       - name: Release
-        if: ${{ github.event.inputs.tag != '' }}
+        if: ${{ inputs.tag != '' }}
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ github.event.inputs.tag }}
-          name: ${{ github.event.inputs.tag }}
+          tag_name: ${{ env.release_tag }}
+          name: ${{ env.release_tag }}
+          target_commitish: ${{ github.sha }}
           files: |
-            PiliPlus_ios_*.ipa
+            PiliNara_ios_*.ipa
+            release-manifest.json
 
       - name: Upload ios release
         uses: actions/upload-artifact@v7
         with:
-          archive: false
-          name: iOS-release
-          path: PiliPlus_ios_*.ipa
+          name: ${{ inputs.artifact_name }}
+          path: PiliNara_ios_*.ipa

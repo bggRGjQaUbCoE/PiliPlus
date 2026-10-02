@@ -27,12 +27,16 @@ class MouseInteractiveViewer extends StatefulWidget {
     this.onPointerPanZoomUpdate,
     this.onPointerPanZoomEnd,
     required this.onPointerDown,
+    this.onPointerMove,
+    this.onPointerUp,
+    this.onPointerCancel,
     required this.onPanEnd,
     required this.onPanStart,
     required this.onPanUpdate,
     required this.onScaleUpdate,
     this.panEnabled = true,
     this.scaleEnabled = true,
+    this.rotateEnabled = false,
     this.scaleFactor = kDefaultMouseScrollToScaleFactor,
     required this.transformationController,
     this.alignment,
@@ -53,6 +57,7 @@ class MouseInteractiveViewer extends StatefulWidget {
   final bool constrained;
   final bool panEnabled;
   final bool scaleEnabled;
+  final bool rotateEnabled;
   final bool trackpadScrollCausesScale;
   final double scaleFactor;
   final double maxScale;
@@ -62,6 +67,9 @@ class MouseInteractiveViewer extends StatefulWidget {
   final PointerPanZoomUpdateEventListener? onPointerPanZoomUpdate;
   final PointerPanZoomEndEventListener? onPointerPanZoomEnd;
   final PointerDownEventListener onPointerDown;
+  final PointerMoveEventListener? onPointerMove;
+  final PointerUpEventListener? onPointerUp;
+  final PointerCancelEventListener? onPointerCancel;
   final GestureScaleEndCallback onPanEnd;
   final GestureScaleStartCallback onPanStart;
   final GestureScaleUpdateCallback onPanUpdate;
@@ -86,11 +94,13 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
   late Offset _scaleAnimationFocalPoint;
   late AnimationController _controller;
   late AnimationController _scaleController;
+  late AnimationController _snapController;
+  Animation<Matrix4>? _snapAnimation;
   Axis? _currentAxis;
   Offset? _referenceFocalPoint;
   double? _scaleStart;
   double? _rotationStart = 0.0;
-  double _currentRotation = 0.0;
+  int _gestureStartQuarter = 0;
   _GestureType? _gestureType;
 
   static final gestureSettings = DeviceGestureSettings(
@@ -99,7 +109,24 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
 
   late final ScaleGestureRecognizer _scaleGestureRecognizer;
 
-  final bool _rotateEnabled = false;
+  static const double _kQuarterTurn = math.pi / 2;
+  static const Duration _kSnapDuration = Duration(milliseconds: 255);
+
+  // 矩阵线性部分的旋转角。等比缩放下 m00=s·cosθ、m10=s·sinθ，
+  // 角度一律由此反解，不维护独立簿记（外部写矩阵不会失同步）
+  double get _matrixRotation {
+    final storage = _transformer.value.storage;
+    return math.atan2(storage[1], storage[0]);
+  }
+
+  int _quarterOf(double rotation) => (rotation / _kQuarterTurn).round();
+
+  double _quarterAngle(int quarter) => switch (quarter % 4) {
+    1 => _kQuarterTurn,
+    2 => math.pi,
+    3 => -_kQuarterTurn,
+    _ => 0,
+  };
 
   Rect get _boundaryRect {
     assert(widget.childKey.currentContext != null);
@@ -158,9 +185,15 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
       return nextMatrix;
     }
 
+    // 旋转态不做边界钳制，合法性由旋转吸附落位恢复
+    final double rotation = _matrixRotation;
+    if (rotation != 0.0) {
+      return nextMatrix;
+    }
+
     final Quad boundariesAabbQuad = _getAxisAlignedBoundingBoxWithRotation(
       _boundaryRect,
-      _currentRotation,
+      rotation,
     );
 
     final Offset offendingDistance = _exceedsBy(
@@ -223,16 +256,24 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
     assert(scale != 0.0);
 
     final double currentScale = _transformer.value.getMaxScaleOnAxis();
-    final double totalScale = math.max(
-      currentScale * scale,
-      math.max(
-        _viewport.width / _boundaryRect.width,
-        _viewport.height / _boundaryRect.height,
-      ),
-    );
+    double totalScale = currentScale * scale;
+    double minScale = widget.minScale;
+    if (math.sin(_matrixRotation).abs() > 0.001) {
+      // 横竖互换的旋转态：缩放下限放宽到 contain 适配值，钳回由吸附落位完成
+      final Size size = _viewport.size;
+      minScale = math.min(minScale, size.shortestSide / size.longestSide);
+    } else {
+      totalScale = math.max(
+        totalScale,
+        math.max(
+          _viewport.width / _boundaryRect.width,
+          _viewport.height / _boundaryRect.height,
+        ),
+      );
+    }
     final double clampedTotalScale = clampDouble(
       totalScale,
-      widget.minScale,
+      minScale,
       widget.maxScale,
     );
 
@@ -256,7 +297,6 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
 
   bool _gestureIsSupported(_GestureType? gestureType) {
     return switch (gestureType) {
-      _GestureType.rotate => _rotateEnabled,
       _GestureType.scale => widget.scaleEnabled,
       _GestureType.pan || null => widget.panEnabled,
     };
@@ -264,11 +304,8 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
 
   _GestureType _getGestureType(ScaleUpdateDetails details) {
     final double scale = !widget.scaleEnabled ? 1.0 : details.scale;
-    final double rotation = !_rotateEnabled ? 0.0 : details.rotation;
-    if ((scale - 1).abs() > rotation.abs()) {
+    if (scale != 1.0) {
       return _GestureType.scale;
-    } else if (rotation != 0.0) {
-      return _GestureType.rotate;
     } else {
       return _GestureType.pan;
     }
@@ -298,12 +335,20 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
       _scaleAnimation?.removeListener(_handleScaleAnimation);
       _scaleAnimation = null;
     }
+    if (_snapController.isAnimating) {
+      _snapController
+        ..stop()
+        ..reset();
+      _snapAnimation?.removeListener(_handleSnapAnimation);
+      _snapAnimation = null;
+    }
 
     _gestureType = null;
     _currentAxis = null;
     _scaleStart = _transformer.value.getMaxScaleOnAxis();
     _referenceFocalPoint = _transformer.toScene(details.localFocalPoint);
-    _rotationStart = _currentRotation;
+    _rotationStart = _matrixRotation;
+    _gestureStartQuarter = _quarterOf(_rotationStart!);
   }
 
   // Handle an update to an ongoing gesture. All of pan, scale, and rotate are
@@ -311,6 +356,11 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
   void _onScaleUpdate(ScaleUpdateDetails details) {
     if (_isSinglePointer) {
       widget.onPanUpdate(details);
+      return;
+    }
+
+    if (widget.rotateEnabled && widget.scaleEnabled) {
+      _onRotateScaleUpdate(details);
       return;
     }
 
@@ -367,18 +417,6 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
           _referenceFocalPoint = focalPointSceneCheck;
         }
 
-      case _GestureType.rotate:
-        if (details.rotation == 0.0) {
-          return;
-        }
-        final double desiredRotation = _rotationStart! + details.rotation;
-        _transformer.value = _matrixRotate(
-          _transformer.value,
-          _currentRotation - desiredRotation,
-          details.localFocalPoint,
-        );
-        _currentRotation = desiredRotation;
-
       case _GestureType.pan:
         assert(_referenceFocalPoint != null);
         // details may have a change in scale here when scaleEnabled is false.
@@ -416,6 +454,12 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
     _scaleAnimation?.removeListener(_handleScaleAnimation);
     _controller.reset();
     _scaleController.reset();
+
+    if (widget.rotateEnabled && widget.scaleEnabled) {
+      _currentAxis = null;
+      _snapRotation();
+      return;
+    }
 
     if (!_gestureIsSupported(_gestureType)) {
       _currentAxis = null;
@@ -484,8 +528,126 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
         _scaleController
           ..duration = Duration(milliseconds: (tFinal * 1000).round())
           ..forward();
-      case _GestureType.rotate || null:
+      case null:
         break;
+    }
+  }
+
+  // 双指期间缩放/旋转/平移同时跟手，松手由 _snapRotation 定型
+  void _onRotateScaleUpdate(ScaleUpdateDetails details) {
+    _scaleAnimationFocalPoint = details.localFocalPoint;
+
+    final double currentScale = _transformer.value.getMaxScaleOnAxis();
+    final double desiredScale = _scaleStart! * details.scale;
+    if (desiredScale != currentScale) {
+      _transformer.value = _matrixScale(
+        _transformer.value,
+        desiredScale / currentScale,
+      );
+    }
+
+    final double desiredRotation = _rotationStart! + details.rotation;
+    final double currentRotation = _matrixRotation;
+    if (desiredRotation != currentRotation) {
+      _transformer.value = _matrixRotate(
+        _transformer.value,
+        currentRotation - desiredRotation,
+        details.localFocalPoint,
+      );
+    }
+
+    // 平移使起始焦点始终锚定在手指下（含缩放/旋转位移的修正）
+    final Offset focalPointScene = _transformer.toScene(
+      details.localFocalPoint,
+    );
+    _transformer.value = _matrixTranslate(
+      _transformer.value,
+      focalPointScene - _referenceFocalPoint!,
+    );
+    final Offset focalPointSceneCheck = _transformer.toScene(
+      details.localFocalPoint,
+    );
+    if (_round(_referenceFocalPoint!) != _round(focalPointSceneCheck)) {
+      _referenceFocalPoint = focalPointSceneCheck;
+    }
+  }
+
+  // 旋转吸附：换向 → 适配居中；未换向 → 只摆正角度，保留缩放/平移
+  void _snapRotation() {
+    final Matrix4 matrix = _transformer.value;
+    final double rotation = _matrixRotation;
+    final int quarter = _quarterOf(rotation);
+
+    final Matrix4 target;
+    if ((quarter - _gestureStartQuarter) % 4 != 0) {
+      target = _fitCenteredPose(quarter);
+    } else {
+      final double delta = rotation - _quarterAngle(quarter);
+      final Matrix4 straightened = delta == 0.0
+          ? matrix
+          : _matrixRotate(matrix, delta, _viewport.center);
+      // 重组使档位角精确（0° 需 m10 精确为零以恢复边界钳制）
+      target = _composePose(
+        _getMatrixTranslation(straightened),
+        quarter,
+        straightened.getMaxScaleOnAxis(),
+      );
+    }
+    if (target == matrix) {
+      return;
+    }
+    _animateSnapTo(target);
+  }
+
+  Matrix4 _fitCenteredPose(int quarter) {
+    final int q = quarter % 4;
+    if (q == 0) {
+      return Matrix4.identity();
+    }
+    final RenderBox childRenderBox =
+        widget.childKey.currentContext!.findRenderObject()! as RenderBox;
+    final Size size = childRenderBox.size;
+    final double scale = q.isOdd ? size.shortestSide / size.longestSide : 1.0;
+    final Offset center = size.center(Offset.zero);
+    return Matrix4.identity()
+      ..translateByDouble(center.dx, center.dy, 0, 1)
+      ..rotateZ(_quarterAngle(q))
+      ..scaleByDouble(scale, scale, scale, 1)
+      ..translateByDouble(-center.dx, -center.dy, 0, 1);
+  }
+
+  Matrix4 _composePose(Offset translation, int quarter, double scale) {
+    final Matrix4 pose = Matrix4.identity()
+      ..translateByDouble(translation.dx, translation.dy, 0, 1);
+    if (quarter % 4 != 0) {
+      pose.rotateZ(_quarterAngle(quarter));
+    }
+    return pose..scaleByDouble(scale, scale, scale, 1);
+  }
+
+  void _animateSnapTo(Matrix4 target) {
+    _snapAnimation =
+        _snapController.drive(
+            Matrix4Tween(
+              begin: _transformer.value.clone(),
+              end: target,
+            ).chain(CurveTween(curve: Curves.easeOutCubic)),
+          )
+          ..addListener(_handleSnapAnimation);
+    _snapController
+      ..duration = _kSnapDuration
+      ..forward().whenComplete(() {
+        // Tween 分解重组有残差，终值显式写入
+        _transformer.value = target;
+      });
+  }
+
+  void _handleSnapAnimation() {
+    _transformer.value = _snapAnimation!.value;
+    if (!_snapController.isAnimating) {
+      _snapAnimation?.removeListener(_handleSnapAnimation);
+      _snapAnimation = null;
+      _snapController.reset();
     }
   }
 
@@ -655,6 +817,7 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
       ..onEnd = _onScaleEnd;
     _controller = AnimationController(vsync: this);
     _scaleController = AnimationController(vsync: this);
+    _snapController = AnimationController(vsync: this);
 
     _transformer = widget.transformationController;
     _transformer.addListener(_handleTransformation);
@@ -677,6 +840,7 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
   void dispose() {
     _controller.dispose();
     _scaleController.dispose();
+    _snapController.dispose();
     _transformer.removeListener(_handleTransformation);
     super.dispose();
   }
@@ -690,6 +854,9 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
       behavior: HitTestBehavior.opaque,
       onPointerSignal: _receivedPointerSignal,
       onPointerDown: widget.onPointerDown,
+      onPointerMove: widget.onPointerMove,
+      onPointerUp: widget.onPointerUp,
+      onPointerCancel: widget.onPointerCancel,
       onPointerPanZoomStart: _scaleGestureRecognizer.addPointerPanZoom,
       onPointerPanZoomUpdate: widget.onPointerPanZoomUpdate,
       onPointerPanZoomEnd: widget.onPointerPanZoomEnd,
@@ -749,7 +916,7 @@ class _InteractiveViewerBuilt extends StatelessWidget {
   }
 }
 
-enum _GestureType { pan, scale, rotate }
+enum _GestureType { pan, scale }
 
 double _getFinalTime(
   double velocity,

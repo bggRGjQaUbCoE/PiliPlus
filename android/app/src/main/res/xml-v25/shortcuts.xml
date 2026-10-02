@@ -5,7 +5,7 @@
         android:shortcutLongLabel="@string/search"
         android:shortcutShortLabel="@string/search">
         <intent
-            android:action="com.example.piliplus.SHORTCUT"
+            android:action="com.example.pilinara.SHORTCUT"
             android:data="bilibili://search" />
     </shortcut>
     <shortcut
@@ -14,7 +14,7 @@
         android:shortcutLongLabel="@string/offline_video"
         android:shortcutShortLabel="@string/offline_video">
         <intent
-            android:action="com.example.piliplus.SHORTCUT"
+            android:action="com.example.pilinara.SHORTCUT"
             android:data="bilibili://download" />
     </shortcut>
 </shortcuts>

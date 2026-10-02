@@ -18,7 +18,7 @@ if (!isBuiltInKotlinEnabled) {
 }
 
 android {
-    namespace = "com.example.piliplus"
+    namespace = "com.example.pilinara"
     compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
@@ -28,7 +28,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.piliplus"
+        applicationId = "com.example.pilinara"
         minSdk = flutter.minSdkVersion
         targetSdk = 37
         versionCode = flutter.versionCode
@@ -62,7 +62,10 @@ android {
 
     buildTypes {
         all {
-            signingConfig = config ?: signingConfigs["debug"]
+            // 允许通过 `-Punsigned=true` 生成未签名 release 包，默认行为保持不变。
+            if (!project.hasProperty("unsigned")) {
+                signingConfig = config ?: signingConfigs["debug"]
+            }
         }
         release {
             if (project.hasProperty("dev")) {

@@ -1,7 +1,9 @@
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
+import 'package:PiliPlus/common/widgets/flutter/popup_menu.dart';
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart' hide ListTile;
+import 'package:material_ui/material_ui.dart' as material show PopupMenuItem;
 
 typedef PopupMenuItemSelected<T> = void Function(
   T value,
@@ -10,7 +12,9 @@ typedef PopupMenuItemSelected<T> = void Function(
 
 List<PopupMenuEntry<T>> enumItemBuilder<T extends EnumWithLabel>(
   Iterable<T> items,
-) => items.map((e) => PopupMenuItem(value: e, child: Text(e.label))).toList();
+) => items
+    .map((e) => CustomPopupMenuItem(value: e, child: Text(e.label)))
+    .toList();
 
 enum DescPosType { subtitle, title, trailing }
 
@@ -50,7 +54,11 @@ class PopupListTile<T> extends StatefulWidget {
 class _PopupListTileState<T> extends State<PopupListTile<T>> {
   final _key = PlatformUtils.isDesktop ? null : GlobalKey();
 
-  void _showButtonMenu(TapUpDetails details, T value) {
+  void _showButtonMenu(
+    BuildContext menuContext,
+    TapUpDetails details,
+    T value,
+  ) {
     final thisOffset = details.globalPosition - details.localPosition;
     final double dx;
     if (PlatformUtils.isDesktop) {
@@ -61,10 +69,44 @@ class _PopupListTileState<T> extends State<PopupListTile<T>> {
       final titleOffset = titleBox.localToGlobal(.zero, ancestor: thisBox);
       dx = thisOffset.dx + titleOffset.dx;
     }
-    showMenu<T>(
-      context: context,
+    final items = widget.itemBuilder(context).map((item) {
+      if (item is CustomPopupMenuItem<T>) {
+        return CustomPopupMenuItem<T>(
+          value: item.value,
+          height: item.height,
+          selected: item.represents(value),
+          enabled: item.enabled,
+          padding: item.padding,
+          labelTextStyle: item.labelTextStyle,
+          textStyle: item.textStyle,
+          mouseCursor: item.mouseCursor,
+          onTap: item.onTap,
+          borderRadius: item.borderRadius,
+          outerPadding: item.outerPadding,
+          stateLayerColor: item.stateLayerColor,
+          child: item.child,
+        );
+      }
+      if (item is material.PopupMenuItem<T>) {
+        return CustomPopupMenuItem<T>(
+          value: item.value,
+          height: item.height,
+          selected: item.represents(value),
+          enabled: item.enabled,
+          padding: item.padding,
+          labelTextStyle: item.labelTextStyle,
+          textStyle: item.textStyle,
+          mouseCursor: item.mouseCursor,
+          onTap: item.onTap,
+          child: item.child,
+        );
+      }
+      return item;
+    }).toList();
+    showMenu<T?>(
+      context: menuContext,
       position: RelativeRect.fromLTRB(dx, thisOffset.dy + 5, dx, 0),
-      items: widget.itemBuilder(context),
+      items: items,
       initialValue: value,
       requestFocus: false,
     ).then<void>((newValue) {
@@ -107,16 +149,29 @@ class _PopupListTileState<T> extends State<PopupListTile<T>> {
       case DescPosType.trailing:
         trailing = desc;
     }
-    return ListTile(
-      dense: widget.dense,
-      safeArea: widget.safeArea,
-      enabled: widget.enabled,
-      onTapUp: (details) => _showButtonMenu(details, value),
-      leading: widget.leading,
-      title: title,
-      titleTextStyle: widget.titleStyle ?? theme.textTheme.titleMedium,
-      subtitle: subtitle,
-      trailing: trailing,
+    final menuTheme = theme.copyWith(highlightColor: Colors.transparent);
+    return Theme(
+      data: menuTheme,
+      child: Builder(
+        builder: (menuContext) => Theme(
+          data: theme,
+          child: ListTile(
+            dense: widget.dense,
+            safeArea: widget.safeArea,
+            enabled: widget.enabled,
+            onTapUp: (details) => _showButtonMenu(
+              menuContext,
+              details,
+              value,
+            ),
+            leading: widget.leading,
+            title: title,
+            titleTextStyle: widget.titleStyle ?? theme.textTheme.titleMedium,
+            subtitle: subtitle,
+            trailing: trailing,
+          ),
+        ),
+      ),
     );
   }
 }

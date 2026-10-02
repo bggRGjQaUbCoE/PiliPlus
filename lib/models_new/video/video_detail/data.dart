@@ -7,6 +7,7 @@ import 'package:PiliPlus/models_new/video/video_detail/rights.dart';
 import 'package:PiliPlus/models_new/video/video_detail/staff.dart';
 import 'package:PiliPlus/models_new/video/video_detail/stat.dart';
 import 'package:PiliPlus/models_new/video/video_detail/ugc_season.dart';
+import 'package:PiliPlus/models/common/list_order.dart';
 import 'package:PiliPlus/utils/parse_string.dart';
 
 class VideoDetailData {
@@ -33,7 +34,8 @@ class VideoDetailData {
   UgcSeason? ugcSeason;
   List<Staff>? staff;
   String? redirectUrl;
-  bool isPageReversed = false;
+  ListOrder listOrder = ListOrder.asc;
+  List<Part>? originalPages;
 
   VideoDetailData({
     this.bvid,

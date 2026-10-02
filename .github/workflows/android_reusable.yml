@@ -1,0 +1,163 @@
+name: Reusable Android Build
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: "Git ref to build"
+        required: false
+        default: ""
+        type: string
+      tag:
+        description: "Publish release when non-empty; actual tag uses build number"
+        required: false
+        default: ""
+        type: string
+      dev:
+        description: "Whether to build dev variant"
+        required: false
+        default: false
+        type: boolean
+      target_platforms:
+        description: "Flutter target platforms"
+        required: false
+        default: "android-arm,android-arm64,android-x64"
+        type: string
+      upload_arm64_v8a:
+        description: "Upload arm64-v8a artifact"
+        required: false
+        default: true
+        type: boolean
+      upload_armeabi_v7a:
+        description: "Upload armeabi-v7a artifact"
+        required: false
+        default: true
+        type: boolean
+      upload_x86_64:
+        description: "Upload x86_64 artifact"
+        required: false
+        default: true
+        type: boolean
+    secrets:
+      SIGN_KEYSTORE_BASE64:
+        required: false
+      KEYSTORE_PASSWORD:
+        required: false
+      KEY_ALIAS:
+        required: false
+      KEY_PASSWORD:
+        required: false
+
+jobs:
+  android:
+    name: Release Android
+    runs-on: ubuntu-latest
+    permissions: write-all
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref != '' && inputs.ref || github.ref }}
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: "zulu"
+          java-version: "17"
+          cache: "gradle"
+          cache-dependency-path: |
+            android/*.gradle*
+            android/**/gradle-wrapper.properties
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+          cache: true
+
+      - name: Apply Patch
+        shell: pwsh
+        run: lib/scripts/patch.ps1 android
+        continue-on-error: true
+
+      - name: Write key
+        shell: bash
+        env:
+          SIGN_KEYSTORE_BASE64: ${{ secrets.SIGN_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -n "${SIGN_KEYSTORE_BASE64}" ]; then
+            echo "${SIGN_KEYSTORE_BASE64}" | base64 --decode > android/app/key.jks
+            echo storeFile='key.jks' >> android/key.properties
+            echo storePassword='${KEYSTORE_PASSWORD}' >> android/key.properties
+            echo keyAlias='${KEY_ALIAS}' >> android/key.properties
+            echo keyPassword='${KEY_PASSWORD}' >> android/key.properties
+          fi
+
+      - name: Set and Extract version
+        shell: pwsh
+        run: lib/scripts/build.ps1 android
+
+      - name: Build Android APKs
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          args=(
+            build apk
+            --release
+            --split-per-abi
+            --target-platform "${{ inputs.target_platforms }}"
+            --dart-define-from-file=pili_release.json
+            --pub
+          )
+
+          if [ "${{ inputs.dev }}" = "true" ]; then
+            args+=(--android-project-arg dev=1)
+          fi
+
+          flutter "${args[@]}"
+
+      - name: Rename APKs
+        shell: bash
+        run: |
+          for file in build/app/outputs/flutter-apk/app-*-release.apk; do
+            abi=$(echo "$file" | sed -E 's|.*app-(.*)-release\.apk|\1|')
+            mv "$file" "PiliNara_android_${{ env.version }}_${abi}.apk"
+          done
+
+      - name: Release to GitHub
+        if: ${{ inputs.tag != '' }}
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ env.release_tag }}
+          name: ${{ env.release_tag }}
+          files: |
+            PiliNara_android_*.apk
+            release-manifest.json
+
+      - name: Upload arm64-v8a
+        if: ${{ inputs.upload_arm64_v8a }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: Android_arm64-v8a
+          path: PiliNara_android_*_arm64-v8a.apk
+
+      - name: Upload armeabi-v7a
+        if: ${{ inputs.upload_armeabi_v7a }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: Android_armeabi-v7a
+          path: PiliNara_android_*_armeabi-v7a.apk
+
+      - name: Upload x86_64
+        if: ${{ inputs.upload_x86_64 }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: Android_x86_64
+          path: PiliNara_android_*_x86_64.apk

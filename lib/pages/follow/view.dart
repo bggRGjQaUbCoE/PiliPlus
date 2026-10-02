@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
+import 'package:PiliPlus/common/widgets/flutter/popup_menu.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
@@ -126,7 +127,7 @@ class _FollowPageState extends State<FollowPage>
               icon: const Icon(Icons.search_outlined),
               tooltip: '搜索',
             ),
-            PopupMenuButton(
+            StaticPopupMenuButton(
               icon: const Icon(Icons.more_vert),
               itemBuilder: (context) => [
                 PopupMenuItem(

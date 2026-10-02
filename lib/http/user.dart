@@ -358,6 +358,7 @@ abstract final class UserHttp {
     bool desc = true,
     dynamic sortField = 1,
     bool direction = false,
+    int? pn,
   }) async {
     final res = await Request().get(
       Api.mediaList,
@@ -373,6 +374,7 @@ abstract final class UserHttp {
         'sort_field': sortField,
         'tid': 0,
         'with_current': withCurrent,
+        if (pn != null) ...{'pn': pn, 'use_pn': true},
       },
     );
     if (res.data['code'] == 0) {
@@ -386,6 +388,15 @@ abstract final class UserHttp {
     final res = await Request().get(Api.getCoin);
     if (res.data['code'] == 0) {
       return Success(res.data['data']?['money']);
+    } else {
+      return Error(res.data['message']);
+    }
+  }
+
+  static Future<LoadingState<int>> coinTodayExp() async {
+    final res = await Request().get(Api.coinTodayExp);
+    if (res.data['code'] == 0) {
+      return Success((res.data['data'] as num?)?.toInt() ?? 0);
     } else {
       return Error(res.data['message']);
     }

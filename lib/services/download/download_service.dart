@@ -5,14 +5,21 @@ import 'dart:io' show Directory, File;
 import 'package:PiliPlus/grpc/dm.dart';
 import 'package:PiliPlus/http/download.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/http/sponsor_block.dart';
+import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/models_new/download/bili_download_media_file_info.dart';
+import 'package:PiliPlus/models_new/download/playback_meta.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart' as pgc;
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
+import 'package:PiliPlus/models_new/sponsor_block/segment_item.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
+import 'package:PiliPlus/models_new/video/video_play_info/subtitle.dart';
+import 'package:PiliPlus/pages/danmaku/controller.dart';
 import 'package:PiliPlus/services/download/download_manager.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/danmaku_utils.dart';
@@ -35,7 +42,12 @@ class DownloadService extends GetxService {
 
   final _lock = Lock();
 
+  /// 弹幕下载锁：批量更新时外层 Future.wait 会并发调用多次 downloadDanmaku，
+  /// 此锁确保同一时间只有一个视频在下载弹幕，避免总并发超过 _maxDanmakuConcurrency。
+  final _danmakuLock = Lock();
+
   final flagNotifier = SetNotifier();
+  final completedEntryNotifier = Set<ValueChanged<BiliDownloadEntryInfo>>();
   final waitDownloadQueue = RxList<BiliDownloadEntryInfo>();
   final downloadList = <BiliDownloadEntryInfo>[];
 
@@ -112,8 +124,10 @@ class DownloadService extends GetxService {
     Part page,
     VideoDetailData? videoDetail,
     ugc.EpisodeItem? videoArc,
-    VideoQuality videoQuality,
-  ) {
+    VideoQuality videoQuality, {
+    String? autoFolderTitle,
+    String? autoFolderSourceKey,
+  }) {
     final cid = page.cid!;
     if (downloadList.indexWhere((e) => e.cid == cid) != -1) {
       return;
@@ -164,6 +178,8 @@ class DownloadService extends GetxService {
       ownerId: videoDetail?.owner?.mid ?? videoArc?.arc?.author?.mid,
       ownerName: videoDetail?.owner?.name ?? videoArc?.arc?.author?.name,
       pageData: pageData,
+      autoFolderTitle: autoFolderTitle,
+      autoFolderSourceKey: autoFolderSourceKey,
     );
     _createDownload(entry);
   }
@@ -305,6 +321,7 @@ class DownloadService extends GetxService {
     if (cid == null) {
       return false;
     }
+    return _danmakuLock.synchronized<bool>(() async {
     final danmakuFile = File(
       path.join(entry.entryDirPath, PathUtils.danmakuName),
     );
@@ -345,6 +362,86 @@ class DownloadService extends GetxService {
       }
     }
     return true;
+    });
+  }
+
+  Future<void> _downloadSubtitles({
+    required BiliDownloadEntryInfo entry,
+  }) async {
+    try {
+      final cid = entry.pageData?.cid ?? entry.source?.cid;
+      if (cid == null) return;
+
+      final res = await VideoHttp.playInfo(
+        bvid: entry.bvid,
+        cid: cid,
+        seasonId: entry.seasonId,
+        epId: entry.ep?.episodeId,
+      );
+      final List<Subtitle>? subtitleList;
+      if (res case Success(:final response)) {
+        subtitleList = response.subtitle?.subtitles;
+      } else {
+        return;
+      }
+      if (subtitleList == null || subtitleList.isEmpty) return;
+
+      final vttResults = await Future.wait(
+        subtitleList.map((sub) async {
+          if (sub.subtitleUrl?.isNotEmpty != true) return null;
+          try {
+            return await VideoHttp.getSubtitles(sub.subtitleUrl!);
+          } catch (_) {
+            return null;
+          }
+        }),
+      );
+
+      final subsDir = Directory(
+        path.join(entry.entryDirPath, PathUtils.subtitlesDirName),
+      );
+      if (!subsDir.existsSync()) {
+        await subsDir.create(recursive: true);
+      }
+
+      final successfulSubs = <Subtitle>[];
+      for (int i = 0; i < subtitleList.length; i++) {
+        final vtt = vttResults[i];
+        if (vtt == null) continue;
+        final sub = subtitleList[i];
+        try {
+          await File(
+            path.join(subsDir.path, PathUtils.subtitleVttName(sub.lan)),
+          ).writeAsString(vtt);
+          successfulSubs.add(sub);
+        } catch (_) {}
+      }
+      if (successfulSubs.isEmpty) return;
+
+      final indexJson = successfulSubs
+          .map(
+            (sub) => {
+              'lan': sub.lan,
+              'lan_doc': sub.isAi
+                  ? sub.lanDoc!.substring(
+                      0,
+                      sub.lanDoc!.length - '（AI）'.length,
+                    )
+                  : sub.lanDoc ?? '',
+              'subtitle_url': sub.subtitleUrl ?? '',
+              'subtitle_url_v2': sub.subtitleUrlV2,
+              'type': sub.isAi ? 1 : 0,
+            },
+          )
+          .toList();
+      await File(
+        path.join(subsDir.path, PathUtils.subtitleIndexName),
+      ).writeAsString(jsonEncode(indexJson));
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('_downloadSubtitles failed: $e');
+      }
+    }
   }
 
   Future<bool> _downloadCover({
@@ -369,6 +466,116 @@ class DownloadService extends GetxService {
     }
   }
 
+  Future<DownloadPlaybackChapters?> _queryPlaybackChapters({
+    required BiliDownloadEntryInfo entry,
+    required int fetchedAt,
+  }) async {
+    try {
+      final res = await VideoHttp.playInfo(
+        bvid: entry.bvid,
+        cid: entry.cid,
+        seasonId: entry.seasonId,
+        epId: entry.ep?.episodeId,
+      );
+      if (res case Success(:final response)) {
+        final viewPoints = response.viewPoints;
+        if (viewPoints != null &&
+            viewPoints.isNotEmpty &&
+            viewPoints.first.type == 2) {
+          return DownloadPlaybackChapters(
+            fetchedAt: fetchedAt,
+            items: viewPoints
+                .map(
+                  (item) => DownloadPlaybackChapter(
+                    type: item.type,
+                    fromMs: item.from == null ? null : item.from! * 1000,
+                    toMs: item.to == null ? null : item.to! * 1000,
+                    content: item.content,
+                    imgUrl: item.imgUrl,
+                  ),
+                )
+                .toList(),
+          );
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('download playback chapters failed: $e');
+      }
+    }
+    return null;
+  }
+
+  Future<DownloadPlaybackSkipSegments?> _querySponsorBlockSegments({
+    required BiliDownloadEntryInfo entry,
+    required int fetchedAt,
+  }) async {
+    try {
+      final res = await SponsorBlock.getSkipSegments(
+        bvid: entry.bvid,
+        cid: entry.cid,
+      );
+      switch (res) {
+        case Success(:final response) when response.isNotEmpty:
+          return DownloadPlaybackSkipSegments(
+            fetchedAt: fetchedAt,
+            items: response
+                .map(DownloadPlaybackSkipSegment.fromSegmentItemModel)
+                .toList(),
+          );
+        case Error(:final code) when code != 404:
+          if (kDebugMode) {
+            debugPrint('download sponsorblock failed: $res');
+          }
+        default:
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('download sponsorblock exception: $e');
+      }
+    }
+    return null;
+  }
+
+  Future<void> _writePlaybackMeta({
+    required BiliDownloadEntryInfo entry,
+    List<SegmentItemModel>? clipInfoList,
+  }) async {
+    try {
+      final fetchedAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      final results = await Future.wait<Object?>([
+        _queryPlaybackChapters(entry: entry, fetchedAt: fetchedAt),
+        _querySponsorBlockSegments(entry: entry, fetchedAt: fetchedAt),
+      ]);
+      final meta = DownloadPlaybackMeta(
+        chapters: results[0] as DownloadPlaybackChapters?,
+        sponsorBlock: results[1] as DownloadPlaybackSkipSegments?,
+        clipInfo: clipInfoList?.isNotEmpty == true
+            ? DownloadPlaybackSkipSegments(
+                fetchedAt: fetchedAt,
+                items: clipInfoList!
+                    .map(DownloadPlaybackSkipSegment.fromSegmentItemModel)
+                    .toList(),
+              )
+            : null,
+      );
+      final playbackMetaFile = File(
+        path.join(entry.entryDirPath, PathUtils.playbackMetaName),
+      );
+      if (meta.isEmpty) {
+        if (playbackMetaFile.existsSync()) {
+          await playbackMetaFile.tryDel();
+        }
+        return;
+      }
+      await playbackMetaFile.writeAsString(jsonEncode(meta.toJson()));
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('write playback meta failed: $e');
+      }
+    }
+  }
+
   Future<void> _startDownload(BiliDownloadEntryInfo entry) async {
     try {
       if (!await downloadDanmaku(entry: entry)) {
@@ -377,12 +584,13 @@ class DownloadService extends GetxService {
 
       _updateCurStatus(DownloadStatus.getPlayUrl);
 
-      final mediaFileInfo = await DownloadHttp.getVideoUrl(
+      final downloadResult = await DownloadHttp.getVideoUrl(
         entry: entry,
         ep: entry.ep,
         source: entry.source,
         pageData: entry.pageData,
       );
+      final mediaFileInfo = downloadResult.mediaFileInfo;
 
       final videoDir = Directory(path.join(entry.entryDirPath, entry.typeTag));
       if (!videoDir.existsSync()) {
@@ -393,11 +601,17 @@ class DownloadService extends GetxService {
       await Future.wait([
         mediaJsonFile.writeAsString(jsonEncode(mediaFileInfo.toJson())),
         _downloadCover(entry: entry),
+        _writePlaybackMeta(
+          entry: entry,
+          clipInfoList: downloadResult.clipInfoList,
+        ),
       ]);
 
       if (curDownload.value?.cid != entry.cid) {
         return;
       }
+
+      unawaited(_downloadSubtitles(entry: entry));
 
       switch (mediaFileInfo) {
         case Type1 mediaFileInfo:
@@ -511,6 +725,7 @@ class DownloadService extends GetxService {
     await _updateBiliDownloadEntryJson(entry);
     waitDownloadQueue.remove(entry);
     downloadList.insert(0, entry);
+    completedEntryNotifier.notify(entry);
     flagNotifier.refresh();
     _curCid = null;
     curDownload.value = null;
@@ -595,6 +810,101 @@ class DownloadService extends GetxService {
       nextDownload();
     }
   }
+
+  static String get _exportBasePath =>
+      path.join('/storage/emulated/0/Download', 'PiliNara');
+
+  static Future<String> exportEntry(
+    BiliDownloadEntryInfo entry,
+    ValueChanged<double>? onProgress,
+  ) async {
+    final srcDir = Directory(entry.entryDirPath);
+    if (!srcDir.existsSync()) throw '缓存目录不存在';
+
+    final baseDir = Directory(_exportBasePath);
+    if (!baseDir.existsSync()) await baseDir.create(recursive: true);
+
+    final nomedia = File(path.join(_exportBasePath, '.nomedia'));
+    if (!nomedia.existsSync()) await nomedia.create();
+
+    final dirName = _sanitizeDirName(entry.title, entry.avid);
+    final subDirName = path.basename(entry.entryDirPath);
+    final destDir = Directory(path.join(_exportBasePath, dirName, subDirName));
+    final destPath = destDir.path;
+
+    if (destDir.existsSync() && !await _dirHasDifference(srcDir, destDir)) {
+      return destPath;
+    }
+
+    final totalSize = await _dirSize(srcDir);
+    int copiedSize = 0;
+
+    await _copyDir(srcDir, destDir, (fileCopied) {
+      copiedSize += fileCopied;
+      if (totalSize > 0) onProgress?.call(copiedSize / totalSize);
+    });
+
+    return destPath;
+  }
+
+  static Future<void> _copyDir(
+    Directory src,
+    Directory dest,
+    void Function(int bytesCopied) onProgress,
+  ) async {
+    if (!dest.existsSync()) await dest.create(recursive: true);
+    await for (final entity in src.list()) {
+      if (entity is File) {
+        final target = File(path.join(dest.path, path.basename(entity.path)));
+        if (!target.existsSync() ||
+            target.lengthSync() != entity.lengthSync()) {
+          await entity.copy(target.path);
+        }
+        onProgress(entity.lengthSync());
+      } else if (entity is Directory) {
+        await _copyDir(
+          entity,
+          Directory(path.join(dest.path, path.basename(entity.path))),
+          onProgress,
+        );
+      }
+    }
+  }
+
+  static Future<int> _dirSize(Directory dir) async {
+    int size = 0;
+    await for (final entity in dir.list(recursive: true)) {
+      if (entity is File) size += await entity.length();
+    }
+    return size;
+  }
+
+  static Future<bool> _dirHasDifference(
+    Directory src,
+    Directory dest,
+  ) async {
+    await for (final entity in src.list(recursive: true)) {
+      if (entity is! File) continue;
+      final relPath = path.relative(entity.path, from: src.path);
+      final target = File(path.join(dest.path, relPath));
+      if (!target.existsSync()) return true;
+      final diff = (await entity.length()) - (await target.length());
+      if (diff.abs() > 1024) return true;
+      if (diff == 0) continue;
+      if (target.lastModifiedSync().isBefore(entity.lastModifiedSync())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static String _sanitizeDirName(String title, int avid) {
+    final clean = title
+        .replaceAll(RegExp(r'[\\/:*?"<>|]'), '_')
+        .replaceAll(RegExp(r'_+'), '_')
+        .trim();
+    return '${clean.isEmpty ? 'video' : clean}_$avid';
+  }
 }
 
 typedef SetNotifier = Set<VoidCallback>;
@@ -603,6 +913,14 @@ extension SetNotifierExt on SetNotifier {
   void refresh() {
     for (final i in this) {
       i();
+    }
+  }
+}
+
+extension EntryNotifierExt on Set<ValueChanged<BiliDownloadEntryInfo>> {
+  void notify(BiliDownloadEntryInfo entry) {
+    for (final i in this) {
+      i(entry);
     }
   }
 }

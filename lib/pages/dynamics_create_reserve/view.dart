@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/flutter/popup_menu.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/time_picker.dart';
 import 'package:PiliPlus/pages/dynamics_create_reserve/controller.dart';
@@ -65,7 +66,7 @@ class _CreateReservePageState extends State<CreateReservePage> {
                 child: Text('类型', style: _leadingStyle),
               ),
               Obx(
-                () => PopupMenuButton(
+                () => StaticPopupMenuButton(
                   requestFocus: false,
                   initialValue: _controller.subType.value,
                   onSelected: _controller.subType.call,

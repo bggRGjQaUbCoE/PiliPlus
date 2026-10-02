@@ -9,9 +9,13 @@ import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/models/model_avatar.dart';
 import 'package:PiliPlus/models_new/article/article_view/data.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_controller.dart';
+import 'package:PiliPlus/pages/video/pay_coins/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
+import 'package:PiliPlus/utils/extension/string_ext.dart';
+import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -39,6 +43,10 @@ class ArticleController extends CommonDynController {
   DynamicItemModel? opusData; // 标题信息从summary获取, 动态没有favorite
   ArticleViewData? articleData;
   final stats = Rxn<ModuleStatModel>();
+
+  // 投币数量（0/1/2）
+  final RxInt coinNum = 0.obs;
+  bool get hasCoin => coinNum.value != 0;
 
   List<ArticleContentModel>? get opus =>
       opusData?.modules.moduleContent ?? articleData?.opus?.content;
@@ -142,6 +150,10 @@ class ArticleController extends CommonDynController {
         ..cover ??= response.originImageUrls?.firstOrNull
         ..title ??= response.title;
 
+      if (response.coin case final coin?) {
+        coinNum.value = coin;
+      }
+
       stats.value ??= ModuleStatModel(
         comment: DynamicStat(count: response.stats?.reply),
         forward: DynamicStat(count: response.stats?.share),
@@ -213,6 +225,50 @@ class ArticleController extends CommonDynController {
         ..count = (like.count ?? 0) + (isLike ? -1 : 1);
       stats.refresh();
       SmartDialog.showToast(!isLike ? '点赞成功' : '取消赞');
+    } else {
+      res.toast();
+    }
+  }
+
+  // 投币（专栏 avtype: 2）
+  void actionCoin() {
+    if (!Accounts.main.isLogin) {
+      SmartDialog.showToast('账号未登录');
+      return;
+    }
+    if (coinNum.value >= 2) {
+      SmartDialog.showToast('达到投币上限啦~');
+      return;
+    }
+    PayCoinsPage.toPayCoinsPage(
+      onPayCoin: onPayCoin,
+      hasCoin: coinNum.value == 1,
+      hasCopyright: true,
+      // web 端专栏投币接口不支持 select_like，隐藏“同时点赞”
+      showCoinWithLike: !Accounts.main.accessKey.isNullOrEmpty,
+    );
+  }
+
+  Future<void> onPayCoin(int coin, bool coinWithLike) async {
+    final res = await VideoHttp.coinVideo(
+      aid: commentId,
+      multiply: coin,
+      selectLike: coinWithLike ? 1 : 0,
+      avtype: 2,
+      upid: summary.author?.mid,
+      referer: url,
+    );
+    if (res.isSuccess) {
+      SmartDialog.showToast('投币成功');
+      coinNum.value += coin;
+      GlobalData().afterCoin(coin);
+      final like = stats.value?.like;
+      if (coinWithLike && like != null && like.status != true) {
+        like
+          ..status = true
+          ..count = (like.count ?? 0) + 1;
+        stats.refresh();
+      }
     } else {
       res.toast();
     }

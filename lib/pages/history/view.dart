@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/widgets/appbar/appbar.dart';
+import 'package:PiliPlus/common/widgets/flutter/popup_menu.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart';
@@ -164,7 +165,7 @@ class _HistoryPageState extends State<HistoryPage>
         onPressed: () => Get.toNamed('/historySearch'),
         icon: const Icon(Icons.search_outlined),
       ),
-      PopupMenuButton(
+      StaticPopupMenuButton(
         itemBuilder: (_) => [
           PopupMenuItem(
             onTap: () => _historyController.baseCtr.onPauseHistory(context),

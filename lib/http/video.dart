@@ -5,6 +5,7 @@ import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/browser_ua.dart';
+import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/login.dart';
@@ -38,6 +39,7 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/subtitle_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/parse_int.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show compute;
@@ -45,7 +47,10 @@ import 'package:protobuf/protobuf.dart';
 
 /// view层根据 status 判断渲染逻辑
 abstract final class VideoHttp {
-  static RegExp zoneRegExp = RegExp(Pref.banWordForZone, caseSensitive: false);
+  static RegExp zoneRegExp = RegExp(
+    Pref.parseBanWordToRegex(Pref.banWordForZone),
+    caseSensitive: false,
+  );
   static bool enableFilter = zoneRegExp.pattern.isNotEmpty;
 
   // 首页推荐视频
@@ -68,10 +73,12 @@ abstract final class VideoHttp {
     if (res.data['code'] == 0) {
       List<RcmdVideoItemModel> list = <RcmdVideoItemModel>[];
       for (final i in res.data['data']['item']) {
+        final mid = safeToInt(i['owner']?['mid']);
         //过滤掉live与ad，以及拉黑用户
         if (i['goto'] == 'av' &&
             (i['owner'] != null &&
-                !GlobalData().blackMids.contains(i['owner']['mid']))) {
+                (!GlobalData().blackMids.contains(i['owner']['mid']) ||
+                    RecommendFilter.isWhitelisted(mid)))) {
           RcmdVideoItemModel videoItem = RcmdVideoItemModel.fromJson(i);
           if (!RecommendFilter.filter(videoItem)) {
             list.add(videoItem);
@@ -89,23 +96,23 @@ abstract final class VideoHttp {
     required int freshIdx,
   }) async {
     final params = {
-      'build': 2001100,
+      'build': 8430300,
       'c_locale': 'zh_CN',
       'channel': 'master',
-      'column': 4,
-      'device': 'pad',
+      'column': 2,
+      'device': 'phone',
       'device_name': 'android',
       'device_type': 0,
       'disable_rcmd': 0,
-      'flush': 5,
+      'flush': 8,
       'fnval': 976,
       'fnver': 0,
       'force_host': 2, //使用https
       'fourk': 1,
-      'guidance': 0,
-      'https_url_req': 0,
+      'guidance': 1,
+      'https_url_req': 1,
       'idx': freshIdx,
-      'mobi_app': 'android_hd',
+      'mobi_app': 'android_i',
       'network': 'wifi',
       'platform': 'android',
       'player_net': 1,
@@ -114,7 +121,7 @@ abstract final class VideoHttp {
       'recsys_mode': 0,
       's_locale': 'zh_CN',
       'splash_id': '',
-      'statistics': Constants.statistics,
+      'statistics': Constants.statisticsApp,
       'voice_balance': 0,
     };
     final res = await Request().get(
@@ -136,19 +143,27 @@ abstract final class VideoHttp {
         },
       ),
     );
+
     if (res.data['code'] == 0) {
       final list = <RcmdVideoItemAppModel>[];
+      final bool removeBlockedRcmd = Pref.removeBlockedRcmd;
       for (final i in res.data['data']['items']) {
+        final upMid = safeToInt(i['args']?['up_id']);
+        final isWhitelisted = RecommendFilter.isWhitelisted(upMid);
         // 屏蔽推广和拉黑用户
         if (i['card_goto'] != 'ad_av' &&
             i['card_goto'] != 'ad_web_s' &&
             i['ad_info'] == null &&
-            i['can_play'] == 1 &&
             (i['args'] != null &&
-                !GlobalData().blackMids.contains(i['args']['up_id']))) {
+                (!GlobalData().blackMids.contains(i['args']['up_id']) ||
+                    isWhitelisted))) {
           if (enableFilter &&
+              !isWhitelisted &&
               i['args']?['tname'] != null &&
               zoneRegExp.hasMatch(i['args']['tname'])) {
+            continue;
+          }
+          if (removeBlockedRcmd && !isWhitelisted && i['can_play'] != 1) {
             continue;
           }
           RcmdVideoItemAppModel videoItem = RcmdVideoItemAppModel.fromJson(i);
@@ -174,18 +189,25 @@ abstract final class VideoHttp {
     );
     if (res.data['code'] == 0) {
       List<HotVideoItemModel> list = <HotVideoItemModel>[];
+      final applyFullFilter = RecommendFilter.applyFilterToHotVideos;
       for (final i in res.data['data']['list']) {
-        if (!GlobalData().blackMids.contains(i['owner']['mid']) &&
-            !RecommendFilter.filterTitle(i['title']) &&
-            !RecommendFilter.filterLikeRatio(
-              i['stat']['like'],
-              i['stat']['view'],
-            )) {
-          if (enableFilter &&
-              i['tname'] != null &&
-              zoneRegExp.hasMatch(i['tname'])) {
+        final mid = safeToInt(i['owner']?['mid']);
+        final isWhitelisted = RecommendFilter.isWhitelisted(mid);
+        // 分区关键词过滤（始终生效，上游原始行为）
+        if (enableFilter &&
+            !isWhitelisted &&
+            i['tname'] != null &&
+            zoneRegExp.hasMatch(i['tname'])) {
+          continue;
+        }
+        if (applyFullFilter) {
+          // 开关开启：全局黑名单 + 完整过滤（时长、播放量、点赞率、标题关键词、推荐屏蔽用户）
+          if (!isWhitelisted && GlobalData().blackMids.contains(i['owner']['mid'])) {
             continue;
           }
+          final item = HotVideoItemModel.fromJson(i);
+          if (!RecommendFilter.filterAll(item)) list.add(item);
+        } else {
           list.add(HotVideoItemModel.fromJson(i));
         }
       }
@@ -348,22 +370,37 @@ abstract final class VideoHttp {
     }
   }
 
-  // 投币
+  // 投币（视频 avtype: 1，专栏 avtype: 2；专栏必须传 upid 即作者 mid）
   static Future<LoadingState<void>> coinVideo({
-    required String bvid,
+    required Object aid,
     required int multiply,
     int selectLike = 0,
+    int avtype = 1,
+    Object? upid,
+    String? referer,
   }) async {
+    final hasAccessKey = !Accounts.main.accessKey.isNullOrEmpty;
+    final options = Options(
+      contentType: Headers.formUrlEncodedContentType,
+      headers: hasAccessKey
+          ? null
+          : {
+              'origin': 'https://www.bilibili.com',
+              'referer': ?referer,
+              'user-agent': BrowserUa.pc,
+            },
+    );
     final res = await Request().post(
-      Api.coinVideo,
+      hasAccessKey ? Api.coinVideo : Api.coinVideoWeb,
       data: {
-        'aid': IdUtils.bv2av(bvid).toString(),
-        // 'bvid': bvid,
+        'aid': aid.toString(),
         'multiply': multiply.toString(),
         'select_like': selectLike.toString(),
-        // 'csrf': Accounts.main.csrf,
+        'avtype': avtype.toString(),
+        if (upid != null) 'upid': upid.toString(),
+        if (!hasAccessKey) 'csrf': Accounts.main.csrf,
       },
-      options: Options(contentType: Headers.formUrlEncodedContentType),
+      options: options,
     );
     if (res.data['code'] == 0) {
       return const Success(null);
@@ -434,13 +471,30 @@ abstract final class VideoHttp {
     required String bvid,
     required bool type,
   }) async {
+    final hasAccessKey = !Accounts.main.accessKey.isNullOrEmpty;
+    final options = Options(
+      contentType: Headers.formUrlEncodedContentType,
+      headers: hasAccessKey
+          ? null
+          : {
+              'origin': 'https://www.bilibili.com',
+              'referer': 'https://www.bilibili.com/video/$bvid',
+              'user-agent': BrowserUa.pc,
+            },
+    );
     final res = await Request().post(
-      Api.likeVideo,
-      data: {'aid': IdUtils.bv2av(bvid).toString(), 'like': type ? '0' : '1'},
-      options: Options(contentType: Headers.formUrlEncodedContentType),
+      hasAccessKey ? Api.likeVideo : Api.likeVideoWeb,
+      data: hasAccessKey
+          ? {'aid': IdUtils.bv2av(bvid).toString(), 'like': type ? '0' : '1'}
+          : {
+              'aid': IdUtils.bv2av(bvid).toString(),
+              'like': type ? '1' : '2',
+              'csrf': Accounts.main.csrf,
+            },
+      options: options,
     );
     if (res.data['code'] == 0) {
-      return Success(res.data['data']['toast']);
+      return Success(res.data['data']?['toast'] as String? ?? '点赞成功');
     } else {
       return Error(res.data['message']);
     }
@@ -850,21 +904,56 @@ abstract final class VideoHttp {
     return null;
   }
 
+  static final _fillerWords = RegExp(
+    r'(嗯+|啊+|额+|呃+|那个|就是说|然后呢|对吧|是吧|对不对|你知道吗|反正就是|基本上|说实话)',
+  );
+
+  /// Fetch raw subtitle body JSON list from URL.
+  static Future<List?> fetchSubtitleBody(String subtitleUrl) async {
+    final res = await Request().get("https:$subtitleUrl");
+    return res.data?['body'] as List?;
+  }
+
+  /// Preprocess subtitle body JSON for AI analysis.
+  /// Returns (compressed text, isTooLong).
+  static ({String text, bool isTooLong}) preprocessSubtitlesForAi(
+    List body,
+  ) {
+    final sb = StringBuffer();
+    // Check if any subtitle exceeds 1 hour to determine format
+    final hasHour = body.isNotEmpty && (body.last['from'] as num) >= 3600;
+    for (final item in body) {
+      final from = item['from'] as num;
+      final content = (item['content'] as String?)?.trim() ?? '';
+      if (content.isEmpty) continue;
+      final h = from ~/ 3600;
+      final m = (from % 3600) ~/ 60;
+      final s = (from % 60).toInt();
+      final ts = hasHour
+          ? '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}'
+          : '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+      sb.writeln('[$ts] $content');
+    }
+
+    // Second level: remove filler words
+    var text = sb.toString().replaceAll(_fillerWords, '');
+    // Collapse multiple blank lines
+    text = text.replaceAll(RegExp(r'\n{3,}'), '\n\n').trim();
+
+    return (text: text, isTooLong: text.length > 20000);
+  }
+
   static bool _canAddRank(Map i) {
-    if (!GlobalData().blackMids.contains(i['owner']['mid']) &&
-        !RecommendFilter.filterTitle(i['title']) &&
-        !RecommendFilter.filterLikeRatio(
-          i['stat']['like'],
-          i['stat']['view'],
-        )) {
-      if (enableFilter &&
-          i['tname'] != null &&
-          zoneRegExp.hasMatch(i['tname'])) {
-        return false;
-      }
+    final isWhitelisted = RecommendFilter.isWhitelisted(
+      safeToInt(i['owner']?['mid']),
+    );
+    if (isWhitelisted) {
       return true;
     }
-    return false;
+    // 分区关键词过滤（始终生效，上游原始行为）
+    return !(enableFilter &&
+        i['tname'] != null &&
+        zoneRegExp.hasMatch(i['tname']));
   }
 
   // 视频排行
@@ -877,8 +966,20 @@ abstract final class VideoHttp {
     );
     if (res.data['code'] == 0) {
       List<HotVideoItemModel> list = <HotVideoItemModel>[];
+      final applyFullFilter = RecommendFilter.applyFilterToRankVideos;
       for (final i in res.data['data']['list']) {
-        if (_canAddRank(i)) {
+        if (!_canAddRank(i)) continue;
+        final isWhitelisted = RecommendFilter.isWhitelisted(
+          safeToInt(i['owner']?['mid']),
+        );
+        if (applyFullFilter) {
+          // 开关开启：全局黑名单 + 完整过滤（时长、播放量、点赞率、标题关键词、推荐屏蔽用户）
+          if (!isWhitelisted && GlobalData().blackMids.contains(i['owner']['mid'])) {
+            continue;
+          }
+          final item = HotVideoItemModel.fromJson(i);
+          if (!RecommendFilter.filterAll(item)) list.add(item);
+        } else {
           list.add(HotVideoItemModel.fromJson(i));
           // final List? others = i['others'];
           // if (others != null && others.isNotEmpty) {
@@ -909,9 +1010,17 @@ abstract final class VideoHttp {
       }),
     );
     if (res.data['code'] == 0) {
+      final items = res.data['result']?['list'] as List?;
+      if (items == null) return const Success(null);
+      final applyFilter = RecommendFilter.applyFilterToRankVideos;
       return Success(
-        (res.data['result']?['list'] as List?)
-            ?.map((e) => PgcRankItemModel.fromJson(e))
+        items
+            .where(
+              (e) =>
+                  !applyFilter ||
+                  !RecommendFilter.filterTitle(e['title'] ?? ''),
+            )
+            .map((e) => PgcRankItemModel.fromJson(e))
             .toList(),
       );
     } else {
@@ -932,9 +1041,17 @@ abstract final class VideoHttp {
       }),
     );
     if (res.data['code'] == 0) {
+      final items = res.data['data']?['list'] as List?;
+      if (items == null) return const Success(null);
+      final applyFilter = RecommendFilter.applyFilterToRankVideos;
       return Success(
-        (res.data['data']?['list'] as List?)
-            ?.map((e) => PgcRankItemModel.fromJson(e))
+        items
+            .where(
+              (e) =>
+                  !applyFilter ||
+                  !RecommendFilter.filterTitle(e['title'] ?? ''),
+            )
+            .map((e) => PgcRankItemModel.fromJson(e))
             .toList(),
       );
     } else {
@@ -970,6 +1087,13 @@ abstract final class VideoHttp {
     final res = await Request().get(
       Api.popularSeriesList,
       queryParameters: await WbiSign.makSign({'web_location': 333.934}),
+      options: Options(
+        headers: const {
+          'user-agent': BrowserUa.pc,
+          'origin': HttpString.baseUrl,
+          'referer': 'https://www.bilibili.com/v/popular/weekly',
+        },
+      ),
     );
     if (res.data['code'] == 0) {
       return Success(
@@ -993,6 +1117,13 @@ abstract final class VideoHttp {
         'number': number,
         'web_location': 333.934,
       }),
+      options: Options(
+        headers: {
+          'user-agent': BrowserUa.pc,
+          'origin': HttpString.baseUrl,
+          'referer': 'https://www.bilibili.com/v/popular/weekly?num=$number',
+        },
+      ),
     );
     if (res.data['code'] == 0) {
       return Success(PopularSeriesOneData.fromJson(res.data['data']));
@@ -1011,6 +1142,13 @@ abstract final class VideoHttp {
         'page': page,
         'web_location': 333.934,
       }),
+      options: Options(
+        headers: const {
+          'user-agent': BrowserUa.pc,
+          'origin': HttpString.baseUrl,
+          'referer': 'https://www.bilibili.com/v/popular/history',
+        },
+      ),
     );
     if (res.data['code'] == 0) {
       return Success(PopularPreciousData.fromJson(res.data['data']));

@@ -1,0 +1,82 @@
+name: Android Debug Build
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths-ignore:
+      - "**.md"
+  workflow_dispatch:
+    # 允许手动触发构建
+
+jobs:
+  android-debug:
+    name: Build Debug APK
+    runs-on: ubuntu-latest
+    permissions: write-all
+
+    steps:
+      - name: 代码迁出
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 构建Java环境
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "17"
+          cache: "gradle"
+          cache-dependency-path: |
+            android/*.gradle*
+            android/**/gradle-wrapper.properties
+
+      - name: 安装Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+          cache: true
+
+      # 保留你原有的 Patch 逻辑
+      - name: revert new overscrollindicator
+        working-directory: ${{ env.FLUTTER_ROOT }}
+        run: |
+          git config --global user.name "ci"
+          git config --global user.email "example@example.com"
+          git stash || true
+          git revert 362b1de29974ffc1ed6faa826e1df870d7bec75f --no-edit
+          git reset --soft HEAD~1
+          git stash pop || true
+        continue-on-error: true
+
+      - name: apply patches
+        working-directory: ${{ env.FLUTTER_ROOT }}
+        run: |
+          git apply $GITHUB_WORKSPACE/lib/scripts/bottom_sheet_patch.diff || true
+          git apply $GITHUB_WORKSPACE/lib/scripts/modal_barrier_patch.diff || true
+          git apply $GITHUB_WORKSPACE/lib/scripts/mouse_cursor_patch.diff || true
+
+      - name: Set and Extract version
+        shell: pwsh
+        run: lib/scripts/build.ps1 android
+
+      # 核心修改点：使用 --debug 模式
+      # 注意：Debug 模式下通常不使用 --split-per-abi，因为它会生成一个包含全架构的胖 APK
+      - name: Flutter Build Debug APK
+        run: |
+          flutter build apk --debug --dart-define-from-file=pili_release.json --pub
+
+      - name: Rename Debug APK
+        run: |
+          mkdir -p output
+          if [ -f "build/app/outputs/flutter-apk/app-debug.apk" ]; then
+            mv "build/app/outputs/flutter-apk/app-debug.apk" "output/PiliNara_android_debug_all.apk"
+          fi
+        shell: bash
+
+      - name: 上传 Debug 产物
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: Android_Debug_APK
+          path: output/PiliNara_android_debug_all.apk

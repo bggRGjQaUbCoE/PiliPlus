@@ -1,3 +1,4 @@
+import 'package:PiliPlus/models/common/list_order.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
 
 class SectionItem {
@@ -6,7 +7,8 @@ class SectionItem {
   String? title;
   int? type;
   List<EpisodeItem>? episodes;
-  bool isReversed = false;
+  ListOrder listOrder = ListOrder.asc;
+  List<EpisodeItem>? originalEpisodes;
 
   SectionItem({this.seasonId, this.id, this.title, this.type, this.episodes});
 

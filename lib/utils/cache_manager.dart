@@ -10,6 +10,16 @@ abstract final class CacheManager {
   static late final DefaultCacheManager manager;
 
   static Future<void> ensureInitialized() => DefaultCacheManager.init(
+    cacheDirectoryProvider:
+        PlatformUtils.isDesktop
+            ? () async {
+              final appSupportDirectory =
+                  await getApplicationSupportDirectory();
+              return Directory(
+                path.join(appSupportDirectory.path, 'cached_network_image_ce'),
+              );
+            }
+            : getTemporaryDirectory,
     maxNrOfCacheLength: Pref.maxCacheSize.toInt(),
   ).then((i) => manager = i);
 

@@ -1,0 +1,114 @@
+name: Debug Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_android:
+        description: "Build Android debug APK"
+        required: false
+        default: false
+        type: boolean
+      build_win_x64:
+        description: "Build Windows x64 debug package"
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  android_debug:
+    if: ${{ inputs.build_android }}
+    name: Debug Android
+    runs-on: ubuntu-latest
+    permissions: write-all
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: "zulu"
+          java-version: "17"
+          cache: "gradle"
+          cache-dependency-path: |
+            android/*.gradle*
+            android/**/gradle-wrapper.properties
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+          cache: true
+
+      - name: Apply Patch
+        shell: pwsh
+        run: lib/scripts/patch.ps1 android
+        continue-on-error: true
+
+      - name: Set and Extract version
+        shell: pwsh
+        run: lib/scripts/build.ps1 android
+
+      - name: Flutter Build Debug APK
+        run: flutter build apk --debug --dart-define-from-file=pili_release.json --pub
+
+      - name: Prepare Upload
+        shell: bash
+        run: |
+          mkdir -p output
+          mv build/app/outputs/flutter-apk/app-debug.apk "output/PiliNara_android_${{ env.version }}_debug.apk"
+
+      - name: Upload Android debug APK
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: Android-debug-apk
+          path: output/PiliNara_android_*_debug.apk
+
+  win_x64_debug:
+    if: ${{ inputs.build_win_x64 }}
+    name: Debug Windows x64
+    runs-on: windows-latest
+    permissions: write-all
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+          cache: true
+
+      - name: Apply Patch
+        shell: pwsh
+        run: lib/scripts/patch.ps1 windows
+
+      - name: Set and Extract version
+        shell: pwsh
+        run: lib/scripts/build.ps1
+
+      - name: Flutter Build Windows Debug
+        run: flutter build windows --debug --dart-define-from-file=pili_release.json --pub
+
+      - name: Prepare Upload
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "PiliNara-Windows-Debug"
+          Copy-Item -Recurse -Force "build/windows/x64/runner/Debug/*" "PiliNara-Windows-Debug/"
+          Compress-Archive -Path "PiliNara-Windows-Debug" -DestinationPath "PiliNara_windows_${{ env.version }}_x64_debug.zip" -Force
+
+      - name: Upload Windows debug package
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: Windows-x64-debug
+          path: PiliNara_windows_*_x64_debug.zip

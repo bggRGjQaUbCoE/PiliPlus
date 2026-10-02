@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
+import 'package:PiliPlus/common/widgets/flutter/popup_menu.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
@@ -68,6 +69,19 @@ class _DownloadPanelState extends State<DownloadPanel> {
   late final cidSet = widget.cidSet;
   VideoQuality _quality = VideoQuality.fromCode(Pref.defaultVideoQa);
 
+  ({String title, String sourceKey})? get _autoFolderInfo {
+    final ugcSeason = widget.videoDetail?.ugcSeason;
+    final title = ugcSeason?.title?.trim();
+    final seasonId = ugcSeason?.id;
+    if (title == null || title.isEmpty || seasonId == null) {
+      return null;
+    }
+    return (
+      title: title,
+      sourceKey: 'ugc-season:$seasonId',
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -111,11 +125,11 @@ class _DownloadPanelState extends State<DownloadPanel> {
         spacing: 16,
         children: [
           Text(
-            '最高画质',
+            '目标画质',
             style: textStyle,
           ),
           Builder(
-            builder: (context) => PopupMenuButton<VideoQuality>(
+            builder: (context) => StaticPopupMenuButton<VideoQuality>(
               initialValue: _quality,
               onSelected: (value) {
                 _quality = value;
@@ -285,6 +299,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
     }
 
     try {
+      final autoFolderInfo = _autoFolderInfo;
       switch (episode) {
         case Part part:
           _downloadService.downloadVideo(
@@ -292,6 +307,8 @@ class _DownloadPanelState extends State<DownloadPanel> {
             parent == null ? widget.videoDetail : null,
             parent,
             _quality,
+            autoFolderTitle: autoFolderInfo?.title,
+            autoFolderSourceKey: autoFolderInfo?.sourceKey,
           );
           break;
         case ugc.EpisodeItem episode:
@@ -300,6 +317,8 @@ class _DownloadPanelState extends State<DownloadPanel> {
             null,
             episode,
             _quality,
+            autoFolderTitle: autoFolderInfo?.title,
+            autoFolderSourceKey: autoFolderInfo?.sourceKey,
           );
           break;
         case pgc.EpisodeItem episode:

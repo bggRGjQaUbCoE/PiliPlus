@@ -39,7 +39,25 @@ try {
 
     $data | ConvertTo-Json -Compress | Out-File 'pili_release.json' -Encoding UTF8
 
-    Add-Content -Path $env:GITHUB_ENV -Value "version=$versionName+$versionCode"
+    $releaseTag = $env:RELEASE_TAG
+    if ([string]::IsNullOrWhiteSpace($releaseTag)) {
+        $releaseTag = "$versionCode"
+    }
+
+    $manifest = @{
+        'schema_version' = 1
+        'version_name' = $versionName
+        'version_code' = $versionCode
+        'commit_hash' = $commitHash
+        'release_tag' = $releaseTag
+    }
+
+    $manifest | ConvertTo-Json -Compress | Out-File 'release-manifest.json' -Encoding UTF8
+
+    if (-not [string]::IsNullOrWhiteSpace($env:GITHUB_ENV)) {
+        Add-Content -Path $env:GITHUB_ENV -Value "version=$versionName+$versionCode"
+        Add-Content -Path $env:GITHUB_ENV -Value "release_tag=$versionCode"
+    }
 }
 catch {
     Write-Error "Prebuild Error: $($_.Exception.Message)"

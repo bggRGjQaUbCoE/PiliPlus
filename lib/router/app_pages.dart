@@ -1,3 +1,5 @@
+import 'package:PiliPlus/pages/about/view.dart';
+import 'package:PiliPlus/pages/setting/ai_setting/view.dart';
 import 'package:PiliPlus/pages/article/view.dart';
 import 'package:PiliPlus/pages/article_list/view.dart';
 import 'package:PiliPlus/pages/audio/view.dart';
@@ -55,6 +57,7 @@ import 'package:PiliPlus/pages/search_trending/view.dart';
 import 'package:PiliPlus/pages/setting/pages/bar_set.dart';
 import 'package:PiliPlus/pages/setting/pages/color_select.dart';
 import 'package:PiliPlus/pages/setting/pages/display_mode.dart';
+import 'package:PiliPlus/pages/setting/pages/double_tap_seek_zone_setting.dart';
 import 'package:PiliPlus/pages/setting/pages/font_setting.dart';
 import 'package:PiliPlus/pages/setting/pages/logs.dart';
 import 'package:PiliPlus/pages/setting/pages/play_speed_set.dart';
@@ -65,6 +68,7 @@ import 'package:PiliPlus/pages/sponsor_block/view.dart';
 import 'package:PiliPlus/pages/subscription/view.dart';
 import 'package:PiliPlus/pages/subscription_detail/view.dart';
 import 'package:PiliPlus/pages/video/view.dart';
+import 'package:PiliPlus/pages/webdav/view.dart';
 import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/pages/whisper/view.dart';
 import 'package:PiliPlus/pages/whisper_detail/view.dart';
@@ -112,9 +116,14 @@ class Routes {
     GetPage(name: '/blackListPage', page: () => const BlackListPage()),
     GetPage(name: '/colorSetting', page: () => const ColorSelectPage()),
     GetPage(name: '/fontSetting', page: () => const FontSettingPage()),
+    GetPage(
+      name: '/doubleTapSeekZoneSetting',
+      page: () => const DoubleTapSeekZoneSettingPage(),
+    ),
     // 屏幕帧率
     GetPage(name: '/displayModeSetting', page: () => const SetDisplayMode()),
-    //
+    // 关于
+    GetPage(name: '/about', page: () => const AboutPage()),
     GetPage(name: '/articlePage', page: () => const ArticlePage()),
 
     // 历史记录搜索
@@ -149,9 +158,11 @@ class Routes {
     // 弹幕屏蔽管理
     GetPage(name: '/danmakuBlock', page: () => const DanmakuBlockPage()),
     GetPage(name: '/sponsorBlock', page: () => const SponsorBlockPage()),
+    GetPage(name: '/aiSetting', page: () => const AiSettingPage()),
     GetPage(name: '/createFav', page: () => const CreateFavPage()),
     GetPage(name: '/editProfile', page: () => const EditProfilePage()),
     GetPage(name: '/settingsSearch', page: () => const SettingsSearchPage()),
+    GetPage(name: '/webdavSetting', page: () => const WebDavSettingPage()),
     GetPage(name: '/searchTrending', page: () => const SearchTrendingPage()),
     GetPage(name: '/dynTopic', page: () => const DynTopicPage()),
     GetPage(name: '/articleList', page: () => const ArticleListPage()),

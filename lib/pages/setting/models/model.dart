@@ -1,9 +1,9 @@
-import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/pages/setting/widgets/normal_item.dart';
 import 'package:PiliPlus/pages/setting/widgets/popup_item.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/switch_item.dart';
+import 'package:PiliPlus/pages/setting/widgets/list_editor_dialog.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -28,6 +28,30 @@ sealed class SettingsModel {
     this.contentPadding,
     this.titleStyle,
   });
+}
+
+class WidgetModel extends SettingsModel {
+  const WidgetModel({
+    required this.child,
+    this.searchTitle = '',
+    this.searchSubtitle,
+  });
+
+  final Widget child;
+  final String searchTitle;
+  final String? searchSubtitle;
+
+  @override
+  String? get title => null;
+
+  @override
+  String get effectiveTitle => searchTitle;
+
+  @override
+  String? get effectiveSubtitle => searchSubtitle;
+
+  @override
+  Widget get widget => child;
 }
 
 class SplitModel extends SettingsModel {
@@ -206,60 +230,248 @@ class SwitchModel extends SettingsModel {
   );
 }
 
-SettingsModel getBanWordModel({
+/// Creates a list-based keyword filter model using ListEditorDialog
+/// Items are stored as newline-separated strings (instead of pipe-separated)
+/// to support regex patterns containing '|' character
+///
+/// 使用 getListBanWordModel 替代了上游的 getBanWordModel
+SettingsModel getListBanWordModel({
   required String title,
   required String key,
   required ValueChanged<RegExp> onChanged,
 }) {
   String banWord = GStorage.setting.get(key, defaultValue: '');
+
+  // Helper function to parse stored data with backward compatibility
+  List<String> parseItems(String data) {
+    if (data.isEmpty) return [];
+
+    // Check if it's the old pipe-separated format (no newlines)
+    // If it contains no newlines but has pipes, it's likely old format
+    if (!data.contains('\n') && data.contains('|')) {
+      // Old format: pipe-separated
+      final parts = data
+          .split('|')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
+
+      // Heuristic: check for complex regex
+      if (parts.length > 1) {
+        final hasComplexRegex = parts.any(
+          (p) =>
+              p.contains('(') ||
+              p.contains('[') ||
+              p.contains('{') ||
+              p.contains('\\') ||
+              p.contains('^') ||
+              p.contains('\$'),
+        );
+
+        if (!hasComplexRegex) {
+          // Old format with simple keywords - migrate
+          return parts;
+        }
+      }
+
+      // Might be a single complex regex pattern - keep as single item
+      return [data];
+    }
+
+    // New format: newline-separated
+    return data
+        .split('\n')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+  }
+
+  // Helper function to join items using newline
+  String joinItems(List<String> items) {
+    return items.join('\n');
+  }
+
   return NormalModel(
     leading: const Icon(Icons.filter_alt_outlined),
     title: title,
-    getSubtitle: () => banWord.isEmpty ? "点击添加" : banWord,
-    onTap: (context, setState) {
-      String editValue = banWord;
-      showDialog(
+    getSubtitle: () {
+      if (banWord.isEmpty) return "点击添加";
+      final items = parseItems(banWord);
+      return items.isEmpty ? "点击添加" : '${items.length} 个关键词';
+    },
+    onTap: (context, setState) async {
+      final items = parseItems(banWord);
+
+      final result = await showDialog<List<String>>(
         context: context,
-        builder: (context) => AlertDialog(
-          constraints: Style.dialogFixedConstraints,
-          title: Text(title),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('使用|隔开，如：尝试|测试'),
-              TextFormField(
-                autofocus: true,
-                initialValue: editValue,
-                textInputAction: TextInputAction.newline,
-                minLines: 1,
-                maxLines: 4,
-                onChanged: (value) => editValue = value,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: Get.back,
-              child: Text(
-                '取消',
-                style: TextStyle(color: ColorScheme.of(context).outline),
-              ),
-            ),
-            TextButton(
-              child: const Text('保存'),
-              onPressed: () {
-                Get.back();
-                banWord = editValue;
-                setState();
-                onChanged(RegExp(banWord, caseSensitive: false));
-                SmartDialog.showToast('已保存');
-                GStorage.setting.put(key, banWord);
-              },
-            ),
-          ],
-        ),
+        builder: (context) {
+          return ListEditorDialog(
+            title: title,
+            initialItems: items,
+            hintText: '输入关键词或正则表达式',
+            itemLabel: '关键词',
+          );
+        },
       );
+
+      if (result != null) {
+        banWord = joinItems(result);
+        setState();
+        // Build regex by joining all patterns with alternation
+        final regexPattern = result.isEmpty
+            ? ''
+            : result
+                  .map((item) {
+                    // If the item is already a complex pattern, wrap in non-capturing group
+                    if (item.contains('|') && !item.startsWith('(')) {
+                      return '($item)';
+                    }
+                    return item;
+                  })
+                  .join('|');
+        onChanged(RegExp(regexPattern, caseSensitive: false));
+        SmartDialog.showToast('已保存');
+        GStorage.setting.put(key, banWord);
+      }
+    },
+  );
+}
+
+/// Creates a list-based UID filter model with user names using ListEditorDialog
+///
+/// 支持显示用户名的 UID 过滤模型
+SettingsModel getListUidWithNameModel({
+  required String title,
+  required Map<int, String> Function() getUidsMap,
+  required void Function(Map<int, String>) setUidsMap,
+  required void Function() onUpdate,
+  Widget? leading,
+  String emptySubtitle = '点击添加',
+  String Function(int count)? countSubtitleBuilder,
+}) {
+  return NormalModel(
+    leading: leading ?? const Icon(Icons.person_off_outlined),
+    title: title,
+    getSubtitle: () {
+      final uidsMap = getUidsMap();
+      if (uidsMap.isEmpty) return emptySubtitle;
+      return countSubtitleBuilder?.call(uidsMap.length) ??
+          '已屏蔽 ${uidsMap.length} 个用户';
+    },
+    onTap: (context, setState) async {
+      final uidsMap = getUidsMap();
+      // 将 Map 转换为显示格式："用户名 (UID)"
+      final items = uidsMap.entries.map((e) {
+        return '${e.value} (${e.key})';
+      }).toList();
+
+      final result = await showDialog<List<String>>(
+        context: context,
+        builder: (context) {
+          return ListEditorDialog(
+            title: title,
+            initialItems: items,
+            hintText: '输入用户UID',
+            itemLabel: 'UID',
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            allowEdit: false,
+            validator: (value) {
+              if (value.isEmpty) return '请输入UID';
+              final uid = int.tryParse(value);
+              if (uid == null) return 'UID必须是数字';
+              if (uid <= 0) return 'UID必须大于0';
+              return null;
+            },
+          );
+        },
+      );
+
+      if (result != null) {
+        final newMap = <int, String>{};
+
+        for (final item in result) {
+          // 解析格式 "用户名 (UID)" 或纯数字 "UID"
+          final match = RegExp(r'(.+?)\s*\((\d+)\)$').firstMatch(item);
+          if (match != null) {
+            // 格式: "用户名 (UID)"
+            final name = match.group(1)?.trim() ?? '';
+            final uid = int.tryParse(match.group(2) ?? '');
+            if (uid != null && uid > 0) {
+              newMap[uid] = name;
+            }
+          } else {
+            // 纯数字格式：新添加的UID
+            final uid = int.tryParse(item);
+            if (uid != null && uid > 0) {
+              newMap[uid] = 'UID:$uid'; // 默认名称
+            }
+          }
+        }
+
+        setUidsMap(newMap);
+        onUpdate();
+        setState();
+        SmartDialog.showToast('已保存');
+      }
+    },
+  );
+}
+
+/// Creates a list-based UID filter model using ListEditorDialog
+///
+/// 使用 getListUidModel 替代了上游的 getUidModel
+SettingsModel getListUidModel({
+  required String title,
+  required Set<int> Function() getUids,
+  required void Function(Set<int>) setUids,
+  required void Function() onUpdate,
+}) {
+  return NormalModel(
+    leading: const Icon(Icons.person_off_outlined),
+    title: title,
+    getSubtitle: () {
+      final uids = getUids();
+      if (uids.isEmpty) return '点击添加';
+      return '已屏蔽 ${uids.length} 个用户';
+    },
+    onTap: (context, setState) async {
+      final uids = getUids();
+      final items = uids.map((e) => e.toString()).toList();
+
+      final result = await showDialog<List<String>>(
+        context: context,
+        builder: (context) {
+          return ListEditorDialog(
+            title: title,
+            initialItems: items,
+            hintText: '输入用户UID',
+            itemLabel: 'UID',
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            allowEdit: false,
+            validator: (value) {
+              if (value.isEmpty) return '请输入UID';
+              final uid = int.tryParse(value);
+              if (uid == null) return 'UID必须是数字';
+              if (uid <= 0) return 'UID必须大于0';
+              return null;
+            },
+          );
+        },
+      );
+
+      if (result != null) {
+        final newUids = result
+            .map((e) => int.tryParse(e))
+            .where((e) => e != null)
+            .cast<int>()
+            .toSet();
+        setUids(newUids);
+        onUpdate();
+        setState();
+        SmartDialog.showToast('已保存');
+      }
     },
   );
 }
@@ -324,6 +536,7 @@ SettingsModel getVideoFilterSelectModel({
                 ),
                 TextButton(
                   onPressed: () {
+                    // 上游修复：增加了 try-catch 防止解析错误
                     try {
                       result = int.parse(valueStr);
                       Get.back();

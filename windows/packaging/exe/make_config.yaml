@@ -1,13 +1,15 @@
 script_template: inno_setup.iss
 # AppId 的值唯一标识此应用。
 # 不要在其他应用的安装程序中使用相同的 AppId 值。
-app_id: 5ef970f9-2b9e-4155-b7d6-a9d4dbd6b226
+app_id: 404deda7-6e76-49bc-97e7-ce02bc666e61
 publisher: dom
-publisher_url: https://github.com/bggRGjQaUbCoE/PiliPlus
-display_name: PiliPlus
+publisher_url: https://github.com/Starfallan/PiliNara
+display_name: PiliNara
 # create_desktop_icon: true
 # See: https://jrsoftware.org/ishelp/index.php?topic=setup_defaultdirname
-# install_dir_name: "D:\\HELLO-WORLD"
+# fastforge 默认用 pubspec.name 推导安装目录（本项目为 PiliPlus），
+# 这里显式指定为 PiliNara，避免装进 PiliPlus 的目录。
+install_dir_name: '{autopf64}\PiliNara'
 # 这里的路径是相对于项目根目录的路径； 图标格式必须是ico格式，不能是png或其它
 setup_icon_file: windows\runner\resources\app_icon.ico
 locales:

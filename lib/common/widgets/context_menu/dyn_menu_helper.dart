@@ -26,11 +26,62 @@ Widget dynTextMenuBuilder(
         },
       ),
     );
+  _addDynFilterItem(buttonItems, state);
   state.addLaunchMenuIfNeeded(buttonItems, index: 5);
   return AdaptiveTextSelectionToolbar.buttonItems(
     buttonItems: buttonItems,
     anchors: state.contextMenuAnchors,
   );
+}
+
+void _addDynFilterItem(
+  List<ContextMenuButtonItem> buttonItems,
+  SelectableRegionState state,
+) {
+  if (state.isUncollapsed) {
+    buttonItems.add(
+      ContextMenuButtonItem(
+        onPressed: () {
+          final escapedText = RegExp.escape(state.selectedText!);
+
+          showConfirmDialog(
+            context: Get.context!,
+            title: const Text('是否将以下内容加入动态过滤：'),
+            content: Text(
+              escapedText,
+              style: const TextStyle(
+                color: Colors.green,
+                fontWeight: .bold,
+              ),
+            ),
+            onConfirm: () {
+              final currentStored = Pref.banWordForDyn;
+              // 检查是否已存在（按行分割检查）
+              final existingKeywords = currentStored.isEmpty
+                  ? <String>[]
+                  : currentStored.split('\n');
+              if (existingKeywords.contains(escapedText)) {
+                SmartDialog.showToast('该关键词已在过滤列表中');
+                return;
+              }
+              final newStored = currentStored.isEmpty
+                  ? escapedText
+                  : '$currentStored\n$escapedText';
+              GStorage.setting.put(SettingBoxKey.banWordForDyn, newStored);
+              final newPattern = Pref.parseBanWordToRegex(newStored);
+              DynamicsDataModel.banWordForDyn = RegExp(
+                newPattern,
+                caseSensitive: true,
+              );
+              DynamicsDataModel.enableFilter = true;
+              SmartDialog.showToast('已保存');
+            },
+          );
+        },
+        label: '加入过滤',
+      ),
+    );
+  }
 }
 
 void _showEmoteDialog(ModuleDynamicModel? moduleDynamic) {
@@ -96,7 +147,15 @@ void _showTextDialog(String text) {
       child: Padding(
         padding: const .symmetric(horizontal: 20, vertical: 16),
         child: SelectionArea(
-          contextMenuBuilder: openUrlMenuBuilder,
+          contextMenuBuilder: (_, state) {
+            final buttonItems = state.contextMenuButtonItems;
+            state.addLaunchMenuIfNeeded(buttonItems, index: 3);
+            _addDynFilterItem(buttonItems, state);
+            return AdaptiveTextSelectionToolbar.buttonItems(
+              buttonItems: buttonItems,
+              anchors: state.contextMenuAnchors,
+            );
+          },
           child: SingleChildScrollView(
             child: Text(
               text,
@@ -106,14 +165,5 @@ void _showTextDialog(String text) {
         ),
       ),
     ),
-  );
-}
-
-Widget openUrlMenuBuilder(_, SelectableRegionState state) {
-  final buttonItems = state.contextMenuButtonItems;
-  state.addLaunchMenuIfNeeded(buttonItems, index: 3);
-  return AdaptiveTextSelectionToolbar.buttonItems(
-    buttonItems: buttonItems,
-    anchors: state.contextMenuAnchors,
   );
 }

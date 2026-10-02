@@ -1,0 +1,9 @@
+This project includes a copied/adapted pinyin dictionary derived from:
+https://github.com/xmcp/pakku.js
+
+Original upstream path:
+pakkujs/similarity/repo-cpp/src/pinyin_dict.txt
+
+The upstream project pakku.js is licensed under GNU GPL v3.0.
+This repository is also distributed under GPL-3.0, and this copied asset is
+kept with explicit attribution to preserve provenance and licensing context.

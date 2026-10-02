@@ -10,6 +10,7 @@ import 'package:PiliPlus/pages/dynamics_create/view.dart';
 import 'package:PiliPlus/pages/dynamics_tab/view.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart' hide DraggableScrollableSheet;
 
@@ -193,7 +194,11 @@ class _DynamicsPageState extends CommonPageState<DynamicsPage>
                     .toList(),
                 onTap: (index) {
                   if (!_dynamicsController.tabController.indexIsChanging) {
-                    _dynamicsController.animateToTop();
+                    if (Pref.enableCurrentPageRefresh) {
+                      _dynamicsController.toTopAndRefresh();
+                    } else {
+                      _dynamicsController.animateToTop();
+                    }
                   }
                 },
               ),

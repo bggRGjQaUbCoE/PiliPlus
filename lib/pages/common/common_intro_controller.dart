@@ -57,13 +57,15 @@ abstract class CommonIntroController extends GetxController
 
   void queryVideoIntro();
 
-  bool prevPlay();
-  bool nextPlay();
+  bool prevPlay({bool manual = false});
+  bool nextPlay({bool manual = false});
 
   void actionShareVideo(BuildContext context);
 
   // 同时观看
   final bool isShowOnlineTotal = Pref.enableOnlineTotal;
+  // 当前分P弹幕数
+  final bool isShowDmCount = Pref.enableDmCount;
   late final RxString total = '1'.obs;
   Timer? timer;
 
@@ -128,9 +130,10 @@ abstract class CommonIntroController extends GetxController
       return;
     }
     final res = await VideoHttp.coinVideo(
-      bvid: bvid,
+      aid: IdUtils.bv2av(bvid),
       multiply: coin,
       selectLike: coinWithLike ? 1 : 0,
+      referer: 'https://www.bilibili.com/video/$bvid',
     );
     if (res.isSuccess) {
       SmartDialog.showToast('投币成功');
@@ -242,7 +245,7 @@ mixin FavMixin on TripleMixin {
           if (result.isSuccess) {
             updateFavCount(hasFav ? -1 : 1);
             this.hasFav.toggle();
-            SmartDialog.showToast('${hasFav ? '取消' : ''}收藏成功');
+            SmartDialog.showToast(hasFav ? '已从默认收藏夹中移除' : '已加入默认收藏夹');
           } else {
             res.toast();
           }

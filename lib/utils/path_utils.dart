@@ -1,5 +1,6 @@
-import 'dart:io' show Platform;
+import 'dart:io' show Platform, Process;
 
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:path/path.dart' as path;
 
 late final String tmpDirPath;
@@ -18,7 +19,11 @@ abstract final class PathUtils {
   static const videoNameType2 = 'video$_fileExt';
   static const coverName = 'cover.jpg';
   static const danmakuName = 'danmaku.pb';
+  static const playbackMetaName = 'playback_meta.json';
   static const downloadDir = 'download';
+  static const subtitlesDirName = 'subtitles';
+  static const subtitleIndexName = 'index.json';
+  static String subtitleVttName(String lan) => '$lan.vtt';
 
   static String buildShadersAbsolutePath(
     String baseDirectory,
@@ -27,5 +32,23 @@ abstract final class PathUtils {
     return shaders
         .map((shader) => path.join(baseDirectory, shader))
         .join(Platform.isWindows ? ';' : ':');
+  }
+
+  static Future<void> openDir(String dirPath) async {
+    try {
+      final String executable;
+      if (Platform.isWindows) {
+        executable = 'explorer';
+      } else if (Platform.isMacOS) {
+        executable = 'open';
+      } else if (Platform.isLinux) {
+        executable = 'xdg-open';
+      } else {
+        throw UnimplementedError();
+      }
+      await Process.run(executable, [dirPath]);
+    } catch (e) {
+      SmartDialog.showToast(e.toString());
+    }
   }
 }

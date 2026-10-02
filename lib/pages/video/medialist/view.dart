@@ -10,6 +10,7 @@ import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/media_list/media_list.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
 import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
+import 'package:PiliPlus/models/common/list_order.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -26,19 +27,20 @@ class MediaListPanel extends CommonSlidePage {
     required this.bvid,
     required this.loadMoreMedia,
     required this.count,
-    required this.desc,
+    required this.listOrder,
     required this.onReverse,
     required this.loadPrevious,
     this.onDelete,
   });
 
   final RxList<MediaListItemModel> mediaList;
-  final ValueChanged<BaseEpisodeItem> onChangeEpisode;
+  final Future<bool> Function(BaseEpisodeItem episode, {bool manual})
+  onChangeEpisode;
   final String? panelTitle;
   final String bvid;
   final VoidCallback loadMoreMedia;
   final int? count;
-  final bool desc;
+  final ListOrder listOrder;
   final VoidCallback onReverse;
   final RefreshCallback? loadPrevious;
   final void Function(MediaListItemModel item, int index)? onDelete;
@@ -87,10 +89,12 @@ class _MediaListPanelState extends State<MediaListPanel>
                 ),
                 iconButton(
                   iconSize: 20,
-                  tooltip: widget.desc ? '顺序播放' : '倒序播放',
-                  icon: widget.desc
-                      ? const Icon(MdiIcons.sortAscending)
-                      : const Icon(MdiIcons.sortDescending),
+                  tooltip: widget.listOrder.label,
+                  icon: switch (widget.listOrder) {
+                    ListOrder.desc => const Icon(MdiIcons.sortDescending),
+                    ListOrder.shuffle => const Icon(Icons.shuffle),
+                    _ => const Icon(MdiIcons.sortAscending),
+                  },
                   onPressed: () {
                     Get.back();
                     widget.onReverse();
@@ -180,7 +184,7 @@ class _MediaListPanelState extends State<MediaListPanel>
                 return;
               }
               Get.back();
-              widget.onChangeEpisode(item);
+              widget.onChangeEpisode(item, manual: true);
             },
             onLongPress: onLongPress,
             onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,

@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/flutter/popup_menu.dart';
 import 'package:PiliPlus/models/common/fav_order_type.dart';
 import 'package:PiliPlus/models_new/fav/fav_detail/data.dart';
 import 'package:PiliPlus/models_new/fav/fav_detail/media.dart';
@@ -64,7 +65,7 @@ class _FavSearchPageState
   List<Widget>? get extraActions => [
     Obx(
       () {
-        return PopupMenuButton<FavOrderType>(
+        return StaticPopupMenuButton<FavOrderType>(
           icon: const Icon(Icons.sort),
           requestFocus: false,
           initialValue: controller.order.value,

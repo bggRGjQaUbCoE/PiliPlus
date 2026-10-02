@@ -23,6 +23,14 @@ abstract final class AppSign {
         .toString(); // 获取MD5哈希值
   }
 
+  /// 生成签名后的完整查询字符串，排序与签名计算完全一致。
+  /// 空格编码为 %20（而非 +），其余特殊字符按 encodeQueryComponent 规范处理。
+  static String makeQuery(Map<String, dynamic> params) {
+    final sorted = params.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+    return _makeQueryFromParametersDefault(sorted);
+  }
+
   /// from [Uri]
   static String _makeQueryFromParametersDefault(
     List<MapEntry<String, dynamic /*String?|Iterable<String>*/>>
@@ -35,11 +43,11 @@ abstract final class AppSign {
       assert(value != null, 'remove null value');
       result.write(separator);
       separator = '&';
-      result.write(Uri.encodeComponent(key));
+      result.write(Uri.encodeQueryComponent(key).replaceAll('+', '%20'));
       if (value != null && value.isNotEmpty) {
         result
           ..write('=')
-          ..write(Uri.encodeComponent(value));
+          ..write(Uri.encodeQueryComponent(value).replaceAll('+', '%20'));
       }
     }
 

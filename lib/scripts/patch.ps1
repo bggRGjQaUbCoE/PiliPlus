@@ -27,6 +27,11 @@ $TextSelectionPatch = "lib/scripts/text_selection.patch"
 # https://github.com/bggRGjQaUbCoE/PiliPlus/issues/1947
 $NavigatorPatch = "lib/scripts/navigator.patch"
 
+# fix predictive back direction after popping a nested route
+# (route below mounts the transition with a null back event during another
+#  route's gesture; direction tween is never recomputed on later gestures)
+$PredictiveBackPatch = "lib/scripts/predictive_back_page_transitions_builder.patch"
+
 # https://github.com/bggRGjQaUbCoE/PiliPlus/issues/2107
 $ImageAnimPatch = "lib/scripts/image_anim.patch"
 
@@ -133,6 +138,7 @@ switch ($platform.ToLower()) {
         $patches += $BottomSheetAndroidPatch
         $patches += $ScrollViewPatch
         $patches += $NavigatorPatch
+        $patches += $PredictiveBackPatch
 
         git reset --hard HEAD
     }

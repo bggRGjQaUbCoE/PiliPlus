@@ -1,0 +1,258 @@
+name: Sync Upstream And Build
+
+on:
+  schedule:
+    # 每天 UTC 03:20 检查一次上游；只有检测到新提交时才继续打包。
+    - cron: '20 3 * * *'
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: 'Target branch to sync into'
+        required: false
+        default: 'main'
+        type: string
+      build_android:
+        description: 'Build Android split APKs'
+        required: false
+        default: true
+        type: boolean
+      build_ios:
+        description: 'Build iOS unsigned IPA'
+        required: false
+        default: true
+        type: boolean
+      force_build:
+        description: 'Build even if upstream has no new commits'
+        required: false
+        default: false
+        type: boolean
+      create_release:
+        description: 'Create GitHub Release after successful build'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-upstream-build
+  cancel-in-progress: false
+
+env:
+  DEFAULT_TARGET_BRANCH: main
+  UPSTREAM_REPO: Starfallan/PiliNara
+  UPSTREAM_BRANCH: main
+
+jobs:
+  sync:
+    name: Sync upstream
+    runs-on: ubuntu-latest
+    outputs:
+      updated: ${{ steps.sync.outputs.updated }}
+      should_build: ${{ steps.sync.outputs.should_build }}
+      target_branch: ${{ steps.sync.outputs.target_branch }}
+      target_sha: ${{ steps.sync.outputs.target_sha }}
+      upstream_sha: ${{ steps.sync.outputs.upstream_sha }}
+
+    steps:
+      - name: Checkout target repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge upstream/main into target branch
+        id: sync
+        env:
+          INPUT_TARGET_BRANCH: ${{ github.event.inputs.target_branch }}
+          INPUT_FORCE_BUILD: ${{ github.event.inputs.force_build }}
+          PUSH_TOKEN: ${{ secrets.SYNC_PUSH_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          target_branch="${INPUT_TARGET_BRANCH:-${DEFAULT_TARGET_BRANCH}}"
+          force_build="${INPUT_FORCE_BUILD:-false}"
+
+          git remote remove upstream 2>/dev/null || true
+          git remote add upstream "https://github.com/${UPSTREAM_REPO}.git"
+
+          git fetch origin "${target_branch}" --tags
+          git fetch upstream "${UPSTREAM_BRANCH}" --tags
+
+          git checkout -B "${target_branch}" "origin/${target_branch}"
+
+          upstream_sha="$(git rev-parse "upstream/${UPSTREAM_BRANCH}")"
+          target_sha="$(git rev-parse HEAD)"
+
+          echo "target_branch=${target_branch}" >> "$GITHUB_OUTPUT"
+          echo "upstream_sha=${upstream_sha}" >> "$GITHUB_OUTPUT"
+
+          if git merge-base --is-ancestor "${upstream_sha}" HEAD; then
+            echo "updated=false" >> "$GITHUB_OUTPUT"
+            echo "target_sha=${target_sha}" >> "$GITHUB_OUTPUT"
+
+            if [ "${force_build}" = "true" ]; then
+              echo "should_build=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "should_build=false" >> "$GITHUB_OUTPUT"
+            fi
+
+            echo "Target branch already contains upstream/${UPSTREAM_BRANCH}."
+            exit 0
+          fi
+
+          # 合并前保存目标分支自己的 README.md，防止被上游覆盖
+          git show "origin/${target_branch}:README.md" > /tmp/keep-readme.md
+
+          if ! git merge --no-ff --no-edit "upstream/${UPSTREAM_BRANCH}"; then
+            {
+              echo "Merge conflict while syncing upstream/${UPSTREAM_BRANCH} into ${target_branch}";
+              echo;
+              echo "git status --short";
+              git status --short;
+              echo;
+              echo "Conflicted files:";
+              git diff --name-only --diff-filter=U;
+            } > sync-conflict.txt
+            git merge --abort || true
+            exit 1
+          fi
+
+          # 还原目标分支自己的 README.md（始终不同步上游的 README.md）
+          cp /tmp/keep-readme.md README.md
+          if ! git diff --quiet -- README.md; then
+            git add README.md
+            git commit -m "chore: keep local README.md (never sync from upstream)"
+          fi
+
+          target_sha="$(git rev-parse HEAD)"
+
+          if [ -n "${PUSH_TOKEN}" ]; then
+            git remote set-url origin "https://x-access-token:${PUSH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          fi
+
+          git push origin "HEAD:${target_branch}"
+
+          echo "updated=true" >> "$GITHUB_OUTPUT"
+          echo "should_build=true" >> "$GITHUB_OUTPUT"
+          echo "target_sha=${target_sha}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload sync conflict report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: sync-conflict-report
+          path: sync-conflict.txt
+
+  android:
+    needs: sync
+    if: ${{ needs.sync.outputs.should_build == 'true' && (github.event_name == 'schedule' || github.event.inputs.build_android == 'true') }}
+    uses: ./.github/workflows/android_reusable.yml
+    permissions: write-all
+    with:
+      ref: ${{ needs.sync.outputs.target_sha }}
+      target_platforms: android-arm64
+      upload_arm64_v8a: true
+      upload_armeabi_v7a: false
+      upload_x86_64: false
+    secrets: inherit
+
+  ios:
+    needs: sync
+    if: ${{ needs.sync.outputs.should_build == 'true' && (github.event_name == 'schedule' || github.event.inputs.build_ios == 'true') }}
+    uses: ./.github/workflows/ios.yml
+    permissions: write-all
+    with:
+      ref: ${{ needs.sync.outputs.target_sha }}
+      artifact_name: iOS-unsigned
+      file_suffix: _unsigned
+    secrets: inherit
+
+  release:
+    name: Create Release
+    needs: [sync, android, ios]
+    if: ${{ always() && needs.sync.outputs.should_build == 'true' && (needs.android.result == 'success' || needs.ios.result == 'success') && (github.event_name == 'schedule' || github.event.inputs.create_release != 'false') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.sync.outputs.target_sha }}
+          fetch-depth: 0
+
+      - name: Determine release tag
+        id: tag
+        run: |
+          set -euo pipefail
+
+          # Always use current version from pubspec.yaml + date
+          version=$(grep -m1 'version:' pubspec.yaml | sed 's/version: *//')
+          release_tag="v${version}-$(date +%Y%m%d)"
+
+          # If tag already exists, append a revision suffix
+          if git rev-parse "refs/tags/${release_tag}" >/dev/null 2>&1; then
+            i=1
+            while git rev-parse "refs/tags/${release_tag}.${i}" >/dev/null 2>&1; do
+              i=$((i + 1))
+            done
+            release_tag="${release_tag}.${i}"
+          fi
+
+          echo "tag=${release_tag}" >> "$GITHUB_OUTPUT"
+          echo "Release tag: ${release_tag}"
+
+      - name: Download Android artifacts
+        if: ${{ needs.android.result == 'success' }}
+        uses: actions/download-artifact@v7
+        continue-on-error: true
+        with:
+          name: Android_arm64-v8a
+          path: release-assets/
+
+      - name: Download iOS artifacts
+        if: ${{ needs.ios.result == 'success' }}
+        uses: actions/download-artifact@v7
+        continue-on-error: true
+        with:
+          name: iOS-unsigned
+          path: release-assets/
+
+      - name: List release assets
+        run: ls -la release-assets/ || echo "No assets found"
+
+      - name: Generate release manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(grep -m1 'version:' pubspec.yaml | sed 's/version: *//')
+          version_code=$(git rev-list --count HEAD)
+          commit_hash=$(git rev-parse HEAD)
+
+          cat > release-assets/release-manifest.json <<EOF
+          {
+            "schema_version": 1,
+            "version_name": "${version%%+*}",
+            "version_code": ${version_code},
+            "commit_hash": "${commit_hash}",
+            "release_tag": "${{ steps.tag.outputs.tag }}"
+          }
+          EOF
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ${{ steps.tag.outputs.tag }}
+          generate_release_notes: true
+          files: release-assets/*
+          draft: false
+          prerelease: false

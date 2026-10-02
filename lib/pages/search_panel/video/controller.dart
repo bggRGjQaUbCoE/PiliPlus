@@ -6,12 +6,16 @@ import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/pages/search_panel/controller.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
+import 'package:PiliPlus/utils/url_utils.dart';
+import 'package:PiliPlus/utils/recommend_filter.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
+
+final _b23Regex = RegExp(r'b23\.tv/[A-Za-z0-9]{7}$', caseSensitive: false);
 
 mixin SearchVideoMixin on SearchVideoController {
   late bool _hasJump2Video = false;
@@ -40,7 +44,7 @@ mixin SearchVideoMixin on SearchVideoController {
     } catch (_) {}
   }
 
-  void _jump2Video() {
+  Future<void> _jump2Video() async {
     if (IdUtils.avRegexExact.hasMatch(keyword)) {
       _hasJump2Video = true;
       PiliScheme.videoPush(
@@ -51,6 +55,18 @@ mixin SearchVideoMixin on SearchVideoController {
     } else if (IdUtils.bvRegexExact.hasMatch(keyword)) {
       _hasJump2Video = true;
       PiliScheme.videoPush(null, keyword, showDialog: false);
+    } else if (_b23Regex.hasMatch(keyword)) {
+      _hasJump2Video = true;
+      final redirectUrl = await UrlUtils.parseRedirectUrl(keyword);
+      if (redirectUrl != null) {
+        final matchRes = IdUtils.matchAvorBv(input: redirectUrl);
+        final aid = matchRes.av;
+        String? bvid = matchRes.bv;
+        if (aid != null || bvid != null) {
+          bvid ??= IdUtils.av2bv(aid!);
+          PiliScheme.videoPush(aid, bvid, showDialog: false);
+        }
+      }
     }
   }
 }
@@ -76,6 +92,17 @@ class SearchVideoController
   @override
   List<SearchVideoItemModel>? getDataList(SearchVideoData response) {
     return response.list;
+  }
+
+  @override
+  bool customHandleResponse(bool isRefresh, Success<SearchVideoData> response) {
+    final list = response.response.list;
+    if (list != null) {
+      list.removeWhere(
+        (item) => RecommendFilter.searchShouldRemove(item.owner.mid, item.title),
+      );
+    }
+    return super.customHandleResponse(isRefresh, response);
   }
 
   final Rx<ArchiveFilterType> selectedType = ArchiveFilterType.totalrank.obs;
@@ -282,6 +309,7 @@ class SearchVideoController
                     },
                   ).toList(),
                 ),
+                buildKeywordFilterSection(context, theme, setState),
               ],
             ),
           );

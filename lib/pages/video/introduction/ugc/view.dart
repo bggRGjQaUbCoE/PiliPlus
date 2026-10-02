@@ -35,11 +35,13 @@ import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
+import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -52,6 +54,7 @@ class UgcIntroPanel extends StatefulWidget {
     super.key,
     required this.heroTag,
     required this.showAiBottomSheet,
+    required this.showAiChatBottomSheet,
     required this.showEpisodes,
     required this.onShowMemberPage,
     required this.isPortrait,
@@ -59,6 +62,7 @@ class UgcIntroPanel extends StatefulWidget {
   });
   final String heroTag;
   final Function showAiBottomSheet;
+  final VoidCallback showAiChatBottomSheet;
   final Function showEpisodes;
   final ValueChanged<int?> onShowMemberPage;
   final bool isPortrait;
@@ -539,6 +543,14 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
             semanticsLabel: '分享',
             text: !isLoading ? NumUtils.numFormat(stat!.share!) : null,
           ),
+          if (Pref.enableAiChat)
+            ActionItem(
+              icon: const Icon(Icons.auto_awesome),
+              onTap: widget.showAiChatBottomSheet,
+              selectStatus: false,
+              semanticsLabel: 'AI分析',
+              text: 'AI',
+            ),
         ],
       ),
     );
@@ -860,7 +872,10 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
             crossAxisAlignment: .start,
             children: [
               Text(
-                item.name!,
+                remarkedName(
+                  item.mid is int ? item.mid : int.tryParse('${item.mid}'),
+                  item.name!,
+                ),
                 maxLines: 1,
                 overflow: .ellipsis,
                 style: TextStyle(
@@ -896,6 +911,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
       () {
         final userStat = introController.userStat.value;
         final isVip = (userStat.card?.vip?.status ?? 0) > 0;
+        final ownerMid = int.tryParse(userStat.card?.mid ?? '');
         return Row(
           spacing: 10,
           mainAxisSize: .min,
@@ -907,25 +923,45 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
               vipStatus: userStat.card?.vip?.status,
               officialType: userStat.card?.official?.type,
             ),
-            Column(
-              crossAxisAlignment: .start,
-              children: [
-                Text(
-                  userStat.card?.name ?? "",
-                  maxLines: 1,
-                  overflow: .ellipsis,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isVip && userStat.card?.vip?.type == 2
-                        ? colorScheme.vipColor
-                        : null,
+            Flexible(
+              child: Column(
+                crossAxisAlignment: .start,
+                children: [
+                  Text.rich(
+                    maxLines: 1,
+                    overflow: .ellipsis,
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: remarkedName(
+                            ownerMid,
+                            userStat.card?.name ?? '',
+                          ),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: isVip && userStat.card?.vip?.type == 2
+                                ? colorScheme.vipColor
+                                : null,
+                          ),
+                        ),
+                        if (!GlobalData().remarkReplaceName &&
+                            remarkOf(ownerMid) != null)
+                          TextSpan(
+                            text: '（${remarkOf(ownerMid)}）',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: colorScheme.primary,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-                Text(
-                  '${NumUtils.numFormat(userStat.follower)}粉丝    ${'${NumUtils.numFormat(userStat.archiveCount)}视频'}',
-                  style: TextStyle(fontSize: 12, color: colorScheme.outline),
-                ),
-              ],
+                  Text(
+                    '${NumUtils.numFormat(userStat.follower)}粉丝    ${'${NumUtils.numFormat(userStat.archiveCount)}视频'}',
+                    style: TextStyle(fontSize: 12, color: colorScheme.outline),
+                  ),
+                ],
+              ),
             ),
           ],
         );

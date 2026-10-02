@@ -31,6 +31,10 @@ class _SearchArticlePanelState
   late final SearchArticleController controller;
 
   @override
+  String? getTitle(SearchArticleItemModel item) =>
+      item.title.map((e) => e.text).join();
+
+  @override
   void initState() {
     super.initState();
     controller = Get.put(
@@ -76,11 +80,14 @@ class _SearchArticlePanelState
                   padding: WidgetStatePropertyAll(EdgeInsets.zero),
                 ),
                 onPressed: () => controller.onShowFilterDialog(context),
-                icon: Icon(
-                  Icons.filter_list_outlined,
+                icon: Obx(() => Icon(
+                  controller.includeKeywords.isNotEmpty ||
+                          controller.excludeKeywords.isNotEmpty
+                      ? Icons.filter_list
+                      : Icons.filter_list_off,
                   size: 18,
                   color: colorScheme.primary,
-                ),
+                )),
               ),
             ),
           ],

@@ -4,11 +4,17 @@ on:
   workflow_call:
     inputs:
       tag:
-        description: "tag"
+        description: "Publish release when non-empty; actual tag uses build number"
         required: false
         default: ""
         type: string
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Publish release when non-empty; actual tag uses build number"
+        required: false
+        default: ""
+        type: string
 
 jobs:
   build-mac-app:
@@ -33,31 +39,33 @@ jobs:
       - name: Apply Patch
         shell: pwsh
         run: lib/scripts/patch.ps1 macOS
-
+        continue-on-error: true
       - name: Build Mac
         run: flutter build macos --release --dart-define-from-file=pili_release.json --no-pub
 
       - name: Prepare Upload
         run: |
           npm install --global create-dmg
-          create-dmg build/macos/Build/Products/Release/PiliPlus.app || true
+          create-dmg build/macos/Build/Products/Release/PiliNara.app || true
         continue-on-error: true
 
       - name: Rename DMG
-        run: mv PiliPlus*.dmg PiliPlus_macos_${{ env.version }}.dmg
+        run: mv PiliNara*.dmg PiliNara_macos_${{ env.version }}.dmg
 
       - name: Release
-        if: ${{ github.event.inputs.tag != '' }}
+        if: ${{ inputs.tag != '' }}
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ github.event.inputs.tag }}
-          name: ${{ github.event.inputs.tag }}
+          tag_name: ${{ env.release_tag }}
+          name: ${{ env.release_tag }}
+          target_commitish: ${{ github.sha }}
           files: |
-            PiliPlus_macos_*.dmg
+            PiliNara_macos_*.dmg
+            release-manifest.json
 
       - name: Upload macos release
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: macOS-release
-          path: PiliPlus_macos_*.dmg
+          path: PiliNara_macos_*.dmg

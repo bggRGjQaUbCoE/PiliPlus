@@ -7,6 +7,7 @@ import 'package:PiliPlus/models/model_avatar.dart';
 import 'package:PiliPlus/models/model_owner.dart';
 import 'package:PiliPlus/models_new/live/live_feed_index/watched_show.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
+import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/parse_bool.dart';
 import 'package:PiliPlus/utils/parse_int.dart';
 import 'package:PiliPlus/utils/parse_string.dart';
@@ -40,12 +41,16 @@ class DynamicsDataModel {
   }
 
   static RegExp banWordForDyn = RegExp(
-    Pref.banWordForDyn,
+    Pref.parseBanWordToRegex(Pref.banWordForDyn),
     caseSensitive: false,
   );
   static bool enableFilter = banWordForDyn.pattern.isNotEmpty;
 
   static bool antiGoodsDyn = Pref.antiGoodsDyn;
+  static bool removeBlockedDyn = Pref.removeBlockedDyn;
+  static bool removeOnlyFansVideoDyn = Pref.removeOnlyFansVideoDyn;
+  static bool removeDynVideoDyn = Pref.removeDynVideoDyn;
+  static Set<int> dynamicsBlockedMids = Pref.dynamicsBlockedMids;
 
   DynamicsDataModel.fromJson(
     Map<String, dynamic> json, {
@@ -59,8 +64,34 @@ class DynamicsDataModel {
       items = <DynamicItemModel>[];
       late final filterBan =
           type != DynamicsTabType.up && tempBannedList?.isNotEmpty == true;
+      late final filterBlockedUsers =
+          type != DynamicsTabType.up && dynamicsBlockedMids.isNotEmpty;
+      late final filterDynVideo =
+          type != DynamicsTabType.up && removeDynVideoDyn;
+      final whitelistMids = GlobalData().whitelistMids;
       for (final e in list) {
         DynamicItemModel item = DynamicItemModel.fromJson(e);
+        if (filterBlockedUsers &&
+            dynamicsBlockedMids.contains(item.modules.moduleAuthor?.mid)) {
+          continue;
+        }
+        if (whitelistMids.containsKey(item.modules.moduleAuthor?.mid)) {
+          items!.add(item);
+          continue;
+        }
+        if (removeBlockedDyn &&
+            (item.hasNoPrivilegeDynamic ||
+                (item.orig?.hasNoPrivilegeDynamic ?? false))) {
+          continue;
+        }
+        if (removeOnlyFansVideoDyn &&
+            (item.hasOnlyFansVideoBadge ||
+                (item.orig?.hasOnlyFansVideoBadge ?? false))) {
+          continue;
+        }
+        if (filterDynVideo && item.hasDynVideoBadge) {
+          continue;
+        }
         if (antiGoodsDyn &&
             (item.orig?.modules.moduleDynamic?.additional?.type ==
                     'ADDITIONAL_TYPE_GOODS' ||
@@ -105,8 +136,6 @@ class DynamicItemModel {
   String? type;
   bool? visible;
 
-  late bool linkFolded = false;
-
   // opus
   Fallback? fallback;
 
@@ -138,6 +167,19 @@ class DynamicItemModel {
       fallback = Fallback.fromJson(json['fallback']);
     }
   }
+
+  bool get hasNoPrivilegeDynamic =>
+      (basic?.isOnlyFans ?? false) &&
+      modules.moduleDynamic?.major?.type == 'MAJOR_TYPE_BLOCKED' &&
+      modules.moduleDynamic?.major?.blocked != null;
+
+  bool get hasOnlyFansVideoBadge =>
+      (basic?.isOnlyFans ?? false) &&
+      type == 'DYNAMIC_TYPE_AV' &&
+      modules.moduleDynamic?.major?.archive?.badge?.text == '充电专属';
+
+  bool get hasDynVideoBadge =>
+      modules.moduleDynamic?.major?.archive?.badge?.text == '动态视频';
 }
 
 class Fallback {
@@ -399,11 +441,13 @@ class Basic {
   String? commentIdStr;
   int? commentType;
   String? ridStr;
+  bool? isOnlyFans;
 
   Basic.fromJson(Map<String, dynamic> json) {
     commentIdStr = json['comment_id_str'];
     commentType = safeToInt(json['comment_type']);
     ridStr = json['rid_str'];
+    isOnlyFans = json['is_only_fans'] as bool? ?? json['isOnlyFans'] as bool?;
   }
 }
 

@@ -17,11 +17,11 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
 # update when release
-version: 2.1.4+1
+version: 2.1.5+1
 
 environment:
   sdk: ">=3.13.0"
-  flutter: 3.47.4
+  flutter: 3.47.0
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -41,8 +41,16 @@ dependencies:
     git:
       url: https://github.com/bggRGjQaUbCoE/audio_service.git
       path: audio_service
+      ref: dev
+  audio_service_win:
+    git:
+      url: https://github.com/Starfallan/audio_service_win.git
       ref: main
-  audio_session: ^0.2.2
+  audio_service_mpris: 1.0.0-beta.2
+  audio_session:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/audio_session.git
+      ref: dev
   battery_plus: ^7.0.0
   brotli: ^0.6.0
   cached_network_image_ce:
@@ -52,20 +60,21 @@ dependencies:
       ref: develop
   canvas_danmaku:
     git:
-      url: https://github.com/bggRGjQaUbCoE/canvas_danmaku.git
-      ref: main
+      url: https://github.com/Starfallan/canvas_danmaku.git
+      ref: feat/mask-region
   catcher_2:
     git:
       url: https://github.com/My-Responsitories/catcher_2.git
       ref: dev
   characters: ^1.4.1
+  clipboard: ^3.0.14
   chat_bottom_container:
     git:
       url: https://github.com/bggRGjQaUbCoE/flutter_chat_packages.git
       path: packages/chat_bottom_container
       ref: dev
   collection: ^1.19.1
-  connectivity_plus: ^7.1.1
+  connectivity_plus: 7.0.0
   cookie_jar: ^4.0.8
   crypto: ^3.0.6
   cupertino_ui: ^1.0.0
@@ -73,7 +82,7 @@ dependencies:
     git:
       url: https://github.com/Predidit/linux_webview_window
       ref: main
-  device_info_plus: ^13.1.0
+  device_info_plus: 13.0.0
   dio: ^5.9.1
   dio_http2_adapter: ^2.7.1
   dlna_dart: ^0.1.0
@@ -85,7 +94,7 @@ dependencies:
       url: https://github.com/bggRGjQaUbCoE/extended_nested_scroll_view.git
       ref: dev
   ffi: ^2.2.0
-  file_picker: ^12.0.0
+  file_picker: 12.0.0-beta.7
   fixnum: ^1.1.1
   fl_chart: ^1.0.0
   flex_seed_scheme: ^5.0.0
@@ -99,6 +108,9 @@ dependencies:
     git:
       url: https://github.com/bggRGjQaUbCoE/flutter_smart_dialog.git
       ref: main
+  markdown: ^7.3.1
+  flutter_markdown_plus: ^1.0.7
+  flutter_markdown_plus_latex: ^1.0.5
   flutter_sortable_wrap:
     git:
       url: https://github.com/bggRGjQaUbCoE/flutter_sortable_wrap.git
@@ -111,8 +123,9 @@ dependencies:
       ref: v10.9.0
   get:
     git:
-      url: https://github.com/bggRGjQaUbCoE/getx.git
+      url: https://github.com/Starfallan/getx.git
       ref: dev
+  hashlib: ^1.12.0
   hive_ce: ^2.19.3
   html: ^0.15.4
   http2: ^2.3.1
@@ -140,6 +153,7 @@ dependencies:
       ref: master
   package_info_plus: ^10.1.0
   path: ^1.9.1
+  path_parsing: ^1.1.0
   path_provider: ^2.1.5
   permission_handler_android: ^14.0.0
   permission_handler_apple: ^9.4.7
@@ -176,6 +190,10 @@ dependencies:
       ref: main
 
 dependency_overrides:
+  clipboard:
+    git:
+      url: https://github.com/dongfengweixiao/flutter_clipboard.git
+      ref: patch-1
   flutter_inappwebview_android:
     git:
       url: https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git
@@ -188,37 +206,37 @@ dependency_overrides:
       ref: v6.1.5
   media_kit:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/Starfallan/media-kit.git
       path: media_kit
       ref: native
   media_kit_libs_android_video:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/Starfallan/media-kit.git
       path: libs/android/media_kit_libs_android_video
       ref: native
   media_kit_libs_ios_video:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/Starfallan/media-kit.git
       path: libs/ios/media_kit_libs_ios_video
       ref: native
   media_kit_libs_video:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/Starfallan/media-kit.git
       path: libs/universal/media_kit_libs_video
       ref: native
   media_kit_libs_windows_video:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/Starfallan/media-kit.git
       path: libs/windows/media_kit_libs_windows_video
       ref: native
   media_kit_native_event_loop:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/Starfallan/media-kit.git
       path: media_kit_native_event_loop
       ref: native
   media_kit_video:
     git:
-      url: https://github.com/My-Responsitories/media-kit.git
+      url: https://github.com/Starfallan/media-kit.git
       path: media_kit_video
       ref: native
   cached_network_image_ce:
@@ -272,6 +290,11 @@ flutter:
     - path: assets/images/live/
     - path: assets/images/paycoins/
     - path: assets/shaders/
+    - assets/danmaku_merge/pinyin_dict.txt
+    - assets/danmaku_merge/NOTICE.pakku
+    - assets/cdn_nodes.json
+  # An image asset can refer to one or more resolution-specific "variants", see
+  # https://flutter.dev/assets-and-images/#resolution-aware
 
   fonts:
     - family: digital_id_num

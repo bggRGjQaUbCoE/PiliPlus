@@ -4,11 +4,17 @@ on:
   workflow_call:
     inputs:
       tag:
-        description: "tag"
+        description: "Publish release when non-empty; actual tag uses build number"
         required: false
         default: ""
         type: string
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Publish release when non-empty; actual tag uses build number"
+        required: false
+        default: ""
+        type: string
 
 jobs:
   build-linux-app:
@@ -40,28 +46,28 @@ jobs:
       - name: Apply Patch
         shell: pwsh
         run: lib/scripts/patch.ps1 Linux
-
+        continue-on-error: true
         #TODO: deb and rpm packages need to be build
       - name: Build Linux
         run: flutter build linux --release --dart-define-from-file=pili_release.json --no-pub
 
       - name: Package .tar.gz
-        run: tar -zcvf PiliPlus_linux_${{ env.version }}_amd64.tar.gz -C build/linux/x64/release/bundle .
+        run: tar -zcvf PiliNara_linux_${{ env.version }}_amd64.tar.gz -C build/linux/x64/release/bundle .
 
       - name: Packege deb
         run: |
           printf "建立构建目录...\n"
-          mkdir "PiliPlus_linux_${{ env.version }}_amd64"
-          pushd "PiliPlus_linux_${{ env.version }}_amd64"
-          mkdir -p opt/PiliPlus
+          mkdir "PiliNara_linux_${{ env.version }}_amd64"
+          pushd "PiliNara_linux_${{ env.version }}_amd64"
+          mkdir -p opt/PiliNara
           mkdir -p usr/share/applications
           mkdir -p usr/share/icons/hicolor/512x512/apps
 
           printf "复制文件...\n"
-          cp -r ../build/linux/x64/release/bundle/* opt/PiliPlus
+          cp -r ../build/linux/x64/release/bundle/* opt/PiliNara
           cp -r ../assets/linux/DEBIAN .
-          cp ../assets/linux/com.example.piliplus.desktop usr/share/applications
-          cp ../assets/images/logo/logo.png usr/share/icons/hicolor/512x512/apps/piliplus.png
+          cp ../assets/linux/com.example.pilinara.desktop usr/share/applications
+          cp ../assets/images/logo/logo.png usr/share/icons/hicolor/512x512/apps/pilinara.png
 
           printf "修改控制文件...\n"
           # 替换版本号
@@ -74,9 +80,9 @@ jobs:
           sed -i "9s/size_need_change/${SIZE_KB}/g" DEBIAN/control
 
           printf "生成并写入 md5sums ...\n"
-          md5sum opt/PiliPlus/piliplus >> DEBIAN/md5sums
-          md5sum opt/PiliPlus/lib/* >> DEBIAN/md5sums
-          md5sum opt/PiliPlus/data/icudtl.dat >> DEBIAN/md5sums
+          md5sum opt/PiliNara/pilinara >> DEBIAN/md5sums
+          md5sum opt/PiliNara/lib/* >> DEBIAN/md5sums
+          md5sum opt/PiliNara/data/icudtl.dat >> DEBIAN/md5sums
 
           printf "设置权限...\n"
           chmod 0644 DEBIAN/control
@@ -87,8 +93,8 @@ jobs:
 
           printf "打包 deb 文件...\n"
           popd
-          dpkg-deb --build --verbose --root-owner-group "PiliPlus_linux_${{ env.version }}_amd64"
-          printf "完成: PiliPlus_linux_%s_amd64.deb\n" "${{ env.version }}"
+          dpkg-deb --build --verbose --root-owner-group "PiliNara_linux_${{ env.version }}_amd64"
+          printf "完成: PiliNara_linux_%s_amd64.deb\n" "${{ env.version }}"
         shell: bash
 
       - name: Packege rpm
@@ -99,46 +105,46 @@ jobs:
 
           printf "准备源码归档（仅包含运行时与元数据）...\n"
           DATE="$(date '+%a %b %d %Y')"
-          SRC_DIR="$PWD/piliplus-${{ env.version }}"
+          SRC_DIR="$PWD/pilinara-${{ env.version }}"
           mkdir -p "$SRC_DIR/bundle" "$SRC_DIR/assets"
           cp -r build/linux/x64/release/bundle/* "$SRC_DIR/bundle/"
-          cp assets/linux/com.example.piliplus.desktop "$SRC_DIR/assets/com.example.piliplus.desktop"
-          cp assets/images/logo/logo.png "$SRC_DIR/assets/piliplus.png"
-          tar -zcvf "$RPM_BUILD_ROOT/SOURCES/piliplus-${{ env.version }}.tar.gz" -C "$PWD" "piliplus-${{ env.version }}"
+          cp assets/linux/com.example.pilinara.desktop "$SRC_DIR/assets/com.example.pilinara.desktop"
+          cp assets/images/logo/logo.png "$SRC_DIR/assets/pilinara.png"
+          tar -zcvf "$RPM_BUILD_ROOT/SOURCES/pilinara-${{ env.version }}.tar.gz" -C "$PWD" "pilinara-${{ env.version }}"
 
           printf "生成 spec 文件...\n"
-          cat > "$RPM_BUILD_ROOT/SPECS/piliplus.spec" <<EOF
-          Name:           piliplus
+          cat > "$RPM_BUILD_ROOT/SPECS/pilinara.spec" <<EOF
+          Name:           pilinara
           Version:        ${{ env.version }}
           Release:        1%{?dist}
-          Summary:        PiliPlus Linux Version
+          Summary:        PiliNara Linux Version
           License:        GPL-3.0
-          Source0:        piliplus-${{ env.version }}.tar.gz
+          Source0:        pilinara-${{ env.version }}.tar.gz
           Requires:       desktop-file-utils, hicolor-icon-theme
 
           %description
           使用 Flutter 开发的 BiliBili 第三方客户端
 
           %prep
-          %setup -q -n piliplus-${{ env.version }}
+          %setup -q -n pilinara-${{ env.version }}
 
           %build
 
           %install
-          mkdir -p %{buildroot}/opt/PiliPlus
-          cp -r bundle/* %{buildroot}/opt/PiliPlus/
+          mkdir -p %{buildroot}/opt/PiliNara
+          cp -r bundle/* %{buildroot}/opt/PiliNara/
 
           # 二进制权限与命令行入口
-          chmod 755 %{buildroot}/opt/PiliPlus/piliplus
+          chmod 755 %{buildroot}/opt/PiliNara/pilinara
           mkdir -p %{buildroot}/usr/bin
-          ln -sf /opt/PiliPlus/piliplus %{buildroot}/usr/bin/piliplus
+          ln -sf /opt/PiliNara/pilinara %{buildroot}/usr/bin/pilinara
 
           # 桌面集成
           mkdir -p %{buildroot}/usr/share/applications
-          install -m 644 assets/com.example.piliplus.desktop %{buildroot}/usr/share/applications/com.example.piliplus.desktop
+          install -m 644 assets/com.example.pilinara.desktop %{buildroot}/usr/share/applications/com.example.pilinara.desktop
 
           mkdir -p %{buildroot}/usr/share/icons/hicolor/512x512/apps
-          install -m 644 assets/piliplus.png %{buildroot}/usr/share/icons/hicolor/512x512/apps/piliplus.png
+          install -m 644 assets/pilinara.png %{buildroot}/usr/share/icons/hicolor/512x512/apps/pilinara.png
 
           %post
           update-desktop-database -q || true
@@ -149,25 +155,25 @@ jobs:
           gtk-update-icon-cache -q -t -f %{_datadir}/icons/hicolor || true
 
           %files
-          /opt/PiliPlus
-          /usr/bin/piliplus
-          /usr/share/applications/com.example.piliplus.desktop
-          /usr/share/icons/hicolor/512x512/apps/piliplus.png
+          /opt/PiliNara
+          /usr/bin/pilinara
+          /usr/share/applications/com.example.pilinara.desktop
+          /usr/share/icons/hicolor/512x512/apps/pilinara.png
 
           %changelog
           * DATE - ${{ env.version }}-1
           - Initial RPM release
           EOF
 
-          sed -i "s/DATE/${DATE}/g" "$RPM_BUILD_ROOT/SPECS/piliplus.spec"
+          sed -i "s/DATE/${DATE}/g" "$RPM_BUILD_ROOT/SPECS/pilinara.spec"
 
           printf "构建 RPM 包...\n"
-          rpmbuild --define "_topdir $RPM_BUILD_ROOT" -bb "$RPM_BUILD_ROOT/SPECS/piliplus.spec"
+          rpmbuild --define "_topdir $RPM_BUILD_ROOT" -bb "$RPM_BUILD_ROOT/SPECS/pilinara.spec"
 
           printf "移动生成的 RPM...\n"
-          find "$RPM_BUILD_ROOT/RPMS" -name "*.rpm" -exec mv {} "PiliPlus_linux_${{ env.version }}_amd64.rpm" \;
+          find "$RPM_BUILD_ROOT/RPMS" -name "*.rpm" -exec mv {} "PiliNara_linux_${{ env.version }}_amd64.rpm" \;
 
-          printf "完成: PiliPlus_linux_%s_amd64.rpm\n" "${{ env.version }}"
+          printf "完成: PiliNara_linux_%s_amd64.rpm\n" "${{ env.version }}"
         shell: bash
 
       - name: Package AppImage
@@ -177,7 +183,7 @@ jobs:
           chmod +x appimagetool-x86_64.AppImage
 
           printf "建立 AppDir 目录结构...\n"
-          APPDIR="PiliPlus.AppDir"
+          APPDIR="PiliNara.AppDir"
           mkdir -p "$APPDIR/usr/bin"
           mkdir -p "$APPDIR/usr/lib"
           mkdir -p "$APPDIR/usr/share/applications"
@@ -187,10 +193,10 @@ jobs:
           cp -r build/linux/x64/release/bundle/* "$APPDIR/usr/bin/"
 
           printf "复制桌面文件和图标...\n"
-          cp assets/linux/com.example.piliplus.desktop "$APPDIR/com.example.piliplus.desktop"
-          cp assets/linux/com.example.piliplus.desktop "$APPDIR/usr/share/applications/com.example.piliplus.desktop"
-          cp assets/images/logo/logo.png "$APPDIR/piliplus.png"
-          cp assets/images/logo/logo.png "$APPDIR/usr/share/icons/hicolor/512x512/apps/piliplus.png"
+          cp assets/linux/com.example.pilinara.desktop "$APPDIR/com.example.pilinara.desktop"
+          cp assets/linux/com.example.pilinara.desktop "$APPDIR/usr/share/applications/com.example.pilinara.desktop"
+          cp assets/images/logo/logo.png "$APPDIR/pilinara.png"
+          cp assets/images/logo/logo.png "$APPDIR/usr/share/icons/hicolor/512x512/apps/pilinara.png"
 
           printf "创建 AppRun 启动脚本...\n"
           cat > "$APPDIR/AppRun" <<'APPRUN_EOF'
@@ -199,56 +205,58 @@ jobs:
           HERE=${SELF%/*}
           export PATH="${HERE}/usr/bin:${PATH}"
           export LD_LIBRARY_PATH="${HERE}/usr/lib:${LD_LIBRARY_PATH}"
-          exec "${HERE}/usr/bin/piliplus" "$@"
+          exec "${HERE}/usr/bin/pilinara" "$@"
           APPRUN_EOF
           chmod +x "$APPDIR/AppRun"
 
           printf "修改桌面文件中的 Exec 路径...\n"
-          sed -i 's|Exec=piliplus|Exec=piliplus|g' "$APPDIR/com.example.piliplus.desktop"
-          sed -i 's|Icon=piliplus|Icon=piliplus|g' "$APPDIR/com.example.piliplus.desktop"
+          sed -i 's|Exec=pilinara|Exec=pilinara|g' "$APPDIR/com.example.pilinara.desktop"
+          sed -i 's|Icon=pilinara|Icon=pilinara|g' "$APPDIR/com.example.pilinara.desktop"
 
           printf "打包 AppImage...\n"
-          ARCH=x86_64 ./appimagetool-x86_64.AppImage "$APPDIR" "PiliPlus_linux_${{ env.version }}_amd64.AppImage"
+          ARCH=x86_64 ./appimagetool-x86_64.AppImage "$APPDIR" "PiliNara_linux_${{ env.version }}_amd64.AppImage"
 
-          printf "完成: PiliPlus_linux_%s_amd64.AppImage\n" "${{ env.version }}"
+          printf "完成: PiliNara_linux_%s_amd64.AppImage\n" "${{ env.version }}"
         shell: bash
 
       - name: Release
-        if: ${{ github.event.inputs.tag != '' }}
+        if: ${{ inputs.tag != '' }}
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ github.event.inputs.tag }}
-          name: ${{ github.event.inputs.tag }}
+          tag_name: ${{ env.release_tag }}
+          name: ${{ env.release_tag }}
+          target_commitish: ${{ github.sha }}
           files: |
-            PiliPlus_linux_*.tar.gz
-            PiliPlus_linux_*.deb
-            PiliPlus_linux_*.rpm
-            PiliPlus_linux_*.AppImage
+            PiliNara_linux_*.tar.gz
+            PiliNara_linux_*.deb
+            PiliNara_linux_*.rpm
+            PiliNara_linux_*.AppImage
+            release-manifest.json
 
       - name: Upload linux targz package
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: Linux_targz_amd64_packege
-          path: PiliPlus_linux_*.tar.gz
+          path: PiliNara_linux_*.tar.gz
 
       - name: Upload linux deb package
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: Linux_deb_amd64_package
-          path: PiliPlus_linux_*.deb
+          path: PiliNara_linux_*.deb
 
       - name: Upload linux rpm package
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: Linux_rpm_amd64_package
-          path: PiliPlus_linux_*.rpm
+          path: PiliNara_linux_*.rpm
 
       - name: Upload linux AppImage package
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: Linux_AppImage_amd64_package
-          path: PiliPlus_linux_*.AppImage
+          path: PiliNara_linux_*.AppImage

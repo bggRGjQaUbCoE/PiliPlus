@@ -1,0 +1,225 @@
+schema: comet.native.v4
+name: fix-member-video-filter-dialog
+language: zh-CN
+phase: archive
+status: done
+state_version: 10
+brief: brief.md
+shape_confirmation_hash: 320dad21fd97580879393882ca4d597923a341b9dcd70e94c76bb9bc81bebb28
+spec_changes: []
+workspace:
+  isolation: branch
+  change_branch: comet/fix-member-video-filter-dialog
+  target_branch: main
+  finish: merge
+loop:
+  stage: done
+  goal_cycle: 1
+  iteration: 1
+  attempt: 1
+  retry_epoch: 0
+  failed_iteration_count: 0
+  no_progress_count: 0
+  execution_failure_count: 0
+  previous_unresolved_ids: []
+  next_action: null
+acceptance:
+  - id: A1
+    source: brief.md
+    text: A1 点击作者主页视频列表 header 的筛选图标，BottomSheet
+      正常弹出并显示完整内容（播放量滑块、两端数字标签、「已观看」两个开关、确认按钮），debug 与 release 构建均无异常。
+    result: passed
+    reason:
+      text: 弹窗整链（showModalBottomSheet/Theme/RangeSlider/AlertDialog）已切换为 material_ui
+        自有实现（pub-cache 核实 material_ui-1.1.0 自有 showModalBottomSheet 与
+        MaterialLocalizations 类型，与 flutter/material 同名不同型），flutter/material
+        空断言崩溃路径结构性消除；新增 widget 回归测试在 material_ui MaterialApp + material_ui
+        GlobalMaterialLocalizations.delegates 下断言 sheet
+        内容（标题/RangeSlider/两开关/确认）全部通过（Runtime 20/20）。release 真机冒烟按 brief
+        属用户后续步骤。
+      truncated: false
+  - id: A2
+    source: brief.md
+    text: A2 弹窗内设置过滤条件（拖滑块或数字输入）后点「确认」→ 弹窗关闭、列表按条件过滤、header 图标高亮为
+      `filter_list`；非确认关闭（下滑 / 遮罩 / 返回）→ 过滤不应用、列表不变。
+    result: passed
+    reason:
+      text: filter 仅在确认按钮 onPressed
+        写回（member_video_filter_dialog.dart:146-151）；三处入口（view.dart header
+        与两个空态）均 .whenComplete(onFilterChanged)；非确认关闭无写回、applyFilter 幂等；确认后
+        filterActive 联动 header
+        图标高亮（view.dart:321-330）。测试断言确认写回（enableMinPlay=true、minPlay=105000、sheet
+        关闭）通过。
+      truncated: false
+  - id: A3
+    source: brief.md
+    text: A3 点击两端数字标签弹出数字输入对话框，输入如「10.5万」确定后滑块端点更新为 105000；越界 / 交叉输入按既有钳制规则处理。
+    result: passed
+    reason:
+      text: NumUtils 正则核实 '10.5万'→105000、numFormat(105000)→'10.5万' 与测试断言一致；_parse 预钳
+        playSliderMax（0/空/不限→端点语义）+ _clampInput 与 spec 一致，无 start>end
+        交叉路径；widget 测试覆盖 输入→标签更新→确认写回 全链路。
+      truncated: false
+  - id: A4
+    source: brief.md
+    text: A4 过滤后列表为空时的两个空态入口（「调整过滤条件」按钮）同样能正常弹出弹窗。
+    result: passed
+    reason:
+      text: 两个空态入口（view.dart:239-245、279-284）与 header 入口调用完全相同的
+        MemberVideoFilterDialog.show(context,
+        filter).whenComplete(onFilterChanged)，弹窗侧无入口差异；真机空态场景按 brief 属用户手动验收。
+      truncated: false
+  - id: A5
+    source: brief.md
+    text: A5 member_video 相关文件（弹窗、video_filter、对应测试）不再 import
+      `flutter/material.dart`，统一使用 material_ui；`flutter analyze`
+      无新增告警；既有与新增测试全部通过。
+    result: passed
+    reason:
+      text: Glob 枚举 member_video 全部 dart 文件并 grep：零个 flutter/material import；4 处改动文件均
+        material_ui。Runtime analyze exit 0、test 20/20（19 单测 + 1 widget
+        回归），数量与覆盖逐个核对吻合。
+      truncated: false
+builder_handoff:
+  candidate_id: 462ece2a-c353-4fa9-a294-1a0258ed6211
+  identity_provider: skill-coordinated
+  builder_execution_ref: skill-coordinated:builder:261b08f5-4468-47bc-b5f4-824f9778e1a5
+  iteration: 1
+  summary:
+    text: 迁移 member_video 过滤弹窗链路到 material_ui：member_video_filter_dialog.dart 与
+      video_filter.dart 改用
+      material_ui（RangeValues/RangeSlider/showModalBottomSheet
+      等类型整链一致），video_filter_test.dart 同步；新增 member_video_filter_dialog_test.dart
+      回归测试（material_ui MaterialApp + material_ui 本地化代理下驱动 打开→数字输入10.5万→确认写回
+      全链路，旧代码下必失败）。开发期发现并修复既有缺陷：数字输入弹窗的 TextEditingController 在 pop 瞬间
+      dispose，退出动画重建 TextField 触发 used-after-disposed debug 异常；重构为
+      _NumberInputDialog State 持有控制器、路由卸载时释放，用户可见行为不变。pubspec.lock 保持 HEAD
+      未动（曾因镜像差异误升级 material_ui 1.1.0→1.1.1，已还原并以 flutter-io.cn 镜像重新 pub get）。
+    truncated: false
+  addressed_acceptance_ids:
+    - A1
+    - A2
+    - A3
+    - A4
+    - A5
+  checks:
+    - name:
+        text: flutter analyze lib/pages/member_video/ test/pages/member_video/
+        truncated: false
+      result: passed
+      note:
+        text: No issues found
+        truncated: false
+    - name:
+        text: flutter test test/pages/member_video/
+        truncated: false
+      result: passed
+      note:
+        text: 20/20 通过（19 既有 + 1 新增回归）
+        truncated: false
+  checks_truncated: false
+  known_limits:
+    - text: A1 的 release 构建行为、A4 空态入口与真机手感需用户手动验收（widget 测试覆盖 debug 语义层）
+      truncated: false
+    - text: 数字输入弹窗 dispose 时序修复属实现层缺陷修复，无用户可见行为变化
+      truncated: false
+  known_limits_truncated: false
+  review:
+    status: passed
+    summary:
+      text: Self-review 完成：核对迁移 diff（import 整链一致、解析/钳制/初始值逻辑逐行保持）、确认 member_video 无
+        flutter/material 残留引用（仅测试注释提及回归背景）、pubspec.lock 与 HEAD 一致、analyze
+        无告警、20/20 测试通过。
+      truncated: false
+    reviewer_execution_ref: builder-session-iteration1-self-review
+  submitted_at: 2026-09-08T02:22:05.158Z
+blockers: []
+verification:
+  candidate_id: 462ece2a-c353-4fa9-a294-1a0258ed6211
+  identity_provider: skill-coordinated
+  verifier_execution_ref: skill-coordinated:verifier:4b2f8606-ff80-4493-b413-d8a6281737ef
+  iteration: 1
+  attempt: 1
+  assurance: skill-coordinated
+  verdict: pass
+  checks:
+    - id: analyze-member-video
+      name:
+        text: flutter analyze member_video
+        truncated: false
+      argv_display:
+        - text: analyze
+          truncated: false
+        - text: lib/pages/member_video/
+          truncated: false
+        - text: test/pages/member_video/
+          truncated: false
+      argv_truncated: false
+      cwd_ref: .
+      status: passed
+      exit_code: 0
+      duration_ms: 5615
+    - id: test-member-video
+      name:
+        text: flutter test member_video
+        truncated: false
+      argv_display:
+        - text: test
+          truncated: false
+        - text: test/pages/member_video/
+          truncated: false
+      argv_truncated: false
+      cwd_ref: .
+      status: passed
+      exit_code: 0
+      duration_ms: 3027
+  summary:
+    text: 实现候选在代码层与测试层满足 A1-A5，根因（flutter/material 与 material_ui 类型链混用）已整链消除，判定
+      pass；唯一需行动项是提交时必须 git add -f 被 test* 规则忽略的新回归测试，否则 D3 防线无法持久化。
+    truncated: false
+  risks:
+    - text: 【高·提交时必须处理】新增回归测试 member_video_filter_dialog_test.dart 未被 git 跟踪且被
+        .gitignore:169 的 test* 规则忽略（git check-ignore 证实；既有
+        video_filter_test.dart 系历史 force-add）。提交时必须 git add -f 并以 git ls-files
+        test/pages/member_video/ 复核，否则 D3 回归防线不入库。
+      truncated: false
+    - text: brief 验证预期中的真机/模拟器手动验收 A1-A4（尤其 release 构建点击筛选）尚未发生，属用户步骤；本验收为代码层 + widget
+        测试层结论。
+      truncated: false
+    - text: _NumberInputDialog 重构超出 brief「仅 import 迁移」字面范围，但 handoff
+        已披露；逐行比对确认解析逻辑、keyboardType、取消/确定行为与旧实现等价，且修复 pop 期间 controller
+        used-after-disposed 既有缺陷，用户可见行为不变，判定为可接受的行为中性修复。
+      truncated: false
+    - text: "轻微：spec 文本写 TextInputType.number，实现（本轮之前即如此）为 numberWithOptions(decimal:
+        true)；后者是 spec 示例「10.5万」所必需，属既有出入非本轮引入，建议后续 spec 修订时对齐。"
+      truncated: false
+    - text: 工作树还含 .gitignore（Comet 块顺序重排，无功能变化）与
+        .comet/config.yaml（工作流状态）改动，与修复无关，提交时注意区分归属。
+      truncated: false
+  risks_truncated: false
+  completed_at: 2026-09-08T02:44:53.743Z
+history:
+  - goal_cycle: 1
+    iteration: 1
+    attempt: 1
+    outcome: pass
+    unresolved_ids: []
+    summary:
+      text: 实现候选在代码层与测试层满足 A1-A5，根因（flutter/material 与 material_ui 类型链混用）已整链消除，判定
+        pass；唯一需行动项是提交时必须 git add -f 被 test* 规则忽略的新回归测试，否则 D3 防线无法持久化。
+      truncated: false
+    completed_at: 2026-09-08T02:44:53.743Z
+history_overflow:
+  dropped_entries: 0
+  first_dropped_at: null
+  last_dropped_at: null
+  outcome_counts:
+    pass: 0
+    fail: 0
+    blocked: 0
+    execution-error: 0
+    recovery: 0
+verification_result: pass
+verification_report: verification.md
+archived: true
+created_at: 2026-09-08T01:36:51.349Z

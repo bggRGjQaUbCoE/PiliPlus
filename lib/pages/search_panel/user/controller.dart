@@ -1,9 +1,11 @@
 import 'dart:math';
 
+import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/search/user_search_type.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/pages/search_panel/controller.dart';
+import 'package:PiliPlus/utils/recommend_filter.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -21,6 +23,19 @@ class SearchUserController
     super.onInit();
     userType = UserType.all.obs;
     userOrderType = UserOrderType.def.obs;
+  }
+
+  @override
+  bool customHandleResponse(bool isRefresh, Success<SearchUserData> response) {
+    searchResultController?.count[searchType.index] =
+        response.response.numResults ?? 0;
+    final list = response.response.list;
+    if (list != null) {
+      list.removeWhere(
+        (item) => RecommendFilter.searchShouldRemove(item.mid, item.uname ?? ''),
+      );
+    }
+    return false;
   }
 
   void onShowFilterDialog(BuildContext context) {

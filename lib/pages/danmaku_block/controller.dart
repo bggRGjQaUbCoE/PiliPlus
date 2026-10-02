@@ -79,4 +79,64 @@ class DanmakuBlockController extends GetxController
       res.toast();
     }
   }
+
+  List<Map<String, dynamic>> exportRules() {
+    return [
+      for (final list in rules)
+        for (final rule in list)
+          {'id': rule.id, 'type': rule.type, 'filter': rule.filter, 'opened': true},
+    ];
+  }
+
+  Future<void> importDanmakuFilter(List<dynamic> incoming) async {
+    final incomingRules = incoming
+        .whereType<Map<String, dynamic>>()
+        .map((e) => (type: (e['type'] as num).toInt(), filter: e['filter'] as String))
+        .toList();
+
+    final existing = [
+      for (int t = 0; t < rules.length; t++)
+        for (final rule in rules[t]) (type: t, filter: rule.filter, id: rule.id),
+    ];
+
+    final incomingSet = {for (final r in incomingRules) (r.type, r.filter)};
+    final existingMap = {for (final r in existing) (r.type, r.filter): r.id};
+
+    final toDelete = existing.where((r) => !incomingSet.contains((r.type, r.filter))).toList();
+    final toAdd = incomingRules.where((r) => !existingMap.containsKey((r.type, r.filter))).toList();
+
+    if (toDelete.isEmpty && toAdd.isEmpty) {
+      SmartDialog.showToast('规则已是最新，无需同步');
+      return;
+    }
+
+    SmartDialog.showLoading(msg: '正在同步弹幕屏蔽规则……');
+    int deleted = 0;
+    int added = 0;
+
+    for (final r in toDelete) {
+      final res = await DanmakuFilterHttp.danmakuFilterDel(ids: r.id);
+      if (res.isSuccess) {
+        deleted++;
+        final list = rules[r.type];
+        final idx = list.indexWhere((e) => e.id == r.id);
+        if (idx != -1) list.removeAt(idx);
+      }
+    }
+
+    for (final r in toAdd) {
+      String filter = r.filter;
+      final res = await DanmakuFilterHttp.danmakuFilterAdd(
+        filter: filter,
+        type: r.type,
+      );
+      if (res case Success(:final response)) {
+        rules[r.type].add(response);
+        added++;
+      }
+    }
+
+    SmartDialog.dismiss();
+    SmartDialog.showToast('同步完成：新增 $added 条，删除 $deleted 条');
+  }
 }

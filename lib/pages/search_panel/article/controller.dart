@@ -1,9 +1,11 @@
 import 'dart:math';
 
+import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/search/article_search_type.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/pages/search_panel/controller.dart';
+import 'package:PiliPlus/utils/recommend_filter.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -43,6 +45,22 @@ class SearchArticleController
 
   Rx<ArticleOrderType> articleOrderType = ArticleOrderType.totalrank.obs;
 
+  @override
+  bool customHandleResponse(bool isRefresh, Success<SearchArticleData> response) {
+    searchResultController?.count[searchType.index] =
+        response.response.numResults ?? 0;
+    final list = response.response.list;
+    if (list != null) {
+      list.removeWhere(
+        (item) => RecommendFilter.searchShouldRemove(
+          item.mid,
+          item.title.map((e) => e.text).join(),
+        ),
+      );
+    }
+    return false;
+  }
+
   void onShowFilterDialog(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -51,74 +69,77 @@ class SearchArticleController
       constraints: BoxConstraints(
         maxWidth: min(640, context.mediaQueryShortestSide),
       ),
-      builder: (context) {
-        final theme = Theme.of(context);
-        return SingleChildScrollView(
-          padding: EdgeInsets.only(
-            top: 20,
-            left: 16,
-            right: 16,
-            bottom: 100 + MediaQuery.viewPaddingOf(context).bottom,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 10),
-              const Text('排序', style: TextStyle(fontSize: 16)),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: ArticleOrderType.values.map(
-                  (e) {
-                    final isCurr = e == articleOrderType.value;
-                    return SearchText(
-                      text: e.label,
-                      onTap: (_) {
-                        articleOrderType.value = e;
-                        order = e.order;
-                        onSortSearch(label: e.label);
-                      },
-                      bgColor: isCurr
-                          ? theme.colorScheme.secondaryContainer
-                          : null,
-                      textColor: isCurr
-                          ? theme.colorScheme.onSecondaryContainer
-                          : null,
-                    );
-                  },
-                ).toList(),
-              ),
-              const SizedBox(height: 20),
-              const Text('分区', style: TextStyle(fontSize: 16)),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: ArticleZoneType.values.map(
-                  (e) {
-                    final isCurr = e == articleZoneType!.value;
-                    return SearchText(
-                      text: e.label,
-                      onTap: (_) {
-                        articleZoneType!.value = e;
-                        onSortSearch(label: e.label);
-                      },
-                      bgColor: isCurr
-                          ? theme.colorScheme.secondaryContainer
-                          : null,
-                      textColor: isCurr
-                          ? theme.colorScheme.onSecondaryContainer
-                          : null,
-                    );
-                  },
-                ).toList(),
-              ),
-            ],
-          ),
-        );
-      },
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          final theme = Theme.of(context);
+          return SingleChildScrollView(
+            padding: EdgeInsets.only(
+              top: 20,
+              left: 16,
+              right: 16,
+              bottom: 100 + MediaQuery.viewPaddingOf(context).bottom,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 10),
+                const Text('排序', style: TextStyle(fontSize: 16)),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: ArticleOrderType.values.map(
+                    (e) {
+                      final isCurr = e == articleOrderType.value;
+                      return SearchText(
+                        text: e.label,
+                        onTap: (_) {
+                          articleOrderType.value = e;
+                          order = e.order;
+                          onSortSearch(label: e.label);
+                        },
+                        bgColor: isCurr
+                            ? theme.colorScheme.secondaryContainer
+                            : null,
+                        textColor: isCurr
+                            ? theme.colorScheme.onSecondaryContainer
+                            : null,
+                      );
+                    },
+                  ).toList(),
+                ),
+                const SizedBox(height: 20),
+                const Text('分区', style: TextStyle(fontSize: 16)),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: ArticleZoneType.values.map(
+                    (e) {
+                      final isCurr = e == articleZoneType!.value;
+                      return SearchText(
+                        text: e.label,
+                        onTap: (_) {
+                          articleZoneType!.value = e;
+                          onSortSearch(label: e.label);
+                        },
+                        bgColor: isCurr
+                            ? theme.colorScheme.secondaryContainer
+                            : null,
+                        textColor: isCurr
+                            ? theme.colorScheme.onSecondaryContainer
+                            : null,
+                      );
+                    },
+                  ).toList(),
+                ),
+                buildKeywordFilterSection(context, theme, setState),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }

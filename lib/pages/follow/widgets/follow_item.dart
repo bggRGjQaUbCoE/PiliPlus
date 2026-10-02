@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
 import 'package:PiliPlus/models_new/follow/list.dart';
 import 'package:PiliPlus/pages/share/view.dart' show UserModel;
 import 'package:PiliPlus/utils/feed_back.dart';
+import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -81,7 +82,7 @@ class FollowItem extends StatelessWidget {
                   crossAxisAlignment: .start,
                   children: [
                     Text(
-                      item.uname!,
+                      remarkedName(item.mid, item.uname!),
                       maxLines: 1,
                       overflow: .ellipsis,
                       style: const TextStyle(fontSize: 14),
@@ -94,6 +95,17 @@ class FollowItem extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 13,
                           color: colorScheme.outline,
+                        ),
+                      ),
+                    if (!GlobalData().remarkReplaceName &&
+                        remarkOf(item.mid) != null)
+                      Text(
+                        '备注：${remarkOf(item.mid)}',
+                        maxLines: 1,
+                        overflow: .ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: colorScheme.primary,
                         ),
                       ),
                   ],

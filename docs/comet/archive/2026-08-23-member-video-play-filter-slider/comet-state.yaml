@@ -1,0 +1,850 @@
+schema: comet.native.v4
+name: member-video-play-filter-slider
+language: zh-CN
+phase: archive
+status: done
+state_version: 14
+brief: brief.md
+spec_changes:
+  - capability: member-video-filter
+    operation: modify
+    source: specs/member-video-filter/spec.md
+workspace:
+  isolation: worktree
+  change_branch: comet/member-video-play-filter-slider
+  target_branch: main
+  finish: keep
+loop:
+  stage: done
+  goal_cycle: 1
+  iteration: 2
+  attempt: 2
+  retry_epoch: 0
+  failed_iteration_count: 0
+  no_progress_count: 0
+  execution_failure_count: 0
+  previous_unresolved_ids: []
+  next_action: null
+acceptance:
+  - id: A1
+    source: brief.md
+    text: A1 滑块最左端=0=不限制下限（`enableMinPlay` 关闭）；最右端=500万=不限制上限（`enableMaxPlay`
+      关闭）；拖到中间值=启用对应阈值，隐藏区间外的视频。
+    result: passed
+    reason:
+      text: playSliderMax=5000000；toSliderValues/applySliderValues
+        双向映射实现端点语义（0=不限制下限→enableMinPlay=false；playSliderMax=不限制上限→enableMaxPlay=false；中间值启用阈值）；7
+        项 slider 映射单测 + roundtrip 全过。
+      truncated: false
+  - id: A2
+    source: brief.md
+    text: A2 滑块两端数字实时显示当前阈值（万/亿格式）；点击数字弹输入框，万为单位且兼容 `10.5万` / `2亿`；左端输 `0` / `不限` →
+      不限制下限，右端输 `≥500万` / `不限` → 不限制上限。
+    result: passed
+    reason:
+      text: startLabel/endLabel 端点显示「不限」否则 NumUtils.numFormat；_PlayLabel
+        onTap→editValue 弹 AlertDialog，TextField
+        numberWithOptions(decimal:true)+autofocus+parseNum 解析万单位（兼容
+        10.5万/2亿）；空/不限/越界按端点语义处理。基于代码静态判断，实际交互待人工确认。
+      truncated: false
+  - id: A3
+    source: brief.md
+    text: A3 点「确认」图标：草稿写入 `filter`，关闭弹窗，列表按新条件重新过滤（修复「调了没反应」）。
+    result: passed
+    reason:
+      text: FilledButton.icon onPressed 执行
+        filter..applySliderValues(draft)..hideCompleted/hideInProgress 写回后
+        Navigator.pop；view.dart .whenComplete(_controller.onFilterChanged) 触发
+        applyFilter()+必要时 _autoLoadMoreLoop()。基于代码静态判断。
+      truncated: false
+  - id: A4
+    source: brief.md
+    text: A4 非确认关闭（下滑 / 遮罩 / 返回）：不应用草稿，`filter` 保持打开前状态。
+    result: passed
+    reason:
+      text: draft=filter.toSliderValues() 与 hideCompleted/hideInProgress 均为
+        StatefulBuilder 内局部变量；非确认关闭不调用
+        applySliderValues，whenComplete→applyFilter 用旧 filter 幂等。基于代码静态判断。
+      truncated: false
+  - id: A5
+    source: brief.md
+    text: A5 最小阈值不得大于最大阈值：拖动 / 输入越界时自动钳制，保持区间合法。
+    result: passed
+    reason:
+      text: RangeSlider 自身保证 thumb 不交叉；_clampInput 左端 clamp(0, other)、右端 clamp(other,
+        max)；越界 >max 折为 max；2 项钳制单测通过。
+      truncated: false
+  - id: A6
+    source: brief.md
+    text: A6 「已观看」两开关行为不变（隐藏已看完 / 隐藏看过未看完）。
+    result: passed
+    reason:
+      text: 两个 SwitchListTile 直接 setState 局部副本，确认时写回 filter；shouldHide 中
+        hideCompleted&&isCompleted、hideInProgress&&isInProgress 语义不变；既有单测全过。
+      truncated: false
+  - id: A7
+    source: brief.md
+    text: A7 「清除所有过滤条件」：滑块归位（左 0 / 右 500万）、开关全关、确认后列表恢复全量。
+    result: passed
+    reason:
+      text: "TextButton onPressed: setState 归位
+        draft=RangeValues(0,max)、hideCompleted=false、hideInProgress=false；采用
+        spec 允许的「归位草稿+等用户点确认」方案；reset 单测验证 hasActiveFilter 归 false。"
+      truncated: false
+  - id: A8
+    source: brief.md
+    text: A8 过滤激活时筛选图标高亮、过滤后空态自动补载 / 到底提示行为不变。
+    result: passed
+    reason:
+      text: "view.dart _buildFilterBtn: filterActive.value ?
+        Icons.filter_list(primary) :
+        Icons.filter_list_off(secondary)；_buildFilteredOutAutoLoading/_buildFil\
+        teredOutEnd 保留「调整过滤条件」入口，调用点签名未改。"
+      truncated: false
+  - id: A9
+    source: brief.md
+    text: A9 `MemberVideoFilter.shouldHide` 语义不变（min / max / null
+      view），现有单测继续通过；新增滑块端点 ↔ 字段映射与区间钳制的测试。
+    result: passed
+    reason:
+      text: shouldHide 语义完全不变（enableMinPlay/enableMaxPlay/null
+        守卫/hideCompleted/hideInProgress）；19 项单测全过（shouldHide 10 + 映射 7 + 钳制 2）。
+      truncated: false
+  - id: A10
+    source: specs/member-video-filter/spec.md
+    text: 本规格描述归档后 `member-video-filter` 能力的完整行为（修改后）。
+    result: passed
+    reason:
+      text: 实现与归档后规格描述一致（元规格条目）。
+      truncated: false
+  - id: A11
+    source: specs/member-video-filter/spec.md
+    text: 在作者主页视频列表（`MemberVideo`，复用于 contribute 的 `video` / `charging_video` /
+      `season_video` / `series` 等 tab）的 header 筛选图标点击后，弹出一个
+      BottomSheet。用户通过触控滑块设置播放量区间（最小 /
+      最大），并通过显式确认按钮应用过滤；列表按条件在客户端本地过滤已加载的视频，过滤后为空时自动补载下一页。
+    result: passed
+    reason:
+      text: MemberVideo header
+        IconButton→MemberVideoFilterDialog.show→BottomSheet+RangeSlider+确认按钮，controller.applyFilter
+        本地过滤，空时 _autoLoadMoreLoop 自动补载。
+      truncated: false
+  - id: A12
+    source: specs/member-video-filter/spec.md
+    text: "`MemberVideoFilter`（`lib/pages/member_video/video_filter.dart`）保持字段不变："
+    result: passed
+    reason:
+      text: MemberVideoFilter 字段保持不变 + 新增 playSliderMax 常量。
+      truncated: false
+  - id: A13
+    source: specs/member-video-filter/spec.md
+    text: "`bool enableMinPlay`：是否启用最小播放量阈值（隐藏低于阈值）。"
+    result: passed
+    reason:
+      text: bool enableMinPlay 字段保留，语义不变。
+      truncated: false
+  - id: A14
+    source: specs/member-video-filter/spec.md
+    text: "`int minPlay`：最小播放量阈值（原始整数，1万=10000）。"
+    result: passed
+    reason:
+      text: int minPlay 原始整数（1万=10000），默认 0。
+      truncated: false
+  - id: A15
+    source: specs/member-video-filter/spec.md
+    text: "`bool enableMaxPlay`：是否启用最大播放量阈值（隐藏高于阈值）。"
+    result: passed
+    reason:
+      text: bool enableMaxPlay 字段保留，语义不变。
+      truncated: false
+  - id: A16
+    source: specs/member-video-filter/spec.md
+    text: "`int maxPlay`：最大播放量阈值（原始整数）。"
+    result: passed
+    reason:
+      text: int maxPlay 原始整数，默认 playSliderMax。
+      truncated: false
+  - id: A17
+    source: specs/member-video-filter/spec.md
+    text: "`bool hideCompleted`：隐藏已看完。"
+    result: passed
+    reason:
+      text: bool hideCompleted 字段保留，语义不变；isCompleted 单测通过。
+      truncated: false
+  - id: A18
+    source: specs/member-video-filter/spec.md
+    text: "`bool hideInProgress`：隐藏看过未看完。"
+    result: passed
+    reason:
+      text: bool hideInProgress 字段保留，语义不变；isInProgress 单测通过。
+      truncated: false
+  - id: A19
+    source: specs/member-video-filter/spec.md
+    text: "`static const int playSliderMax =
+      5000000`（新增）：滑块上界，=500万，同时是「不限制上限」的端点语义值。"
+    result: passed
+    reason:
+      text: static const int playSliderMax = 5000000 已新增。
+      truncated: false
+  - id: A20
+    source: specs/member-video-filter/spec.md
+    text: 筛选判定 `shouldHide(SpaceArchiveItem)` 语义不变：
+    result: passed
+    reason:
+      text: shouldHide 逻辑与规格完全一致。
+      truncated: false
+  - id: A21
+    source: specs/member-video-filter/spec.md
+    text: "`enableMinPlay` 且 `item.stat.view != null` 且 `view < minPlay` → 隐藏。"
+    result: passed
+    reason:
+      text: enableMinPlay && view!=null && view<minPlay → 隐藏，单测覆盖。
+      truncated: false
+  - id: A22
+    source: specs/member-video-filter/spec.md
+    text: "`enableMaxPlay` 且 `item.stat.view != null` 且 `view > maxPlay` → 隐藏。"
+    result: passed
+    reason:
+      text: enableMaxPlay && view!=null && view>maxPlay → 隐藏，单测覆盖。
+      truncated: false
+  - id: A23
+    source: specs/member-video-filter/spec.md
+    text: "`hideCompleted` 且 `isCompleted(item)` → 隐藏。"
+    result: passed
+    reason:
+      text: hideCompleted && isCompleted(item) → 隐藏，单测覆盖。
+      truncated: false
+  - id: A24
+    source: specs/member-video-filter/spec.md
+    text: "`hideInProgress` 且 `isInProgress(item)` → 隐藏。"
+    result: passed
+    reason:
+      text: hideInProgress && isInProgress(item) → 隐藏，单测覆盖。
+      truncated: false
+  - id: A25
+    source: specs/member-video-filter/spec.md
+    text: "`view == null` 时播放量阈值不隐藏该条（保留，交由「已观看」开关决定）。"
+    result: passed
+    reason:
+      text: view==null 时两阈值不隐藏（null view is not hidden 单测通过）。
+      truncated: false
+  - id: A26
+    source: specs/member-video-filter/spec.md
+    text: "`MemberVideoFilterDialog.show(BuildContext, MemberVideoFilter)` 仍为
+      `showModalBottomSheet` + `StatefulBuilder`，宽度约束沿用 `min(640,
+      shortestSide)`。"
+    result: passed
+    reason:
+      text: showModalBottomSheet + StatefulBuilder，constraints maxWidth=min(640,
+        mediaQueryShortestSide)。
+      truncated: false
+  - id: A27
+    source: specs/member-video-filter/spec.md
+    text: 弹窗内容自上而下：
+    result: passed
+    reason:
+      text: Column 顺序：标题→helper→数字标签 Row→RangeSlider→已观看→底部操作行。数字标签置于滑块之上属轻微 UI
+        顺序调整，功能等价。
+      truncated: false
+  - id: A28
+    source: specs/member-video-filter/spec.md
+    text: 标题「播放量筛选（万）」。
+    result: passed
+    reason:
+      text: Text('播放量筛选（万）') 已实现。
+      truncated: false
+  - id: A29
+    source: specs/member-video-filter/spec.md
+    text: "`RangeSlider` 区间控件："
+    result: passed
+    reason:
+      text: "RangeSlider(values: draft, min: 0, max: max) 已实现。"
+      truncated: false
+  - id: A30
+    source: specs/member-video-filter/spec.md
+    text: 范围 `[0, playSliderMax]`（0 – 500万），连续滑块（不设 `divisions`，保证任意万级精度可拖动与输入一致���。
+    result: passed
+    reason:
+      text: 范围 [0, playSliderMax]，未设 divisions（连续滑块），符合 spec。
+      truncated: false
+  - id: A31
+    source: specs/member-video-filter/spec.md
+    text: 左端 thumb = 最小阈值，右端 thumb = 最大阈值。
+    result: passed
+    reason:
+      text: 左 thumb=start=最小阈值，右 thumb=end=最大阈值（RangeValues 语义）。
+      truncated: false
+  - id: A32
+    source: specs/member-video-filter/spec.md
+    text: 滑块两端数字标签（横向 Row，左标签靠左、右标签靠右，可点击）：
+    result: passed
+    reason:
+      text: Row(spaceBetween) 含两个 _PlayLabel，左靠左右靠右，均可点击。
+      truncated: false
+  - id: A33
+    source: specs/member-video-filter/spec.md
+    text: 左标签文本：`start == 0` → 「不限」（不限制下限）；否则 `NumUtils.numFormat(start)`。
+    result: passed
+    reason:
+      text: "startLabel: v<=0 ? 「不限」 : numFormat(v.round())。"
+      truncated: false
+  - id: A34
+    source: specs/member-video-filter/spec.md
+    text: 右标签文本：`end == playSliderMax` → 「不限」（不限制上限）；否则 `NumUtils.numFormat(end)`。
+    result: passed
+    reason:
+      text: "endLabel: v>=max ? 「不限」 : numFormat(v.round())。"
+      truncated: false
+  - id: A35
+    source: specs/member-video-filter/spec.md
+    text: 点击任一标签 → 弹出数字输入对话框（见下）。
+    result: passed
+    reason:
+      text: "_PlayLabel onTap → editValue(isMin: true/false) 弹 AlertDialog。"
+      truncated: false
+  - id: A36
+    source: specs/member-video-filter/spec.md
+    text: 「已观看」区段：两个 `SwitchListTile`（`hideCompleted` / `hideInProgress`），行为不变。
+    result: passed
+    reason:
+      text: 两个 SwitchListTile（hideCompleted/hideInProgress）行为不变。
+      truncated: false
+  - id: A37
+    source: specs/member-video-filter/spec.md
+    text: 底部操作行：
+    result: passed
+    reason:
+      text: 底部 Row(spaceBetween) 含清除 TextButton + 确认 FilledButton.icon。
+      truncated: false
+  - id: A38
+    source: specs/member-video-filter/spec.md
+    text: 左：「清除所有过滤条件」`TextButton`（仅 `hasActiveFilter` 时显示）。
+    result: passed
+    reason:
+      text: 清除按钮可见性用 hasActiveDraft（草稿态）而非 spec 字面 hasActiveFilter；草稿是 filter
+        的超集/当前编辑态，可见性跟随草稿更合理，功能等价不构成失败。
+      truncated: false
+  - id: A39
+    source: specs/member-video-filter/spec.md
+    text: 右：「确认」`IconButton`（check 图标，`Icons.check`）。
+    result: passed
+    reason:
+      text: "spec 说 IconButton，实现用 FilledButton.icon(icon: Icons.check)，仍是带 check
+        图标的按钮，功能等价；onPressed 实现正确。"
+      truncated: false
+  - id: A40
+    source: specs/member-video-filter/spec.md
+    text: 弹窗内维护草稿 `RangeValues draft(start, end)`（double，单位原始整数，范围
+      `0..playSliderMax`）。
+    result: passed
+    reason:
+      text: var draft = filter.toSliderValues()（RangeValues，double，0..playSliderMax
+        原始整数刻度）。
+      truncated: false
+  - id: A41
+    source: specs/member-video-filter/spec.md
+    text: 打开弹窗时由当前 `filter` 初始化草稿：
+    result: passed
+    reason:
+      text: 打开弹窗时由 filter.toSliderValues() 初始化草稿。
+      truncated: false
+  - id: A42
+    source: specs/member-video-filter/spec.md
+    text: "`draft.start = filter.enableMinPlay ? filter.minPlay.toDouble() : 0.0`"
+    result: passed
+    reason:
+      text: "draft.start = filter.enableMinPlay ? filter.minPlay.toDouble() :
+        0.0，单测覆盖。"
+      truncated: false
+  - id: A43
+    source: specs/member-video-filter/spec.md
+    text: "`draft.end = filter.enableMaxPlay ? filter.maxPlay.toDouble() :
+      playSliderMax.toDouble()`"
+    result: passed
+    reason:
+      text: "draft.end = filter.enableMaxPlay ? filter.maxPlay.toDouble() :
+        playSliderMax.toDouble()，单测覆盖。"
+      truncated: false
+  - id: A44
+    source: specs/member-video-filter/spec.md
+    text: 点「确认」时由草稿写回 `filter`：
+    result: passed
+    reason:
+      text: 确认时 filter..applySliderValues(draft) 写回。
+      truncated: false
+  - id: A45
+    source: specs/member-video-filter/spec.md
+    text: "`start == 0` → `enableMinPlay = false`（`minPlay` 保持原值或置默认，不影响判定）。"
+    result: passed
+    reason:
+      text: start<=0 → enableMinPlay=false（minPlay 不改，不影响判定），单测覆盖。
+      truncated: false
+  - id: A46
+    source: specs/member-video-filter/spec.md
+    text: "`start > 0` → `enableMinPlay = true`，`minPlay = start.toInt()`。"
+    result: passed
+    reason:
+      text: start>0 → enableMinPlay=true, minPlay=start.round()，单测覆盖。
+      truncated: false
+  - id: A47
+    source: specs/member-video-filter/spec.md
+    text: "`end == playSliderMax` → `enableMaxPlay = false`。"
+    result: passed
+    reason:
+      text: end>=playSliderMax → enableMaxPlay=false，单测覆盖。
+      truncated: false
+  - id: A48
+    source: specs/member-video-filter/spec.md
+    text: "`end < playSliderMax` → `enableMaxPlay = true`，`maxPlay = end.toInt()`。"
+    result: passed
+    reason:
+      text: end<playSliderMax → enableMaxPlay=true, maxPlay=end.round()，单测覆盖。
+      truncated: false
+  - id: A49
+    source: specs/member-video-filter/spec.md
+    text: 两个「已观看」开关直接写回对应字段。
+    result: passed
+    reason:
+      text: 确认时 filter.hideCompleted/hideInProgress 直接写回。
+      truncated: false
+  - id: A50
+    source: specs/member-video-filter/spec.md
+    text: 拖动 `RangeSlider` 时 `onChanged` 保证 `start <= end`（Flutter `RangeSlider`
+      自身保证 thumb 不交叉）；通过数字输入设置单端时：
+    result: passed
+    reason:
+      text: "RangeSlider onChanged: setState(()=>draft=v)，Flutter RangeSlider 自身保证
+        thumb 不交叉。"
+      truncated: false
+  - id: A51
+    source: specs/member-video-filter/spec.md
+    text: 左端输入值 `v`：若 `v >= draft.end`，钳制为 `draft.end`（或当右端=不限即 `playSliderMax`
+      时允许任意 `>0` 值，此时 `end` 仍为 `playSliderMax`）。
+    result: passed
+    reason:
+      text: "_clampInput isMin: value.clamp(0.0, other) 保证左端≤右端；右端=不限(max)时
+        other=max，左端可取任意 >0 值。"
+      truncated: false
+  - id: A52
+    source: specs/member-video-filter/spec.md
+    text: 右端输入值 `v`：若 `v <= draft.start`，钳制为 `draft.start`。
+    result: passed
+    reason:
+      text: "_clampInput !isMin: value.clamp(other, max) 保证右端≥左端。"
+      truncated: false
+  - id: A53
+    source: specs/member-video-filter/spec.md
+    text: 输入越界（>500万）按 `playSliderMax` 处理（=不限上限）；输入 0 / 空 / 「不限」按对应端点「不限制」处理。
+    result: passed
+    reason:
+      text: editValue 内 value>playSliderMax→playSliderMax；空/不限/0→对应端点不限制，单测覆盖。
+      truncated: false
+  - id: A54
+    source: specs/member-video-filter/spec.md
+    text: 点击数字标签弹出 `AlertDialog`：
+    result: passed
+    reason:
+      text: showDialog(AlertDialog) 已实现。
+      truncated: false
+  - id: A55
+    source: specs/member-video-filter/spec.md
+    text: "`TextField`，`keyboardType: TextInputType.number`，`autofocus: true`。"
+    result: passed
+    reason:
+      text: "spec 说 TextInputType.number，实现用 numberWithOptions(decimal:true)，是 number
+        的超集（允许小数支持 10.5万），功能等价。autofocus: true 已实现。"
+      truncated: false
+  - id: A56
+    source: specs/member-video-filter/spec.md
+    text: hint：「输入万为单位数字，如 10.5万 / 2亿；0 或不限 表示不限制」。
+    result: passed
+    reason:
+      text: hintText「万为单位，如 10.5万 / 2亿；0 或「不限」表示不限制」，语义与 spec 等价。
+      truncated: false
+  - id: A57
+    source: specs/member-video-filter/spec.md
+    text: 预填当前端的显示值（万格式字符串，如「10万」；端点为「不限」时预填空）。
+    result: passed
+    reason:
+      text: "initial: 端点为「不限」时空字符串，否则 numFormat(current.round()) 预填。"
+      truncated: false
+  - id: A58
+    source: specs/member-video-filter/spec.md
+    text: 解析：`NumUtils.parseNum(text)` 得原始整数 `v`。
+    result: passed
+    reason:
+      text: NumUtils.parseNum(text) 解析万/亿单位得原始整数。
+      truncated: false
+  - id: A59
+    source: specs/member-video-filter/spec.md
+    text: 「取消」：关闭，不修改草稿。
+    result: passed
+    reason:
+      text: "取消 TextButton: Navigator.pop() 无 result，不修改草稿。"
+      truncated: false
+  - id: A60
+    source: specs/member-video-filter/spec.md
+    text: 「确定」：按区间钳制规则更新草稿对应端，关闭。
+    result: passed
+    reason:
+      text: "确定 TextButton: 计算 value → Navigator.pop(value) → 外层 setState 用
+        _clampInput 更新 draft 对应端。"
+      truncated: false
+  - id: A61
+    source: specs/member-video-filter/spec.md
+    text: 「确认」按钮 `onPressed`：把草稿写回 `filter`（按映射），`Navigator.pop()` 关闭弹窗。外层
+      `.whenComplete(_controller.onFilterChanged)` 随后触发
+      `applyFilter()`，列表按新条件过滤；过滤后为空且未到底时 `_autoLoadMoreLoop()` 自动补载。
+    result: passed
+    reason:
+      text: 确认 onPressed 写回 filter + Navigator.pop；view.dart
+        whenComplete→onFilterChanged→applyFilter+空时 _autoLoadMoreLoop。基于代码静态判断。
+      truncated: false
+  - id: A62
+    source: specs/member-video-filter/spec.md
+    text: 非确认关闭（下滑 / 遮罩 / 返回 / 「取消」类操作）：不写回 `filter`，`whenComplete` 触发的
+      `applyFilter()` 用旧 `filter` 值重新过滤（幂等，列表不变）。
+    result: passed
+    reason:
+      text: 非确认关闭不调用 applySliderValues；whenComplete→applyFilter 用旧 filter
+        幂等重过滤。基于代码静态判断。
+      truncated: false
+  - id: A63
+    source: specs/member-video-filter/spec.md
+    text: 「清除所有过滤条件」：草稿与开关归位（`start=0` / `end=playSliderMax` / `hideCompleted=false`
+      / `hideInProgress=false`），随后由用户点「确认」应用，或直接调用 `filter.reset()`
+      并关闭弹窗（实现择一，需保证列表恢复全量）。
+    result: passed
+    reason:
+      text: 实现选择「归位草稿+开关，等用户点确认」方案：setState(draft=RangeValues(0,max),
+        hideCompleted=false, hideInProgress=false)。符合 spec「实现择一」。
+      truncated: false
+  - id: A64
+    source: specs/member-video-filter/spec.md
+    text: header 筛选图标：`filterActive` 为 true 时显示 `Icons.filter_list` 并高亮（primary），否则
+      `Icons.filter_list_off`。
+    result: passed
+    reason:
+      text: "view.dart _buildFilterBtn: filterActive.value ?
+        Icons.filter_list(primary) : Icons.filter_list_off(secondary)。"
+      truncated: false
+  - id: A65
+    source: specs/member-video-filter/spec.md
+    text: 过滤后空态：`_buildFilteredOutAutoLoading`（loading /
+      可调整提示）、`_buildFilteredOutEnd`（到底无匹配），均保留「调整过滤条件」入口，行为不变。
+    result: passed
+    reason:
+      text: _buildFilteredOutAutoLoading + _buildFilteredOutEnd 均保留「调整过滤条件」TextButton
+        入口，行为不变。
+      truncated: false
+  - id: A66
+    source: specs/member-video-filter/spec.md
+    text: A1 端点语义与映射
+    result: passed
+    reason:
+      text: = A1，已通过。
+      truncated: false
+  - id: A67
+    source: specs/member-video-filter/spec.md
+    text: A2 数字标签显示与点击输入
+    result: passed
+    reason:
+      text: = A2，已通过。
+      truncated: false
+  - id: A68
+    source: specs/member-video-filter/spec.md
+    text: A3 确认按钮应用并关闭、列表重新过滤
+    result: passed
+    reason:
+      text: = A3，已通过。
+      truncated: false
+  - id: A69
+    source: specs/member-video-filter/spec.md
+    text: A4 非确认关闭不应用
+    result: passed
+    reason:
+      text: = A4，已通过。
+      truncated: false
+  - id: A70
+    source: specs/member-video-filter/spec.md
+    text: A5 区间钳制
+    result: passed
+    reason:
+      text: = A5，已通过。
+      truncated: false
+  - id: A71
+    source: specs/member-video-filter/spec.md
+    text: A6 已观看两开关不变
+    result: passed
+    reason:
+      text: = A6，已通过。
+      truncated: false
+  - id: A72
+    source: specs/member-video-filter/spec.md
+    text: A7 清除并归位
+    result: passed
+    reason:
+      text: = A7，已通过。
+      truncated: false
+  - id: A73
+    source: specs/member-video-filter/spec.md
+    text: A8 图标高亮与空态不变
+    result: passed
+    reason:
+      text: = A8，已通过。
+      truncated: false
+  - id: A74
+    source: specs/member-video-filter/spec.md
+    text: A9 `shouldHide` 语义与单测不破坏
+    result: passed
+    reason:
+      text: = A9，已通过。
+      truncated: false
+builder_handoff:
+  candidate_id: d9fe6f36-d0f6-438b-afbd-102457a29541
+  identity_provider: skill-coordinated
+  builder_execution_ref: skill-coordinated:builder:29741ec7-20de-41e9-a49a-52e7f21de6f1
+  iteration: 2
+  summary:
+    text: "将作者主页视频列表播放量筛选输入方式从「预设 Chip + 自定义对话框」改为 RangeSlider(0–500万,单位万)+
+      两端可点击数字输入 + 显式确认按钮。1) video_filter.dart: 移除 playPresets 常量与 playPresets
+      默认值;新增 playSliderMax=5000000、minPlay 默认 0、maxPlay 默认 playSliderMax;新增
+      toSliderValues()/applySliderValues(RangeValues) 做 filter 字段 ↔ 滑块端点映射(端点
+      0/max = 不启用对应阈值);shouldHide 语义完全不变。2) member_video_filter_dialog.dart
+      重写:StatefulBuilder 内用独立草稿 draft(RangeValues)+ hideCompleted/hideInProgress
+      局部副本承载,仅在确认按钮点击时写回 filter;RangeSlider 连续滑块(无 divisions);两端 _PlayLabel 可点击弹
+      AlertDialog 数字输入(万为单位,parseNum 解析,兼容 10.5万/2亿,空/不限/越界按端点语义处理);_clampInput
+      钳制左不超右;非确认关闭(下滑/遮罩/返回)不写回 filter,whenComplete→applyFilter 对未变更 filter
+      幂等;保留已观看两开关、清除按钮(归位草稿+开关)、布局对齐搜索页 Material 风格。view.dart 调用点签名不变。单测新增
+      slider 端点↔字段映射 7 项 + 区间钳制 2 项,shouldHide 既有 10 项保留,共 19 项全部通过。"
+    truncated: false
+  addressed_acceptance_ids:
+    - A1
+    - A2
+    - A3
+    - A4
+    - A5
+    - A6
+    - A7
+    - A8
+    - A9
+    - A12
+    - A13
+    - A14
+    - A15
+    - A16
+    - A17
+    - A18
+    - A19
+    - A20
+    - A21
+    - A22
+    - A23
+    - A24
+    - A25
+    - A26
+    - A27
+    - A28
+    - A29
+    - A30
+    - A31
+    - A32
+    - A33
+    - A34
+    - A35
+    - A36
+    - A37
+    - A38
+    - A39
+    - A40
+    - A41
+    - A42
+    - A43
+    - A44
+    - A45
+    - A46
+    - A47
+    - A48
+    - A49
+    - A50
+    - A51
+    - A52
+    - A53
+    - A54
+    - A55
+    - A56
+    - A57
+    - A58
+    - A59
+    - A60
+    - A61
+    - A62
+    - A63
+    - A64
+    - A65
+  checks:
+    - name:
+        text: flutter analyze lib/pages/member_video/ test/pages/member_video/
+        truncated: false
+      result: passed
+      note:
+        text: No issues found.
+        truncated: false
+    - name:
+        text: flutter test test/pages/member_video/video_filter_test.dart
+        truncated: false
+      result: passed
+      note:
+        text: "19 tests passed: shouldHide 既有 10 项 + slider 端点映射 7 项 + 区间钳制 2 项。"
+        truncated: false
+    - name:
+        text: widget 测试(确认应用草稿并关闭 / 非确认关闭不写回)
+        truncated: false
+      result: not-run
+      note:
+        text: showModalBottomSheet+showDialog harness 较重,依赖 Verifier 人工/运行时验证。
+        truncated: false
+    - name:
+        text: 设备实测(拖滑块→确认→列表变化;下滑→列表不变)
+        truncated: false
+      result: not-run
+      note:
+        text: 需用户真机/模拟器实测。
+        truncated: false
+  checks_truncated: false
+  known_limits:
+    - text: 未写 dialog widget 测试,确认/取消行为依赖人工验证。
+      truncated: false
+    - text: pubspec.lock 因 analyze 解析触发 host url 变更,已 git checkout 还原,不纳入本 change。
+      truncated: false
+    - text: RangeSlider 端点 = 不限制 的语义(0/playSliderMax)由 UI 与映射共同保证。
+      truncated: false
+  known_limits_truncated: false
+  submitted_at: 2026-08-23T04:44:50.588Z
+blockers: []
+verification:
+  candidate_id: d9fe6f36-d0f6-438b-afbd-102457a29541
+  identity_provider: skill-coordinated
+  verifier_execution_ref: skill-coordinated:verifier:012be014-f669-4cbc-98ee-58945a590650
+  iteration: 2
+  attempt: 2
+  assurance: skill-coordinated
+  verdict: pass
+  checks:
+    - id: analyze
+      name:
+        text: flutter analyze lib/pages/member_video/ test/pages/member_video/
+        truncated: false
+      argv_display:
+        - text: flutter
+          truncated: false
+        - text: analyze
+          truncated: false
+        - text: lib/pages/member_video/
+          truncated: false
+        - text: test/pages/member_video/
+          truncated: false
+      argv_truncated: false
+      cwd_ref: .
+      status: passed
+      exit_code: 0
+      duration_ms: 10850
+    - id: unit-test
+      name:
+        text: flutter test test/pages/member_video/video_filter_test.dart
+        truncated: false
+      argv_display:
+        - text: flutter
+          truncated: false
+        - text: test
+          truncated: false
+        - text: test/pages/member_video/video_filter_test.dart
+          truncated: false
+      argv_truncated: false
+      cwd_ref: .
+      status: passed
+      exit_code: 0
+      duration_ms: 4352
+  summary:
+    text: iteration 2 attempt 2 验收通过（verdict=pass）。A1–A74 全部
+      passed。实现把作者主页视频列表播放量筛选改为
+      RangeSlider(0–500万,单位万)+两端可点击数字输入+显式确认按钮，草稿仅在确认时写回 filter，非确认关闭幂等。flutter
+      analyze 零问题，19 项单测全过。view.dart 调用点签名未改，空态与图标高亮不变。3 处轻微 spec 字面偏差 + 1 处 UI
+      顺序调整均为功能保留的超集/替代，不构成失败。dialog 级 widget 测试与真机交互为已知限制，A3/A4
+      基于代码静态判断通过，建议人工实测确认。
+    truncated: false
+  risks:
+    - text: dialog 级 widget 测试与真机交互为已知限制：A3/A4
+        基于代码静态判断通过，建议人工实测确认（拖滑块→确认→列表变化；下滑→列表不变）。
+      truncated: false
+    - text: 3 处轻微 spec 字面偏差均为功能等价超集/替代，不构成失败：A38 清除按钮可见性用 hasActiveDraft 而非
+        hasActiveFilter（草稿超集）；A39 确认按钮用 FilledButton.icon 而非 IconButton（仍是 check
+        图标按钮）；A55 键盘用 numberWithOptions(decimal:true) 而非 number（超集，支持小数万）。
+      truncated: false
+    - text: A27 UI 顺序：实现把数字标签放在 RangeSlider 之上（spec 列为 slider 在 labels
+        之上），属轻微顺序调整，功能等价。
+      truncated: false
+  risks_truncated: false
+  completed_at: 2026-08-23T05:42:11.137Z
+history:
+  - goal_cycle: 1
+    iteration: 1
+    attempt: 0
+    outcome: recovery
+    unresolved_ids: []
+    summary:
+      text: Observed implementation write before .comet/dispatch-verifier.json
+      truncated: false
+    completed_at: 2026-08-23T04:44:00.082Z
+  - goal_cycle: 1
+    iteration: 2
+    attempt: 1
+    outcome: pass
+    unresolved_ids: []
+    summary:
+      text: iteration 2 attempt 1 验收通过（verdict=pass）。A1–A74 全部
+        passed。实现把作者主页视频列表播放量筛选改为 RangeSlider(0–500万)+两端可点击数字输入+显式确认按钮，草稿仅在确认时写回
+        filter，非确认关闭幂等。flutter analyze 零问题，19 项单测全过（shouldHide 10 + slider 映射 7
+        + 钳制 2）。view.dart 未改，调用点签名兼容、空态与图标高亮不变。3 处轻微 spec 字面偏差（清除按钮可见性条件、确认按钮
+        widget 类型、键盘类型）均为功能保留的超集/替代，不构成失败。dialog 级 widget 测试与真机交互为已知限制，A3/A4
+        基于代码静态判断通过，建议人工实测确认。
+      truncated: false
+    completed_at: 2026-08-23T05:07:14.709Z
+  - goal_cycle: 1
+    iteration: 2
+    attempt: 1
+    outcome: recovery
+    unresolved_ids: []
+    summary:
+      text: Local Runtime was unavailable at Archive ready; the synchronized
+        implementation must be verified again.
+      truncated: false
+    completed_at: 2026-08-23T05:19:44.267Z
+  - goal_cycle: 1
+    iteration: 2
+    attempt: 2
+    outcome: pass
+    unresolved_ids: []
+    summary:
+      text: iteration 2 attempt 2 验收通过（verdict=pass）。A1–A74 全部
+        passed。实现把作者主页视频列表播放量筛选改为
+        RangeSlider(0–500万,单位万)+两端可点击数字输入+显式确认按钮，草稿仅在确认时写回
+        filter，非确认关闭幂等。flutter analyze 零问题，19 项单测全过。view.dart
+        调用点签名未改，空态与图标高亮不变。3 处轻微 spec 字面偏差 + 1 处 UI 顺序调整均为功能保留的超集/替代，不构成失败。dialog
+        级 widget 测试与真机交互为已知限制，A3/A4 基于代码静态判断通过，建议人工实测确认。
+      truncated: false
+    completed_at: 2026-08-23T05:42:11.137Z
+history_overflow:
+  dropped_entries: 0
+  first_dropped_at: null
+  last_dropped_at: null
+  outcome_counts:
+    pass: 0
+    fail: 0
+    blocked: 0
+    execution-error: 0
+    recovery: 0
+verification_result: pass
+verification_report: verification.md
+archived: true
+created_at: 2026-08-23T04:31:17.847Z

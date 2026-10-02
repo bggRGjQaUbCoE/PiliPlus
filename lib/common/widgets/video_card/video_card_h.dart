@@ -10,12 +10,16 @@ import 'package:PiliPlus/models/horizontal_video_model.dart';
 import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
+import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 // 视频卡片 - 水平布局
 class VideoCardH extends StatelessWidget {
+  static final RxSet<String> clickedBvids = <String>{}.obs;
+
   const VideoCardH({
     super.key,
     required this.videoItem,
@@ -148,44 +152,60 @@ class VideoCardH extends StatelessWidget {
         children: [
           if (videoItem.titleList?.isNotEmpty == true)
             Expanded(
-              child: Text.rich(
-                overflow: .ellipsis,
-                maxLines: 2,
-                TextSpan(
-                  children: videoItem.titleList!
-                      .map(
-                        (e) => TextSpan(
-                          text: e.text,
-                          style: TextStyle(
-                            fontSize: theme.textTheme.bodyMedium!.fontSize,
-                            height: 1.42,
-                            letterSpacing: 0.3,
-                            color: e.isEm
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.onSurface,
+              child: Obx(() {
+                final key = videoItem.bvid ?? videoItem.aid?.toString();
+                final isClicked =
+                    key != null && VideoCardH.clickedBvids.contains(key);
+                return Text.rich(
+                  overflow: .ellipsis,
+                  maxLines: 2,
+                  TextSpan(
+                    children: videoItem.titleList!
+                        .map(
+                          (e) => TextSpan(
+                            text: e.text,
+                            style: TextStyle(
+                              fontSize: theme.textTheme.bodyMedium!.fontSize,
+                              height: 1.42,
+                              letterSpacing: 0.3,
+                              color: isClicked
+                                  ? theme.colorScheme.outline
+                                  : e.isEm
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.onSurface,
+                            ),
                           ),
-                        ),
-                      )
-                      .toList(),
-                ),
-              ),
+                        )
+                        .toList(),
+                  ),
+                );
+              }),
             )
           else
             Expanded(
-              child: Text(
-                videoItem.title,
-                textAlign: .start,
-                style: TextStyle(
-                  fontSize: theme.textTheme.bodyMedium!.fontSize,
-                  height: 1.42,
-                  letterSpacing: 0.3,
-                ),
-                maxLines: 2,
-                overflow: .ellipsis,
-              ),
+              child: Obx(() {
+                final key = videoItem.bvid ?? videoItem.aid?.toString();
+                final isClicked =
+                    key != null && VideoCardH.clickedBvids.contains(key);
+                return Text(
+                  videoItem.title,
+                  textAlign: .start,
+                  style: TextStyle(
+                    fontSize: theme.textTheme.bodyMedium!.fontSize,
+                    height: 1.42,
+                    letterSpacing: 0.3,
+                    color: isClicked ? theme.colorScheme.outline : null,
+                  ),
+                  maxLines: 2,
+                  overflow: .ellipsis,
+                );
+              }),
             ),
           Text(
-            "$pubdate${videoItem.owner.name}",
+            "$pubdate${remarkedName(
+              videoItem.owner.mid,
+              videoItem.owner.name ?? '',
+            )}",
             maxLines: 1,
             style: TextStyle(
               fontSize: 12,
@@ -254,5 +274,9 @@ Future<void> pushVideoH(HorizontalVideoModel videoItem) async {
       title: videoItem.title,
       dimension: dimension,
     );
+    final String? key = videoItem.bvid ?? videoItem.aid?.toString();
+    if (key != null && key.isNotEmpty) {
+      VideoCardH.clickedBvids.add(key);
+    }
   }
 }

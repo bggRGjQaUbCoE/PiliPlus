@@ -24,6 +24,7 @@ import 'package:PiliPlus/pages/video/reply_search_item/view.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/latex_to_unicode.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -346,15 +347,15 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
                         .plPlayerController
                         .videoPlayerController
                         ?.screenshot();
-                    if (res != null) {
-                      final png = await res.toByteData(format: .png);
-                      if (png != null) {
-                        final path =
-                            '$tmpDirPath/${Utils.generateRandomString(8)}.png';
-                        await File(path).writeAsBytes(png.buffer.asUint8List());
-                        imageList.add(FilePicModel(path: path));
-                      }
-                      res.dispose();
+                    final bytes = await ImageUtils.uiImageToPngBytes(
+                      res,
+                      dispose: true,
+                    );
+                    if (bytes != null) {
+                      final path =
+                          '$tmpDirPath/${Utils.generateRandomString(8)}.png';
+                      await File(path).writeAsBytes(bytes);
+                      imageList.add(FilePicModel(path: path));
                     } else {
                       debugPrint('null screenshot');
                     }

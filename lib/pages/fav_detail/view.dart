@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
+import 'package:PiliPlus/common/widgets/flutter/popup_menu.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -224,7 +225,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
       ),
       Obx(
         () {
-          return PopupMenuButton<FavOrderType>(
+          return StaticPopupMenuButton<FavOrderType>(
             icon: const Icon(Icons.sort),
             initialValue: _favDetailController.order.value,
             tooltip: '排序方式',
@@ -243,7 +244,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
         },
       ),
       if (_favDetailController.account.isLogin)
-        PopupMenuButton(
+        StaticPopupMenuButton(
           icon: const Icon(Icons.more_vert),
           itemBuilder: (context) {
             final isOwner = _favDetailController.isOwner;

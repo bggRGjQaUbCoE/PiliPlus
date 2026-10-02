@@ -372,3 +372,103 @@ class BaseRenderProgressBar<T extends BaseSegment> extends RenderBox {
     size = constraints.constrainDimensions(constraints.maxWidth, height);
   }
 }
+
+class ViewPointDividerBar extends LeafRenderObjectWidget {
+  const ViewPointDividerBar({
+    super.key,
+    required this.segments,
+    this.progress = 0.0,
+    this.dotRadius = 1.75,
+  });
+
+  final List<ViewPointSegment> segments;
+  final double progress;
+  final double dotRadius;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) {
+    return _RenderViewPointDividerBar(
+      segments: segments,
+      progress: progress,
+      dotRadius: dotRadius,
+    );
+  }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderViewPointDividerBar renderObject,
+  ) {
+    renderObject
+      ..segments = segments
+      ..progress = progress
+      ..dotRadius = dotRadius;
+  }
+}
+
+class _RenderViewPointDividerBar extends RenderBox {
+  _RenderViewPointDividerBar({
+    required List<ViewPointSegment> segments,
+    required double progress,
+    required double dotRadius,
+  }) : _segments = segments,
+       _progress = progress,
+       _dotRadius = dotRadius;
+
+  List<ViewPointSegment> _segments;
+  set segments(List<ViewPointSegment> value) {
+    if (listEquals(_segments, value)) return;
+    _segments = value;
+    markNeedsPaint();
+  }
+
+  double _progress;
+  set progress(double value) {
+    if (_progress == value) return;
+    _progress = value;
+    markNeedsPaint();
+  }
+
+  double _dotRadius;
+  set dotRadius(double value) {
+    if (_dotRadius == value) return;
+    _dotRadius = value;
+    markNeedsPaint();
+  }
+
+  @override
+  void performLayout() {
+    size = constraints.constrainDimensions(
+      constraints.maxWidth,
+      _dotRadius * 2,
+    );
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    final canvas = context.canvas;
+    final paint = Paint()..style = PaintingStyle.fill;
+
+    final centerY = offset.dy + size.height / 2;
+    // ViewPointSegmentProgressBar uses a divider width of 2.0 starting at segment.end
+    const double dividerWidth = 2.0;
+
+    // Skip the last segment (its end = 1.0, which is the end of the bar)
+    final count = _segments.length;
+    for (int i = 0; i < count - 1; i++) {
+      final segment = _segments[i];
+      final segmentEnd = offset.dx + segment.end * size.width;
+
+      // Unreached dots use white75, reached dots use solid white
+      if (segment.end <= _progress) {
+        paint.color = Colors.white;
+      } else {
+        paint.color = Colors.white.withValues(alpha: 0.75);
+      }
+
+      // Align the center of the dot to the center of the divider line
+      final x = segmentEnd + dividerWidth / 2;
+      canvas.drawCircle(Offset(x, centerY), _dotRadius, paint);
+    }
+  }
+}

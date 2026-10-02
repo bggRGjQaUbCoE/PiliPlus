@@ -1,12 +1,11 @@
-import 'dart:io' show Platform, Process;
-
+import 'package:PiliPlus/common/widgets/flutter/popup_menu.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart'
     show MultiSelectData;
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/route_manager.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -38,6 +37,8 @@ class BiliDownloadEntryInfo with MultiSelectData {
   final String? seasonId;
   final SourceInfo? source;
   EpInfo? ep;
+  final String? autoFolderTitle;
+  final String? autoFolderSourceKey;
 
   late String pageDirPath;
   late String entryDirPath;
@@ -62,82 +63,79 @@ class BiliDownloadEntryInfo with MultiSelectData {
   Widget moreBtn(ColorScheme colorScheme) => SizedBox(
     width: 29,
     height: 29,
-    child: PopupMenuButton(
-      padding: EdgeInsets.zero,
-      position: PopupMenuPosition.under,
-      icon: Icon(
-        Icons.more_vert_outlined,
-        color: colorScheme.outline,
-        size: 18,
-      ),
-      itemBuilder: (_) => [
-        PopupMenuItem(
-          height: 38,
-          child: const Text('查看详情页', style: TextStyle(fontSize: 13)),
-          onTap: () {
-            if (ep case final ep?) {
-              if (ep.from == VideoType.pugv.name) {
-                PageUtils.viewPugv(
-                  seasonId: seasonId,
-                  epId: ep.episodeId,
-                );
-              } else {
-                PageUtils.viewPgc(
-                  seasonId: seasonId,
-                  epId: ep.episodeId,
-                );
-              }
-              return;
-            }
-            PageUtils.toVideoPage(
-              aid: avid,
-              bvid: bvid,
-              cid: cid,
-              epId: ep?.episodeId,
-              title: title,
-              cover: cover,
-              isVertical: pageData?.isVertical ?? false,
-            );
-          },
+    child: Builder(
+      builder: (context) => IconButton(
+        constraints: const BoxConstraints.tightFor(width: 29, height: 29),
+        padding: EdgeInsets.zero,
+        icon: Icon(
+          Icons.more_vert_outlined,
+          color: colorScheme.outline,
+          size: 18,
         ),
-        if (PlatformUtils.isDesktop)
-          PopupMenuItem(
-            height: 38,
-            child: const Text('打开本地文件夹', style: TextStyle(fontSize: 13)),
-            onTap: () async {
-              try {
-                final String executable;
-                if (Platform.isWindows) {
-                  executable = 'explorer';
-                } else if (Platform.isMacOS) {
-                  executable = 'open';
-                } else if (Platform.isLinux) {
-                  executable = 'xdg-open';
-                } else {
-                  throw UnimplementedError();
-                }
-                await Process.run(executable, [entryDirPath]);
-              } catch (e) {
-                SmartDialog.showToast(e.toString());
-              }
-            },
-          )
-        else
-          PopupMenuItem(
-            height: 38,
-            child: const Text('复制缓存路径', style: TextStyle(fontSize: 13)),
-            onTap: () => Utils.copyText(entryDirPath),
-          ),
-        if (ownerId case final mid?)
-          PopupMenuItem(
-            height: 38,
-            child: Text(
-              '访问${ownerName != null ? '：$ownerName' : '用户主页'}',
-              style: const TextStyle(fontSize: 13),
-            ),
-            onTap: () => Get.toNamed('/member?mid=$mid'),
-          ),
-      ],
+        onPressed: () {
+          showStaticPositionMenu<void>(
+            context: context,
+            items: [
+              CustomPopupMenuItem<void>(
+                height: 38,
+                child: const Text('查看详情页', style: TextStyle(fontSize: 13)),
+                onTap: () {
+                  if (ep case final ep?) {
+                    if (ep.from == VideoType.pugv.name) {
+                      PageUtils.viewPugv(
+                        seasonId: seasonId,
+                        epId: ep.episodeId,
+                      );
+                    } else {
+                      PageUtils.viewPgc(
+                        seasonId: seasonId,
+                        epId: ep.episodeId,
+                      );
+                    }
+                    return;
+                  }
+                  PageUtils.toVideoPage(
+                    aid: avid,
+                    bvid: bvid,
+                    cid: cid,
+                    epId: ep?.episodeId,
+                    title: title,
+                    cover: cover,
+                    isVertical: pageData?.isVertical ?? false,
+                  );
+                },
+              ),
+              if (PlatformUtils.isDesktop)
+                CustomPopupMenuItem<void>(
+                  height: 38,
+                  child: const Text(
+                    '打开本地文件夹',
+                    style: TextStyle(fontSize: 13),
+                  ),
+                  onTap: () => PathUtils.openDir(entryDirPath),
+                )
+              else
+                CustomPopupMenuItem<void>(
+                  height: 38,
+                  child: const Text(
+                    '复制缓存路径',
+                    style: TextStyle(fontSize: 13),
+                  ),
+                  onTap: () => Utils.copyText(entryDirPath),
+                ),
+              if (ownerId case final mid?)
+                CustomPopupMenuItem<void>(
+                  height: 38,
+                  child: Text(
+                    '访问${ownerName != null ? '：$ownerName' : '用户主页'}',
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                  onTap: () => Get.toNamed('/member?mid=$mid'),
+                ),
+            ],
+          );
+        },
+      ),
     ),
   );
 
@@ -169,6 +167,8 @@ class BiliDownloadEntryInfo with MultiSelectData {
     this.seasonId,
     this.source,
     this.ep,
+    this.autoFolderTitle,
+    this.autoFolderSourceKey,
   });
 
   factory BiliDownloadEntryInfo.fromJson(Map<String, dynamic> json) =>
@@ -207,6 +207,8 @@ class BiliDownloadEntryInfo with MultiSelectData {
         ep: json['ep'] != null
             ? EpInfo.fromJson(json['ep'] as Map<String, dynamic>)
             : null,
+        autoFolderTitle: json['auto_folder_title'] as String?,
+        autoFolderSourceKey: json['auto_folder_source_key'] as String?,
       );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -237,6 +239,8 @@ class BiliDownloadEntryInfo with MultiSelectData {
     'season_id': ?seasonId,
     'source': ?source?.toJson(),
     'ep': ?ep?.toJson(),
+    'auto_folder_title': ?autoFolderTitle,
+    'auto_folder_source_key': ?autoFolderSourceKey,
   };
 
   @override

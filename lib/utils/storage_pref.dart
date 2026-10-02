@@ -263,8 +263,13 @@ abstract final class Pref {
 
   static String get hardwareDecoding => _setting.get(
     SettingBoxKey.hardwareDecoding,
-    defaultValue: HwDecType.kHwdec,
+    defaultValue: Platform.isAndroid
+        ? HwDecType.androidDefault
+        : HwDecType.auto.hwdec,
   );
+
+  static bool get useExoPlayer =>
+      _setting.get(SettingBoxKey.useExoPlayer, defaultValue: true);
 
   static String get videoSync =>
       _setting.get(SettingBoxKey.videoSync, defaultValue: 'display-resample');

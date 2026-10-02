@@ -533,7 +533,19 @@ class VideoDetailController extends GetxController
   @override
   BlockConfigMixin get blockConfig => plPlayerController;
   @override
-  Player? get player => plPlayerController.videoPlayerController;
+  bool get blockPlayerReady => plPlayerController.playerReady;
+  @override
+  bool get blockPlayerPlaying => plPlayerController.isPlaying;
+
+  @override
+  void addBlockPositionListener(ValueChanged<Duration> listener) {
+    plPlayerController.addPositionListener(listener);
+  }
+
+  @override
+  void removeBlockPositionListener(ValueChanged<Duration> listener) {
+    plPlayerController.removePositionListener(listener);
+  }
   @override
   bool get isFullScreen => plPlayerController.isFullScreen.value;
   @override

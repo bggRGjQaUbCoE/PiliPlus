@@ -47,7 +47,9 @@ import 'package:PiliPlus/plugin/pl_player/widgets/backward_seek.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/bottom_control.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/common_btn.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/forward_seek.dart';
-import 'package:PiliPlus/plugin/pl_player/widgets/mpv_convert_webp.dart';
+import 'package:PiliPlus/plugin/pl_player/widgets/player_animated_webp_converter.dart';
+import 'package:PiliPlus/plugin/pl_player/widgets/player_subtitle_layer.dart';
+import 'package:PiliPlus/plugin/pl_player/widgets/player_surface.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/play_pause_btn.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
@@ -2173,7 +2175,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         '${ctr.cid}-${segment.first.toStringAsFixed(3)}_${segment.second.toStringAsFixed(3)}.webp';
     final file = '$tmpDirPath/$name';
 
-    final mpv = MpvConvertWebp(
+    final converter = createAnimatedWebpConverter(
       url!,
       file,
       segment.first,
@@ -2181,7 +2183,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       progress: progress,
       preset: preset,
     );
-    final future = mpv.convert().whenComplete(
+    final future = converter.convert().whenComplete(
       () => SmartDialog.dismiss(status: SmartStatus.loading),
     );
 
@@ -2190,7 +2192,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       builder: (_) => LoadingWidget(progress: progress, msg: '正在保存，可能需要较长时间'),
       onDismiss: () async {
         if (progress.value < 1.0) {
-          mpv.dispose();
+          converter.dispose();
         }
         if (await future) {
           await ImageUtils.saveFileImg(

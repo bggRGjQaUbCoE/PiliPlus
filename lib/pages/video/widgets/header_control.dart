@@ -48,6 +48,7 @@ import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:PiliPlus/utils/ios/pip_helper.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -1930,6 +1931,7 @@ class HeaderControlState extends State<HeaderControl>
                   ),
                 ),
                 if (Platform.isAndroid ||
+                    IOSPipHelper.isAvailable ||
                     (PlatformUtils.isDesktop && !isFullScreen))
                   SizedBox(
                     width: btnWidth,
@@ -1942,7 +1944,7 @@ class HeaderControlState extends State<HeaderControl>
                           plPlayerController.toggleDesktopPip();
                           return;
                         }
-                        if (AndroidHelper.isPipAvailable) {
+                        if (Platform.isIOS || AndroidHelper.isPipAvailable) {
                           plPlayerController.enterPip();
                         }
                       },

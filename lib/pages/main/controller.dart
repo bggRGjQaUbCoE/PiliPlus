@@ -341,6 +341,7 @@ class MainController extends GetxController
 
   bool refreshRecommendations() {
     if (navigationBars[selectedIndex.value] == NavigationBarType.home &&
+        !homeController.homeSearchOnly &&
         homeController.tabs[homeController.tabController.index] ==
             HomeTabType.rcmd) {
       homeController.onRefresh();

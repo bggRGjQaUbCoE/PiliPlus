@@ -41,6 +41,21 @@ class _HomePageState extends CommonPageState<HomePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    if (_homeController.homeSearchOnly) {
+      return SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Row(
+                children: [searchBar()],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     Widget tabBar;
     if (_homeController.tabs.length > 1) {
       tabBar = Padding(
@@ -175,7 +190,9 @@ class _HomePageState extends CommonPageState<HomePage>
                 Expanded(
                   child: Obx(
                     () => Text(
-                      _homeController.defaultSearch.value,
+                      _homeController.defaultSearch.value.isEmpty
+                          ? '搜索'
+                          : _homeController.defaultSearch.value,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(color: _colorScheme.outline),

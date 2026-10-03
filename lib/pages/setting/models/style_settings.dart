@@ -210,6 +210,14 @@ List<SettingsModel> get styleSettings => [
       SmartDialog.showToast('重启生效');
     },
   ),
+  const SwitchModel(
+    title: '首页仅搜索',
+    subtitle: '首页仅显示搜索入口，不加载推荐等标签页',
+    leading: Icon(Icons.search_outlined),
+    setKey: SettingBoxKey.homeSearchOnly,
+    defaultVal: false,
+    needReboot: true,
+  ),
   SwitchModel(
     title: '首页顶栏收起',
     subtitle: '首页列表滑动时，收起顶栏',

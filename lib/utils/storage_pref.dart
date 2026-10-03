@@ -293,6 +293,9 @@ abstract final class Pref {
   static bool get appRcmd =>
       _setting.get(SettingBoxKey.appRcmd, defaultValue: true);
 
+  static bool get homeSearchOnly =>
+      _setting.get(SettingBoxKey.homeSearchOnly, defaultValue: false);
+
   static String get systemProxyHost =>
       _setting.get(SettingBoxKey.systemProxyHost, defaultValue: '');
 

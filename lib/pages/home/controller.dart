@@ -20,6 +20,8 @@ class HomeController extends GetxController
   late List<HomeTabType> tabs;
   late TabController tabController;
 
+  final bool homeSearchOnly = Pref.homeSearchOnly;
+
   RxBool? showTopBar;
   late final bool hideTopBar;
 
@@ -38,7 +40,7 @@ class HomeController extends GetxController
   void onInit() {
     super.onInit();
 
-    hideTopBar = !Pref.useSideBar && Pref.hideTopBar;
+    hideTopBar = !homeSearchOnly && !Pref.useSideBar && Pref.hideTopBar;
     if (hideTopBar) {
       final mainCtr = Get.find<MainController>();
       switch (mainCtr.barHideType) {
@@ -59,9 +61,20 @@ class HomeController extends GetxController
 
   @override
   Future<void> onRefresh() {
+    if (homeSearchOnly) return Future.value();
     return controller.onRefresh().catchError((e) {
       if (kDebugMode) debugPrint(e.toString());
     });
+  }
+
+  @override
+  void animateToTop() {
+    if (!homeSearchOnly) super.animateToTop();
+  }
+
+  @override
+  void toTopOrRefresh() {
+    if (!homeSearchOnly) super.toTopOrRefresh();
   }
 
   void setTabConfig() {

@@ -92,16 +92,14 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
 
   @override
   Future<void> skipToNext() {
-    return Future.syncValue(
-      (onSkipToNext ?? _findIntroController()?.nextPlay)?.call(),
-    );
+    final func = onSkipToNext ?? _findIntroController()?.nextPlay;
+    return func == null ? Future.syncValue(null) : Future.sync(func);
   }
 
   @override
   Future<void> skipToPrevious() {
-    return Future.syncValue(
-      (onSkipToPrevious ?? _findIntroController()?.prevPlay)?.call(),
-    );
+    final func = onSkipToPrevious ?? _findIntroController()?.prevPlay;
+    return func == null ? Future.syncValue(null) : Future.sync(func);
   }
 
   @override

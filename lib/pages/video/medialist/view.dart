@@ -10,8 +10,12 @@ import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/media_list/media_list.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
 import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
+import 'package:PiliPlus/pages/temporary_queue/batch_dialog.dart';
+import 'package:PiliPlus/services/temporary_queue_batch.dart';
+import 'package:PiliPlus/services/temporary_queue_service.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -36,7 +40,7 @@ class MediaListPanel extends CommonSlidePage {
   final ValueChanged<BaseEpisodeItem> onChangeEpisode;
   final String? panelTitle;
   final String bvid;
-  final VoidCallback loadMoreMedia;
+  final Future<void> Function() loadMoreMedia;
   final int? count;
   final bool desc;
   final VoidCallback onReverse;
@@ -50,6 +54,119 @@ class MediaListPanel extends CommonSlidePage {
 class _MediaListPanelState extends State<MediaListPanel>
     with SingleTickerProviderStateMixin, CommonSlideMixin {
   late final ScrollController _controller;
+  bool _batchLoading = false;
+
+  Future<void> _addAllToTemporaryQueue() async {
+    if (_batchLoading) return;
+    setState(() => _batchLoading = true);
+    try {
+      await showTemporaryQueueBatchDialog(
+        context,
+        title: '全部添加至临时播放列表',
+        work: (cancelled, onProgress) async {
+          String? error;
+          if (widget.loadPrevious != null) {
+            while (!cancelled()) {
+              final before = widget.mediaList.length;
+              try {
+                await widget.loadPrevious!();
+              } catch (e) {
+                error = '读取前序分页失败：$e';
+                break;
+              }
+              onProgress(
+                TemporaryQueueBatchProgress(
+                  total: widget.count,
+                  scanned: 0,
+                ),
+              );
+              if (widget.mediaList.length == before) break;
+            }
+          }
+          while (!cancelled() && error == null) {
+            if (widget.count != null &&
+                widget.mediaList.length >= widget.count!) {
+              break;
+            }
+            final before = widget.mediaList.length;
+            try {
+              await widget.loadMoreMedia();
+            } catch (e) {
+              error = '读取后续分页失败：$e';
+              break;
+            }
+            onProgress(
+              TemporaryQueueBatchProgress(
+                total: widget.count,
+                scanned: 0,
+              ),
+            );
+            if (widget.mediaList.length == before) break;
+          }
+          if (!cancelled() &&
+              error == null &&
+              widget.count != null &&
+              widget.mediaList.length < widget.count!) {
+            error =
+                '仅获取 ${widget.mediaList.length} / ${widget.count} 条，未能确认全部内容';
+          }
+          var scanned = 0;
+          var added = 0;
+          var moved = 0;
+          var skipped = 0;
+          // Snapshot the displayed order before modifying the queue.
+          final entries = List<MediaListItemModel>.of(widget.mediaList);
+          for (final entry in entries) {
+            if (cancelled()) break;
+            scanned++;
+            final bvid = entry.bvid;
+            final cid = entry.cid;
+            if (bvid == null || bvid.isEmpty || cid == null) {
+              skipped++;
+            } else {
+              final change = TemporaryQueueService.instance.addLast(
+                TemporaryQueueEntry(
+                  bvid: bvid,
+                  cid: cid,
+                  aid: entry.aid,
+                  title: entry.title ?? bvid,
+                  cover: entry.cover,
+                ),
+              );
+              if (change.alreadyPlaying) {
+                skipped++;
+              } else if (change.moved) {
+                moved++;
+              } else {
+                added++;
+              }
+            }
+            onProgress(
+              TemporaryQueueBatchProgress(
+                scanned: scanned,
+                total: widget.count ?? entries.length,
+                added: added,
+                moved: moved,
+                skipped: skipped,
+                error: error,
+              ),
+            );
+          }
+          return TemporaryQueueBatchProgress(
+            scanned: scanned,
+            total: widget.count ?? entries.length,
+            added: added,
+            moved: moved,
+            skipped: skipped,
+            error: error,
+            cancelled: cancelled(),
+          );
+        },
+      );
+    } finally {
+      if (mounted) setState(() => _batchLoading = false);
+    }
+  }
 
   @override
   void initState() {
@@ -85,6 +202,20 @@ class _MediaListPanelState extends State<MediaListPanel>
                     style: const TextStyle(fontSize: 16),
                   ),
                 ),
+                if (Pref.enableTemporaryQueue)
+                  PopupMenuButton<String>(
+                    tooltip: '更多',
+                    icon: const Icon(Icons.more_vert, size: 20),
+                    onSelected: (value) {
+                      if (value == 'queue') _addAllToTemporaryQueue();
+                    },
+                    itemBuilder: (context) => const [
+                      PopupMenuItem(
+                        value: 'queue',
+                        child: Text('全部添加至临时播放列表'),
+                      ),
+                    ],
+                  ),
                 iconButton(
                   iconSize: 20,
                   tooltip: widget.desc ? '顺序播放' : '倒序播放',
@@ -138,7 +269,8 @@ class _MediaListPanelState extends State<MediaListPanel>
               itemExtent: 112,
               itemCount: widget.mediaList.length,
               itemBuilder: (context, index) {
-                if (index == widget.mediaList.length - 1 &&
+                if (!_batchLoading &&
+                    index == widget.mediaList.length - 1 &&
                     (widget.count == null ||
                         widget.mediaList.length < widget.count!)) {
                   widget.loadMoreMedia();

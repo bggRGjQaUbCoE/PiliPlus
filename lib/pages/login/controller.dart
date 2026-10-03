@@ -745,16 +745,24 @@ class LoginPageController extends GetxController
             child: Text('取消', style: TextStyle(color: colorScheme.outline)),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Get.back();
-              for (final type in AccountType.values) {
-                final index = type.index;
-                final account = quickSelect
-                    ? selectAccount.first
-                    : selectAccount[index];
-                if (account != Accounts.accountMode[index]) {
-                  Accounts.set(type, account);
+              try {
+                for (final type in AccountType.values) {
+                  final index = type.index;
+                  final account = quickSelect
+                      ? selectAccount.first
+                      : selectAccount[index];
+                  if (!identical(account, Accounts.accountMode[index])) {
+                    await Accounts.set(type, account);
+                  }
+                  if (type == AccountType.main &&
+                      !identical(Accounts.main, account)) {
+                    return;
+                  }
                 }
+              } catch (_) {
+                SmartDialog.showToast('账号切换失败；请检查网页登录态后重试');
               }
             },
             child: const Text('确定'),

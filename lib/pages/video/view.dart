@@ -56,6 +56,8 @@ import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/plugin/pl_player/view/view.dart';
 import 'package:PiliPlus/services/service_locator.dart';
+import 'package:PiliPlus/services/in_app_mini_player.dart';
+import 'package:PiliPlus/services/temporary_queue_service.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart'
     show shutdownTimerService;
 import 'package:PiliPlus/utils/accounts.dart';
@@ -89,6 +91,10 @@ class VideoDetailPageV extends StatefulWidget {
 class _VideoDetailPageVState extends State<VideoDetailPageV>
     with RouteAware, RouteAwareMixin, WidgetsBindingObserver {
   final heroTag = Get.arguments['heroTag'];
+  final Object _queueOwnerToken = Object();
+  late final TemporaryQueueAttempt? _queueAttempt =
+      Get.arguments[TemporaryQueueService.attemptArgument]
+          as TemporaryQueueAttempt?;
 
   late final VideoDetailController videoDetailController;
   late final VideoReplyController _videoReplyController;
@@ -153,6 +159,10 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     super.initState();
 
     videoDetailController = Get.put(VideoDetailController(), tag: heroTag);
+    if (_queueAttempt != null) {
+      videoDetailController.autoPlay = true;
+      videoDetailController.onTerminalSourceFailure = _onQueueSourceFailure;
+    }
 
     introController = _initIntroCtr();
 
@@ -180,6 +190,22 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   // 获取视频资源，初始化播放器
   void videoSourceInit() {
+    final mini = InAppMiniPlayer.instance;
+    final restoreOwner =
+        videoDetailController.args[InAppMiniPlayer.restoreOwnerArgument]
+            as String? ??
+        heroTag;
+    if (mini.adoptByPage(ownerKey: restoreOwner, routeName: '/videoV')) {
+      videoDetailController.adoptPlayingSession();
+      _transferQueueCurrentOwner();
+      plPlayerController = videoDetailController.plPlayerController
+        ..isLive = false
+        ..addStatusLister(playerListener)
+        ..addPositionListener(positionListener);
+      videoDetailController.queryVideoUrl(keepCurrentSession: true);
+      return;
+    }
+    mini.dismissForOtherMedia(exceptOwner: heroTag);
     videoDetailController.queryVideoUrl(autoFullScreenFlag: true);
     if (videoDetailController.autoPlay) {
       plPlayerController = videoDetailController.plPlayerController;
@@ -191,6 +217,18 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   void positionListener(Duration position) {
     videoDetailController.playedTime = position;
+  }
+
+  void _transferQueueCurrentOwner() {
+    if (videoDetailController.isFileSource) return;
+    TemporaryQueueService.instance.transferCurrentOwner(
+      TemporaryQueueEntry(
+        bvid: videoDetailController.bvid,
+        cid: videoDetailController.cid.value,
+        title: '',
+      ),
+      newOwnerToken: _queueOwnerToken,
+    );
   }
 
   @override
@@ -224,9 +262,55 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     return plPlayerController?.play();
   }
 
+  void _onQueueSourceFailure(String bvid, int cid, String reason) {
+    final attempt = _queueAttempt;
+    if (attempt == null) return;
+    final transition = TemporaryQueueService.instance.reportTerminalFailure(
+      attempt: attempt,
+      bvid: bvid,
+      cid: cid,
+      playbackMid: attempt.playbackMid,
+      reason: reason,
+    );
+    if (transition == null) return;
+    SmartDialog.showToast(
+      transition.next == null ? '当前视频播放失败。可在临时列表中重试或跳过。' : '当前视频播放失败，正在播放下一条。',
+    );
+    final next = transition.next;
+    final nextAttempt = transition.nextAttempt;
+    if (next?.cid case final nextCid? when nextAttempt != null) {
+      Future<void>(() {
+        if (!mounted) return;
+        PageUtils.toVideoPage(
+          bvid: next!.bvid,
+          cid: nextCid,
+          aid: next.aid,
+          title: next.title,
+          cover: next.cover,
+          off: true,
+          extraArguments: {
+            TemporaryQueueService.attemptArgument: nextAttempt,
+          },
+        );
+      });
+    }
+  }
+
   // 播放器状态监听
   Future<void> playerListener(PlayerStatus status) async {
     final isPlaying = status.isPlaying;
+    if (isPlaying && !videoDetailController.isFileSource) {
+      TemporaryQueueService.instance.markCurrent(
+        TemporaryQueueEntry(
+          bvid: videoDetailController.bvid,
+          cid: videoDetailController.cid.value,
+          aid: videoDetailController.aid,
+          title: videoDetailController.args['title'] as String? ?? '',
+          cover: videoDetailController.cover.value,
+        ),
+        ownerToken: _queueOwnerToken,
+      );
+    }
     try {
       if (videoDetailController.scrollCtr.hasClients) {
         if (isPlaying) {
@@ -265,6 +349,27 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
           return;
         }
       } catch (_) {}
+
+      if (!shutdownTimerService.isWaiting &&
+          plPlayerController?.playRepeat != PlayRepeat.singleCycle) {
+        final queued = TemporaryQueueService.instance.nextAfterCompletion();
+        if (queued?.cid case final cid?) {
+          PageUtils.toVideoPage(
+            bvid: queued!.bvid,
+            cid: cid,
+            aid: queued.aid,
+            title: queued.title,
+            cover: queued.cover,
+            off: true,
+            extraArguments: {
+              TemporaryQueueService.attemptArgument: TemporaryQueueService
+                  .instance
+                  .attemptFor(queued),
+            },
+          );
+          return;
+        }
+      }
 
       bool exitFlag = true;
 
@@ -342,6 +447,20 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   @override
   void dispose() {
+    if (_queueAttempt case final attempt?) {
+      TemporaryQueueService.instance.cancelAttempt(attempt);
+    }
+    if (!InAppMiniPlayer.instance.isOwner(heroTag) &&
+        !videoDetailController.isFileSource) {
+      TemporaryQueueService.instance.clearCurrentIfMatches(
+        TemporaryQueueEntry(
+          bvid: videoDetailController.bvid,
+          cid: videoDetailController.cid.value,
+          title: '',
+        ),
+        ownerToken: _queueOwnerToken,
+      );
+    }
     plPlayerController
       ?..removeStatusLister(playerListener)
       ..removePositionListener(positionListener);
@@ -382,6 +501,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   // 离开当前页面时
   void didPushNext() {
     super.didPushNext();
+    final miniActive = _showInAppMiniPlayer();
     isShowing = false;
 
     removeObserverMobile(this);
@@ -393,7 +513,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     introController.cancelTimer();
 
     videoDetailController
-      ..videoState.value = false
+      ..videoState.value = miniActive
       ..cancelBlockListener()
       ..playerStatus = plPlayerController?.playerStatus
       ..brightness = plPlayerController?.brightness.value;
@@ -401,8 +521,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       videoDetailController.makeHeartBeat();
       plPlayerController!
         ..removeStatusLister(playerListener)
-        ..removePositionListener(positionListener)
-        ..pause();
+        ..removePositionListener(positionListener);
+      if (!miniActive) plPlayerController!.pause();
     }
   }
 
@@ -410,6 +530,31 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   // 返回当前页面时
   void didPopNext() {
     super.didPopNext();
+
+    final mini = InAppMiniPlayer.instance;
+    if (mini.wasClosedForOwner(heroTag)) {
+      isShowing = true;
+      addObserverMobile(this);
+      videoDetailController
+        ..autoPlay = false
+        ..videoState.value = false;
+      return;
+    }
+    final restored =
+        mini.consumeExistingRestore(heroTag) ||
+        mini.adoptByPage(ownerKey: heroTag, routeName: '/videoV');
+    if (restored) {
+      _transferQueueCurrentOwner();
+      isShowing = true;
+      addObserverMobile(this);
+      videoDetailController.videoState.value = true;
+      plPlayerController
+        ?..addStatusLister(playerListener)
+        ..addPositionListener(positionListener);
+      PlPlayerController.setPlayCallBack(playCallBack);
+      introController.startTimer();
+      return;
+    }
 
     if (videoDetailController.plPlayerController.isCloseAll) {
       return;
@@ -460,6 +605,17 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       videoDetailController.playerInit();
     }
   }
+
+  bool _showInAppMiniPlayer({bool isPop = false}) =>
+      InAppMiniPlayer.instance.show(
+        ownerKey: heroTag,
+        routeName: '/videoV',
+        routeArguments: videoDetailController.args,
+        ownerRoute: ModalRoute.of(context),
+        controller: videoDetailController.plPlayerController,
+        title: videoDetailController.args['title'] as String?,
+        isPop: isPop,
+      );
 
   @override
   void didChangeDependencies() {
@@ -1219,42 +1375,55 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         !isFullScreen &&
         !videoDetailController.plPlayerController.isDesktopPip &&
         (videoDetailController.horizontalScreen || isPortrait),
-    onPopInvokedWithResult:
-        videoDetailController.plPlayerController.onPopInvokedWithResult,
+    onPopInvokedWithResult: (didPop, result) {
+      if (didPop && _showInAppMiniPlayer(isPop: true)) return;
+      videoDetailController.plPlayerController.onPopInvokedWithResult(
+        didPop,
+        result,
+      );
+    },
     child: Obx(
       () =>
           !videoDetailController.videoState.value ||
               !videoDetailController.autoPlay ||
               plPlayerController?.videoController == null
           ? const SizedBox.shrink()
-          : PLVideoPlayer(
-              maxWidth: width,
-              maxHeight: height,
-              plPlayerController: plPlayerController!,
-              videoDetailController: videoDetailController,
-              introController: introController,
-              headerControl: HeaderControl(
-                key: videoDetailController.headerCtrKey,
-                isPortrait: isPortrait,
-                controller: videoDetailController.plPlayerController,
-                videoDetailCtr: videoDetailController,
-                heroTag: heroTag,
-              ),
-              danmuWidget: isPipMode && pipNoDanmaku
-                  ? null
-                  : Obx(
-                      () => PlDanmaku(
-                        key: ValueKey(videoDetailController.cid.value),
-                        isPipMode: isPipMode,
-                        cid: videoDetailController.cid.value,
-                        playerController: plPlayerController!,
-                        isFullScreen: plPlayerController!.isFullScreen.value,
-                        isFileSource: videoDetailController.isFileSource,
-                        size: Size(width, height),
+          : ValueListenableBuilder<MiniPlayback?>(
+              valueListenable: InAppMiniPlayer.instance.current,
+              builder: (context, mini, _) =>
+                  mini?.ownerKey == heroTag && !isShowing
+                  ? const SizedBox.shrink()
+                  : PLVideoPlayer(
+                      maxWidth: width,
+                      maxHeight: height,
+                      plPlayerController: plPlayerController!,
+                      videoDetailController: videoDetailController,
+                      introController: introController,
+                      headerControl: HeaderControl(
+                        key: videoDetailController.headerCtrKey,
+                        isPortrait: isPortrait,
+                        controller: videoDetailController.plPlayerController,
+                        videoDetailCtr: videoDetailController,
+                        heroTag: heroTag,
                       ),
+                      danmuWidget: isPipMode && pipNoDanmaku
+                          ? null
+                          : Obx(
+                              () => PlDanmaku(
+                                key: ValueKey(videoDetailController.cid.value),
+                                isPipMode: isPipMode,
+                                cid: videoDetailController.cid.value,
+                                playerController: plPlayerController!,
+                                isFullScreen:
+                                    plPlayerController!.isFullScreen.value,
+                                isFileSource:
+                                    videoDetailController.isFileSource,
+                                size: Size(width, height),
+                              ),
+                            ),
+                      showEpisodes: showEpisodes,
+                      showViewPoints: showViewPoints,
                     ),
-              showEpisodes: showEpisodes,
-              showViewPoints: showViewPoints,
             ),
     ),
   );

@@ -21,6 +21,7 @@ import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -106,6 +107,7 @@ class _MediaPageState extends CommonPageState<MinePage>
     return Row(
       mainAxisAlignment: .spaceEvenly,
       children: controller.list
+          .where((item) => item.title != '临时列表' || Pref.enableTemporaryQueue)
           .map(
             (e) => Flexible(
               child: InkWell(

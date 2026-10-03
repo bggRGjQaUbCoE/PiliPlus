@@ -8,6 +8,7 @@ import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/pages/video/ai_conclusion/view.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
+import 'package:PiliPlus/services/temporary_queue_actions.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -61,6 +62,27 @@ class VideoPopupMenu extends StatelessWidget {
                       const Icon(MdiIcons.clockTimeEightOutline, size: 16),
                       () => UserHttp.toViewLater(bvid: videoItem.bvid),
                     ),
+                  if (Pref.enableTemporaryQueue) ...[
+                    _VideoCustomAction(
+                      '添加至临时播放列表',
+                      const Icon(Icons.playlist_add, size: 16),
+                      () =>
+                          TemporaryQueueActions.addVideo(videoItem, next: true),
+                    ),
+                    _VideoCustomAction(
+                      '添加至临时播放列表并最后播放',
+                      const Icon(Icons.queue_play_next, size: 16),
+                      () => TemporaryQueueActions.addVideo(
+                        videoItem,
+                        next: false,
+                      ),
+                    ),
+                    _VideoCustomAction(
+                      '查看临时播放列表',
+                      const Icon(Icons.format_list_numbered, size: 16),
+                      () => Get.toNamed('/temporaryQueue'),
+                    ),
+                  ],
                   if (videoItem.cid != null && Pref.enableAi)
                     _VideoCustomAction(
                       'AI总结',

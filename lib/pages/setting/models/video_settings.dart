@@ -5,6 +5,7 @@ import 'package:PiliPlus/models/common/video/cdn_type.dart';
 import 'package:PiliPlus/models/common/video/live_quality.dart';
 import 'package:PiliPlus/models/common/video/video_decode_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
+import 'package:PiliPlus/common/widgets/flutter/list_tile.dart' as setting_tile;
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/widgets/ordered_multi_select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
@@ -55,12 +56,72 @@ List<SettingsModel> get videoSettings => [
       ),
     ),
   ),
-  NormalModel(
+  _ManualCdnModel(
     title: 'CDN 设置',
     leading: const Icon(MdiIcons.cloudPlusOutline),
     getSubtitle: () =>
         '当前使用：${VideoUtils.cdnService.desc}，部分 CDN 可能失效，如无法播放请尝试切换',
     onTap: _showCDNDialog,
+  ),
+  const SwitchModel(
+    title: '自动选择 CDN（实验性）',
+    leading: Icon(Icons.route_outlined),
+    subtitle: '按当前视频有效数据选择来源；独立于并发，开启后暂停手选 CDN。下次播放生效',
+    setKey: SettingBoxKey.cdnAutoSelect,
+    defaultVal: false,
+  ),
+  const SwitchModel(
+    title: '自适应并发',
+    leading: Icon(Icons.auto_graph_outlined),
+    subtitle: '并发开启时从少量连接开始；仅有收益时增加，供给不再改善时回退；关闭后使用手动路数与分块',
+    setKey: SettingBoxKey.cdnAdaptive,
+    defaultVal: true,
+  ),
+  const SwitchModel(
+    title: '并发 CDN 加载（实验性）',
+    leading: Icon(Icons.cloud_download_outlined),
+    subtitle: '下次播放生效；仅限 DASH 点播。可配合自动选源，也可在手选 CDN 上并发；启用系统代理时不生效',
+    setKey: SettingBoxKey.cdnParallelLoading,
+    defaultVal: false,
+  ),
+  NormalModel(
+    title: '并发路数',
+    leading: const Icon(Icons.call_split_outlined),
+    getSubtitle: () =>
+        '手动模式：${Pref.cdnParallelConnections} 路（1–32）；自适应开启时自动调整，最多 8 路',
+    onTap: (context, setState) => _showParallelValueDialog(
+      context,
+      setState,
+      title: '并发路数',
+      key: SettingBoxKey.cdnParallelConnections,
+      current: Pref.cdnParallelConnections,
+      choices: const [1, 2, 4, 8, 12, 16, 24, 32],
+      min: 1,
+      max: 32,
+      suffix: '路',
+    ),
+  ),
+  NormalModel(
+    title: '分块大小',
+    leading: const Icon(Icons.view_module_outlined),
+    getSubtitle: () =>
+        '手动模式：${Pref.cdnParallelChunkSizeKiB} KiB（64–4096）；自适应先连续接收，必要时分块上限 512 KiB',
+    onTap: (context, setState) => _showParallelValueDialog(
+      context,
+      setState,
+      title: '分块大小',
+      key: SettingBoxKey.cdnParallelChunkSizeKiB,
+      current: Pref.cdnParallelChunkSizeKiB,
+      choices: const [64, 128, 256, 512, 1024, 2048, 4096],
+      min: 64,
+      max: 4096,
+      suffix: 'KiB',
+    ),
+  ),
+  const NormalModel(
+    title: '多 CDN 选择策略',
+    leading: Icon(Icons.public_outlined),
+    subtitle: '自动选源以当前视频有效数据为准；华为云先尝试，响应慢时启动备用候选；跨源分块仍验证内容一致。不以域名地区或历史测速决定优先级',
   ),
   NormalModel(
     title: '直播 CDN 设置',
@@ -68,14 +129,20 @@ List<SettingsModel> get videoSettings => [
     getSubtitle: () => '当前使用：${Pref.liveCdnUrl ?? "默认"}',
     onTap: _showLiveCDNDialog,
   ),
-  const SwitchModel(
+  const _LiveEnhancementSwitchModel(
+    title: '直播界面增强（实验性）',
+    subtitle: '默认关闭；显示礼物快捷条、聊天互动与粉丝团／大航海面板。独立于 CDN 与画质；付费操作需逐次确认',
+    leading: Icon(Icons.live_tv_outlined),
+    setKey: SettingBoxKey.liveRoomEnhancement,
+  ),
+  const _ManualCdnSwitchModel(
     title: 'CDN 测速',
     leading: Icon(Icons.speed),
     subtitle: '测速通过模拟加载视频实现，注意流量消耗，结果仅供参考',
     setKey: SettingBoxKey.cdnSpeedTest,
     defaultVal: true,
   ),
-  SwitchModel(
+  _ManualCdnSwitchModel(
     title: '音频不跟随 CDN 设置',
     subtitle: '直接采用备用 URL，可解决部分视频无声',
     leading: const Icon(MdiIcons.musicNotePlus),
@@ -179,12 +246,177 @@ List<SettingsModel> get videoSettings => [
   ),
 ];
 
+const _manualCdnDisabledSubtitle = '自动选源已接管视频与音频；此项已停用，关闭自动选择 CDN 后恢复原设置';
+
+/// Avoid the generic switch's unchecked dynamic-to-bool conversion on restore.
+class _LiveEnhancementSwitchModel extends SwitchModel {
+  const _LiveEnhancementSwitchModel({
+    required super.title,
+    required super.setKey,
+    super.subtitle,
+    super.leading,
+  });
+
+  @override
+  Widget get widget => StreamBuilder(
+    stream: GStorage.setting.watch(key: SettingBoxKey.liveRoomEnhancement),
+    builder: (context, _) {
+      final theme = Theme.of(context);
+      final enabled = Pref.liveRoomEnhancement;
+      return setting_tile.ListTile(
+        title: Text(title!, style: theme.textTheme.titleMedium),
+        subtitle: Text(
+          subtitle!,
+          style: theme.textTheme.labelMedium!.copyWith(
+            color: theme.colorScheme.outline,
+          ),
+        ),
+        leading: leading,
+        trailing: Transform.scale(
+          scale: 0.8,
+          alignment: Alignment.centerRight,
+          child: Switch(
+            value: enabled,
+            onChanged: (value) => GStorage.setting.put(setKey, value),
+          ),
+        ),
+        onTap: () => GStorage.setting.put(setKey, !enabled),
+      );
+    },
+  );
+}
+
+/// Rebuild only the affected rows when the parallel switch changes, including
+/// in settings search, where the rows do not share a page-level state.
+class _ManualCdnModel extends NormalModel {
+  const _ManualCdnModel({
+    required super.title,
+    super.leading,
+    super.getSubtitle,
+    super.onTap,
+  });
+
+  @override
+  Widget get widget => StreamBuilder(
+    stream: GStorage.setting.watch(key: SettingBoxKey.cdnAutoSelect),
+    builder: (context, snapshot) => Pref.cdnAutoSelect
+        ? NormalModel(
+            title: title,
+            leading: leading,
+            subtitle: _manualCdnDisabledSubtitle,
+            getTrailing: (_) => const Icon(Icons.lock_outline_rounded),
+          ).widget
+        : super.widget,
+  );
+}
+
+class _ManualCdnSwitchModel extends SwitchModel {
+  const _ManualCdnSwitchModel({
+    required super.title,
+    required super.setKey,
+    super.defaultVal,
+    super.subtitle,
+    super.leading,
+    super.onChanged,
+  });
+
+  @override
+  Widget get widget => StreamBuilder(
+    stream: GStorage.setting.watch(key: SettingBoxKey.cdnAutoSelect),
+    builder: (context, snapshot) => Pref.cdnAutoSelect
+        ? NormalModel(
+            title: title,
+            leading: leading,
+            subtitle: _manualCdnDisabledSubtitle,
+            getTrailing: (_) => Transform.scale(
+              scale: 0.8,
+              alignment: Alignment.centerRight,
+              child: const Switch(value: false, onChanged: null),
+            ),
+          ).widget
+        : super.widget,
+  );
+}
+
+Future<void> _showParallelValueDialog(
+  BuildContext context,
+  VoidCallback setState, {
+  required String title,
+  required String key,
+  required int current,
+  required List<int> choices,
+  required int min,
+  required int max,
+  required String suffix,
+}) async {
+  final values = {...choices, current}.toList()..sort();
+  var result = await showDialog<int>(
+    context: context,
+    builder: (context) => SelectDialog<int>(
+      title: title,
+      value: current,
+      values: [
+        for (final value in values) (value, '$value $suffix'),
+        (-1, '自定义（$min–$max $suffix）'),
+      ],
+    ),
+  );
+  if (result == -1 && context.mounted) {
+    var input = current.toString();
+    final formKey = GlobalKey<FormState>();
+    result = await showDialog<int>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('自定义$title'),
+        content: Form(
+          key: formKey,
+          child: TextFormField(
+            initialValue: input,
+            autofocus: true,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              suffixText: suffix,
+              helperText: '请输入 $min–$max 之间的整数（包含边界）',
+            ),
+            onChanged: (value) => input = value,
+            validator: (value) {
+              final parsed = int.tryParse(value?.trim() ?? '');
+              return parsed == null || parsed < min || parsed > max
+                  ? '请输入 $min–$max 之间的整数'
+                  : null;
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                Navigator.of(context).pop(int.parse(input.trim()));
+              }
+            },
+            child: const Text('保存'),
+          ),
+        ],
+      ),
+    );
+  }
+  if (result != null && result >= min && result <= max) {
+    await GStorage.setting.put(key, result);
+    setState();
+  }
+}
+
 Future<void> _showCDNDialog(BuildContext context, VoidCallback setState) async {
+  if (Pref.cdnAutoSelect) return;
   final res = await showDialog<CDNService>(
     context: context,
     builder: (context) => const CdnSelectDialog(),
   );
-  if (res != null) {
+  if (res != null && !Pref.cdnAutoSelect) {
     VideoUtils.cdnService = res;
     await GStorage.setting.put(SettingBoxKey.CDNService, res.name);
     setState();

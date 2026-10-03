@@ -20,7 +20,8 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:dio_http2_adapter/dio_http2_adapter.dart';
-import 'package:flutter/foundation.dart' show kDebugMode, listEquals;
+import 'package:flutter/foundation.dart'
+    show debugPrint, kDebugMode, listEquals;
 
 class Request {
   static const _gzipDecoder = GZipDecoder();
@@ -40,7 +41,11 @@ class Request {
     accountManager = AccountManager();
     dio.interceptors.add(accountManager);
     Accounts.refresh();
-    LoginUtils.setWebCookie();
+    unawaited(
+      LoginUtils.setWebCookie().catchError((Object _, StackTrace _) {
+        if (kDebugMode) debugPrint('WebView cookie startup sync failed');
+      }),
+    );
 
     if (Accounts.main.isLogin) {
       final coin = Pref.userInfoCache?.money;

@@ -3,6 +3,7 @@ enum AccountType {
   heartbeat('记录观看'),
   recommend('推荐'),
   video('视频取流'),
+  reply('评论获取'),
   ;
 
   final String title;

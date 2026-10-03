@@ -27,6 +27,8 @@ import 'package:PiliPlus/models_new/dynamic/dyn_topic_top/top_details.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_top/topic_item.dart';
 import 'package:PiliPlus/models_new/followee_votes/vote.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
+import 'package:PiliPlus/utils/parse_int.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
@@ -70,13 +72,17 @@ abstract final class DynamicsHttp {
     }
   }
 
-  static Future<LoadingState<FollowUpModel>> followUp() async {
+  /// 获取指定账号的官方作者列表首屏，续页必须使用响应中的 offset。
+  static Future<LoadingState<FollowUpModel>> followUp({
+    Account? account,
+  }) async {
     final res = await Request().get(
       Api.followUp,
       queryParameters: {
         'up_list_more': 1,
         'web_location': 333.1365,
       },
+      options: Options(extra: {'account': account ?? Accounts.main}),
     );
     if (res.data['code'] == 0) {
       return Success(FollowUpModel.fromJson(res.data['data']));
@@ -85,7 +91,11 @@ abstract final class DynamicsHttp {
     }
   }
 
-  static Future<LoadingState<FollowUpModel>> dynUpList(String? offset) async {
+  /// 按 portal 的游标继续获取官方状态，固定账号避免途中切换后混用响应。
+  static Future<LoadingState<FollowUpModel>> dynUpList(
+    String? offset, {
+    Account? account,
+  }) async {
     final res = await Request().get(
       Api.dynUplist,
       queryParameters: {
@@ -93,6 +103,7 @@ abstract final class DynamicsHttp {
         'platform': 'web',
         'web_location': 333.1365,
       },
+      options: Options(extra: {'account': account ?? Accounts.main}),
     );
     if (res.data['code'] == 0) {
       return Success(FollowUpModel.fromUpList(res.data['data']));
@@ -101,11 +112,65 @@ abstract final class DynamicsHttp {
     }
   }
 
+  /// 按本地动态 id 基线收集新增动态的作者。
+  ///
+  /// 动态流接口虽然接受 `update_baseline` 参数并返回 `update_num`，但实测该字段在
+  /// 传入基线后恒为字符串 `'0'`、与基线深浅无关，因此「哪些动态算新」改由客户端判定：
+  /// 把服务端返回的 `update_baseline`（代表「此刻」的截止线）存下来，下次只取回动态 id
+  /// 严格大于该截止线的记录即可，无需再向接口传参。
+  ///
+  /// 两种模式共用综合流（`type=all`），视频按记录的类型识别；同一作者的视频和图文
+  /// 都保留原始身份，列表摘要按模式生成，不能只保存最新一条动态的类型。
+  ///
+  /// 翻页与截断规则本身位于 [DynamicUpUpdateResult.scan]，此处只负责取页，
+  /// 使同一套规则可以用真实抓包数据离线回归。
+  ///
+  /// [backfillPages] 只在首次启用（本地还没有基线）时生效：先取若干页作为回补，
+  /// 避免刚开启功能后红点长时间为空；基线仍推进到「此刻」，回补内容不会被重复计入。
+  /// [maxPages] 是单批翻页上限；未完成范围通过 [resume] 续扫，不推进完整基线。
+  static Future<LoadingState<DynamicUpUpdateResult>> followDynamicUpdates({
+    required String? updateBaseline,
+    int backfillPages = 0,
+    int maxPages = 8,
+    DynamicUpScanProgress? resume,
+    Account? account,
+  }) async {
+    // 取页失败时暂存服务端返回的错误信息，供上层提示用户。
+    dynamic errorMessage;
+    final result = await DynamicUpUpdateResult.scan(
+      baselineId: safeToInt(updateBaseline) ?? 0,
+      backfillPages: backfillPages,
+      maxPages: maxPages,
+      resume: resume,
+      loadPage: (offset) async {
+        final res = await Request().get(
+          Api.followDynamic,
+          queryParameters: {
+            if (offset?.isNotEmpty == true) 'offset': offset,
+            'type': DynamicsTabType.all.name,
+            'features': Constants.dynFeatures,
+          },
+          options: Options(extra: {'account': account ?? Accounts.main}),
+        );
+        if (res.data['code'] != 0) {
+          errorMessage = res.data['message'];
+          return null;
+        }
+        return DynamicUpUpdatePage.fromJson(res.data['data']);
+      },
+    );
+    if (result == null) {
+      return Error(errorMessage ?? '获取更新动态失败');
+    }
+    return Success(result);
+  }
+
   static Future<LoadingState<FollowUpModel>> followings({
     int? vmid,
     int? pn,
     int ps = 20,
     String orderType = '', // ''=>最近关注，'attention'=>最常访问
+    Account? account,
   }) async {
     final res = await Request().get(
       Api.followings,
@@ -116,6 +181,7 @@ abstract final class DynamicsHttp {
         'order': 'desc',
         'order_type': orderType,
       },
+      options: Options(extra: {'account': account ?? Accounts.main}),
     );
     if (res.data['code'] == 0) {
       return Success(FollowUpModel.fromFollowList(res.data['data']));

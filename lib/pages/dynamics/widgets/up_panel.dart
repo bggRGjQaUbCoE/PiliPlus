@@ -129,8 +129,9 @@ class _UpPanelState extends State<UpPanel> {
   }
 
   void _onSelect(UpItem item) {
-    item.hasUpdate = false;
-    controller.onSelectUp(item.mid);
+    controller
+      ..markUpRead(item)
+      ..onSelectUp(item.mid);
     setState(() {});
   }
 

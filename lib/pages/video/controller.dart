@@ -46,11 +46,16 @@ import 'package:PiliPlus/pages/video/note/view.dart';
 import 'package:PiliPlus/pages/video/post_panel/view.dart';
 import 'package:PiliPlus/pages/video/send_danmaku/view.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
+import 'package:PiliPlus/pages/video_together/playback_adapter.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
+import 'package:PiliPlus/plugin/pl_player/models/data_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
+import 'package:PiliPlus/services/video_together/models.dart';
+import 'package:PiliPlus/services/video_together/playback.dart';
+import 'package:PiliPlus/services/video_together/session.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
@@ -79,6 +84,8 @@ import 'package:media_kit/media_kit.dart' hide Subtitle;
 
 class VideoDetailController extends GetxController
     with GetTickerProviderStateMixin, BlockMixin {
+  PlPlayerVideoTogetherPlayback? _videoTogetherPlayback;
+
   /// 路由传参
   late final Map args;
   late String bvid;
@@ -700,7 +707,10 @@ class VideoDetailController extends GetxController
     playerInit();
   }
 
-  Future<void>? _initPlayerIfNeeded(bool autoFullScreenFlag) {
+  Future<void>? _initPlayerIfNeeded(
+    bool autoFullScreenFlag, [
+    int? loadGeneration,
+  ]) {
     if (_autoPlay.value ||
         (plPlayerController.preInitPlayer && !plPlayerController.processing) &&
             (isFileSource
@@ -708,6 +718,7 @@ class VideoDetailController extends GetxController
                 : videoPlayerKey.currentState?.mounted == true)) {
       return playerInit(
         autoFullScreenFlag: autoFullScreenFlag && _autoPlay.value,
+        loadGeneration: loadGeneration,
       );
     }
     return null;
@@ -716,7 +727,13 @@ class VideoDetailController extends GetxController
   Future<void> playerInit({
     bool? autoplay,
     bool autoFullScreenFlag = false,
+    int? loadGeneration,
   }) async {
+    final generation = loadGeneration ?? _videoLoadGeneration;
+    if (!isFileSource) {
+      _videoTogetherMediaReady = false;
+      if (!_isVideoLoadCurrent(generation)) return;
+    }
     Duration? seek = defaultST ?? playedTime;
     if (seek == .zero) seek = null;
     seek ??= getFirstSegment();
@@ -755,7 +772,15 @@ class VideoDetailController extends GetxController
       autoFullScreenFlag: autoFullScreenFlag,
     );
 
-    if (isClosed) return;
+    if (isClosed || (!isFileSource && !_isVideoLoadCurrent(generation))) {
+      return;
+    }
+    if (!isFileSource) {
+      _videoTogetherMediaReady =
+          plPlayerController.dataStatus.value == DataStatus.loaded;
+    }
+
+    if (!isFileSource) _updateVideoTogetherPlaybackBinding();
 
     if (!isFileSource) {
       if (plPlayerController.enableBlock) {
@@ -774,7 +799,79 @@ class VideoDetailController extends GetxController
     defaultST = null;
   }
 
+  void bindVideoTogetherPlayback(
+    VideoTogetherPreparePlayback preparePlayback,
+  ) {
+    if (isFileSource || _videoTogetherPlayback != null) return;
+    _videoTogetherPlayback = PlPlayerVideoTogetherPlayback(
+      plPlayerController,
+      preparePlayback: preparePlayback,
+      isCurrentMediaReady: () => _videoTogetherMediaReady,
+    );
+    _updateVideoTogetherPlaybackBinding();
+  }
+
+  void _updateVideoTogetherPlaybackBinding() {
+    final playback = _videoTogetherPlayback;
+    if (playback == null) return;
+    final title = _videoTogetherTitle;
+    final media = switch ((isUgc, epId)) {
+      (false, final int epId) => VideoTogetherMediaBuilder.pgc(
+        epId: epId,
+        title: title,
+      ),
+      _ => VideoTogetherMediaBuilder.ugc(
+        bvid: bvid,
+        title: title,
+        part: _videoTogetherPart,
+      ),
+    };
+    VideoTogetherSession.instance.bindPlayback(playback, media);
+  }
+
+  String get _videoTogetherTitle {
+    if (args['title'] case final String title when title.isNotEmpty) {
+      return title;
+    }
+    try {
+      final title = isUgc
+          ? Get.find<UgcIntroController>(tag: heroTag).videoDetail.value.title
+          : Get.find<PgcIntroController>(tag: heroTag).videoDetail.value.title;
+      if (title?.isNotEmpty == true) return title!;
+    } catch (_) {}
+    return isUgc ? bvid : '番剧 $epId';
+  }
+
+  int get _videoTogetherPart {
+    if (!isUgc) return 1;
+    try {
+      final pages = Get.find<UgcIntroController>(tag: heroTag)
+          .videoDetail
+          .value
+          .pages;
+      final index = pages?.indexWhere((item) => item.cid == cid.value) ?? -1;
+      if (index >= 0) return index + 1;
+    } catch (_) {}
+    final roomUrl = VideoTogetherSession.instance.room.value?.url;
+    if (roomUrl != null) {
+      final identity = VideoTogetherMediaIdentity.fromUrl(roomUrl);
+      if (identity.kind == 'video' && identity.id == bvid.toUpperCase()) {
+        return identity.part;
+      }
+    }
+    return 1;
+  }
+
   bool isQuerying = false;
+  int _videoLoadGeneration = 0;
+  bool _videoTogetherMediaReady = false;
+  bool _queryQueued = false;
+  bool _queuedFromReset = false;
+  bool _queuedAutoFullScreenFlag = false;
+  bool get videoTogetherMediaReady => _videoTogetherMediaReady;
+
+  bool _isVideoLoadCurrent(int generation) =>
+      !isClosed && generation == _videoLoadGeneration;
 
   final languages = Rxn<List<LanguageItem>>();
   final currLang = Rxn<String>();
@@ -802,10 +899,11 @@ class VideoDetailController extends GetxController
     );
   }
 
-  Future<void> _supplementVideoQualities() async {
+  Future<void> _supplementVideoQualities(int generation) async {
     final quality = data.missingVideoQualityBelowHighest;
     if (quality == -1) return;
     final result = await _getVideoUrl(quality);
+    if (!_isVideoLoadCurrent(generation)) return;
     if (result case Success(:final response)) {
       data.dash!.video!.merge(response.dash?.video);
     }
@@ -822,24 +920,42 @@ class VideoDetailController extends GetxController
     if (isFileSource) {
       return _initPlayerIfNeeded(autoFullScreenFlag);
     }
-    if (isQuerying) {
-      return;
-    }
+    _queuedFromReset = fromReset;
+    _queuedAutoFullScreenFlag = autoFullScreenFlag;
+    _queryQueued = true;
+    _videoTogetherMediaReady = false;
+    _videoLoadGeneration += 1;
+    if (isQuerying) return;
     isQuerying = true;
     try {
-      await _queryVideoUrl(fromReset, autoFullScreenFlag);
+      while (_queryQueued && !isClosed) {
+        _queryQueued = false;
+        final generation = _videoLoadGeneration;
+        final queuedFromReset = _queuedFromReset;
+        final queuedAutoFullScreenFlag = _queuedAutoFullScreenFlag;
+        await _queryVideoUrl(
+          queuedFromReset,
+          queuedAutoFullScreenFlag,
+          generation,
+        );
+      }
     } finally {
       isQuerying = false;
     }
   }
 
   @pragma('vm:prefer-inline')
-  Future<void> _queryVideoUrl(bool fromReset, bool autoFullScreenFlag) async {
+  Future<void> _queryVideoUrl(
+    bool fromReset,
+    bool autoFullScreenFlag,
+    int generation,
+  ) async {
     if (plPlayerController.enableSponsorBlock && isBlock && !fromReset) {
       querySponsorBlock(bvid: bvid, cid: cid.value);
     }
     if (plPlayerController.cacheVideoQa == null) {
       final isWiFi = await ConnectivityUtils.isWiFi;
+      if (!_isVideoLoadCurrent(generation)) return;
       plPlayerController
         ..cacheVideoQa = isWiFi
             ? Pref.defaultVideoQa
@@ -851,10 +967,12 @@ class VideoDetailController extends GetxController
     }
 
     final result = await _getVideoUrl(VideoQuality.hdrVivid.code);
+    if (!_isVideoLoadCurrent(generation)) return;
 
     if (result case Success(:final response)) {
       data = response;
-      if (data.dash != null) await _supplementVideoQualities();
+      if (data.dash != null) await _supplementVideoQualities(generation);
+      if (!_isVideoLoadCurrent(generation)) return;
 
       languages.value = data.language?.items;
       currLang.value = data.curLanguage;
@@ -911,7 +1029,7 @@ class VideoDetailController extends GetxController
           _setVideoHeight();
           currentDecodeFormats = VideoDecodeFormatType.AVC;
           currentVideoQa.value = videoQuality;
-          await _initPlayerIfNeeded(autoFullScreenFlag);
+          await _initPlayerIfNeeded(autoFullScreenFlag, generation);
           return;
         } else {
           SmartDialog.showToast('视频资源不存在');
@@ -979,7 +1097,7 @@ class VideoDetailController extends GetxController
       } else {
         audioUrl = '';
       }
-      await _initPlayerIfNeeded(autoFullScreenFlag);
+      await _initPlayerIfNeeded(autoFullScreenFlag, generation);
     } else {
       _autoPlay.value = false;
       videoState.value = false;
@@ -1240,6 +1358,10 @@ class VideoDetailController extends GetxController
 
   @override
   void onClose() {
+    if (_videoTogetherPlayback case final playback?) {
+      VideoTogetherSession.instance.unbindPlayback(playback);
+      _videoTogetherPlayback = null;
+    }
     cid.close();
     if (isFileSource) {
       cacheLocalProgress();
@@ -1257,6 +1379,12 @@ class VideoDetailController extends GetxController
   }
 
   void onReset({bool isStein = false}) {
+    if (!isFileSource) {
+      VideoTogetherSession.instance.beginLocalMediaChange();
+    }
+    _videoLoadGeneration += 1;
+    plPlayerController.invalidatePendingDataSource();
+    _videoTogetherMediaReady = false;
     if (isFileSource) {
       cacheLocalProgress();
     }

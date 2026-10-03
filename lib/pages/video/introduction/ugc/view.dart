@@ -26,6 +26,7 @@ import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/action_item.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/page.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/season.dart';
+import 'package:PiliPlus/pages/video/widgets/video_together_action.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/bili_colors.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
@@ -534,6 +535,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
             semanticsLabel: '分享',
             text: !isLoading ? NumUtils.numFormat(stat!.share!) : null,
           ),
+          const VideoTogetherActionItem(),
         ],
       ),
     );

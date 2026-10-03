@@ -1,0 +1,1402 @@
+// Pure-Dart build tool for pre-build steps: SDK/patch application, version
+// metadata generation, and disposable SDK-copy isolation.
+//
+// Design principle (mirrors upstream #1510 discussion): never try to export
+// environment variables from Dart (impossible); version/metadata is written to
+// files (pili_release.json) and read via --dart-define-from-file, and optional
+// CI hints are appended to $GITHUB_ENV *file*, which the Actions runner reads.
+//
+// OOP layout — domain concepts are encapsulated into classes; the task
+// subcommands are thin orchestrators on top:
+//
+//   Runner         process execution + [success]/Error logging
+//   FlutterSdk     SDK root resolution + git ops (reset/cherry-pick/revert/apply)
+//   PubCache       pub cache root + hosted/<registry>/ package find/delete
+//   PatchesMatrix  declarative matrix in patches.json (keys/file/meta/hash);
+//                  each patch carries a `target` (sdk|pub|project) so
+//                  distribution is data-driven, no group names are hardcoded
+//
+// Stateless design: no `.patch_state.json` state machine. `apply-patches` runs
+// on a git-clean tree (CI), optionally onto a disposable SDK copy (`--sdk-copy`)
+// for local debugging isolation, so nothing ever needs to remember what was
+// applied or be restored in place.
+//
+// Entry:
+//
+//   dart run lib/scripts/pre_build.dart apply-patches  --platform linux
+//   dart run lib/scripts/pre_build.dart apply-patches  --platform linux --sdk-copy [--force]
+//   dart run lib/scripts/pre_build.dart apply-patches  --device-id <id> --sdk-copy
+//   dart run lib/scripts/pre_build.dart apply-patches  --platform linux --ci   # scripted/CI: skip confirm
+//   dart run lib/scripts/pre_build.dart gen-build-info --platform linux [--tag vX] [--ci]
+//
+// Direct-mode apply-patches (no --sdk-copy) prompts for confirmation before
+// mutating the resolved SDK in place; pass `--ci` to bypass, or refuse when
+// stdin is closed (scripted calls must opt in explicitly).
+//
+// Patch matrix: lib/scripts/patches.json (declarative source of truth).
+
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data' show BytesBuilder;
+
+const String _patchJson = 'lib/scripts/patches.json';
+const String _piliReleaseJson = 'pili_release.json';
+
+/// Absolute path of this git repo root (parent of lib/scripts).
+final String projectRoot = Directory.current.absolute.path;
+
+// ---------------------------------------------------------------------------
+// misc top-level helpers
+// ---------------------------------------------------------------------------
+
+// Portably resolve a symlink (or plain path) to its absolute target using
+// Dart's built-in FileSystemEntity, avoiding the platform-specific `realpath`
+// binary (absent by default on Windows).
+String? _realpath(String p) {
+  try {
+    final resolved = File(p).resolveSymbolicLinksSync();
+    if (resolved.isNotEmpty) return resolved;
+  } catch (_) {}
+  return null;
+}
+
+/// True when [path] is a symbolic link itself (rather than its target), i.e.
+/// the entry resolves to a link. Used to refuse publishing patches *through* a
+/// symlink, which would silently write into the shared global pub cache.
+bool _isSymlink(String path) {
+  return FileSystemEntity.typeSync(path, followLinks: false) ==
+      FileSystemEntityType.link;
+}
+
+// ---------------------------------------------------------------------------
+// Runner: subprocess execution with uniform diagnostics
+// ---------------------------------------------------------------------------
+
+/// Executes external commands and reports `[success]` / `Error:` lines to stderr.
+class Runner {
+  final String logTo;
+  Runner({this.logTo = 'stderr'});
+
+  IOSink get _out => logTo == 'stdout' ? stdout : stderr;
+
+  void success(String msg) => _out.writeln('[success] $msg applied');
+  void info(String msg) => _out.writeln(msg);
+  void warnLine(String msg) => _out.writeln('Warning: $msg');
+  Never error(String msg) {
+    _out.writeln('Error: $msg');
+    exit(1);
+  }
+
+  /// Prompt for a `y`/`n` decision on [msg], returning true when the user
+  /// agrees (y) and false when they decline (n).  Loop until a valid answer.
+  /// When stdin is closed/unavailable (piped/CI), default to [whenNoStdin] so
+  /// automation never hangs.
+  bool confirm(String msg, {bool whenNoStdin = false}) {
+    while (true) {
+      _out.write('$msg [y/n] ');
+      final line = stdin.readLineSync();
+      if (line == null) {
+        _out.writeln(whenNoStdin ? 'y' : 'n');
+        return whenNoStdin;
+      }
+      final a = line.trim().toLowerCase();
+      if (a == 'y' || a == 'yes') return true;
+      if (a == 'n' || a == 'no') return false;
+    }
+  }
+
+  /// Env for subprocesses that run with a custom `PUB_CACHE`: git checkouts of
+  /// deep package trees (e.g. flutter_inappwebview) blow past the 260-char
+  /// MAX_PATH under long isolated pub-cache paths (Windows) unless
+  /// `core.longpaths` is set. Injected per-process via GIT_CONFIG_* so the
+  /// user's global git config and registry flags stay untouched. Harmless on
+  /// other platforms where the limit does not apply.
+  Map<String, String> _flutterEnv(Map<String, String>? environment) {
+    if (environment == null || !environment.containsKey('PUB_CACHE')) {
+      return environment ?? const {};
+    }
+    return {
+      ...environment,
+      'GIT_CONFIG_COUNT': '1',
+      'GIT_CONFIG_KEY_0': 'core.longpaths',
+      'GIT_CONFIG_VALUE_0': 'true',
+    };
+  }
+
+  Future<ProcessResult> run(
+    String cwd,
+    List<String> cmd, {
+    Map<String, String>? environment,
+  }) {
+    return Process.run(
+      cmd.first,
+      cmd.sublist(1),
+      workingDirectory: cwd,
+      environment: _flutterEnv(environment),
+      stdoutEncoding: utf8,
+      stderrEncoding: utf8,
+    );
+  }
+
+  ProcessResult runSync(
+    String cwd,
+    List<String> cmd, {
+    Map<String, String>? environment,
+  }) {
+    return Process.runSync(
+      cmd.first,
+      cmd.sublist(1),
+      workingDirectory: cwd,
+      environment: _flutterEnv(environment),
+      stdoutEncoding: utf8,
+      stderrEncoding: utf8,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// FlutterSdk: locate SDK + git operations against it
+// ---------------------------------------------------------------------------
+
+final Runner _r = Runner();
+
+class FlutterSdk {
+  final String root;
+  FlutterSdk._(this.root);
+
+  /// The SDK's `flutter` launcher path. On Windows `Process.run` cannot spawn
+  /// the `.bat` by bare name, so callers use this explicit path (with `fvm`,
+  /// which also needs an absolute target, kept as-is). Returns null when the
+  /// binary does not exist.
+  String? flutterBin() {
+    final bin = Platform.isWindows ? 'flutter.bat' : 'flutter';
+    final p = '$root/bin/$bin';
+    return File(p).existsSync() ? p : null;
+  }
+
+  static FlutterSdk resolve() {
+    final env = Platform.environment['FLUTTER_ROOT'];
+    if (env != null && env.isNotEmpty) return FlutterSdk._(env);
+    // Resolve `flutter` from PATH (covers FVM via `.fvm/flutter_sdk/bin` and
+    // bare global installs alike). The launcher often sits behind a symlink
+    // (`.fvm/flutter_sdk`), so realpath the SDK root — callers rely on the
+    // real `versions/<v>` path for FVM detection.
+    final which = Process.runSync(
+      Platform.isWindows ? 'where.exe' : 'which',
+      ['flutter'],
+    );
+    if (which.exitCode == 0) {
+      final line = (which.stdout as String).trim().split('\n').first.trim();
+      if (line.isNotEmpty) {
+        // flutter binary lives at <sdk>/bin/flutter — resolve SDK root.
+        final sdkRoot = File(line).parent.parent.path;
+        final real = _realpath(sdkRoot);
+        if (real == null) throw StateError('cannot locate Flutter SDK');
+        return FlutterSdk._(real);
+      }
+    }
+    throw StateError(
+      'cannot locate Flutter SDK (no FLUTTER_ROOT and `flutter` not in PATH)',
+    );
+  }
+
+  Future<String> head() async =>
+      ((await _r.run(root, ['git', 'rev-parse', 'HEAD'])).stdout as String)
+          .trim();
+
+  Future<void> configureIdentity() async {
+    await _r.run(root, ['git', 'config', 'user.name', 'ci']);
+    await _r.run(root, ['git', 'config', 'user.email', 'example@example.com']);
+  }
+
+  Future<void> resetHard({String? to}) async {
+    final args = to == null
+        ? ['git', 'reset', '--hard', 'HEAD']
+        : ['git', 'reset', '--hard', to];
+    final r = await _r.run(root, args);
+    if (r.exitCode != 0) {
+      _r.error('git reset --hard failed\n${r.stderr}');
+    }
+    _r.info('SDK working tree reset to ${to ?? 'HEAD'}');
+  }
+
+  Future<void> applyPatch(
+    String patchAbs, {
+    String label = '',
+    bool reverse = false,
+  }) async {
+    final args = <String>['git', 'apply'];
+    if (reverse) args.add('-R');
+    args.add(patchAbs);
+    final r = await _r.run(root, args);
+    if (r.exitCode == 0) {
+      _r.success(label);
+    } else {
+      _r.error('failed to $label apply $patchAbs\n${r.stderr}');
+    }
+  }
+
+  /// Cherry-pick the given hash out of the SDK history. On failure the working
+  /// tree is restored to HEAD.
+  Future<void> cherryPick(String hash, [String label = '']) async {
+    await _r.run(root, ['git', 'stash']);
+    final cp = await _r.run(root, ['git', 'cherry-pick', hash, '--no-edit']);
+    if (cp.exitCode == 0) {
+      await _r.run(root, ['git', 'reset', '--soft', 'HEAD~1']);
+      _r.info('cherry-pick ${hash.substring(0, 9)} ($label) applied');
+      await _r.run(root, ['git', 'stash', 'pop']);
+    } else {
+      await _r.run(root, ['git', 'reset', '--hard', 'HEAD']);
+      await _r.run(root, ['git', 'stash', 'pop']);
+      _r.error(
+        'cherry-pick ${hash.substring(0, 9)} ($label) failed\n${cp.stderr}',
+      );
+    }
+  }
+
+  /// git-revert the given hash, then squashed so only the revert changes remain.
+  Future<void> revert(String hash, [String label = '']) async {
+    await _r.run(root, ['git', 'stash']);
+    final rv = await _r.run(root, ['git', 'revert', hash, '--no-edit']);
+    if (rv.exitCode == 0) {
+      await _r.run(root, ['git', 'reset', '--soft', 'HEAD~1']);
+      _r.info('revert ${hash.substring(0, 9)} ($label) applied');
+      await _r.run(root, ['git', 'stash', 'pop']);
+    } else {
+      await _r.run(root, ['git', 'reset', '--hard', 'HEAD']);
+      await _r.run(root, ['git', 'stash', 'pop']);
+      _r.error('revert ${hash.substring(0, 9)} ($label) failed\n${rv.stderr}');
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// PubCache: cache root + hosted/<registry>/ package lookup/delete
+// ---------------------------------------------------------------------------
+
+class PubCache {
+  final String root;
+  PubCache._(this.root);
+
+  /// The active pub cache root, honoring an explicit `PUB_CACHE` override.
+  static PubCache resolve(String platform) =>
+      PubCache._(_defaultRoot(platform));
+
+  static String _defaultRoot(String platform) {
+    final env = Platform.environment['PUB_CACHE'];
+    if (env != null && env.isNotEmpty) return env;
+    if (platform == 'windows') {
+      final la = Platform.environment['LOCALAPPDATA'];
+      if (la != null && la.isNotEmpty) return '$la/Pub/Cache';
+      return '${Platform.environment['HOME'] ?? ''}/AppData/Local/Pub/Cache';
+    }
+    return '${Platform.environment['HOME'] ?? ''}/.pub-cache';
+  }
+
+  /// The global (shared) pub cache this process would otherwise use. Public so
+  /// sdk-copy mode can mirror it into an isolated cache without re-downloading.
+  static PubCache global(String platform) => PubCache._(_defaultRoot(platform));
+
+  Directory _hosted() => Directory('$root/hosted');
+
+  Iterable<Directory> _registries() {
+    final hosted = _hosted();
+    if (!hosted.existsSync()) return const [];
+    return hosted.listSync(followLinks: false).whereType<Directory>();
+  }
+
+  Map<String, String> env() => {'PUB_CACHE': root};
+
+  /// Host of the single registry `flutter pub get` will actually fetch from:
+  /// the `PUB_HOSTED_URL` mirror if set, else pub's default `pub.dev`. The
+  /// isolated cache is mirror-only for this registry so we never stage copies
+  /// from a source pub will not consult (which would also blur the
+  /// double-registry lookup in [findPackage]).
+  static String activeRegistry() {
+    final raw = Platform.environment['PUB_HOSTED_URL'];
+    if (raw == null || raw.trim().isEmpty) return 'pub.dev';
+    try {
+      return Uri.parse(raw.trim()).host;
+    } on FormatException {
+      return 'pub.dev';
+    }
+  }
+
+  /// Prepare a disposable per-copy pub cache rooted at [isolatedRoot] that
+  /// mirrors the global shared cache with zero-copy symlinks: every global
+  /// hosted package becomes a symlink here, so `flutter pub get` resolves
+  /// offline without re-downloading. Only the registry named by [activeRegistry]
+  /// (the one `pub get` will read) is mirrored, keeping the isolated cache
+  /// free of copies from other registries. Patched packages are re-fetched as
+  /// real directories into this cache by [applyPubPatches] (which deletes the
+  /// symlink first, leaving the global package untouched).
+  static PubCache prepareIsolated(
+    String platform,
+    String isolatedRoot,
+  ) {
+    final global = PubCache.global(platform);
+    final iso = PubCache._(isolatedRoot);
+    final want = activeRegistry();
+    for (final reg in global._registries()) {
+      final regName = reg.path.split(Platform.pathSeparator).last;
+      // Only stage the registry that pub will actually consult for downloads.
+      if (regName != want) continue;
+      final isoReg = Directory('$isolatedRoot/hosted/$regName')
+        ..createSync(recursive: true);
+      for (final d in reg.listSync(followLinks: false).whereType<Directory>()) {
+        final name = d.path.split(Platform.pathSeparator).last;
+        final linkPath = '${isoReg.path}/$name';
+        // Idempotent reuse: the entry may already be a symlink or a real
+        // directory (materialized by an earlier applyPubPatches); mirror
+        // only what is missing.
+        if (FileSystemEntity.typeSync(linkPath, followLinks: false) ==
+            FileSystemEntityType.notFound) {
+          try {
+            Link(linkPath).createSync(d.path);
+          } on FileSystemException catch (e) {
+            // The mimicked cache is a hard requirement for sdk-copy (its
+            // whole point is zero-copy reuse of the shared cache), so fail
+            // fast with a fixable message instead of silently degrading to a
+            // network re-download. $e already carries the concrete cause:
+            // ERROR_PRIVILEGE_NOT_HELD (1314) when the user lacks symlink
+            // privilege, ERROR_ALREADY_EXISTS (183) when a stale entry occupies
+            // the path, ERROR_PATH_NOT_FOUND (3) when the source vanished, etc.
+            // Only the privilege case gets the Developer Mode hint; the rest
+            // keep the raw OS error rather than a misleading single-cause hint.
+            if (Platform.isWindows && e.osError?.errorCode == 1314) {
+              _r.error(
+                'sdk-copy needs symlinks; on Windows enable Developer Mode '
+                '(Settings > For developers) or run as Administrator.\n$e',
+              );
+            }
+            _r.error('sdk-copy cannot create a symbolic link in the isolated '
+                'pub cache:\n$e');
+          }
+        }
+      }
+      break;
+    }
+    return iso;
+  }
+
+  /// Latest matching directory under the pub cache, searching every
+  /// `hosted/<registry>/` subdir (e.g. `pub.dev` or China mirror
+  /// `pub.flutter-io.cn`). Returns null when absent.
+  ///
+  /// "Latest" is compared by [comparePubVersions] on the semver suffix after
+  /// [prefix] (e.g. `1.10.0` beats `1.2.0`), not by raw path lexicographic
+  /// order which would misrank across the `1.9 → 1.10` boundary.
+  Directory? findPackage(String prefix) {
+    Directory? best;
+    for (final reg in _registries()) {
+      for (final d in reg.listSync(followLinks: false).whereType<Directory>()) {
+        final name = d.path.split(Platform.pathSeparator).last;
+        if (!name.startsWith(prefix)) continue;
+        final version = name.substring(prefix.length);
+        if (!d.existsSync()) continue;
+        if (best == null) {
+          best = d;
+          continue;
+        }
+        final bestVersion = best.path
+            .split(Platform.pathSeparator)
+            .last
+            .substring(prefix.length);
+        if (comparePubVersions(version, bestVersion) > 0) best = d;
+      }
+    }
+    return best;
+  }
+
+  /// Delete every cached copy of [prefixes] across all hosted registries, so
+  /// the next `flutter pub get` re-downloads a pristine copy.
+  void deletePackages(List<String> prefixes) {
+    for (final reg in _registries()) {
+      for (final d in reg.listSync(followLinks: false).whereType<Directory>()) {
+        final name = d.path.split(Platform.pathSeparator).last;
+        if (prefixes.any(name.startsWith)) {
+          d.deleteSync(recursive: true);
+          _r.info('Removed cached $name: ${d.path}');
+        }
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// misc top-level helpers (continued)
+// ---------------------------------------------------------------------------
+
+/// Compare two pub package version suffixes (e.g. `1.10.0` vs `1.2.0`)
+/// semver-wise: numeric dot-segments dominate, so crossing the `1.9 → 1.10`
+/// boundary ranks correctly instead of lexicographically (`"1.2.0" > "1.10.0"`
+/// under path ordering). A pre-release marker (`1.1.0-beta.1`) ranks below the
+/// same version without it; build metadata (`1.1.0+9`) is compared numerically
+/// after an identical core+pre-release, matching pub's resolution rather than
+/// the byte order of `+9` vs `+10`. Returns <0, 0, >0.
+int comparePubVersions(String a, String b) {
+  final av = _parsePubSemver(a);
+  final bv = _parsePubSemver(b);
+  // Core numeric dot-segments dominate (1.10.0 > 1.2.0).
+  final c = _compareVersionSegments(av.core, bv.core);
+  if (c != 0) return c;
+  // Release beats the same version carrying a pre-release marker.
+  final aPre = av.pre.isNotEmpty;
+  final bPre = bv.pre.isNotEmpty;
+  if (aPre != bPre) return aPre ? -1 : 1;
+  final p = _compareVersionSegments(av.pre, bv.pre);
+  if (p != 0) return p;
+  return _compareVersionSegments(av.build, bv.build);
+}
+
+/// Parse a pub version suffix (`1.2.0`, `1.1.0-beta.1`, `1.1.0+9`) into its
+/// core, pre-release, and build dot-separated identifier lists.
+({
+  List<String> core,
+  List<String> pre,
+  List<String> build,
+})
+_parsePubSemver(String v) {
+  var rest = v;
+  var build = const <String>[];
+  final plus = rest.indexOf('+');
+  if (plus >= 0) {
+    build = rest.substring(plus + 1).split('.');
+    rest = rest.substring(0, plus);
+  }
+  var pre = const <String>[];
+  final dash = rest.indexOf('-');
+  if (dash >= 0) {
+    pre = rest.substring(dash + 1).split('.');
+    rest = rest.substring(0, dash);
+  }
+  return (core: rest.split('.'), pre: pre, build: build);
+}
+
+/// Compare two dot-separated identifier lists: all-digit identifiers compare
+/// numerically, anything else byte-wise; a shorter list ranks below an
+/// otherwise-identical longer one.
+int _compareVersionSegments(List<String> a, List<String> b) {
+  final n = a.length < b.length ? a.length : b.length;
+  for (var i = 0; i < n; i++) {
+    final an = int.tryParse(a[i]);
+    final bn = int.tryParse(b[i]);
+    final int c;
+    if (an != null && bn != null) {
+      c = an.compareTo(bn);
+    } else {
+      c = a[i].compareTo(b[i]);
+    }
+    if (c != 0) return c;
+  }
+  return a.length.compareTo(b.length);
+}
+
+// ---------------------------------------------------------------------------
+// PatchesMatrix: declarative matrix in patches.json
+// ---------------------------------------------------------------------------
+
+class PatchesMatrix {
+  final Map<String, dynamic> data;
+
+  PatchesMatrix._(this.data);
+
+  static PatchesMatrix load() => PatchesMatrix._(
+    jsonDecode(File('$projectRoot/$_patchJson').readAsStringSync())
+        as Map<String, dynamic>,
+  );
+
+  Map<String, dynamic> meta(String id) =>
+      (data['patches'][id] as Map<String, dynamic>?) ?? {};
+
+  String fileFor(String id) => meta(id)['file'] as String? ?? '';
+
+  String hashFor(String id) => meta(id)['hash'] as String? ?? id;
+
+  String? issueFor(String id) => meta(id)['issue_link'] as String?;
+
+  /// Distribution target: `sdk`, `pub` or `project` (data-driven, replaces
+  /// hardcoded group names so new groups need no script change).
+  String targetFor(String id) => meta(id)['target'] as String? ?? 'sdk';
+
+  /// Target pub package (e.g. `material_ui`) for a `pub` patch.
+  String packageFor(String id) => meta(id)['package'] as String? ?? '';
+
+  /// Every patch key selected for [platform], merging `common` first and then
+  /// every platform group (any group name) in order, de-duplicated. This is
+  /// the single aggregation point for all of the SDK / pub / project patches;
+  /// downstream code filters by [targetFor].
+  List<String> allKeysFor(String platform) {
+    final out = <String>[];
+    final common = data['platform']['common'];
+    void addFrom(dynamic node) {
+      if (node == null) return;
+      if (node is List) {
+        for (final v in node) {
+          out.add(v as String);
+        }
+        return;
+      }
+      if (node is Map) {
+        for (final v in node.values) {
+          if (v is List) {
+            for (final e in v) {
+              out.add(e as String);
+            }
+          }
+        }
+      }
+    }
+
+    addFrom(common);
+    final pl = data['platform'][platform];
+    if (pl is Map) addFrom(pl);
+    final seen = <String>{};
+    return out.where(seen.add).toList();
+  }
+
+  /// Keys of the given kind for [platform], merging `common` first.
+  List<String> keysFor(String platform, {required String kind}) {
+    final out = <String>[];
+    final common = data['platform']['common'];
+    if (common != null && common[kind] != null) {
+      out.addAll((common[kind] as List).cast<String>());
+    }
+    final pl = data['platform'][platform];
+    if (pl != null && pl[kind] != null) {
+      out.addAll((pl[kind] as List).cast<String>());
+    }
+    return out;
+  }
+
+  String? engineVersionKey(String platform) =>
+      data['platform']?[platform]?['engine_version']?['key'];
+}
+
+// ---------------------------------------------------------------------------
+// Patch application primitives (normalize CRLF, byte compare)
+// ---------------------------------------------------------------------------
+
+/// Normalize CRLF -> LF so `git apply` works on files from a Windows checkout.
+Future<void> normalizePatch(File f) async {
+  if (!f.existsSync()) return;
+  final bytes = f.readAsBytesSync();
+  final out = BytesBuilder();
+  for (var i = 0; i < bytes.length; i++) {
+    if (bytes[i] == 13 && i + 1 < bytes.length && bytes[i + 1] == 10) {
+      // drop \r, keep \n
+    } else {
+      out.addByte(bytes[i]);
+    }
+  }
+  final replaced = out.takeBytes();
+  if (!_bytesEqual(bytes, replaced)) {
+    f.writeAsBytesSync(replaced, flush: true);
+  }
+}
+
+bool _bytesEqual(List<int> a, List<int> b) {
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// Shared application primitives (reused by apply-patches in-place and copy)
+// ---------------------------------------------------------------------------
+
+/// Apply every `target == "project"` patch for [platform] to the project repo.
+void applyProjectPatches(String platform, PatchesMatrix matrix) {
+  for (final id in matrix.allKeysFor(platform)) {
+    if (matrix.targetFor(id) != 'project') continue;
+    final file = matrix.fileFor(id);
+    final abs = '$projectRoot/lib/scripts/$file';
+    final issue = matrix.issueFor(id);
+    final r = _r.runSync(projectRoot, ['git', 'apply', abs]);
+    if (r.exitCode == 0) {
+      _r.info('$file applied to project${issue != null ? ' ($issue)' : ''}');
+    } else {
+      _r.error(
+        'failed to apply $file to project${issue != null ? ' ($issue)' : ''}\n${r.stderr}',
+      );
+    }
+  }
+}
+
+/// Apply every `target == "sdk"` patch for [platform] onto [sdk], plus the
+/// pick/revert commits and the optional engine-version rewrite. Assumes a
+/// pristine SDK HEAD (CI or a fresh copy).
+Future<void> applySdkPatches(
+  String platform,
+  PatchesMatrix matrix,
+  FlutterSdk sdk,
+) async {
+  for (final id in matrix.keysFor(platform, kind: 'picks')) {
+    await sdk.cherryPick(matrix.hashFor(id), id);
+  }
+  for (final id in matrix.keysFor(platform, kind: 'reverts')) {
+    await sdk.revert(matrix.hashFor(id), id);
+  }
+  for (final id in matrix.allKeysFor(platform)) {
+    if (matrix.targetFor(id) != 'sdk') continue;
+    final file = matrix.fileFor(id);
+    final issue = matrix.issueFor(id) ?? '';
+    final abs = '$projectRoot/lib/scripts/$file';
+    await sdk.applyPatch(abs, label: '$file -> Flutter SDK $issue');
+  }
+
+  // engine version (optional; empty in current main)
+  final engineKey = matrix.engineVersionKey(platform);
+  if (engineKey != null && engineKey.toString().isNotEmpty) {
+    final ev = File('${sdk.root}/bin/internal/engine.version');
+    if (ev.existsSync()) ev.writeAsStringSync(engineKey.toString());
+    Directory('${sdk.root}/bin/cache').deleteSync(recursive: true);
+    final fb = sdk.flutterBin();
+    if (fb != null) await _r.run(sdk.root, [fb, '--version']);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Task: apply-patches
+// ---------------------------------------------------------------------------
+
+/// Map a Flutter device `targetPlatform` (from `flutter devices --machine`) to
+/// the patch-matrix platform key (`android` / `ios` / `linux` / `macos` /
+/// `windows`). Retains the old jq+sed rule — drop everything after the first
+/// `-`, then remap `darwin` -> `macos`. Targets with no SDK patch set (web,
+/// tester) are rejected.
+String _platformFromTarget(String targetPlatform) {
+  final base = targetPlatform.split('-').first;
+  if (base == 'darwin') return 'macos';
+  const supported = {'android', 'ios', 'linux', 'macos', 'windows'};
+  if (!supported.contains(base)) {
+    _r.error('device targetPlatform $targetPlatform has no SDK patch set');
+  }
+  return base;
+}
+
+/// Resolve the patch platform from a selected device id by calling
+/// `flutter devices --machine` (JSON, parsed with `dart:convert`) and matching
+/// `id`. Removes the VSCode task's dependency on `jq` and `sed` for this step.
+String _platformFromDeviceId(String deviceId) {
+  final sdk = FlutterSdk.resolve();
+  final bin = sdk.flutterBin();
+  if (bin == null) _r.error('cannot locate flutter binary in ${sdk.root}');
+  final r = Process.runSync(bin, ['devices', '--machine'],
+      workingDirectory: projectRoot);
+  if (r.exitCode != 0) {
+    _r.error('flutter devices --machine failed\n${r.stderr}');
+  }
+  final dynamic list;
+  try {
+    list = jsonDecode(r.stdout as String);
+  } on FormatException {
+    _r.error('cannot parse flutter devices --machine output');
+  }
+  if (list is! List) _r.error('unexpected flutter devices --machine output');
+  for (final d in list) {
+    if (d is Map && d['id'] == deviceId) {
+      final tp = d['targetPlatform'];
+      if (tp is! String || tp.isEmpty) {
+        _r.error('device $deviceId has no targetPlatform');
+      }
+      return _platformFromTarget(tp);
+    }
+  }
+  _r.error('no flutter device found with id: $deviceId');
+}
+
+Future<void> applyPatches(Map<String, String> opts) async {
+  var platform = opts['platform'] ?? '';
+  final deviceId = opts['device-id'] ?? '';
+  if (platform.isEmpty && deviceId.isNotEmpty) {
+    // Derive the patch platform from the selected device instead of requiring
+    // the caller to map it (the old VSCode task shell-piped `flutter devices
+    // --machine` through jq+sed for this).
+    platform = _platformFromDeviceId(deviceId);
+  }
+  if (platform.isEmpty) {
+    _r.error('--platform (or --device-id) is required');
+  }
+  final sdkCopyMode = opts.containsKey('sdk-copy');
+  final force = opts.containsKey('force');
+  final ci = opts.containsKey('ci');
+
+  final matrix = PatchesMatrix.load();
+
+  final mode = sdkCopyMode ? 'sdk-copy' : 'direct';
+  _r.info(
+    '== apply-patches [platform=$platform mode=$mode'
+    '${ci ? ' ci' : ''}${force ? ' force' : ''}]',
+  );
+
+  // Optionally route the whole apply onto a disposable SDK copy instead of the
+  // resolved SDK (CI builds patch in place; local debugging isolates via copy).
+  // The copy also carries its own pub cache (mirrored from the shared one via
+  // symlinks) so pub patches never write to the user's real PUB_CACHE.
+  final copyRoot = sdkCopyMode ? await _prepareSdkCopy(platform, force) : null;
+  final sdk = copyRoot != null ? FlutterSdk._(copyRoot) : FlutterSdk.resolve();
+  final pubCache = copyRoot != null
+      ? PubCache.prepareIsolated(platform, '$copyRoot/pub-cache')
+      : PubCache.resolve(platform);
+
+  if (copyRoot == null) {
+    // Direct mode patches the resolved SDK in place.  Always warn (including
+    // under `--ci`) that this mutates the real SDK / public pub cache; only
+    // non-CI interactive runs then prompt y/n for confirmation.
+    _r.warnLine(
+      'You are launching direct-mode, all patches will be applied to the SDK '
+      'in your FLUTTER_ROOT or PATH, and the public pub cache.',
+    );
+    if (!ci) {
+      final ok = _r.confirm('Continue?');
+      if (!ok) _r.error('aborted');
+    }
+  }
+
+  // project-level patches (applied before entering Flutter SDK)
+  applyProjectPatches(platform, matrix);
+
+  // enter the SDK on a clean tree (stateless: SDK HEAD must be pristine)
+  await sdk.configureIdentity();
+  await sdk.resetHard();
+  await applySdkPatches(platform, matrix, sdk);
+  await applyPubPatches(platform, matrix, sdk, cache: pubCache);
+
+  if (copyRoot != null) {
+    final copyVersion = copyRoot.split(Platform.pathSeparator).last;
+    // Point the project at the patched copy.
+    await _r.run(projectRoot, [
+      'fvm',
+      'use',
+      '--skip-pub-get',
+      '--skip-setup',
+      '--force',
+      copyVersion,
+    ]);
+
+    // Warm up the copy: renew excluded bin/cache + record the copy as SDK in
+    // the *project's* package_config.json (run from project root using the
+    // copy's flutter binary) so the analysis server / launch are self-consistent.
+    // PUB_CACHE points at the copy's isolated cache for the same reason.
+    final cfb = sdk.flutterBin();
+    if (cfb == null) _r.error('cannot locate flutter binary in ${sdk.root}');
+    final w = await _r.run(projectRoot, [
+      cfb,
+      'pub',
+      'get',
+    ], environment: pubCache.env());
+    if (w.exitCode != 0) {
+      _r.warnLine('flutter pub get on SDK copy failed (retry on first run)');
+    }
+
+    File('$copyRoot/.sdk-copy-ok').createSync(recursive: true);
+    _r.info('SDK copy prepared: $copyVersion');
+    stdout.writeln(copyVersion);
+  }
+
+  final keys = matrix.allKeysFor(platform);
+  _r.info(
+    '== apply-patches done: ${keys.length} patches '
+    '(${keys.where((k) => matrix.targetFor(k) == 'sdk').length} sdk, '
+    '${keys.where((k) => matrix.targetFor(k) == 'pub').length} pub, '
+    '${keys.where((k) => matrix.targetFor(k) == 'project').length} project) ==',
+  );
+}
+
+// ---------------------------------------------------------------------------
+// material / cupertino pub-cache patches (dynamic, package-driven)
+// ---------------------------------------------------------------------------
+
+/// Apply every `target == "pub"` patch for [platform]. Packages are resolved
+/// dynamically from each patch's `package` field in patches.json (e.g.
+/// `material_ui`, `cupertino_ui`), so arbitrary pub packages are handled
+/// without hardcoding any package name or group. Every affected package is
+/// re-downloaded clean via `flutter pub get` before patching, guaranteeing a
+/// pristine checkout (conflict-free reapply and symmetric restore). Returns
+/// the distinct packages patched, one per entry.
+Future<List<String>> applyPubPatches(
+  String platform,
+  PatchesMatrix matrix,
+  FlutterSdk sdk, {
+  PubCache? cache,
+}) async {
+  // Group patch keys by package, preserving first-seen order; skip anything
+  // whose target is not "pub" (so adding a new group needs no script change).
+  final keysByPackage = <String, List<String>>{};
+  final packageOrder = <String>[];
+  for (final id in matrix.allKeysFor(platform)) {
+    if (matrix.targetFor(id) != 'pub') continue;
+    final pkg = matrix.packageFor(id);
+    if (pkg.isEmpty) continue;
+    keysByPackage
+        .putIfAbsent(pkg, () {
+          packageOrder.add(pkg);
+          return <String>[];
+        })
+        .add(id);
+  }
+  if (packageOrder.isEmpty) return const [];
+
+  final cd = cache ?? PubCache.resolve(platform);
+  final applied = <String>[];
+
+  for (final pkg in packageOrder) {
+    // Re-download a pristine copy of the package before patching. In isolated
+    // mode the existing entry is a symlink to the global cache; deleting it
+    // only drops the link, so the global package stays untouched and the
+    // re-fetched copy lands as a real directory in the isolated cache.
+    final existing = cd.findPackage('$pkg-');
+    if (existing != null) {
+      existing.deleteSync(recursive: true);
+      _r.info('Removed cached $pkg: ${existing.path}');
+    }
+    final fb = sdk.flutterBin();
+    if (fb == null) _r.error('cannot locate flutter binary in ${sdk.root}');
+    final rc = await _r.run(
+      projectRoot,
+      [fb, 'pub', 'get'],
+      environment: cd.env(),
+    );
+    if (rc.exitCode != 0) {
+      // A non-zero exit means the package may not have been (re)downloaded at
+      // all: in isolated mode the leftover entry would still be a symlink into
+      // the shared cache, and git-applying through it would patch the *global*
+      // package. Refuse instead of risking a silent cross-cache write.
+      _r.error('flutter pub get failed\n${rc.stderr}');
+    }
+    final pkgDir = cd.findPackage('$pkg-');
+    if (pkgDir == null) {
+      _r.error('$pkg package not found in pub cache');
+    }
+    if (_isSymlink(pkgDir.path)) {
+      _r.error(
+        '$pkg resolved to a symlink (${pkgDir.path}); pub get did not '
+        'materialize it in ${cd.root}. Refusing to patch through into the '
+        'shared cache.',
+      );
+    }
+    for (final id in keysByPackage[pkg]!) {
+      final file = matrix.fileFor(id);
+      final abs = '$projectRoot/lib/scripts/$file';
+      await normalizePatch(File(abs));
+      // In SDK-copy mode the pub-cache lives inside the copy's .git tree.
+      // GIT_CEILING_DIRECTORIES tells git not to ascend past the pub-cache
+      // root when looking for a repo, so patch paths resolve relative to cwd
+      // (the package dir) instead of the SDK copy root.
+      final ar = await _r.run(pkgDir.path, ['git', 'apply', abs], environment: {
+        'GIT_CEILING_DIRECTORIES': cd.root,
+      });
+      if (ar.exitCode != 0) {
+        _r.error('failed to apply $file -> $pkg\n${ar.stderr}');
+      }
+      _r.success('$file -> $pkg');
+    }
+    applied.add(pkg);
+  }
+
+  return applied;
+}
+
+// ---------------------------------------------------------------------------
+// Task: gen-build-info (writes files, does NOT export env vars)
+// ---------------------------------------------------------------------------
+
+/// Resolve the most recent numeric git tag (e.g. `2.1.2.3`), skipping shallow
+/// clones where tag history is unavailable.
+String? _resolveLastTag() {
+  if (File('$projectRoot/.git/shallow').existsSync()) {
+    _r.warnLine('shallow clone detected, skipping tag-based versioning');
+    return null;
+  }
+  final r = Process.runSync('git', [
+    'describe',
+    '--tags',
+    '--abbrev=0',
+    '--match',
+    '[0-9]*',
+  ], workingDirectory: projectRoot);
+  if (r.exitCode == 0) {
+    final t = (r.stdout as String).trim();
+    if (t.isNotEmpty) return t;
+  }
+  return null;
+}
+
+/// Write pili_release.json (name/code/hash/time) resolved from --tag, the most
+/// recent numeric tag, or the pubspec version fallback. Never exports env vars;
+/// optional CI hints are appended to the `$GITHUB_ENV` *file*.
+Future<void> genBuildInfo(Map<String, String> opts) async {
+  final platform = opts['platform'] ?? '';
+  final ci = opts.containsKey('ci');
+  final tag = opts['tag'] ?? '';
+
+  final p = projectRoot;
+  final count =
+      ((await _r.run(p, ['git', 'rev-list', '--count', 'HEAD'])).stdout
+              as String)
+          .trim();
+  final head =
+      ((await _r.run(p, ['git', 'rev-parse', 'HEAD'])).stdout as String).trim();
+
+  String versionName, baseVersion;
+  if (tag.isNotEmpty) {
+    versionName = tag;
+    baseVersion = tag;
+  } else {
+    final lastTag = _resolveLastTag();
+    if (lastTag != null) {
+      baseVersion = lastTag;
+      versionName = lastTag;
+    } else {
+      final pubspec = File('$p/pubspec.yaml');
+      if (pubspec.existsSync()) {
+        final m = RegExp(r'^\s*version:\s*([0-9.]+)').firstMatch(
+          pubspec
+              .readAsStringSync()
+              .split('\n')
+              .firstWhere(
+                (l) => RegExp(r'^\s*version:').hasMatch(l),
+                orElse: () => '',
+              ),
+        );
+        final mv = m?.group(1);
+        if (mv == null) {
+          _r.error('Prebuild Error: version not found');
+        } else {
+          versionName = mv;
+          baseVersion = mv;
+          // android builds embed the short commit hash in the version name
+          // so installed app metadata stays distinguishable.
+          if (platform == 'android') {
+            versionName = '$mv-${head.substring(0, 9)}';
+          }
+        }
+      } else {
+        _r.error('Prebuild Error: version not found');
+      }
+    }
+  }
+
+  if (ci && platform != 'linux') {
+    final parts = baseVersion.split('.');
+    var pubspecVer = '${parts[0]}.${parts[1]}.${parts[2]}';
+    // normalize a 4-segment version (2.0.7.2) to a valid semver pre-release
+    // suffix (2.0.7-2).
+    if (parts.length > 3 && parts[3].isNotEmpty) {
+      pubspecVer = '$pubspecVer-${parts[3]}';
+    }
+    _patchPubspecVersion(p, pubspecVer, count);
+  }
+
+  final buildTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+  final rel = {
+    'pili.name': versionName,
+    'pili.code': count,
+    'pili.hash': head,
+    'pili.time': buildTime,
+  };
+  File('$p/$_piliReleaseJson').writeAsStringSync(
+    const JsonEncoder.withIndent(' ').convert(rel),
+    flush: true,
+  );
+  _r.info(
+    '== gen-build-info: wrote $_piliReleaseJson '
+    'name=$versionName code=$count hash=${head.substring(0, 9)} '
+    'time=$buildTime ==',
+  );
+
+  final gEnv = Platform.environment['GITHUB_ENV'];
+  if (gEnv != null && gEnv.isNotEmpty) {
+    final f = File(gEnv);
+    final s = StringBuffer()
+      ..writeln('version=$versionName+$count')
+      ..writeln('version_name=$versionName')
+      ..writeln('version_code=$count')
+      ..writeln('base_version=$baseVersion');
+    f.writeAsStringSync(s.toString(), mode: FileMode.append, flush: true);
+  }
+}
+
+void _patchPubspecVersion(String p, String ver, String code) {
+  final path = '$p/pubspec.yaml';
+  final f = File(path);
+  if (!f.existsSync()) return;
+  final lines = f.readAsLinesSync();
+  final out = <String>[];
+  var found = false;
+  for (final l in lines) {
+    if (!found && RegExp(r'^\s*version:\s*[0-9.]+').hasMatch(l)) {
+      out.add('version: $ver+$code');
+      found = true;
+    } else {
+      out.add(l);
+    }
+  }
+  if (found) f.writeAsStringSync('${out.join('\n')}\n', flush: true);
+}
+
+// ---------------------------------------------------------------------------
+// SDK-copy helper (isolated, disposable SDK for local debugging)
+// ---------------------------------------------------------------------------
+
+/// Deterministic short hash over every patch input, derived from the *staged*
+/// (git index) content: `git ls-files -s -- <patch paths>` yields sorted
+/// `<blobHash> <path>` lines; those are merged and hashed via
+/// `git hash-object <file>`. Any `git add`ed patch/patches.json change yields
+/// a fresh copy version (it then embeds this 12-char prefix). Unstaged or
+/// untracked working-tree changes are rejected: the index alone defines the
+/// intended patch set, so a dirty tree can silently reuse a stale copy.
+Future<String> _patchesHeadHash() async {
+  // Reject any unstaged (` M`/`MM`) or untracked (`??`) change under the patch
+  // inputs — only the index reflects the intended patch set. Staged edits
+  // (`M `) are fine: they are captured in `git ls-files -s` below.
+  final soft = await _r.run(projectRoot, [
+    'git',
+    'status',
+    '--porcelain',
+    '--',
+    'lib/scripts/patches.json',
+    ':(glob)lib/scripts/**/*.patch',
+  ]);
+  final dirty = (soft.stdout as String)
+      .split('\n')
+      .where((l) {
+        if (l.startsWith('??')) return true;
+        // Second status column (` M` / `MM`) marks a worktree-vs-index change.
+        return l.length > 1 && l[1].trim().isNotEmpty;
+      })
+      .join('\n')
+      .trim();
+  if (dirty.isNotEmpty) {
+    _r.error(
+      'patch inputs have unstaged or untracked changes; `git add` them so the '
+      'SDK copy version reflects the intended patch set:\n$dirty',
+    );
+  }
+
+  final r = await _r.run(projectRoot, [
+    'git',
+    'ls-files',
+    '-s',
+    '--',
+    'lib/scripts/patches.json',
+    ':(glob)lib/scripts/**/*.patch',
+  ]);
+  final lines = (r.stdout as String);
+  if (r.exitCode != 0 || lines.trim().isEmpty) {
+    _r.error('cannot compute patches content hash');
+  }
+  // Merge every `<blobHash> <path>` line and hash once so the copy version
+  // reflects the whole patch set, not just the first file. Pure git, no
+  // external package —
+  // `git hash-object <file>` hashes a file's bytes, so a temp file is used
+  // instead of stdin (which `Process.runSync` cannot pipe).
+  final merged = lines.replaceAll('\n', ' ').trim();
+  final tmp = File(
+      '${Directory.systemTemp.path}/pili_patch_hash_${DateTime.now().microsecondsSinceEpoch}')
+    ..writeAsStringSync(merged);
+  try {
+    final h = Process.runSync('git', ['hash-object', tmp.path],
+        workingDirectory: projectRoot);
+    if (h.exitCode != 0 || (h.stdout as String).trim().isEmpty) {
+      _r.error('cannot compute patches content hash');
+    }
+    return (h.stdout as String).trim();
+  } finally {
+    if (tmp.existsSync()) tmp.deleteSync();
+  }
+}
+
+/// Extract the `flutter` version field from `.fvmrc` JSON text, or null when
+/// the text is not valid JSON or lacks a string `flutter` field.
+String? _fvmrcFlutter(String text) {
+  final dynamic decoded;
+  try {
+    decoded = jsonDecode(text);
+  } on FormatException {
+    return null;
+  }
+  if (decoded is! Map<String, dynamic>) return null;
+  final f = decoded['flutter'];
+  return f is String && f.isNotEmpty ? f : null;
+}
+
+/// True when a `.fvmrc` flutter value is a patched-SDK-copy version name
+/// written by `fvm use` (e.g. `3.47.2-piliplus-linux-p19ff2f8d487d`) rather
+/// than a clean base version. Such copy names must never be committed; their
+/// presence in the index or repository signals `fvm use` output was
+/// staged/committed by mistake. (Distinct from git's release `tag`.)
+bool _isSdkCopyVersion(String value) =>
+    RegExp(r'-piliplus-[^-]+-p[0-9a-f]+$').hasMatch(value);
+
+/// Resolve the pristine FVM-managed SDK (source for the copy) and return its
+/// absolute path, or null when it cannot be determined/installed.
+///
+/// The base version is read from the git **index** (staging area) rather than
+/// the working tree, because `fvm use` rewrites the working-tree `.fvmrc` to a
+/// patched-copy version name and we must ignore that side effect. The index
+/// reflects the developer's *staged* declaration, so a `git add`ed base upgrade
+/// is honoured while uncommitted `fvm use` pollution is ignored. `.fvmrc` is
+/// assumed to be git-tracked; if it is absent from the index the function fails
+/// fast asking for it to be staged and committed.
+///
+/// Pollution is probed on all three layers. A `fvm use` copy version in the
+/// working tree is a normal side effect (reading the index already ignores it),
+/// so it only prompts. But a *clean, unstaged base* in the working tree — a base
+/// version upgraded but not `git add`ed — fails fast with a prompt to stage it,
+/// otherwise the stale staged base would silently be patched instead. A copy
+/// version in the index (`git add`ed) or the repository HEAD (committed) is a
+/// repo-hygiene error and fails fast so the base declaration can be restored
+/// before sdk-copy proceeds.
+///
+/// The absolute install path is resolved from `fvm api list` (machine-readable
+/// JSON) instead of hand-deriving `$FVM_HOME/versions/...`, which also
+/// sidesteps the Windows USERPROFILE vs HOME disambiguation handled by fvm.
+Future<String?> _resolveBaseSdk() async {
+  final sr = await _r.run(projectRoot, ['git', 'show', ':./.fvmrc']);
+  if (sr.exitCode != 0) {
+    _r.error(
+      '`.fvmrc` is not in the git index. `fvm use` writes it only to the '
+      'working tree; `git add .fvmrc` and commit it so the pristine base '
+      'version can be resolved.',
+    );
+  }
+  final fvmrc = sr.stdout as String;
+  final declared = _fvmrcFlutter(fvmrc);
+  if (declared == null) return null;
+  final sniffedFromIndex = _isSdkCopyVersion(declared);
+
+  // Fail fast on repo-hygiene pollution: an unstaged clean base, or a copy
+  // version in the index/HEAD. A `fvm use` copy version in the working tree
+  // is expected and handled below.
+  final rawWork = File('$projectRoot/.fvmrc');
+  if (rawWork.existsSync()) {
+    final workVal = _fvmrcFlutter(rawWork.readAsStringSync());
+    if (workVal != null) {
+      if (_isSdkCopyVersion(workVal)) {
+        _r.warnLine(
+          '.fvmrc working tree holds a `fvm use` copy version; ignoring it '
+          'and using the staged base. Expected for sdk-copy — no action '
+          'needed.',
+        );
+      } else if (workVal != declared) {
+        _r.error(
+          'working tree .fvmrc declares base `$workVal` but only `$declared` is '
+          'staged; the new base is unstaged. Stage it first: `git add '
+          '.fvmrc`.',
+        );
+      }
+    }
+  }
+  if (sniffedFromIndex) {
+    _r.error(
+      'staged .fvmrc is a `fvm use` copy version ($declared); it was '
+      '`git add`ed. Stage the clean base first: `git restore --staged '
+      '.fvmrc` then `git add .fvmrc`.',
+    );
+  }
+  final hr = await _r.run(projectRoot, ['git', 'show', 'HEAD:.fvmrc']);
+  if (hr.exitCode == 0) {
+    final headFlutter = _fvmrcFlutter(hr.stdout as String) ?? '';
+    if (_isSdkCopyVersion(headFlutter)) {
+      _r.error(
+        'committed .fvmrc is a `fvm use` copy version ($headFlutter); it '
+        'reached the repository. Re-commit a clean base version.',
+      );
+    }
+  }
+
+  final lr = await _r.run(projectRoot, ['fvm', 'api', 'list', '-c']);
+  if (lr.exitCode != 0) return null;
+  final dynamic list;
+  try {
+    list = jsonDecode(lr.stdout as String);
+  } on FormatException {
+    return null;
+  }
+  final versions = list is Map<String, dynamic> ? list['versions'] : null;
+  if (versions is! List<dynamic>) return null;
+  for (final v in versions) {
+    if (v is! Map<String, dynamic>) continue;
+    if (v['name'] == declared) {
+      final dir = v['directory'] as String?;
+      if (dir != null && dir.isNotEmpty) return dir;
+    }
+  }
+  return null;
+}
+
+/// Prepare (or reuse) a disposable SDK copy and return its root, or null when
+/// `--sdk-copy` was not requested.  The pristine SDK is cloned via
+/// `git clone --local` (hardlinks, ~50% disk savings, automatic `bin/cache`
+/// exclusion via `.gitignore`).  A ready marker short-circuits to `fvm use`
+/// without re-patching.  Patching itself happens in the shared `applyPatches`
+/// flow so both modes reuse one code path.
+Future<String?> _prepareSdkCopy(String platform, bool force) async {
+  final src = await _resolveBaseSdk();
+  if (src == null || !Directory(src).existsSync()) {
+    _r.error(
+      'cannot resolve pristine SDK from .fvmrc (staged/committed base version '
+      'not installed: run `fvm install <ver>` first)',
+    );
+  }
+  final srcName = src.split(Platform.pathSeparator).last;
+  final fvmVersions = src.substring(0, src.length - srcName.length - 1);
+
+  final patchHash = await _patchesHeadHash();
+  final copyVersion = '$srcName-piliplus-$platform-p${patchHash.substring(0, 12)}';
+  final dest = '$fvmVersions/$copyVersion';
+  final marker = File('$dest/.sdk-copy-ok');
+
+  // Reuse an already-prepared copy.
+  if (!force && Directory(dest).existsSync() && marker.existsSync()) {
+    _r.info('SDK copy already prepared: $copyVersion');
+    await _r.run(projectRoot, [
+      'fvm',
+      'use',
+      '--skip-pub-get',
+      '--skip-setup',
+      '--force',
+      copyVersion,
+    ]);
+    stdout.writeln(copyVersion);
+    return dest;
+  }
+
+  // (Re)create copy. Rebuild when: recreating from scratch (`--force`), or
+  // the copy is a broken/interrupted prior run (exists but no marker → partial
+  // patches, no fvm switch).
+  if (force || !Directory(dest).existsSync() || !marker.existsSync()) {
+    _r.info('Cloning SDK copy: $dest (from $src)');
+    if (Directory(dest).existsSync()) {
+      // Reuse `fvm remove` (which also purges any FVM cache index entries) as
+      // the deletion primitive instead of hand-rolling a cross-platform tree
+      // wipe; it resolves copy versions under versions/ exactly like real SDKs.
+      final rr = await _r.run(projectRoot, ['fvm', 'remove', copyVersion]);
+      if (Directory(dest).existsSync()) {
+        _r.error(
+            'failed to remove stale SDK copy $dest (fvm remove exit ${rr.exitCode}): ${rr.stderr}');
+      }
+    }
+    // `git clone --local` hardlinks unchanged files from the pristine SDK,
+    // saving ~50% disk vs a full copy.  `bin/cache` is .gitignored so it is
+    // automatically excluded — no manual filtering needed.  Symlinks are
+    // preserved natively by git.
+    final cr = await _r.run(projectRoot, ['git', 'clone', '--local', src, dest]);
+    if (cr.exitCode != 0) {
+      _r.error('git clone --local failed: ${cr.stderr}');
+    }
+    _r.info('SDK cloned: $dest');
+  }
+
+  return dest;
+}
+
+// ---------------------------------------------------------------------------
+// CLI dispatch
+// ---------------------------------------------------------------------------
+
+const String _usage = '''
+Usage: dart run lib/scripts/pre_build.dart <subcommand> [options]
+
+Subcommands:
+  apply-patches    Apply the SDK/pub patches of --platform (optionally in an
+                   isolated SDK copy) and refresh the project pub cache.
+  gen-build-info   Write pili_release.json with version/code/hash/timestamp.
+  help             Show this help.
+
+Run '<subcommand> --help' for subcommand-specific options.''';
+
+const String _usageApplyPatches = '''
+Usage: dart run lib/scripts/pre_build.dart apply-patches [options]
+
+Options:
+  --platform <android|ios|linux|macos|windows>
+                         Target SDK to patch (required unless --device-id).
+  --device-id <id>       Derive the platform from a connected Flutter device.
+  --sdk-copy             Patch a disposable SDK copy (default: patch in place).
+  --force                Rebuild the SDK copy even if it already exists.
+  --ci                   Non-interactive mode (confirmations auto-approve).
+  --help, -h             Show this help.''';
+
+const String _usageGenBuildInfo = '''
+Usage: dart run lib/scripts/pre_build.dart gen-build-info [options]
+
+Options:
+  --platform <android|ios|linux|macos|windows>
+                         Platform key embedded in pili_release.json.
+  --tag <version>        Use an explicit version instead of the latest git tag.
+  --ci                   Skip prompts / CI-friendly output.
+  --help, -h             Show this help.''';
+
+const Map<String, Set<String>> _flagSpec = {
+  'apply-patches': {'platform', 'device-id', 'sdk-copy', 'force', 'ci'},
+  'gen-build-info': {'platform', 'tag', 'ci'},
+};
+
+const Map<String, Set<String>> _valueFlags = {
+  'apply-patches': {'platform', 'device-id'},
+  'gen-build-info': {'platform', 'tag'},
+};
+
+Map<String, String> _parseFlags(String sub, List<String> rest) {
+  final spec = _flagSpec[sub]!;
+  final opts = <String, String>{};
+  for (var i = 0; i < rest.length; i++) {
+    final a = rest[i];
+    if (!a.startsWith('--')) {
+      _r.error('unexpected argument: $a\n${_usageFor(sub)}');
+    }
+    final body = a.substring(2);
+    if (!spec.contains(body)) {
+      _r.error('unknown option: $a\n${_usageFor(sub)}');
+    }
+    if (_valueFlags[sub]!.contains(body)) {
+      if (i + 1 >= rest.length || rest[i + 1].startsWith('--')) {
+        _r.error('option $a requires a value\n${_usageFor(sub)}');
+      }
+      opts[body] = rest[++i];
+    } else {
+      opts[body] = 'true';
+    }
+  }
+  return opts;
+}
+
+String _usageFor(String sub) => switch (sub) {
+  'apply-patches' => _usageApplyPatches,
+  'gen-build-info' => _usageGenBuildInfo,
+  _ => _usage,
+};
+
+Future<void> main(List<String> args) async {
+  if (args.isEmpty || args.first == 'help' || args.first == '--help') {
+    _r.info(_usage);
+    exit(0);
+  }
+
+  final sub = args.first;
+  if (sub != 'apply-patches' && sub != 'gen-build-info') {
+    _r.error('unknown subcommand: $sub\n$_usage');
+  }
+
+  final rest = args.sublist(1);
+  if (rest.contains('--help') || rest.contains('-h')) {
+    _r.info(_usageFor(sub));
+    exit(0);
+  }
+
+  final opts = _parseFlags(sub, rest);
+  switch (sub) {
+    case 'apply-patches':
+      if (rest.isEmpty) {
+        _r.error('missing required options\n${_usageFor(sub)}');
+      }
+      await applyPatches(opts);
+    case 'gen-build-info':
+      await genBuildInfo(opts);
+  }
+}

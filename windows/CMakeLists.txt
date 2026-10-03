@@ -90,10 +90,11 @@ if(PLUGIN_BUNDLED_LIBRARIES)
 endif()
 
 # Copy the native assets provided by the build.dart from all packages.
+# Builds without native asset output do not create this directory.
 set(NATIVE_ASSETS_DIR "${PROJECT_BUILD_DIR}native_assets/windows/")
 install(DIRECTORY "${NATIVE_ASSETS_DIR}"
    DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
-   COMPONENT Runtime)
+   COMPONENT Runtime OPTIONAL)
 
 # Fully re-copy the assets directory on each build to avoid having stale files
 # from a previous install.

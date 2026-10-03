@@ -1,0 +1,23 @@
+diff --git a/flutter_inappwebview_windows/windows/in_app_webview/in_app_webview_manager.cpp b/flutter_inappwebview_windows/windows/in_app_webview/in_app_webview_manager.cpp
+index 5f025c678..c9b96e6fa 100644
+--- a/flutter_inappwebview_windows/windows/in_app_webview/in_app_webview_manager.cpp
++++ b/flutter_inappwebview_windows/windows/in_app_webview/in_app_webview_manager.cpp
+@@ -42,12 +42,18 @@ namespace flutter_inappwebview_plugin
+ 
+         graphics_context_ = std::make_unique<GraphicsContext>(rohelper_.get());
+         compositor_ = graphics_context_->CreateCompositor();
++        if (compositor_) {
++          // fix for KernelBase.dll RaiseFailFastException
++          // when app is closing
++          compositor_->AddRef();
++        }
+         valid_ = graphics_context_->IsValid();
+       }
+     }
+ 
+     windowClass_.lpszClassName = CustomPlatformView::CLASS_NAME;
+     windowClass_.lpfnWndProc = &DefWindowProc;
++    windowClass_.style = CS_NOCLOSE;
+ 
+     RegisterClass(&windowClass_);
+   }

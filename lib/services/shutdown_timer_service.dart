@@ -1,7 +1,7 @@
 // 定时关闭服务
 
 import 'dart:async' show Timer;
-import 'dart:io' show exit;
+import 'dart:io' show Platform, exit;
 
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/menu_row.dart';
@@ -15,6 +15,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:win32/win32.dart' as kernel32;
 
 const _kSqueeze = 1.25;
 const _kItemExtent = 38.0;
@@ -125,11 +126,23 @@ class ShutdownTimerService {
         isManual: true,
       );
       if (res != null) {
-        res.whenComplete(() => exit(0));
+        res.whenComplete(_exitApp);
         return;
       }
     }
-    exit(0);
+    _exitApp();
+  }
+
+  /// Matches the main window close path: on Windows the process is terminated
+  /// instead of returning from Dart, because tearing down the WinRT compositor
+  /// created by `flutter_inappwebview_windows` while it is still referenced
+  /// makes Windows fail fast (`0xC0000602`) instead of closing cleanly.
+  void _exitApp() {
+    if (Platform.isWindows) {
+      kernel32.TerminateProcess(kernel32.GetCurrentProcess(), 0);
+    } else {
+      exit(0);
+    }
   }
 
   static (int hour, int minute) _parseMinutes(int minutes) =>

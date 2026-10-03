@@ -312,3 +312,70 @@ foreach ($patch in $patches_cupertino) {
         throw "$LASTEXITCODE"
     }
 }
+
+# flutter_inappwebview_windows comes from a git dependency, so it is not covered
+# by the hosted pub.dev patches above. The ref pinned in pubspec.lock predates the
+# upstream fix for the process fail fast raised while the WinRT compositor is
+# released (KernelBase.dll RaiseFailFastException -> 0xC0000602 on exit).
+$InAppWebViewPatch = "lib/scripts/inappwebview/windows_compositor_crash.patch"
+
+if ($platform.ToLower() -eq "windows") {
+    # Repo root: CI provides GITHUB_WORKSPACE; local runs fall back to the
+    # script location (<root>/lib/scripts).
+    $RepoRoot = if ($env:GITHUB_WORKSPACE) {
+        $env:GITHUB_WORKSPACE
+    } else {
+        (Resolve-Path (Join-Path $PSScriptRoot '..\\..')).Path
+    }
+    # Pub cache: prefer PUB_CACHE when set (local SDK layout), otherwise the
+    # CI default under LOCALAPPDATA.
+    $PubCacheCandidates = @()
+    if ($env:PUB_CACHE) { $PubCacheCandidates += $env:PUB_CACHE }
+    if ($env:LOCALAPPDATA) {
+        $PubCacheCandidates += "$env:LOCALAPPDATA/Pub/Cache"
+    }
+    $PubCacheCandidates += "$PubCacheDir/git", "~/.pub-cache/git"
+    $InAppWebViewDirs = $PubCacheCandidates |
+        Where-Object { $_ -and (Test-Path $_) } |
+        ForEach-Object { Get-ChildItem $_ -Directory -ErrorAction SilentlyContinue } |
+        Where-Object { $_.Name -like "flutter_inappwebview-*" } |
+        Sort-Object FullName -Unique
+
+    if (-not $InAppWebViewDirs) {
+        throw "flutter_inappwebview package not found in pub cache"
+    }
+
+    Get-ChildItem -Path "$RepoRoot/lib/scripts/inappwebview" -Filter *.patch | ForEach-Object {
+        (Get-Content $_.FullName -Raw) -replace "`r`n", "`n" |
+            Set-Content -NoNewline $_.FullName
+    }
+
+    $InAppWebViewPatched = $false
+
+    foreach ($InAppWebViewDir in $InAppWebViewDirs) {
+        Write-Host "flutter_inappwebview dir: $($InAppWebViewDir.FullName)"
+
+        cd $InAppWebViewDir.FullName
+
+        git apply --reverse --check "$RepoRoot/$InAppWebViewPatch" 2>$null
+
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "$InAppWebViewPatch already applied"
+            $InAppWebViewPatched = $true
+            continue
+        }
+
+        git apply "$RepoRoot/$InAppWebViewPatch"
+
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "$InAppWebViewPatch applied"
+            $InAppWebViewPatched = $true
+        } else {
+            Write-Warning "$InAppWebViewPatch does not apply to $($InAppWebViewDir.Name)"
+        }
+    }
+
+    if (-not $InAppWebViewPatched) {
+        throw "$InAppWebViewPatch could not be applied"
+    }
+}

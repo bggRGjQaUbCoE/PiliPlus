@@ -50,6 +50,7 @@ List<SettingsModel> get recommendSettings => [
   ),
   getVideoFilterSelectModel(
     title: '点赞率',
+    subtitleSuffix: '；对首页推荐不生效',
     suffix: '%',
     key: SettingBoxKey.minLikeRatioForRecommend,
     values: [0, 1, 2, 3, 4],

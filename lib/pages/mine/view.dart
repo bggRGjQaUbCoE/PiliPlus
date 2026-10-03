@@ -162,6 +162,14 @@ class _MediaPageState extends CommonPageState<MinePage>
             ),
             msgBadge(_mainController),
           ],
+          IconButton(
+            iconSize: iconSize,
+            padding: padding,
+            style: style,
+            tooltip: '一起看',
+            onPressed: () => Get.toNamed('/videoTogether'),
+            icon: const Icon(Icons.groups_2_outlined),
+          ),
           if (GStorage.reply != null)
             IconButton(
               iconSize: iconSize,

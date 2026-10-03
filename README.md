@@ -47,6 +47,7 @@
 
 - [x] 编辑动态
 - [x] DLNA 投屏
+- [x] [一起看](docs/guidelines/videotogether.md)（兼容 VideoTogether 服务器，支持双向控制及官方兼容模式）
 - [x] 离线缓存/播放
 - [x] 移动端支持点击弹幕悬停，点赞、复制、举报 by [@My-Responsitories](https://github.com/My-Responsitories)
 - [x] 播放音频

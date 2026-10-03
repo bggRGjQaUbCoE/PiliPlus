@@ -10,6 +10,8 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:jni/jni.dart';
 
 abstract final class PiliAndroidHelper {
+  static bool get isFoldable => Platform.isAndroid && AndroidHelper.isFoldable;
+
   @pragma('vm:prefer-inline')
   static void back() => AndroidHelper.back();
 

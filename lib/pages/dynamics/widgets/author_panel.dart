@@ -25,6 +25,7 @@ import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -585,7 +586,28 @@ class AuthorPanel extends StatelessWidget {
                     ),
                   ),
               ],
-              if (Accounts.main.isLogin)
+              if (!Accounts.main.isLogin)
+                ListTile(
+                  title: Text(
+                    '屏蔽',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: theme.colorScheme.error,
+                    ),
+                  ),
+                  leading: Icon(
+                    Icons.error_outline_outlined,
+                    size: 19,
+                    color: theme.colorScheme.error,
+                  ),
+                  onTap: () {
+                    Get.back();
+                    Pref.setBlackMid(moduleAuthor.mid!);
+                    SmartDialog.showToast('屏蔽成功');
+                  },
+                  minLeadingWidth: 0,
+                )
+              else
                 ListTile(
                   title: Text(
                     '举报',
@@ -602,6 +624,7 @@ class AuthorPanel extends StatelessWidget {
                     Get.back();
                     autoWrapReportDialog(
                       context,
+                      mid: () => moduleAuthor.mid!,
                       ReportOptions.dynamicReport,
                       (reasonType, reasonDesc, banUid) {
                         if (banUid) {

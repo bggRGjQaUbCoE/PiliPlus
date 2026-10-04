@@ -1,0 +1,37 @@
+diff --git a/packages/flutter/lib/src/gestures/multitap.dart b/packages/flutter/lib/src/gestures/multitap.dart
+index b81d16aff4e..dfd7e756034 100644
+--- a/packages/flutter/lib/src/gestures/multitap.dart
++++ b/packages/flutter/lib/src/gestures/multitap.dart
+@@ -260,7 +260,7 @@ class DoubleTapGestureRecognizer extends GestureRecognizer {
+       if (_firstTap == null) {
+         _registerFirstTap(tracker);
+       } else {
+-        _registerSecondTap(tracker);
++        _registerSecondTap(tracker, event);
+       }
+     } else if (event is PointerMoveEvent) {
+       if (!tracker.isWithinGlobalTolerance(event, kDoubleTapTouchSlop)) {
+@@ -336,12 +336,12 @@ class DoubleTapGestureRecognizer extends GestureRecognizer {
+     _firstTap = tracker;
+   }
+ 
+-  void _registerSecondTap(_TapTracker tracker) {
++  void _registerSecondTap(_TapTracker tracker, PointerUpEvent event) {
+     _firstTap!.entry.resolve(GestureDisposition.accepted);
+     tracker.entry.resolve(GestureDisposition.accepted);
+     _freezeTracker(tracker);
+     _trackers.remove(tracker.pointer);
+-    _checkUp(tracker.initialButtons);
++    checkUp(tracker.initialButtons, event);
+     _reset();
+   }
+ 
+@@ -365,7 +365,7 @@ class DoubleTapGestureRecognizer extends GestureRecognizer {
+     }
+   }
+ 
+-  void _checkUp(int buttons) {
++  void checkUp(int buttons, PointerUpEvent event) {
+     if (onDoubleTap != null) {
+       invokeCallback<void>('onDoubleTap', onDoubleTap!);
+     }

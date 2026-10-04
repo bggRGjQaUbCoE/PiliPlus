@@ -33,8 +33,12 @@ import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:PiliPlus/models_new/video/video_pbp/data.dart';
 import 'package:PiliPlus/models_new/video/video_play_info/subtitle.dart';
+import 'package:PiliPlus/models_new/video/video_stein_edgeinfo/choice.dart'
+    as stein;
 import 'package:PiliPlus/models_new/video/video_stein_edgeinfo/data.dart';
 import 'package:PiliPlus/pages/audio/view.dart';
+import 'package:PiliPlus/pages/video/interactive/interactive_coordinator.dart';
+import 'package:PiliPlus/pages/video/interactive/interactive_http.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/pages/sponsor_block/block_mixin.dart';
@@ -1073,29 +1077,52 @@ class VideoDetailController extends GetxController
   int? graphVersion;
   EdgeInfoData? steinEdgeInfo;
   late final RxBool showSteinEdgeInfo = false.obs;
+  late final InteractiveCoordinator interactive = InteractiveCoordinator(
+    onSwitchPart: _onSteinSwitchPart,
+    getBvid: () => bvid,
+    getGraphVersion: () => graphVersion,
+    onShowQuestion: () {
+      showSteinEdgeInfo.value = true;
+    },
+    onHideQuestion: () {
+      showSteinEdgeInfo.value = false;
+    },
+    onPausePlayer: plPlayerController.pause,
+    fetchNode: InteractiveHttp.edgeInfo,
+  );
 
-  Future<void> getSteinEdgeInfo([int? edgeId]) async {
-    steinEdgeInfo = null;
+  /// 互动节点切换分P：复用 UGC 切集（isStein: true 保留 graphVersion）。
+  Future<bool> _onSteinSwitchPart(int cid, String? title) async {
     try {
-      final res = await Request().get(
-        '/x/stein/edgeinfo_v2',
-        queryParameters: {
-          'bvid': bvid,
-          'graph_version': graphVersion,
-          'edge_id': ?edgeId,
-        },
-      );
-      if (res.data['code'] == 0) {
-        steinEdgeInfo = EdgeInfoData.fromJson(res.data['data']);
-      } else {
-        if (kDebugMode) {
-          debugPrint('getSteinEdgeInfo error: ${res.data['message']}');
-        }
-      }
+      final stein.Choice episode = stein.Choice(cid: cid, title: title);
+      return await ugcIntroCtr.onChangeEpisode(episode, isStein: true);
     } catch (e) {
-      if (kDebugMode) debugPrint('getSteinEdgeInfo: $e');
+      if (kDebugMode) debugPrint('onSteinSwitchPart: $e');
+      return false;
     }
   }
+
+  /// 播放完成 → 交互逻辑接管判断（互动视频返回 true 抑制普通连播）。
+  bool onPlaybackCompleted() {
+    if (graphVersion == null) {
+      return false;
+    }
+    return interactive.onPlaybackCompleted();
+  }
+
+  Future<void> getSteinEdgeInfo([int? edgeId]) async {
+    await interactive.enterNode(edgeId);
+    steinEdgeInfo = interactive.currentNode;
+  }
+
+  /// 互动视频进度回溯（issue #2419）：回到上一个节点。
+  Future<void> steinBacktrack() async {
+    await interactive.backtrack();
+    steinEdgeInfo = interactive.currentNode;
+  }
+
+  /// 互动视频从头开始（叶子节点“重新体验”）。
+  Future<void> steinRestart() => interactive.restart();
 
   late bool continuePlayingPart = Pref.continuePlayingPart;
 
@@ -1116,8 +1143,18 @@ class VideoDetailController extends GetxController
       if (isUgc && graphVersion == null) {
         try {
           if (ugcIntroCtr.videoDetail.value.rights?.isSteinGate == 1) {
-            graphVersion = response.interaction?.graphVersion;
-            getSteinEdgeInfo();
+            final int? gv = response.interaction?.graphVersion;
+            if (gv != null) {
+              graphVersion = gv;
+              interactive.initSession();
+              // issue #1969：互动视频从起始节点开始播放，避免「历史进度在
+              // 后段、互动选项却是开头节点」的不一致状态。
+              playedTime = Duration.zero;
+              if (plPlayerController.videoPlayerController != null) {
+                plPlayerController.seekTo(Duration.zero, isSeek: false);
+              }
+              getSteinEdgeInfo();
+            }
           }
         } catch (e) {
           if (kDebugMode) debugPrint('handle stein: $e');
@@ -1218,12 +1255,15 @@ class VideoDetailController extends GetxController
         !plPlayerController.playerStatus.isCompleted &&
         playedTime != null) {
       try {
+        final int time = graphVersion != null
+            ? 0 // 互动视频：进度记到起点，历史记录与互动选项保持一致
+            : data.timeLength != null
+            ? (data.timeLength! - playedTime!.inMilliseconds).abs() <= 1000
+                  ? -1
+                  : playedTime!.inSeconds
+            : playedTime!.inSeconds;
         plPlayerController.makeHeartBeat(
-          data.timeLength != null
-              ? (data.timeLength! - playedTime!.inMilliseconds).abs() <= 1000
-                    ? -1
-                    : playedTime!.inSeconds
-              : playedTime!.inSeconds,
+          time,
           type: HeartBeatType.completed,
           isManual: true,
           aid: aid,
@@ -1241,6 +1281,7 @@ class VideoDetailController extends GetxController
   @override
   void onClose() {
     cid.close();
+    interactive.dispose();
     if (isFileSource) {
       cacheLocalProgress();
     }
@@ -1296,6 +1337,7 @@ class VideoDetailController extends GetxController
 
       // interactive video
       if (!isStein) {
+        interactive.dispose();
         graphVersion = null;
       }
       steinEdgeInfo = null;

@@ -1,5 +1,6 @@
-import 'dart:io' show Directory, File;
+import 'dart:io' show Directory, File, FileSystemException;
 
+import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
@@ -7,11 +8,52 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
 abstract final class CacheManager {
-  static late final DefaultCacheManager manager;
+  static DefaultCacheManager get manager => _manager!;
 
-  static Future<void> ensureInitialized() => DefaultCacheManager.init(
-    maxNrOfCacheLength: Pref.maxCacheSize.toInt(),
-  ).then((i) => manager = i);
+  static DefaultCacheManager? _manager;
+  static Future<void>? _initializing;
+
+  static Future<void> ensureInitialized({
+    CacheDirectoryProvider cacheDirectoryProvider = getTemporaryDirectory,
+  }) {
+    if (_manager != null && identical(_manager, DefaultCacheManager.instance)) {
+      return Future.value();
+    }
+    return _initializing ??= _init(cacheDirectoryProvider).whenComplete(
+      () => _initializing = null,
+    );
+  }
+
+  static Future<void> _init(
+    CacheDirectoryProvider cacheDirectoryProvider,
+  ) async {
+    _manager = null;
+    final maxCacheSize = Pref.maxCacheSize.toInt();
+    try {
+      _manager = await DefaultCacheManager.init(
+        maxNrOfCacheLength: maxCacheSize,
+        cacheDirectoryProvider: cacheDirectoryProvider,
+      );
+    } catch (defaultError) {
+      // init publishes the singleton before its directory/Hive setup succeeds.
+      await DefaultCacheManager.instance?.dispose();
+      final fallback = path.join(appSupportDirPath, 'image_cache');
+      try {
+        _manager = await DefaultCacheManager.init(
+          maxNrOfCacheLength: maxCacheSize,
+          cacheDirectoryProvider: () async => Directory(fallback),
+        );
+      } catch (fallbackError) {
+        await DefaultCacheManager.instance?.dispose();
+        throw FileSystemException(
+          'Failed to initialize image cache.\n'
+          'Temporary directory: $defaultError\n'
+          'Application support directory: $fallbackError',
+          fallback,
+        );
+      }
+    }
+  }
 
   // 获取缓存目录
   @pragma('vm:notify-debugger-on-exception')

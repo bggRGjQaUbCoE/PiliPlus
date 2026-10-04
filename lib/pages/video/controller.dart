@@ -1496,7 +1496,7 @@ class VideoDetailController extends GetxController
               scrollController: scrollController,
               videoDetailController: this,
               heroTag: heroTag,
-              ugcIntroController: ugcIntroCtr,
+              ugcIntroController: isUgc ? ugcIntroCtr : null,
               cidSet: cidSet,
             ),
           );

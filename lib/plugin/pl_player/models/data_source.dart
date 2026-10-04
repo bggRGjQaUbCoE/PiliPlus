@@ -12,10 +12,29 @@ sealed class DataSource {
 }
 
 class NetworkSource extends DataSource {
+  /// The API URLs for exactly one selected DASH representation per stream.
+  ///
+  /// Keep them even while parallel loading is disabled: playback may start or
+  /// be recreated after the setting changes, and [videoSource] may already
+  /// have been rewritten to the user's manually selected CDN.
+  final List<String> originalVideoUrls;
+  final List<String> originalAudioUrls;
+  final int? durationSeconds;
+
   NetworkSource({
     required super.videoSource,
     required super.audioSource,
-  });
+    this.durationSeconds,
+    Iterable<String> originalVideoUrls = const [],
+    Iterable<String> originalAudioUrls = const [],
+  }) : originalVideoUrls = List.unmodifiable(originalVideoUrls),
+       originalAudioUrls = List.unmodifiable(originalAudioUrls);
+
+  String get originalVideoSource =>
+      originalVideoUrls.firstOrNull ?? videoSource;
+
+  String? get originalAudioSource =>
+      originalAudioUrls.firstOrNull ?? audioSource;
 }
 
 class FileSource extends DataSource {

@@ -20,6 +20,18 @@ abstract final class VideoUtils {
     r'^https?://(?:(?:(?:\d{1,3}\.){3}\d{1,3}|[^/]+\.mcdn\.bilivideo\.(?:com|cn|net))(?:\:\d{1,5})?/v\d/resource)',
   );
 
+  /// VOD playback keeps API URLs for the optional automatic CDN selector.
+  /// For DASH, the transport receives the complete URL list separately and
+  /// chooses its CDN pool. Downloads, casting and live playback keep using
+  /// their existing URL selection methods.
+  static String getPlaybackCdnUrl(
+    Iterable<String> urls, {
+    bool isAudio = false,
+  }) {
+    if (Pref.cdnAutoSelect) return urls.first;
+    return getCdnUrl(urls, isAudio: isAudio);
+  }
+
   static String getCdnUrl(
     Iterable<String> urls, {
     CDNService? defaultCDNService,

@@ -7,6 +7,8 @@ import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/main.dart' show webViewEnvironment;
 import 'package:PiliPlus/models/common/webview_menu_type.dart';
 import 'package:PiliPlus/plugin/linux_webview.dart';
+import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
@@ -46,6 +48,11 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
   final RxDouble _progress = 1.0.obs;
   bool _inApp = false;
   bool _off = false;
+  Account? _officialLiveAccount;
+  bool _mainListenerRegistered = false;
+  bool _closingOfficialPage = false;
+  late final Future<void> Function() _mainAccountChangeListener =
+      _closeForMainAccountChange;
 
   InAppWebViewController? _webViewController;
   LinuxWebviewController? _linuxController;
@@ -64,6 +71,9 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
     if (Get.arguments case final Map map) {
       _inApp = map['inApp'] ?? false;
       _off = map['off'] ?? false;
+      if (map['officialLiveAccount'] case final Account account) {
+        _officialLiveAccount = account;
+      }
     }
 
     if (Platform.isAndroid) {
@@ -72,7 +82,30 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_officialLiveAccount != null && !_mainListenerRegistered) {
+      Accounts.addMainIdentityChangeListener(_mainAccountChangeListener);
+      _mainListenerRegistered = true;
+    }
+  }
+
+  Future<void> _closeForMainAccountChange() async {
+    if (!mounted || _closingOfficialPage) return;
+    final route = ModalRoute.of(context);
+    final navigator = route?.navigator;
+    if (route != null && route.isActive && navigator != null) {
+      _closingOfficialPage = true;
+      navigator.removeRoute(route);
+      await route.popped;
+    }
+  }
+
+  @override
   void dispose() {
+    if (_mainListenerRegistered) {
+      Accounts.removeMainIdentityChangeListener(_mainAccountChangeListener);
+    }
     if (Platform.isAndroid) routeObserver.unsubscribe(this);
     _linuxController?.dispose();
     _linuxController = null;
@@ -373,6 +406,13 @@ document.addEventListener('click', function(e) {
 
   @override
   Widget build(BuildContext context) {
+    if (_officialLiveAccount case final account?
+        when !identical(Accounts.main, account)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _closeForMainAccountChange();
+      });
+      return const Scaffold(body: Center(child: Text('主账号已切换，官方页面已关闭')));
+    }
     if (Platform.isLinux) {
       return _buildLinuxView(context);
     }

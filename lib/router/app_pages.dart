@@ -59,6 +59,7 @@ import 'package:PiliPlus/pages/setting/pages/font_setting.dart';
 import 'package:PiliPlus/pages/setting/pages/logs.dart';
 import 'package:PiliPlus/pages/setting/pages/play_speed_set.dart';
 import 'package:PiliPlus/pages/setting/view.dart';
+import 'package:PiliPlus/pages/temporary_queue/view.dart';
 import 'package:PiliPlus/pages/settings_search/view.dart';
 import 'package:PiliPlus/pages/space_setting/view.dart';
 import 'package:PiliPlus/pages/sponsor_block/view.dart';
@@ -89,6 +90,7 @@ class Routes {
     GetPage(name: '/favDetail', page: () => const FavDetailPage()),
     // 稍后再看
     GetPage(name: '/later', page: () => const LaterPage()),
+    GetPage(name: '/temporaryQueue', page: () => const TemporaryQueuePage()),
     // 历史记录
     GetPage(name: '/history', page: () => const HistoryPage()),
     // 搜索页面

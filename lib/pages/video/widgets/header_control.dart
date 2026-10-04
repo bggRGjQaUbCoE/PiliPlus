@@ -511,28 +511,52 @@ class HeaderControlState extends State<HeaderControl>
                       ),
                     ),
                 if (!isFileSource)
-                  ListTile(
-                    dense: true,
-                    title: const Text('CDN 设置', style: titleStyle),
-                    leading: const Icon(MdiIcons.cloudPlusOutline, size: 20),
-                    subtitle: Text(
-                      '当前：${VideoUtils.cdnService.desc}，无法播放请切换',
-                      style: subTitleStyle,
+                  StreamBuilder(
+                    stream: setting.watch(
+                      key: SettingBoxKey.cdnAutoSelect,
                     ),
-                    onTap: () async {
-                      Get.back();
-                      final result = await showDialog<CDNService>(
-                        context: context,
-                        builder: (context) => CdnSelectDialog(
-                          sample: videoInfo.dash?.video?.firstOrNull,
+                    builder: (context, snapshot) {
+                      final managed = Pref.cdnAutoSelect;
+                      return ListTile(
+                        dense: true,
+                        enabled: !managed,
+                        title: const Text('CDN 设置', style: titleStyle),
+                        leading: const Icon(
+                          MdiIcons.cloudPlusOutline,
+                          size: 20,
                         ),
+                        subtitle: Text(
+                          managed
+                              ? '自动选源已接管视频与音频；关闭自动选择 CDN 后恢复原设置'
+                              : '当前：${VideoUtils.cdnService.desc}，无法播放请切换',
+                          style: subTitleStyle,
+                        ),
+                        onTap: managed
+                            ? null
+                            : () async {
+                                if (!mounted || Pref.cdnAutoSelect) return;
+                                Get.back();
+                                final result = await showDialog<CDNService>(
+                                  context: this.context,
+                                  builder: (context) => CdnSelectDialog(
+                                    sample: videoInfo.dash?.video?.firstOrNull,
+                                  ),
+                                );
+                                if (mounted &&
+                                    result != null &&
+                                    !Pref.cdnAutoSelect) {
+                                  VideoUtils.cdnService = result;
+                                  setting.put(
+                                    SettingBoxKey.CDNService,
+                                    result.name,
+                                  );
+                                  SmartDialog.showToast(
+                                    '已设置为 ${result.desc}，正在重载视频',
+                                  );
+                                  videoDetailCtr.queryVideoUrl(fromReset: true);
+                                }
+                              },
                       );
-                      if (result != null) {
-                        VideoUtils.cdnService = result;
-                        setting.put(SettingBoxKey.CDNService, result.name);
-                        SmartDialog.showToast('已设置为 ${result.desc}，正在重载视频');
-                        videoDetailCtr.queryVideoUrl(fromReset: true);
-                      }
                     },
                   ),
                 SingleChildScrollView(

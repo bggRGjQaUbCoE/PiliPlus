@@ -46,14 +46,22 @@ class _SuperChatCardState extends State<SuperChatCard> {
   @override
   void initState() {
     super.initState();
+    _syncTimer();
+  }
+
+  @override
+  void didUpdateWidget(covariant SuperChatCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _cancelTimer();
+    _syncTimer();
+  }
+
+  void _syncTimer() {
+    _remains = null;
     if (!widget.persistentSC) {
-      if (widget.item.expired) {
-        _remove();
-        return;
-      }
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       final offset = widget.item.endTime - now;
-      if (offset > 0) {
+      if (offset > 0 && !widget.item.expired && !widget.item.deleted) {
         _remains = offset.obs;
         _startTimer();
       } else {
@@ -64,20 +72,19 @@ class _SuperChatCardState extends State<SuperChatCard> {
 
   void _remove() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Timer(const Duration(seconds: 1), _onRemove);
+      if (mounted) _onRemove();
     });
   }
 
   void _onRemove() {
-    widget
-      ..item.expired = true
-      ..onRemove?.call();
+    if (mounted) widget.onRemove?.call();
   }
 
   void _callback(_) {
-    final remains = _remains!.value;
-    if (remains > 0) {
-      _remains!.value = remains - 1;
+    final remains =
+        widget.item.endTime - DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    if (remains > 0 && !widget.item.deleted) {
+      _remains!.value = remains;
     } else {
       _cancelTimer();
       _onRemove();
@@ -153,6 +160,7 @@ class _SuperChatCardState extends State<SuperChatCard> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.item.deleted) return const SizedBox.shrink();
     return _build(item: widget.item, remains: _remains, showMenu: _showMenu);
   }
 }
@@ -192,7 +200,10 @@ Widget _build({
     }
   }
 
-  Widget price = Text("￥${item.price}", style: TextStyle(color: bottomColor));
+  Widget price = Text(
+    "￥${item.price}${item.expired ? ' · 已过期' : ''}",
+    style: TextStyle(color: bottomColor),
+  );
   Widget? remains_;
   if (remains != null) {
     remains_ = Obx(

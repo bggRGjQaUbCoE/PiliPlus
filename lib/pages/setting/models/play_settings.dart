@@ -25,6 +25,13 @@ import 'package:material_ui/material_ui.dart';
 
 List<SettingsModel> get playSettings => [
   const SwitchModel(
+    title: '临时播放列表',
+    subtitle: '在本机保存待播顺序，按游客和账号分别保存',
+    leading: Icon(Icons.queue_play_next_outlined),
+    setKey: SettingBoxKey.enableTemporaryQueue,
+    defaultVal: true,
+  ),
+  const SwitchModel(
     title: '弹幕开关',
     subtitle: '是否展示弹幕',
     leading: Icon(CustomIcons.dm_settings),
@@ -57,6 +64,13 @@ List<SettingsModel> get playSettings => [
     subtitle: '进入详情页自动播放',
     leading: Icon(Icons.motion_photos_auto_outlined),
     setKey: SettingBoxKey.autoPlayEnable,
+    defaultVal: false,
+  ),
+  const SwitchModel(
+    title: '应用内小窗播放',
+    subtitle: '离开正在播放的点播或直播页时在应用内继续播放',
+    leading: Icon(Icons.picture_in_picture_alt_outlined),
+    setKey: SettingBoxKey.inAppMiniPlayer,
     defaultVal: false,
   ),
   const SwitchModel(

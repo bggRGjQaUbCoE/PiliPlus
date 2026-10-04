@@ -13,9 +13,11 @@ import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/router/app_pages.dart';
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
+import 'package:PiliPlus/services/in_app_mini_player.dart';
 import 'package:PiliPlus/services/logger.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
+import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/calc_window_position.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/core_palettes_ext.dart';
@@ -101,6 +103,7 @@ void main() async {
     if (kDebugMode) debugPrint('GStorage init error: $e');
     exit(0);
   }
+  Accounts.beforeMainIdentityChange = InAppMiniPlayer.instance.close;
   ScaledWidgetsFlutterBinding.instance.scaleFactor = Pref.uiScale;
   await Future.wait([
     _initDownPath(),
@@ -342,10 +345,10 @@ class MyApp extends StatelessWidget {
     if (PlatformUtils.isDesktop) {
       return BackDetector(
         onBack: _onBack,
-        child: child,
+        child: InAppMiniPlayerHost(child: child),
       );
     }
-    return child;
+    return InAppMiniPlayerHost(child: child);
   }
 
   /// from [DynamicColorBuilderState.initPlatformState]

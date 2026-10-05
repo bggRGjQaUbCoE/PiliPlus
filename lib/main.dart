@@ -83,31 +83,111 @@ Future<void> _initDownPath() async {
 }
 
 Future<void> _initTmpPath() async {
-  tmpDirPath = (await getTemporaryDirectory()).path;
+  try {
+    tmpDirPath = (await getTemporaryDirectory()).path;
+  } catch (e) {
+    if (kDebugMode) {
+      debugPrint('getTemporaryDirectory error: $e');
+    }
+    final fallback = path.join(appSupportDirPath, 'tmp');
+    await Directory(fallback).create(recursive: true);
+    tmpDirPath = fallback;
+  }
 }
 
-Future<void> _initAppPath() async {
-  appSupportDirPath = (await getApplicationSupportDirectory()).path;
+/// Prepares [appSupportDirPath].
+///
+/// Returns `null` when an application data directory is ready, otherwise a
+/// description of every failure. On Windows, when the platform application
+/// support directory cannot be used (restricted environments, portable usage,
+/// security software blocking writes to `%APPDATA%`), a `portable_data` folder
+/// next to the executable is used instead so that the app can still start.
+Future<String?> _initAppPath() async {
+  final candidates = <String>[];
+  String? platformError;
+  try {
+    candidates.add((await getApplicationSupportDirectory()).path);
+  } catch (e) {
+    platformError = e.toString();
+    if (kDebugMode) {
+      debugPrint('getApplicationSupportDirectory error: $e');
+    }
+  }
+  if (Platform.isWindows) {
+    candidates.add(
+      path.join(path.dirname(Platform.resolvedExecutable), 'portable_data'),
+    );
+  }
+  final errors = <String>[
+    ?platformError,
+  ];
+  for (final candidate in candidates) {
+    try {
+      final dir = Directory(candidate);
+      if (!dir.existsSync()) {
+        await dir.create(recursive: true);
+      }
+      // The directory may exist but still reject writes.
+      final probe = File(path.join(candidate, '.write_test'));
+      await probe.writeAsString('ok', flush: true);
+      await probe.delete();
+      appSupportDirPath = candidate;
+      if (kDebugMode) {
+        debugPrint('appSupportDirPath: $appSupportDirPath');
+      }
+      return null;
+    } catch (e) {
+      errors.add('$candidate: $e');
+    }
+  }
+  return errors.join('\n\n');
 }
 
 void main() async {
   ScaledWidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
-  await _initAppPath();
+  final String? appPathError = await _initAppPath();
+  if (appPathError != null) {
+    runApp(_StartupErrorApp(appPathError));
+    return;
+  }
   try {
     await GStorage.init();
-  } catch (e) {
-    await Utils.copyText(e.toString(), needToast: false);
-    if (kDebugMode) debugPrint('GStorage init error: $e');
-    exit(0);
+  } catch (e, st) {
+    if (kDebugMode) {
+      debugPrint('GStorage init error: $e');
+      debugPrint('$st');
+    }
+    try {
+      await Utils.copyText(e.toString(), needToast: false);
+    } catch (_) {}
+    runApp(_StartupErrorApp(e.toString()));
+    return;
   }
   ScaledWidgetsFlutterBinding.instance.scaleFactor = Pref.uiScale;
-  await Future.wait([
-    _initDownPath(),
-    _initTmpPath(),
-    CacheManager.ensureInitialized(),
-    ?FontUtils.init(),
-  ]);
+  try {
+    await CacheManager.ensureInitialized();
+  } catch (e, st) {
+    if (kDebugMode) {
+      debugPrint('image cache init error: $e');
+      debugPrint('$st');
+    }
+    runApp(_StartupErrorApp(e.toString()));
+    return;
+  }
+  try {
+    await Future.wait([
+      _initDownPath(),
+      _initTmpPath(),
+      ?FontUtils.init(),
+    ]);
+  } catch (e, st) {
+    // Non-essential startup work must not keep the app from starting.
+    if (kDebugMode) {
+      debugPrint('startup init error: $e');
+      debugPrint('$st');
+    }
+  }
   Get
     ..lazyPut(AccountService.new)
     ..lazyPut(DownloadService.new);
@@ -213,6 +293,62 @@ void main() async {
     );
   } else {
     runApp(const MyApp());
+  }
+}
+
+/// Shown instead of the app when local storage could not be initialized.
+///
+/// Exiting here would tear down the WinRT compositor created by
+/// `flutter_inappwebview_windows` while it is still referenced, which makes
+/// Windows fail fast (`0xC0000602`) instead of closing cleanly — so the error
+/// is reported in a window instead.
+class _StartupErrorApp extends StatelessWidget {
+  const _StartupErrorApp(this.message);
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline, size: 48),
+                const SizedBox(height: 16),
+                const Text(
+                  '应用数据目录不可用，无法启动\nFailed to initialize app storage',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  '请确认程序所在目录与用户数据目录可写，并检查安全软件是否拦截了本程序。\n'
+                  'Make sure the application directory is writable and that no '
+                  'security software is blocking this app.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12),
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: SelectableText(
+                      message,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

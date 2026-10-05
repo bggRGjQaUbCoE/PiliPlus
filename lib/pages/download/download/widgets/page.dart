@@ -138,7 +138,7 @@ class PageInfoItem<T extends MultiSelectData> extends StatelessWidget {
                       top: 6.0,
                     ),
                   Positioned.fill(
-                    child: selectMask(colorScheme, pageInfo.checked),
+                    child: selectMask(colorScheme, seasonInfo.checked),
                   ),
                 ],
               ),

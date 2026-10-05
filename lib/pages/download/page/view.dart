@@ -80,7 +80,7 @@ class _DownloadPagePageState extends State<DownloadPagePage>
   }
 
   static int _sort(DownloadPageInfo a, DownloadPageInfo b) {
-    if (a == b) {
+    if (a.sortKey == b.sortKey) {
       return b.entries.first.avid.compareTo(a.entries.first.avid);
     }
     return a.sortKey.compareTo(b.sortKey);

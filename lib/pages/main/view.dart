@@ -323,8 +323,15 @@ class _MainAppState extends PopScopeState<MainApp>
                 .map(
                   (e) => FloatingNavigationDestination(
                     label: e.label,
-                    icon: _buildIcon(type: e),
-                    selectedIcon: _buildIcon(type: e, selected: true),
+                    icon: _buildIcon(type: e, withBadge: false),
+                    selectedIcon: _buildIcon(
+                      type: e,
+                      selected: true,
+                      withBadge: false,
+                    ),
+                    badge: e == .dynamics
+                        ? _dynamicBadge(const SizedBox.square(dimension: 24))
+                        : null,
                   ),
                 )
                 .toList(),
@@ -534,24 +541,28 @@ class _MainAppState extends PopScopeState<MainApp>
     return child;
   }
 
-  Widget _buildIcon({required NavigationBarType type, bool selected = false}) {
+  Widget _buildIcon({
+    required NavigationBarType type,
+    bool selected = false,
+    bool withBadge = true,
+  }) {
     final icon = selected ? type.selectIcon : type.icon;
-    return type == .dynamics
-        ? Obx(
-            () {
-              final dynCount = _mainController.dynCount.value;
-              return Badge(
-                isLabelVisible: dynCount > 0,
-                label: _mainController.dynamicBadgeMode == .number
-                    ? Text(dynCount.toString())
-                    : null,
-                padding: const .symmetric(horizontal: 6),
-                child: icon,
-              );
-            },
-          )
-        : icon;
+    return type == .dynamics && withBadge ? _dynamicBadge(icon) : icon;
   }
+
+  Widget _dynamicBadge(Widget child) => Obx(
+    () {
+      final dynCount = _mainController.dynCount.value;
+      return Badge(
+        isLabelVisible: dynCount > 0,
+        label: _mainController.dynamicBadgeMode == .number
+            ? Text(dynCount.toString())
+            : null,
+        padding: const .symmetric(horizontal: 6),
+        child: child,
+      );
+    },
+  );
 
   Widget userAndSearchVertical() {
     return Column(

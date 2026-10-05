@@ -960,42 +960,52 @@ class _FloatingBarItemState extends State<_FloatingBarItem>
     final color = widget.destination.enabled
         ? colorScheme.onSurfaceVariant
         : colorScheme.onSurface.withValues(alpha: 0.38);
-    final content = _LensTint(
-      lens: widget.lens,
-      lift: widget.lift,
-      parallax: _parallax,
-      index: widget.index,
-      color: widget.destination.enabled
-          ? colorScheme.primary
-          : colorScheme.onSurface.withValues(alpha: 0.38),
-      textDirection: Directionality.of(context),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: _labelInset),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            IconTheme(
-              data: IconThemeData(size: _iconSize, color: color),
-              child: widget.selected
+    Widget buildContent(Widget icon) => Padding(
+      padding: const EdgeInsets.symmetric(horizontal: _labelInset),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconTheme(
+            data: IconThemeData(size: _iconSize, color: color),
+            child: icon,
+          ),
+          const SizedBox(height: _labelGap),
+          SizedBox(
+            height: widget.labelHeight,
+            child: Center(
+              child: Text(
+                widget.destination.label,
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.ellipsis,
+                style: widget.labelStyle?.copyWith(color: color),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    final content = Stack(
+      fit: StackFit.expand,
+      children: [
+        for (final inside in [false, true])
+          _LensTint(
+            lens: widget.lens,
+            lift: widget.lift,
+            parallax: _parallax,
+            index: widget.index,
+            inside: inside,
+            color: widget.destination.enabled
+                ? colorScheme.primary
+                : colorScheme.onSurface.withValues(alpha: 0.38),
+            textDirection: Directionality.of(context),
+            child: buildContent(
+              inside
                   ? widget.destination.selectedIcon ?? widget.destination.icon
                   : widget.destination.icon,
             ),
-            const SizedBox(height: _labelGap),
-            SizedBox(
-              height: widget.labelHeight,
-              child: Center(
-                child: Text(
-                  widget.destination.label,
-                  maxLines: 1,
-                  softWrap: false,
-                  overflow: TextOverflow.ellipsis,
-                  style: widget.labelStyle?.copyWith(color: color),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+      ],
     );
     final badgedContent = widget.destination.badge == null
         ? content
@@ -1051,8 +1061,8 @@ class _FloatingBarItemState extends State<_FloatingBarItem>
   }
 }
 
-/// Paints what lies under the lens in [color] and the rest as it is, cut to
-/// the lens's own shape so a destination it passes over turns part by part.
+/// Paints one content variant inside or outside the lens's exact shape.
+/// The inside variant is tinted in [color]; the outside retains its colors.
 /// The content swells under a lifted lens and leans after the [parallax], in
 /// destinations, while layout and hit testing see it at rest.
 class _LensTint extends SingleChildRenderObjectWidget {
@@ -1063,9 +1073,11 @@ class _LensTint extends SingleChildRenderObjectWidget {
     required this.index,
     required this.color,
     required this.textDirection,
+    required this.inside,
     super.child,
   });
 
+  final bool inside;
   final _Spring lens;
   final ValueListenable<double> lift;
   final ValueListenable<double> parallax;
@@ -1082,6 +1094,7 @@ class _LensTint extends SingleChildRenderObjectWidget {
       index: index,
       color: color,
       textDirection: textDirection,
+      insideOnly: inside,
     );
   }
 
@@ -1093,7 +1106,8 @@ class _LensTint extends SingleChildRenderObjectWidget {
       ..parallax = parallax
       ..index = index
       ..color = color
-      ..textDirection = textDirection;
+      ..textDirection = textDirection
+      ..inside = inside;
   }
 }
 
@@ -1105,7 +1119,15 @@ class _RenderLensTint extends RenderProxyBox {
     required this._index,
     required this._color,
     required this._textDirection,
+    required this._insideOnly,
   });
+
+  bool _insideOnly;
+  set inside(bool value) {
+    if (value == _insideOnly) return;
+    _insideOnly = value;
+    markNeedsPaint();
+  }
 
   final _outside = LayerHandle<ClipPathLayer>();
   final _inside = LayerHandle<ClipPathLayer>();
@@ -1285,22 +1307,28 @@ class _RenderLensTint extends RenderProxyBox {
       _inside.layer = null;
       _tint.layer = null;
       _insideMotion.layer = null;
-      _paintMoved(context, offset, motion, _outsideMotion);
+      if (!_insideOnly) {
+        _paintMoved(context, offset, motion, _outsideMotion);
+      }
       return;
     }
     final reach = content.expandToInclude(bounds).inflate(_labelInset);
     final lens = _pillShape.getOuterPath(lensBounds);
-    _outside.layer = context.pushClipPath(
-      needsCompositing,
-      offset,
-      reach,
-      Path()
-        ..fillType = PathFillType.evenOdd
-        ..addRect(reach)
-        ..addPath(lens, Offset.zero),
-      (context, offset) => _paintMoved(context, offset, motion, _outsideMotion),
-      oldLayer: _outside.layer,
-    );
+    if (!_insideOnly) {
+      _outside.layer = context.pushClipPath(
+        needsCompositing,
+        offset,
+        reach,
+        Path()
+          ..fillType = PathFillType.evenOdd
+          ..addRect(reach)
+          ..addPath(lens, Offset.zero),
+        (context, offset) =>
+            _paintMoved(context, offset, motion, _outsideMotion),
+        oldLayer: _outside.layer,
+      );
+      return;
+    }
     _inside.layer = context.pushClipPath(
       needsCompositing,
       offset,

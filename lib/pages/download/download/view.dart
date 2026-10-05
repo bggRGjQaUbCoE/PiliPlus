@@ -1,29 +1,21 @@
 import 'dart:async';
 
-import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/appbar/appbar.dart';
-import 'package:PiliPlus/common/widgets/badge.dart';
-import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
-import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
-import 'package:PiliPlus/common/widgets/select_mask.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/models_new/download/download_info.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
-import 'package:PiliPlus/pages/download/controller.dart';
-import 'package:PiliPlus/pages/download/detail/view.dart';
 import 'package:PiliPlus/pages/download/detail/widgets/item.dart';
+import 'package:PiliPlus/pages/download/download/controller.dart';
+import 'package:PiliPlus/pages/download/download/widgets/page.dart';
+import 'package:PiliPlus/pages/download/download/widgets/season.dart';
 import 'package:PiliPlus/pages/download/download_action_mixin.dart';
 import 'package:PiliPlus/pages/download/search/view.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -39,15 +31,15 @@ class DownloadPage extends StatefulWidget {
 }
 
 class _DownloadPageState extends State<DownloadPage>
-    with GridMixin, BaseDownloadActionMixin<DownloadPage, DownloadPageInfo> {
+    with GridMixin, BaseDownloadActionMixin<DownloadPage, DownloadSeasonInfo> {
   final _progress = ChangeNotifier();
-  final _controller = Get.put(DownloadPageController());
+  final _controller = Get.put(DownloadController());
 
   @override
   final downloadService = Get.find<DownloadService>();
 
   @override
-  BaseMultiSelectMixin<DownloadPageInfo> get multiSelectCtr => _controller;
+  BaseMultiSelectMixin<DownloadSeasonInfo> get multiSelectCtr => _controller;
 
   @override
   void dispose() {
@@ -72,11 +64,22 @@ class _DownloadPageState extends State<DownloadPage>
     bool isSuccess = true;
     for (final chunk in _controller.allChecked.mapChunked(
       kUpdateConcurrency,
-      (page) async {
+      (season) async {
         bool isSuccess = true;
-        for (final chunk in page.entries.mapChunked(
+        for (final chunk in season.pages.mapChunked(
           kUpdateConcurrency,
-          toElement,
+          (page) async {
+            bool isSuccess = true;
+            for (final chunk in page.entries.mapChunked(
+              kUpdateConcurrency,
+              toElement,
+            )) {
+              final res = await Future.wait(chunk);
+              if (res.any((e) => !e)) isSuccess = false;
+              if (dismiss) break;
+            }
+            return isSuccess;
+          },
         )) {
           final res = await Future.wait(chunk);
           if (res.any((e) => !e)) isSuccess = false;
@@ -93,23 +96,30 @@ class _DownloadPageState extends State<DownloadPage>
     toastUpdateResult(dismiss, isSuccess);
   }
 
-  Future<void> _updatePageDm(DownloadPageInfo pageInfo) async {
-    if (checkUpdateCount(pageInfo.entries.length)) return;
+  Future<void> _updateSeasonDm(DownloadSeasonInfo seasonInfo) async {
+    if (checkUpdateCount(
+      seasonInfo.pages.fold(0, (a, b) => a + b.entries.length),
+    )) {
+      return;
+    }
 
     bool dismiss = false;
     SmartDialog.showLoading(onDismiss: () => dismiss = true);
 
     bool isSuccess = true;
-    for (final chunk in pageInfo.entries.mapChunked(
-      kUpdateConcurrency,
-      (e) => downloadService.downloadDanmaku(
-        entry: e,
-        isUpdate: true,
-      ),
-    )) {
-      final res = await Future.wait(chunk);
-      if (res.any((e) => !e)) isSuccess = false;
-      if (dismiss) break;
+
+    for (final page in seasonInfo.pages) {
+      for (final chunk in page.entries.mapChunked(
+        kUpdateConcurrency,
+        (e) => downloadService.downloadDanmaku(
+          entry: e,
+          isUpdate: true,
+        ),
+      )) {
+        final res = await Future.wait(chunk);
+        if (res.any((e) => !e)) isSuccess = false;
+        if (dismiss) break;
+      }
     }
 
     toastUpdateResult(dismiss, isSuccess);
@@ -198,7 +208,7 @@ class _DownloadPageState extends State<DownloadPage>
                   return const SliverToBoxAdapter();
                 }),
                 Obx(() {
-                  if (_controller.pages.isNotEmpty) {
+                  if (_controller.seasons.isNotEmpty) {
                     return SliverMainAxisGroup(
                       slivers: [
                         SliverPadding(
@@ -216,9 +226,25 @@ class _DownloadPageState extends State<DownloadPage>
                         SliverGrid.builder(
                           gridDelegate: gridDelegate,
                           itemBuilder: (context, index) {
-                            final item = _controller.pages[index];
-                            if (item.entries.length == 1) {
-                              final entry = item.entries.first;
+                            final season = _controller.seasons[index];
+                            final seasonInfo = season.seasonInfo;
+                            final pages = season.pages;
+
+                            if (seasonInfo != null && pages.length > 1) {
+                              return SeasonInfoItem(
+                                controller: _controller,
+                                downloadService: downloadService,
+                                seasonInfo: seasonInfo,
+                                season: season,
+                                enableMultiSelect: enableMultiSelect,
+                                progress: _progress,
+                                updateSeasonDm: _updateSeasonDm,
+                              );
+                            }
+
+                            final page = pages.first;
+                            if (pages.length == 1 && page.entries.length == 1) {
+                              final entry = page.entries.first;
                               return DetailItem(
                                 entry: entry,
                                 progress: _progress,
@@ -233,14 +259,23 @@ class _DownloadPageState extends State<DownloadPage>
                                     entry.cid.toString(),
                                   );
                                 },
-                                checked: item.checked,
-                                onSelect: (_) => _controller.onSelect(item),
+                                checked: season.checked,
+                                onSelect: (_) => _controller.onSelect(season),
                                 controller: _controller,
                               );
                             }
-                            return _buildItem(item, enableMultiSelect);
+
+                            return PageInfoItem(
+                              controller: _controller,
+                              downloadService: downloadService,
+                              seasonInfo: season,
+                              pageInfo: page,
+                              enableMultiSelect: enableMultiSelect,
+                              progress: _progress,
+                              updatePageDm: updatePageDm,
+                            );
                           },
-                          itemCount: _controller.pages.length,
+                          itemCount: _controller.seasons.length,
                         ),
                       ],
                     );
@@ -259,151 +294,5 @@ class _DownloadPageState extends State<DownloadPage>
         ),
       );
     });
-  }
-
-  Widget _buildItem(DownloadPageInfo pageInfo, bool enableMultiSelect) {
-    void onLongPress() => enableMultiSelect
-        ? null
-        : showDialog(
-            context: context,
-            builder: (context) => SimpleDialog(
-              clipBehavior: Clip.hardEdge,
-              contentPadding: const EdgeInsets.symmetric(vertical: 12),
-              children: [
-                DialogOption(
-                  onPressed: () {
-                    Get.back();
-                    showConfirmDialog(
-                      context: context,
-                      title: const Text('确定删除？'),
-                      onConfirm: () async {
-                        await GStorage.watchProgress.deleteAll(
-                          pageInfo.entries.map((e) => e.cid.toString()),
-                        );
-                        downloadService.deletePage(
-                          pageDirPath: pageInfo.dirPath,
-                        );
-                      },
-                    );
-                  },
-                  child: const Text('删除', style: TextStyle(fontSize: 14)),
-                ),
-                DialogOption(
-                  onPressed: () {
-                    Get.back();
-                    _updatePageDm(pageInfo);
-                  },
-                  child: const Text('更新弹幕', style: TextStyle(fontSize: 14)),
-                ),
-              ],
-            ),
-          );
-    final first = pageInfo.entries.first;
-    return Material(
-      type: MaterialType.transparency,
-      child: InkWell(
-        onTap: () {
-          if (_controller.enableMultiSelect.value) {
-            _controller.onSelect(pageInfo);
-            return;
-          }
-          Get.to(
-            DownloadDetailPage(
-              pageId: pageInfo.pageId,
-              title: pageInfo.title,
-              progress: _progress,
-            ),
-          );
-        },
-        onLongPress: onLongPress,
-        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Style.safeSpace,
-            vertical: 5,
-          ),
-          child: Row(
-            spacing: 10,
-            children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  AspectRatio(
-                    aspectRatio: Style.aspectRatio,
-                    child: LayoutBuilder(
-                      builder: (context, constraints) => NetworkImgLayer(
-                        src: pageInfo.cover,
-                        width: constraints.maxWidth,
-                        height: constraints.maxHeight,
-                      ),
-                    ),
-                  ),
-                  PBadge(
-                    text: '${pageInfo.entries.length}个视频',
-                    right: 6.0,
-                    bottom: 6.0,
-                    isBold: false,
-                    type: PBadgeType.gray,
-                  ),
-                  if (pageInfo.seasonType case final pgcType?)
-                    PBadge(
-                      text: switch (pgcType) {
-                        -1 => '课程',
-                        1 => '番剧',
-                        2 => '电影',
-                        3 => '纪录片',
-                        4 => '国创',
-                        5 => '电视剧',
-                        7 => '综艺',
-                        _ => null,
-                      },
-                      right: 6.0,
-                      top: 6.0,
-                    ),
-                  Positioned.fill(
-                    child: selectMask(colorScheme, pageInfo.checked),
-                  ),
-                ],
-              ),
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        pageInfo.title,
-                        textAlign: TextAlign.start,
-                        style: const TextStyle(
-                          height: 1.42,
-                          letterSpacing: 0.3,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Row(
-                      crossAxisAlignment: .end,
-                      mainAxisAlignment: .spaceBetween,
-                      children: [
-                        Text(
-                          '${pageInfo.entries.fold(0, (p, n) => p + n.totalBytes).formatSize}  ${first.ownerName ?? ""}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            height: 1.6,
-                            color: colorScheme.outline,
-                          ),
-                        ),
-                        pageInfo.entries.first.moreBtn(colorScheme),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

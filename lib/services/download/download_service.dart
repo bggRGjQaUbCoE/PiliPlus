@@ -113,12 +113,14 @@ class DownloadService extends GetxService {
     return result;
   }
 
-  void downloadVideo(
-    Part page,
+  void downloadVideo({
+    required int index,
+    required Part page,
     VideoDetailData? videoDetail,
     ugc.EpisodeItem? videoArc,
-    VideoQuality videoQuality,
-  ) {
+    required VideoQuality videoQuality,
+    SeasonInfo? seasonInfo,
+  }) {
     final cid = page.cid!;
     if (downloadList.indexWhere((e) => e.cid == cid) != -1) {
       return;
@@ -169,16 +171,17 @@ class DownloadService extends GetxService {
       ownerId: videoDetail?.owner?.mid ?? videoArc?.arc?.author?.mid,
       ownerName: videoDetail?.owner?.name ?? videoArc?.arc?.author?.name,
       pageData: pageData,
+      seasonInfo: seasonInfo,
     );
     _createDownload(entry);
   }
 
-  void downloadBangumi(
-    int index,
-    PgcInfoModel pgcItem,
-    pgc.EpisodeItem episode,
-    VideoQuality quality,
-  ) {
+  void downloadBangumi({
+    required int index,
+    required PgcInfoModel pgcItem,
+    required pgc.EpisodeItem episode,
+    required VideoQuality quality,
+  }) {
     final cid = episode.cid!;
     if (downloadList.indexWhere((e) => e.cid == cid) != -1) {
       return;

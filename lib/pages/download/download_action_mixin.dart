@@ -1,4 +1,5 @@
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
+import 'package:PiliPlus/models_new/download/download_info.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
@@ -74,6 +75,25 @@ mixin BaseDownloadActionMixin<
   void didChangeDependencies() {
     super.didChangeDependencies();
     colorScheme = ColorScheme.of(context);
+  }
+
+  Future<void> updatePageDm(DownloadPageInfo pageInfo) async {
+    if (checkUpdateCount(pageInfo.entries.length)) return;
+
+    bool dismiss = false;
+    SmartDialog.showLoading(onDismiss: () => dismiss = true);
+
+    bool isSuccess = true;
+    for (final chunk in pageInfo.entries.mapChunked(
+      kUpdateConcurrency,
+      (e) => downloadService.downloadDanmaku(entry: e, isUpdate: true),
+    )) {
+      final res = await Future.wait(chunk);
+      if (res.any((e) => !e)) isSuccess = false;
+      if (dismiss) break;
+    }
+
+    toastUpdateResult(dismiss, isSuccess);
   }
 
   void onUpdate(

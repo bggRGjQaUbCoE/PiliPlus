@@ -9,13 +9,12 @@ import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart'
     show BaseMultiSelectMixin;
-import 'package:PiliPlus/pages/download/controller.dart';
 import 'package:PiliPlus/pages/download/detail/widgets/item.dart';
+import 'package:PiliPlus/pages/download/download/controller.dart';
 import 'package:PiliPlus/pages/download/download_action_mixin.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/storage.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart'
@@ -45,7 +44,7 @@ class _DownloadDetailPageState extends State<DownloadDetailPage>
         CommonDownloadActionMixin<DownloadDetailPage> {
   StreamSubscription? _sub;
   final _downloadItems = RxList<BiliDownloadEntryInfo>();
-  final _controller = Get.find<DownloadPageController>();
+  final _controller = Get.find<DownloadController>();
 
   @override
   RxList<BiliDownloadEntryInfo> get list => _downloadItems;
@@ -81,11 +80,14 @@ class _DownloadDetailPageState extends State<DownloadDetailPage>
   }
 
   void _loadList() {
-    final list =
-        _controller.pages
-            .firstWhereOrNull((e) => e.pageId == widget.pageId)
-            ?.entries
-          ?..sort((a, b) => a.sortKey.compareTo(b.sortKey));
+    List<BiliDownloadEntryInfo>? list;
+    for (final season in _controller.seasons) {
+      for (final page in season.pages) {
+        if (page.pageId == widget.pageId) {
+          list = page.entries..sort(downloadEntrySort);
+        }
+      }
+    }
     if (list != null) {
       _downloadItems.value = list;
     } else {

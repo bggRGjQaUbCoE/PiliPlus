@@ -56,7 +56,6 @@ class DetailItem extends StatelessWidget {
   void showSegmentsDetail(BuildContext context) => showDialog(
     context: context,
     builder: (context) => SimpleDialog(
-      scrollable: true,
       clipBehavior: .hardEdge,
       contentPadding: const .symmetric(vertical: 10),
       children: entry.segments!

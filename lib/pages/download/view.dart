@@ -11,12 +11,16 @@ import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/select_mask.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
+import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/models_new/download/download_info.dart';
+import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/pages/download/controller.dart';
 import 'package:PiliPlus/pages/download/detail/view.dart';
 import 'package:PiliPlus/pages/download/detail/widgets/item.dart';
+import 'package:PiliPlus/pages/download/download_action_mixin.dart';
 import 'package:PiliPlus/pages/download/search/view.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -34,10 +38,16 @@ class DownloadPage extends StatefulWidget {
   State<DownloadPage> createState() => _DownloadPageState();
 }
 
-class _DownloadPageState extends State<DownloadPage> with GridMixin {
-  final _downloadService = Get.find<DownloadService>();
-  final _controller = Get.put(DownloadPageController());
+class _DownloadPageState extends State<DownloadPage>
+    with GridMixin, BaseDownloadActionMixin<DownloadPage, DownloadPageInfo> {
   final _progress = ChangeNotifier();
+  final _controller = Get.put(DownloadPageController());
+
+  @override
+  final downloadService = Get.find<DownloadService>();
+
+  @override
+  BaseMultiSelectMixin<DownloadPageInfo> get multiSelectCtr => _controller;
 
   @override
   void dispose() {
@@ -46,8 +56,67 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
   }
 
   @override
+  Future<void> onUpdate(
+    Future<bool> Function(BiliDownloadEntryInfo e) toElement,
+  ) async {
+    if (checkUpdateCount(_controller.checkedCount)) return;
+
+    bool dismiss = false;
+    SmartDialog.showLoading(
+      onDismiss: () {
+        dismiss = true;
+        _controller.handleSelect();
+      },
+    );
+
+    bool isSuccess = true;
+    for (final chunk in _controller.allChecked.mapChunked(
+      kUpdateConcurrency,
+      (page) async {
+        bool isSuccess = true;
+        for (final chunk in page.entries.mapChunked(
+          kUpdateConcurrency,
+          toElement,
+        )) {
+          final res = await Future.wait(chunk);
+          if (res.any((e) => !e)) isSuccess = false;
+          if (dismiss) break;
+        }
+        return isSuccess;
+      },
+    )) {
+      final res = await Future.wait(chunk);
+      if (res.any((e) => !e)) isSuccess = false;
+      if (dismiss) break;
+    }
+
+    toastUpdateResult(dismiss, isSuccess);
+  }
+
+  Future<void> _updatePageDm(DownloadPageInfo pageInfo) async {
+    if (checkUpdateCount(pageInfo.entries.length)) return;
+
+    bool dismiss = false;
+    SmartDialog.showLoading(onDismiss: () => dismiss = true);
+
+    bool isSuccess = true;
+    for (final chunk in pageInfo.entries.mapChunked(
+      kUpdateConcurrency,
+      (e) => downloadService.downloadDanmaku(
+        entry: e,
+        isUpdate: true,
+      ),
+    )) {
+      final res = await Future.wait(chunk);
+      if (res.any((e) => !e)) isSuccess = false;
+      if (dismiss) break;
+    }
+
+    toastUpdateResult(dismiss, isSuccess);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final padding = MediaQuery.viewPaddingOf(context);
     return Obx(() {
       final enableMultiSelect = _controller.enableMultiSelect.value;
@@ -61,41 +130,14 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
         child: SimpleScaffold(
           appBar: MultiSelectAppBarWidget(
             ctr: _controller,
-            actions: [
-              TextButton(
-                style: TextButton.styleFrom(
-                  visualDensity: VisualDensity.compact,
-                ),
-                onPressed: () async {
-                  final future = [
-                    for (final page in _controller.allChecked)
-                      for (final e in page.entries)
-                        _downloadService.downloadDanmaku(
-                          entry: e,
-                          isUpdate: true,
-                        ),
-                  ];
-                  _controller.handleSelect();
-                  final res = await Future.wait(future);
-                  if (res.every((e) => e)) {
-                    SmartDialog.showToast('更新成功');
-                  } else {
-                    SmartDialog.showToast('更新失败');
-                  }
-                },
-                child: Text(
-                  '更新',
-                  style: TextStyle(color: theme.colorScheme.onSurface),
-                ),
-              ),
-            ],
+            actions: [updateBtn()],
             child: AppBar(
               title: const Text('离线缓存'),
               actions: [
                 IconButton(
                   tooltip: '搜索',
                   onPressed: () async {
-                    await _downloadService.waitForInitialization;
+                    await downloadService.waitForInitialization;
                     if (!mounted) return;
                     Get.to(DownloadSearchPage(progress: _progress));
                   },
@@ -122,10 +164,10 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
               slivers: [
                 Obx(() {
                   final entry =
-                      _downloadService.waitDownloadQueue.firstWhereOrNull(
-                        (e) => e.cid == _downloadService.curCid,
+                      downloadService.waitDownloadQueue.firstWhereOrNull(
+                        (e) => e.cid == downloadService.curCid,
                       ) ??
-                      _downloadService.waitDownloadQueue.firstOrNull;
+                      downloadService.waitDownloadQueue.firstOrNull;
                   if (entry != null) {
                     return SliverMainAxisGroup(
                       slivers: [
@@ -133,7 +175,7 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                           padding: const EdgeInsets.only(left: 12, bottom: 7),
                           sliver: SliverToBoxAdapter(
                             child: Text(
-                              '正在缓存 (${_downloadService.waitDownloadQueue.length})',
+                              '正在缓存 (${downloadService.waitDownloadQueue.length})',
                             ),
                           ),
                         ),
@@ -143,7 +185,7 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                             child: DetailItem(
                               entry: entry,
                               progress: _progress,
-                              downloadService: _downloadService,
+                              downloadService: downloadService,
                               showTitle: true,
                               isCurr: true,
                               controller: _controller,
@@ -163,7 +205,7 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                           padding: EdgeInsets.only(
                             left: 12,
                             bottom: 7,
-                            top: _downloadService.waitDownloadQueue.isEmpty
+                            top: downloadService.waitDownloadQueue.isEmpty
                                 ? 0
                                 : 7,
                           ),
@@ -180,10 +222,10 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                               return DetailItem(
                                 entry: entry,
                                 progress: _progress,
-                                downloadService: _downloadService,
+                                downloadService: downloadService,
                                 showTitle: true,
                                 onDelete: () {
-                                  _downloadService.deleteDownload(
+                                  downloadService.deleteDownload(
                                     entry: entry,
                                     removeList: true,
                                   );
@@ -196,14 +238,14 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                                 controller: _controller,
                               );
                             }
-                            return _buildItem(theme, item, enableMultiSelect);
+                            return _buildItem(item, enableMultiSelect);
                           },
                           itemCount: _controller.pages.length,
                         ),
                       ],
                     );
                   }
-                  if (_downloadService.waitDownloadQueue.isNotEmpty) {
+                  if (downloadService.waitDownloadQueue.isNotEmpty) {
                     return const SliverToBoxAdapter();
                   }
                   return const HttpError();
@@ -219,11 +261,7 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
     });
   }
 
-  Widget _buildItem(
-    ThemeData theme,
-    DownloadPageInfo pageInfo,
-    bool enableMultiSelect,
-  ) {
+  Widget _buildItem(DownloadPageInfo pageInfo, bool enableMultiSelect) {
     void onLongPress() => enableMultiSelect
         ? null
         : showDialog(
@@ -242,7 +280,7 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                         await GStorage.watchProgress.deleteAll(
                           pageInfo.entries.map((e) => e.cid.toString()),
                         );
-                        _downloadService.deletePage(
+                        downloadService.deletePage(
                           pageDirPath: pageInfo.dirPath,
                         );
                       },
@@ -251,21 +289,9 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                   child: const Text('删除', style: TextStyle(fontSize: 14)),
                 ),
                 DialogOption(
-                  onPressed: () async {
+                  onPressed: () {
                     Get.back();
-                    final res = await Future.wait(
-                      pageInfo.entries.map(
-                        (e) => _downloadService.downloadDanmaku(
-                          entry: e,
-                          isUpdate: true,
-                        ),
-                      ),
-                    );
-                    if (res.every((e) => e)) {
-                      SmartDialog.showToast('更新成功');
-                    } else {
-                      SmartDialog.showToast('更新失败');
-                    }
+                    _updatePageDm(pageInfo);
                   },
                   child: const Text('更新弹幕', style: TextStyle(fontSize: 14)),
                 ),
@@ -335,7 +361,7 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                       top: 6.0,
                     ),
                   Positioned.fill(
-                    child: selectMask(theme.colorScheme, pageInfo.checked),
+                    child: selectMask(colorScheme, pageInfo.checked),
                   ),
                 ],
               ),
@@ -348,8 +374,7 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                       child: Text(
                         pageInfo.title,
                         textAlign: TextAlign.start,
-                        style: TextStyle(
-                          fontSize: theme.textTheme.bodyMedium!.fontSize,
+                        style: const TextStyle(
                           height: 1.42,
                           letterSpacing: 0.3,
                         ),
@@ -366,10 +391,10 @@ class _DownloadPageState extends State<DownloadPage> with GridMixin {
                           style: TextStyle(
                             fontSize: 12,
                             height: 1.6,
-                            color: theme.colorScheme.outline,
+                            color: colorScheme.outline,
                           ),
                         ),
-                        pageInfo.entries.first.moreBtn(theme.colorScheme),
+                        pageInfo.entries.first.moreBtn(colorScheme),
                       ],
                     ),
                   ],

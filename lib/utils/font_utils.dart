@@ -96,14 +96,15 @@ abstract final class FontUtils {
       if (files.isNotEmpty) {
         final Map<String, Uint8List> fonts = {};
         final now = DateTime.now().millisecondsSinceEpoch.toString();
-        await Future.wait(
-          files.map((file) async {
-            final name = '$now/${path.basenameWithoutExtension(file.name)}';
-            final bytes = await file.readAsBytes();
-            await _loadFont(bytes, fontFamily: name);
-            fonts[name] = bytes;
-          }),
-        );
+
+        Future<void> loadFont(file) async {
+          final name = '$now/${path.basenameWithoutExtension(file.name)}';
+          final bytes = await file.readAsBytes();
+          await _loadFont(bytes, fontFamily: name);
+          fonts[name] = bytes;
+        }
+
+        await Future.wait(files.map(loadFont));
         return fonts;
       }
     } catch (_) {

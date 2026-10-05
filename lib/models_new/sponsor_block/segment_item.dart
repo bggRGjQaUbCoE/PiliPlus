@@ -1,4 +1,6 @@
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
+import 'package:PiliPlus/utils/extension/iterable_ext.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 
 class SegmentItemModel {
   String? cid;
@@ -50,4 +52,36 @@ class SegmentItemModel {
     uuid: '',
     videoDuration: videoDuration,
   );
+
+  Map<String, dynamic> toJson() => {
+    'cid': ?cid,
+    'category': category,
+    'actionType': ?actionType,
+    'segment': segment,
+    'UUID': uuid,
+    'videoDuration': ?videoDuration,
+    'votes': ?votes,
+  };
+
+  factory SegmentItemModel.fromNormalizedJson(Map<String, dynamic> json) =>
+      SegmentItemModel(
+        cid: json["cid"],
+        category: json["category"],
+        actionType: json["actionType"],
+        segment: (json["segment"] as List).fromCast<int>(),
+        uuid: json["UUID"],
+        videoDuration: json["videoDuration"],
+        votes: json["votes"],
+      );
+
+  static List<SegmentItemModel>? fromCache(dynamic segments) {
+    try {
+      return (segments as List?)
+          ?.map((e) => SegmentItemModel.fromNormalizedJson(e))
+          .toList();
+    } catch (_) {
+      if (kDebugMode) rethrow;
+    }
+    return null;
+  }
 }

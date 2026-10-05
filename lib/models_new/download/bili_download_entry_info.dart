@@ -1,4 +1,5 @@
 import 'package:PiliPlus/models/common/video/video_type.dart';
+import 'package:PiliPlus/models_new/sponsor_block/segment_item.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart'
     show MultiSelectData;
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -36,6 +37,8 @@ class BiliDownloadEntryInfo with MultiSelectData {
   final String? seasonId;
   final SourceInfo? source;
   EpInfo? ep;
+
+  List<SegmentItemModel>? segments;
 
   late String pageDirPath;
   late String entryDirPath;
@@ -151,6 +154,7 @@ class BiliDownloadEntryInfo with MultiSelectData {
     this.seasonId,
     this.source,
     this.ep,
+    this.segments,
   });
 
   factory BiliDownloadEntryInfo.fromJson(Map<String, dynamic> json) =>
@@ -189,6 +193,7 @@ class BiliDownloadEntryInfo with MultiSelectData {
         ep: json['ep'] != null
             ? EpInfo.fromJson(json['ep'] as Map<String, dynamic>)
             : null,
+        segments: SegmentItemModel.fromCache(json['segments']),
       );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -219,6 +224,7 @@ class BiliDownloadEntryInfo with MultiSelectData {
     'season_id': ?seasonId,
     'source': ?source?.toJson(),
     'ep': ?ep?.toJson(),
+    'segments': ?segments?.map((e) => e.toJson()).toList(),
   };
 
   @override

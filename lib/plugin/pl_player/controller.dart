@@ -1752,7 +1752,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     SmartDialog.showToast('截图中');
     final image = await videoPlayerController?.screenshot();
     if (image != null) {
-      SmartDialog.showToast('点击弹窗保存截图');
+      SmartDialog.showToast('点击弹窗或按 Enter 保存截图');
       await showDialog(
         context: Get.context!,
         requestFocus: true,

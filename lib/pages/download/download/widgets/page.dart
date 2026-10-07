@@ -8,6 +8,7 @@ import 'package:PiliPlus/models_new/download/download_info.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/pages/download/detail/view.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
+import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -124,21 +125,12 @@ class PageInfoItem<T extends MultiSelectData> extends StatelessWidget {
                   ),
                   if (pageInfo.seasonType case final pgcType?)
                     PBadge(
-                      text: switch (pgcType) {
-                        -1 => '课程',
-                        1 => '番剧',
-                        2 => '电影',
-                        3 => '纪录片',
-                        4 => '国创',
-                        5 => '电视剧',
-                        7 => '综艺',
-                        _ => null,
-                      },
+                      text: BiliUtils.pgcType2Label(pgcType),
                       right: 6.0,
                       top: 6.0,
                     ),
                   Positioned.fill(
-                    child: selectMask(colorScheme, pageInfo.checked),
+                    child: selectMask(colorScheme, seasonInfo.checked),
                   ),
                 ],
               ),

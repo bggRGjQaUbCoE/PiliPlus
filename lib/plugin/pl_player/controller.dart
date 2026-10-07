@@ -1,6 +1,8 @@
 import 'dart:async' show StreamSubscription, Timer;
 import 'dart:convert' show ascii, utf8;
 import 'dart:io' show Platform;
+
+import 'package:PiliPlus/services/btr_proxy/btr_proxy.dart';
 import 'dart:math' show max, min;
 import 'dart:ui' as ui;
 
@@ -902,7 +904,14 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     };
 
     String video = dataSource.videoSource;
-    if (dataSource.audioSource case final audio? when (audio.isNotEmpty)) {
+    String? audioSrc = dataSource.audioSource;
+    if (dataSource is NetworkSource && !isLive) {
+      video = await BtrProxy.instance.wrap(video);
+      if (audioSrc != null && audioSrc.isNotEmpty) {
+        audioSrc = await BtrProxy.instance.wrap(audioSrc);
+      }
+    }
+    if (audioSrc case final audio? when (audio.isNotEmpty)) {
       if (onlyPlayAudio.value) {
         video = audio;
       } else {

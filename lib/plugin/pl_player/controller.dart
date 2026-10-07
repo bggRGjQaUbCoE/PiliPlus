@@ -2,7 +2,6 @@ import 'dart:async' show StreamSubscription, Timer;
 import 'dart:convert' show ascii, utf8;
 import 'dart:io' show Platform;
 
-import 'package:PiliPlus/services/btr_proxy/btr_proxy.dart';
 import 'dart:math' show max, min;
 import 'dart:ui' as ui;
 
@@ -31,6 +30,7 @@ import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/danmaku_options.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
+import 'package:PiliPlus/services/btr_proxy/btr_proxy.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';

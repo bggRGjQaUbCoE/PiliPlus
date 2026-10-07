@@ -14,7 +14,7 @@ abstract final class BtrSettings {
 
   static void load() {
     final s = GStorage.setting;
-    BtrConfig.enabled = s.get(_enabled, defaultValue: true);
+    BtrConfig.enabled = s.get(_enabled, defaultValue: false);
     BtrConfig.mode =
         BtrCdnMode.values.asNameMap()[s.get(_mode)] ?? BtrCdnMode.mainland;
     BtrConfig.customHosts = List<String>.from(

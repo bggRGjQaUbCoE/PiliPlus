@@ -30,7 +30,7 @@ enum BtrTakeover {
 /// Runtime config. The app fills this from settings (see BtrSettings);
 /// the bench tool leaves the defaults.
 class BtrConfig {
-  static bool enabled = true;
+  static bool enabled = false;
   static BtrCdnMode mode = BtrCdnMode.mainland;
   static List<String> customHosts = const [];
   static BtrTakeover takeover = BtrTakeover.full;

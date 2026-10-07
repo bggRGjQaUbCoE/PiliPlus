@@ -70,6 +70,9 @@ class BtrProxy {
   BtrProxy._();
   static final BtrProxy instance = BtrProxy._();
 
+  /// Debug hook (bench tool sets it); null in the app.
+  static void Function(String)? log;
+
   static const chunkSize = 512 * 1024;
   static const firstChunkSize = 128 * 1024;
   static const probeBytes = 256 * 1024;
@@ -265,7 +268,8 @@ class BtrProxy {
       await res.flush(); // send headers now so mpv doesn't time out waiting
       await _stream(src, start, end, res);
       await res.close();
-    } catch (_) {
+    } catch (err) {
+      log?.call('HANDLER ERROR $err');
       try {
         res.statusCode = HttpStatus.badGateway;
       } catch (_) {}
@@ -303,7 +307,11 @@ class BtrProxy {
         inflight.add(_Job(s, e, _fetch(src, s, e)));
       }
       final head = inflight.removeAt(0);
+      final hw = Stopwatch()..start();
       final bytes = await _awaitWithRescue(src, head);
+      if (hw.elapsedMilliseconds > 3000) {
+        log?.call('SLOW head ${head.s} waited ${hw.elapsedMilliseconds}ms');
+      }
       res.add(bytes);
       await res.flush(); // back-pressure + detects player disconnect (seek)
     }
@@ -372,8 +380,14 @@ class BtrProxy {
           throw HttpException('short read ${bytes.length}/${e - s + 1}');
         }
         src.ok(host, bytes.length, sw.elapsedMicroseconds);
+        log?.call(
+          'ok   $s-$e ${host.split('.').first} ${sw.elapsedMilliseconds}ms${rescue ? ' R' : ''}',
+        );
         return bytes;
       } catch (err) {
+        log?.call(
+          'FAIL $s-$e ${host.split('.').first} ${sw.elapsedMilliseconds}ms $err',
+        );
         lastErr = err;
         src.fail(host);
         avoid = host;
@@ -392,15 +406,20 @@ class _Job {
 }
 
 class _Host {
+  _Host({this.fallback = false});
   double? speed; // bytes/sec EWMA
   int inflight = 0;
+  int stalls = 0; // recent timeouts/failures, decays on success
   DateTime? badUntil;
+  final bool fallback; // e.g. akamai: only used when nothing else works
 }
 
 class _Source {
   _Source(this.url) : origin = Uri.parse(url) {
-    hosts[origin.host] = _Host();
+    hosts[origin.host] = _Host(fallback: _isFallback(origin.host));
   }
+
+  static bool _isFallback(String host) => host.endsWith('.akamaized.net');
 
   final String url;
   final Uri origin;
@@ -439,7 +458,8 @@ class _Source {
             got += c.length;
           }
           if (got == BtrProxy.probeBytes) {
-            (hosts[h] ??= _Host()).speed = got * 1e6 / sw.elapsedMicroseconds;
+            (hosts[h] ??= _Host(fallback: _isFallback(h))).speed =
+                got * 1e6 / sw.elapsedMicroseconds;
           }
         } catch (_) {}
       }();
@@ -464,7 +484,10 @@ class _Source {
     var score = -1.0;
     for (final MapEntry(key: name, value: h) in hosts.entries) {
       if (name == avoid || !_usable(name, h, now)) continue;
-      final sp = h.speed ?? (_best > 0 ? _best * 0.5 : 1);
+      if (h.fallback && _hasPrimary(now, avoid)) continue;
+      // each recent stall halves a host's effective speed
+      final sp =
+          (h.speed ?? (_best > 0 ? _best * 0.5 : 1)) / math.pow(2, h.stalls);
       final s = best ? sp : sp / (h.inflight + 1);
       if (s > score) {
         score = s;
@@ -474,6 +497,10 @@ class _Source {
     return choice ??
         hosts.keys.firstWhere((k) => k != avoid, orElse: () => origin.host);
   }
+
+  bool _hasPrimary(DateTime now, String? avoid) => hosts.entries.any(
+    (e) => !e.value.fallback && e.key != avoid && _usable(e.key, e.value, now),
+  );
 
   /// Auto: about 3 connections per healthy host, 4..16.
   int get threadLimit {
@@ -487,9 +514,9 @@ class _Source {
 
   Duration rescueDelay(int bytes) {
     final best = _best;
-    if (best <= 0) return const Duration(milliseconds: 2500);
-    final ms = (bytes / best * 1000 * 2.5).round();
-    return Duration(milliseconds: ms.clamp(800, 3000));
+    if (best <= 0) return const Duration(milliseconds: 1500);
+    final ms = (bytes / best * 1000 * 2).round();
+    return Duration(milliseconds: ms.clamp(600, 1500));
   }
 
   void begin(String h) => hosts[h]?.inflight++;
@@ -499,6 +526,7 @@ class _Source {
     final h = hosts[name];
     if (h == null || micros <= 0) return;
     h.badUntil = null;
+    if (h.stalls > 0) h.stalls--;
     final v = bytes * 1e6 / micros;
     h.speed = h.speed == null ? v : h.speed! * 0.7 + v * 0.3;
   }
@@ -506,8 +534,9 @@ class _Source {
   void fail(String name) {
     final h = hosts[name];
     if (h == null) return;
-    h.badUntil = DateTime.now().add(const Duration(seconds: 30));
-    if (h.speed != null) h.speed = h.speed! * 0.5;
+    h.stalls = math.min(h.stalls + 2, 6);
+    h.badUntil = DateTime.now().add(Duration(seconds: 10 * h.stalls));
+    if (h.speed != null) h.speed = h.speed! * 0.3;
   }
 
   Future<int> meta(BtrProxy p) {

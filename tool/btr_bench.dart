@@ -9,6 +9,8 @@ Future<void> main(List<String> args) async {
     BtrConfig.threads = int.parse(args[1]);
   }
   if (args.length > 2) BtrConfig.mode = BtrCdnMode.values.byName(args[2]);
+  final t0 = DateTime.now();
+  BtrProxy.log = (m) => stderr.writeln('${DateTime.now().difference(t0).inMilliseconds}ms $m');
   final u = await BtrProxy.instance.wrap(args[0]);
   stdout.writeln(u);
   await Future<void>.delayed(const Duration(minutes: 10));

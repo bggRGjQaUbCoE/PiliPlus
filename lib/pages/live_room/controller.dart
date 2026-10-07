@@ -38,6 +38,7 @@ import 'package:PiliPlus/utils/extension/rx_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/services/btr_proxy/btr_proxy.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -333,6 +334,20 @@ class LiveRoomController extends GetxController {
     currentQnDesc.value =
         LiveQuality.fromCode(currentQn)?.desc ?? currentQn.toString();
     videoUrl = VideoUtils.getLiveCdnUrl(item, index: liveUrlIndex);
+    // BTR live boost: race the official hosts once, only for the default pick
+    if (liveUrlIndex == 0 &&
+        VideoUtils.liveCdnUrl == null &&
+        item.urlInfo.length > 1) {
+      return BtrProxy.instance
+          .pickLive([
+            for (var i = 0; i < item.urlInfo.length; i++)
+              VideoUtils.getLiveCdnUrl(item, index: i),
+          ])
+          .then((url) {
+            videoUrl = url;
+            return playerInit()?.whenComplete(_startSizeSub);
+          });
+    }
     return playerInit()?.whenComplete(_startSizeSub);
   }
 

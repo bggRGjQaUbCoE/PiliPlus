@@ -113,7 +113,9 @@ class BtrProxy {
 
   /// VOD entry point. Full takeover: returns a loopback URL served by the
   /// multi-thread proxy. Compat: returns a direct URL on the fastest mirror,
-  /// mpv downloads it itself. Falls back to [url] on any problem.
+  /// mpv downloads it itself. If the loopback server can't start (e.g. a
+  /// sandbox without network.server), degrades to compat. Falls back to
+  /// [url] on any other problem.
   Future<String> wrap(String url) async {
     if (!BtrConfig.enabled || !isMediaUrl(url)) return url;
     try {
@@ -122,7 +124,11 @@ class BtrProxy {
       }
       await _ensureServer();
     } catch (_) {
-      return url;
+      try {
+        return await _fastestMirror(url);
+      } catch (_) {
+        return url;
+      }
     }
     final id = (++_seq).toString();
     _sources[id] = _Source(url)..discover(this);

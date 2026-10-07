@@ -86,6 +86,8 @@ import 'package:window_manager/window_manager.dart';
 
 part 'widgets.dart';
 
+enum _DanmakuAssistantQuickAction { gentle, absolute, openAssistant }
+
 class PLVideoPlayer extends StatefulWidget {
   const PLVideoPlayer({
     required this.maxWidth,
@@ -1151,7 +1153,13 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   void _onTapUp(TapUpDetails details) {
     switch (details.kind) {
       case ui.PointerDeviceKind.mouse when PlatformUtils.isDesktop:
-        plPlayerController.onDoubleTapCenter();
+        if (_suspendedDm == null) {
+          plPlayerController.onDoubleTapCenter();
+        } else if (_suspendedDm!.suspend) {
+          _dmOffset.value = details.localPosition;
+        } else {
+          _suspendedDm = null;
+        }
       default:
         if (_suspendedDm == null) {
           plPlayerController.controls = !plPlayerController.showControls.value;
@@ -1160,6 +1168,77 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         } else {
           _suspendedDm = null;
         }
+    }
+  }
+
+  Future<void> _showDanmakuAssistantQuickActions(String rawContent) async {
+    final content = rawContent.trim();
+    if (content.isEmpty) return;
+
+    _removeDmAction();
+    final action = await showDialog<_DanmakuAssistantQuickAction>(
+      context: context,
+      builder: (dialogContext) => SimpleDialog(
+        title: const Text('屏蔽这条弹幕'),
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+            child: Text(
+              content,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.filter_alt_outlined),
+            title: const Text('加入温和屏蔽'),
+            subtitle: const Text('仅屏蔽内容完全相同的弹幕（推荐）'),
+            onTap: () => Navigator.pop(
+              dialogContext,
+              _DanmakuAssistantQuickAction.gentle,
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.block_outlined),
+            title: const Text('加入绝对屏蔽'),
+            subtitle: const Text('屏蔽所有包含这段文字的弹幕'),
+            onTap: () => Navigator.pop(
+              dialogContext,
+              _DanmakuAssistantQuickAction.absolute,
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.tune),
+            title: const Text('打开弹幕屏蔽助手'),
+            onTap: () => Navigator.pop(
+              dialogContext,
+              _DanmakuAssistantQuickAction.openAssistant,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    switch (action) {
+      case _DanmakuAssistantQuickAction.gentle:
+        final added = plPlayerController.addDanmakuAssistantTextRule(
+          content,
+          absolute: false,
+        );
+        SmartDialog.showToast(added ? '已加入温和屏蔽' : '该规则已存在');
+      case _DanmakuAssistantQuickAction.absolute:
+        final added = plPlayerController.addDanmakuAssistantTextRule(
+          content,
+          absolute: true,
+        );
+        SmartDialog.showToast(added ? '已加入绝对屏蔽' : '该规则已存在');
+      case _DanmakuAssistantQuickAction.openAssistant:
+        await Get.toNamed(
+          '/danmakuAssistant',
+          arguments: plPlayerController,
+        );
+      case null:
+        return;
     }
   }
 
@@ -2301,6 +2380,16 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           children: switch (extra) {
             null => throw UnimplementedError(),
             VideoDanmaku() => [
+              _dmActionItem(
+                const Icon(
+                  size: 20,
+                  Icons.shield_outlined,
+                  color: Colors.white,
+                ),
+                onTap: () => _showDanmakuAssistantQuickActions(
+                  item.content.text,
+                ),
+              ),
               Stack(
                 clipBehavior: Clip.none,
                 children: [

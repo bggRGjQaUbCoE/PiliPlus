@@ -7,6 +7,7 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
 class BtrProxy {
@@ -177,7 +178,9 @@ class BtrProxy {
           f.ignore(); // errors surface when awaited; avoid unhandled if aborted
           inflight.add(f);
         }
-        final bytes = await inflight.removeAt(0);
+        final head = inflight.removeAt(0);
+        final (hs, he) = pieces[i];
+        final bytes = await _hedged(src, head, hs, he);
         res.add(bytes);
         await res.flush(); // back-pressure + detects player disconnect (seek)
       }
@@ -193,10 +196,57 @@ class BtrProxy {
     }
   }
 
-  Future<Uint8List> _fetch(_Source src, int s, int e) async {
+  /// Head-of-line piece blocks everything behind it. If it hasn't arrived
+  /// within a deadline derived from the best observed node speed, race a
+  /// second copy on the fastest node and take whichever lands first.
+  Future<Uint8List> _hedged(
+    _Source src,
+    Future<Uint8List> head,
+    int s,
+    int e,
+  ) async {
+    final best = src.bestSpeed;
+    final expectMs = best == null ? 1500 : ((e - s + 1) * 1000 / best).round();
+    final deadline = Duration(milliseconds: (expectMs * 2).clamp(800, 4000));
+    final done = Completer<Uint8List>();
+    var failures = 0;
+    void settle(Future<Uint8List> f, int racers) {
+      f.then((v) {
+        if (!done.isCompleted) done.complete(v);
+      }, onError: (Object err, StackTrace st) {
+        if (++failures >= racers && !done.isCompleted) {
+          done.completeError(err, st);
+        }
+      });
+    }
+
+    var racers = 1;
+    settle(head, 1);
+    final timer = Timer(deadline, () {
+      if (done.isCompleted) return;
+      racers = 2;
+      final hedge = _fetch(src, s, e, preferFastest: true);
+      hedge.ignore();
+      settle(hedge, racers);
+    });
+    try {
+      return await done.future;
+    } finally {
+      timer.cancel();
+    }
+  }
+
+  Future<Uint8List> _fetch(
+    _Source src,
+    int s,
+    int e, {
+    bool preferFastest = false,
+  }) async {
     Object? lastErr;
     for (var attempt = 0; attempt < 5; attempt++) {
-      final url = src.pick();
+      final url = (preferFastest && attempt == 0)
+          ? src.fastest() ?? src.pick()
+          : src.pick();
       final sw = Stopwatch()..start();
       try {
         final req = await _client.getUrl(Uri.parse(url));
@@ -215,7 +265,8 @@ class BtrProxy {
           throw HttpException('bad content-range $cr');
         }
         final b = BytesBuilder(copy: false);
-        await for (final c in resp.timeout(const Duration(seconds: 8))) {
+        // stall detection: no bytes for 3s => give up on this node
+        await for (final c in resp.timeout(const Duration(seconds: 3))) {
           b.add(c);
         }
         final bytes = b.takeBytes();
@@ -258,8 +309,8 @@ class _Source {
     }
   }
   final Map<String, DateTime> _badUntil = {};
-  final Map<String, double> speed = {}; // bytes/sec EWMA, for debugging
-  int _rr = 0;
+  final Map<String, double> speed = {}; // bytes/sec EWMA per node
+  final _rand = Random();
   int? _size;
   String contentType = 'application/octet-stream';
   Future<int>? _metaFuture;
@@ -275,14 +326,50 @@ class _Source {
     return list;
   }
 
+  bool _usable(String c, DateTime now) {
+    final bad = _badUntil[c];
+    return bad == null || now.isAfter(bad);
+  }
+
+  double? get bestSpeed =>
+      speed.values.isEmpty ? null : speed.values.reduce(max);
+
+  String? fastest() {
+    final now = DateTime.now();
+    String? best;
+    for (final c in candidates) {
+      final v = speed[c];
+      if (v == null || !_usable(c, now)) continue;
+      if (best == null || v > speed[best]!) best = c;
+    }
+    return best;
+  }
+
+  /// Speed-weighted random pick. Unmeasured nodes get the median weight so
+  /// they still get sampled; nodes slower than 30% of the best are skipped.
   String pick() {
     final now = DateTime.now();
-    for (var i = 0; i < candidates.length; i++) {
-      final c = candidates[_rr++ % candidates.length];
-      final bad = _badUntil[c];
-      if (bad == null || now.isAfter(bad)) return c;
+    final live = candidates.where((c) => _usable(c, now)).toList();
+    if (live.isEmpty) return url;
+    final known = live.map((c) => speed[c]).whereType<double>().toList()
+      ..sort();
+    final top = known.isEmpty ? 0.0 : known.last;
+    final median = known.isEmpty ? 1.0 : known[known.length ~/ 2];
+    final pool = <String>[];
+    final weights = <double>[];
+    for (final c in live) {
+      final v = speed[c];
+      if (v != null && known.length >= 2 && v < top * 0.3) continue;
+      pool.add(c);
+      weights.add(v ?? median);
     }
-    return url;
+    if (pool.isEmpty) return fastest() ?? url;
+    var r = _rand.nextDouble() * weights.fold(0.0, (a, b) => a + b);
+    for (var i = 0; i < pool.length; i++) {
+      r -= weights[i];
+      if (r <= 0) return pool[i];
+    }
+    return pool.last;
   }
 
   void ok(String c, int bytes, int micros) {

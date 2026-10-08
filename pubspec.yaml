@@ -50,7 +50,7 @@ dependencies:
   brotli: ^0.6.0
   cached_network_image_ce:
     git:
-      url: https://github.com/My-Responsitories/flutter_cached_network_image_ce.git
+      url: https://github.com/bggRGjQaUbCoE/flutter_cached_network_image_ce.git
       path: cached_network_image
       ref: develop
   canvas_danmaku:
@@ -102,6 +102,7 @@ dependencies:
     git:
       url: https://github.com/bggRGjQaUbCoE/flutter_sortable_wrap.git
       ref: master
+  flutter_staggered_grid_view: ^0.7.0
   flutter_svg: ^2.0.14
   flutter_volume_controller: ^2.0.0
   font_awesome_flutter:
@@ -161,7 +162,6 @@ dependencies:
   uuid: ^4.5.1
   vector_math: ^2.2.0
   wakelock_plus: ^1.2.8
-  waterfall_flow: ^3.1.0
   web_socket_channel: ^3.0.3
   webdav_client:
     git:
@@ -220,11 +220,6 @@ dependency_overrides:
       url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: media_kit_video
       ref: native
-  cached_network_image_ce:
-    git:
-      url: https://github.com/My-Responsitories/flutter_cached_network_image_ce.git
-      path: cached_network_image
-      ref: develop
 
 dev_dependencies:
   flutter_test:

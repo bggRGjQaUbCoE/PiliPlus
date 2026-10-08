@@ -47,6 +47,7 @@ class ArticlePage extends StatefulWidget {
 class _ArticlePageState extends CommonDynPageState<ArticlePage> {
   @override
   late final ArticleController controller;
+  @override
   bool get isArticle => true;
 
   @override

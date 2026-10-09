@@ -11,6 +11,7 @@ import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/models_new/download/bili_download_media_file_info.dart';
+import 'package:PiliPlus/models_new/download/download_video_info.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart' as pgc;
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
@@ -243,6 +244,103 @@ class DownloadService extends GetxService {
       pageData: null,
     );
     _createDownload(entry);
+  }
+
+  /// 通过视频基本信息创建缓存任务（用于收藏夹、稍后再看等列表的批量缓存）
+  /// 返回是否成功加入缓存队列（已在缓存列表或队列中会返回 false）
+  bool downloadUgc({
+    required int avid,
+    required String bvid,
+    required int cid,
+    required String title,
+    required String cover,
+    required VideoQuality videoQuality,
+    int duration = 0,
+    int danmaku = 0,
+    int? ownerId,
+    String? ownerName,
+    int page = 1,
+  }) {
+    if (downloadList.any((e) => e.cid == cid) ||
+        waitDownloadQueue.any((e) => e.cid == cid)) {
+      return false;
+    }
+    final pageData = PageInfo(
+      cid: cid,
+      page: page,
+      part: title,
+      hasAlias: false,
+      tid: 0,
+      width: 0,
+      height: 0,
+      rotate: 0,
+      downloadTitle: '视频已缓存完成',
+      downloadSubtitle: title,
+    );
+    final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final entry = BiliDownloadEntryInfo(
+      mediaType: 2,
+      hasDashAudio: false,
+      isCompleted: false,
+      totalBytes: 0,
+      downloadedBytes: 0,
+      title: title,
+      typeTag: videoQuality.code.toString(),
+      cover: cover.http2https,
+      preferedVideoQuality: videoQuality.code,
+      qualityPithyDescription: videoQuality.desc,
+      guessedTotalBytes: 0,
+      totalTimeMilli: duration * 1000,
+      danmakuCount: danmaku,
+      timeUpdateStamp: currentTime,
+      timeCreateStamp: currentTime,
+      canPlayInAdvance: true,
+      interruptTransformTempFile: false,
+      avid: avid,
+      spid: 0,
+      seasonId: null,
+      ep: null,
+      source: null,
+      bvid: bvid,
+      ownerId: ownerId,
+      ownerName: ownerName,
+      pageData: pageData,
+    );
+    _createDownload(entry);
+    return true;
+  }
+
+  /// 批量缓存 UGC 视频，返回成功加入缓存队列的数量
+  int batchDownload({
+    required Iterable<DownloadVideoInfo> items,
+    required VideoQuality videoQuality,
+  }) {
+    var count = 0;
+    final cids = <int>{
+      ...downloadList.map((e) => e.cid),
+      ...waitDownloadQueue.map((e) => e.cid),
+    };
+    for (final item in items) {
+      // 同一次批量中重复的 cid 以及已在缓存列表/队列中的直接跳过
+      if (!cids.add(item.cid)) {
+        continue;
+      }
+      if (downloadUgc(
+        avid: item.avid,
+        bvid: item.bvid,
+        cid: item.cid,
+        title: item.title,
+        cover: item.cover,
+        videoQuality: videoQuality,
+        duration: item.duration,
+        danmaku: item.danmaku,
+        ownerId: item.ownerId,
+        ownerName: item.ownerName,
+      )) {
+        count++;
+      }
+    }
+    return count;
   }
 
   Future<void> _createDownload(BiliDownloadEntryInfo entry) async {

@@ -10,6 +10,7 @@ import 'package:PiliPlus/pages/setting/widgets/ordered_multi_select_dialog.dart'
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/plugin/pl_player/models/audio_output_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/hwdec_type.dart';
+import 'package:PiliPlus/services/multi_thread_proxy.dart';
 import 'package:PiliPlus/utils/filtering_text.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -82,6 +83,24 @@ List<SettingsModel> get videoSettings => [
     setKey: SettingBoxKey.disableAudioCDN,
     defaultVal: false,
     onChanged: (value) => VideoUtils.disableAudioCDN = value,
+  ),
+  SwitchModel(
+    title: '多线程加速',
+    subtitle: '从多个CDN节点并发加载视频以缓解海外或单连接限速',
+    leading: const Icon(Icons.call_split_outlined),
+    setKey: SettingBoxKey.enableMultiThread,
+    defaultVal: false,
+    onChanged: (value) {
+      MultiThreadProxy.enable = value;
+      if (value) MultiThreadProxy.start();
+    },
+  ),
+  NormalModel(
+    title: '多线程加速线程数',
+    leading: const Icon(Icons.stacked_line_chart_outlined),
+    getSubtitle: () =>
+        '当前：${Pref.multiThreadCount}，线程越多连接与调度开销越大',
+    onTap: _showMultiThreadCountDialog,
   ),
   NormalModel(
     title: '默认画质',
@@ -187,6 +206,25 @@ Future<void> _showCDNDialog(BuildContext context, VoidCallback setState) async {
   if (res != null) {
     VideoUtils.cdnService = res;
     await GStorage.setting.put(SettingBoxKey.CDNService, res.name);
+    setState();
+  }
+}
+
+Future<void> _showMultiThreadCountDialog(
+  BuildContext context,
+  VoidCallback setState,
+) async {
+  final res = await showDialog<int>(
+    context: context,
+    builder: (context) => SelectDialog<int>(
+      title: '多线程加速线程数',
+      value: Pref.multiThreadCount,
+      values: const [4, 8, 16, 32, 64].map((e) => (e, '$e')).toList(),
+    ),
+  );
+  if (res != null) {
+    MultiThreadProxy.threads = res;
+    await GStorage.setting.put(SettingBoxKey.multiThreadCount, res);
     setState();
   }
 }

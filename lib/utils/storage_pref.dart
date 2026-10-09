@@ -965,6 +965,22 @@ abstract final class Pref {
   static bool get keyboardControl =>
       _setting.get(SettingBoxKey.keyboardControl, defaultValue: true);
 
+  /// 播放器快捷键自定义绑定：`{ actionName: bindingJson }`，`'none'` 表示已清除。
+  /// Hive 读出的 Map 是 `Map<dynamic, dynamic>`，必须逐项转换而不是直接断言。
+  static Map<String, dynamic> get customKeyBindings {
+    final raw = _setting.get(SettingBoxKey.customKeyBindings);
+    if (raw is! Map) {
+      return <String, dynamic>{};
+    }
+    return {
+      for (final entry in raw.entries)
+        if (entry.key is String) entry.key as String: entry.value,
+    };
+  }
+
+  static set customKeyBindings(Map<String, dynamic> value) =>
+      _setting.put(SettingBoxKey.customKeyBindings, value);
+
   static bool get pauseOnMinimize =>
       _setting.get(SettingBoxKey.pauseOnMinimize, defaultValue: false);
 

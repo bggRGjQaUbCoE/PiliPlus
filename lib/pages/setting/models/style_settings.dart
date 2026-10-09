@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/color_palette.dart';
 import 'package:PiliPlus/common/widgets/custom_toast.dart';
+import 'package:PiliPlus/common/widgets/custom_tooltip.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/scale_app.dart';
@@ -11,6 +12,8 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart'
 import 'package:PiliPlus/common/widgets/stateful_builder.dart';
 import 'package:PiliPlus/models/common/bar_hide_type.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
+import 'package:PiliPlus/models/common/dynamic/dynamic_up_list_mode.dart';
+import 'package:PiliPlus/pages/dynamics/controller.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
 import 'package:PiliPlus/models/common/home_tab_type.dart';
 import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
@@ -163,12 +166,12 @@ List<SettingsModel> get styleSettings => [
       SmartDialog.showToast('重启生效');
     },
   ),
-  const SwitchModel(
-    title: '动态页显示所有已关注UP主',
-    leading: Icon(Icons.people_alt_outlined),
-    setKey: SettingBoxKey.dynamicsShowAllFollowedUp,
-    defaultVal: false,
-    needReboot: true,
+  PopupModel(
+    title: '动态页UP主与更新红点',
+    leading: _dynamicUpUpdateHint(),
+    value: () => Pref.dynamicUpListMode,
+    items: DynamicUpListMode.values,
+    onSelected: _setDynamicUpListMode,
   ),
   const SwitchModel(
     title: '动态页展开正在直播UP列表',
@@ -700,6 +703,86 @@ void _setDynBadge(DynamicBadgeMode value, VoidCallback setState) {
   GStorage.setting
       .put(SettingBoxKey.dynamicBadgeMode, value.index)
       .whenComplete(setState);
+}
+
+/// 说明本地提醒的已读来源：桌面悬停、手机点击图标，均延迟 100ms 显示。
+Widget _dynamicUpUpdateHint() {
+  // 状态只用于说明图标的即时反馈，不修改选项或持久化设置。
+  bool hovered = false;
+  bool pressed = false;
+  return StatefulBuilder(
+    builder: (context, setState) {
+      final colors = ColorScheme.of(context);
+      // 指针序列可能在页面退出后结束，失效的说明图标不能继续更新组件状态。
+      void updateFeedback(bool nextHovered, bool nextPressed) {
+        if (!context.mounted) return;
+        setState(() {
+          hovered = nextHovered;
+          pressed = nextPressed;
+        });
+      }
+
+      return Semantics(
+        label: '更新提醒说明',
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          onEnter: (_) => updateFeedback(true, pressed),
+          onExit: (_) => updateFeedback(false, false),
+          child: Listener(
+            // 原始指针事件提供按下反馈，不抢占自定义 Tooltip 的点击识别。
+            onPointerDown: (_) => updateFeedback(hovered, true),
+            onPointerUp: (_) => updateFeedback(hovered, false),
+            onPointerCancel: (_) => updateFeedback(hovered, false),
+            child: CustomTooltip(
+              color: colors.surfaceContainerHigh,
+              shadow: colors.shadow,
+              triggerMode: PlatformUtils.isDesktop ? .mouse : .tap,
+              waitDuration: const Duration(milliseconds: 100),
+              overlayWidget: () => ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 300),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(
+                    '本地跟踪更新与阅读，并结合官方状态和观看历史。'
+                    '其他客户端的图文已读可能无法同步。',
+                    style: TextStyle(color: colors.onSurface, fontSize: 13),
+                  ),
+                ),
+              ),
+              // Hover、Active 只改变图标底色，提示展开不会触发选项保存。
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 100),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: pressed
+                      ? colors.primary.withValues(alpha: 0.16)
+                      : hovered
+                      ? colors.primary.withValues(alpha: 0.08)
+                      : Colors.transparent,
+                ),
+                child: const Icon(Icons.info_outline, size: 24),
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
+/// 保存模式后立即刷新存活的动态页，未保存前仍使用当前设置。
+void _setDynamicUpListMode(
+  DynamicUpListMode value,
+  VoidCallback setState,
+) {
+  GStorage.setting.put(SettingBoxKey.dynamicUpListMode, value.index).then((_) {
+    // 页面尚未创建时无需强行创建，下一次打开会读取已保存的模式。
+    if (Get.isRegistered<DynamicsController>()) {
+      Get.find<DynamicsController>().setUpListMode(value);
+    }
+    setState();
+  });
 }
 
 Future<void> _setMsgBadge(DynamicBadgeMode value, VoidCallback setState) async {

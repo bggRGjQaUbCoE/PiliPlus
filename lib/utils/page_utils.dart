@@ -18,6 +18,9 @@ import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/pages/contact/view.dart';
 import 'package:PiliPlus/pages/fav_panel/view.dart';
 import 'package:PiliPlus/pages/share/view.dart';
+import 'package:PiliPlus/services/dynamic_unread_notifier.dart';
+import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/parse_int.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
@@ -116,6 +119,8 @@ abstract final class PageUtils {
     Object? type,
   }) async {
     assert(id != null || rid != null);
+    // 在详情请求之前固定账号，旧页面响应不能清除切换后的新账号红点。
+    final accountMid = Accounts.main.mid;
     SmartDialog.showLoading();
     final res = await DynamicsHttp.dynamicDetail(
       id: id,
@@ -124,6 +129,16 @@ abstract final class PageUtils {
     );
     SmartDialog.dismiss();
     if (res case Success(:final response)) {
+      // 详情成功后按该条发布时间推进作者已读水位，保留之后发布的更新。
+      DynamicUnreadNotifier.markContentRead(
+        DynamicReadEvent(
+          accountMid: accountMid,
+          viewedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          mid: response.modules.moduleAuthor?.mid,
+          dynamicId: safeToInt(response.idStr),
+          publishedAt: response.modules.moduleAuthor?.pubTs,
+        ),
+      );
       if (response.basic?.commentType == 12) {
         toDupNamed(
           '/articlePage',
@@ -229,8 +244,22 @@ abstract final class PageUtils {
   }) async {
     feedBack();
 
+    // 回调固定触发时的主账号，后续折叠详情和视频解析可能跨越账号切换。
+    final readAccountMid = Accounts.main.mid;
+    void markDynamicRead() => DynamicUnreadNotifier.markContentRead(
+      DynamicReadEvent(
+        accountMid: readAccountMid,
+        viewedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        mid: item.modules.moduleAuthor?.mid,
+        dynamicId: safeToInt(item.idStr),
+        publishedAt: item.modules.moduleAuthor?.pubTs,
+      ),
+    );
+
     void push() {
+      // 折叠内容交给详情成功回调；普通跳转只标记当前动态。
       if (item.basic?.commentType == 12) {
+        markDynamicRead();
         toDupNamed(
           '/articlePage',
           parameters: {
@@ -244,6 +273,7 @@ abstract final class PageUtils {
           pushDynFromId(id: item.idStr);
           return;
         }
+        markDynamicRead();
         toDupNamed(
           '/dynamicDetail',
           arguments: {
@@ -310,6 +340,8 @@ abstract final class PageUtils {
 
       /// 专栏文章查看
       case 'DYNAMIC_TYPE_ARTICLE':
+        // 专栏直达路径同样需要内容级已读，不能只覆盖普通动态详情。
+        markDynamicRead();
         toDupNamed(
           '/articlePage',
           parameters: {

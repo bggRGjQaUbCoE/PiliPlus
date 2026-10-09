@@ -194,6 +194,7 @@ class _BlackListPageState extends State<BlackListPage>
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           ViewSliverSafeArea(
+            bottom: 180,
             sliver: SliverPadding(
               padding: const .fromLTRB(12, 12, 12, 0),
               sliver: SliverFixedWrap(

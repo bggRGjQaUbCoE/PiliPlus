@@ -14,7 +14,7 @@ import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/services/logger.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
-import 'package:PiliPlus/utils/android/android_helper.dart';
+import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
@@ -62,7 +62,7 @@ class _AboutPageState extends State<AboutPage> {
   void getCacheSize() {
     CacheManager.loadApplicationCache().then((res) {
       if (mounted) {
-        cacheSize.value = CacheManager.formatSize(res);
+        cacheSize.value = res.formatSize;
       }
     });
   }
@@ -180,7 +180,7 @@ Commit Hash: ${BuildConfig.commitHash}''',
           ),
           if (Platform.isAndroid)
             ListTile(
-              onTap: PiliAndroidHelper.openLinkVerifySettings,
+              onTap: AndroidHelper.openLinkVerifySettings,
               leading: const Icon(MdiIcons.linkBoxOutline),
               title: const Text('打开受支持的链接'),
               trailing: Icon(Icons.arrow_forward, size: 16, color: outline),

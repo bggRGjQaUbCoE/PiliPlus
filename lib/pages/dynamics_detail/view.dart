@@ -36,19 +36,12 @@ import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
-
-const Set<TargetPlatform> _kDesktopPlatforms = <TargetPlatform>{
-  TargetPlatform.macOS,
-  TargetPlatform.windows,
-  TargetPlatform.linux,
-};
 
 class DynamicDetailPage extends StatefulWidget {
   const DynamicDetailPage({super.key});
@@ -347,6 +340,7 @@ class _DynamicDetailPageState
 
   Widget _buildTabBody([bool isPortrait = true]) {
     Widget reply = CustomScrollView(
+      primary: true,
       key: const PageStorageKey(DynType.reply),
       physics: ReloadScrollPhysics(
         controller: controller,
@@ -451,6 +445,7 @@ class _DynamicDetailPageState
         Expanded(
           flex: flex,
           child: CustomScrollView(
+            primary: true,
             slivers: [
               SliverPadding(
                 padding: .only(
@@ -478,13 +473,6 @@ class _DynamicDetailPageState
         ),
       ],
     );
-    if (PlatformUtils.isDesktop) {
-      return PrimaryScrollController(
-        controller: PrimaryScrollController.of(context),
-        automaticallyInheritForPlatforms: _kDesktopPlatforms,
-        child: child,
-      );
-    }
     return child;
   }
 

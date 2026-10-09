@@ -208,6 +208,6 @@ class VideoReplyReplyController extends ReplyController
   void onClose() {
     _controller?.dispose();
     _controller = null;
-    super.dispose();
+    super.onClose();
   }
 }

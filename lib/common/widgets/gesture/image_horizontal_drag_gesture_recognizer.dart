@@ -1,5 +1,10 @@
 import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart';
-import 'package:flutter/gestures.dart';
+import 'package:flutter/gestures.dart'
+    show
+        PointerDownEvent,
+        PointerDeviceKind,
+        PointerPanZoomStartEvent,
+        PointerEvent;
 
 class ImageHorizontalDragGestureRecognizer
     extends CustomHorizontalDragGestureRecognizer {
@@ -19,21 +24,36 @@ class ImageHorizontalDragGestureRecognizer
 
   @override
   void addPointer(PointerDownEvent event, {bool isPointerAllowed = true}) {
-    if (_pointer == event.pointer) {
-      return;
+    if (_handleAddPointer(event, isPointerAllowed)) return;
+    _pointer = event.pointer;
+    if (isPointerAllowed) {
+      super.addPointer(event);
     }
+  }
+
+  @override
+  void addPointerPanZoom(
+    PointerPanZoomStartEvent event, {
+    bool isPointerAllowed = true,
+  }) {
+    if (_handleAddPointer(event, isPointerAllowed)) return;
+    _pointer = event.pointer;
+    if (isPointerAllowed) {
+      super.addPointerPanZoom(event);
+    }
+  }
+
+  bool _handleAddPointer(PointerEvent event, bool isPointerAllowed) {
+    if (_pointer == event.pointer) return true;
     if (!_reset &&
         _pointer != event.pointer &&
         isPointerAllowed &&
         !_hasAcceptedOrRejected) {
       rejectGesture(_pointer!);
       _pointer = event.pointer;
-      return;
+      return true;
     }
-    _pointer = event.pointer;
-    if (isPointerAllowed) {
-      super.addPointer(event);
-    }
+    return false;
   }
 
   @override

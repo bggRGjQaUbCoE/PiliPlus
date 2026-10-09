@@ -191,7 +191,8 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
 
   void blockUser(BuildContext context) {
     if (!account.isLogin) {
-      SmartDialog.showToast('账号未登录');
+      Pref.setBlackMid(mid);
+      SmartDialog.showToast('屏蔽成功');
       return;
     }
     showDialog(
@@ -201,9 +202,16 @@ class MemberController extends CommonDataController<SpaceData, SpaceData?>
         content: Text(relation.value != 128 ? '确定拉黑UP主?' : '从黑名单移除UP主'),
         actions: [
           TextButton(
+            onPressed: () {
+              Get.back();
+              Pref.setBlackMid(mid);
+            },
+            child: const Text('本地屏蔽'),
+          ),
+          TextButton(
             onPressed: Get.back,
             child: Text(
-              '点错了',
+              '取消',
               style: TextStyle(color: Theme.of(context).colorScheme.outline),
             ),
           ),

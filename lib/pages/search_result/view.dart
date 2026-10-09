@@ -39,7 +39,7 @@ class _SearchResultPageState extends State<SearchResultPage>
     _tabController = TabController(
       vsync: this,
       initialIndex: Get.arguments?['initIndex'] ?? 0,
-      length: SearchType.values.length,
+      length: SearchType.actives.length,
     );
 
     if (_isFromSearch) {
@@ -106,7 +106,7 @@ class _SearchResultPageState extends State<SearchResultPage>
               splashFactory: NoSplash.splashFactory,
               padding: const EdgeInsets.only(top: 4, left: 8, right: 8),
               controller: _tabController,
-              tabs: SearchType.values
+              tabs: SearchType.actives
                   .map(
                     (item) => Obx(
                       () {
@@ -153,7 +153,7 @@ class _SearchResultPageState extends State<SearchResultPage>
             Expanded(
               child: tabBarView(
                 controller: _tabController,
-                children: SearchType.values
+                children: SearchType.actives
                     .map(
                       (item) => switch (item) {
                         .all => SearchAllPanel(

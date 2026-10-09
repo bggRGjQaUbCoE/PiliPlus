@@ -155,14 +155,16 @@ class Language {
     support = json['support'];
     items =
         (json['items'] as List?)?.map((e) => LanguageItem.fromJson(e)).toList()
-          ?..sort((a, b) {
-            final aHasZh = a.lang?.contains('zh') ?? false;
-            final bHasZh = b.lang?.contains('zh') ?? false;
-            if (aHasZh != bHasZh) return aHasZh ? -1 : 1;
-            if (a.isAi != b.isAi) return a.isAi ? 1 : -1;
-            return 0;
-          });
+          ?..sort(_sort);
   }
+}
+
+int _sort(LanguageItem a, LanguageItem b) {
+  final aHasZh = a.lang?.contains('zh') ?? false;
+  final bHasZh = b.lang?.contains('zh') ?? false;
+  if (aHasZh != bHasZh) return aHasZh ? -1 : 1;
+  if (a.isAi != b.isAi) return a.isAi ? 1 : -1;
+  return 0;
 }
 
 class LanguageItem {

@@ -850,10 +850,16 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       player,
       configuration: VideoControllerConfiguration(
         enableHardwareAcceleration: hwdec != null,
-        androidAttachSurfaceAfterVideoParameters: false,
+        // Size the Android surface before rendering a paused first frame.
+        androidAttachSurfaceAfterVideoParameters: true,
         hwdec: hwdec,
       ),
     );
+
+    if (Platform.isAndroid) {
+      // Avoid sizing the surface using mpv's idle window between media loads.
+      player.setProperty('force-window', 'no');
+    }
 
     player.setMediaHeader(userAgent: BrowserUa.pc, referer: HttpString.baseUrl);
 

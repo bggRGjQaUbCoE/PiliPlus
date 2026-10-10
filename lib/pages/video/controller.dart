@@ -36,6 +36,7 @@ import 'package:PiliPlus/models_new/video/video_play_info/subtitle.dart';
 import 'package:PiliPlus/models_new/video/video_stein_edgeinfo/data.dart';
 import 'package:PiliPlus/pages/audio/view.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
+import 'package:PiliPlus/pages/later/base_controller.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/pages/sponsor_block/block_mixin.dart';
 import 'package:PiliPlus/pages/video/download_panel/view.dart';
@@ -494,6 +495,7 @@ class VideoDetailController extends GetxController
                   );
                   if (res.isSuccess) {
                     mediaList.removeAt(index);
+                    LaterBaseController.notifyChanged();
                   }
                 } else {
                   final res = await FavHttp.favVideo(

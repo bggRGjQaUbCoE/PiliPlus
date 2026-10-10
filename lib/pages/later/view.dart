@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/widgets/appbar/appbar.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart';
+import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show tabBarScrollPhysics;
@@ -25,7 +26,7 @@ class LaterPage extends StatefulWidget {
 }
 
 class _LaterPageState extends State<LaterPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, RouteAware, RouteAwareMixin {
   final LaterBaseController _baseCtr = Get.put(LaterBaseController());
   late final TabController _tabController;
 
@@ -49,10 +50,24 @@ class _LaterPageState extends State<LaterPage>
       length: LaterViewType.values.length,
       vsync: this,
     )..addListener(listener);
+    _baseCtr.setVisible(true);
+  }
+
+  @override
+  void didPushNext() {
+    _baseCtr.setVisible(false);
+    super.didPushNext();
+  }
+
+  @override
+  void didPopNext() {
+    _baseCtr.setVisible(true);
+    super.didPopNext();
   }
 
   @override
   void dispose() {
+    _baseCtr.setVisible(false);
     _tabController
       ..removeListener(listener)
       ..dispose();

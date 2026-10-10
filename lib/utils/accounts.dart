@@ -34,16 +34,18 @@ abstract final class Accounts {
   }
 
   static Future<void> refresh() {
+    final migrated = LoginAccount.initializeReplyAccount(account.values);
     for (final a in account.values) {
       for (final t in a.type) {
         accountMode[t.index] = a;
       }
     }
-    return Future.wait(
-      (accountMode.toSet()..removeWhere((i) => i.activated)).map(
+    return Future.wait([
+      for (final account in migrated) ?account.onChange(),
+      ...(accountMode.toSet()..removeWhere((i) => i.activated)).map(
         Request.buvidActive,
       ),
-    );
+    ]);
   }
 
   static Future<void> clear() async {

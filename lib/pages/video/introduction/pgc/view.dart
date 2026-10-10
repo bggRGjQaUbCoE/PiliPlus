@@ -16,6 +16,7 @@ import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/pgc/widgets/pgc_panel.dart';
 import 'package:PiliPlus/pages/video/introduction/pgc/widgets/season.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/action_item.dart';
+import 'package:PiliPlus/pages/video/widgets/video_together_action.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -458,6 +459,7 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
             semanticsLabel: '转发',
             text: NumUtils.numFormat(stat.share),
           ),
+          const VideoTogetherActionItem(),
         ],
       ),
     );

@@ -58,7 +58,6 @@ import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
-import 'package:PiliPlus/utils/ios/pip_helper.dart';
 import 'package:PiliPlus/utils/mobile_observer.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -151,6 +150,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   Offset? _initialFocalPoint;
 
   bool _pauseDueToPauseUponEnteringBackgroundMode = false;
+  Timer? _pipTransitionTimer;
+  bool _appInBackground = false;
 
   StreamSubscription? _brightnessListener;
   void _onBrightnessChanged(double value) {
@@ -333,21 +334,54 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Keep playing in the PiP window.
-    if (Platform.isIOS && IOSPipHelper.isActive) return;
-    if (!plPlayerController.continuePlayInBackground.value) {
-      late final player = plPlayerController.videoPlayerController;
-      if (const <AppLifecycleState>[.paused, .detached].contains(state)) {
-        if (player != null && player.state.playing) {
-          _pauseDueToPauseUponEnteringBackgroundMode = true;
-          player.pause();
-        }
-      } else {
-        if (_pauseDueToPauseUponEnteringBackgroundMode) {
-          _pauseDueToPauseUponEnteringBackgroundMode = false;
-          player?.play();
-        }
+    if (state == AppLifecycleState.resumed) {
+      _appInBackground = false;
+      _pipTransitionTimer?.cancel();
+      _pipTransitionTimer = null;
+      plPlayerController.resetPipTransition();
+      if (_pauseDueToPauseUponEnteringBackgroundMode) {
+        _pauseDueToPauseUponEnteringBackgroundMode = false;
+        plPlayerController.videoPlayerController?.play();
       }
+      return;
+    }
+
+    if (state == AppLifecycleState.inactive) {
+      _appInBackground = true;
+      return;
+    }
+
+    if (const <AppLifecycleState>[
+      .hidden,
+      .paused,
+      .detached,
+    ].contains(state)) {
+      _appInBackground = true;
+      if (plPlayerController.keepsPlayingInBackground) {
+        if (plPlayerController.isPipTransitionPending) {
+          _pipTransitionTimer?.cancel();
+          _pipTransitionTimer = Timer(
+            PlPlayerController.pipTransitionTimeout +
+                const Duration(milliseconds: 100),
+            _pauseForBackgroundIfNeeded,
+          );
+        }
+        return;
+      }
+      _pauseForBackgroundIfNeeded();
+    }
+  }
+
+  void _pauseForBackgroundIfNeeded() {
+    if (!mounted ||
+        !_appInBackground ||
+        plPlayerController.keepsPlayingInBackground) {
+      return;
+    }
+    final player = plPlayerController.videoPlayerController;
+    if (player != null && player.state.playing) {
+      _pauseDueToPauseUponEnteringBackgroundMode = true;
+      player.pause();
     }
   }
 
@@ -376,6 +410,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   @override
   void dispose() {
+    _pipTransitionTimer?.cancel();
     removeObserverMobile(this);
     _danmakuListener?.cancel();
     _tapGestureRecognizer.dispose();

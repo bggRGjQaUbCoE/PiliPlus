@@ -65,6 +65,7 @@ import 'package:PiliPlus/pages/sponsor_block/view.dart';
 import 'package:PiliPlus/pages/subscription/view.dart';
 import 'package:PiliPlus/pages/subscription_detail/view.dart';
 import 'package:PiliPlus/pages/video/view.dart';
+import 'package:PiliPlus/pages/video_together/view.dart';
 import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/pages/whisper/view.dart';
 import 'package:PiliPlus/pages/whisper_detail/view.dart';
@@ -83,6 +84,8 @@ class Routes {
     GetPage(name: '/webview', page: () => const WebviewPage()),
     // 设置
     GetPage(name: '/setting', page: () => const SettingPage()),
+    // 一起看
+    GetPage(name: '/videoTogether', page: () => const VideoTogetherPage()),
     //
     GetPage(name: '/fav', page: () => const FavPage()),
     //

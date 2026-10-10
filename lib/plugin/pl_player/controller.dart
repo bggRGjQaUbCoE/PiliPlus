@@ -1,4 +1,4 @@
-import 'dart:async' show StreamSubscription, Timer;
+import 'dart:async' show Completer, StreamSubscription, TimeoutException, Timer;
 import 'dart:convert' show ascii, utf8;
 import 'dart:io' show Platform;
 import 'dart:math' show max, min;
@@ -153,7 +153,11 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   late DataSource dataSource;
 
   Timer? _timer;
+  // ignore: cancel_subscriptions
   StreamSubscription? _subForSeek;
+  Completer<void>? _pendingSeekCompleter;
+  int _dataSourceGeneration = 0;
+  Future<void> _dataSourceTail = Future<void>.value();
 
   Box setting = GStorage.setting;
 
@@ -202,7 +206,31 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   late final bool autoPiP = Pref.autoPiP;
   bool get isPipMode =>
       (Platform.isAndroid && AndroidHelper.isPipMode) ||
+      (Platform.isIOS && IOSPipHelper.isActive) ||
       (PlatformUtils.isDesktop && isDesktopPip);
+  static const pipTransitionTimeout = Duration(seconds: 3);
+  Stopwatch? _pipTransitionClock;
+
+  bool get isPipTransitionPending {
+    if (isPipMode) {
+      _pipTransitionClock = null;
+      return false;
+    }
+    if (!(Platform.isAndroid || Platform.isIOS) ||
+        !_isAutoEnterPip ||
+        !playerStatus.isPlaying ||
+        !_isCurrVideoPage) {
+      _pipTransitionClock = null;
+      return false;
+    }
+    _pipTransitionClock ??= Stopwatch()..start();
+    return _pipTransitionClock!.elapsed < pipTransitionTimeout;
+  }
+
+  bool get keepsPlayingInBackground =>
+      continuePlayInBackground.value || isPipMode || isPipTransitionPending;
+
+  void resetPipTransition() => _pipTransitionClock = null;
   late bool isDesktopPip = false;
   late Rect _lastWindowBounds;
   static Rect? _lastPipBounds;
@@ -678,6 +706,17 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   bool _processing = false;
   bool get processing => _processing;
 
+  /// Immediately makes asynchronous work for the current media obsolete.
+  ///
+  /// A replacement URL can take a while to resolve. Invalidating here keeps a
+  /// previous `open`/seek/autoplay continuation from becoming visible while
+  /// that request is still in flight.
+  void invalidatePendingDataSource() {
+    _dataSourceGeneration += 1;
+    _processing = false;
+    _cancelSubForSeek();
+  }
+
   // offline
   bool get isFileSource => dataSource is FileSource;
 
@@ -707,8 +746,15 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     Volume? volume,
     bool autoFullScreenFlag = false,
   }) async {
+    final generation = ++_dataSourceGeneration;
+    final previous = _dataSourceTail;
+    final completed = Completer<void>();
+    _dataSourceTail = completed.future;
     try {
+      await previous;
+      if (generation != _dataSourceGeneration) return;
       _processing = true;
+      _cancelSubForSeek();
       this.isLive = isLive;
       _videoType = videoType ?? VideoType.ugc;
       this.width = width;
@@ -733,6 +779,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       if (_videoPlayerController != null &&
           _videoPlayerController!.state.playing) {
         await pause(notify: false);
+        if (generation != _dataSourceGeneration) return;
       }
 
       if (_playerCount == 0) {
@@ -740,6 +787,10 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       }
       // 配置Player 音轨、字幕等等
       await _createVideoController(dataSource, seekTo, volume);
+      if (generation != _dataSourceGeneration) {
+        await pause(notify: false);
+        return;
+      }
 
       if (_playerCount == 0) {
         _removeListeners();
@@ -758,16 +809,21 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
         triggerFullScreen(status: true);
       }
 
-      await _initializePlayer();
-      onInit?.call();
+      await _initializePlayer(generation);
+      if (generation == _dataSourceGeneration) onInit?.call();
     } catch (err, stackTrace) {
-      dataStatus.value = DataStatus.error;
+      if (generation == _dataSourceGeneration) {
+        dataStatus.value = DataStatus.error;
+      }
       if (kDebugMode) {
         debugPrint(stackTrace.toString());
         debugPrint('plPlayer err:  $err');
       }
     } finally {
-      _processing = false;
+      if (generation == _dataSourceGeneration) {
+        _processing = false;
+      }
+      if (!completed.isCompleted) completed.complete();
     }
   }
 
@@ -949,8 +1005,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   // 开始播放
-  Future<void> _initializePlayer() async {
-    if (_instance == null) return;
+  Future<void> _initializePlayer(int generation) async {
+    if (_instance == null || generation != _dataSourceGeneration) return;
     // 设置倍速
     if (_videoPlayerController != null) {
       final speed = isLive ? 1.0 : playbackSpeed;
@@ -958,10 +1014,11 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
         await setPlaybackSpeed(speed);
       }
     }
+    if (generation != _dataSourceGeneration) return;
     _initVideoFit();
 
     // 自动播放
-    if (_autoPlay) {
+    if (_autoPlay && generation == _dataSourceGeneration) {
       playIfExists();
     }
   }
@@ -1161,9 +1218,13 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   void _cancelSubForSeek() {
-    if (_subForSeek != null) {
-      _subForSeek!.cancel();
-      _subForSeek = null;
+    final subscription = _subForSeek;
+    _subForSeek = null;
+    subscription?.cancel();
+    final completer = _pendingSeekCompleter;
+    _pendingSeekCompleter = null;
+    if (completer != null && !completer.isCompleted) {
+      completer.complete();
     }
   }
 
@@ -1183,24 +1244,79 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   /// 跳转至指定位置
   Future<void> seekTo(Duration position, {bool isSeek = true}) async {
-    if (_playerCount == 0) {
+    final generation = _dataSourceGeneration;
+    final player = _videoPlayerController;
+    if (_playerCount == 0 || player == null) {
       return;
     }
+    bool isCurrentPlayer() =>
+        generation == _dataSourceGeneration &&
+        identical(player, _videoPlayerController) &&
+        _playerCount > 0;
+
     if (position < Duration.zero) {
       position = Duration.zero;
     }
     _heartDuration = position.inSeconds;
 
-    if (duration.value != 0) {
-      seek(position, isSeek: isSeek);
-    } else {
-      // if (kDebugMode) debugPrint('seek duration else');
-      _subForSeek?.cancel();
-      _subForSeek = duration.listen((_) {
-        seek(position, isSeek: isSeek);
-        _cancelSubForSeek();
-      });
+    Future<void> seekCurrentPlayer() async {
+      if (!isCurrentPlayer()) return;
+      if (isSeek) {
+        try {
+          await player.stream.buffer.first.timeout(
+            const Duration(seconds: 5),
+          );
+        } on TimeoutException {
+          if (!isCurrentPlayer()) return;
+        }
+      }
+      if (!isCurrentPlayer()) return;
+      danmakuController?.clear();
+      try {
+        await player.seek(position);
+        if (isCurrentPlayer()) _updateIOSPip(position);
+      } catch (e) {
+        if (kDebugMode) debugPrint('seek failed: $e');
+      }
     }
+
+    if (duration.value != 0) {
+      await seekCurrentPlayer();
+      return;
+    }
+
+    _cancelSubForSeek();
+    final completer = Completer<void>();
+    var seeking = false;
+    _pendingSeekCompleter = completer;
+    _subForSeek = duration.listen((value) async {
+      if (value <= 0 ||
+          seeking ||
+          !isCurrentPlayer() ||
+          !identical(_pendingSeekCompleter, completer)) {
+        return;
+      }
+      seeking = true;
+      final subscription = _subForSeek;
+      _subForSeek = null;
+      await subscription?.cancel();
+      try {
+        await seekCurrentPlayer();
+      } finally {
+        if (identical(_pendingSeekCompleter, completer)) {
+          _pendingSeekCompleter = null;
+          if (!completer.isCompleted) completer.complete();
+        }
+      }
+    });
+    await completer.future.timeout(
+      const Duration(seconds: 8),
+      onTimeout: () {
+        if (identical(_pendingSeekCompleter, completer)) {
+          _cancelSubForSeek();
+        }
+      },
+    );
   }
 
   /// 设置倍速
@@ -1648,6 +1764,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       return;
     }
 
+    _dataSourceGeneration += 1;
+    _processing = false;
     _playerCount = 0;
     if (removeSafeArea) {
       showSystemBar();

@@ -30,6 +30,9 @@
 
 Download a build from [Releases](https://github.com/bggRGjQaUbCoE/PiliPlus/releases), or clone the repository and build it locally.
 
+For synchronized viewing with VideoTogether-compatible rooms, see the
+[watch-together guide (Chinese)](docs/guidelines/videotogether.md).
+
 ## Disclaimer
 
 PiliPlus is a personal project developed for educational purposes, intended only for learning and testing. Please delete it within 24 hours of downloading.

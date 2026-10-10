@@ -539,7 +539,11 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
           } catch (_) {}
         }
 
-        hasLater.value = videoDetailCtr.sourceType == SourceType.watchLater;
+        // keep manual watch-later toggles when switching parts of the same
+        // video; reset only when jumping to a different bvid (#3139)
+        if (this.bvid != bvid) {
+          hasLater.value = videoDetailCtr.sourceType == SourceType.watchLater;
+        }
         this.bvid = bvid;
         queryVideoIntro();
       } else {

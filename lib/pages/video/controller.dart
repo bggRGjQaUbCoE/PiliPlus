@@ -327,9 +327,18 @@ class VideoDetailController extends GetxController
   late final watchProgress = GStorage.watchProgress;
   void cacheLocalProgress() {
     if (plPlayerController.playerStatus.isCompleted) {
-      watchProgress.put(cid.value.toString(), entry.totalTimeMilli);
-    } else if (playedTime case final playedTime?) {
-      watchProgress.put(cid.value.toString(), playedTime.inMilliseconds);
+      watchProgress.put(
+        cid.value.toString(),
+        isFileSource ? entry.totalTimeMilli : data.timeLength ?? 0,
+      );
+    } else {
+      // live player position; playedTime is only a snapshot from the last
+      // quality change and goes stale while watching (#2916)
+      final position = plPlayerController.positionInMilliseconds;
+      final ms = position > 0 ? position : playedTime?.inMilliseconds ?? 0;
+      if (ms > 0) {
+        watchProgress.put(cid.value.toString(), ms);
+      }
     }
   }
 
@@ -879,6 +888,13 @@ class VideoDetailController extends GetxController
         } else {
           defaultST = Duration(milliseconds: data.lastPlayTime);
         }
+      } else {
+        // returning to a part (fromReset): the server history only tracks the
+        // last watched part, so resume from the per-cid local record (#2916)
+        if (watchProgress.get(cid.value.toString()) case final int ms?
+            when ms > 0) {
+          defaultST = Duration(milliseconds: ms);
+        }
       }
 
       if (!isUgc && !fromReset && plPlayerController.enablePgcSkip) {
@@ -1252,9 +1268,7 @@ class VideoDetailController extends GetxController
   @override
   void onClose() {
     cid.close();
-    if (isFileSource) {
-      cacheLocalProgress();
-    }
+    cacheLocalProgress();
     introScrollCtr?.dispose();
     introScrollCtr = null;
     tabCtr.dispose();
@@ -1268,9 +1282,9 @@ class VideoDetailController extends GetxController
   }
 
   void onReset({bool isStein = false}) {
-    if (isFileSource) {
-      cacheLocalProgress();
-    }
+    // cache progress of the outgoing part for online videos as well, so
+    // switching parts and returning can resume (#2916)
+    cacheLocalProgress();
 
     playedTime = null;
     defaultST = null;

@@ -24,6 +24,7 @@ import 'package:PiliPlus/models/common/video/live_quality.dart';
 import 'package:PiliPlus/models/common/video/subtitle_pref_type.dart';
 import 'package:PiliPlus/models/common/video/video_decode_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
+import 'package:PiliPlus/models/user/danmaku_assistant.dart';
 import 'package:PiliPlus/models/user/danmaku_rule.dart';
 import 'package:PiliPlus/models/user/info.dart';
 import 'package:PiliPlus/pages/setting/pages/fullscreen_sc_size.dart'
@@ -73,6 +74,11 @@ abstract final class Pref {
     LocalCacheKey.danmakuFilterRules,
     defaultValue: RuleFilter.empty(),
   );
+
+  static DanmakuAssistantConfig get danmakuAssistantConfig =>
+      DanmakuAssistantConfig.fromStorage(
+        _localCache.get(LocalCacheKey.danmakuAssistantConfig),
+      );
 
   static void setBlackMid(int mid) => _localCache.put(
     LocalCacheKey.blackMids,

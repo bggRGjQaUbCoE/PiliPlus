@@ -110,9 +110,7 @@ class HorizontalMemberPageController
 
   @override
   Future<void> onRefresh() {
-    if (!hasPrev) {
-      return Future.syncValue(null);
-    }
+    assert(hasPrev);
     isLoadPrevious = true;
     return queryData();
   }

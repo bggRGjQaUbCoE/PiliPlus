@@ -2,12 +2,25 @@ import 'dart:math' show pow;
 
 import 'package:flutter/widgets.dart' show BuildContext, MediaQuery;
 
+const unitArr = ['B', 'K', 'M', 'G', 'T', 'P'];
+
 extension ImageExtension on num {
   int? cacheSize(BuildContext context) {
     if (this == 0) {
       return null;
     }
     return (this * MediaQuery.devicePixelRatioOf(context)).round();
+  }
+
+  String get formatSize {
+    var value = this;
+    int index = 0;
+    while (value >= 1024) {
+      index++;
+      value = value / 1024;
+      if (index == unitArr.length - 1) break;
+    }
+    return '${value.toStringAsFixed(2)}${unitArr[index]}';
   }
 }
 

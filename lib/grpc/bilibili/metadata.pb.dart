@@ -26,7 +26,7 @@ class Metadata extends $pb.GeneratedMessage {
     $core.String? buvid,
     $core.String? platform,
   }) {
-    final result = create();
+    final result = Metadata._();
     if (accessKey != null) result.accessKey = accessKey;
     if (mobiApp != null) result.mobiApp = mobiApp;
     if (device != null) result.device = device;
@@ -41,16 +41,16 @@ class Metadata extends $pb.GeneratedMessage {
 
   factory Metadata.fromBuffer($core.List<$core.int> data,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
+      Metadata()..mergeFromBuffer(data, registry);
   factory Metadata.fromJson($core.String json,
           [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+      Metadata()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Metadata',
       package:
           const $pb.PackageName(_omitMessageNames ? '' : 'bilibili.metadata'),
-      createEmptyInstance: create)
+      createEmptyInstance: Metadata.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'accessKey')
     ..aOS(2, _omitFieldNames ? '' : 'mobiApp')
     ..aOS(3, _omitFieldNames ? '' : 'device')
@@ -70,12 +70,14 @@ class Metadata extends $pb.GeneratedMessage {
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use Metadata() / Metadata.new instead')
   static Metadata create() => Metadata._();
+  static $pb.GeneratedMessage $_createMessage() => Metadata._();
   @$core.override
-  Metadata createEmptyInstance() => create();
+  Metadata createEmptyInstance() => Metadata._();
   @$core.pragma('dart2js:noInline')
-  static Metadata getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Metadata>(create);
+  static Metadata getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<Metadata>(Metadata.$_createMessage);
   static Metadata? _defaultInstance;
 
   @$pb.TagNumber(1)

@@ -43,6 +43,7 @@ class _MemberAudioState extends State<MemberAudio>
     super.build(context);
     final colorScheme = ColorScheme.of(context);
     return refreshIndicator(
+      isClampingScrollPhysics: true,
       onRefresh: _controller.onRefresh,
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),

@@ -29,8 +29,6 @@ import android.provider.Settings;
 import android.util.Rational;
 import android.view.WindowManager;
 
-import androidx.annotation.DrawableRes;
-import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
@@ -40,9 +38,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Objects;
 
-@Keep
+import static com.example.piliplus.MediaHelper.getRemoteAction;
+
 public final class AndroidHelper {
     public static final boolean isFoldable;
 
@@ -175,7 +173,9 @@ public final class AndroidHelper {
                     activity.setPictureInPictureParams(builder.build());
                 }
             } else {
-                activity.enterPictureInPictureMode(builder.build());
+                PictureInPictureParams params = builder.build();
+                activity.enterPictureInPictureMode(params);
+                activity.setPictureInPictureParams(params);
             }
         }
     }
@@ -190,42 +190,27 @@ public final class AndroidHelper {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private static void setPipActions(Activity activity, PictureInPictureParams.Builder builder, boolean isLive, boolean isPlaying) {
-        ComponentName mbrComponent = MediaHelper.getMediaButtonReceiverComponent(activity);
-        if (mbrComponent == null) return;
+    private static void setPipActions(Context context, PictureInPictureParams.Builder builder, boolean isLive, boolean isPlaying) {
         ArrayList<RemoteAction> actionList = new ArrayList<>(3);
         if (!isLive) {
-            actionList.add(getRemoteAction(mbrComponent, activity, R.drawable.ic_player_rewind_10s, "ACTION_REWIND", (int) PlaybackState.ACTION_REWIND));
+            actionList.add(getRemoteAction(context, R.drawable.ic_player_rewind_10s, "ACTION_REWIND", (int) PlaybackState.ACTION_REWIND));
         }
         if (isPlaying) {
-            actionList.add(getRemoteAction(mbrComponent, activity, R.drawable.ic_player_pause, "ACTION_PAUSE", (int) PlaybackState.ACTION_PAUSE));
+            actionList.add(getRemoteAction(context, R.drawable.ic_player_pause, "ACTION_PAUSE", (int) PlaybackState.ACTION_PAUSE));
         } else {
-            actionList.add(getRemoteAction(mbrComponent, activity, R.drawable.ic_player_play, "ACTION_PLAY", (int) PlaybackState.ACTION_PLAY));
+            actionList.add(getRemoteAction(context, R.drawable.ic_player_play, "ACTION_PLAY", (int) PlaybackState.ACTION_PLAY));
         }
         if (!isLive) {
-            actionList.add(getRemoteAction(mbrComponent, activity, R.drawable.ic_player_fast_forward_10s, "ACTION_FAST_FORWARD", (int) PlaybackState.ACTION_FAST_FORWARD));
+            actionList.add(getRemoteAction(context, R.drawable.ic_player_fast_forward_10s, "ACTION_FAST_FORWARD", (int) PlaybackState.ACTION_FAST_FORWARD));
         }
         builder.setActions(actionList);
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    private static RemoteAction getRemoteAction(@NonNull ComponentName mbrComponent, Activity activity, @DrawableRes int resId, String title, int action) {
-        return new RemoteAction(
-                Icon.createWithResource(activity, resId),
-                title,
-                title,
-                Objects.requireNonNull(MediaHelper.buildMediaButtonPendingIntent(activity, mbrComponent, action))
-        );
     }
 
     public static void disableAutoEnterPip(long engineId) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             Activity activity = JniFlutterPlugin.getActivity(engineId);
             if (activity != null) {
-                activity.setPictureInPictureParams(new PictureInPictureParams.Builder()
-                        .setAutoEnterEnabled(false)
-                        .build()
-                );
+                activity.setPictureInPictureParams(new PictureInPictureParams.Builder().setAutoEnterEnabled(false).build());
             }
         }
     }
@@ -269,11 +254,10 @@ public final class AndroidHelper {
         }
     }
 
-    @SuppressLint("BlockedPrivateApi")
     public static String[] fontFamilies() {
         Map<String, Typeface> systemFontMap = null;
         try {
-            Method method = Typeface.class.getDeclaredMethod("getSystemFontMap");
+            @SuppressLint("BlockedPrivateApi") Method method = Typeface.class.getDeclaredMethod("getSystemFontMap");
             method.setAccessible(true);
             systemFontMap = (Map<String, Typeface>) method.invoke(null);
         } catch (Exception ignored) {
@@ -284,7 +268,7 @@ public final class AndroidHelper {
             } catch (Exception ignored0) {
             }
         }
-        if (null != systemFontMap) {
+        if (null != systemFontMap && !systemFontMap.isEmpty()) {
             return systemFontMap.keySet().toArray(new String[0]);
         }
         return null;
@@ -299,7 +283,7 @@ public final class AndroidHelper {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.S)
-    public static boolean isDomainVerified(String domain) {
+    public static boolean isDomainVerified(@NonNull String domain) {
         try {
             Context context = getContext();
             DomainVerificationManager manager =
@@ -317,7 +301,7 @@ public final class AndroidHelper {
         return false;
     }
 
-    public static String openUrl(String url) {
+    public static String openUrl(@NonNull String url) {
         Context context = getContext();
         String pkg = context.getPackageName();
         PackageManager pm = context.getPackageManager();
@@ -326,21 +310,29 @@ public final class AndroidHelper {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
+            ArrayList<Intent> external = new ArrayList<>();
             for (ResolveInfo info : pm.queryIntentActivities(intent, 0)) {
                 String packageName = info.activityInfo.packageName;
                 if (!packageName.equals(pkg)) {
-                    intent.setPackage(packageName);
-                    context.startActivity(intent);
-                    return null;
+                    external.add(new Intent(intent).setComponent(new ComponentName(packageName, info.activityInfo.name)));
                 }
             }
-            return "package not found";
+            if (external.isEmpty()) {
+                return "package not found";
+            } else if (external.size() == 1) {
+                intent = external.get(0);
+            } else {
+                intent = Intent.createChooser(external.remove(0), null);
+                intent.putExtra(Intent.EXTRA_INITIAL_INTENTS, external.toArray(new Intent[0]));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            }
+            context.startActivity(intent);
+            return null;
         } catch (Exception e) {
             return e.toString();
         }
     }
 
-    @Keep
     public static final class ToDart {
         public static volatile Runnable onUserLeaveHint;
         public static Runnable onConfigurationChanged;

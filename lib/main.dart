@@ -18,9 +18,11 @@ import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/calc_window_position.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
+import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/extension/core_palettes_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/font_utils.dart';
+import 'package:PiliPlus/utils/ios/pip_helper.dart';
 import 'package:PiliPlus/utils/json_file_handler.dart';
 import 'package:PiliPlus/utils/max_screen_size.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
@@ -96,9 +98,9 @@ void main() async {
   try {
     await GStorage.init();
   } catch (e) {
-    await Utils.copyText(e.toString());
+    await Utils.copyText(e.toString(), needToast: false);
     if (kDebugMode) debugPrint('GStorage init error: $e');
-    exit(0);
+    DeviceUtils.exitApp();
   }
   ScaledWidgetsFlutterBinding.instance.scaleFactor = Pref.uiScale;
   await Future.wait([
@@ -117,6 +119,7 @@ void main() async {
     await Future.wait([
       if (Pref.horizontalScreen) ?fullMode() else ?portraitUpMode(),
       setupServiceLocator(),
+      if (Platform.isIOS) IOSPipHelper.init(),
     ]);
   } else if (Platform.isWindows) {
     if (await WebViewEnvironment.getAvailableVersion() != null) {
@@ -135,6 +138,8 @@ void main() async {
   RequestUtils.syncHistoryStatus();
 
   SmartDialog.config.toast = SmartConfigToast(displayType: .onlyRefresh);
+
+  FocusManager.instance.addEarlyKeyEventHandler(_onKeyEvent);
 
   if (PlatformUtils.isMobile) {
     SystemChrome.setEnabledSystemUIMode(.edgeToEdge);
@@ -163,16 +168,12 @@ void main() async {
       ScreenBrightnessPlatform.instance.setAutoReset(false);
     }
   } else if (PlatformUtils.isDesktop) {
-    FocusManager.instance.addEarlyKeyEventHandler(_onKeyEvent);
-
     await windowManager.ensureInitialized();
 
     final windowOptions = WindowOptions(
       minimumSize: const Size(400, 720),
       skipTaskbar: false,
-      titleBarStyle: Pref.showWindowTitleBar
-          ? TitleBarStyle.normal
-          : TitleBarStyle.hidden,
+      titleBarStyle: Pref.showWindowTitleBar ? .normal : .hidden,
       title: Constants.appName,
     );
     windowManager.waitUntilReadyToShow(windowOptions, () async {
@@ -215,7 +216,7 @@ void main() async {
 }
 
 KeyEventResult _onKeyEvent(KeyEvent event) {
-  if (event.logicalKey == .escape && event is KeyDownEvent) {
+  if (event is KeyDownEvent && event.logicalKey == .escape) {
     _onBack();
     return .handled;
   }
@@ -249,20 +250,30 @@ class MyApp extends StatelessWidget {
 
   static (ThemeData, ThemeData) getAllTheme() {
     final dynamicColor = _light != null && _dark != null && Pref.dynamicColor;
-    late final brandColor = colorThemeTypes[Pref.customColor].color;
-    late final variant = Pref.schemeVariant;
+
+    final ColorScheme lightScheme, darkScheme;
+    if (dynamicColor) {
+      lightScheme = _light!;
+      darkScheme = _dark!;
+    } else {
+      final customColor = Pref.customColor;
+      final brandColor =
+          colorThemeTypes.elementAtOrNull(customColor)?.color ??
+          Color(customColor);
+      final variant = Pref.schemeVariant;
+
+      lightScheme = brandColor.asColorSchemeSeed(variant, .light);
+      darkScheme = brandColor.asColorSchemeSeed(variant, .dark);
+    }
+
     return (
       ThemeUtils.lightTheme = ThemeUtils.getThemeData(
-        colorScheme: dynamicColor
-            ? _light!
-            : brandColor.asColorSchemeSeed(variant, .light),
+        colorScheme: lightScheme,
         isDynamic: dynamicColor,
       ),
       ThemeUtils.darkTheme = ThemeUtils.getThemeData(
         isDark: true,
-        colorScheme: dynamicColor
-            ? _dark!
-            : brandColor.asColorSchemeSeed(variant, .dark),
+        colorScheme: darkScheme,
         isDynamic: dynamicColor,
       ),
     );

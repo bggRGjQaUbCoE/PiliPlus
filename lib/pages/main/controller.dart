@@ -51,6 +51,7 @@ class MainController extends GetxController
   late bool hasHome = false;
   late final homeController = Get.putOrFind(HomeController.new);
 
+  late final disableLikeMsg = Pref.disableLikeMsg;
   late DynamicBadgeMode msgBadgeMode = Pref.msgBadgeMode;
   late Set<MsgUnReadType> msgUnReadTypes = Pref.msgUnReadTypeV2;
   late final RxnString msgUnReadCount = RxnString(null);
@@ -63,7 +64,7 @@ class MainController extends GetxController
   late final optTabletNav = Pref.optTabletNav;
 
   late bool directExitOnBack = Pref.directExitOnBack;
-  late bool showTrayIcon = Pref.showTrayIcon;
+  late final bool showTrayIcon = Pref.showTrayIcon;
   late bool minimizeOnExit = Pref.minimizeOnExit;
   late bool pauseOnMinimize = Pref.pauseOnMinimize;
   late bool isPlaying = false;
@@ -153,7 +154,7 @@ class MainController extends GetxController
               count += response.at;
               break;
             case MsgUnReadType.like:
-              count += response.like;
+              if (!disableLikeMsg) count += response.like;
               break;
             case MsgUnReadType.sysMsg:
               count += response.sysMsg;

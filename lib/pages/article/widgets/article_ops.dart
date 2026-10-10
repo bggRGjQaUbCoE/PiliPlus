@@ -72,6 +72,7 @@ class ArticleOpus extends StatelessWidget {
                       child: CachedNetworkImage(
                         width: width,
                         height: height,
+                        gaplessPlayback: true,
                         memCacheWidth: width.cacheSize(context),
                         imageUrl: ImageUtils.thumbnailUrl(card.url, 60),
                         placeholder: (_, _) => const SizedBox.shrink(),

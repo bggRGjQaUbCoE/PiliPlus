@@ -36,6 +36,7 @@ abstract final class ApiType {
       Api.liveRoomDmToken,
       Api.liveRoomDmPrefetch,
       Api.superChatMsg,
+      Api.getLiveInfoByUser,
 
       // Api.memberInfo,
       // Api.bgmDetail,
@@ -87,6 +88,7 @@ abstract final class ApiType {
       Api.searchDefault,
       Api.searchSuggest,
       Api.searchByType,
+      Api.searchAll,
       Api.dynSearch,
       Api.searchArchive,
       Api.liveSearch,

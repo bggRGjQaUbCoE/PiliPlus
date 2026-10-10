@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:PiliPlus/common/widgets/custom_tooltip.dart';
+import 'package:PiliPlus/common/widgets/emote_tooltip.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart'
@@ -52,11 +52,6 @@ class _LiveEmotePanelState extends State<LiveEmotePanel>
 
   Widget _buildBody(LoadingState<List<LiveEmoteDatum>?> loadingState) {
     late final theme = Theme.of(context);
-    late final color = ElevationOverlay.colorWithOverlay(
-      theme.colorScheme.surface,
-      theme.hoverColor,
-      2,
-    );
     return switch (loadingState) {
       Loading() => m3eLoading,
       Success(:final response) =>
@@ -107,46 +102,13 @@ class _LiveEmotePanelState extends State<LiveEmotePanel>
                                       widget.onSendEmoticonUnique(e);
                                     }
                                   },
-                                  child: CustomTooltip(
-                                    indicator: () => Triangle(
-                                      color: color,
-                                      size: const Size(14, 8),
-                                    ),
-                                    overlayWidget: () => Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: color,
-                                        borderRadius: const BorderRadius.all(
-                                          Radius.circular(8),
-                                        ),
-                                      ),
-                                      child: Column(
-                                        spacing: 4,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          NetworkImgLayer(
-                                            src: e.url,
-                                            width: 65,
-                                            height: 65,
-                                            type: ImageType.emote,
-                                            fit: BoxFit.contain,
-                                          ),
-                                          Text(
-                                            e.emoji == null
-                                                ? ''
-                                                : e.emoji!.startsWith('[')
-                                                ? e.emoji!.substring(
-                                                    1,
-                                                    e.emoji!.length - 1,
-                                                  )
-                                                : e.emoji!,
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+                                  child: emoteTooltipBuilder(
+                                    enable: true,
+                                    size: 70,
+                                    colorScheme: theme.colorScheme,
+                                    url: e.url,
+                                    emote: e.emoji,
+                                    triggerMode: kTriggerMode,
                                     child: Padding(
                                       padding: const EdgeInsets.all(6),
                                       child: NetworkImgLayer(

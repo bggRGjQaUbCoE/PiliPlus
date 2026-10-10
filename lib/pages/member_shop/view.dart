@@ -9,10 +9,9 @@ import 'package:PiliPlus/pages/member_shop/controller.dart';
 import 'package:PiliPlus/pages/member_shop/widgets/item.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/waterfall.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:waterfall_flow/waterfall_flow.dart'
-    hide SliverWaterfallFlowDelegateWithMaxCrossAxisExtent;
 
 class MemberShop extends StatefulWidget {
   const MemberShop({
@@ -45,6 +44,7 @@ class _MemberShopState extends State<MemberShop>
   Widget build(BuildContext context) {
     super.build(context);
     return refreshIndicator(
+      isClampingScrollPhysics: true,
       onRefresh: _controller.onRefresh,
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -66,16 +66,16 @@ class _MemberShopState extends State<MemberShop>
   @override
   bool get wantKeepAlive => true;
 
-  late final gridDelegate = SliverWaterfallFlowDelegateWithMaxCrossAxisExtent(
+  late final gridDelegate = SliverSimpleGridDelegateWithMaxCrossAxisExtent_(
     maxCrossAxisExtent: Grid.smallCardWidth,
-    mainAxisSpacing: Style.safeSpace,
-    crossAxisSpacing: Style.safeSpace,
   );
 
   Widget _buildBody(LoadingState<List<SpaceShopItem>?> loadingState) {
     switch (loadingState) {
       case Loading():
-        return SliverWaterfallFlow(
+        return SliverMasonryGrid(
+          mainAxisSpacing: Style.safeSpace,
+          crossAxisSpacing: Style.safeSpace,
           gridDelegate: gridDelegate,
           delegate: const SliverSingleChildDelegate(
             count: 10,
@@ -86,12 +86,12 @@ class _MemberShopState extends State<MemberShop>
         if (response == null || response.isEmpty) {
           return HttpError(onReload: _controller.onReload);
         }
-        Widget sliver = SliverWaterfallFlow(
+        Widget sliver = SliverMasonryGrid(
+          mainAxisSpacing: Style.safeSpace,
+          crossAxisSpacing: Style.safeSpace,
           gridDelegate: gridDelegate,
           delegate: SliverChildBuilderDelegate(
-            (_, index) {
-              return MemberShopItem(item: response[index]);
-            },
+            (context, index) => MemberShopItem(item: response[index]),
             childCount: response.length,
           ),
         );

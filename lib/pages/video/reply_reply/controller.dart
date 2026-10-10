@@ -2,6 +2,7 @@ import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo, DetailListReply, Mode;
 import 'package:PiliPlus/grpc/reply.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/models_new/dynamic/dyn_mention/item.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/pages/common/reply_controller.dart';
 import 'package:PiliPlus/pages/video/reply_new/view.dart';
@@ -345,6 +346,7 @@ class VideoReplyReplyController extends ReplyController
     int? oid,
     int? replyType,
     int? index,
+    MentionItem? mentionItem,
   }) {
     assert(replyItem != null && index != null);
 

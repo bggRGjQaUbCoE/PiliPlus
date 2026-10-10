@@ -400,6 +400,18 @@ class Basic {
   int? commentType;
   String? ridStr;
 
+  ({int oid, int replyType})? get replyInfo {
+    if (commentIdStr != null && commentType != null) {
+      try {
+        return (
+          oid: int.parse(commentIdStr!),
+          replyType: commentType!,
+        );
+      } catch (_) {}
+    }
+    return null;
+  }
+
   Basic.fromJson(Map<String, dynamic> json) {
     commentIdStr = json['comment_id_str'];
     commentType = safeToInt(json['comment_type']);
@@ -1179,6 +1191,7 @@ class RichTextNodeItem {
 class Emoji {
   String? url;
   late num size;
+  String? jumpUrl;
 
   Emoji.fromJson(Map<String, dynamic> json) {
     url =
@@ -1186,6 +1199,7 @@ class Emoji {
         nonNullOrEmptyString(json['gif_url']) ??
         nonNullOrEmptyString(json['icon_url']);
     size = json['size'] ?? 1;
+    jumpUrl = json['jump_url'];
   }
 }
 

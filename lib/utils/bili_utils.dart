@@ -20,6 +20,13 @@ abstract final class BiliUtils {
     return (attr & 1) == 0;
   }
 
+  static bool isFavFolderFull(int attr, int count) {
+    if (isDefaultFav(attr)) {
+      return count >= 50000;
+    }
+    return count >= 1000;
+  }
+
   static bool isCustomFollowTag(int? tagid) {
     return tagid != null && tagid != 0 && tagid != -10 && tagid != -2;
   }
@@ -44,6 +51,18 @@ abstract final class BiliUtils {
     1 => _liveGuard1,
     2 => _liveGuard2,
     3 => _liveGuard3,
+    _ => null,
+  };
+
+  static String? pgcType2Label(int? pgcType) => switch (pgcType) {
+    -1 => '课程',
+    1 => '番剧',
+    2 => '电影',
+    3 => '纪录片',
+    4 => '国创',
+    5 => '电视剧',
+    6 => '漫画',
+    7 => '综艺',
     _ => null,
   };
 }

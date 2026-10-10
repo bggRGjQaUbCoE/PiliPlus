@@ -12,20 +12,17 @@ class MediaPgcSkeleton extends StatefulWidget {
 class _MediaPgcSkeletonState extends State<MediaPgcSkeleton> {
   @override
   Widget build(BuildContext context) {
-    Color bgColor = Theme.of(context).colorScheme.onInverseSurface;
+    final bgColor = ColorScheme.of(context).onInverseSurface;
     return Skeleton(
       child: Padding(
-        padding: const .symmetric(
-          horizontal: Style.safeSpace,
-          vertical: 7,
-        ),
+        padding: const .symmetric(horizontal: Style.safeSpace, vertical: 5),
         child: Row(
           children: [
             Container(
               width: 111,
               height: 148,
               decoration: BoxDecoration(
-                borderRadius: const BorderRadius.all(Radius.circular(6)),
+                borderRadius: const .all(Radius.circular(6)),
                 color: bgColor,
               ),
             ),
@@ -58,17 +55,6 @@ class _MediaPgcSkeletonState extends State<MediaPgcSkeleton> {
                       color: bgColor,
                       width: 150,
                       height: 13,
-                    ),
-                    const Spacer(),
-                    Container(
-                      width: 90,
-                      height: 35,
-                      decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(20),
-                        ),
-                        color: bgColor,
-                      ),
                     ),
                   ],
                 ),

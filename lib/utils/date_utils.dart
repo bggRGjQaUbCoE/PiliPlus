@@ -6,6 +6,7 @@ abstract final class DateFormatUtils {
   static final _shortFormatD = DateFormat('MM-dd HH:mm');
   static final longFormatD = DateFormat('yyyy-MM-dd HH:mm');
   static final longFormatDs = DateFormat('yyyy-MM-dd HH:mm:ss');
+  static final only0_9 = DateFormat('yyyyMMddHHmmss');
 
   static String dateFormat(
     int? time, {

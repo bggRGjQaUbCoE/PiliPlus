@@ -15,6 +15,7 @@ import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/dynamics/result.dart' show FilePicModel;
+import 'package:PiliPlus/models_new/dynamic/dyn_mention/item.dart';
 import 'package:PiliPlus/pages/common/publish/common_rich_text_pub_page.dart';
 import 'package:PiliPlus/pages/dynamics_mention/controller.dart';
 import 'package:PiliPlus/pages/emote/controller.dart';
@@ -34,14 +35,6 @@ import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart' hide TextField;
 
 class ReplyPage extends CommonRichTextPubPage {
-  final int oid;
-  final int root;
-  final int parent;
-  final int replyType;
-  final ReplyInfo? replyItem;
-  final String? hint;
-  final bool canUploadPic;
-
   const ReplyPage({
     super.key,
     super.items,
@@ -54,7 +47,18 @@ class ReplyPage extends CommonRichTextPubPage {
     this.replyItem,
     this.hint,
     this.canUploadPic = true,
+    this.mentionItem,
   });
+
+  final int oid;
+  final int root;
+  final int parent;
+  final int replyType;
+  final ReplyInfo? replyItem;
+  final String? hint;
+  final bool canUploadPic;
+  // mention
+  final MentionItem? mentionItem;
 
   @override
   State<ReplyPage> createState() => _ReplyPageState();
@@ -501,5 +505,23 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
         ..syncRichText(delta)
         ..value = newValue;
     }
+  }
+
+  @override
+  MentionItem? get topMentionItem {
+    final mentionItem = widget.mentionItem;
+    if (mentionItem != null) return mentionItem;
+
+    final replyItem = widget.replyItem;
+    if (replyItem != null) {
+      final basic = replyItem.memberV2.basic;
+      return MentionItem(
+        face: basic.face,
+        name: basic.name,
+        uid: replyItem.mid.toString(),
+      );
+    }
+
+    return null;
   }
 }

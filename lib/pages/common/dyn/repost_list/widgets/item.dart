@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/emote_tooltip.dart';
 import 'package:PiliPlus/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart';
@@ -188,11 +189,17 @@ List<InlineSpan> _parseSummary(
             (emoteSize.hasEmojiSize() ? emoteSize.emojiSize : 1) * 20.0;
         children.add(
           WidgetSpan(
-            child: NetworkImgLayer(
-              src: emote.emoteUrl,
-              width: size,
-              height: size,
-              type: .emote,
+            child: emoteTooltipBuilder(
+              triggerMode: .tap,
+              url: emote.emoteUrl,
+              emote: emote.rawText.words,
+              colorScheme: colorScheme,
+              child: NetworkImgLayer(
+                src: emote.emoteUrl,
+                width: size,
+                height: size,
+                type: .emote,
+              ),
             ),
           ),
         );
@@ -298,11 +305,17 @@ List<InlineSpan> _parseDesc(ColorScheme colorScheme, List<Description> desc) {
         final size = (e.hasEmojiSize() ? e.emojiSize : 1) * 20.0;
         children.add(
           WidgetSpan(
-            child: NetworkImgLayer(
-              src: e.uri,
-              width: size,
-              height: size,
-              type: .emote,
+            child: emoteTooltipBuilder(
+              url: e.uri,
+              emote: e.text,
+              triggerMode: .tap,
+              colorScheme: colorScheme,
+              child: NetworkImgLayer(
+                src: e.uri,
+                width: size,
+                height: size,
+                type: .emote,
+              ),
             ),
           ),
         );

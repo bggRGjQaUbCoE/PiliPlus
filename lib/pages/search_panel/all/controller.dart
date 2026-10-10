@@ -1,77 +1,55 @@
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/search.dart';
-import 'package:PiliPlus/models/common/search/search_type.dart';
 import 'package:PiliPlus/models/search/result.dart';
-import 'package:PiliPlus/pages/search_panel/controller.dart';
-import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/id_utils.dart';
+import 'package:PiliPlus/models/search/search_esports.dart';
+import 'package:PiliPlus/pages/search_panel/video/controller.dart';
 
-class SearchAllController
-    extends SearchPanelController<SearchAllData, dynamic> {
+class SearchAllController extends SearchVideoController with SearchVideoMixin {
   SearchAllController({
     required super.keyword,
     required super.searchType,
     required super.tag,
   });
 
-  late bool hasJump2Video = false;
+  List<SearchUser>? searchUser;
+  List<SearchPgcItemModel>? searchMedia;
+  List<SearchActivity>? searchActivity;
+  SearchEsports? searchEsports;
 
   @override
-  void onInit() {
-    super.onInit();
-    jump2Video();
-  }
-
-  @override
-  List? getDataList(response) {
-    return response.list;
-  }
-
-  @override
-  bool customHandleResponse(bool isRefresh, Success response) {
-    searchResultController?.count[searchType.index] =
-        response.response.numResults ?? 0;
-    if (searchType == SearchType.video && !hasJump2Video && isRefresh) {
-      hasJump2Video = true;
-      onPushDetail(response.response.list);
+  bool customHandleResponse(bool isRefresh, Success<SearchVideoData> response) {
+    final res = response.response;
+    if (isRefresh) {
+      searchType_ = .video;
+      searchUser = res.searchUser;
+      searchMedia = res.searchMedia;
+      searchActivity = res.searchActivity;
+      searchEsports = res.searchEsports;
     }
-    return false;
+    return super.customHandleResponse(isRefresh, response);
   }
 
   @override
-  Future<LoadingState<SearchAllData>> customGetData() => SearchHttp.searchAll(
-    keyword: keyword,
-    page: page,
-    order: order,
-    duration: null,
-    tids: videoZoneType?.tids,
-    orderSort: userOrderType?.value.orderSort,
-    userType: userType?.value.index,
-    categoryId: articleZoneType?.value.categoryId,
-    pubBegin: pubBegin,
-    pubEnd: pubEnd,
-  );
+  late var searchType_ = searchType;
 
-  void onPushDetail(dynamic resultList) {
-    try {
-      int? aid = int.tryParse(keyword);
-      if (aid != null && resultList.first.aid == aid) {
-        PiliScheme.videoPush(aid, null, showDialog: false);
-      }
-    } catch (_) {}
+  void _computeActualSearchType() {
+    if (order.isNotEmpty ||
+        videoDurationType != .all ||
+        videoZoneType != .all ||
+        pubBegin != null ||
+        pubEnd != null) {
+      searchType_ = .video;
+      return;
+    }
+    searchType_ = .all;
   }
 
-  void jump2Video() {
-    if (IdUtils.avRegexExact.hasMatch(keyword)) {
-      hasJump2Video = true;
-      PiliScheme.videoPush(
-        int.parse(keyword.substring(2)),
-        null,
-        showDialog: false,
-      );
-    } else if (IdUtils.bvRegexExact.hasMatch(keyword)) {
-      hasJump2Video = true;
-      PiliScheme.videoPush(null, keyword, showDialog: false);
-    }
+  @override
+  Future<void> onRefresh() {
+    _computeActualSearchType();
+    searchUser = null;
+    searchMedia = null;
+    searchActivity = null;
+    searchEsports = null;
+    return super.onRefresh();
   }
 }

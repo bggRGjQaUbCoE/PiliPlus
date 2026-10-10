@@ -71,7 +71,10 @@ class _PlDanmakuState extends State<PlDanmaku> {
     if (oldWidget.notFullscreen != widget.notFullscreen &&
         !DanmakuOptions.sameFontScale) {
       _controller?.updateOption(
-        DanmakuOptions.get(notFullscreen: widget.notFullscreen),
+        DanmakuOptions.get(
+          notFullscreen: widget.notFullscreen,
+          speed: playerController.playbackSpeed,
+        ),
       );
     }
   }

@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -15,28 +13,31 @@ import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:material_ui/material_ui.dart';
 
 abstract final class SearchHttp {
   // 获取搜索建议
+  @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<SearchSuggestModel>> searchSuggest({
     required String term,
   }) async {
     final res = await Request().get(
       Api.searchSuggest,
-      queryParameters: {
+      queryParameters: await WbiSign.makSign({
         'term': term,
-        'main_ver': 'v1',
-        'highlight': term,
-      },
+        'highlight': 0,
+        'spmid': 333.1365,
+        'web_location': 333.1365,
+      }),
     );
-    if (res.data is String) {
-      Map<String, dynamic> resultMap = json.decode(res.data);
-      if (resultMap['code'] == 0) {
-        if (resultMap['result'] is Map) {
-          return Success(SearchSuggestModel.fromJson(resultMap['result']));
-        }
+    final resData = res.data;
+    if (resData is Map && resData['code'] == 0) {
+      try {
+        return Success(SearchSuggestModel.fromJson(resData['data']['result']));
+      } catch (_) {
+        if (kDebugMode) rethrow;
       }
     }
     return const Error(null);
@@ -77,7 +78,7 @@ abstract final class SearchHttp {
       'gaia_vtoken': ?gaiaVtoken,
     });
     final res = await Request().get(
-      Api.searchByType,
+      searchType.api,
       queryParameters: params,
       options: Options(
         headers: {
@@ -97,28 +98,17 @@ abstract final class SearchHttp {
           RequestUtils.validate(vVoucher, onSuccess);
           return const Error('触发风控');
         }
-        dynamic data;
         try {
-          switch (searchType) {
-            case SearchType.video:
-              data = SearchVideoData.fromJson(dataData);
-              break;
-            case SearchType.live_room:
-              data = SearchLiveData.fromJson(dataData);
-              break;
-            case SearchType.bili_user:
-              data = SearchUserData.fromJson(dataData);
-              break;
-            case SearchType.media_bangumi || SearchType.media_ft:
-              data = SearchPgcData.fromJson(dataData);
-              break;
-            case SearchType.article:
-              data = SearchArticleData.fromJson(dataData);
-              break;
-            // default:
-            //   break;
-          }
-          return Success(data);
+          return Success(
+            switch (searchType) {
+              .all => SearchVideoData.fromSearchAll(dataData),
+              .video => SearchVideoData.fromJson(dataData),
+              .media_bangumi || .media_ft => SearchPgcData.fromJson(dataData),
+              .live_room => SearchLiveData.fromJson(dataData),
+              .bili_user => SearchUserData.fromJson(dataData),
+              .article => SearchArticleData.fromJson(dataData),
+            } as R,
+          );
         } catch (e, s) {
           return Error('$e\n\n$s');
         }
@@ -127,49 +117,6 @@ abstract final class SearchHttp {
       }
     } else {
       return const Error('服务器错误');
-    }
-  }
-
-  @pragma('vm:notify-debugger-on-exception')
-  static Future<LoadingState<SearchAllData>> searchAll({
-    required String keyword,
-    required page,
-    String? order,
-    int? duration,
-    int? tids,
-    int? orderSort,
-    int? userType,
-    int? categoryId,
-    int? pubBegin,
-    int? pubEnd,
-  }) async {
-    final params = await WbiSign.makSign({
-      'keyword': keyword,
-      'page': page,
-      if (order != null && order.isNotEmpty) 'order': order,
-      'duration': ?duration,
-      'tids': ?tids,
-      'order_sort': ?orderSort,
-      'user_type': ?userType,
-      'category_id': ?categoryId,
-      'pubtime_begin_s': ?pubBegin,
-      'pubtime_end_s': ?pubEnd,
-    });
-    final res = await Request().get(
-      Api.searchAll,
-      queryParameters: params,
-    );
-    if (res.data is! Map) {
-      return const Error('没有相关数据');
-    }
-    if (res.data['code'] == 0) {
-      try {
-        return Success(SearchAllData.fromJson(res.data['data']));
-      } catch (e, s) {
-        return Error('$e\n\n$s');
-      }
-    } else {
-      return Error(res.data['message'] ?? '没有相关数据');
     }
   }
 

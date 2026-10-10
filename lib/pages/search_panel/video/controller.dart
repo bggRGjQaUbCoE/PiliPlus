@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/search/search_type.dart';
 import 'package:PiliPlus/models/common/search/video_search_type.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
@@ -14,6 +13,48 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
+mixin SearchVideoMixin on SearchVideoController {
+  late bool _hasJump2Video = false;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _jump2Video();
+  }
+
+  @override
+  bool customHandleResponse(bool isRefresh, Success<SearchVideoData> response) {
+    if (isRefresh && !_hasJump2Video) {
+      _hasJump2Video = true;
+      _onPushDetail(response.response.list);
+    }
+    return super.customHandleResponse(isRefresh, response);
+  }
+
+  void _onPushDetail(List<SearchVideoItemModel>? resultList) {
+    try {
+      final aid = int.tryParse(keyword);
+      if (aid != null && resultList?.firstOrNull?.aid == aid) {
+        PiliScheme.videoPush(aid, null, showDialog: false);
+      }
+    } catch (_) {}
+  }
+
+  void _jump2Video() {
+    if (IdUtils.avRegexExact.hasMatch(keyword)) {
+      _hasJump2Video = true;
+      PiliScheme.videoPush(
+        int.parse(keyword.substring(2)),
+        null,
+        showDialog: false,
+      );
+    } else if (IdUtils.bvRegexExact.hasMatch(keyword)) {
+      _hasJump2Video = true;
+      PiliScheme.videoPush(null, keyword, showDialog: false);
+    }
+  }
+}
+
 class SearchVideoController
     extends SearchPanelController<SearchVideoData, SearchVideoItemModel> {
   SearchVideoController({
@@ -22,57 +63,19 @@ class SearchVideoController
     required super.tag,
   });
 
-  late bool hasJump2Video = false;
-
   @override
   void onInit() {
     super.onInit();
-    videoDurationType = VideoDurationType.all;
-    videoZoneType = VideoZoneType.all;
+    videoDurationType = .all;
+    videoZoneType = .all;
     DateTime now = DateTime.now();
     pubBeginDate = DateTime(now.year, now.month, 1, 0, 0, 0);
     pubEndDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
-
-    jump2Video();
   }
 
   @override
   List<SearchVideoItemModel>? getDataList(SearchVideoData response) {
     return response.list;
-  }
-
-  @override
-  bool customHandleResponse(bool isRefresh, Success<SearchVideoData> response) {
-    searchResultController?.count[searchType.index] =
-        response.response.numResults ?? 0;
-    if (searchType == SearchType.video && !hasJump2Video && isRefresh) {
-      hasJump2Video = true;
-      onPushDetail(response.response.list);
-    }
-    return false;
-  }
-
-  void onPushDetail(List<SearchVideoItemModel>? resultList) {
-    try {
-      int? aid = int.tryParse(keyword);
-      if (aid != null && resultList?.firstOrNull?.aid == aid) {
-        PiliScheme.videoPush(aid, null, showDialog: false);
-      }
-    } catch (_) {}
-  }
-
-  void jump2Video() {
-    if (IdUtils.avRegexExact.hasMatch(keyword)) {
-      hasJump2Video = true;
-      PiliScheme.videoPush(
-        int.parse(keyword.substring(2)),
-        null,
-        showDialog: false,
-      );
-    } else if (IdUtils.bvRegexExact.hasMatch(keyword)) {
-      hasJump2Video = true;
-      PiliScheme.videoPush(null, keyword, showDialog: false);
-    }
   }
 
   final Rx<ArchiveFilterType> selectedType = ArchiveFilterType.totalrank.obs;

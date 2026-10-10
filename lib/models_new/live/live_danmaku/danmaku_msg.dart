@@ -40,7 +40,6 @@ class DanmakuMsg {
         );
       }
     }
-    final medal = user['medal'];
     return DanmakuMsg(
       name: user['base']['name'],
       text: obj['text'],
@@ -56,9 +55,9 @@ class DanmakuMsg {
         ts: checkInfo['ts'],
         ct: checkInfo['ct'],
       ),
-      medalInfo: !GlobalData().showMedal || medal == null
-          ? null
-          : UinfoMedal.fromJson(medal),
+      medalInfo: GlobalData().showMedal
+          ? UinfoMedal.lightMedal(user['medal'])
+          : null,
     );
   }
 

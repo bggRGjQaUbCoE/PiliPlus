@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:PiliPlus/common/style.dart';
@@ -7,6 +8,7 @@ import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart';
 import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
+import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/scaffold/mini_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_behavior.dart'
@@ -32,22 +34,14 @@ import 'package:PiliPlus/pages/dynamics_create/view.dart';
 import 'package:PiliPlus/pages/dynamics_detail/controller.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
-import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
-
-const Set<TargetPlatform> _kDesktopPlatforms = <TargetPlatform>{
-  TargetPlatform.macOS,
-  TargetPlatform.windows,
-  TargetPlatform.linux,
-};
 
 class DynamicDetailPage extends StatefulWidget {
   const DynamicDetailPage({super.key});
@@ -247,7 +241,7 @@ class _DynamicDetailPageState
         repostDynId: item.orig?.idStr,
       ),
       onSuccess: () {
-        Future.delayed(
+        Timer(
           const Duration(milliseconds: 500),
           () async {
             if (!mounted) return;
@@ -346,6 +340,7 @@ class _DynamicDetailPageState
 
   Widget _buildTabBody([bool isPortrait = true]) {
     Widget reply = CustomScrollView(
+      primary: true,
       key: const PageStorageKey(DynType.reply),
       physics: ReloadScrollPhysics(
         controller: controller,
@@ -394,7 +389,7 @@ class _DynamicDetailPageState
             right: 0,
             top: displacement,
             child: Obx(
-              () => _RefreshIndicator(isRefreshing: _isRefreshing.value),
+              () => RefreshIndicator_(isRefreshing: _isRefreshing.value),
             ),
           ),
         ],
@@ -450,6 +445,7 @@ class _DynamicDetailPageState
         Expanded(
           flex: flex,
           child: CustomScrollView(
+            primary: true,
             slivers: [
               SliverPadding(
                 padding: .only(
@@ -477,13 +473,6 @@ class _DynamicDetailPageState
         ),
       ],
     );
-    if (PlatformUtils.isDesktop) {
-      return PrimaryScrollController(
-        controller: PrimaryScrollController.of(context),
-        automaticallyInheritForPlatforms: _kDesktopPlatforms,
-        child: child,
-      );
-    }
     return child;
   }
 
@@ -537,7 +526,8 @@ class _DynamicDetailPageState
       );
     }
 
-    final moduleStat = controller.dynItem.modules.moduleStat;
+    final dynItem = controller.dynItem;
+    final moduleStat = dynItem.modules.moduleStat;
     return Padding(
       padding: .only(left: padding.left, right: padding.right),
       child: Column(
@@ -576,7 +566,7 @@ class _DynamicDetailPageState
                           isScrollControlled: true,
                           useSafeArea: true,
                           builder: (context) => RepostPanel(
-                            item: controller.dynItem,
+                            item: dynItem,
                             onSuccess: () {
                               if (forward != null) {
                                 int count = forward.count ?? 0;
@@ -586,6 +576,12 @@ class _DynamicDetailPageState
                                 }
                               }
                             },
+                            replyInfo: (
+                              oid: controller.oid,
+                              replyType: controller.replyType,
+                            ),
+                            mentionItem:
+                                dynItem.modules.moduleAuthor?.mentionItem,
                           ),
                         ),
                       );
@@ -619,7 +615,7 @@ class _DynamicDetailPageState
                         text: '点赞',
                         stat: moduleStat?.like,
                         onPressed: (iconColor) => RequestUtils.onLikeDynamic(
-                          controller.dynItem,
+                          dynItem,
                           iconColor == primary,
                           () {
                             if (context.mounted) {
@@ -677,92 +673,5 @@ class _DynamicDetailPageState
       final position = PrimaryScrollController.of(context).position;
       position.jumpTo(position.maxScrollExtent);
     } catch (_) {}
-  }
-}
-
-class _RefreshIndicator extends StatefulWidget {
-  const _RefreshIndicator({
-    required this.isRefreshing,
-  });
-
-  final bool isRefreshing;
-
-  @override
-  State<_RefreshIndicator> createState() => _RefreshIndicatorState();
-}
-
-class _RefreshIndicatorState extends State<_RefreshIndicator>
-    with TickerProviderStateMixin {
-  late final AnimationController _scaleController;
-  late final AnimationController _progressController;
-  late Color _color;
-
-  @override
-  void initState() {
-    super.initState();
-    _scaleController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 200),
-    );
-    _progressController = AnimationController(
-      vsync: this,
-      duration: CircularProgressIndicator.defaultAnimationDuration,
-    );
-  }
-
-  @override
-  void dispose() {
-    _scaleController.dispose();
-    _progressController.dispose();
-    super.dispose();
-  }
-
-  @override
-  void didUpdateWidget(_RefreshIndicator oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.isRefreshing != widget.isRefreshing) {
-      if (widget.isRefreshing) {
-        _scaleController.value = 1;
-        _progressController
-          ..value = 0.0
-          ..repeat();
-      } else {
-        _scaleController.reverse();
-        _progressController.stop();
-      }
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final colorScheme = ColorScheme.of(context);
-    _color = colorScheme.isDark
-        ? colorScheme.onInverseSurface
-        : colorScheme.surface;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _scaleController,
-      child: Center(
-        child: SizedBox.square(
-          dimension: 40,
-          child: Material(
-            type: .circle,
-            elevation: 2.0,
-            color: _color,
-            child: Padding(
-              padding: const .all(6),
-              child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                controller: _progressController,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }

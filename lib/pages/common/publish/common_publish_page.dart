@@ -100,7 +100,7 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
   }
 
   void _requestFocus({Duration duration = const Duration(microseconds: 200)}) {
-    Future.delayed(duration, _safeRequestFocus);
+    Timer(duration, _safeRequestFocus);
   }
 
   @override
@@ -166,7 +166,7 @@ abstract class CommonPublishPageState<T extends CommonPublishPage>
 
   Future<void> hidePanel([_]) async {
     if (focusNode.hasFocus) {
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future.pause(const Duration(milliseconds: 100));
       if (!mounted) return;
       focusNode.unfocus();
     }

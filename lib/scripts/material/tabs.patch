@@ -1,5 +1,5 @@
 diff --git a/lib/src/tabs.dart b/lib/src/tabs.dart
-index 8a0d078..20e79f3 100644
+index 6f8fee0..203d992 100644
 --- a/lib/src/tabs.dart
 +++ b/lib/src/tabs.dart
 @@ -9,7 +9,7 @@ import 'dart:math' as math;
@@ -11,21 +11,24 @@ index 8a0d078..20e79f3 100644
  import 'package:flutter/rendering.dart';
  import 'package:flutter/widgets.dart';
  
-@@ -352,9 +352,13 @@ class _TabStyle extends AnimatedWidget {
+@@ -352,12 +352,16 @@ class _TabStyle extends AnimatedWidget {
    }
  }
  
 +typedef TabBarLayoutCallback = _LayoutCallback;
 +
- typedef _LayoutCallback =
-     void Function(List<double> xOffsets, TextDirection textDirection, double width);
+ typedef _LayoutCallback = void Function(
+   List<double> xOffsets,
+   TextDirection textDirection,
+   double width,
+ );
  
 +typedef TabLabelBarRenderer = _TabLabelBarRenderer;
 +
  class _TabLabelBarRenderer extends RenderFlex {
    _TabLabelBarRenderer({
      required super.direction,
-@@ -472,6 +476,8 @@ class _DividerPainter extends CustomPainter {
+@@ -475,6 +479,8 @@ class _DividerPainter extends CustomPainter {
    }
  }
  
@@ -34,7 +37,7 @@ index 8a0d078..20e79f3 100644
  // A ChangeNotifier for triggering repaints when async resources load.
  class _IndicatorPainterNotifier extends ChangeNotifier {
    void notify() {
-@@ -482,6 +488,8 @@ class _IndicatorPainterNotifier extends ChangeNotifier {
+@@ -485,6 +491,8 @@ class _IndicatorPainterNotifier extends ChangeNotifier {
    String toString() => describeIdentity(this);
  }
  
@@ -43,7 +46,7 @@ index 8a0d078..20e79f3 100644
  class _IndicatorPainter extends CustomPainter {
    factory _IndicatorPainter({
      required TabController controller,
-@@ -504,7 +512,7 @@ class _IndicatorPainter extends CustomPainter {
+@@ -507,7 +515,7 @@ class _IndicatorPainter extends CustomPainter {
      ///
      /// The notifier is to trigger a repaint when asynchronous resources,
      /// like images in the indicator [Decoration], are finished loading.
@@ -52,7 +55,7 @@ index 8a0d078..20e79f3 100644
        controller: controller,
        indicator: indicator,
        indicatorSize: indicatorSize,
-@@ -522,7 +530,7 @@ class _IndicatorPainter extends CustomPainter {
+@@ -525,7 +533,7 @@ class _IndicatorPainter extends CustomPainter {
      );
    }
  
@@ -61,7 +64,7 @@ index 8a0d078..20e79f3 100644
      required this.controller,
      required this.indicator,
      required this.indicatorSize,
-@@ -1590,6 +1598,8 @@ class TabBar extends StatefulWidget implements PreferredSizeWidget {
+@@ -1593,6 +1601,8 @@ class TabBar extends StatefulWidget implements PreferredSizeWidget {
    State<TabBar> createState() => _TabBarState();
  }
  
@@ -70,7 +73,7 @@ index 8a0d078..20e79f3 100644
  class _TabBarState extends State<TabBar> {
    TabBarScrollController? _internalScrollController;
    TabController? _controller;
-@@ -1744,6 +1754,38 @@ class _TabBarState extends State<TabBar> {
+@@ -1747,6 +1757,38 @@ class _TabBarState extends State<TabBar> {
      }
    }
  
@@ -109,7 +112,7 @@ index 8a0d078..20e79f3 100644
    void _initIndicatorPainter() {
      final ThemeData theme = Theme.of(context);
      final TabBarThemeData tabBarTheme = TabBarTheme.of(context);
-@@ -1759,7 +1801,7 @@ class _TabBarState extends State<TabBar> {
+@@ -1762,7 +1804,7 @@ class _TabBarState extends State<TabBar> {
  
      _indicatorPainter = !_controllerIsValid
          ? null
@@ -118,7 +121,7 @@ index 8a0d078..20e79f3 100644
              controller: _controller!,
              indicator: _getIndicator(indicatorSize),
              indicatorSize: indicatorSize,
-@@ -1987,6 +2029,7 @@ class _TabBarState extends State<TabBar> {
+@@ -1990,6 +2032,7 @@ class _TabBarState extends State<TabBar> {
    }
  
    bool _debugTabAlignmentIsValid(TabAlignment tabAlignment) {
@@ -126,7 +129,7 @@ index 8a0d078..20e79f3 100644
      assert(() {
        if (widget.isScrollable && tabAlignment == TabAlignment.fill) {
          throw FlutterError('$tabAlignment is only valid for non-scrollable tab bars.');
-@@ -2000,6 +2043,28 @@ class _TabBarState extends State<TabBar> {
+@@ -2003,6 +2046,28 @@ class _TabBarState extends State<TabBar> {
      return true;
    }
  
@@ -155,7 +158,7 @@ index 8a0d078..20e79f3 100644
    @override
    Widget build(BuildContext context) {
      assert(debugCheckHasMaterialLocalizations(context));
-@@ -2155,9 +2220,7 @@ class _TabBarState extends State<TabBar> {
+@@ -2158,9 +2223,7 @@ class _TabBarState extends State<TabBar> {
          ),
        );
        wrappedTabs[index] = MergeSemantics(child: wrappedTabs[index]);
@@ -166,7 +169,7 @@ index 8a0d078..20e79f3 100644
      }
  
      Widget tabBar = Semantics(
-@@ -2175,7 +2238,7 @@ class _TabBarState extends State<TabBar> {
+@@ -2178,7 +2241,7 @@ class _TabBarState extends State<TabBar> {
            labelStyle: widget.labelStyle,
            unselectedLabelStyle: widget.unselectedLabelStyle,
            defaults: _defaults,
@@ -175,7 +178,7 @@ index 8a0d078..20e79f3 100644
              onPerformLayout: _saveTabOffsets,
              mainAxisSize: effectiveTabAlignment == TabAlignment.fill
                  ? MainAxisSize.max
-@@ -2274,8 +2337,17 @@ class TabBarView extends StatefulWidget {
+@@ -2275,8 +2338,17 @@ class TabBarView extends StatefulWidget {
      this.dragStartBehavior = DragStartBehavior.start,
      this.viewportFraction = 1.0,
      this.clipBehavior = Clip.hardEdge,
@@ -193,7 +196,7 @@ index 8a0d078..20e79f3 100644
    /// This widget's selection and animation state.
    ///
    /// If [TabController] is not provided, then the value of [DefaultTabController.of]
-@@ -2577,6 +2649,9 @@ class _TabBarViewState extends State<TabBarView> {
+@@ -2578,6 +2650,9 @@ class _TabBarViewState extends State<TabBarView> {
          dragStartBehavior: widget.dragStartBehavior,
          clipBehavior: widget.clipBehavior,
          controller: _pageController,

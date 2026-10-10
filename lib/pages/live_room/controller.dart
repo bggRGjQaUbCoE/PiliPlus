@@ -1,5 +1,6 @@
 import 'dart:async' show Timer, StreamSubscription;
 import 'dart:convert' show jsonDecode;
+import 'dart:io' show Platform;
 import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/dialog/report.dart';
@@ -28,6 +29,7 @@ import 'package:PiliPlus/plugin/pl_player/utils/danmaku_options.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/tcp/live.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/danmaku_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
@@ -262,7 +264,7 @@ class LiveRoomController extends GetxController {
           codecIndex: codecIndex,
           liveUrlIndex: liveUrlIndex,
         ),
-        if (isLogin && !isLoaded.value) _fetchBlockRules(),
+        if (!isLoaded.value && Accounts.heartbeat.isLogin) _fetchBlockRules(),
       ]);
       isLoaded.value = true;
     } else {
@@ -538,7 +540,7 @@ class LiveRoomController extends GetxController {
   }
 
   void initDm(LiveDmInfoData info) {
-    if (info.hostList.isNullOrEmpty) {
+    if (info.hostList.isEmpty) {
       return;
     }
     _msgStream =
@@ -582,7 +584,7 @@ class LiveRoomController extends GetxController {
           final content = first[15];
           final user = content['user'];
           // final midHash = first[7];
-          final uid = user['uid'];
+          final uid = user['uid'] as int;
           final msg = info[1];
           if (isBlocked(msg, uid)) {
             return;
@@ -619,9 +621,9 @@ class LiveRoomController extends GetxController {
               uemote: uemote,
               extra: liveExtra,
               reply: reply,
-              medalInfo: !GlobalData().showMedal || user['medal'] == null
-                  ? null
-                  : UinfoMedal.fromJson(user['medal']),
+              medalInfo: GlobalData().showMedal
+                  ? UinfoMedal.lightMedal(user['medal'])
+                  : null,
             ),
             DanmakuContentItem(
               msg,
@@ -636,8 +638,10 @@ class LiveRoomController extends GetxController {
           );
           break;
         case 'SUPER_CHAT_MESSAGE' when showSuperChat:
-          final item = SuperChatItem.fromJson(obj['data']);
+          final item = SuperChatItem.fromJson(obj['data'], roomId);
           superChatMsg.insert(0, item);
+          addDm(item);
+          if (Platform.isAndroid && AndroidHelper.isPipMode) return;
           if (plPlayerController.showDanmaku &&
               (isFullScreen || plPlayerController.isDesktopPip)) {
             fsSC.value = item.copyWith(
@@ -647,7 +651,6 @@ class LiveRoomController extends GetxController {
               ),
             );
           }
-          addDm(item);
           break;
         // case 'SUPER_CHAT_MESSAGE_DELETE' when showSuperChat:
         //   if (obj['roomid'] == roomId) {
@@ -782,7 +785,6 @@ class LiveRoomController extends GetxController {
     }
     autoWrapReportDialog(
       Get.context!,
-      ban: false,
       ReportOptions.liveDanmakuReport,
       withContent: ReportOptions.liveDanmakuReportCheck,
       contentRequired: ReportOptions.liveDanmakuReportCheck,

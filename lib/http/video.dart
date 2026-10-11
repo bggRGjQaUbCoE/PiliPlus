@@ -247,8 +247,8 @@ abstract final class VideoHttp {
           'gaia_source': 'pre-load',
           'isGaiaAvoided': true,
           'web_location': 1315873,
-          if (videoType == .pugv) ...{
-            'biz_type': videoType.name,
+          if (videoType == .pugv) ...const {
+            'biz_type': 'pugv',
             'scene': 'normal',
             'from_client': 'BROWSER',
             'drm_tech_type': 0,
@@ -263,18 +263,12 @@ abstract final class VideoHttp {
           'cur_language': ?language,
         });
       case .pgc:
+        final video = Accounts.video;
         params = await WbiSign.makSign({
-          'x-bili-locale-json': {
-            "c_locale": {"language": "zh-Hans"},
-            "always_translate": false,
-          },
-          'x-bili-device-req-json': {
-            "platform": "web",
-            "device": "pc",
-            "spmid": "666.25",
-            "mobi_app": "web_cn",
-          },
-          'csrf': Accounts.video.csrf,
+          'x-bili-locale-json':
+              '{"c_locale":{"language":"zh-Hans"},"always_translate":false}',
+          'x-bili-device-req-json': '{"platform":"web","device":"pc","spmid":"666.25","mobi_app":"web_cn"}',
+          if (video.isLogin) 'csrf': video.csrf,
         });
         data = {
           "scene": "normal",
@@ -285,7 +279,7 @@ abstract final class VideoHttp {
             "ogv_episode_id": epid,
           },
           "video_param": {"qn": qn},
-          "player_param": {
+          "player_param": const {
             "fnver": 0,
             "fnval": 4048,
             "drm_tech_type": 0,

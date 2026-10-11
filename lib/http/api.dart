@@ -25,6 +25,8 @@ abstract final class Api {
 
   static const String pugvUrl = '/pugv/player/web/playurl';
 
+  static const String ogvUrl = '/ogv/player/playview';
+
   static const String tvPlayUrl = '/x/tv/playurl';
 
   // 字幕

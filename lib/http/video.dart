@@ -225,34 +225,82 @@ abstract final class VideoHttp {
     String? language,
     bool voiceBalance = false,
   }) async {
-    final dmImgStr = Utils.base64EncodeRandomString(16, 64);
-    final dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
-    final params = await WbiSign.makSign({
-      'avid': ?avid,
-      'bvid': ?bvid,
-      'ep_id': ?epid,
-      'season_id': ?seasonId,
-      'cid': cid,
-      'qn': qn,
-      // 获取所有格式的视频
-      'fnval': 4048,
-      'fourk': 1,
-      'fnver': 0,
-      'voice_balance': voiceBalance ? 1 : 0,
-      'gaia_source': 'pre-load',
-      'isGaiaAvoided': true,
-      'web_location': 1315873,
-      // 免登录查看1080p
-      if (tryLook) 'try_look': 1,
-      'dm_img_list': '[]',
-      'dm_img_str': dmImgStr,
-      'dm_cover_img_str': dmCoverImgStr,
-      'dm_img_inter': '{"ds":[],"wh":[0,0,0],"of":[0,0,0]}',
-      'cur_language': ?language,
-    });
+    final Map<String, dynamic> params;
+    Map<String, dynamic>? data;
+
+    switch (videoType) {
+      case .ugc || .pugv:
+        final dmImgStr = Utils.base64EncodeRandomString(16, 64);
+        final dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
+        params = await WbiSign.makSign({
+          'avid': ?avid,
+          'bvid': ?bvid,
+          'ep_id': ?epid,
+          'season_id': ?seasonId,
+          'cid': cid,
+          'qn': qn,
+          // 获取所有格式的视频
+          'fnval': 4048,
+          'fourk': 1,
+          'fnver': 0,
+          'voice_balance': voiceBalance ? 1 : 0,
+          'gaia_source': 'pre-load',
+          'isGaiaAvoided': true,
+          'web_location': 1315873,
+          if (videoType == .pugv) ...{
+            'biz_type': videoType.name,
+            'scene': 'normal',
+            'from_client': 'BROWSER',
+            'drm_tech_type': 0,
+            'app_id': 100,
+          },
+          // 免登录查看1080p
+          if (tryLook) 'try_look': 1,
+          'dm_img_list': '[]',
+          'dm_img_str': dmImgStr,
+          'dm_cover_img_str': dmCoverImgStr,
+          'dm_img_inter': '{"ds":[],"wh":[0,0,0],"of":[0,0,0]}',
+          'cur_language': ?language,
+        });
+      case .pgc:
+        params = await WbiSign.makSign({
+          'x-bili-locale-json': {
+            "c_locale": {"language": "zh-Hans"},
+            "always_translate": false,
+          },
+          'x-bili-device-req-json': {
+            "platform": "web",
+            "device": "pc",
+            "spmid": "666.25",
+            "mobi_app": "web_cn",
+          },
+          'csrf': Accounts.video.csrf,
+        });
+        data = {
+          "scene": "normal",
+          "video_index": {
+            "bvid": null,
+            "cid": null,
+            "ogv_season_id": seasonId,
+            "ogv_episode_id": epid,
+          },
+          "video_param": {"qn": qn},
+          "player_param": {
+            "fnver": 0,
+            "fnval": 4048,
+            "drm_tech_type": 0,
+            "app_id": 100,
+          },
+        };
+    }
 
     try {
-      final res = await Request().get(videoType.api, queryParameters: params);
+      final res = await Request().request(
+        videoType.api,
+        data: data,
+        queryParameters: params,
+        options: Options(method: videoType.method),
+      );
 
       if (res.data['code'] == 0) {
         late PlayUrlModel data;
@@ -260,17 +308,23 @@ abstract final class VideoHttp {
           case .ugc:
             data = PlayUrlModel.fromJson(res.data['data']);
 
-          case .pgc:
-            final result = res.data['result'];
-            data = PlayUrlModel.fromJson(result['video_info'])
-              ..lastPlayTime =
-                  result['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress'];
-
-          case .pugv:
+          case .pgc || .pugv:
             final result = res.data['data'];
-            data = PlayUrlModel.fromJson(result)
-              ..lastPlayTime =
-                  result['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress'];
+            final videoInfo = result['video_info'];
+            if (videoInfo != null) {
+              data = PlayUrlModel.fromJson(videoInfo);
+              final progress = result['watch_progress'];
+              if (progress != null) {
+                data.lastPlayTime =
+                    progress['current_watch_progress'] ??
+                    progress['current_progress'];
+              }
+            } else {
+              final reason = result['not_playable_reason'];
+              if (reason != null) {
+                return Error(_parseVideoErr(reason['code'], reason['message']));
+              }
+            }
         }
         return Success(data);
       } else if (epid != null && videoType == .ugc) {

@@ -54,7 +54,7 @@ import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/services.dart'
-    show DeviceOrientation, HapticFeedback, KeyDownEvent;
+    show DeviceOrientation, HapticFeedback, KeyDownEvent, MethodChannel;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:get/get.dart';
@@ -858,6 +858,29 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     if (Platform.isAndroid) {
       // Avoid sizing the surface using mpv's idle window between media loads.
       player.setProperty('force-window', 'no');
+      // Resize the buffer before media_kit attaches the next video's surface.
+      // A paused video may never redraw the frame decoded at the old size.
+      player.onLoadHooks.insert(0, () async {
+        final surfaceWidth = width;
+        final surfaceHeight = height;
+        if (surfaceWidth == null ||
+            surfaceHeight == null ||
+            surfaceWidth <= 1 ||
+            surfaceHeight <= 1) {
+          return;
+        }
+        await const MethodChannel(
+          'com.alexmercerind/media_kit_video',
+        ).invokeMethod<void>('VideoOutputManager.SetSurfaceTextureSize', {
+          'handle': player.handle.toString(),
+          'width': surfaceWidth.toString(),
+          'height': surfaceHeight.toString(),
+        });
+        player.setProperty(
+          'android-surface-size',
+          '${surfaceWidth}x$surfaceHeight',
+        );
+      });
     }
 
     player.setMediaHeader(userAgent: BrowserUa.pc, referer: HttpString.baseUrl);

@@ -49,13 +49,21 @@ class DynMentionPanel extends StatefulWidget {
         minChildSize: 0,
         maxChildSize: 1,
         initialChildSize: offset == 0 ? 0.65 : 1,
-        initialScrollOffset: offset,
         snapSizes: const [0.65],
-        builder: (context, scrollController) => DynMentionPanel(
-          scrollController: scrollController,
-          onCachePos: onCachePos,
-          top: top,
-        ),
+        builder: (context, scrollController) {
+          if (offset > 0) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (scrollController.hasClients) {
+                scrollController.jumpTo(offset);
+              }
+            });
+          }
+          return DynMentionPanel(
+            scrollController: scrollController,
+            onCachePos: onCachePos,
+            top: top,
+          );
+        },
       ),
     );
   }

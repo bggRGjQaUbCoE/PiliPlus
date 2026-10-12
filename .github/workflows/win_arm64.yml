@@ -73,9 +73,33 @@ jobs:
       - name: Apply Flutter and package patches
         run: ./lib/scripts/patch.ps1 windows
 
+      - name: Resolve Flutter dependencies
+        run: |
+          flutter pub get
+          if ($LASTEXITCODE -ne 0) { throw 'Flutter dependency resolution failed.' }
+
+      - name: Install ARM64 ANGLE libraries
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: CLANGARM64
+          install: >-
+            mingw-w64-clang-aarch64-angleproject
+            mingw-w64-clang-aarch64-headers
+            mingw-w64-clang-aarch64-egl-headers
+            mingw-w64-clang-aarch64-gles-headers
+            mingw-w64-clang-aarch64-libc++
+            mingw-w64-clang-aarch64-zlib
+
+      - name: Locate ARM64 MSYS2 prefix
+        shell: msys2 {0}
+        run: echo "MSYS2_ARM64_ROOT=$(cygpath -w /clangarm64)" >> "$GITHUB_ENV"
+
+      - name: Prepare ARM64 media libraries
+        run: ./tool/prepare_windows_arm64_media.ps1 -MsysRoot $env:MSYS2_ARM64_ROOT
+
       - name: Build Windows ARM64
         run: |
-          flutter build windows --release --no-pub --dart-define-from-file=pili_release.json
+          flutter build windows --release --no-pub --dart-define-from-file=pili_release.json -v
           if ($LASTEXITCODE -ne 0) { throw 'Flutter ARM64 build failed.' }
           if (!(Test-Path 'build/windows/arm64/runner/Release/piliplus.exe')) {
             throw 'Expected ARM64 executable was not produced.'

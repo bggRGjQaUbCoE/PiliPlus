@@ -239,25 +239,17 @@ class _MainAppState extends PopScopeState<MainApp>
   tray_manager.Image? _icon;
   int? _trayListenerId;
   Menu? _trayMenu;
-  int? _showMenuId;
-  MenuItem? _showMenuItem;
-  int? _exitMenuId;
-  MenuItem? _exitMenuItem;
+  final List<(MenuItem, int)> _trayMenuItems = <(MenuItem, int)>[];
 
   void _destroyTrayIcon() {
     if (!_mainController.showTrayIcon) return;
 
-    _showMenuItem
-      ?..removeListener(_showMenuId!)
-      ..dispose();
-    _showMenuId = null;
-    _showMenuItem = null;
-
-    _exitMenuItem
-      ?..removeListener(_exitMenuId!)
-      ..dispose();
-    _exitMenuId = null;
-    _exitMenuItem = null;
+    for (final (item, id) in _trayMenuItems) {
+      item
+        ..removeListener(id)
+        ..dispose();
+    }
+    _trayMenuItems.clear();
 
     _trayMenu?.dispose();
     _trayMenu = null;
@@ -271,16 +263,38 @@ class _MainAppState extends PopScopeState<MainApp>
     _trayIcon = null;
   }
 
-  void _showMenuListener(MenuEvent event) {
-    if (event is MenuItemClickedEvent) {
-      _show();
+  void _addTrayMenuItem(String label, void Function() onTap) {
+    final menu = _trayMenu;
+    final item = MenuItem.createWithLabelAndType(label, MenuItemType.normal);
+    if (menu == null || item == null) return;
+    final id = item.addListener((MenuEvent event) {
+      if (event is MenuItemClickedEvent) {
+        onTap();
+      }
+    });
+    _trayMenuItems.add((item, id));
+    menu.addItem(item);
+  }
+
+  /// 与 AppScheme 唤出窗口的写法保持一致（见 utils/app_scheme.dart）。
+  Future<void> _showWindow() async {
+    await _show();
+    await windowManager.focus();
+  }
+
+  /// 显示窗口并切到导航栏中的对应页（用户可能把该页从导航栏去掉了，此时只显示窗口）。
+  Future<void> _toNavPage(NavigationBarType type) async {
+    await _showWindow();
+    final index = _mainController.navigationBars.indexOf(type);
+    if (index != -1) {
+      _mainController.setIndex(index);
     }
   }
 
-  void _exitMenuListener(MenuEvent event) {
-    if (event is MenuItemClickedEvent) {
-      _onClose();
-    }
+  /// 我的页可以从导航栏移除，交由 MainController 处理（会另开 MinePage）。
+  Future<void> _toMinePage() async {
+    await _showWindow();
+    _mainController.toMinePage();
   }
 
   Future<void> _trayListener(TrayIconEvent event) async {
@@ -312,18 +326,27 @@ class _MainAppState extends PopScopeState<MainApp>
       ..icon = _icon
       ..setTooltip(Constants.appName);
 
-    _showMenuItem = .createWithLabelAndType('显示窗口', .normal)!;
-    _showMenuId = _showMenuItem!.addListener(_showMenuListener);
-    _exitMenuItem = .createWithLabelAndType('退出 ${Constants.appName}', .normal);
-    _exitMenuId = _exitMenuItem!.addListener(_exitMenuListener);
-    _trayMenu = Menu.create()!
-      ..addItem(_showMenuItem)
-      ..addSeparator()
-      ..addItem(_exitMenuItem);
+    _trayMenu = Menu.create()!;
+    _addTrayMenuItem(NavigationBarType.home.label, () {
+      _toNavPage(NavigationBarType.home);
+    });
+    _addTrayMenuItem(NavigationBarType.dynamics.label, () {
+      _toNavPage(NavigationBarType.dynamics);
+    });
+    _addTrayMenuItem(NavigationBarType.mine.label, _toMinePage);
+    _addTrayMenuItem('退出 ${Constants.appName}', _onClose);
 
     trayIcon
       ..setContextMenu(_trayMenu)
       ..setVisible(true);
+
+    // Linux 的托盘图标是 StatusNotifierItem：菜单由宿主（KDE/GNOME）在右键时弹出，
+    // 但只有把弹出方式显式设为右键才会导出给宿主，默认不导出——于是右键毫无反应。
+    // 见 nativeapi 的 tools/gui/core_tray_icon_events_test_linux.sh：
+    // "KDE: Activate on a click, ContextMenu on a right click"。
+    if (Platform.isLinux) {
+      trayIcon.setContextMenuTrigger(ContextMenuTrigger.rightClicked);
+    }
   }
 
   @pragma('vm:prefer-inline')

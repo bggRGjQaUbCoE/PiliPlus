@@ -59,6 +59,16 @@ add_subdirectory("runner")
 # them to the application.
 include(flutter/generated_plugins.cmake)
 
+# Patch the dependency's integer scaling without modifying the pub cache.
+if(TARGET media_kit_video_plugin)
+  include(cmake/media_kit_video_scaling.cmake)
+endif()
+
+set(PILIPLUS_ARM64_MPV_BUNDLE "" CACHE PATH "Validated ARM64 mpv replacement bundle")
+if(PILIPLUS_ARM64_MPV_BUNDLE)
+  include(cmake/mpv_arm64_bundle.cmake)
+endif()
+
 
 # === Installation ===
 # Support files are copied into place next to the executable, so that it can

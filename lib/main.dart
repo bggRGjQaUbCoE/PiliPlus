@@ -117,7 +117,7 @@ void main() async {
   if (PlatformUtils.isMobile) {
     if (Platform.isAndroid) MaxScreenSize.init();
     await Future.wait([
-      if (Pref.horizontalScreen) ?fullMode() else ?portraitUpMode(),
+      ?applyUiOrientationMode(),
       setupServiceLocator(),
       if (Platform.isIOS) IOSPipHelper.init(),
     ]);

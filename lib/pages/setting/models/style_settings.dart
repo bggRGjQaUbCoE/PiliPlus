@@ -18,6 +18,7 @@ import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
 import 'package:PiliPlus/models/common/theme/theme_type.dart';
+import 'package:PiliPlus/models/common/ui_orientation_mode.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
@@ -71,6 +72,23 @@ List<SettingsModel> get styleSettings => [
     setKey: SettingBoxKey.horizontalScreen,
     defaultVal: Pref.horizontalScreen,
     onChanged: _onHorizontalScreenChanged,
+  ),
+  PopupModel<UiOrientationMode>(
+    title: '横屏模式',
+    leading: const Icon(Icons.screen_rotation_outlined),
+    value: () => Pref.uiOrientationMode,
+    items: UiOrientationMode.values,
+    onSelected: (value, setState) async {
+      await setUiOrientationMode(value);
+      setState();
+    },
+  ),
+  SwitchModel(
+    title: '竖屏视频全屏保持竖屏',
+    subtitle: '仅在横屏模式开启时生效；关闭后竖屏视频全屏跟随横屏方向',
+    leading: const Icon(Icons.stay_current_portrait_outlined),
+    setKey: SettingBoxKey.verticalVideoPortraitInFullscreen,
+    defaultVal: Pref.verticalVideoPortraitInFullscreen,
   ),
   const SwitchModel(
     title: '改用侧边栏',
@@ -851,7 +869,9 @@ Widget _themeTrailing(ThemeData theme) {
 }
 
 void _onHorizontalScreenChanged(bool value) {
-  if (value) {
+  if (Pref.uiOrientationMode != UiOrientationMode.off) {
+    applyUiOrientationMode();
+  } else if (value) {
     fullMode();
   } else {
     portraitUpMode();

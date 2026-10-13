@@ -1,6 +1,12 @@
 name: Build for iOS
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'lib/**'
+      - '.github/workflows/ios.yml'
+      - 'pubspec.yaml'
   workflow_call:
     inputs:
       tag:
@@ -14,6 +20,8 @@ jobs:
   build-macos-app:
     name: Release IOS
     runs-on: macos-26
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -43,11 +51,11 @@ jobs:
           zip -r9 PiliPlus_ios_${{env.version}}.ipa Payload/Runner.app
 
       - name: Release
-        if: ${{ github.event.inputs.tag != '' }}
+        if: ${{ github.event_name == 'push' || github.event.inputs.tag != '' }}
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ github.event.inputs.tag }}
-          name: ${{ github.event.inputs.tag }}
+          tag_name: ${{ github.event_name == 'push' && format('ios-gesture-fix-{0}', github.run_number) || github.event.inputs.tag }}
+          name: ${{ github.event_name == 'push' && format('iOS 手势修复版 #{0}', github.run_number) || github.event.inputs.tag }}
           files: |
             PiliPlus_ios_*.ipa
 

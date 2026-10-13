@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:PiliPlus/build_config.dart';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/back_detector.dart';
+import 'package:PiliPlus/common/widgets/ios_back_gesture.dart';
 import 'package:PiliPlus/common/widgets/custom_toast.dart';
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/common/widgets/scale_app.dart';
@@ -340,6 +341,13 @@ class MyApp extends StatelessWidget {
     }
     if (PlatformUtils.isDesktop) {
       return BackDetector(
+        onBack: _onBack,
+        child: child,
+      );
+    }
+    if (Platform.isIOS) {
+      // iOS 右滑返回手势：GetX 路由未接入系统手势，在此补上
+      return IosBackGesture(
         onBack: _onBack,
         child: child,
       );

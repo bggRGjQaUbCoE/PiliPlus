@@ -48,7 +48,8 @@ class IosBackGesture extends StatelessWidget {
 /// 通过重写 [addAllowedPointer]，让非边缘触摸完全不参与手势竞技，
 /// 从而零干扰页面内部的轮播、标签页等水平手势。
 class _EdgeBackGestureRecognizer extends HorizontalDragGestureRecognizer {
-  _EdgeBackGestureRecognizer() : super(kind: PointerDeviceKind.touch) {
+  _EdgeBackGestureRecognizer()
+      : super(supportedDevices: <PointerDeviceKind>{PointerDeviceKind.touch}) {
     onStart = (_) => _dx = 0;
     onUpdate = (DragUpdateDetails details) => _dx += details.delta.dx;
     onEnd = _handleEnd;

@@ -1906,6 +1906,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                             color: Colors.white,
                           ),
                           onTap: plPlayerController.toggleLandscapeOrientation,
+                          onLongPress: () {
+                            Feedback.forLongPress(context);
+                            plPlayerController.disableUiOrientationMode();
+                          },
                         ),
                       ),
                     ),

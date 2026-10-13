@@ -1659,6 +1659,10 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     }
   }
 
+  /// Disables the explicit UI orientation override.
+  Future<void> disableUiOrientationMode() =>
+      setUiOrientationMode(UiOrientationMode.off);
+
   void onCloseAll() {
     _isCloseAll = true;
     if (PlatformUtils.isDesktop) exitDesktopFullScreen();

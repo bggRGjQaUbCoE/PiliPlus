@@ -74,6 +74,7 @@ List<SettingsModel> get playSettings => [
   ),
   const SwitchModel(
     title: '全屏显示横屏切换按钮',
+    subtitle: '全屏时短按切换横屏方向，长按关闭横屏模式',
     leading: Icon(Icons.screen_rotation_alt),
     setKey: SettingBoxKey.showFsLandscapeBtn,
     defaultVal: true,

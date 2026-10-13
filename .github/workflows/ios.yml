@@ -55,7 +55,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.event_name == 'push' && format('ios-gesture-fix-{0}', github.run_number) || github.event.inputs.tag }}
-          name: ${{ github.event_name == 'push' && format('iOS 手势修复版 #{0}', github.run_number) || github.event.inputs.tag }}
+          name: ${{ github.event_name == 'push' && format('iOS gesture fix build {0}', github.run_number) || github.event.inputs.tag }}
           files: |
             PiliPlus_ios_*.ipa
 

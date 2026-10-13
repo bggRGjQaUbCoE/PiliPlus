@@ -72,6 +72,13 @@ List<SettingsModel> get playSettings => [
     setKey: SettingBoxKey.showFsScreenshotBtn,
     defaultVal: true,
   ),
+  const SwitchModel(
+    title: '全屏显示横屏切换按钮',
+    subtitle: '全屏时短按切换横屏方向，长按关闭横屏模式',
+    leading: Icon(Icons.screen_rotation_alt),
+    setKey: SettingBoxKey.showFsLandscapeBtn,
+    defaultVal: true,
+  ),
   SwitchModel(
     title: '全屏显示电池电量',
     leading: const Icon(Icons.battery_3_bar),

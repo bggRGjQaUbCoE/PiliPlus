@@ -22,6 +22,7 @@ import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/double_tap_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/duration.dart';
+import 'package:PiliPlus/models/common/ui_orientation_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
@@ -444,6 +445,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   late final showDmChart = Pref.showDmChart;
   late final showViewPoints = Pref.showViewPoints;
   late final showFsScreenshotBtn = Pref.showFsScreenshotBtn;
+  late final showFsLandscapeBtn = Pref.showFsLandscapeBtn;
   late final showFsLockBtn = Pref.showFsLockBtn;
   late final keyboardControl = Pref.keyboardControl;
   late final uiScale = Pref.uiScale;
@@ -593,6 +595,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   void _onOrientationChanged(OrientationParams param) {
     _orientation = param.orientation;
+    if (Pref.uiOrientationMode != UiOrientationMode.off) return;
     if (Platform.isIOS && !visible) return;
     final orientation = param.orientation;
     final isFullScreen = this.isFullScreen.value;
@@ -1460,6 +1463,16 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     required bool isVertical,
     DeviceOrientation? orientation,
   }) {
+    if (Pref.uiOrientationMode != UiOrientationMode.off) {
+      if (isVertical && Pref.verticalVideoPortraitInFullscreen) {
+        return portraitUpMode();
+      }
+      return switch (Pref.uiOrientationMode) {
+        UiOrientationMode.off => null,
+        UiOrientationMode.landscape => landscapeLeftMode(),
+        UiOrientationMode.reverseLandscape => landscapeRightMode(),
+      };
+    }
     if (orientation == null && (mode == .none || mode == .gravity)) {
       return null;
     }
@@ -1517,7 +1530,9 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
           if (!removeSafeArea) {
             showSystemBar();
           }
-          if (orientation == null && mode == .none) {
+          if (orientation == null &&
+              mode == .none &&
+              Pref.uiOrientationMode == UiOrientationMode.off) {
             return;
           }
           await resetScreenRotation();
@@ -1622,12 +1637,31 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   bool get isCloseAll => _isCloseAll;
 
   Future<void>? resetScreenRotation() {
+    if (Pref.uiOrientationMode != UiOrientationMode.off) {
+      return applyUiOrientationMode();
+    }
     if (horizontalScreen) {
       return fullMode();
     } else {
       return portraitUpMode();
     }
   }
+
+  Future<void> toggleLandscapeOrientation() async {
+    final next = Pref.uiOrientationMode == UiOrientationMode.landscape
+        ? UiOrientationMode.reverseLandscape
+        : UiOrientationMode.landscape;
+    await setUiOrientationMode(next);
+    if (isFullScreen.value &&
+        isVertical &&
+        Pref.verticalVideoPortraitInFullscreen) {
+      await portraitUpMode();
+    }
+  }
+
+  /// Disables the explicit UI orientation override.
+  Future<void> disableUiOrientationMode() =>
+      setUiOrientationMode(UiOrientationMode.off);
 
   void onCloseAll() {
     _isCloseAll = true;

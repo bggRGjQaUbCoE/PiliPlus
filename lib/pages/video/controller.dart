@@ -21,6 +21,7 @@ import 'package:PiliPlus/models/common/sponsor_block/post_segment_model.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_model.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models/common/video/audio_quality.dart';
+import 'package:PiliPlus/models/common/video/cdn_type.dart';
 import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models/common/video/video_decode_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
@@ -60,7 +61,9 @@ import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/utils/playback_position.dart';
 import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -783,6 +786,22 @@ class VideoDetailController extends GetxController
     }
 
     defaultST = null;
+  }
+
+  /// Select a CDN without losing the current playback position.
+  Future<void> selectCdnService(CDNService service) async {
+    if (isClosed || isFileSource || isQuerying) return;
+
+    playedTime = chooseResumePosition(
+      playerPosition: plPlayerController.videoPlayerController?.state.position,
+      lastReportedSeconds: plPlayerController.position.value,
+      previousResumePosition: playedTime,
+    );
+    defaultST = null;
+    VideoUtils.cdnService = service;
+    await setting.put(SettingBoxKey.CDNService, service.name);
+    SmartDialog.showToast('已设置为 ${service.desc}，正在重载视频');
+    await queryVideoUrl(fromReset: true);
   }
 
   bool isQuerying = false;

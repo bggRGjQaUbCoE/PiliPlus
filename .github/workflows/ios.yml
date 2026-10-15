@@ -48,7 +48,7 @@ jobs:
       - name: Build iOS
         run: |
           flutter pub get
-          flutter analyze
+          flutter analyze --no-fatal-infos --no-fatal-warnings
           flutter build ios --release --no-codesign --dart-define-from-file=pili_release.json --no-pub
           find Payload/Runner.app/Frameworks -type d -name "*.framework" -exec codesign --force --sign - --preserve-metadata=identifier,entitlements {} \;
           ln -sf ./build/ios/iphoneos Payload

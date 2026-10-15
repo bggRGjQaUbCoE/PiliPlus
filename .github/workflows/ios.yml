@@ -47,18 +47,12 @@ jobs:
 
       - name: Build iOS
         run: |
-          set -o pipefail
-          flutter build ios --release --no-codesign --dart-define-from-file=pili_release.json --no-pub --verbose 2>&1 | tee /tmp/ios-verbose.log
+          flutter pub get
+          flutter analyze
+          flutter build ios --release --no-codesign --dart-define-from-file=pili_release.json --no-pub
           find Payload/Runner.app/Frameworks -type d -name "*.framework" -exec codesign --force --sign - --preserve-metadata=identifier,entitlements {} \;
           ln -sf ./build/ios/iphoneos Payload
           zip --symlinks -qr PiliPlus.ipa Payload
-
-      - name: Upload verbose build log on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-verbose-build-log
-          path: /tmp/ios-verbose.log
 
       - name: Release
         if: ${{ github.event_name == 'push' || github.event.inputs.tag != '' }}

@@ -43,7 +43,7 @@ class LiveController extends CommonListController with AccountMixin {
 
   /// 英雄联盟分区ID（B站直播）
   static const int _lolAreaId = 86;
-  static const int _lolParentAreaId = 2;
+  // _lolParentAreaId 已删除（未使用，避免 analyze 警告）
 
   @override
   void checkIsEnd(int length) {

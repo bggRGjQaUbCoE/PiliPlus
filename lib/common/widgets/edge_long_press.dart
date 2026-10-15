@@ -155,7 +155,7 @@ class _EdgeLongPressRecognizer extends OneSequenceGestureRecognizer {
       builder: (_) => _PressFlash(position: position),
     );
     overlay.insert(entry);
-    Future.delayed(const Duration(milliseconds: 300), entry.remove);
+    Future.delayed(const Duration(milliseconds: 300), () { if (entry.mounted) entry.remove(); });
   }
 
   void _cancelTimers() {

@@ -2,7 +2,8 @@ import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart'; import 'package:PiliPlus/pages/main/controller.dart';
+
 
 /// 左边缘长按返回手势（与右滑返回互补）。
 ///
@@ -57,7 +58,7 @@ class _EdgeLongPressRecognizer extends OneSequenceGestureRecognizer {
   VoidCallback? onTriggerBack;
   VoidCallback? onTriggerRefresh;
 
-  @override void didStopTrackingLastPointer(int pointer) { _cancelTimers(); _hideGlow(); _pointer = null; _downPosition = null; } // flutter 3.47新增抽象方法，必须实现
+  @override void didStopTrackingLastPointer(int pointer) { _cancelTimers(); _hideGlow(); _pointer = null; _downPosition = null; } @override void dispose() { _cancelAll(); super.dispose(); } // flutter 3.47新增抽象方法，必须实现; dispose防残留Timer/Overlay
   static const Duration _feedbackDelay = Duration(milliseconds: 120);
 
   /// 触发动作所需的按住时长
@@ -128,9 +129,9 @@ class _EdgeLongPressRecognizer extends OneSequenceGestureRecognizer {
   }
 
   bool _isOnHomeTab() {
-    // 主页 Tab 时 Get.currentRoute 为 / 或 /home
+    // 主页 Tab 时 Get.currentRoute 为 / 或 /home；底部栏切换 Tab 时路由不变，需再检查 MainController.selectedIndex
     final route = Get.currentRoute;
-    return route == '/' || route == '/home' || route.isEmpty;
+    if (route != '/' && route != '/home' && route.isNotEmpty) return false; try { return Get.find<MainController>().selectedIndex.value == 0; } catch (_) { return true; }
   }
 
   void _showGlow(Offset position) {

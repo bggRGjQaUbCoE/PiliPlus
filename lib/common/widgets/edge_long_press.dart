@@ -57,7 +57,7 @@ class _EdgeLongPressRecognizer extends OneSequenceGestureRecognizer {
   VoidCallback? onTriggerBack;
   VoidCallback? onTriggerRefresh;
 
-  /// 按下后显示光圈反馈的延迟
+  @override void didStopTrackingLastPointer(int pointer) { _cancelTimers(); _hideGlow(); _pointer = null; _downPosition = null; } // flutter 3.47新增抽象方法，必须实现
   static const Duration _feedbackDelay = Duration(milliseconds: 120);
 
   /// 触发动作所需的按住时长

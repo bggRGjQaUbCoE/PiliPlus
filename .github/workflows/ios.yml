@@ -1,5 +1,6 @@
 name: Build for iOS
 
+
 on:
   push:
     branches: [main]
@@ -16,6 +17,7 @@ on:
         type: string
   workflow_dispatch:
 
+
 jobs:
   build-macos-app:
     name: Release IOS
@@ -27,6 +29,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+
 
       - name: Setup flutter
         uses: subosito/flutter-action@v2
@@ -44,7 +47,13 @@ jobs:
 
       - name: Build iOS
         run: |
-          CODE_SIGNING_ALLOWED=NO flutter build ios --release --no-codesign --dart-define-from-file=pili_release.json --no-pub
+          # 显式关闭所有签名步骤：Flutter 3.47.x 的 post-build 检查会在
+          # --no-codesign 下仍因未选 Development Team 而失败，需彻底跳过签名
+          export CODE_SIGNING_ALLOWED=NO
+          export CODE_SIGNING_REQUIRED=NO
+          export CODE_SIGN_IDENTITY=""
+          export DEVELOPMENT_TEAM=""
+          flutter build ios --release --no-codesign --dart-define-from-file=pili_release.json --no-pub
           ln -sf ./build/ios/iphoneos Payload
           # make AltSign happy...
           find Payload/Runner.app/Frameworks -type d -name "*.framework" -exec codesign --force --sign - --preserve-metadata=identifier,entitlements {} \;

@@ -47,17 +47,18 @@ jobs:
 
       - name: Build iOS
         run: |
-          # 显式关闭所有签名步骤：Flutter 3.47.x 的 post-build 检查会在
-          # --no-codesign 下仍因未选 Development Team 而失败，需彻底跳过签名
-          export CODE_SIGNING_ALLOWED=NO
-          export CODE_SIGNING_REQUIRED=NO
-          export CODE_SIGN_IDENTITY=""
-          export DEVELOPMENT_TEAM=""
-          flutter build ios --release --no-codesign --dart-define-from-file=pili_release.json --no-pub
-          ln -sf ./build/ios/iphoneos Payload
-          # make AltSign happy...
+          set -o pipefail
+          flutter build ios --release --no-codesign --dart-define-from-file=pili_release.json --no-pub --verbose 2>&1 | tee /tmp/ios-verbose.log
           find Payload/Runner.app/Frameworks -type d -name "*.framework" -exec codesign --force --sign - --preserve-metadata=identifier,entitlements {} \;
-          zip -r9 PiliPlus_ios_${{env.version}}.ipa Payload/Runner.app
+          ln -sf ./build/ios/iphoneos Payload
+          zip --symlinks -qr PiliPlus.ipa Payload
+
+      - name: Upload verbose build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-verbose-build-log
+          path: /tmp/ios-verbose.log
 
       - name: Release
         if: ${{ github.event_name == 'push' || github.event.inputs.tag != '' }}

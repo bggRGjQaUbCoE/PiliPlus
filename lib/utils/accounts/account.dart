@@ -55,6 +55,9 @@ class LoginAccount extends Account {
   @HiveField(3)
   final Set<AccountType> type;
 
+  @HiveField(4)
+  bool replyAccountInitialized;
+
   @override
   bool activated = false;
 
@@ -97,6 +100,7 @@ class LoginAccount extends Account {
     'accessKey': accessKey,
     'refresh': refresh,
     'type': type.map((i) => i.index).toList(),
+    'replyAccountInitialized': replyAccountInitialized,
   };
 
   late final String _midStr = cookieJar
@@ -111,6 +115,7 @@ class LoginAccount extends Account {
     this.accessKey,
     this.refresh, [
     Set<AccountType>? type,
+    this.replyAccountInitialized = true,
   ]) : type = type ?? {} {
     cookieJar.setBuvid3();
   }
@@ -120,7 +125,29 @@ class LoginAccount extends Account {
     json['accessKey'],
     json['refresh'],
     (json['type'] as Iterable?)?.map((i) => AccountType.values[i]).toSet(),
+    json['replyAccountInitialized'] == true,
   );
+
+  static List<LoginAccount> initializeReplyAccount(
+    Iterable<LoginAccount> accounts,
+  ) {
+    final pending = accounts.where((a) => !a.replyAccountInitialized).toList();
+    if (pending.isEmpty) return pending;
+    if (!accounts.any(
+      (a) => a.replyAccountInitialized || a.type.contains(AccountType.reply),
+    )) {
+      for (final account in pending) {
+        if (account.type.contains(AccountType.main)) {
+          account.type.add(AccountType.reply);
+          break;
+        }
+      }
+    }
+    for (final account in pending) {
+      account.replyAccountInitialized = true;
+    }
+    return pending;
+  }
 
   @override
   int get hashCode => mid.hashCode;

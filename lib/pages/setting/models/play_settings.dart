@@ -32,14 +32,13 @@ List<SettingsModel> get playSettings => [
     setKey: SettingBoxKey.enableShowDanmaku,
     defaultVal: true,
   ),
-  if (PlatformUtils.isMobile)
-    const SwitchModel(
-      title: '启用点击弹幕',
-      subtitle: '点击弹幕悬停，支持点赞、复制、举报操作',
-      leading: Icon(Icons.touch_app_outlined),
-      setKey: SettingBoxKey.enableTapDm,
-      defaultVal: true,
-    ),
+  const SwitchModel(
+    title: '启用点击弹幕',
+    subtitle: '点击弹幕悬停，支持快速屏蔽、点赞、复制和举报',
+    leading: Icon(Icons.touch_app_outlined),
+    setKey: SettingBoxKey.enableTapDm,
+    defaultVal: true,
+  ),
   NormalModel(
     onTap: (context, setState) => Get.toNamed('/playSpeedSet'),
     leading: const Icon(Icons.speed_outlined),

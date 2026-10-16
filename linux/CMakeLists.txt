@@ -54,9 +54,13 @@ add_subdirectory(${FLUTTER_MANAGED_DIR})
 # System-level dependencies.
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0)
-pkg_check_modules(WEBKIT IMPORTED_TARGET webkit2gtk-4.1)
-if(NOT WEBKIT_FOUND)
-  pkg_check_modules(WEBKIT REQUIRED IMPORTED_TARGET webkit2gtk-4.0)
+# The Ubuntu Touch container exports PILI_UBUNTU_TOUCH. Desktop builds do
+# not, so they keep WebKit and libmpv. The phone image has neither library.
+if(NOT DEFINED ENV{PILI_UBUNTU_TOUCH})
+  pkg_check_modules(WEBKIT IMPORTED_TARGET webkit2gtk-4.1)
+  if(NOT WEBKIT_FOUND)
+    pkg_check_modules(WEBKIT REQUIRED IMPORTED_TARGET webkit2gtk-4.0)
+  endif()
 endif()
 
 # Application build; see runner/CMakeLists.txt.
@@ -77,6 +81,14 @@ set_target_properties(${BINARY_NAME}
 
 # Generated plugin build rules, which manage building the plugins and adding
 # them to the application.
+if(DEFINED ENV{PILI_UBUNTU_TOUCH})
+  set(MEDIA_KIT_LIBS_AVAILABLE OFF CACHE BOOL
+      "Ubuntu Touch click does not ship libmpv" FORCE)
+  # media_kit_libs_linux downloads and builds mimalloc when this defaults
+  # ON, independent of MEDIA_KIT_LIBS_AVAILABLE. The phone does not need it.
+  set(MIMALLOC_USE_STATIC_LIBS OFF CACHE BOOL
+      "Ubuntu Touch click does not build mimalloc" FORCE)
+endif()
 include(flutter/generated_plugins.cmake)
 
 

@@ -155,4 +155,5 @@ test*
 
 # Local-only notes (kept on disk, not for upstream)
 docs/linux-arm64.md
+docs/doc_from_gastube
 feasibility.md

@@ -2,7 +2,7 @@
 
 日期：2026-10-16  
 对应路线：`docs/ubuntu-touch-port.md` 建议顺序的第 1 步和第 2 步  
-状态：Click 已装到 6T，进程画出了第一帧。手测还没做。
+状态：第 7 步手测已通过。视频不能播，滑动也不满 60 帧，这两项都在这份 Click 的范围之外。
 
 这篇只做到一件事：PiliPlus 的界面在 OnePlus 6T 上从启动器打开，首页、搜索和设置能进，设置能写入 Hive，旋转、锁屏和切走不会把进程打崩。系统播放器、CDN 请求头试验、MPD 都不在这里。
 
@@ -181,7 +181,7 @@ Lomiri 对失去焦点的 Click 发 SIGSTOP，状态会变成 `T`。切回来应
 
 - [x] 6T 用数据线接到台式机，解锁屏幕。`adb devices` 里 `d3ba49e7` 为 `device`。
 - [x] 构建期间 Mac 开机、接电、不睡眠，Docker Desktop 在运行。
-- [ ] 装上之后看首页、设置、搜索、键盘、旋转、锁屏、切走和划掉。
+- [x] 装上之后看首页、设置、搜索、键盘、旋转、锁屏、切走和划掉。
 
 ### 等待实现
 
@@ -191,7 +191,7 @@ Lomiri 对失去焦点的 Click 发 SIGSTOP，状态会变成 `T`。切回来应
 - [x] 第 4 步 `readelf` 通过。
 - [x] 第 5 步 `clickable review` 为 pass，sha256 一致。
 - [x] 第 6 步进程在 6T 上保持运行，并画出第一帧。
-- [ ] 第 7 步手测记入实现笔记。
+- [x] 第 7 步手测记入实现笔记。
 
 ## 实现笔记
 
@@ -202,7 +202,7 @@ Lomiri 对失去焦点的 Click 发 SIGSTOP，状态会变成 `T`。切回来应
 - 产物路径和 sha256：无。
 - 手机上的 pid 和日志要点：未启动应用。
 
-### 2026-10-16 第 2 步（进行中）
+### 2026-10-16 第 2 步
 
 - 步骤：容器。
 - 做了什么：Mac 上已有 `gastube-flutter-focal-ut:20.04`（`498491ed61bb`）。`DOCKER_BUILDKIT=0 docker build --pull=false` 只改标签，得到 `piliplus-flutter-focal:20.04`，没有往 GasTube 标签里加包，也没有 apt 安装 libmpv 或 WebKit。新 volume `piliplus-flutter-sdk` 里 `git clone --depth 1 --branch 3.47.7`。`flutter --version`：Flutter 3.47.7，framework `abaf9c5237`，engine `deb287481e3ce9468f3434937ced4240a70539ca`（revision deb287481e），Dart 3.13.5。不是 GasTube 的 `5d531788691ec3404cac0cee66ead4007b177363`。pub 缓存在独立 volume `piliplus-flutter-pub`，不和 GasTube 的缓存混用。
@@ -237,6 +237,20 @@ Lomiri 对失去焦点的 Click 发 SIGSTOP，状态会变成 `T`。切回来应
 - 产物路径和 sha256：手机路径 `/opt/click.ubuntu.com/piliplus.alphaliu01/2.1.6/piliplus`，md5 `73ad5e2faf4f2d0332236da2939f91a3`。
 - 手机上的 pid 和日志要点：pid `13531`，状态 `Ssl`。
 
+### 2026-10-16 第 7 步
+
+- 步骤：手测。手机前的人确认首页汉字、Hive、搜索、软键盘、底部导航、旋转、锁屏和切走都通过。下面是同一时段 journal 和 Hive 文件能对上的部分。
+- 做了什么：
+  1. 首页三次启动的逻辑尺寸都是 `360.0x759.0`、`dpr=3.0`（12:52:47 pid 13531，12:55:39 pid 13763，12:59:18 pid 13905）。360 低于侧栏断点，竖屏走底部导航。首页汉字由看屏幕的人确认不是方框。搜索记录里留下的是 UTF-8「第七翼刀」，说明这条路径上的中文没有丢成问号或空字节。
+  2. Hive 在 `~/.local/share/piliplus.alphaliu01/hive/`。`setting.hive` 在 12:54 已有内容，进程换成 13905 之后于 12:59:53 增长到 327 字节，里面有 `horizontalScreen`、`themeMode`、`textScale`。`historyword.hive` 在 12:55:47 写成 40 字节，键 `cacheList`，值是「第七翼刀」。12:56:10 进程被划掉、12:59:17 再次打开后，这个文件还在，没有被空文件替换。
+  3. 每次启动都有 `im context id=maliit`，模块是包内的 `lib/im-maliit.so`。软键盘升起、中文和英文各输入一次，由看屏幕的人确认。journal 里没有单独的键盘弹出行；能对上的是 12:55:47 写入的那条中文搜索记录。
+  4. 旋转没有重启进程。pid 13531：12:54:00 `configure 2340x1017`，12:54:02 回到 `1080x2277`，12:54:07 再横、12:54:08 再竖。pid 13763：12:56:05 横、12:56:08 竖。
+  5. 锁屏和切走由看屏幕的人确认，进程没有打出崩溃。Lomiri 在 12:55:18 和 12:56:10 记了 `ApplicationManager::onProcessStopped`，应用 id 是 `piliplus.alphaliu01_piliplus`。划掉之后是新进程：13531 停在 12:55:18，13763 于 12:55:38 启动；13763 停在 12:56:10，13905 于 12:59:17 启动。13905 手测结束时仍是 `Ssl`。拔掉 USB 这一项 journal 里看不出来，没有单独记成通过。
+- 视频：12:54:51 和 12:55:03，点击进了 `PlPlayerController.setDataSource`，抛出 `MediaKit.ensureInitialized must be called before using any API from package:media_kit`。这是这个 Click 故意不调用 `MediaKit.ensureInitialized()` 的结果。两次异常之后 pid 13531 都还在，直到 12:55:18 才被外壳停掉。
+- 滑动帧率：journal 里没有帧时间。看屏幕的人确认滑动和 GasTube 一样到不了 60。这一项不改 AppArmor，也不换引擎。
+- 产物路径和 sha256：Hive 目录如上。二进制仍是第 6 步那个 md5。
+- 手机上的 pid 和日志要点：手测结束时 pid `13905`，状态 `Ssl`。同一次启动仍有 AppArmor 拒绝 `/etc/gtk-3.0/settings.ini`、`/usr/share/alsa/alsa.conf`、`/proc/sys/vm/max_map_count`、`/proc/self/loginuid`，以及 `exec /usr/bin/stat`。这些拒绝没有让第 7 步失败，规则保持只有 `networking`。
+
 ## 故障记录
 
 出现一次就加一行，保留命令输出里能定位的那几行。
@@ -247,6 +261,7 @@ Lomiri 对失去焦点的 Click 发 SIGSTOP，状态会变成 `T`。切回来应
 | 2026-10-16 | `app_links_linux` 1.0.4 在 Focal 的 glib 2.64 上编不过。桌面 CI 用的是更新的 Ubuntu，同一行能过。 | `app_links_plugin_linux.cc:133` `cannot initialize a variable of type 'GPtrArray_autoptr' with an rvalue of type 'void *'`。`pkg-config --modversion glib-2.0` 为 2.64.6。 | 只在这个容器里把 `g_steal_pointer` 的结果 `static_cast` 成 `GPtrArray*`。不改桌面依赖。 | 这一行不再报错。下一次失败是链接。 |
 | 2026-10-16 | 关掉 `MEDIA_KIT_LIBS_AVAILABLE` 之后，`media_kit_video` 走了不链 libmpv 的桩，但 `media_kit_libs_linux` 1.2.1 仍会下载并 `make` mimalloc。Flutter 只印出 `clang: error: linker command failed`，真正的命令在构建目录的 `mimalloc/out`。 | `CMakeCache.txt` 里 `MEDIA_KIT_LIBS_AVAILABLE:BOOL=OFF`。构建树里有 `mimalloc/out/release`。 | 在包含插件之前再把 `MIMALLOC_USE_STATIC_LIBS` 强制设为 `OFF`。桌面不设这个环境变量，仍走原来的默认值。 | 下一次链接不再进入 mimalloc。 |
 | 2026-10-16 | 链接 `piliplus` 失败。Ubuntu Touch 目标没有编译 `linux_webview_plugin.cc`，但 `my_application.cc` 仍在目标里并调用注册函数。 | `my_application.cc:(.text+0x538): undefined reference to LinuxWebviewPluginRegister` | Ubuntu Touch 目标不再编译 `my_application.cc`。桌面目标仍编译它和 WebKit 插件。 | 链接通过。Click 已装上。 |
+| 2026-10-16 | 打开点播后没有画面。进程没有退出。 | 12:54:51 与 12:55:03，`PlPlayerController.setDataSource`：`MediaKit.ensureInitialized must be called before using any API from package:media_kit`。栈顶是一次指针事件。 | 这个 Click 本来就不调用 `MediaKit.ensureInitialized()`，也不链 libmpv。不在这里补上。播放留给系统播放器那一步。 | 意料之中。pid 13531 在两次异常之后仍在。 |
 
 ## 进度日志
 
@@ -254,3 +269,4 @@ Lomiri 对失去焦点的 Click 发 SIGSTOP，状态会变成 `T`。切回来应
 
 - 建立这份计划。范围停在 Click 装上 6T 并且界面能用。播放不在这里。
 - Click `piliplus.alphaliu01` 2.1.6 已安装。进程 13531 画出第一帧：逻辑宽度 360，dpr 3，物理宽度 1080。手测未做。
+- 手测通过。`historyword.hive` 留下「第七翼刀」。旋转在同一进程里于 1080×2277 和 2340×1017 之间切换。划掉后新进程仍读到原来的 Hive。点播抛出 `MediaKit.ensureInitialized`，进程未退出。滑动帧率 journal 无计数，看屏幕的人确认与 GasTube 一样不满 60。

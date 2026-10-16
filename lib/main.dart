@@ -25,6 +25,7 @@ import 'package:PiliPlus/utils/font_utils.dart';
 import 'package:PiliPlus/utils/ios/pip_helper.dart';
 import 'package:PiliPlus/utils/json_file_handler.dart';
 import 'package:PiliPlus/utils/max_screen_size.dart';
+import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
@@ -345,6 +346,17 @@ class MyApp extends StatelessWidget {
         print(
           'piliplus: logical=${metrics.size.width}x${metrics.size.height} '
           'dpr=${metrics.devicePixelRatio} padding=${metrics.padding}',
+        );
+        final marker = File('${UbuntuTouch.cacheHome}/open-video');
+        if (!marker.existsSync()) return;
+        final parts = marker.readAsStringSync().trim().split(RegExp(r'\s+'));
+        marker.deleteSync();
+        final cid = parts.length >= 2 ? int.tryParse(parts[1]) : null;
+        if (cid == null) return;
+        PageUtils.toVideoPage(
+          bvid: parts[0],
+          cid: cid,
+          extraArguments: parts.length >= 3 ? {'utTest': parts[2]} : null,
         );
       });
     }

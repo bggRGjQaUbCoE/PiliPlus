@@ -19,7 +19,7 @@ PiliPlus 已经是 Flutter 3.47.7 的 Linux GTK 应用，播放地址由 Dart �
 
 不能原样复制的只有三处，都在动手前用手动命令确认，不先写进应用：
 
-- 哔哩哔哩的 CDN 会不会在没有 `Referer` 的情况下给系统播放器 200。GasTube 的 googlevideo 可以，这里还没试过。
+- 哔哩哔哩的 CDN 会不会在没有 `Referer` 的情况下给系统播放器 200。GasTube 的 googlevideo 可以。2026-10-16 的结果在 [ubuntu-touch-cdn.md](ubuntu-touch-cdn.md)：空 `User-Agent` 的 Range 是 403；有 `User-Agent`、没有 `Referer` 是 206。随后一份手工 AVC+AAC MPD 交给 `mediaplayer-app`，自定义头为空，仍然 `PLAYING`，范围内 seek 能停住。线上 UA 字符串没有抓包。
 - 本仓库的 Linux runner 链了 WebKit。6T 的 Click 运行时没有这份库，不拆掉的话进程起不来。
 - 弹幕画在 Flutter 自己的画面上。系统播放器是另一个全屏应用，弹幕过不去。这是这条路线的产品代价，不是还没做完的步骤。
 
@@ -104,7 +104,9 @@ MPD 的形状沿用已经通过的那一种：`SegmentList`，初始化用 `sour
 3. 若两边不带头也是 200，就写成上面那份 MPD，`Charge` 给 `mediaplayer-app`。看有没有画面、有没有声音、拖一次之后还在不在。
 4. 若不带头是 403、带头是 200，就停在这里。系统播放器的 `%u` 和 Content Hub 都不带请求头。`OpenUriExtended` 能带头，但那是本应用自己的 media-hub 会话，画面不在系统播放器里，而且会把整窗光栅留在本进程。不要在 Click 里开一个转发来补头：播放器在前台时这个进程是停住的，转发一停，后面的分片就断。GasTube 为高清排除过同一种「在 Click 里合成」的做法。
 
-这一步是和 YouTube 不一样的地方。播放器代码把 `Referer: https://www.bilibili.com` 设在每一次 `open` 上。系统播放器看不到这个头。试验没有结果之前，不要把「GasTube 的 URL 能播」写成「哔哩哔哩的 m4s 也能播」。
+这一步是和 YouTube 不一样的地方。播放器代码把 `Referer: https://www.bilibili.com` 设在每一次 `open` 上。系统播放器看不到这个头。
+
+2026-10-16 的结果记在 [ubuntu-touch-cdn.md](ubuntu-touch-cdn.md)。空头 Range 是 403，门槛是 `User-Agent` 而不是 `Referer`，所以没有写代理。同一天仍用手工 MPD 做了第 3 条里的 `Charge`：播放器自定义头为空，AVC+AAC 进入 `PLAYING`，范围内 seek 能停住。点播页的写出和交出按 [ubuntu-touch-dash.md](ubuntu-touch-dash.md) 验收。
 
 通过之后，HEVC 用同一份清单形状再交一次。直播不并进这一步。直播间走 `getRoomPlayInfo`，协议是另一套（常见是 FLV 或 HLS）。手机上有 `libgsthls.so`。FLV 要单独看 playbin 认不认，不和点播 MPD 混成一次验收。
 
@@ -125,9 +127,9 @@ MPD 的形状沿用已经通过的那一种：`SegmentList`，初始化用 `sour
 1. Ubuntu Touch 的 runner：GLES、普通 `GtkWindow`、最大化、整数缩放、输入法、中文回退。不链 WebKit，不链 libmpv。桌面构建不动。
 2. 打成 Click，在 6T 上打开首页、搜索和设置。Hive 落在 Click 可写目录。旋转、锁屏、切走再回来，进程还在。
 
-这两步的执行计划、实现笔记和故障记录在 [ubuntu-touch-click.md](ubuntu-touch-click.md)。
-3. 做上面的 CDN 头试验。403 就停，不写代理。
-4. 试验通过后，只在点播页写 MPD 并 Charge。先 AVC 加 AAC，再 HEVC。
+这两步的执行计划、实现笔记和故障记录在 [ubuntu-touch-click.md](ubuntu-touch-click.md)。2026-10-16 在 6T 上的手测已通过：首页、搜索、设置、Hive、软键盘、底部导航、旋转、锁屏和切走。点播仍进不了 `media_kit`，滑动帧率与 GasTube 一样不满 60。这两项都不是这一步要解决的。
+3. 做上面的 CDN 头试验。403 就停，不写代理。过程和结果在 [ubuntu-touch-cdn.md](ubuntu-touch-cdn.md)。2026-10-16：完全不带头是 403，有 `User-Agent` 即可。没有写代理。同一天在手机上手工写了 AVC+AAC 的 MPD 并 `Charge`，播放器自定义头为空，仍然出画，范围内 seek 停在 30 秒后继续往前走。
+4. 只在点播页写 MPD 并 Charge。先 AVC 加 AAC，再 HEVC。手工清单已经能播。执行计划、实现笔记和故障记录在 [ubuntu-touch-dash.md](ubuntu-touch-dash.md)。
 5. 占位、本片画质、手动上一首和下一首。
 
 直播、后台纯音频、观看历史在播放器占着前台时继续写，都排在这五步之后。它们在 GasTube 里也是主路径通过以后的修补，而且后台音频还要再对哔哩哔哩的音轨做 Range，不能把 YouTube 那次切片结果直接拿来用。

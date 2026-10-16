@@ -46,6 +46,7 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
+import 'package:PiliPlus/utils/windows/taskbar_helper.dart';
 import 'package:fixnum/fixnum.dart' show Int64;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -433,6 +434,13 @@ class AudioController extends GetxController
           animController.reverse();
           _playerStatus = .paused;
           _startStatusTimer();
+        }
+        if (Platform.isWindows) {
+          WindowsTaskbarHelper.update(
+            this,
+            playing: playing,
+            onToggle: playOrPause,
+          );
         }
       }),
       stream.buffering.listen((bool buffering) {
@@ -837,6 +845,7 @@ class AudioController extends GetxController
     _subscriptions?.forEach((e) => e.cancel());
     _subscriptions?.clear();
     _subscriptions = null;
+    if (Platform.isWindows) WindowsTaskbarHelper.hide(this);
     player?.dispose();
     player = null;
     animController.dispose();

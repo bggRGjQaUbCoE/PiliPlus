@@ -53,6 +53,10 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_APP_ICON            ICON                    "resources\\app_icon.ico"
+IDI_PLAY_WHITE          ICON                    "resources\\play_white.ico"
+IDI_PAUSE_WHITE         ICON                    "resources\\pause_white.ico"
+IDI_PLAY_BLACK          ICON                    "resources\\play_black.ico"
+IDI_PAUSE_BLACK         ICON                    "resources\\pause_black.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////

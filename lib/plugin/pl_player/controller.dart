@@ -50,6 +50,7 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/windows/taskbar_helper.dart';
 import 'package:archive/archive.dart' show getCrc32;
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:easy_debounce/easy_throttle.dart';
@@ -1041,6 +1042,17 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
           _updateIOSPip();
         }
 
+        if (Platform.isWindows) {
+          WindowsTaskbarHelper.update(
+            this,
+            playing: playing,
+            // same as the media notification, `playIfExists` restores the
+            // listeners of the video page
+            onToggle: () =>
+                playerStatus.isPlaying ? pauseIfExists() : playIfExists(),
+          );
+        }
+
         for (final element in _statusListeners) {
           element(playing ? .playing : .paused);
         }
@@ -1674,6 +1686,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       AndroidHelper$ToDart.onUserLeaveHint = null;
     } else if (Platform.isIOS) {
       IOSPipHelper.dispose();
+    } else if (Platform.isWindows) {
+      WindowsTaskbarHelper.hide(this);
     }
     _timer?.cancel();
     // _position.close();

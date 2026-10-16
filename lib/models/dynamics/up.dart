@@ -8,10 +8,16 @@ class FollowUpModel {
   String? offset;
 
   void addAllUpList(List<UpItem> newList) {
-    if (upList != null) {
-      upList!.addAll(newList);
-    } else {
-      upList = newList;
+    final items = upList ??= [];
+    final byMid = {for (final item in items) item.mid: item};
+    for (final item in newList) {
+      final existing = byMid[item.mid];
+      if (existing == null) {
+        items.add(item);
+        byMid[item.mid] = item;
+      } else if (item.hasUpdate == true) {
+        existing.hasUpdate = true;
+      }
     }
   }
 

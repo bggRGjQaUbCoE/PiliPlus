@@ -161,6 +161,7 @@ List<SettingsModel> get styleSettings => [
   ),
   const SwitchModel(
     title: '动态页显示所有已关注UP主',
+    subtitle: '使用本地记录提示更新，首次补查最近7天；已读状态与其他客户端独立',
     leading: Icon(Icons.people_alt_outlined),
     setKey: SettingBoxKey.dynamicsShowAllFollowedUp,
     defaultVal: false,

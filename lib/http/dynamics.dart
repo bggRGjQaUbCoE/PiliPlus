@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/constants.dart';
+import 'package:PiliPlus/http/dynamics_up_list.dart';
 import 'package:PiliPlus/http/error_msg.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
@@ -12,6 +13,7 @@ import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
 import 'package:PiliPlus/models/common/reply/reply_option_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/models/dynamics/up.dart';
+import 'package:PiliPlus/models/dynamics/up_updates.dart';
 import 'package:PiliPlus/models/dynamics/vote_model.dart';
 import 'package:PiliPlus/models_new/article/article_info/data.dart';
 import 'package:PiliPlus/models_new/article/article_list/data.dart';
@@ -27,6 +29,7 @@ import 'package:PiliPlus/models_new/dynamic/dyn_topic_top/top_details.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_top/topic_item.dart';
 import 'package:PiliPlus/models_new/followee_votes/vote.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
@@ -70,22 +73,32 @@ abstract final class DynamicsHttp {
     }
   }
 
-  static Future<LoadingState<FollowUpModel>> followUp() async {
+  static Future<LoadingState<FollowUpModel>> followUp({
+    bool loadAll = false,
+    Account? account,
+  }) async {
     final res = await Request().get(
       Api.followUp,
-      queryParameters: {
-        'up_list_more': 1,
-        'web_location': 333.1365,
-      },
+      queryParameters: {'up_list_more': 1, 'web_location': 333.1365},
+      options: Options(extra: {'account': account ?? Accounts.main}),
     );
     if (res.data['code'] == 0) {
-      return Success(FollowUpModel.fromJson(res.data['data']));
+      final data = FollowUpModel.fromJson(res.data['data']);
+      return loadAll
+          ? loadAllDynamicUps(
+              data,
+              (offset) => dynUpList(offset, account: account),
+            )
+          : Success(data);
     } else {
       return Error(res.data['message']);
     }
   }
 
-  static Future<LoadingState<FollowUpModel>> dynUpList(String? offset) async {
+  static Future<LoadingState<FollowUpModel>> dynUpList(
+    String? offset, {
+    Account? account,
+  }) async {
     final res = await Request().get(
       Api.dynUplist,
       queryParameters: {
@@ -93,6 +106,7 @@ abstract final class DynamicsHttp {
         'platform': 'web',
         'web_location': 333.1365,
       },
+      options: Options(extra: {'account': account ?? Accounts.main}),
     );
     if (res.data['code'] == 0) {
       return Success(FollowUpModel.fromUpList(res.data['data']));
@@ -106,6 +120,7 @@ abstract final class DynamicsHttp {
     int? pn,
     int ps = 20,
     String orderType = '', // ''=>最近关注，'attention'=>最常访问
+    Account? account,
   }) async {
     final res = await Request().get(
       Api.followings,
@@ -116,12 +131,31 @@ abstract final class DynamicsHttp {
         'order': 'desc',
         'order_type': orderType,
       },
+      options: Options(extra: {'account': account ?? Accounts.main}),
     );
     if (res.data['code'] == 0) {
       return Success(FollowUpModel.fromFollowList(res.data['data']));
     } else {
       return Error(errorMsg[res.data['code']] ?? res.data['message']);
     }
+  }
+
+  static Future<LoadingState<DynamicUpPage>> dynamicUpUpdates({
+    required Account account,
+    String? offset,
+  }) async {
+    final res = await Request().get(
+      Api.followDynamic,
+      queryParameters: {
+        'type': 'all',
+        'offset': ?offset,
+        'features': Constants.dynFeatures,
+      },
+      options: Options(extra: {'account': account}),
+    );
+    return res.data['code'] == 0
+        ? Success(DynamicUpPage.fromJson(res.data['data']))
+        : Error(res.data['message']);
   }
 
   // 动态点赞

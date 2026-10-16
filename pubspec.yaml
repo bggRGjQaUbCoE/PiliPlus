@@ -141,6 +141,7 @@ dependencies:
       ref: master
   package_info_plus: ^10.1.0
   path: ^1.9.1
+  path_parsing: ^1.1.0
   path_provider: ^2.1.5
   path_provider_platform_interface: ^2.1.3
   permission_handler_android: ^14.0.0

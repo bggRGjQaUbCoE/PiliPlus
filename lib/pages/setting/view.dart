@@ -7,6 +7,7 @@ import 'package:PiliPlus/pages/about/view.dart';
 import 'package:PiliPlus/pages/login/controller.dart';
 import 'package:PiliPlus/pages/setting/common_setting.dart';
 import 'package:PiliPlus/pages/setting/widgets/multi_select_dialog.dart';
+import 'package:PiliPlus/pages/video_together/settings_view.dart';
 import 'package:PiliPlus/pages/webdav/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
@@ -74,6 +75,11 @@ class _SettingPageState extends State<SettingPage> {
       icon: Icon(Icons.extension_outlined),
     ),
     _SettingsModel(
+      type: SettingType.videoTogetherSetting,
+      subtitle: '服务器、自动跳转、播放同步、等待缓冲等',
+      icon: Icon(Icons.groups_2_outlined),
+    ),
+    _SettingsModel(
       type: SettingType.webdavSetting,
       icon: Icon(MdiIcons.databaseCogOutline),
     ),
@@ -123,6 +129,9 @@ class _SettingPageState extends State<SettingPage> {
                         settingType: _type,
                         showAppBar: false,
                       ),
+                      .videoTogetherSetting => const VideoTogetherSettingsPage(
+                        showAppBar: false,
+                      ),
                       .webdavSetting => const WebDavSettingPage(
                         showAppBar: false,
                       ),
@@ -151,6 +160,7 @@ class _SettingPageState extends State<SettingPage> {
           .playSetting ||
           .styleSetting ||
           .extraSetting => CommonSetting(settingType: type),
+          .videoTogetherSetting => const VideoTogetherSettingsPage(),
           .webdavSetting => const WebDavSettingPage(),
           .about => const AboutPage(),
         },

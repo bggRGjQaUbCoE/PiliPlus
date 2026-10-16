@@ -58,6 +58,7 @@ import 'package:PiliPlus/plugin/pl_player/view/view.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart'
     show shutdownTimerService;
+import 'package:PiliPlus/services/video_together/session.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
@@ -177,6 +178,11 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   // 获取视频资源，初始化播放器
   void videoSourceInit() {
+    if (!videoDetailController.isFileSource) {
+      videoDetailController.bindVideoTogetherPlayback(
+        _prepareVideoTogetherPlayback,
+      );
+    }
     videoDetailController.queryVideoUrl(autoFullScreenFlag: true);
     if (videoDetailController.autoPlay) {
       plPlayerController = videoDetailController.plPlayerController;
@@ -303,7 +309,20 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   }
 
   /// 未开启自动播放时触发播放
-  Future<void>? handlePlay() {
+  Future<void>? handlePlay() => _activatePlayer(
+    autoplay: true,
+    autoFullScreenFlag: true,
+  );
+
+  Future<void>? _prepareVideoTogetherPlayback() {
+    if (!mounted || !isShowing) return null;
+    return _activatePlayer(autoplay: false, autoFullScreenFlag: false);
+  }
+
+  Future<void>? _activatePlayer({
+    required bool autoplay,
+    required bool autoFullScreenFlag,
+  }) {
     if (!videoDetailController.isFileSource) {
       if (videoDetailController.isQuerying) {
         if (kDebugMode) debugPrint('handlePlay: querying');
@@ -324,15 +343,16 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     plPlayerController
       ..addStatusLister(playerListener)
       ..addPositionListener(positionListener);
-    if (plPlayerController.preInitPlayer) {
-      if (plPlayerController.autoEnterFullScreen) {
+    if (plPlayerController.videoPlayerController != null &&
+        videoDetailController.videoTogetherMediaReady) {
+      if (autoplay && plPlayerController.autoEnterFullScreen) {
         plPlayerController.triggerFullScreen();
       }
-      return plPlayerController.play();
+      return autoplay ? plPlayerController.play() : Future<void>.value();
     } else {
       return videoDetailController.playerInit(
-        autoplay: true,
-        autoFullScreenFlag: true,
+        autoplay: autoplay,
+        autoFullScreenFlag: autoFullScreenFlag,
       );
     }
   }
@@ -396,6 +416,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       ..brightness = plPlayerController?.brightness.value;
     if (plPlayerController != null) {
       videoDetailController.makeHeartBeat();
+      if (VideoTogetherSession.instance.inRoom) {
+        VideoTogetherSession.instance.suppressLocalChanges();
+      }
       plPlayerController!
         ..removeStatusLister(playerListener)
         ..removePositionListener(positionListener)
@@ -447,14 +470,25 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     plPlayerController
       ?..addStatusLister(playerListener)
       ..addPositionListener(positionListener);
+    final videoTogetherSession = VideoTogetherSession.instance;
+    final inVideoTogetherRoom = videoTogetherSession.inRoom;
+    final roomWantsPlayback =
+        inVideoTogetherRoom && videoTogetherSession.room.value?.paused == false;
+    if (inVideoTogetherRoom) {
+      videoTogetherSession.suppressLocalChanges(const Duration(seconds: 5));
+    }
     if (videoDetailController.autoPlay) {
       videoDetailController.playerInit(
-        autoplay: videoDetailController.playerStatus?.isPlaying ?? false,
+        autoplay: inVideoTogetherRoom
+            ? roomWantsPlayback
+            : videoDetailController.playerStatus?.isPlaying ?? false,
       );
     } else if (videoDetailController.plPlayerController.preInitPlayer &&
         !videoDetailController.isQuerying &&
         videoDetailController.videoUrl != null) {
-      videoDetailController.playerInit();
+      videoDetailController.playerInit(
+        autoplay: inVideoTogetherRoom ? roomWantsPlayback : null,
+      );
     }
   }
 

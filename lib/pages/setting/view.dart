@@ -64,6 +64,11 @@ class _SettingPageState extends State<SettingPage> {
       icon: Icon(Icons.touch_app_outlined),
     ),
     _SettingsModel(
+      type: SettingType.shortcutSetting,
+      subtitle: '启用键盘控制、自定义播放器按键绑定',
+      icon: Icon(Icons.keyboard_alt_outlined),
+    ),
+    _SettingsModel(
       type: SettingType.styleSetting,
       subtitle: '横屏适配（平板）、侧栏、列宽、首页、动态红点、主题、字号、图片、帧率等',
       icon: Icon(Icons.style_outlined),
@@ -118,6 +123,7 @@ class _SettingPageState extends State<SettingPage> {
                       .recommendSetting ||
                       .videoSetting ||
                       .playSetting ||
+                      .shortcutSetting ||
                       .styleSetting ||
                       .extraSetting => CommonSetting(
                         settingType: _type,
@@ -149,6 +155,7 @@ class _SettingPageState extends State<SettingPage> {
           .recommendSetting ||
           .videoSetting ||
           .playSetting ||
+          .shortcutSetting ||
           .styleSetting ||
           .extraSetting => CommonSetting(settingType: type),
           .webdavSetting => const WebDavSettingPage(),

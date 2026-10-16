@@ -155,12 +155,6 @@ List<SettingsModel> get playSettings => [
       defaultVal: false,
       onChanged: (value) => WindowController.instance.pauseOnMinimize = value,
     ),
-  const SwitchModel(
-    title: '启用键盘控制',
-    leading: Icon(Icons.keyboard_alt_outlined),
-    setKey: SettingBoxKey.keyboardControl,
-    defaultVal: true,
-  ),
   PopupModel(
     title: 'SuperChat (醒目留言) 显示类型',
     leading: const Icon(Icons.live_tv),

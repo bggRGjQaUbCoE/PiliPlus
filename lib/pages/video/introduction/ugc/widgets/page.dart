@@ -50,6 +50,10 @@ class _PagesPanelState extends State<PagesPanel> {
   List<Part> get pages =>
       widget.list ?? widget.ugcIntroController.videoDetail.value.pages!;
 
+  void _updatePageIndex() {
+    pageIndex = max(0, pages.indexWhere((e) => e.cid == cid));
+  }
+
   @override
   void initState() {
     super.initState();
@@ -59,11 +63,11 @@ class _PagesPanelState extends State<PagesPanel> {
     double offset = 0;
     if (widget.list == null) {
       cid = widget.ugcIntroController.cid.value;
-      pageIndex = pages.indexWhere((Part e) => e.cid == cid);
+      _updatePageIndex();
       offset = targetOffset;
       _listener = _videoDetailController.cid.listen((cid) {
         this.cid = cid;
-        pageIndex = max(0, pages.indexWhere((e) => e.cid == cid));
+        _updatePageIndex();
         if (!mounted) return;
         setState(() {});
         jumpToCurr();
@@ -141,12 +145,13 @@ class _PagesPanelState extends State<PagesPanel> {
         SizedBox(
           height: 45,
           child: ListView.builder(
-            key: PageStorageKey(widget.bvid),
-            controller: _scrollController,
-            scrollDirection: .horizontal,
-            itemCount: pages.length,
-            itemExtent: 150,
             padding: .zero,
+            itemExtent: 150,
+            itemCount: pages.length,
+            scrollDirection: .horizontal,
+            controller: _scrollController,
+            key: PageStorageKey(widget.bvid),
+            physics: const AlwaysScrollableScrollPhysics(),
             itemBuilder: (context, index) {
               bool isCurrentIndex = pageIndex == index;
               final item = pages[index];

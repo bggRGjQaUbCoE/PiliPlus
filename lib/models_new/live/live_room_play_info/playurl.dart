@@ -1,15 +1,19 @@
+import 'package:PiliPlus/models/common/video/live_quality.dart';
 import 'package:PiliPlus/models_new/live/live_room_play_info/stream.dart';
 
 class Playurl {
-  List<Stream> stream;
+  late List<Stream> stream;
 
   Playurl({
     required this.stream,
   });
 
-  factory Playurl.fromJson(Map<String, dynamic> json) => Playurl(
-    stream: (json['stream'] as List<dynamic>)
-        .map((e) => Stream.fromJson(e as Map<String, dynamic>))
-        .toList(),
-  );
+  Playurl.fromJson(Map<String, dynamic> json) {
+    final liveQn = (json['g_qn_desc'] as List<dynamic>?)
+        ?.map((e) => LiveQuality.fromJson(e as Map<String, dynamic>))
+        .toList();
+    stream = (json['stream'] as List<dynamic>)
+        .map((e) => Stream.fromJson(e as Map<String, dynamic>, liveQn))
+        .toList();
+  }
 }

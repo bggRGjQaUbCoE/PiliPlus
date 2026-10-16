@@ -1,6 +1,16 @@
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/foundation.dart' show PlatformDispatcher;
-import 'package:flutter/gestures.dart';
+import 'package:flutter/gestures.dart'
+    show
+        Offset,
+        GestureRecognizer,
+        PointerDownEvent,
+        HorizontalDragGestureRecognizer,
+        DeviceGestureSettings,
+        PointerDeviceKind,
+        kPrecisePointerHitSlop,
+        kTouchSlop,
+        PointerPanZoomStartEvent;
 
 mixin InitialPositionMixin on GestureRecognizer {
   Offset? _initialPosition;
@@ -8,8 +18,14 @@ mixin InitialPositionMixin on GestureRecognizer {
 
   @override
   void addAllowedPointer(PointerDownEvent event) {
-    super.addAllowedPointer(event);
     _initialPosition = event.position;
+    super.addAllowedPointer(event);
+  }
+
+  @override
+  void addAllowedPointerPanZoom(PointerPanZoomStartEvent event) {
+    _initialPosition = event.position;
+    super.addAllowedPointerPanZoom(event);
   }
 }
 
@@ -63,7 +79,8 @@ bool _computeHitSlop(
       return globalDistanceMoved > settings.touchSlop! &&
           _calcAngle(initialPosition!, lastPosition);
     case .trackpad:
-      return globalDistanceMoved > settings.touchSlop!;
+      return globalDistanceMoved > settings.touchSlop! &&
+          _calcAngle(initialPosition!, lastPosition);
   }
 }
 

@@ -27,7 +27,7 @@ class LiveDanmaku extends DanmakuExtra {
   @override
   final Object id;
   @override
-  final Object mid;
+  final int mid;
 
   final int dmType;
 

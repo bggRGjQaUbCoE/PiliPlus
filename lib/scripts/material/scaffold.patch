@@ -1,20 +1,21 @@
 diff --git a/lib/src/bottom_sheet.dart b/lib/src/bottom_sheet.dart
-index 52a8111..cdb5bfd 100644
+index 99f4161..e45c513 100644
 --- a/lib/src/bottom_sheet.dart
 +++ b/lib/src/bottom_sheet.dart
-@@ -256,8 +256,11 @@ class BottomSheet extends StatefulWidget {
+@@ -258,8 +258,11 @@ class BottomSheet extends StatefulWidget {
    }
  }
  
-+typedef BottomSheetState = _BottomSheetState;
+-class _BottomSheetState extends State<BottomSheet> {
++typedef BottomSheetState<T extends BottomSheet> = _BottomSheetState<T>;
 +
- class _BottomSheetState extends State<BottomSheet> {
++class _BottomSheetState<T extends BottomSheet> extends State<T> {
    final GlobalKey _childKey = GlobalKey(debugLabel: 'BottomSheet child');
 +  GlobalKey get childKey => _childKey;
  
    double get _childHeight {
      final renderBox = _childKey.currentContext!.findRenderObject()! as RenderBox;
-@@ -268,14 +271,14 @@ class _BottomSheetState extends State<BottomSheet> {
+@@ -270,14 +273,14 @@ class _BottomSheetState extends State<BottomSheet> {
  
    Set<WidgetState> dragHandleStates = <WidgetState>{};
  
@@ -31,7 +32,7 @@ index 52a8111..cdb5bfd 100644
      assert(
        (widget.enableDrag || (widget.showDragHandle ?? false)) && widget.animationController != null,
        "'BottomSheet.animationController' cannot be null when 'BottomSheet.enableDrag' or 'BottomSheet.showDragHandle' is true. "
-@@ -287,7 +290,7 @@ class _BottomSheetState extends State<BottomSheet> {
+@@ -289,7 +292,7 @@ class _BottomSheetState extends State<BottomSheet> {
      widget.animationController!.value -= details.primaryDelta! / _childHeight;
    }
  
@@ -40,7 +41,7 @@ index 52a8111..cdb5bfd 100644
      assert(
        (widget.enableDrag || (widget.showDragHandle ?? false)) && widget.animationController != null,
        "'BottomSheet.animationController' cannot be null when 'BottomSheet.enableDrag' or 'BottomSheet.showDragHandle' is true. "
-@@ -378,9 +381,9 @@ class _BottomSheetState extends State<BottomSheet> {
+@@ -380,9 +383,9 @@ class _BottomSheetState extends State<BottomSheet> {
        // no need to add it.
        if (!widget.enableDrag) {
          dragHandle = _BottomSheetGestureDetector(
@@ -53,7 +54,7 @@ index 52a8111..cdb5bfd 100644
            child: dragHandle,
          );
        }
-@@ -422,9 +425,9 @@ class _BottomSheetState extends State<BottomSheet> {
+@@ -424,9 +427,9 @@ class _BottomSheetState extends State<BottomSheet> {
      return !widget.enableDrag
          ? bottomSheet
          : _BottomSheetGestureDetector(
@@ -80,7 +81,7 @@ index 1abf23b..119e3c1 100644
    _BottomSheetDefaultsM3(this.context)
      : super(
 diff --git a/lib/src/scaffold.dart b/lib/src/scaffold.dart
-index 168fc5b..c4ed4a1 100644
+index 168fc5b..8e53ddc 100644
 --- a/lib/src/scaffold.dart
 +++ b/lib/src/scaffold.dart
 @@ -3400,7 +3400,9 @@ class _DismissDrawerAction extends DismissAction {
@@ -98,11 +99,29 @@ index 168fc5b..c4ed4a1 100644
  }
  
 +typedef StandardBottomSheet = _StandardBottomSheet;
-+typedef StandardBottomSheetState = _StandardBottomSheetState;
++typedef StandardBottomSheetState<T extends _StandardBottomSheet> = _StandardBottomSheetState<T>;
 +
  class _StandardBottomSheet extends StatefulWidget {
    const _StandardBottomSheet({
      super.key,
+@@ -3449,7 +3454,7 @@ class _StandardBottomSheet extends StatefulWidget {
+   _StandardBottomSheetState createState() => _StandardBottomSheetState();
+ }
+ 
+-class _StandardBottomSheetState extends State<_StandardBottomSheet> {
++class _StandardBottomSheetState<T extends _StandardBottomSheet> extends State<T> {
+   ParametricCurve<double> animationCurve = _standardBottomSheetCurve;
+ 
+   @override
+@@ -3467,7 +3472,7 @@ class _StandardBottomSheetState extends State<_StandardBottomSheet> {
+   }
+ 
+   @override
+-  void didUpdateWidget(_StandardBottomSheet oldWidget) {
++  void didUpdateWidget(T oldWidget) {
+     super.didUpdateWidget(oldWidget);
+     assert(widget.animationController == oldWidget.animationController);
+   }
 @@ -3477,12 +3482,12 @@ class _StandardBottomSheetState extends State<_StandardBottomSheet> {
      widget.onClosing?.call();
    }

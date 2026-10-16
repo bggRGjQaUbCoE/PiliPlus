@@ -61,12 +61,13 @@ abstract final class UserHttp {
     int viewed = 0,
     String keyword = '',
     bool asc = false,
+    int ps = 20,
   }) async {
     final res = await Request().get(
       Api.seeYouLater,
       queryParameters: await WbiSign.makSign({
         'pn': page,
-        'ps': 20,
+        'ps': ps,
         'viewed': viewed,
         'key': keyword,
         'asc': asc,
@@ -87,12 +88,13 @@ abstract final class UserHttp {
     int? max,
     int? viewAt,
     Account? account,
+    int ps = 20,
   }) async {
     final res = await Request().get(
       Api.historyList,
       queryParameters: {
         'type': type,
-        'ps': 20,
+        'ps': ps,
         'max': max ?? 0,
         'view_at': viewAt ?? 0,
       },

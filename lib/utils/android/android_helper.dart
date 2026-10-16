@@ -5,13 +5,11 @@ import 'dart:ui';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:jni/jni.dart';
 
 abstract final class PiliAndroidHelper {
-  @pragma('vm:prefer-inline')
-  static void back() => AndroidHelper.back();
+  static final isPipAvailable = AndroidHelper.isPipAvailable;
 
   static void biliSendCommAntifraud(
     int action,
@@ -49,8 +47,6 @@ abstract final class PiliAndroidHelper {
         uid,
         jCookie,
       );
-    } catch (e) {
-      Utils.reportError(e);
     } finally {
       jCommentText.release();
       jSourceId.release();
@@ -58,10 +54,6 @@ abstract final class PiliAndroidHelper {
       jPictures?.release();
     }
   }
-
-  @pragma('vm:prefer-inline')
-  static void openLinkVerifySettings() =>
-      AndroidHelper.openLinkVerifySettings();
 
   static bool openMusic(String title, String? artist, String? album) {
     final jTitle = title.toJString();

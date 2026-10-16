@@ -38,6 +38,12 @@ class _SeasonPanelState extends State<SeasonPanel> {
   VideoDetailData get videoDetail =>
       widget.ugcIntroController.videoDetail.value;
 
+  void _updateIndex() {
+    currentIndex.value = episodes.indexWhere(
+      (e) => e.cid == _videoDetailController.seasonCid,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -63,9 +69,7 @@ class _SeasonPanelState extends State<SeasonPanel> {
     }
 
     /// 取对应 season_id 的 episodes
-    currentIndex.value = episodes.indexWhere(
-      (EpisodeItem e) => e.cid == _videoDetailController.seasonCid,
-    );
+    _updateIndex();
     _listener = _videoDetailController.cid.listen((int cid) {
       if (_videoDetailController.seasonCid != cid) {
         bool isPart =
@@ -75,9 +79,7 @@ class _SeasonPanelState extends State<SeasonPanel> {
         }
       }
       _findEpisode();
-      currentIndex.value = episodes.indexWhere(
-        (EpisodeItem e) => e.cid == _videoDetailController.seasonCid,
-      );
+      _updateIndex();
     });
   }
 
@@ -120,9 +122,10 @@ class _SeasonPanelState extends State<SeasonPanel> {
               children: <Widget>[
                 Expanded(
                   child: Text(
-                    '合集：${videoDetail.ugcSeason!.title!}',
+                    '合集：${videoDetail.ugcSeason!.title}',
                     style: theme.textTheme.labelMedium,
-                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    overflow: .ellipsis,
                   ),
                 ),
                 const SizedBox(width: 15),

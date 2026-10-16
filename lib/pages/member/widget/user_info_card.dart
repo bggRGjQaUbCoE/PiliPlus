@@ -643,6 +643,7 @@ class UserInfoCard extends StatelessWidget {
                   tag: img.fullCover,
                   child: CachedNetworkImage(
                     fit: .cover,
+                    gaplessPlayback: true,
                     alignment: Alignment(0.0, img.dy),
                     height: kHeaderHeight,
                     width: width,
@@ -700,6 +701,7 @@ class UserInfoCard extends StatelessWidget {
           fit: .cover,
           alignment: alignment,
           height: kHeaderHeight,
+          gaplessPlayback: true,
           width: width,
           memCacheWidth: width.cacheSize(context),
           imageUrl: ImageUtils.thumbnailUrl(imgUrl),

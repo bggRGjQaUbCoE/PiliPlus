@@ -13,6 +13,7 @@ import 'package:PiliPlus/models/common/bar_hide_type.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
 import 'package:PiliPlus/models/common/home_tab_type.dart';
+import 'package:PiliPlus/models/common/mine_tab_type.dart';
 import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
@@ -23,6 +24,7 @@ import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
 import 'package:PiliPlus/pages/setting/widgets/dual_slider_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/multi_select_dialog.dart';
+import 'package:PiliPlus/pages/setting/widgets/ordered_multi_select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/slider_dialog.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
@@ -68,13 +70,7 @@ List<SettingsModel> get styleSettings => [
     leading: const Icon(Icons.phonelink_outlined),
     setKey: SettingBoxKey.horizontalScreen,
     defaultVal: Pref.horizontalScreen,
-    onChanged: (value) {
-      if (value) {
-        fullMode();
-      } else {
-        portraitUpMode();
-      }
-    },
+    onChanged: _onHorizontalScreenChanged,
   ),
   const SwitchModel(
     title: '改用侧边栏',
@@ -310,26 +306,14 @@ List<SettingsModel> get styleSettings => [
     leading: const Icon(Icons.color_lens_outlined),
     title: '应用主题',
     getSubtitle: () => '当前主题：${Pref.dynamicColor ? '动态取色' : '指定颜色'}',
-    getTrailing: (theme) {
-      if (Pref.dynamicColor) {
-        return Icon(Icons.color_lens_rounded, color: theme.colorScheme.primary);
-      }
-      final customColor = Pref.customColor;
-      final color =
-          colorThemeTypes.elementAtOrNull(customColor)?.color ??
-          Color(customColor);
-      return SizedBox.square(
-        dimension: 20,
-        child: ColorPalette(
-          colorScheme: color.asColorSchemeSeed(
-            Pref.schemeVariant,
-            theme.brightness,
-          ),
-          selected: false,
-          showBgColor: false,
-        ),
-      );
-    },
+    getTrailing: _themeTrailing,
+  ),
+  NormalModel(
+    onTap: _showMineTabsDialog,
+    title: '我的页卡片',
+    leading: const Icon(Icons.person_outline),
+    getSubtitle: () =>
+        '当前显示：${Pref.mineTabs.map((item) => item.label).join('、')}',
   ),
   PopupModel(
     leading: const Icon(Icons.home_outlined),
@@ -844,4 +828,54 @@ NormalModel _useSSDModel() {
       ),
     ),
   );
+}
+
+Widget _themeTrailing(ThemeData theme) {
+  if (Pref.dynamicColor) {
+    return Icon(Icons.color_lens_rounded, color: theme.colorScheme.primary);
+  }
+  final customColor = Pref.customColor;
+  final color =
+      colorThemeTypes.elementAtOrNull(customColor)?.color ?? Color(customColor);
+  return SizedBox.square(
+    dimension: 20,
+    child: ColorPalette(
+      colorScheme: color.asColorSchemeSeed(
+        Pref.schemeVariant,
+        theme.brightness,
+      ),
+      selected: false,
+      showBgColor: false,
+    ),
+  );
+}
+
+void _onHorizontalScreenChanged(bool value) {
+  if (value) {
+    fullMode();
+  } else {
+    portraitUpMode();
+  }
+}
+
+Future<void> _showMineTabsDialog(
+  BuildContext context,
+  VoidCallback setState,
+) async {
+  final res = await showDialog<List<MineTabType>>(
+    context: context,
+    builder: (context) => OrderedMultiSelectDialog<MineTabType>(
+      title: const Text('我的页卡片'),
+      initValues: Pref.mineTabs,
+      values: {for (final i in MineTabType.values) i: i.label},
+    ),
+  );
+  if (res != null) {
+    await GStorage.setting.put(
+      SettingBoxKey.mineTabs,
+      res.map((item) => item.index).toList(),
+    );
+    SmartDialog.showToast('重启生效');
+    setState();
+  }
 }

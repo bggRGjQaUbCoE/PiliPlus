@@ -16,14 +16,15 @@ class SearchPgcItem extends StatelessWidget {
 
   final SearchPgcItemModel item;
 
+  void onLongPress() => showPgcCover(
+    title: item.title.map((item) => item.text).join(),
+    cover: item.cover,
+  );
+
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     const TextStyle style = TextStyle(fontSize: 13);
-    void onLongPress() => imageSaveDialog(
-      title: item.title.map((item) => item.text).join(),
-      cover: item.cover,
-    );
     return Material(
       type: MaterialType.transparency,
       child: InkWell(

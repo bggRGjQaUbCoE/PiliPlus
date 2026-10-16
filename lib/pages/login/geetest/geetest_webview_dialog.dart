@@ -46,7 +46,7 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
         '<style>#E{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:red}</style>'
         '<body><div id="E"></div>'
         '<script>'
-        '${Platform.isLinux ? "R=(n,o)=>window.webkit.messageHandlers.msgToNative.postMessage(n+':'+JSON.stringify(o))" : "R=flutter_inappwebview.callHandler"};$js'
+        '${Platform.isLinux ? "R=(n,o)=>window.webkit.messageHandlers.msgToNative.postMessage(n+':'+JSON.stringify(o))" : "R=(n,o)=>window.flutter_inappwebview?.callHandler(n,o)"};$js'
         '</script>'
         '<script src="$_geetestJsUri" onload="G()" onerror="E()"></script>'
         '<script src="$_geetestConfigUri?gt=$gt&callback=geetest_$ts" onerror="E()"></script>'
@@ -60,27 +60,30 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
     if (Platform.isLinux) {
       return AlertDialog(
         title: const Text('验证码'),
-        constraints: const BoxConstraints(maxWidth: 300, maxHeight: 400),
-        content: LinuxWebview(
-          initialHtml: html,
-          userAgent: BrowserUa.mob,
-          incognito: true,
-          onWebMessageReceived: (msg) {
-            final msgStr = msg.toString();
-            if (msgStr.startsWith("success:")) {
-              final dataStr = msgStr.substring("success:".length);
-              try {
-                final data = jsonDecode(dataStr);
-                Get.back(result: data);
-              } catch (e) {
-                debugPrint('geetest decode error: $e');
+        content: SizedBox(
+          width: 300,
+          height: 400,
+          child: LinuxWebview(
+            initialHtml: html,
+            userAgent: BrowserUa.mob,
+            incognito: true,
+            onWebMessageReceived: (msg) {
+              final msgStr = msg.toString();
+              if (msgStr.startsWith("success:")) {
+                final dataStr = msgStr.substring("success:".length);
+                try {
+                  final data = jsonDecode(dataStr);
+                  Get.back(result: data);
+                } catch (e) {
+                  debugPrint('geetest decode error: $e');
+                }
+              } else if (msgStr.startsWith("error:")) {
+                debugPrint('geetest error: $msgStr');
+              } else if (msgStr.startsWith('close:')) {
+                Get.back();
               }
-            } else if (msgStr.startsWith("error:")) {
-              debugPrint('geetest error: $msgStr');
-            } else if (msgStr.startsWith('close:')) {
-              Get.back();
-            }
-          },
+            },
+          ),
         ),
       );
     }
@@ -124,7 +127,6 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
           initialData: InAppWebViewInitialData(data: html),
           onWebViewCreated: (ctr) {
             ctr
-              ..openDevTools()
               ..addJavaScriptHandler(
                 handlerName: 'success',
                 callback: (args) {

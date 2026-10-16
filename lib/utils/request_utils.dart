@@ -484,7 +484,7 @@ abstract final class RequestUtils {
                     if (checkedId != null) {
                       final isFav = ctr is BaseFavController;
                       final removeList = isFav
-                          ? ctr.allChecked.toList().reversed
+                          ? ctr.allChecked.toList().reversed.toSet()
                           : ctr.allChecked.toSet();
                       SmartDialog.showLoading();
                       FavHttp.copyOrMoveFav(

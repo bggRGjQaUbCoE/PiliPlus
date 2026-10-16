@@ -93,9 +93,9 @@ class SuperChatItem {
         token: json['token'],
         ts: safeToInt(json['ts'])!,
         userInfo: UserInfo.fromJson(json['user_info'] as Map<String, dynamic>),
-        medalInfo: !GlobalData().showMedal || json['uinfo']?['medal'] == null
-            ? null
-            : UinfoMedal.fromJson(json['uinfo']['medal']),
+        medalInfo: GlobalData().showMedal
+            ? UinfoMedal.lightMedal(json['uinfo']?['medal'])
+            : null,
         roomid: roomid,
       );
 

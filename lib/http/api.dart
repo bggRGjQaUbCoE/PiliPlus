@@ -25,6 +25,8 @@ abstract final class Api {
 
   static const String pugvUrl = '/pugv/player/web/playurl';
 
+  static const String ogvUrl = '/ogv/player/playview';
+
   static const String tvPlayUrl = '/x/tv/playurl';
 
   // 字幕
@@ -406,7 +408,7 @@ abstract final class Api {
   static const String favPgc = '/x/space/bangumi/follow/list';
 
   // 黑名单
-  static const String blackLst = '/x/relation/blacks';
+  static const String blackList = '/x/relation/blacks';
 
   // github 获取最新版
   static const String latestApp =

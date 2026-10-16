@@ -1,12 +1,13 @@
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
+import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/pages/common/search/common_search_page.dart';
 import 'package:PiliPlus/pages/download/detail/widgets/item.dart';
+import 'package:PiliPlus/pages/download/download_action_mixin.dart';
 import 'package:PiliPlus/pages/download/search/controller.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/grid.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart'
     hide SliverGridDelegateWithMaxCrossAxisExtent;
@@ -30,10 +31,18 @@ class _DownloadSearchPageState
           List<BiliDownloadEntryInfo>,
           BiliDownloadEntryInfo
         >
-    with GridMixin {
+    with
+        GridMixin,
+        BaseDownloadActionMixin<DownloadSearchPage, BiliDownloadEntryInfo>,
+        CommonDownloadActionMixin<DownloadSearchPage> {
   @override
   DownloadSearchController controller = Get.put(DownloadSearchController());
-  final _downloadService = Get.find<DownloadService>();
+
+  @override
+  final downloadService = Get.find<DownloadService>();
+
+  @override
+  BaseMultiSelectMixin<BiliDownloadEntryInfo> get multiSelectCtr => controller;
 
   @override
   List<Widget>? get extraActions => [
@@ -54,32 +63,7 @@ class _DownloadSearchPageState
   ];
 
   @override
-  List<Widget>? get multiSelectActions => [
-    TextButton(
-      style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-      onPressed: () async {
-        final future = controller.allChecked
-            .map(
-              (e) => _downloadService.downloadDanmaku(
-                entry: e,
-                isUpdate: true,
-              ),
-            )
-            .toList();
-        controller.handleSelect();
-        final res = await Future.wait(future);
-        if (res.every((e) => e)) {
-          SmartDialog.showToast('更新成功');
-        } else {
-          SmartDialog.showToast('更新失败');
-        }
-      },
-      child: Text(
-        '更新',
-        style: TextStyle(color: ColorScheme.of(context).onSurface),
-      ),
-    ),
-  ];
+  List<Widget>? get multiSelectActions => [updateBtn()];
 
   @override
   Widget buildList(List<BiliDownloadEntryInfo> list) {
@@ -91,7 +75,7 @@ class _DownloadSearchPageState
           return DetailItem(
             entry: entry,
             progress: widget.progress,
-            downloadService: _downloadService,
+            downloadService: downloadService,
             showTitle: true,
             onDelete: () => controller.onRemoveSingle(index, entry),
             controller: controller,

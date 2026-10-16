@@ -13,12 +13,10 @@ class PgcRankItem extends StatelessWidget {
 
   final PgcRankItemModel item;
 
+  void onLongPress() => showPgcCover(title: item.title, cover: item.cover);
+
   @override
   Widget build(BuildContext context) {
-    void onLongPress() => imageSaveDialog(
-      title: item.title,
-      cover: item.cover,
-    );
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
@@ -38,7 +36,7 @@ class PgcRankItem extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               AspectRatio(
-                aspectRatio: 3 / 4,
+                aspectRatio: Style.aspectRatio3x4,
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     return NetworkImgLayer(

@@ -17,76 +17,129 @@
 
 import 'dart:math' as math;
 
+import 'package:PiliPlus/common/widgets/slotted_layout_helper.dart';
 import 'package:flutter/rendering.dart'
-    show
-        ContainerRenderObjectMixin,
-        MultiChildLayoutParentData,
-        RenderBoxContainerDefaultsMixin,
-        BoxHitTestResult,
-        TransformLayer;
-import 'package:material_ui/material_ui.dart';
+    show BoxHitTestResult, TransformLayer, BoxParentData;
+import 'package:flutter/widgets.dart';
 
-class PlayerBar extends MultiChildRenderObjectWidget {
+enum PlayerBarType { left, right, title }
+
+class PlayerBar
+    extends SlottedMultiChildRenderObjectWidget<PlayerBarType, RenderBox> {
   const PlayerBar({
     super.key,
-    required super.children,
+    required this.left,
+    required this.right,
+    this.title,
   });
 
+  final Widget left;
+  final Widget right;
+  final Widget? title;
+
   @override
-  RenderObject createRenderObject(BuildContext context) {
-    return RenderBottomBar();
+  RenderPlayerBar createRenderObject(BuildContext context) {
+    return RenderPlayerBar();
   }
+
+  @override
+  Widget? childForSlot(slot) => switch (slot) {
+    .left => left,
+    .right => right,
+    .title => title,
+  };
+
+  @override
+  Iterable<PlayerBarType> get slots => PlayerBarType.values;
 }
 
-class RenderBottomBar extends RenderBox
+class RenderPlayerBar extends RenderBox
     with
-        ContainerRenderObjectMixin<RenderBox, MultiChildLayoutParentData>,
-        RenderBoxContainerDefaultsMixin<RenderBox, MultiChildLayoutParentData> {
+        SlottedContainerRenderObjectMixin<PlayerBarType, RenderBox>,
+        SlottedLayoutMixin<PlayerBarType> {
+  RenderBox get left => childForSlot(.left)!;
+  RenderBox get right => childForSlot(.right)!;
+  RenderBox? get title => childForSlot(.title);
+
   @override
-  void setupParentData(RenderBox child) {
-    if (child.parentData is! MultiChildLayoutParentData) {
-      child.parentData = MultiChildLayoutParentData();
-    }
-  }
+  Iterable<PlayerBarType> get slots => PlayerBarType.values;
 
   Matrix4? _transform;
 
   @override
   void performLayout() {
     _transform = null;
+    final maxWidth = constraints.maxWidth;
+
+    final title = this.title;
+    if (title != null) {
+      final c = constraints.loosen();
+      final left = this.left..layout(c, parentUsesSize: true);
+      final right = this.right..layout(c, parentUsesSize: true);
+      final leftSize = left.size;
+      final rightSize = right.size;
+
+      title.layout(
+        BoxConstraints(
+          maxWidth: math.max(0, maxWidth - leftSize.width - rightSize.width),
+        ),
+        parentUsesSize: true,
+      );
+
+      final titleSize = title.size;
+      final height = math.max(
+        math.max(leftSize.height, rightSize.height),
+        titleSize.height,
+      );
+
+      setOffset(left, Offset(0, (height - leftSize.height) / 2));
+      setOffset(
+        right,
+        Offset(maxWidth - rightSize.width, (height - rightSize.height) / 2),
+      );
+      setOffset(title, Offset(leftSize.width, (height - titleSize.height) / 2));
+
+      size = constraints.constrainDimensions(maxWidth, height);
+      return;
+    }
 
     final c = constraints.copyWith(maxWidth: .infinity);
-    final RenderBox first = firstChild!..layout(c, parentUsesSize: true);
-    final RenderBox last = lastChild!..layout(c, parentUsesSize: true);
+    final left = this.left..layout(c, parentUsesSize: true);
+    final right = this.right..layout(c, parentUsesSize: true);
 
-    final firstSize = first.size;
-    final lastSize = last.size;
+    final leftSize = left.size;
+    final rightSize = right.size;
 
-    final firstParentData = first.parentData as MultiChildLayoutParentData;
-    final lastParentData = last.parentData as MultiChildLayoutParentData;
+    final leftParentData = left.parentData as BoxParentData;
+    final rightParentData = right.parentData as BoxParentData;
 
-    final firstWidth = firstSize.width;
-    final lastWidth = lastSize.width;
-    final totalWidth = firstWidth + lastWidth;
-    final maxWidth = constraints.maxWidth;
-    final height = math.max(firstSize.height, lastSize.height);
+    final leftWidth = leftSize.width;
+    final rightWidth = rightSize.width;
+    final totalWidth = leftWidth + rightWidth;
+    final height = math.max(leftSize.height, rightSize.height);
     size = constraints.constrainDimensions(maxWidth, height);
 
-    firstParentData.offset = Offset(0.0, (height - firstSize.height) / 2);
+    leftParentData.offset = Offset(0.0, (height - leftSize.height) / 2);
     if (totalWidth <= maxWidth) {
-      lastParentData.offset = Offset(
-        maxWidth - lastWidth,
-        (height - lastSize.height) / 2,
+      rightParentData.offset = Offset(
+        maxWidth - rightWidth,
+        (height - rightSize.height) / 2,
       );
     } else {
       final scale = maxWidth / totalWidth;
       _transform = Matrix4.identity()
         ..translateByDouble(0.0, height * (1 - scale) / 2, 0.0, 1.0)
         ..scaleByDouble(scale, scale, scale, 1.0);
-      lastParentData.offset = Offset(
-        (maxWidth - lastWidth * scale) / scale,
-        (height - lastSize.height) / 2,
+      rightParentData.offset = Offset(
+        leftWidth,
+        (height - rightSize.height) / 2,
       );
+    }
+  }
+
+  void defaultPaint(PaintingContext context, Offset offset) {
+    for (final child in children) {
+      context.paintChild(child, getOffset(child) + offset);
     }
   }
 
@@ -111,16 +164,15 @@ class RenderBottomBar extends RenderBox
     return result.addWithPaintTransform(
       transform: _transform,
       position: position,
-      hitTest: (BoxHitTestResult result, Offset position) {
-        return defaultHitTestChildren(result, position: position);
+      hitTest: (result, position) {
+        return super.hitTestChildren(result, position: position);
       },
     );
   }
 
   @override
   void applyPaintTransform(RenderBox child, Matrix4 transform) {
-    final childParentData = child.parentData! as MultiChildLayoutParentData;
-    final Offset offset = childParentData.offset;
+    final Offset offset = getOffset(child);
     if (_transform != null) {
       transform
         ..translateByDouble(offset.dx * _transform!.storage[0], offset.dy, 0, 1)

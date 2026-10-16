@@ -61,6 +61,7 @@ class _SearchTrendingPageState extends State<SearchTrendingPage> {
                         child: Image.asset(
                           width: width,
                           height: height,
+                          gaplessPlayback: true,
                           cacheWidth: width.cacheSize(context),
                           Assets.trendingBanner,
                           filterQuality: .low,

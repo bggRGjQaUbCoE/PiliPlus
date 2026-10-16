@@ -80,7 +80,7 @@ abstract final class LiveHttp {
 
   static Future<LoadingState<RoomPlayInfoData>> liveRoomInfo({
     required Object roomId,
-    Object? qn,
+    int? qn,
     bool onlyAudio = false,
   }) async {
     final res = await Request().get(

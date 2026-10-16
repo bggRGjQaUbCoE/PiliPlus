@@ -40,9 +40,7 @@ class MultiSelectAppBarWidget extends StatelessWidget
           TextButton(
             style: style,
             onPressed: () {
-              if (ctr.checkedCount == 0) {
-                return;
-              }
+              if (ctr.checkedCount == 0) return;
               ctr.onRemove();
             },
             child: Text(

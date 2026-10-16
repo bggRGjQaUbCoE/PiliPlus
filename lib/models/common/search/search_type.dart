@@ -4,8 +4,6 @@ import 'package:PiliPlus/models/common/enum_with_label.dart';
 
 enum SearchType implements EnumWithLabel {
   all('综合', api: Api.searchAll),
-  // 视频：video
-  video('视频'),
   // 番剧：media_bangumi,
   media_bangumi('番剧'),
   // 影视：media_ft
@@ -22,6 +20,8 @@ enum SearchType implements EnumWithLabel {
   bili_user('用户'),
   // 专栏：article
   article('专栏'),
+  // 视频：video
+  video('视频'),
   ;
 
   // 相簿：photo
@@ -31,4 +31,13 @@ enum SearchType implements EnumWithLabel {
   final String label;
   final String api;
   const SearchType(this.label, {this.api = Api.searchByType});
+
+  static const List<SearchType> actives = [
+    .all,
+    .media_bangumi,
+    .media_ft,
+    .live_room,
+    .bili_user,
+    .article,
+  ];
 }

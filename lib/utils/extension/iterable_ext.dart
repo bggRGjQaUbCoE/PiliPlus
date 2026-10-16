@@ -14,6 +14,19 @@ extension IterableExt<T> on Iterable<T> {
     }
     return value;
   }
+
+  Iterable<List<R>> mapChunked<R>(int size, R Function(T e) toElement) sync* {
+    Iterator<T> iterator = this.iterator;
+    List<R> buffer = [];
+    while (iterator.moveNext()) {
+      buffer.add(toElement(iterator.current));
+      if (buffer.length == size) {
+        yield buffer;
+        buffer = [];
+      }
+    }
+    if (buffer.isNotEmpty) yield buffer;
+  }
 }
 
 extension ListExt<T> on List<T> {

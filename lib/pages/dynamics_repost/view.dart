@@ -8,7 +8,9 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show platformClampingPhysics;
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
+import 'package:PiliPlus/models_new/dynamic/dyn_mention/item.dart';
 import 'package:PiliPlus/pages/common/publish/common_rich_text_pub_page.dart';
 import 'package:PiliPlus/pages/dynamics_mention/controller.dart';
 import 'package:PiliPlus/pages/emote/controller.dart';
@@ -31,6 +33,10 @@ class RepostPanel extends CommonRichTextPubPage {
     this.pic,
     this.title,
     this.uname,
+    // reply
+    this.replyInfo,
+    // mention
+    this.mentionItem,
     super.autofocus = false,
   });
 
@@ -40,6 +46,12 @@ class RepostPanel extends CommonRichTextPubPage {
   final String? pic;
   final String? title;
   final String? uname;
+
+  // reply
+  final ({int oid, int replyType})? replyInfo;
+
+  // mention
+  final MentionItem? mentionItem;
 
   final DynamicItemModel? item;
   final String? dynIdStr;
@@ -56,6 +68,8 @@ class _RepostPanelState extends CommonRichTextPubPageState<RepostPanel>
   late final String? _pic;
   late final String _text;
   late final String? _uname;
+
+  late final RxBool _reply = false.obs;
 
   static const _durtion = Duration(milliseconds: 300);
 
@@ -331,13 +345,49 @@ class _RepostPanelState extends CommonRichTextPubPageState<RepostPanel>
   Widget get _buildToolbar => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
     child: Row(
-      spacing: 16,
       children: [
         emojiBtn,
+        const SizedBox(width: 16),
         atBtn,
+        const Spacer(),
+        if (widget.replyInfo != null) replyBtn,
       ],
     ),
   );
+
+  Widget get replyBtn {
+    return Obx(() {
+      final reply = _reply.value;
+      final color = reply
+          ? theme.colorScheme.primary
+          : theme.colorScheme.outline;
+      return GestureDetector(
+        onTap: _reply.toggle,
+        behavior: .translucent,
+        child: SizedBox(
+          height: 36,
+          child: Row(
+            spacing: 4,
+            mainAxisSize: .min,
+            children: [
+              reply
+                  ? Icon(Icons.check_box_outlined, color: color, size: 20)
+                  : Icon(
+                      Icons.check_box_outline_blank_outlined,
+                      color: color,
+                      size: 20,
+                    ),
+              Text(
+                '同时评论',
+                style: TextStyle(color: color, height: 1),
+                strutStyle: const StrutStyle(leading: 0, height: 1),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
+  }
 
   List<Widget> _buildDismiss() => [
     const SizedBox(height: 10),
@@ -400,9 +450,33 @@ class _RepostPanelState extends CommonRichTextPubPageState<RepostPanel>
     }
   }
 
+  Future<void> _replyIfNeeded() async {
+    final replyInfo = widget.replyInfo;
+    if (replyInfo == null || !_reply.value || editController.items.isEmpty) {
+      return;
+    }
+    final Map<String, int> atNameToMid = {};
+    for (final e in editController.items) {
+      if (e.type == .at) {
+        atNameToMid[e.rawText] ??= int.parse(e.id!);
+      }
+    }
+    final message = editController.rawText;
+    final res = await VideoHttp.replyAdd(
+      type: replyInfo.replyType,
+      oid: replyInfo.oid,
+      message: message,
+      atNameToMid: atNameToMid,
+    );
+    if (res is! Success) {
+      SmartDialog.showToast('评论失败: $res');
+    }
+  }
+
   @override
   Future<void> onCustomPublish({List? pictures}) async {
     SmartDialog.showLoading();
+    _replyIfNeeded();
     List<Map<String, dynamic>>? richContent = getRichContent();
     final hasRichText = richContent != null;
     List<Map<String, dynamic>>? repostContent = widget.item?.orig != null
@@ -438,4 +512,7 @@ class _RepostPanelState extends CommonRichTextPubPageState<RepostPanel>
 
   @override
   void onSave() {}
+
+  @override
+  MentionItem? get topMentionItem => widget.mentionItem;
 }

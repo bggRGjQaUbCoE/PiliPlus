@@ -40,6 +40,10 @@ abstract final class DownloadHttp {
     );
     if (res case Success(:final response)) {
       final dash = response.dash;
+
+      // segments
+      entry.segments = response.clipInfoList;
+
       if (dash != null) {
         final targetVideoQa = response.findAvailableVideoQuality(
           entry.preferedVideoQuality,

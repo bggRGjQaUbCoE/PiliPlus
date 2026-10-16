@@ -1,20 +1,12 @@
 import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
-import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/api_type.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 List<SettingsModel> get privacySettings => [
   NormalModel(
-    onTap: (context, setState) {
-      if (!Accounts.main.isLogin) {
-        SmartDialog.showToast('登录后查看');
-        return;
-      }
-      Get.toNamed('/blackListPage');
-    },
+    onTap: (context, setState) => Get.toNamed('/blackListPage'),
     title: '黑名单管理',
     subtitle: '已拉黑用户',
     leading: const Icon(Icons.block),

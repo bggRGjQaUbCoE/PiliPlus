@@ -1,10 +1,10 @@
+import 'package:PiliPlus/models/common/video/live_quality.dart';
 import 'package:PiliPlus/models_new/live/live_room_play_info/url_info.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 
 class CodecItem {
   String? codecName;
-  int currentQn;
-  List<int> acceptQn;
+  LiveQuality currentQn;
+  List<LiveQuality> acceptQn;
   String baseUrl;
   List<UrlInfo> urlInfo;
 
@@ -16,10 +16,15 @@ class CodecItem {
     required this.urlInfo,
   });
 
-  factory CodecItem.fromJson(Map<String, dynamic> json) => CodecItem(
+  factory CodecItem.fromJson(
+    Map<String, dynamic> json,
+    List<LiveQuality>? liveQn,
+  ) => CodecItem(
     codecName: json['codec_name'],
-    currentQn: json['current_qn'] as int,
-    acceptQn: (json['accept_qn'] as List).fromCast(),
+    currentQn: LiveQuality.fromFormat(json['current_qn'] as int, liveQn),
+    acceptQn: (json['accept_qn'] as List)
+        .map((e) => LiveQuality.fromFormat(e, liveQn))
+        .toList(),
     baseUrl: json['base_url'] as String,
     urlInfo: (json['url_info'] as List<dynamic>)
         .map((e) => UrlInfo.fromJson(e as Map<String, dynamic>))

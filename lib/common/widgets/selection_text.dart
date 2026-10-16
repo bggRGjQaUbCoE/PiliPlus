@@ -7,7 +7,7 @@ class SelectionText extends StatelessWidget {
     super.key,
     this.style,
     this.textAlign,
-    this.contextMenuBuilder = _defaultContextMenuBuilder,
+    this.contextMenuBuilder = openUrlMenuBuilder,
   }) : textSpan = null;
 
   const SelectionText.rich(
@@ -15,7 +15,7 @@ class SelectionText extends StatelessWidget {
     super.key,
     this.style,
     this.textAlign,
-    this.contextMenuBuilder = _defaultContextMenuBuilder,
+    this.contextMenuBuilder = openUrlMenuBuilder,
   }) : data = null;
 
   final String? data;
@@ -24,19 +24,10 @@ class SelectionText extends StatelessWidget {
   final TextAlign? textAlign;
   final SelectableRegionContextMenuBuilder? contextMenuBuilder;
 
-  static Widget _defaultContextMenuBuilder(
-    BuildContext context,
-    SelectableRegionState selectableRegionState,
-  ) {
-    return AdaptiveTextSelectionToolbar.selectableRegion(
-      selectableRegionState: selectableRegionState,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return SelectionArea(
-      contextMenuBuilder: openUrlMenuBuilder,
+      contextMenuBuilder: contextMenuBuilder,
       child: Text.rich(
         style: style,
         textAlign: textAlign,

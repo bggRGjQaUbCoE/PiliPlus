@@ -147,6 +147,7 @@ class _MemberPageState extends State<MemberPage> {
                           SizedBox(
                             height: 45,
                             child: TabBar(
+                              labelPadding: .zero,
                               controller: _userController.tabController,
                               tabs: _userController.tabs,
                               onTap: _userController.onTapTab,
@@ -345,8 +346,7 @@ class _MemberPageState extends State<MemberPage> {
     PopupMenuButton(
       icon: const Icon(Icons.more_vert),
       itemBuilder: (_) => <PopupMenuEntry>[
-        if (_userController.account.isLogin &&
-            _userController.account.mid != _mid) ...[
+        if (_userController.account.mid != _mid) ...[
           PopupMenuItem(
             onTap: () => _userController.blockUser(context),
             child: Row(
@@ -360,7 +360,8 @@ class _MemberPageState extends State<MemberPage> {
               ],
             ),
           ),
-          if (_userController.isFollowed == 1)
+          if (_userController.account.isLogin &&
+              _userController.isFollowed == 1)
             PopupMenuItem(
               onTap: _userController.onRemoveFan,
               child: const Row(

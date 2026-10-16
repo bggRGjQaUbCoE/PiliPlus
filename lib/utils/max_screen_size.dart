@@ -10,9 +10,9 @@ abstract final class MaxScreenSize {
   static void init() {
     _initScreenSize();
     if (AndroidHelper.isFoldable) {
-      AndroidHelper$ToDart.onConfigurationChanged = Runnable.implement(
-        $Runnable(run: _initScreenSize),
-      );
+      final func = Runnable.implement($Runnable(run: _initScreenSize));
+      AndroidHelper$ToDart.onConfigurationChanged = func;
+      func.release();
     }
   }
 

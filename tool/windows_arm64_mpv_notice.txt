@@ -1,0 +1,16 @@
+ARM64 mpv playback test build
+
+mpv: upstream build 20261001, commit 3186d369f9, libmpv client API 2.5.
+Source and build instructions: https://github.com/shinchiro/mpv-winbuild-cmake
+mpv source: https://github.com/mpv-player/mpv
+Archive: mpv-dev-aarch64-20261001-git-3186d369f9.7z
+Archive SHA256: 0d12fa1fe3bfa19265ffcfc00ec5d90da1972dbde2b36596803bbdcecdc5b6f8
+
+Vulkan loader: MSYS2 mingw-w64-clang-aarch64-vulkan-loader 1.4.357.0-1.
+Source: https://github.com/KhronosGroup/Vulkan-Loader
+Packaging: https://github.com/msys2/MINGW-packages/tree/master/mingw-w64-vulkan-loader
+License: Apache-2.0; see LICENSE.vulkan-loader.txt.
+
+This replaces the older 20260607 libmpv runtime to investigate repeated
+playback crashes at libmpv-2.dll + 0x316344. Decoder smoke tests pass, but
+resolution of the intermittent crash still needs confirmation in normal use.

@@ -1,0 +1,131 @@
+name: Build for Windows ARM64 (WoA)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows-arm64:
+    name: Release Windows ARM64
+    runs-on: windows-11-arm
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Windows ARM64 has engine artifacts but no SDK archive for flutter-action.
+      - name: Checkout Flutter SDK source
+        uses: actions/checkout@v4
+        with:
+          repository: flutter/flutter
+          ref: '3.47.5'
+          path: .build-tools/flutter
+          persist-credentials: false
+
+      - name: Configure Flutter SDK path
+        run: |
+          $flutterRoot = Join-Path $env:GITHUB_WORKSPACE '.build-tools/flutter'
+          "FLUTTER_ROOT=$flutterRoot" >> $env:GITHUB_ENV
+          "$flutterRoot/bin" >> $env:GITHUB_PATH
+
+      - name: Verify native toolchain
+        run: |
+          if ([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture -ne 'Arm64') {
+            throw 'This workflow requires a native ARM64 runner.'
+          }
+          flutter config --enable-windows-desktop
+          if ($LASTEXITCODE -ne 0) { throw 'Flutter SDK bootstrap failed.' }
+          $dartVersion = & "$env:FLUTTER_ROOT/bin/cache/dart-sdk/bin/dart.exe" --version 2>&1 | Out-String
+          if ($LASTEXITCODE -ne 0 -or $dartVersion -notmatch 'windows_arm64') {
+            throw "Expected native ARM64 Dart SDK: $dartVersion"
+          }
+          flutter doctor -v
+          if ($LASTEXITCODE -ne 0) { throw 'Flutter toolchain check failed.' }
+
+      - name: Install Inno Setup
+        run: |
+          $installer = Join-Path $env:RUNNER_TEMP 'innosetup.exe'
+          $ProgressPreference = 'SilentlyContinue'
+          Invoke-WebRequest 'https://github.com/jrsoftware/issrc/releases/download/is-6_5_4/innosetup-6.5.4.exe' -OutFile $installer
+          $signature = Get-AuthenticodeSignature $installer
+          if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'CN=Pyrsys B\.V\.,') {
+            throw 'Inno Setup installer signature is invalid.'
+          }
+          $installDir = Join-Path $env:RUNNER_TEMP 'inno-setup'
+          $process = Start-Process -FilePath $installer -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-', ('/DIR="' + $installDir + '"') -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "Inno Setup installation failed: $($process.ExitCode)" }
+          if (!(Test-Path "$installDir/ISCC.exe")) { throw 'Inno Setup compiler is missing.' }
+          "INNO_SETUP_DIR=$installDir" >> $env:GITHUB_ENV
+
+      - name: Set build version
+        run: ./lib/scripts/build.ps1
+
+      - name: Apply Flutter and package patches
+        run: ./lib/scripts/patch.ps1 windows
+
+      - name: Resolve Flutter dependencies
+        run: |
+          flutter pub get
+          if ($LASTEXITCODE -ne 0) { throw 'Flutter dependency resolution failed.' }
+
+      - name: Install ARM64 ANGLE libraries
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: CLANGARM64
+          install: >-
+            mingw-w64-clang-aarch64-angleproject
+            mingw-w64-clang-aarch64-headers
+            mingw-w64-clang-aarch64-egl-headers
+            mingw-w64-clang-aarch64-gles-headers
+            mingw-w64-clang-aarch64-libc++
+            mingw-w64-clang-aarch64-zlib
+
+      - name: Locate ARM64 MSYS2 prefix
+        shell: msys2 {0}
+        run: echo "MSYS2_ARM64_ROOT=$(cygpath -w /clangarm64)" >> "$GITHUB_ENV"
+
+      - name: Prepare ARM64 media libraries
+        run: ./tool/prepare_windows_arm64_media.ps1 -MsysRoot $env:MSYS2_ARM64_ROOT
+
+      - name: Build Windows ARM64
+        run: |
+          flutter build windows --release --no-pub --dart-define-from-file=pili_release.json -v
+          if ($LASTEXITCODE -ne 0) { throw 'Flutter ARM64 build failed.' }
+          if (!(Test-Path 'build/windows/arm64/runner/Release/piliplus.exe')) {
+            throw 'Expected ARM64 executable was not produced.'
+          }
+
+      - name: Package portable ZIP and installer
+        run: |
+          $bundle = 'build/windows/arm64/runner/Release'
+          $versionParts = $env:version.Split('+')
+          $installerScript = 'windows/packaging/exe/inno_setup_arm64.iss'
+          $script = Get-Content $installerScript -Raw
+          $script = $script -replace '(?m)^#define AppVersion .*$', ('#define AppVersion "' + $env:version + '"')
+          $script = $script -replace '(?m)^VersionInfoVersion=.*$', ('VersionInfoVersion=' + $versionParts[0] + '.' + $versionParts[1])
+          Set-Content $installerScript $script -Encoding utf8
+          & "$env:INNO_SETUP_DIR/ISCC.exe" $installerScript
+          if ($LASTEXITCODE -ne 0) { throw 'ARM64 installer compilation failed.' }
+          $portableDir = 'Release/PiliPlus-Win-ARM64'
+          New-Item -ItemType Directory -Path $portableDir -Force | Out-Null
+          Copy-Item "$bundle/*" $portableDir -Recurse
+          Compress-Archive -Path $portableDir -DestinationPath "dist/PiliPlus_windows_${env:version}_arm64_portable.zip"
+
+      - name: Upload Windows ARM64 packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: Windows-ARM64-release
+          if-no-files-found: error
+          path: |
+            dist/PiliPlus_windows_*_arm64_portable.zip
+            dist/PiliPlus_windows_*_arm64_setup.exe

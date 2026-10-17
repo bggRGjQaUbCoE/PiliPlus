@@ -42,6 +42,9 @@ class WebviewPage extends StatefulWidget {
 class _WebviewPageState extends State<WebviewPage> with RouteAware {
   late String _currentUrl;
   late final String userAgent;
+
+  /// 是否按桌面宽度渲染。用于只有 PC 布局、没有响应式的页面。
+  late final bool _desktopLayout;
   late final RxString _title;
   final RxDouble _progress = 1.0.obs;
   bool _inApp = false;
@@ -61,6 +64,7 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
       'mob' => BrowserUa.mob,
       _ => BrowserUa.platform,
     };
+    _desktopLayout = parameters['desktop'] == '1';
     if (Get.arguments case final Map map) {
       _inApp = map['inApp'] ?? false;
       _off = map['off'] ?? false;
@@ -410,6 +414,8 @@ document.addEventListener('click', function(e) {
                   algorithmicDarkeningAllowed: true,
                   useShouldOverrideUrlLoading: true,
                   userAgent: userAgent,
+                  useWideViewPort: _desktopLayout,
+                  loadWithOverviewMode: _desktopLayout,
                   mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
                 ),
                 initialUrlRequest: URLRequest(
@@ -467,6 +473,25 @@ document.querySelector('.info-bar').addEventListener('click', function() {
 document.styleSheets[0].insertRule('div.open-app-btn.bili-btn-warp {display:none;}', 0);
 document.styleSheets[0].insertRule('#app__display-area > div.control-panel {display:none;}', 0);
                   ''',
+                    );
+                  }
+                  if (_desktopLayout) {
+                    // 只有 PC 布局的页面（如 message.bilibili.com 客服会话）：
+                    // 页面自带的 viewport 是 width=device-width，会让桌面布局被
+                    // 挤进手机宽度，这里改写为固定宽度，配合 useWideViewPort /
+                    // loadWithOverviewMode 整体缩放到屏幕。
+                    controller.evaluateJavascript(
+                      source: '''
+(function () {
+  var m = document.querySelector('meta[name="viewport"]');
+  if (!m) {
+    m = document.createElement('meta');
+    m.setAttribute('name', 'viewport');
+    (document.head || document.documentElement).appendChild(m);
+  }
+  m.setAttribute('content', 'width=1200');
+})();
+''',
                     );
                   }
                   // _webViewController?.evaluateJavascript(

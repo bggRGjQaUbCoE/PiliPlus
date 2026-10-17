@@ -10,14 +10,24 @@ abstract final class CrisisHelper {
   static const String energyStationUrl =
       'https://www.bilibili.com/blackboard/era/3ERAmwloghvazr00.html';
 
-  /// B 站官方客服中心（Web 版）。
+  /// 人工客服会话的 App 深链。
   ///
-  /// 能量加油站页面内的「人工咨询」按钮在官方 App 里跳的是
-  /// `bilibili://link/customer/chat?shop_id=0&shop_father_id=0&situation=10&gid=164&skill_group_id=164`，
-  /// 那是 App 内建的客服会话，依赖官方账号体系与客服后端，第三方客户端无法实现。
-  /// 这里降级到官方 Web 客服中心，功能等价但需要登录。
+  /// 能量加油站页面里的「客服」按钮跳的就是这条，参数含义：
+  /// `situation`（会话场景）、`gid` / `skill_group_id`（技能组路由）。
+  /// 需要设备已安装哔哩哔哩官方客户端。
+  static const String customerChatScheme =
+      'bilibili://link/customer/chat?shop_id=0&shop_father_id=0'
+      '&situation=10&gid=164&skill_group_id=164';
+
+  /// 人工客服会话的 Web 版（官方 PC 消息中心）。
+  ///
+  /// 注意：这是 `message-pc` 的产物，页面没有响应式布局，也没有 UA 分流，
+  /// 移动端只能靠缩放查看。因此优先用 [customerChatScheme] 唤起官方 App，
+  /// 未安装时再降级到这里，并由 WebView 改写 viewport 以适配屏幕宽度。
   static const String customerServiceUrl =
-      'https://www.bilibili.com/v/customer-service';
+      'https://message.bilibili.com/#/whisper/customer/shop0'
+      '?shop_father_id=0&shop_id=0&situation=2&gid=164&skill_group_id=164'
+      '&first_domain=.bilibili.com';
 
   /// 高风险关键词。
   ///

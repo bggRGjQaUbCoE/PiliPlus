@@ -1,7 +1,9 @@
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/crisis_helper.dart';
+import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// 搜索高危词时展示的整页关怀卡片。
 ///
@@ -12,6 +14,31 @@ class CrisisCard extends StatelessWidget {
   const CrisisCard({super.key});
 
   static const _pink = Color(0xFFFB7299);
+
+  /// 优先唤起官方 App 的原生客服会话（体验最好），
+  /// 未安装官方 App 时降级到 Web 版 PC 会话页，
+  /// 并以 `desktop=1` 让 WebView 按桌面宽度渲染。
+  static Future<void> _openConsult() async {
+    var opened = false;
+    try {
+      opened = await launchUrl(
+        Uri.parse(CrisisHelper.customerChatScheme),
+        mode: LaunchMode.externalNonBrowserApplication,
+      );
+    } catch (_) {
+      opened = false;
+    }
+    if (opened) {
+      return;
+    }
+    PageUtils.toDupNamed(
+      '/webview',
+      parameters: {
+        'url': CrisisHelper.customerServiceUrl,
+        'desktop': '1',
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,9 +127,7 @@ class CrisisCard extends StatelessWidget {
                     child: const Text('进入能量加油站'),
                   ),
                   TextButton(
-                    onPressed: () => PiliScheme.routePushFromUrl(
-                      CrisisHelper.customerServiceUrl,
-                    ),
+                    onPressed: _openConsult,
                     child: const Text('人工咨询'),
                   ),
                 ],

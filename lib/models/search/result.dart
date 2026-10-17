@@ -39,6 +39,7 @@ class SearchVideoData extends SearchNumData<SearchVideoItemModel> {
   List<SearchPgcItemModel>? searchMedia;
   List<SearchActivity>? searchActivity;
   SearchEsports? searchEsports;
+  List<SearchTip>? searchTips;
 
   SearchVideoData.fromSearchAll(Map<String, dynamic> json) {
     numResults = (json['numResults'] as num?)?.toInt();
@@ -82,6 +83,15 @@ class SearchVideoData extends SearchNumData<SearchVideoItemModel> {
                 if (kDebugMode) rethrow;
               }
             }
+          // 危机干预提示卡片（搜索自杀/跳楼等关键词时由服务端下发）
+          case 'tips':
+            if (item['data'] case List tips when tips.isNotEmpty) {
+              try {
+                searchTips = tips.map((e) => SearchTip.fromJson(e)).toList();
+              } catch (_) {
+                if (kDebugMode) rethrow;
+              }
+            }
         }
       }
     }
@@ -119,6 +129,38 @@ class SearchActivity {
       state: json['state'] as int?,
       status: json['status'] as int?,
       author: json['author'] as String?,
+    );
+  }
+}
+
+/// 搜索结果中的提示卡片。目前由服务端用于心理危机干预场景：
+/// 当关键词命中高风险词时下发「你不孤单，我们都在」卡片，
+/// jumpUrl 指向「能量加油站」页面。
+class SearchTip {
+  int? id;
+  String? title;
+  String? subTitle;
+  int? hasBgImg;
+  String? jumpUrl;
+  String? cover;
+
+  SearchTip({
+    this.id,
+    this.title,
+    this.subTitle,
+    this.hasBgImg,
+    this.jumpUrl,
+    this.cover,
+  });
+
+  factory SearchTip.fromJson(Map<String, dynamic> json) {
+    return SearchTip(
+      id: json['id'] as int?,
+      title: json['title'] as String?,
+      subTitle: json['sub_title'] as String?,
+      hasBgImg: json['has_bg_img'] as int?,
+      jumpUrl: json['jump_url'] as String?,
+      cover: json['cover'] as String?,
     );
   }
 }

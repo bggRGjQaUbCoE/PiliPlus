@@ -3,6 +3,7 @@ import 'package:PiliPlus/models/search/search_esports.dart';
 import 'package:PiliPlus/pages/search_panel/all/controller.dart';
 import 'package:PiliPlus/pages/search_panel/all/widgets/activity.dart';
 import 'package:PiliPlus/pages/search_panel/all/widgets/esports.dart';
+import 'package:PiliPlus/pages/search_panel/all/widgets/tip.dart';
 import 'package:PiliPlus/pages/search_panel/all/widgets/user.dart';
 import 'package:PiliPlus/pages/search_panel/pgc/widgets/item.dart';
 import 'package:PiliPlus/pages/search_panel/video/view.dart';
@@ -52,6 +53,9 @@ class _SearchAllPanelState
   Widget buildList(List<SearchVideoItemModel> list) {
     return SliverMainAxisGroup(
       slivers: [
+        ...?controller.searchTips?.map((e) {
+          return SliverToBoxAdapter(child: SearchTipItem(item: e));
+        }),
         if (controller.searchEsports != null) ...[
           _buildEsports(controller.searchEsports!),
           SliverToBoxAdapter(

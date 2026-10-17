@@ -216,11 +216,25 @@ dependency_overrides:
       url: https://github.com/My-Responsitories/media-kit.git
       path: media_kit_native_event_loop
       ref: native
+  # TEMPORARY Linux/Wayland workaround — remove once |native| carries the upstream fix.
+  #
+  # With hardware-decoded video the Linux GL path of media_kit_video shows a black
+  # (or banded) video area on Mesa + Intel Xe2, because the plugin creates an
+  # EGLImageKHR from the texture mpv renders into and Mesa then stops rendering into
+  # that texture. Root cause, standalone reproduction and the workarounds that do not
+  # work: https://github.com/media-kit/media-kit/issues/1463
+  # Upstream fix (one file, media_kit_video/linux/texture_gl.cc):
+  #   https://github.com/media-kit/media-kit/pull/1464
+  # The branch below is bggRGjQaUbCoE/media-kit@native (fd8421d) + that one-file fix.
+  # NOTE: only the override target changes; no application code depends on it, and it
+  # is pinned to a fork ref on purpose — an upstream fix does NOT reach PiliPlus by
+  # itself while these media_kit overrides are pinned, so this entry (or `native`) has
+  # to be updated once #1464 lands. Dropping this entry restores current behaviour.
   media_kit_video:
     git:
-      url: https://github.com/bggRGjQaUbCoE/media-kit.git
+      url: https://github.com/FeiLiuEM/media-kit-bgg.git
       path: media_kit_video
-      ref: native
+      ref: fix-linux-egl-image-export-blit
 
 dev_dependencies:
   flutter_test:

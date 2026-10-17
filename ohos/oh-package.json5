@@ -1,0 +1,7 @@
+{
+  "modelVersion": "5.1.0",
+  "name": "piliplus",
+  "version": "1.0.0",
+  "description": "PiliPlus HarmonyOS application host.",
+  "dependencies": {}
+}

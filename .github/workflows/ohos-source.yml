@@ -1,0 +1,26 @@
+name: OHOS source preservation
+
+on:
+  push:
+    branches: [feature/ohos]
+  pull_request:
+    branches: [feature/ohos]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-preservation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source and upstream history
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Check original upstream files
+        run: python3 tool/ohos/ohos.py check-source
+      - name: Test source preparation and version checks
+        run: python3 -m unittest discover -s tool/ohos -p 'test_*.py' -v
+      - name: Export and verify committed source snapshot
+        run: python3 tool/ohos/ohos.py prepare --output "$RUNNER_TEMP/PiliPlus-ohos-source"

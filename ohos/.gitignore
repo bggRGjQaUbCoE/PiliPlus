@@ -1,0 +1,27 @@
+/node_modules/
+/oh_modules/
+**/oh_modules/
+/local.properties
+/.idea/
+/.hvigor/
+**/build/
+**/.cxx/
+**/.test/
+**/BuildProfile.ets
+**/oh-package-lock.json5
+/package.json
+/package-lock.json
+/signing/
+*.p12
+*.p7b
+*.cer
+*.csr
+*.log
+
+# Flutter OHOS generates these from the resolved dependency graph and build mode.
+/entry/src/main/ets/plugins/GeneratedPluginRegistrant.ets
+/entry/src/main/resources/rawfile/buildinfo.json5
+**/src/main/resources/rawfile/flutter_assets/
+**/libs/**/libapp.so
+**/libs/**/libflutter.so
+**/libs/**/libvmservice_snapshot.so

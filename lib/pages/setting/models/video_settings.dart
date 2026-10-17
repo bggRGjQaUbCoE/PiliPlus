@@ -10,6 +10,7 @@ import 'package:PiliPlus/pages/setting/widgets/ordered_multi_select_dialog.dart'
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/plugin/pl_player/models/audio_output_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/hwdec_type.dart';
+import 'package:PiliPlus/services/btr_proxy/btr_settings.dart';
 import 'package:PiliPlus/utils/filtering_text.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -61,6 +62,17 @@ List<SettingsModel> get videoSettings => [
     getSubtitle: () =>
         '当前使用：${VideoUtils.cdnService.desc}，部分 CDN 可能失效，如无法播放请尝试切换',
     onTap: _showCDNDialog,
+  ),
+  NormalModel(
+    title: '线程撕裂者（多线程加速）',
+    leading: const Icon(Icons.rocket_launch_outlined),
+    getSubtitle: () => BtrSettings.summary,
+    onTap: (context, setState) async {
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => const BtrSettingsPage()),
+      );
+      setState();
+    },
   ),
   NormalModel(
     title: '直播 CDN 设置',

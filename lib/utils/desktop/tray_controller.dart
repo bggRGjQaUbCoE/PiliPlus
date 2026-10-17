@@ -16,10 +16,7 @@ class TrayController {
   tray_manager.Image? _icon;
   int? _trayListenerId;
   Menu? _trayMenu;
-  int? _showMenuId;
-  MenuItem? _showMenuItem;
-  int? _exitMenuId;
-  MenuItem? _exitMenuItem;
+  final List<(MenuItem, int)> _trayMenuItems = <(MenuItem, int)>[];
 
   final bool showTrayIcon = Pref.showTrayIcon;
 
@@ -40,30 +37,37 @@ class TrayController {
       ..icon = _icon
       ..setTooltip(Constants.appName);
 
-    _showMenuItem = .createWithLabelAndType('显示窗口', .normal);
-    _showMenuId = _showMenuItem!.addListener(_showMenuListener);
-    _exitMenuItem = .createWithLabelAndType('退出 ${Constants.appName}', .normal);
-    _exitMenuId = _exitMenuItem!.addListener(_exitMenuListener);
-    _trayMenu = Menu.create()!
-      ..addItem(_showMenuItem)
-      ..addSeparator()
-      ..addItem(_exitMenuItem);
+    final trayMenu = Menu.create();
+    if (trayMenu != null) {
+      _trayMenu = trayMenu;
+      _addTrayMenuItem(trayMenu, '显示窗口', WindowController.instance.show);
+      trayMenu.addSeparator();
+      _addTrayMenuItem(
+        trayMenu,
+        '退出 ${Constants.appName}',
+        WindowController.instance.onClose,
+      );
+      trayIcon.setContextMenu(_trayMenu);
+    }
 
-    trayIcon
-      ..setContextMenu(_trayMenu)
-      ..setVisible(true);
-  }
+    trayIcon.setVisible(true);
 
-  void _showMenuListener(MenuEvent event) {
-    if (event is MenuItemClickedEvent) {
-      WindowController.instance.show();
+    // "KDE: Activate on a click, ContextMenu on a right click"。
+    if (Platform.isLinux) {
+      trayIcon.setContextMenuTrigger(.rightClicked);
     }
   }
 
-  void _exitMenuListener(MenuEvent event) {
-    if (event is MenuItemClickedEvent) {
-      WindowController.instance.onClose();
-    }
+  void _addTrayMenuItem(Menu menu, String label, void Function() onTap) {
+    final item = MenuItem.createWithLabelAndType(label, .normal);
+    if (item == null) return;
+    final id = item.addListener((MenuEvent event) {
+      if (event is MenuItemClickedEvent) {
+        onTap();
+      }
+    });
+    _trayMenuItems.add((item, id));
+    menu.addItem(item);
   }
 
   Future<void> _trayListener(TrayIconEvent event) async {
@@ -79,17 +83,12 @@ class TrayController {
   void dispose() {
     if (!showTrayIcon) return;
 
-    _showMenuItem
-      ?..removeListener(_showMenuId!)
-      ..dispose();
-    _showMenuId = null;
-    _showMenuItem = null;
-
-    _exitMenuItem
-      ?..removeListener(_exitMenuId!)
-      ..dispose();
-    _exitMenuId = null;
-    _exitMenuItem = null;
+    for (final (item, id) in _trayMenuItems) {
+      item
+        ..removeListener(id)
+        ..dispose();
+    }
+    _trayMenuItems.clear();
 
     _trayMenu?.dispose();
     _trayMenu = null;

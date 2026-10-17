@@ -207,10 +207,7 @@ dependency_overrides:
       path: libs/universal/media_kit_libs_video
       ref: native
   media_kit_libs_windows_video:
-    git:
-      url: https://github.com/My-Responsitories/media-kit.git
-      path: libs/windows/media_kit_libs_windows_video
-      ref: native
+    path: packages/media_kit_libs_windows_video
   media_kit_native_event_loop:
     git:
       url: https://github.com/My-Responsitories/media-kit.git

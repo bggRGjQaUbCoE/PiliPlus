@@ -128,3 +128,73 @@
    **不是**从 APK 中提取的（APK 内确实没有这个号码）。
 3. 若希望完全复刻截图 1 的整页样式（大标题 + 独立「复制号码」按钮），
    需要新增一个 Flutter 页面，可作为下一步。
+
+---
+
+# 第二阶段：整页复刻 + 人工咨询入口
+
+## 8. 整页关怀卡片
+
+新增 `lib/utils/crisis_helper.dart` 与
+`lib/pages/search_panel/all/widgets/crisis_card.dart`，用于复刻截图 1：
+
+- 大标题「你不孤单，我们都在」
+- 提示「如果需要帮助，请拨打全国24小时免费心理咨询热线」
+- 「全国24小时免费心理咨询」+ 热线号码
+- 粉色圆角「复制号码」按钮 → 调用 `Utils.copyText`（真实写入剪贴板 + toast）
+- 底部两个文字入口：「进入能量加油站」「人工咨询」
+- 背景使用纯代码渐变（白 → 浅粉 → 浅蓝），不依赖外部图片
+
+### 两层卡片的分工
+
+| 场景 | 判定 | 表现 |
+|---|---|---|
+| 服务端下发 `tips`（如 跳楼） | `searchTips != null` | 小卡片 + 正常搜索结果 |
+| 服务端静默压制（如 自杀） | `searchTips == null && CrisisHelper.isCrisis(keyword)` | 整页卡片 + **屏蔽搜索结果** |
+
+### 屏蔽视频的实现
+
+- 卡片挂在 `buildHeader()`，即使结果为空也能展示（`buildList` 在空结果时不会被调用）
+- `buildList` 在高危词下返回空 sliver，视频及其他模块全部不渲染
+- 同时把结果数量角标置为 `-1`（不展示）
+
+## 9. 「人工咨询」入口评估
+
+### 官方实现
+
+能量加油站 H5（`3ERAmwloghvazr00.html`）里的「客服-按钮」是一个 `EvaLinkButton`，
+位于页面 `left=101, top=943`，跳转地址：
+
+```
+bilibili://link/customer/chat?shop_id=0&shop_father_id=0&situation=10&gid=164&skill_group_id=164
+```
+
+这是 B 站 App 内建的客服会话深链，带 `situation`（会话场景）、`gid` 与
+`skill_group_id`（技能组路由）。页面里**没有** http(s) 降级地址。
+
+### 结论：原生入口无法直接移植，但可以降级
+
+| 方案 | 可行性 | 说明 |
+|---|---|---|
+| 直接转发 `bilibili://link/customer/chat` | ⚠️ 部分可用 | 只有装了 B 站官方 App 的设备才会被接管；PiliPlus 自身没有该路由，纯 Flutter 端无法实现 IM 会话 |
+| 自建客服会话 | ❌ 不可行 | 依赖官方账号态、客服后端与技能组路由，属于闭源私有协议 |
+| 打开官方 Web 客服中心 | ✅ 已采用 | `https://www.bilibili.com/v/customer-service`（实测 HTTP 200，标题「客服中心」），功能等价但需登录 |
+
+实现上，「人工咨询」按钮走 `PiliScheme.routePushFromUrl(CrisisHelper.customerServiceUrl)`，
+由客户端内置 WebView 打开官方客服中心。
+
+若后续想进一步贴近原生体验，可以在打开前先尝试 `url_launcher` 唤起官方 App
+（`bilibili://` schema），失败再回落 Web —— 但会引入「跳出当前 App」的体验问题，
+默认未开启。
+
+## 10. 本阶段改动文件
+
+| 文件 | 改动 |
+|---|---|
+| `lib/utils/crisis_helper.dart` | 新建：热线号、能量加油站、客服中心地址、高危词判定 |
+| `lib/pages/search_panel/all/widgets/crisis_card.dart` | 新建：整页关怀卡片 |
+| `lib/pages/search_panel/all/controller.dart` | 新增 `isCrisis`；改用 `CrisisHelper`；高危词隐藏数量角标 |
+| `lib/pages/search_panel/all/view.dart` | `buildHeader` 渲染整页卡片；`buildList` 屏蔽结果 |
+
+仍然没有编译验证（本机无 Flutter SDK），首次构建前请先 `flutter analyze`。
+

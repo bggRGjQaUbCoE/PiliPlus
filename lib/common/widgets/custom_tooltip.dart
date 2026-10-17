@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/gestures.dart'
     show
@@ -25,6 +27,7 @@ class CustomTooltip extends StatefulWidget {
     required this.child,
     required this.triggerMode,
     required this.overlayWidget,
+    this.waitDuration = Duration.zero,
   });
 
   final Widget child;
@@ -34,12 +37,18 @@ class CustomTooltip extends StatefulWidget {
   final ValueGetter<Widget> overlayWidget;
   final TriggerMode_ triggerMode;
 
+  /// 默认保持原有即时提示，仅需延迟的说明入口显式指定等待时间。
+  final Duration waitDuration;
+
   @override
   State<CustomTooltip> createState() => _CustomTooltipState();
 }
 
 class _CustomTooltipState extends State<CustomTooltip> {
   final OverlayPortalController _overlayController = OverlayPortalController();
+
+  /// 离开目标或销毁组件时取消待显示提示，防止延迟回调显示失效的浮层。
+  Timer? _showTimer;
 
   LongPressGestureRecognizer? _longPressRecognizer;
   LongPressGestureRecognizer get longPressRecognizer =>
@@ -52,10 +61,19 @@ class _CustomTooltipState extends State<CustomTooltip> {
         ..onTap = _scheduleShowTooltip;
 
   void _scheduleShowTooltip([_]) {
-    _overlayController.show();
+    _showTimer?.cancel();
+    if (widget.waitDuration <= Duration.zero) {
+      _overlayController.show();
+      return;
+    }
+    // 延迟只影响显示时机；在等待期间离开目标时不会再弹出提示。
+    _showTimer = Timer(widget.waitDuration, () {
+      if (mounted) _overlayController.show();
+    });
   }
 
   void _scheduleDismissTooltip([_]) {
+    _showTimer?.cancel();
     _overlayController.hide();
   }
 
@@ -99,6 +117,8 @@ class _CustomTooltipState extends State<CustomTooltip> {
   @protected
   @override
   void dispose() {
+    _showTimer?.cancel();
+    _showTimer = null;
     _longPressRecognizer
       ?..onLongPress = null
       ..dispose();

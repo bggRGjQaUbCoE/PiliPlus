@@ -71,7 +71,7 @@ List<SettingsModel> get videoSettings => [
   const SwitchModel(
     title: 'CDN 测速',
     leading: Icon(Icons.speed),
-    subtitle: '测速通过模拟加载视频实现，注意流量消耗，结果仅供参考',
+    subtitle: '开启后可在 CDN 设置中手动发起测速，注意流量消耗，结果仅供参考',
     setKey: SettingBoxKey.cdnSpeedTest,
     defaultVal: true,
   ),

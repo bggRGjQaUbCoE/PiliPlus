@@ -131,7 +131,7 @@
 
 ---
 
-# 第二阶段：整页复刻 + 人工咨询入口
+# 第二阶段：整页复刻
 
 ## 8. 整页关怀卡片
 
@@ -142,7 +142,7 @@
 - 提示「如果需要帮助，请拨打全国24小时免费心理咨询热线」
 - 「全国24小时免费心理咨询」+ 热线号码
 - 粉色圆角「复制号码」按钮 → 调用 `Utils.copyText`（真实写入剪贴板 + toast）
-- 底部两个文字入口：「进入能量加油站」「人工咨询」
+- 底部文字入口：「进入能量加油站」
 - 背景使用纯代码渐变（白 → 浅粉 → 浅蓝），不依赖外部图片
 
 ### 两层卡片的分工
@@ -158,112 +158,14 @@
 - `buildList` 在高危词下返回空 sliver，视频及其他模块全部不渲染
 - 同时把结果数量角标置为 `-1`（不展示）
 
-## 9. 「人工咨询」入口评估
-
-### 官方实现
-
-能量加油站 H5（`3ERAmwloghvazr00.html`）里的「客服-按钮」是一个 `EvaLinkButton`，
-位于页面 `left=101, top=943`，跳转地址：
-
-```
-bilibili://link/customer/chat?shop_id=0&shop_father_id=0&situation=10&gid=164&skill_group_id=164
-```
-
-这是 B 站 App 内建的客服会话深链，带 `situation`（会话场景）、`gid` 与
-`skill_group_id`（技能组路由）。页面里**没有** http(s) 降级地址。
-
-### 结论：原生入口无法直接移植，但可以降级
-
-| 方案 | 可行性 | 说明 |
-|---|---|---|
-| 直接转发 `bilibili://link/customer/chat` | ⚠️ 部分可用 | 只有装了 B 站官方 App 的设备才会被接管；PiliPlus 自身没有该路由，纯 Flutter 端无法实现 IM 会话 |
-| 自建客服会话 | ❌ 不可行 | 依赖官方账号态、客服后端与技能组路由，属于闭源私有协议 |
-| 打开官方 Web 客服中心 | ✅ 已采用 | `https://www.bilibili.com/v/customer-service`（实测 HTTP 200，标题「客服中心」），功能等价但需登录 |
-
-实现上，「人工咨询」按钮走 `PiliScheme.routePushFromUrl(CrisisHelper.customerServiceUrl)`，
-由客户端内置 WebView 打开官方客服中心。
-
-若后续想进一步贴近原生体验，可以在打开前先尝试 `url_launcher` 唤起官方 App
-（`bilibili://` schema），失败再回落 Web —— 但会引入「跳出当前 App」的体验问题，
-默认未开启。
-
-## 10. 本阶段改动文件
+## 9. 本阶段改动文件
 
 | 文件 | 改动 |
 |---|---|
-| `lib/utils/crisis_helper.dart` | 新建：热线号、能量加油站、客服中心地址、高危词判定 |
+| `lib/utils/crisis_helper.dart` | 新建：热线号、能量加油站地址、高危词判定 |
 | `lib/pages/search_panel/all/widgets/crisis_card.dart` | 新建：整页关怀卡片 |
 | `lib/pages/search_panel/all/controller.dart` | 新增 `isCrisis`；改用 `CrisisHelper`；高危词隐藏数量角标 |
 | `lib/pages/search_panel/all/view.dart` | `buildHeader` 渲染整页卡片；`buildList` 屏蔽结果 |
 
 仍然没有编译验证（本机无 Flutter SDK），首次构建前请先 `flutter analyze`。
-
----
-
-# 第三阶段：人工客服链接与移动端适配
-
-## 11. 正确的 Web 客服地址
-
-```
-https://message.bilibili.com/#/whisper/customer/shop0
-  ?shop_father_id=0&shop_id=0&situation=2&gid=164&skill_group_id=164
-  &first_domain=.bilibili.com
-```
-
-与 App 深链是同一套参数，差异：`situation` 由 `10`（App）变成 `2`（Web），
-并多一个 `first_domain=.bilibili.com`。
-
-## 12. 为什么「只支持桌面版」
-
-实测结论（不是猜测）：
-
-| 验证项 | 结果 |
-|---|---|
-| HTML 资源目录 | `2233-monorepo/message-pc` —— PC 版产物 |
-| PC UA vs 移动 UA 返回的 HTML | **完全一致**（均 4342 字节），服务端不做 UA 分流 |
-| bundle 里 `isMobile` | **0 次** |
-| bundle 里 `/Mobile/` | **0 次** |
-| bundle 里 `matchMedia` | **0 次** |
-| `navigator.userAgent` | 35 次，但只用于埋点上报和 Firefox 检测 |
-| viewport meta | `width=device-width, initial-scale=1.0` |
-
-结论：页面既没有响应式布局，也没有 UA 判断逻辑，**强制桌面 UA（`uaType=pc`）无效**。
-另有 i18n 文案 `电脑端不支持该种内容，请在APP查看`，说明 PC 端本身就承认功能受限。
-
-试过的其他方案：
-
-| 方案 | 结果 |
-|---|---|
-| `message.bilibili.com/h5/whisper/customer` | HTTP 404，无移动版路由 |
-| `www.bilibili.com/v/customer-service` | 200，但同为 SPA（`customer-service` 提供），未证实含人工入口 |
-
-## 13. 采用的方案
-
-**双通道：先唤起官方 App，失败再降级 Web。**
-
-1. `CrisisHelper.customerChatScheme`
-   = `bilibili://link/customer/chat?...&situation=10...`
-   用 `launchUrl(mode: externalNonBrowserApplication)` 唤起官方客户端原生客服会话。
-   这是唯一能拿到完整体验的路径。
-2. 唤起失败（未安装官方 App / 桌面端无注册协议）→ 降级到 Web 版，
-   并给 WebView 传 `desktop=1`。
-
-### WebView 的桌面宽度渲染
-
-`WebviewPage` 新增可选参数 `desktop=1`（默认关闭，不影响其他页面）：
-
-- `useWideViewPort: true` + `loadWithOverviewMode: true`
-- `onLoadStop` 时把页面的 viewport meta 改写为 `width=1200`
-
-因为页面自带 `width=device-width`，只开 `useWideViewPort` 会被 meta 覆盖，
-必须同时改写 meta 才能真正按桌面宽度排版，再整体缩放到屏幕。
-
-## 14. 改动文件
-
-| 文件 | 改动 |
-|---|---|
-| `lib/utils/crisis_helper.dart` | 修正客服 URL；新增 App 深链常量 |
-| `lib/pages/webview/view.dart` | 新增 `desktop` 参数 → 宽视口 + viewport 改写 |
-| `lib/pages/search_panel/all/widgets/crisis_card.dart` | 人工咨询改为「深链优先 + Web 降级」 |
-
 

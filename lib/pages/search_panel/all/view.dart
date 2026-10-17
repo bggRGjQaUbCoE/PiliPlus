@@ -52,14 +52,16 @@ class _SearchAllPanelState
   }
 
   @override
-  Widget? buildHeader() {
+  Widget buildHeader() {
     // 高危词卡片放在 header，保证结果为空时也能展示；
     // 读取 loadingState 以便搜索完成后重建。
+    // 非高危词回落到 mixin 的排序筛选栏。
     return Obx(() {
       final loaded = controller.loadingState.value is! Loading;
-      return controller.isCrisis && loaded
-          ? const SliverToBoxAdapter(child: CrisisCard())
-          : const SliverToBoxAdapter(child: SizedBox.shrink());
+      if (controller.isCrisis && loaded) {
+        return const SliverToBoxAdapter(child: CrisisCard());
+      }
+      return super.buildHeader();
     });
   }
 

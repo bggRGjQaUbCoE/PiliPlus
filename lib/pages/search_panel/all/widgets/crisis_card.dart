@@ -7,7 +7,7 @@ import 'package:material_ui/material_ui.dart';
 ///
 /// 对应官方客户端在「自杀」等关键词下的页面样式：
 /// 大标题 + 求助提示 + 热线号码 + 可点击复制的按钮。
-/// 与 [SearchTipItem]（服务端下发的小卡片）区分开：这里会同时屏蔽搜索结果。
+/// 与 SearchTipItem（服务端下发的小卡片）区分开：这里会同时屏蔽搜索结果。
 class CrisisCard extends StatelessWidget {
   const CrisisCard({super.key});
 

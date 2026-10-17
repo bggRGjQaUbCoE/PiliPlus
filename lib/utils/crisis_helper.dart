@@ -45,6 +45,6 @@ abstract final class CrisisHelper {
     if (kw.isEmpty) {
       return false;
     }
-    return keywords.any(kw.contains);
+    return keywords.any((e) => kw.contains(e));
   }
 }

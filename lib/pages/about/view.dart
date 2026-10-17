@@ -269,6 +269,12 @@ Commit Hash: ${BuildConfig.commitHash}''',
             ),
           ),
           ListTile(
+            title: const Text('导入/导出所有数据'),
+            dense: false,
+            leading: const Icon(Icons.archive_outlined),
+            onTap: () => showDataImportExportDialog(context),
+          ),
+          ListTile(
             title: const Text('重置所有设置'),
             leading: const Icon(Icons.settings_backup_restore_outlined),
             onTap: () => showDialog(

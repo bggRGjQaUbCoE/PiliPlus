@@ -52,6 +52,7 @@ import 'package:PiliPlus/plugin/pl_player/widgets/play_pause_btn.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/connectivity_utils.dart';
+import 'package:PiliPlus/utils/desktop/window_controller.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
@@ -82,7 +83,6 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:material_ui/material_ui.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
-import 'package:window_manager/window_manager.dart';
 
 part 'widgets.dart';
 
@@ -842,7 +842,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                       }
                     },
                     child: Text(
-                      item.newDesc ?? '',
+                      item.newDesc ?? item.quality.toString(),
                       style: enabled
                           ? const TextStyle(color: Colors.white, fontSize: 13)
                           : const TextStyle(
@@ -1107,18 +1107,16 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       }
     } else if (_gestureType == .right) {
       // 右边区域
-      final double level = maxHeight * 0.5;
       EasyThrottle.throttle(
         'setVolume',
         const Duration(milliseconds: 20),
-        () {
-          final double volume = clampDouble(
-            plPlayerController.volume.value - delta.dy / level,
+        () => plPlayerController.setVolume(
+          clampDouble(
+            plPlayerController.volume.value - delta.dy / (maxHeight * 0.5),
             0.0,
             plPlayerController.maxVolume,
-          );
-          plPlayerController.setVolume(volume);
-        },
+          ),
+        ),
       );
     }
   }
@@ -1309,18 +1307,17 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         return;
       }
 
-      final double level = maxHeight * 0.5;
       EasyThrottle.throttle(
         'setVolume',
         const Duration(milliseconds: 20),
-        () {
-          final double volume = clampDouble(
-            plPlayerController.volume.value - event.localPanDelta.dy / level,
+        () => plPlayerController.setVolume(
+          clampDouble(
+            plPlayerController.volume.value -
+                event.localPanDelta.dy / (maxHeight * 0.5),
             0.0,
             plPlayerController.maxVolume,
-          );
-          plPlayerController.setVolume(volume);
-        },
+          ),
+        ),
       );
     }
   }
@@ -1608,7 +1605,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                     child: plPlayerController.isDesktopPip
                         ? GestureDetector(
                             behavior: HitTestBehavior.translucent,
-                            onPanStart: (_) => windowManager.startDragging(),
+                            onPanStart: (_) => WindowController.instance.window
+                                ?.startDragging(),
                             child: widget.headerControl,
                           )
                         : widget.headerControl,

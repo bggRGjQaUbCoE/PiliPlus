@@ -11,7 +11,6 @@ import 'package:PiliPlus/pages/match_info/widgets/match_info_item.dart';
 import 'package:PiliPlus/pages/video/reply_reply/view.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/widget_ext.dart';
-import 'package:easy_debounce/easy_throttle.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -76,32 +75,28 @@ class _MatchInfoPageState extends CommonDynPageState<MatchInfoPage> {
 
   @override
   void replyReply(BuildContext context, ReplyInfo replyItem, int? id) {
-    EasyThrottle.throttle('replyReply', const Duration(milliseconds: 500), () {
-      int oid = replyItem.oid.toInt();
-      int rpid = replyItem.id.toInt();
-      Get.to(
-        SimpleScaffold(
-          appBar: AppBar(
-            title: const Text('评论详情'),
-            shape: Border(
-              bottom: BorderSide(
-                color: theme.colorScheme.outline.withValues(alpha: 0.1),
-              ),
+    Get.to(
+      SimpleScaffold(
+        appBar: AppBar(
+          title: const Text('评论详情'),
+          shape: Border(
+            bottom: BorderSide(
+              color: theme.colorScheme.outline.withValues(alpha: 0.1),
             ),
           ),
-          body: ViewSafeArea(
-            child: VideoReplyReplyPanel(
-              enableSlide: false,
-              id: id,
-              oid: oid,
-              rpid: rpid,
-              isVideoDetail: false,
-              replyType: controller.replyType,
-              firstFloor: replyItem,
-            ),
-          ).constraintWidth(),
         ),
-      );
-    });
+        body: ViewSafeArea(
+          child: VideoReplyReplyPanel(
+            enableSlide: false,
+            id: id,
+            oid: replyItem.oid.toInt(),
+            rpid: replyItem.id.toInt(),
+            isVideoDetail: false,
+            replyType: controller.replyType,
+            firstFloor: replyItem,
+          ),
+        ).constraintWidth(),
+      ),
+    );
   }
 }

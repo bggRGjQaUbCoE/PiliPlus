@@ -28,6 +28,7 @@ import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/utils/reply_scheme_helper.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -114,6 +115,8 @@ abstract final class PageUtils {
     Object? rid,
     bool off = false,
     Object? type,
+    int? rootRpId,
+    int? secondRpId,
   }) async {
     assert(id != null || rid != null);
     SmartDialog.showLoading();
@@ -131,6 +134,10 @@ abstract final class PageUtils {
             'id': id!,
             'type': 'opus',
           },
+          arguments: {
+            rootRpIdKey: ?rootRpId,
+            secondRpIdKey: ?secondRpId,
+          },
           off: off,
         );
       } else {
@@ -138,6 +145,8 @@ abstract final class PageUtils {
           '/dynamicDetail',
           arguments: {
             'item': response,
+            rootRpIdKey: ?rootRpId,
+            secondRpIdKey: ?secondRpId,
           },
           off: off,
         );
@@ -536,6 +545,8 @@ abstract final class PageUtils {
     bool off = false,
     bool isVertical = false,
     Dimension? dimension,
+    int? rootRpId,
+    int? secondRpId,
   }) {
     final arguments = {
       'aid': aid ?? IdUtils.bv2av(bvid!),
@@ -550,6 +561,8 @@ abstract final class PageUtils {
       'videoType': videoType,
       'isVertical': dimension?.isVertical ?? isVertical,
       'heroTag': Utils.makeHeroTag(cid),
+      rootRpIdKey: ?rootRpId,
+      secondRpIdKey: ?secondRpId,
       ...?extraArguments,
     };
     return PageUtils.toDupNamed('/videoV', arguments: arguments, off: off);

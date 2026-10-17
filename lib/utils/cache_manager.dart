@@ -1,16 +1,32 @@
 import 'dart:io' show Directory, File;
 
+import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
+
+Future<Directory> _cacheDirectoryProvider() async {
+  final tmpDirPath = await PathProviderPlatform.instance.getTemporaryPath();
+  if (tmpDirPath == null) {
+    throw MissingPlatformDirectoryException(
+      'Unable to get temporary directory',
+    );
+  }
+  if (PlatformUtils.isDesktop) {
+    return Directory(path.join(tmpDirPath, Constants.appName));
+  }
+  return Directory(tmpDirPath);
+}
 
 abstract final class CacheManager {
   static late final DefaultCacheManager manager;
 
   static Future<void> ensureInitialized() => DefaultCacheManager.init(
     maxNrOfCacheLength: Pref.maxCacheSize.toInt(),
+    cacheDirectoryProvider: _cacheDirectoryProvider,
   ).then((i) => manager = i);
 
   // 获取缓存目录

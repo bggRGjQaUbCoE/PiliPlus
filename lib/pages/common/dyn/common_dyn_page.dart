@@ -37,6 +37,38 @@ enum DynType implements EnumWithLabel {
   const DynType(this.label);
 }
 
+mixin DynReplyLocateStateMixin<T extends StatefulWidget>
+    on CommonDynPageMixin<T> {
+  DynReplyLocateMixin get dynReplyLocateCtr =>
+      controller as DynReplyLocateMixin;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    dynReplyLocateCtr.didChangeDependencies(context);
+  }
+
+  @override
+  Widget buildReply(BuildContext context, int index, ReplyInfo item) {
+    final child = super.buildReply(context, index, item);
+    final controller = dynReplyLocateCtr;
+    if (item.id == controller.targetRootRpId) {
+      final targetSecondRpId = controller.targetSecondRpId;
+      if (targetSecondRpId == null) {
+        return controller.colorAnimWrapper(theme.colorScheme, child);
+      } else {
+        controller
+          ..targetRootRpId = null
+          ..targetSecondRpId = null;
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => replyReply(context, item, targetSecondRpId),
+        );
+      }
+    }
+    return child;
+  }
+}
+
 abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
     with
         SingleTickerProviderStateMixin<T>,
@@ -182,23 +214,7 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
                   ),
                 );
               } else {
-                return ReplyItemGrpc(
-                  replyItem: response[index],
-                  replyLevel: 1,
-                  replyReply: (item, id) => replyReply(context, item, id),
-                  onReply: controller.onReply,
-                  onDelete: (item, subIndex) =>
-                      controller.onRemove(index, item, subIndex),
-                  upMid: controller.upMid,
-                  onViewImage: hideFab,
-                  onCheckReply: controller.onCheckReply,
-                  onToggleTop: (item) => controller.onToggleTop(
-                    item,
-                    index,
-                    controller.oid,
-                    controller.replyType,
-                  ),
-                );
+                return buildReply(context, index, response[index]);
               }
             },
           );
@@ -227,6 +243,25 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
     }
   }
 
+  Widget buildReply(BuildContext context, int index, ReplyInfo item) {
+    return ReplyItemGrpc(
+      replyItem: item,
+      replyLevel: 1,
+      replyReply: (item, id) => throttleReplyReply(context, item, id),
+      onReply: controller.onReply,
+      onDelete: (item, subIndex) => controller.onRemove(index, item, subIndex),
+      upMid: controller.upMid,
+      onViewImage: hideFab,
+      onCheckReply: controller.onCheckReply,
+      onToggleTop: (item) => controller.onToggleTop(
+        item,
+        index,
+        controller.oid,
+        controller.replyType,
+      ),
+    );
+  }
+
   Widget httpError({String? errMsg, VoidCallback? onReload}) {
     return HttpError(
       errMsg: errMsg,
@@ -234,64 +269,63 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
     );
   }
 
+  void throttleReplyReply(BuildContext context, ReplyInfo replyItem, int? id) {
+    EasyThrottle.throttle(
+      'replyReply',
+      const Duration(milliseconds: 500),
+      () => replyReply(context, replyItem, id),
+    );
+  }
+
   void replyReply(BuildContext context, ReplyInfo replyItem, int? id) {
-    EasyThrottle.throttle('replyReply', const Duration(milliseconds: 500), () {
-      int oid = replyItem.oid.toInt();
-      int rpid = replyItem.id.toInt();
-      Widget replyReplyPage({bool showBackBtn = true}) {
-        final child = ViewSafeArea(
-          left: showBackBtn,
-          right: showBackBtn,
-          child: VideoReplyReplyPanel(
-            enableSlide: false,
-            id: id,
-            oid: oid,
-            rpid: rpid,
-            isVideoDetail: !showBackBtn,
-            replyType: controller.replyType,
-            firstFloor: replyItem,
-            upMid: controller.upMid,
-          ),
-        );
-        if (showBackBtn) {
-          return SimpleScaffold(
-            appBar: AppBar(
-              title: const Text('评论详情'),
-              shape: Border(
-                bottom: BorderSide(
-                  color: theme.colorScheme.outline.withValues(alpha: 0.1),
-                ),
+    Widget replyReplyPage({bool showBackBtn = true}) {
+      final child = ViewSafeArea(
+        left: showBackBtn,
+        right: showBackBtn,
+        child: VideoReplyReplyPanel(
+          enableSlide: false,
+          id: id,
+          oid: replyItem.oid.toInt(),
+          rpid: replyItem.id.toInt(),
+          isVideoDetail: !showBackBtn,
+          replyType: controller.replyType,
+          firstFloor: replyItem,
+          upMid: controller.upMid,
+        ),
+      );
+      if (showBackBtn) {
+        return SimpleScaffold(
+          appBar: AppBar(
+            title: const Text('评论详情'),
+            shape: Border(
+              bottom: BorderSide(
+                color: theme.colorScheme.outline.withValues(alpha: 0.1),
               ),
             ),
-            body: child,
-          );
-        }
-        return child;
-      }
-
-      if (isPortrait) {
-        Get.to(
-          replyReplyPage,
-          routeName: 'dynamicDetail-Copy',
-          arguments: arguments,
+          ),
+          body: child,
         );
-      } else {
-        final scaffoldState = MiniScaffold.maybeOf(context);
-        if (scaffoldState != null) {
-          hideFab();
-          scaffoldState.showBottomSheet(
-            constraints: const BoxConstraints(),
-            (context) => replyReplyPage(showBackBtn: false),
-          );
-        } else {
-          Get.to(
-            replyReplyPage,
-            routeName: 'dynamicDetail-Copy',
-            arguments: arguments,
-          );
-        }
       }
-    });
+      return child;
+    }
+
+    if (!isPortrait) {
+      final scaffoldState = MiniScaffold.maybeOf(context);
+      if (scaffoldState != null) {
+        hideFab();
+        scaffoldState.showBottomSheet(
+          constraints: const BoxConstraints(),
+          (context) => replyReplyPage(showBackBtn: false),
+        );
+        return;
+      }
+    }
+
+    Get.to(
+      replyReplyPage,
+      routeName: 'dynamicDetail-Copy',
+      arguments: arguments,
+    );
   }
 
   Widget ratioWidget(double maxWidth) => IconButton(

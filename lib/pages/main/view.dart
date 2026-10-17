@@ -1,7 +1,5 @@
 import 'dart:io';
 
-import 'package:PiliPlus/common/assets.dart';
-import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/floating_navigation_bar.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
@@ -11,23 +9,20 @@ import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/pages/home/view.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
-import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/device_utils.dart';
+import 'package:PiliPlus/utils/desktop/tray_controller.dart';
+import 'package:PiliPlus/utils/desktop/window_controller.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/mobile_observer.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:tray_manager/tray_manager.dart' as tray_manager show Image;
-import 'package:tray_manager/tray_manager.dart';
-import 'package:window_manager/window_manager.dart';
+import 'package:nativeapi/nativeapi.dart' as nativeapi;
 
 class MainApp extends StatefulWidget {
   const MainApp({super.key});
@@ -37,9 +32,8 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends PopScopeState<MainApp>
-    with RouteAware, RouteAwareMixin, WidgetsBindingObserver, WindowListener {
+    with RouteAware, RouteAwareMixin, WidgetsBindingObserver {
   final _mainController = Get.put(MainController());
-  late final _setting = GStorage.setting;
   late EdgeInsets _padding;
   late ColorScheme _colorScheme;
   Brightness? _brightness;
@@ -55,12 +49,8 @@ class _MainAppState extends PopScopeState<MainApp>
       HardwareKeyboard.instance.addHandler(_handleKeyEvent);
     }
     if (PlatformUtils.isDesktop) {
-      windowManager
-        ..addListener(this)
-        ..setPreventClose(true);
-      if (_mainController.showTrayIcon) {
-        _initTrayIcon();
-      }
+      WindowController.instance.init();
+      TrayController.instance.init();
     }
     if (!Platform.isMacOS) {
       PiliScheme.init();
@@ -78,7 +68,9 @@ class _MainAppState extends PopScopeState<MainApp>
     if (PlatformUtils.isDesktop) {
       if (_brightness != brightness) {
         _brightness = brightness;
-        windowManager.setBrightness(brightness);
+        nativeapi.Application.instance.setBrightness(
+          brightness == .dark ? .dark : .light,
+        );
       }
     }
     if (!_mainController.useSideBar) {
@@ -118,8 +110,8 @@ class _MainAppState extends PopScopeState<MainApp>
       HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
     }
     if (PlatformUtils.isDesktop) {
-      _destroyTrayIcon();
-      windowManager.removeListener(this);
+      WindowController.instance.dispose();
+      TrayController.instance.dispose();
     }
     removeObserverMobile(this);
     PiliScheme.listener?.cancel();
@@ -132,221 +124,6 @@ class _MainAppState extends PopScopeState<MainApp>
         event.logicalKey == LogicalKeyboardKey.keyR &&
         HardwareKeyboard.instance.isMetaPressed &&
         _mainController.refreshRecommendations();
-  }
-
-  @override
-  void onWindowMaximize() {
-    _setting.put(SettingBoxKey.isWindowMaximized, true);
-  }
-
-  @override
-  void onWindowUnmaximize() {
-    _setting.put(SettingBoxKey.isWindowMaximized, false);
-  }
-
-  @override
-  Future<void> onWindowMoved() async {
-    if (PlPlayerController.instance?.updatePipBounds() ?? false) {
-      return;
-    }
-    final Offset offset = await windowManager.getPosition();
-    _setting.put(SettingBoxKey.windowPosition, [offset.dx, offset.dy]);
-  }
-
-  @override
-  Future<void> onWindowResized() async {
-    if (PlPlayerController.instance?.updatePipBounds() ?? false) {
-      return;
-    }
-    final Rect bounds = await windowManager.getBounds();
-    _setting.putAll({
-      SettingBoxKey.windowSize: [bounds.width, bounds.height],
-      SettingBoxKey.windowPosition: [bounds.left, bounds.top],
-    });
-  }
-
-  @override
-  void onWindowClose() {
-    if (_mainController.showTrayIcon && _mainController.minimizeOnExit) {
-      _hide();
-      _onHideWindow();
-    } else {
-      _onClose();
-    }
-  }
-
-  Future<void> _onClose() async {
-    await GStorage.compact();
-    await GStorage.close();
-    _destroyTrayIcon();
-    DeviceUtils.exitApp();
-  }
-
-  @override
-  void onWindowMinimize() {
-    _onHideWindow();
-  }
-
-  @override
-  void onWindowRestore() {
-    _onShowWindow();
-  }
-
-  void _onHideWindow() {
-    if (_mainController.pauseOnMinimize) {
-      if (PlPlayerController.instance case final player?) {
-        if (_mainController.isPlaying = player.playerStatus.isPlaying) {
-          player.pause();
-        }
-      } else {
-        _mainController.isPlaying = false;
-      }
-    }
-  }
-
-  void _onShowWindow() {
-    if (_mainController.pauseOnMinimize && _mainController.isPlaying) {
-      PlPlayerController.instance?.play();
-    }
-  }
-
-  double? _opacity;
-
-  Future<void>? _setOpacity(double opacity) {
-    if (Platform.isWindows && _opacity != opacity) {
-      _opacity = opacity;
-      return windowManager.setOpacity(opacity);
-    }
-    return null;
-  }
-
-  @override
-  Future<void>? onWindowFocus() {
-    return _setOpacity(1.0);
-  }
-
-  /// https://github.com/leanflutter/window_manager/issues/571
-  Future<void> _hide() async {
-    await _setOpacity(0.0);
-    await windowManager.hide();
-  }
-
-  Future<void> _show() {
-    return windowManager.show();
-  }
-
-  TrayIcon? _trayIcon;
-  tray_manager.Image? _icon;
-  int? _trayListenerId;
-  Menu? _trayMenu;
-  final List<(MenuItem, int)> _trayMenuItems = <(MenuItem, int)>[];
-
-  void _destroyTrayIcon() {
-    if (!_mainController.showTrayIcon) return;
-
-    for (final (item, id) in _trayMenuItems) {
-      item
-        ..removeListener(id)
-        ..dispose();
-    }
-    _trayMenuItems.clear();
-
-    _trayMenu?.dispose();
-    _trayMenu = null;
-
-    _icon?.dispose();
-    _icon = null;
-
-    _trayIcon
-      ?..removeListener(_trayListenerId!)
-      ..dispose();
-    _trayIcon = null;
-  }
-
-  void _addTrayMenuItem(String label, void Function() onTap) {
-    final menu = _trayMenu;
-    final item = MenuItem.createWithLabelAndType(label, MenuItemType.normal);
-    if (menu == null || item == null) return;
-    final id = item.addListener((MenuEvent event) {
-      if (event is MenuItemClickedEvent) {
-        onTap();
-      }
-    });
-    _trayMenuItems.add((item, id));
-    menu.addItem(item);
-  }
-
-  /// 与 AppScheme 唤出窗口的写法保持一致（见 utils/app_scheme.dart）。
-  Future<void> _showWindow() async {
-    await _show();
-    await windowManager.focus();
-  }
-
-  /// 显示窗口并切到导航栏中的对应页（用户可能把该页从导航栏去掉了，此时只显示窗口）。
-  Future<void> _toNavPage(NavigationBarType type) async {
-    await _showWindow();
-    final index = _mainController.navigationBars.indexOf(type);
-    if (index != -1) {
-      _mainController.setIndex(index);
-    }
-  }
-
-  /// 我的页可以从导航栏移除，交由 MainController 处理（会另开 MinePage）。
-  Future<void> _toMinePage() async {
-    await _showWindow();
-    _mainController.toMinePage();
-  }
-
-  Future<void> _trayListener(TrayIconEvent event) async {
-    switch (event) {
-      case TrayIconClickedEvent():
-        if (await windowManager.isVisible()) {
-          await _hide();
-        } else {
-          await _show();
-        }
-      case TrayIconRightClickedEvent():
-        _trayIcon!.openContextMenu();
-      case TrayIconDoubleClickedEvent():
-    }
-  }
-
-  void _initTrayIcon() {
-    assert(_trayIcon == null);
-
-    final trayIcon = TrayIcon.create();
-    if (trayIcon == null) return;
-
-    _trayIcon = trayIcon;
-    _trayListenerId = trayIcon.addListener(_trayListener);
-    _icon = ImageAsset.fromAsset(
-      Platform.isWindows ? Assets.logoIco : Assets.logoLarge,
-    );
-    trayIcon
-      ..icon = _icon
-      ..setTooltip(Constants.appName);
-
-    _trayMenu = Menu.create()!;
-    _addTrayMenuItem(NavigationBarType.home.label, () {
-      _toNavPage(NavigationBarType.home);
-    });
-    _addTrayMenuItem(NavigationBarType.dynamics.label, () {
-      _toNavPage(NavigationBarType.dynamics);
-    });
-    _addTrayMenuItem(NavigationBarType.mine.label, _toMinePage);
-    _addTrayMenuItem('退出 ${Constants.appName}', _onClose);
-
-    trayIcon
-      ..setContextMenu(_trayMenu)
-      ..setVisible(true);
-
-    // Linux 的托盘图标是 StatusNotifierItem：菜单由宿主（KDE/GNOME）在右键时弹出，
-    // 但只有把弹出方式显式设为右键才会导出给宿主，默认不导出——于是右键毫无反应。
-    // 见 nativeapi 的 tools/gui/core_tray_icon_events_test_linux.sh：
-    // "KDE: Activate on a click, ContextMenu on a right click"。
-    if (Platform.isLinux) {
-      trayIcon.setContextMenuTrigger(ContextMenuTrigger.rightClicked);
-    }
   }
 
   @pragma('vm:prefer-inline')

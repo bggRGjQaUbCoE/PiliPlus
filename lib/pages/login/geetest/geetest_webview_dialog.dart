@@ -4,6 +4,7 @@ import 'dart:io' show Platform;
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/plugin/linux_webview.dart';
+import 'package:PiliPlus/utils/ubuntu_touch.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -58,6 +59,15 @@ class _GeetestWebviewDialogState extends State<GeetestWebviewDialog> {
     final html = _buildHtml(widget.gt, widget.challenge);
 
     if (Platform.isLinux) {
+      if (UbuntuTouch.enabled) {
+        return AlertDialog(
+          title: const Text('验证码'),
+          content: const Text('Ubuntu Touch 上还不能打开验证码页面，请改用扫码或 cookie 登录。'),
+          actions: [
+            TextButton(onPressed: Get.back, child: const Text('关闭')),
+          ],
+        );
+      }
       return AlertDialog(
         title: const Text('验证码'),
         content: SizedBox(

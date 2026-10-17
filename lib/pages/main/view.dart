@@ -19,6 +19,7 @@ import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/mobile_observer.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/ubuntu_touch.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -48,7 +49,7 @@ class _MainAppState extends PopScopeState<MainApp>
     if (Platform.isMacOS) {
       HardwareKeyboard.instance.addHandler(_handleKeyEvent);
     }
-    if (PlatformUtils.isDesktop) {
+    if (PlatformUtils.isDesktop && !UbuntuTouch.enabled) {
       WindowController.instance.init();
       TrayController.instance.init();
     }
@@ -65,7 +66,7 @@ class _MainAppState extends PopScopeState<MainApp>
     final brightness = _colorScheme.brightness;
     NetworkImgLayer.reduce =
         NetworkImgLayer.reduceLuxColor != null && brightness.isDark;
-    if (PlatformUtils.isDesktop) {
+    if (PlatformUtils.isDesktop && !UbuntuTouch.enabled) {
       if (_brightness != brightness) {
         _brightness = brightness;
         nativeapi.Application.instance.setBrightness(
@@ -109,7 +110,7 @@ class _MainAppState extends PopScopeState<MainApp>
     if (Platform.isMacOS) {
       HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
     }
-    if (PlatformUtils.isDesktop) {
+    if (PlatformUtils.isDesktop && !UbuntuTouch.enabled) {
       WindowController.instance.dispose();
       TrayController.instance.dispose();
     }

@@ -72,6 +72,7 @@ dependencies:
   cookie_jar: ^4.0.8
   crypto: ^3.0.6
   cupertino_ui: ^1.0.0
+  dbus: ^0.7.11
   device_info_plus: ^13.1.0
   dio: ^5.9.1
   dio_http2_adapter: ^2.7.1

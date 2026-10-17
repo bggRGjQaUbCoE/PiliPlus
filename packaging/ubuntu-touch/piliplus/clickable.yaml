@@ -1,0 +1,4 @@
+clickable_minimum_required: 8.4.0
+builder: cmake
+framework: ubuntu-sdk-20.04
+restrict_arch: arm64

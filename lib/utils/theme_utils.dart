@@ -2,7 +2,9 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/font_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoThemeData;
+import 'package:PiliPlus/utils/ubuntu_touch.dart';
+import 'package:cupertino_ui/cupertino_ui.dart'
+    show CupertinoTextThemeData, CupertinoThemeData;
 import 'package:flutter/foundation.dart' show PlatformDispatcher;
 import 'package:material_ui/material_ui.dart';
 
@@ -57,7 +59,7 @@ abstract final class ThemeUtils {
       );
     }
 
-    final theme = ThemeData(
+    var theme = ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
       fontFamily: fontFamily,
@@ -166,9 +168,73 @@ abstract final class ThemeUtils {
       ),
     );
     if (isDark && Pref.isPureBlackTheme) {
-      return darkenTheme(theme);
+      theme = darkenTheme(theme);
+    }
+    if (UbuntuTouch.enabled) {
+      theme = _withCjkFallback(theme);
     }
     return theme;
+  }
+
+  static TextTheme _cjkTextTheme(TextTheme theme) {
+    TextStyle? style(TextStyle? value) =>
+        value?.copyWith(fontFamilyFallback: UbuntuTouch.cjkFallback);
+    return theme.copyWith(
+      displayLarge: style(theme.displayLarge),
+      displayMedium: style(theme.displayMedium),
+      displaySmall: style(theme.displaySmall),
+      headlineLarge: style(theme.headlineLarge),
+      headlineMedium: style(theme.headlineMedium),
+      headlineSmall: style(theme.headlineSmall),
+      titleLarge: style(theme.titleLarge),
+      titleMedium: style(theme.titleMedium),
+      titleSmall: style(theme.titleSmall),
+      bodyLarge: style(theme.bodyLarge),
+      bodyMedium: style(theme.bodyMedium),
+      bodySmall: style(theme.bodySmall),
+      labelLarge: style(theme.labelLarge),
+      labelMedium: style(theme.labelMedium),
+      labelSmall: style(theme.labelSmall),
+    );
+  }
+
+  static ThemeData _withCjkFallback(ThemeData theme) {
+    const fallback = TextStyle(fontFamilyFallback: UbuntuTouch.cjkFallback);
+    TextStyle? style(TextStyle? value) =>
+        value?.copyWith(fontFamilyFallback: UbuntuTouch.cjkFallback);
+    return theme.copyWith(
+      textTheme: _cjkTextTheme(theme.textTheme),
+      primaryTextTheme: _cjkTextTheme(theme.primaryTextTheme),
+      appBarTheme: theme.appBarTheme.copyWith(
+        titleTextStyle: style(theme.appBarTheme.titleTextStyle),
+        toolbarTextStyle: style(theme.appBarTheme.toolbarTextStyle),
+      ),
+      dialogTheme: theme.dialogTheme.copyWith(
+        titleTextStyle: style(theme.dialogTheme.titleTextStyle),
+        contentTextStyle: style(theme.dialogTheme.contentTextStyle),
+      ),
+      snackBarTheme: theme.snackBarTheme.copyWith(
+        contentTextStyle: style(theme.snackBarTheme.contentTextStyle),
+      ),
+      tooltipTheme: theme.tooltipTheme.copyWith(
+        textStyle: style(theme.tooltipTheme.textStyle),
+      ),
+      cupertinoOverrideTheme: (theme.cupertinoOverrideTheme ??
+              const CupertinoThemeData())
+          .copyWith(
+            textTheme: CupertinoTextThemeData(
+              primaryColor: theme.colorScheme.primary,
+              textStyle: fallback,
+              actionTextStyle: fallback,
+              tabLabelTextStyle: fallback,
+              navActionTextStyle: fallback,
+              navTitleTextStyle: fallback,
+              navLargeTitleTextStyle: fallback,
+              pickerTextStyle: fallback,
+              dateTimePickerTextStyle: fallback,
+            ),
+          ),
+    );
   }
 
   static ThemeData darkenTheme(ThemeData theme) {

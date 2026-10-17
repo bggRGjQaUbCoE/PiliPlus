@@ -25,6 +25,7 @@ import 'package:PiliPlus/utils/font_utils.dart';
 import 'package:PiliPlus/utils/ios/pip_helper.dart';
 import 'package:PiliPlus/utils/json_file_handler.dart';
 import 'package:PiliPlus/utils/max_screen_size.dart';
+import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/request_utils.dart';
@@ -32,6 +33,7 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
+import 'package:PiliPlus/utils/ubuntu_touch.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:catcher_2/catcher_2.dart';
 import 'package:collection/collection.dart';
@@ -91,10 +93,25 @@ Future<void> _initAppPath() async {
   appSupportDirPath = (await getApplicationSupportDirectory()).path;
 }
 
+Future<void> _initUbuntuTouchPaths() async {
+  final data = Directory(UbuntuTouch.dataHome);
+  final cache = Directory(UbuntuTouch.cacheHome);
+  await data.create(recursive: true);
+  await cache.create(recursive: true);
+  appSupportDirPath = data.path;
+  tmpDirPath = cache.path;
+  downloadPath = path.join(data.path, PathUtils.downloadDir);
+  await Directory(downloadPath).create(recursive: true);
+}
+
 void main() async {
   ScaledWidgetsFlutterBinding.ensureInitialized();
-  MediaKit.ensureInitialized();
-  await _initAppPath();
+  if (UbuntuTouch.enabled) {
+    await _initUbuntuTouchPaths();
+  } else {
+    MediaKit.ensureInitialized();
+    await _initAppPath();
+  }
   try {
     await GStorage.init();
   } catch (e) {
@@ -104,8 +121,7 @@ void main() async {
   }
   ScaledWidgetsFlutterBinding.instance.scaleFactor = Pref.uiScale;
   await Future.wait([
-    _initDownPath(),
-    _initTmpPath(),
+    if (!UbuntuTouch.enabled) ...[_initDownPath(), _initTmpPath()],
     CacheManager.ensureInitialized(),
     ?FontUtils.init(),
   ]);
@@ -181,8 +197,9 @@ void main() async {
         format: DateFormatUtils.longFormatDs,
       ),
       'Commit Hash': BuildConfig.commitHash,
-      'MPV Api Version':
-          '${NativePlayer.apiVersion >> 16}.${NativePlayer.apiVersion & 0xFFFF}',
+      'MPV Api Version': UbuntuTouch.enabled
+          ? 'skipped'
+          : '${NativePlayer.apiVersion >> 16}.${NativePlayer.apiVersion & 0xFFFF}',
     };
     final fileHandler = await JsonFileHandler.init();
 
@@ -196,7 +213,7 @@ void main() async {
     runApp(const MyApp());
   }
 
-  if (PlatformUtils.isDesktop) {
+  if (PlatformUtils.isDesktop && !UbuntuTouch.enabled) {
     final window = WindowManager.instance.getCurrent();
     if (window != null) {
       window
@@ -317,8 +334,33 @@ class MyApp extends StatelessWidget {
     );
   }
 
+  static bool _loggedUbuntuTouchMetrics = false;
+
   static Widget _builder(BuildContext context, Widget? child) {
-    final uiScale = Pref.uiScale;
+    if (UbuntuTouch.enabled && !_loggedUbuntuTouchMetrics) {
+      _loggedUbuntuTouchMetrics = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final view = WidgetsBinding.instance.platformDispatcher.views.first;
+        final metrics = MediaQueryData.fromView(view);
+        // ignore: avoid_print
+        print(
+          'piliplus: logical=${metrics.size.width}x${metrics.size.height} '
+          'dpr=${metrics.devicePixelRatio} padding=${metrics.padding}',
+        );
+        final marker = File('${UbuntuTouch.cacheHome}/open-video');
+        if (!marker.existsSync()) return;
+        final parts = marker.readAsStringSync().trim().split(RegExp(r'\s+'));
+        marker.deleteSync();
+        final cid = parts.length >= 2 ? int.tryParse(parts[1]) : null;
+        if (cid == null) return;
+        PageUtils.toVideoPage(
+          bvid: parts[0],
+          cid: cid,
+          extraArguments: parts.length >= 3 ? {'utTest': parts[2]} : null,
+        );
+      });
+    }
+    final uiScale = UbuntuTouch.enabled ? 1.0 : Pref.uiScale;
     final mediaQuery = MediaQuery.of(context);
     final textScaler = TextScaler.linear(Pref.defaultTextScale);
     if (uiScale != 1.0) {

@@ -1,0 +1,20 @@
+--- a/ohos/src/main/ets/components/plugin/WakelockApi.ets
++++ b/ohos/src/main/ets/components/plugin/WakelockApi.ets
+@@ -109,7 +109,7 @@
+ 
+   readValueOfType(type: number, buffer: ByteBuffer): ESObject {
+     switch (type) {
+-      case this.getByte(128):
++      case this.getByte(130):
+         return IsEnabledMessage.fromList(super.readValue(buffer));
+       case this.getByte(129):
+         return ToggleMessage.fromList(super.readValue(buffer));
+@@ -120,7 +120,7 @@
+ 
+   writeValue(stream: ByteBuffer, value: ESObject): ESObject {
+     if (value instanceof IsEnabledMessage) {
+-      stream.writeInt8(this.getByte(128));
++      stream.writeInt8(this.getByte(130));
+       this.writeValue(stream, (value as IsEnabledMessage).toList());
+     } else if (value instanceof ToggleMessage) {
+       stream.writeInt8(this.getByte(129));

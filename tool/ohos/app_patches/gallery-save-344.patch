@@ -1,0 +1,94 @@
+--- a/lib/utils/image_utils.dart
++++ b/lib/utils/image_utils.dart
+@@ -92,13 +92,16 @@
+     required String url,
+     required String liveUrl,
+     required int width,
+     required int height,
+   }) async {
+     try {
+-      if (PlatformUtils.isMobile && !await checkPermissionDependOnSdkInt()) {
++      // OHOS requests access for this save in the native assets-creation dialog.
++      if (PlatformUtils.isMobile &&
++          !PlatformUtils.isOHOS &&
++          !await checkPermissionDependOnSdkInt()) {
+         return false;
+       }
+       if (!silentDownImg) SmartDialog.showLoading(msg: '正在下载');
+ 
+       String videoName = "video_${Utils.getFileName(liveUrl)}";
+       String videoPath = '$tmpDirPath/$videoName';
+@@ -123,30 +126,47 @@
+         } else {
+           SmartDialog.showToast('保存失败');
+           return false;
+         }
+       } else {
+         if (!silentDownImg) SmartDialog.showLoading(msg: '正在保存');
+-        await saveFileImg(
+-          filePath: videoPath,
+-          fileName: videoName,
+-          type: FileType.video,
+-          needToast: true,
+-        );
++        if (PlatformUtils.isOHOS) {
++          final saved = await SaverGallery.saveFile(
++            filePath: videoPath,
++            fileName: videoName,
++            albumPath: _albumPath,
++            skipIfExists: false,
++          );
++          if (!saved.isSuccess) {
++            SmartDialog.showToast('保存失败，${saved.errorMessage ?? "已取消"}');
++            return false;
++          }
++          SmartDialog.showToast(' 已保存 ');
++        } else {
++          await saveFileImg(
++            filePath: videoPath,
++            fileName: videoName,
++            type: FileType.video,
++            needToast: true,
++          );
++        }
+       }
+       return true;
+     } catch (err) {
+       SmartDialog.showToast(err.toString());
+       return false;
+     } finally {
+       if (!silentDownImg) SmartDialog.dismiss(status: SmartStatus.loading);
+     }
+   }
+ 
+   static Future<bool> downloadImg(List<String> imgList) async {
+-    if (PlatformUtils.isMobile && !await checkPermissionDependOnSdkInt()) {
++    // OHOS requests access for this save in the native assets-creation dialog.
++    if (PlatformUtils.isMobile &&
++        !PlatformUtils.isOHOS &&
++        !await checkPermissionDependOnSdkInt()) {
+       return false;
+     }
+     if (!silentDownImg) {
+       SmartDialog.showLoading(msg: '正在下载原图');
+     }
+     final futures = imgList.map((url) async {
+@@ -174,13 +194,17 @@
+               filePath: i.$1.path,
+               fileName: i.$2,
+               albumPath: _albumPath,
+             ),
+           );
+         }
+-        await SaverGallery.saveFiles(saveList, skipIfExists: false);
++        final saved = await SaverGallery.saveFiles(saveList, skipIfExists: false);
++        if (PlatformUtils.isOHOS && !saved.isSuccess) {
++          SmartDialog.showToast('保存失败，${saved.errorMessage ?? "已取消"}');
++          return false;
++        }
+       } else {
+         final dst = await FilePicker.getDirectoryPath();
+         if (dst == null) {
+           SmartDialog.showToast('取消保存');
+           return false;
+         }

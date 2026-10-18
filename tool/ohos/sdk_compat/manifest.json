@@ -1,0 +1,252 @@
+{
+  "schema": 1,
+  "repository": "https://gitcode.com/CPF-Flutter/flutter_flutter.git",
+  "branch": "oh-3.44.9-dev",
+  "commit": "3ffe70c6280cc6ddf613bffa59dd70611f238f7e",
+  "official_tag": "3.44.9+ohos-0.0.1-canary1",
+  "official_tag_commit": "39285df71a97ffe0c23241dcc459d997a9d8b7c6",
+  "flutter_version": "3.44.9",
+  "dart_version": "3.12.2",
+  "host_engine_revision": "5a2a6a42cce67f965cf540fcecf616faca624aa1",
+  "ohos_engine_revision": "24497d6833225b0445953e1dd05dc6538c16a8dd",
+  "upstream_patch_driver": "lib/scripts/patch.ps1",
+  "upstream_patch_driver_sha256": "20762dd1618d0abb1b4b8a12f0d7467d8859095da2b09f335960b8929ca95b94",
+  "patches": [
+    {
+      "upstream": "lib/scripts/modal_barrier.patch",
+      "upstream_sha256": "acd81d8f627e51e2cfb25a2f0ca941aa7b8d9657cddb51c5e5d04c067734ae7c"
+    },
+    {
+      "upstream": "lib/scripts/text_selection.patch",
+      "upstream_sha256": "b313cde06733c2c533f5859796168a99ee97fa145cda4d0565cd6c372d2ae6d8",
+      "adapted": "text_selection.ohos.patch",
+      "adapted_sha256": "c0f48b860dd1c9b19bafb2a15e7e04c05ef3b5afb0b2df3c313db67588e1146f"
+    },
+    {
+      "upstream": "lib/scripts/mouse_cursor.patch",
+      "upstream_sha256": "0b919f513047ab0f26d02a5a88cd8ea20ccabba839faf5eebcb50f033b5e08b2"
+    },
+    {
+      "upstream": "lib/scripts/image_anim.patch",
+      "upstream_sha256": "4bcfff476a8b39d19601f01a2914b989cf29037500ee78c1a7c93b8ccf4831ef"
+    },
+    {
+      "upstream": "lib/scripts/layout_builder.patch",
+      "upstream_sha256": "0768fe076da2445f469beb35ca5c9515a9baec8efac3eee2220752b09b8f3af0"
+    },
+    {
+      "upstream": "lib/scripts/navigation_drawer.patch",
+      "upstream_sha256": "1d666a7f79b4234747ffd3ab7a67c4616750a9694a98a421a7dc05794338ce67"
+    },
+    {
+      "upstream": "lib/scripts/popup_menu.patch",
+      "upstream_sha256": "5447ebc2e196d56a7a6e1734a862fce5ae0d9684171c047816718ef3e635e964"
+    },
+    {
+      "upstream": "lib/scripts/fab.patch",
+      "upstream_sha256": "753eeff0b0815470e589a9c3a94e567f15bb3581bf2d29c126aa01ce0438c0c8"
+    },
+    {
+      "upstream": "lib/scripts/null_safety_for_selectable_region.patch",
+      "upstream_sha256": "e065cf974a9a74ddfbb8447cf42061f011ca690c2272d2c82e7f9e8c12c672c1"
+    },
+    {
+      "upstream": "lib/scripts/selectable_region.patch",
+      "upstream_sha256": "72c9b63b76d03de8198c99c5acac56d3c4ebb8bbef90f836ff1d50895faacfc4",
+      "adapted": "selectable_region.ohos.patch",
+      "adapted_sha256": "ec3e531d91255c35bc824afa7488f6ccdd09640d2df1c2b392732a8e0aaf3411"
+    },
+    {
+      "upstream": "lib/scripts/editable_text.patch",
+      "upstream_sha256": "1fc9c52fd9e3ddcbc23fcc80520d7065940c5f3f01f9cafab0d4ad4585d9a3d0"
+    },
+    {
+      "upstream": "lib/scripts/text_field.patch",
+      "upstream_sha256": "d48d3ee5c6337b08d63ec2b97d52cde697e698da64ac2fda7e2b65e3c0ffc118"
+    },
+    {
+      "upstream": "lib/scripts/scroll_position.patch",
+      "upstream_sha256": "bf746107a41d27a0b76a301f4aadde8ab3ac2a102887c3b27fa8faaf0e9ff674"
+    },
+    {
+      "upstream": "lib/scripts/scrollable.patch",
+      "upstream_sha256": "69f58082a1bc9a686d59fe84608f5ede93204c94e7c0d5b915332691281d1013"
+    },
+    {
+      "upstream": "lib/scripts/scrollable_gesture.patch",
+      "upstream_sha256": "8121b487b35062239ffaca37b4be4fb829d938b7894cece9db5378c729cf6a73",
+      "adapted": "scrollable_gesture.ohos.patch",
+      "adapted_sha256": "88b40752a28f5d8e38f62f9baa2bda07911a4b55ee4f111a505470e258244043"
+    },
+    {
+      "upstream": "lib/scripts/draggable_scrollable_sheet.patch",
+      "upstream_sha256": "57ce130ec30e9ae077273bf19f83a79d5699182c88942d804e3e0578feb19114"
+    },
+    {
+      "upstream": "lib/scripts/scaffold.patch",
+      "upstream_sha256": "ffd7b6214779ec6fa62a28680214cf99593e099e8b5b819282de38e44c877061"
+    },
+    {
+      "upstream": "lib/scripts/text.patch",
+      "upstream_sha256": "d6cbc31578bf5c32a0b33a09360ea8196d09eb1571e8cb3ccd3f050684344993"
+    },
+    {
+      "upstream": "lib/scripts/text_painter.patch",
+      "upstream_sha256": "4f4f8df0d63abc476ab427e7c236a8d193e618de5269b0f419d59fb1693b739e"
+    },
+    {
+      "upstream": "lib/scripts/sliver.patch",
+      "upstream_sha256": "481c5868ac42b0fce5059111b1ed3aa25fcc04a6072ed28f42bb38dfba9bc30e"
+    },
+    {
+      "upstream": "lib/scripts/refresh_indicator.patch",
+      "upstream_sha256": "34d98cd7fc1ae7fe1ad9ff99dbb36502c7877b99cb3f3a52c791d33e608cd38d"
+    },
+    {
+      "upstream": "lib/scripts/double_tap_gesture.patch",
+      "upstream_sha256": "85cf0e1f8205383d005eb8097be9fdff560a3b58878e6d0ae73763909f1ca638"
+    }
+  ],
+  "files": {
+    "packages/flutter/lib/src/gestures/multitap.dart": {
+      "before_sha256": "bdf971ed2b945fa3e5fb3f28b74dd7231855f2d8b82ed8838b0970d4be0e2089",
+      "after_sha256": "4ffc89f35d6bf7579c4ad4263c5a5379e6f60b367131f8f5fb2d6b56a041514f"
+    },
+    "packages/flutter/lib/src/gestures/tap_and_drag.dart": {
+      "before_sha256": "4fcfaf514270507f9c56341590870f558eaa0c3f6f642ca2baf80dda6f402f45",
+      "after_sha256": "8db3a1faf0533230f2e485a097872e2960baf3bed4329a56527ebc68d5500a74"
+    },
+    "packages/flutter/lib/src/material/bottom_sheet.dart": {
+      "before_sha256": "ff6de2dc9b3f7ead8ccdd96acc9ddd97787694c57d57317c6be3d63e85edf375",
+      "after_sha256": "4140d010169a899aecebbee6b03e757f7033204d187e147b7d057a94c24c2328"
+    },
+    "packages/flutter/lib/src/material/floating_action_button.dart": {
+      "before_sha256": "cb478527aa8449901dda380699bc1090e4ff172e132884834154b0b6de120c3a",
+      "after_sha256": "935fca25716c6cb734dbb015c3a83d55bfdeb5583254d200b60fc29db5f07a43"
+    },
+    "packages/flutter/lib/src/material/navigation_drawer.dart": {
+      "before_sha256": "b4765781b5d7bcf62f4e71a6785a37ab71c44861bc1294f8876ba2778e3156bf",
+      "after_sha256": "52873a9d58aacd13628d55a0c50b4ab932205e765555e794e3181e41dcac52fd"
+    },
+    "packages/flutter/lib/src/material/popup_menu.dart": {
+      "before_sha256": "4468b0373ebf3b049cf266f56041d2054fe6d22d8ff4709e3ce641dc7fc9ece7",
+      "after_sha256": "74ac0681f8f78bd5121daa1aec3543b63acd84e9e007fdf089920f67be693710"
+    },
+    "packages/flutter/lib/src/material/progress_indicator.dart": {
+      "before_sha256": "d3bd97cff012845bb5da23a885fb6d8f9cfcdfc68ff09f674b1f9295d03c0520",
+      "after_sha256": "5b1ed167bddfdf762d891d205f9dba5af3fde02ccbe8314bc98af2da824e31fa"
+    },
+    "packages/flutter/lib/src/material/scaffold.dart": {
+      "before_sha256": "38e6ee38d7dbae298fa2e99a02f04f784237834f08f33a5894fd2b40a0d5f0bd",
+      "after_sha256": "2bb6690e0b9da216d32936ea449c06772664f130fb0f11592e39587149600cc0"
+    },
+    "packages/flutter/lib/src/material/tabs.dart": {
+      "before_sha256": "dd144d27093235f4f4fe3906eef99860330b77c8e5417cbf21cc3c0ff6b0aa83",
+      "after_sha256": "5e53d0a9895f519a0115ac8bfe4facb0e916f4b65af3b235ef789ee698256f13"
+    },
+    "packages/flutter/lib/src/material/text_field.dart": {
+      "before_sha256": "fd5f4df8eb0b60ee1f63fb0b43e75808758811294ba6d5c5218ac045c562797c",
+      "after_sha256": "ba7a477d604473761a2933ccc949b076a3a149e637c2b1c6e4dd7fed46e7ca34"
+    },
+    "packages/flutter/lib/src/painting/inline_span.dart": {
+      "before_sha256": "d54efc3a3045798846dfa90073230d9463cf05b0bab14116b088f4478b03da54",
+      "after_sha256": "342e6be0f79a7d42cc06a445ed375b80a8b9885771f4f3ca43283b1aac107625"
+    },
+    "packages/flutter/lib/src/painting/placeholder_span.dart": {
+      "before_sha256": "13a52af5241f7bb1ec009e9b80da7c8fd6551500aedb43d223b9a4c8c09f31d2",
+      "after_sha256": "3a430edb254cf70d94027a4332fcf611de57cbd6e3bcf989751ba7dd93d855f8"
+    },
+    "packages/flutter/lib/src/painting/text_painter.dart": {
+      "before_sha256": "29bbf75c6436788cd3118be54c9273c8bb75df2d44b653720c413a587d9da7d9",
+      "after_sha256": "b304e2b720a622af6329d51c588d2100fae6374e4e9c19958b8143a9074c4057"
+    },
+    "packages/flutter/lib/src/painting/text_span.dart": {
+      "before_sha256": "1e55a37ba5c9180a3d14d86c61d1c383b1cd5fbb68b9e3096cd162923814c081",
+      "after_sha256": "c5ddab8dcd79d57ae8ae3bdfec4c2a01d5f3810fa2fcac79a2acd1cda6d72db6"
+    },
+    "packages/flutter/lib/src/rendering/editable.dart": {
+      "before_sha256": "a0d6ba03a446d33dfac33c67edfdc86d0d7456745ad3597253b3f6ac5c6ca687",
+      "after_sha256": "af57b7bb6e0f86d52bdf3339768b3638d5e2a67077f2c84a2b05400f247b78c7"
+    },
+    "packages/flutter/lib/src/rendering/paragraph.dart": {
+      "before_sha256": "11825de78d30dd2b046a052f91e79bddb77e02679373000995906273c23d619d",
+      "after_sha256": "e2c68e68d7e06bdae1421717f6ff34018ffb625be494ced22859f542e4e9072a"
+    },
+    "packages/flutter/lib/src/rendering/selection.dart": {
+      "before_sha256": "54487c43978f9c915592d6730309ddd08dbaf86ade0a08ab07049fd556692c6e",
+      "after_sha256": "19d408ad68218f72039382e108484e5061ee422db3d6c7d1717fefbe0d78ab4f"
+    },
+    "packages/flutter/lib/src/widgets/draggable_scrollable_sheet.dart": {
+      "before_sha256": "ac3d1058b7bc87dbd876fb9377a66030e5857fc0654dfeb3457d4c49585f10d0",
+      "after_sha256": "a95bc85a1f022304a9dd47bb62fb6a8e4f7d510a027ca6bae0471c4d0bcea338"
+    },
+    "packages/flutter/lib/src/widgets/editable_text.dart": {
+      "before_sha256": "47459dd6c95005f58ccc9b8ae8df37f06a81096c696eb05bf4ec8d02d49caaa0",
+      "after_sha256": "56c3f6824879702d310cbed187037d53ed73d26474b340f57d198f0a4595ccd5"
+    },
+    "packages/flutter/lib/src/widgets/gesture_detector.dart": {
+      "before_sha256": "32cb44574715d4f04463eb1abe716db0560c9d213adb4d37d3cc3abae565be3a",
+      "after_sha256": "4378d488dd578de02594ef22a98d6b24691d3b0350748a120af6f68079ccf7b9"
+    },
+    "packages/flutter/lib/src/widgets/image.dart": {
+      "before_sha256": "efa77b93b1def560846b575efaf6b1db01efd2fbb6e310f3ed82de42ec3eee28",
+      "after_sha256": "a292ed46137fd624e43a5e0d4c0990b0c6136d7fc5998a9cc2db44faeeac2d4f"
+    },
+    "packages/flutter/lib/src/widgets/layout_builder.dart": {
+      "before_sha256": "3dfd1ec023fc3bd4bd8d9c86a9e02ec891f790ad36347e43e6000e3578fb724b",
+      "after_sha256": "34aca03c15ffc53f0a29e7debb11e495cba8ec90bcae3c1417d4bb5fec8f491d"
+    },
+    "packages/flutter/lib/src/widgets/modal_barrier.dart": {
+      "before_sha256": "a07bc00258c0817a48a242605eb732fab0593c7755f7261aae825dbdec042241",
+      "after_sha256": "75268a74769a9fd41588ed08528aade24e9c77caffb0e3b23be863e433e10420"
+    },
+    "packages/flutter/lib/src/widgets/page_view.dart": {
+      "before_sha256": "06951ea56896dbcb5f65251c90bfc52e98c6a01c6cb7440ea5e0dc067af6950b",
+      "after_sha256": "9fca4e9c3a5abf70a2370cf4c57fdf16de2282b70081d7046363a8829dc2c58b"
+    },
+    "packages/flutter/lib/src/widgets/routes.dart": {
+      "before_sha256": "adff9e93e416c8ebb755316d1effc0e95b3ca9ff1efd65f340eae65c91160f2c",
+      "after_sha256": "4cb1ae2a063e5b0545913ebe0b403eeed748ed179c4d8ec3f55f93a18f7894e3"
+    },
+    "packages/flutter/lib/src/widgets/scroll_position_with_single_context.dart": {
+      "before_sha256": "c1dcfd83e0a6bc049552a9b644e837d332adc16c13690ca4e0567fafd92286e2",
+      "after_sha256": "4d177128f392700a1e2f42e02063adacd2637ea8570e7712b45dbee555a73c7c"
+    },
+    "packages/flutter/lib/src/widgets/scrollable.dart": {
+      "before_sha256": "10d7f77a6e3765b0c00e866c684910c928f850c9e015d17819a14406e84b11cb",
+      "after_sha256": "78b39e208f1ef8d782c896af85a4c693f45cb65b659d074693ed0604ae172621"
+    },
+    "packages/flutter/lib/src/widgets/selectable_region.dart": {
+      "before_sha256": "9435bc219951981c241b3d5c6a90ee5e3ee949c838728d7ecb761065917f38c6",
+      "after_sha256": "a22c331876ef3429927293bb813848ebf93556df2174ccc12be78b08833084c0"
+    },
+    "packages/flutter/lib/src/widgets/selection_container.dart": {
+      "before_sha256": "b3404322311ed39dc6ef07e771cf4be617a4191ec42a50b9092d5fd018ae8b04",
+      "after_sha256": "8e0806585dabad243ce6fc96ca4a8afd0a07305cb82f9b66e655f5a34e145ae1"
+    },
+    "packages/flutter/lib/src/widgets/sliver.dart": {
+      "before_sha256": "3ffc39e994d6a2806445a6ecc8cb490d4bb52ca1db94ab2439d25234a83d093e",
+      "after_sha256": "aa191fa8604d1312b2efb4e9ed49e697f5bcb19396a38507f64591053d20a15b"
+    },
+    "packages/flutter/lib/src/widgets/text.dart": {
+      "before_sha256": "9e47bb3232bc895114077b437b4f45e49f00e78638ac27f53c2cac98233c44aa",
+      "after_sha256": "62083bc578a8d32f60b780bc76b56d6c1a4e37ef82390e3a04ca8416f36f97b6"
+    },
+    "packages/flutter/lib/src/widgets/text_selection.dart": {
+      "before_sha256": "9fe6201b5b40c0ac6e62973697acd5fe44758aa8ec20b640b38c87db509fc8a9",
+      "after_sha256": "3bbebbc73f0b45d5a25e7bb0723b2ae1244e097c89b99cd4c94248b5c341e021"
+    },
+    "packages/flutter/lib/src/widgets/widget_span.dart": {
+      "before_sha256": "f8b30d8a5aae32cd88e23020c88ee97bc986b85f37bc0b1c7f3347341dc32b36",
+      "after_sha256": "2aef00f4d33e49d50e1fe1276ec202573022c4b71a8b4def368bf2f5927aad7b"
+    },
+    "packages/flutter/lib/src/widgets/widget_state.dart": {
+      "before_sha256": "5caa69ece300d67a1984df9cb1ea7456fce7b30dc339c0a804540443242e916a",
+      "after_sha256": "ed17edefc24bc3025a7ed32b494679c7f5992a7e15fb94351f51f750e39dcbba"
+    },
+    "packages/flutter/test/widgets/selectable_region_test.dart": {
+      "before_sha256": "b4a3ed3e18f09e81db1c06cd3379d79baa6f2cbe366c1992fba6ec9bedf7c6c7",
+      "after_sha256": "521dc11b2cb5f2dfedee337c793f3017a09c69045107488476fd121f3305e942"
+    }
+  }
+}

@@ -1,0 +1,227 @@
+--- a/ohos/src/main/ets/components/plugin/FilePlckerDelegate.ets
++++ b/ohos/src/main/ets/components/plugin/FilePlckerDelegate.ets
+@@ -87,7 +87,8 @@
+ 
+           this.savaFilePath = photoSelectResult.photoUris
+           if (photoSelectResult == null || photoSelectResult.photoUris.length == 0) {
+-            this.finishWithError("unknown_activity", "Unknown activity error, please fill an issue.");
++            this.saveFinishWithSuccess(null);
++            return;
+           }
+           if (this.isMultipleSelection) {
+             this.handlingMultipleResults(photoSelectResult.photoUris)
+@@ -107,7 +108,8 @@
+         photoPicker.select(photoSelectOptions).then((photoSelectResult) => {
+           this.savaFilePath = photoSelectResult.photoUris
+           if (photoSelectResult == null || photoSelectResult.photoUris.length == 0) {
+-            this.finishWithError("unknown_activity", "Unknown activity error, please fill an issue.");
++            this.saveFinishWithSuccess(null);
++            return;
+           }
+           let selectedUris: Array<string> = photoSelectResult.photoUris;
+           if (this.isMultipleSelection) {
+@@ -121,14 +123,15 @@
+         break;
+       }
+       case "audio": {
+-        let context = getContext(this) as common.UIAbilityContext;
++        let context = this.ability?.context as common.UIAbilityContext;
+         let audioPicker: picker.AudioViewPicker = new picker.AudioViewPicker(context);
+         let audioSelectOptions = new picker.AudioSelectOptions();
+         audioSelectOptions.maxSelectNumber = this.isMultipleSelection ? 9 : 1;
+         audioPicker.select(audioSelectOptions).then((audioSelectResult) => {
+           this.savaFilePath = audioSelectResult
+           if (audioSelectResult == null || audioSelectResult.length == 0) {
+-            this.finishWithError("unknown_activity", "Unknown activity error, please fill an issue.");
++            this.saveFinishWithSuccess(null);
++            return;
+           }
+           if (this.isMultipleSelection) {
+             this.handlingMultipleResults(audioSelectResult);
+@@ -149,7 +152,8 @@
+           this.savaFilePath = photoSelectResult.photoUris
+           let selectedUris: Array<string> = photoSelectResult.photoUris;
+           if (selectedUris == null || selectedUris.length == 0) {
+-            this.finishWithError("unknown_activity", "Unknown activity error, please fill an issue.");
++            this.saveFinishWithSuccess(null);
++            return;
+           }
+           if (this.isMultipleSelection) {
+             this.handlingMultipleResults(selectedUris)
+@@ -169,7 +173,8 @@
+         documentPicker.select(documentSelectOptions).then((documentSelectResult: Array<string>) => {
+           this.savaFilePath = documentSelectResult
+           if (documentSelectResult == null || documentSelectResult.length == 0) {
+-            this.finishWithError("unknown_activity", "Unknown activity error, please fill an issue.");
++            this.saveFinishWithSuccess(null);
++            return;
+           }
+           let anySelectUris: Array<string> = documentSelectResult;
+           if (this.isMultipleSelection) {
+@@ -178,10 +183,11 @@
+             this.handleSingleResult(anySelectUris[0]);
+           }
+           if (documentSelectResult == null || documentSelectResult.length == 0) {
+-            this.finishWithError("unknown_activity", "Unknown activity error, please fill an issue.");
++            this.saveFinishWithSuccess(null);
++            return;
+           }
+         }).catch((err: BusinessError) => {
+-          console.error('DocumentViewPicker.select failed with err: ' + JSON.stringify(err));
++          this.finishWithError(err.code.toString(), err.message);
+         });
+         break
+       }
+@@ -195,7 +201,8 @@
+           this.savaFilePath = documentSelectResult;
+           let anySelectUris: Array<string> = documentSelectResult;
+           if (documentSelectResult == null || documentSelectResult.length == 0) {
+-            this.finishWithError("unknown_activity", "Unknown activity error, please fill an issue.");
++            this.saveFinishWithSuccess(null);
++            return;
+           }
+           if (this.isMultipleSelection) {
+             this.handlingMultipleResults(anySelectUris)
+@@ -203,36 +210,25 @@
+             this.handleSingleResult(anySelectUris[0]);
+           }
+           if (documentSelectResult == null || documentSelectResult.length == 0) {
+-            this.finishWithError("unknown_activity", "Unknown activity error, please fill an issue.");
++            this.saveFinishWithSuccess(null);
++            return;
+           }
+         }).catch((err: BusinessError) => {
+-          console.error('DocumentViewPicker.select failed with err: ' + JSON.stringify(err));
++          this.finishWithError(err.code.toString(), err.message);
+         });
+         break
+       }
+       case "dir": {
+-        let context = getContext(this) as common.UIAbilityContext;
+-        let documentPicker = new picker.DocumentViewPicker(context);
+-        let documentSelectOptions: picker.DocumentSelectOptions = {
+-          selectMode: 1
++        const context = this.ability?.context as common.UIAbilityContext;
++        const options: picker.DocumentSelectOptions = { selectMode: 1 };
++        try {
++          const directories = await new picker.DocumentViewPicker(context).select(options);
++          this.saveFinishWithSuccess(directories.length === 0 ? null : directories[0]);
++        } catch (error) {
++          const failure = error as BusinessError;
++          this.finishWithError(failure.code.toString(), failure.message);
+         }
+-        documentPicker.select(documentSelectOptions).then((documentSelectResult: Array<string>) => {
+-          if (documentSelectResult == null || documentSelectResult.length == 0) {
+-            this.finishWithError("unknown_activity", "Unknown activity error, please fill an issue.");
+-          }
+-          let anySelectUris: Array<string> = documentSelectResult;
+-          if (this.isMultipleSelection) {
+-            this.handlingMultipleResults(anySelectUris)
+-          } else {
+-            this.handleSingleResult(anySelectUris[0]);
+-          }
+-          if (documentSelectResult == null || documentSelectResult.length == 0) {
+-            this.finishWithError("unknown_activity", "Unknown activity error, please fill an issue.");
+-          }
+-        }).catch((err: BusinessError) => {
+-          console.error('DocumentViewPicker.select failed with err: ' + JSON.stringify(err));
+-        });
+-        break
++        break;
+       }
+     }
+   }
+@@ -273,7 +269,7 @@
+     }
+   }
+ 
+-  saveFinishWithSuccess(data: string) {
++  saveFinishWithSuccess(data: string | null) {
+     this.dispatchEventStatus(false);
+     this.pendingResult?.success(data);
+     this.clearPendingResult();
+@@ -295,57 +291,43 @@
+     this.clearPendingResult();
+   }
+ 
+-  saveFile(fileNameArray: Array<string>, type: string, initialDirectory: string, allowedExtensions: Array<string>,
+-    result: MethodResult) {
++  async saveFile(fileNameArray: Array<string>, initialDirectory: string | null,
++    bytes: Uint8Array, result: MethodResult): Promise<void> {
+     if (!this.setPendingMethodCallAndResult(result)) {
+       this.finishWithAlreadyActiveError(result);
+       return;
+     }
+-    if (initialDirectory == null || initialDirectory.length == 0) {
+-      this.finishWithError("initial Directory为空", "请输入保存文件初始化目录");
++    if (bytes == null) {
++      this.finishWithError("invalid_bytes", "saveFile requires file bytes");
+       return;
+     }
+     try {
+-      if (!fs.accessSync(initialDirectory)) {
+-        this.finishWithError("您输入的文件路径不存在", "请重新输入文件的路径")
++      const options = new picker.DocumentSaveOptions();
++      options.newFileNames = fileNameArray;
++      if (initialDirectory != null && initialDirectory.length > 0) {
++        options.defaultFilePathUri = initialDirectory;
++      }
++      const context = this.ability?.context as common.UIAbilityContext;
++      const destinations = await new picker.DocumentViewPicker(context).save(options);
++      if (destinations.length === 0) {
++        this.saveFinishWithSuccess(null);
+         return;
+       }
++      const target = fs.openSync(destinations[0], fs.OpenMode.WRITE_ONLY | fs.OpenMode.TRUNC);
++      try {
++        const content = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
++        const written = fs.writeSync(target.fd, content);
++        if (written !== bytes.byteLength) {
++          throw new Error('OHOS file export wrote an incomplete file');
++        }
++      } finally {
++        fs.closeSync(target);
++      }
++      this.saveFinishWithSuccess(destinations[0]);
+     } catch (error) {
+-      console.error("访问文件时发生错误:",error)
+-    }
+-    if ((initialDirectory != null && initialDirectory.length != 0)) {
+-      let documentSaveOptions: picker.DocumentSaveOptions | null = null
+-      documentSaveOptions = new picker.DocumentSaveOptions();
+-      documentSaveOptions.defaultFilePathUri = initialDirectory;
+-      if (allowedExtensions) {
+-        documentSaveOptions.fileSuffixChoices = allowedExtensions;
+-      }
+-      let commonContext = this.ability?.context as common.UIAbilityContext;
+-      let documentPicker = new picker.DocumentViewPicker(commonContext);
+-      documentSaveOptions.newFileNames = fileNameArray;
+-      documentSaveOptions.defaultFilePathUri = initialDirectory
+-      documentPicker.save(documentSaveOptions).then((documentSaveResult: Array<string>) => {
+-        this.singSave(initialDirectory, documentSaveResult[0])
+-        let originFileName = FileUtils.getFileName(documentSaveResult[0])
+-        let newFileName = FileUtils.urlDecodeManual(originFileName);
+-        let newSavePath = FileUtils.replaceFileName(documentSaveResult[0], originFileName, newFileName)
+-        this.saveFinishWithSuccess(newSavePath);
+-      }).catch((err: BusinessError) => {
+-        if (err.code == 13900001) {
+-          this.finishWithError(err.code.toString(), err.message + ", 此文件路径无权访问，只接受应用沙箱路径");
+-        } else {
+-          this.finishWithError(err.code.toString(), err.message);
+-        }
+-      });
+-    }
+-  }
+-
+-  singSave(savePath: string, photoSaveResult: string) {
+-    let file = fs.openSync(savePath);
+-    let file2 = fs.openSync(photoSaveResult, fs.OpenMode.READ_WRITE);
+-    fs.copyFileSync(file.fd, file2.fd)
+-    fs.close(file)
+-    fs.close(file2)
++      const failure = error as BusinessError;
++      this.finishWithError(failure.code == null ? 'file_export' : failure.code.toString(), failure.message);
++    }
+   }
+ 
+   finishWithError(errorCode: string, errorMessage: string) {

@@ -1,0 +1,46 @@
+--- a/ohos/src/main/ets/components/plugin/ConnectivityPlusOhosPlugin.ets
++++ b/ohos/src/main/ets/components/plugin/ConnectivityPlusOhosPlugin.ets
+@@ -46,29 +46,35 @@
+ 
+   async onMethodCall(call: MethodCall, result: MethodResult): Promise<void> {
+     if (call.method == "check") {
+-      let netHandle = await connection.getDefaultNetSync();
+-      result.success(await ConnectivityPlusOhosPlugin.getNetBearType(netHandle));
++      try {
++        const netHandle = connection.getDefaultNetSync();
++        result.success(await ConnectivityPlusOhosPlugin.getNetBearType(netHandle));
++      } catch (error) {
++        const failure = error as BusinessError;
++        result.error(failure.code.toString(), failure.message, null);
++      }
+     } else {
+       result.notImplemented()
+     }
+   }
+ 
+ 
+-  static async getNetBearType(netHandle: connection.NetHandle): Promise<string> {
++  static async getNetBearType(netHandle: connection.NetHandle): Promise<string[]> {
++    if (netHandle.netId === 0) return ['none'];
+     let data = await connection.getNetCapabilitiesSync(netHandle);
+     let bearerTypes: Set<connection.NetBearType> = new Set(data.bearerTypes);
+     let bearerTypesNum = Array.from(bearerTypes.values());
+-    let netBearType = 'none';
++    let netBearType: string[] = [];
+     for (let item of bearerTypesNum) {
+       if (item == connection.NetBearType.BEARER_CELLULAR) {
+-        netBearType = 'mobile';
++        netBearType.push('mobile');
+       } else if (item == connection.NetBearType.BEARER_WIFI) {
+-        netBearType = 'wifi';
++        netBearType.push('wifi');
+       } else if (item == connection.NetBearType.BEARER_ETHERNET) {
+-        netBearType = 'ethernet';
++        netBearType.push('ethernet');
+       }
+     }
+-    return netBearType;
++    return netBearType.length > 0 ? netBearType : ['other'];
+   }
+ }
+ 

@@ -1,0 +1,1228 @@
+--- a/lib/src/core/context.dart
++++ b/lib/src/core/context.dart
+@@ -9,7 +9,7 @@
+ class Context {
+   /// Creates a [Context] at [position] in the [buffer].
+   @preferInline
+-  const new(this.buffer, this.position);
++  const Context(this.buffer, this.position);
+ 
+   /// The input buffer being parsed.
+   final String buffer;
+--- a/lib/src/core/exception.dart
++++ b/lib/src/core/exception.dart
+@@ -6,7 +6,7 @@
+ @immutable
+ class ParserException implements FormatException {
+   /// Creates a [ParserException] with the provided [failure].
+-  const new(this.failure);
++  const ParserException(this.failure);
+ 
+   /// The underlying parse failure.
+   final Failure failure;
+--- a/lib/src/core/parser.dart
++++ b/lib/src/core/parser.dart
+@@ -8,7 +8,7 @@
+ @optionalTypeArgs
+ abstract class Parser<R> {
+   /// Creates a [Parser].
+-  new();
++  Parser();
+ 
+   /// Parses the given [context].
+   ///
+--- a/lib/src/core/result.dart
++++ b/lib/src/core/result.dart
+@@ -6,7 +6,7 @@
+ sealed class Result<R> extends Context {
+   /// Creates a [Result] at [position] in the [buffer].
+   @preferInline
+-  const new(super.buffer, super.position);
++  const Result(super.buffer, super.position);
+ 
+   /// The parsed value of this result.
+   ///
+@@ -23,7 +23,7 @@
+ class Success<R> extends Result<R> {
+   /// Creates a [Success] parse result with [value] at [position] in the [buffer].
+   @preferInline
+-  const new(super.buffer, super.position, this.value);
++  const Success(super.buffer, super.position, this.value);
+ 
+   @override
+   final R value;
+@@ -40,7 +40,7 @@
+ class Failure extends Result<Never> {
+   /// Creates a [Failure] parse result with [message] at [position] in the [buffer].
+   @preferInline
+-  const new(super.buffer, super.position, this.message);
++  const Failure(super.buffer, super.position, this.message);
+ 
+   @override
+   Never get value => throw ParserException(this);
+--- a/lib/src/core/token.dart
++++ b/lib/src/core/token.dart
+@@ -16,7 +16,7 @@
+ class Token<R> {
+   /// Constructs a token from the parsed value, the input buffer, and the
+   /// start and stop position in the input buffer.
+-  const new(this.value, this.buffer, this.start, this.stop);
++  const Token(this.value, this.buffer, this.start, this.stop);
+ 
+   /// The parsed value of the token.
+   final R value;
+--- a/lib/src/debug/profile.dart
++++ b/lib/src/debug/profile.dart
+@@ -71,7 +71,7 @@
+ }
+ 
+ class _ProfileFrame extends ProfileFrame {
+-  new(this.parser);
++  _ProfileFrame(this.parser);
+ 
+   final stopwatch = Stopwatch();
+ 
+--- a/lib/src/debug/progress.dart
++++ b/lib/src/debug/progress.dart
+@@ -62,7 +62,7 @@
+ }
+ 
+ class _ProgressFrame extends ProgressFrame {
+-  new(this.parser, this.context);
++  _ProgressFrame(this.parser, this.context);
+ 
+   @override
+   final Parser parser;
+--- a/lib/src/debug/trace.dart
++++ b/lib/src/debug/trace.dart
+@@ -80,7 +80,7 @@
+ }
+ 
+ class _TraceEvent extends TraceEvent {
+-  new(this.parent, this.parser, this.context, [this.result]);
++  _TraceEvent(this.parent, this.parser, this.context, [this.result]);
+ 
+   @override
+   final TraceEvent? parent;
+--- a/lib/src/definition/grammar.dart
++++ b/lib/src/definition/grammar.dart
+@@ -82,7 +82,7 @@
+ /// ```
+ @optionalTypeArgs
+ abstract class GrammarDefinition<R> {
+-  const new();
++  const GrammarDefinition();
+ 
+   /// Returns the starting production of this definition.
+   Parser<R> start();
+--- a/lib/src/definition/internal/reference.dart
++++ b/lib/src/definition/internal/reference.dart
+@@ -8,7 +8,7 @@
+ /// Internal implementation of a reference parser.
+ @immutable
+ class ReferenceParser<R> extends Parser<R> implements ResolvableParser<R> {
+-  new(this.function, this.arguments);
++  ReferenceParser(this.function, this.arguments);
+ 
+   final Function function;
+   final List<dynamic> arguments;
+--- a/lib/src/definition/internal/undefined.dart
++++ b/lib/src/definition/internal/undefined.dart
+@@ -1,5 +1,5 @@
+ class _Undefined {
+-  const new();
++  const _Undefined();
+ }
+ 
+ /// Sentinel object for undefined data.
+--- a/lib/src/expression/group.dart
++++ b/lib/src/expression/group.dart
+@@ -12,7 +12,7 @@
+ /// Models a group of operators of the same precedence.
+ class ExpressionGroup<T> {
+   @internal
+-  new(this._loopback);
++  ExpressionGroup(this._loopback);
+ 
+   /// Loopback parser used to establish the recursive expressions.
+   final Parser<T> _loopback;
+--- a/lib/src/expression/result.dart
++++ b/lib/src/expression/result.dart
+@@ -1,6 +1,6 @@
+ /// Encapsulates a prefix operation.
+ class ExpressionResultPrefix<V, O> {
+-  new(this.operator, this.callback);
++  ExpressionResultPrefix(this.operator, this.callback);
+ 
+   final O operator;
+   final V Function(O operator, V value) callback;
+@@ -10,7 +10,7 @@
+ 
+ /// Encapsulates a postfix operation.
+ class ExpressionResultPostfix<V, O> {
+-  new(this.operator, this.callback);
++  ExpressionResultPostfix(this.operator, this.callback);
+ 
+   final O operator;
+   final V Function(V value, O operator) callback;
+@@ -20,7 +20,7 @@
+ 
+ /// Encapsulates an infix operation.
+ class ExpressionResultInfix<V, O> {
+-  new(this.operator, this.callback);
++  ExpressionResultInfix(this.operator, this.callback);
+ 
+   final O operator;
+   final V Function(V left, O operator, V right) callback;
+--- a/lib/src/indent/indent.dart
++++ b/lib/src/indent/indent.dart
+@@ -26,7 +26,7 @@
+ class Indent {
+   /// Creates an indentation handler with an optional indentation [parser] and
+   /// error [message].
+-  new({Parser<String>? parser, String? message})
++  Indent({Parser<String>? parser, String? message})
+     : parser = parser ?? pattern(' \t'),
+       message = message ?? 'indented expected';
+ 
+--- a/lib/src/matcher/matches/matches_iterable.dart
++++ b/lib/src/matcher/matches/matches_iterable.dart
+@@ -7,7 +7,7 @@
+ 
+ @immutable
+ class MatchesIterable<R> extends IterableBase<R> {
+-  const new(this.parser, this.input, this.start, this.overlapping);
++  const MatchesIterable(this.parser, this.input, this.start, this.overlapping);
+ 
+   final Parser<R> parser;
+   final String input;
+--- a/lib/src/matcher/matches/matches_iterator.dart
++++ b/lib/src/matcher/matches/matches_iterator.dart
+@@ -2,7 +2,7 @@
+ import '../../core/parser.dart';
+ 
+ class MatchesIterator<R> implements Iterator<R> {
+-  new(this.parser, this.input, this.start, this.overlapping);
++  MatchesIterator(this.parser, this.input, this.start, this.overlapping);
+ 
+   final Parser<R> parser;
+   final String input;
+--- a/lib/src/matcher/pattern/parser_match.dart
++++ b/lib/src/matcher/pattern/parser_match.dart
+@@ -4,7 +4,7 @@
+ 
+ @immutable
+ class ParserMatch implements Match {
+-  const new(this.pattern, this.input, this.start, this.end);
++  const ParserMatch(this.pattern, this.input, this.start, this.end);
+ 
+   @override
+   final ParserPattern pattern;
+--- a/lib/src/matcher/pattern/parser_pattern.dart
++++ b/lib/src/matcher/pattern/parser_pattern.dart
+@@ -8,7 +8,7 @@
+ @immutable
+ class ParserPattern implements Pattern {
+   /// Creates a [Pattern] from a [parser].
+-  const new(this.parser);
++  const ParserPattern(this.parser);
+ 
+   /// The underlying parser.
+   final Parser parser;
+--- a/lib/src/matcher/pattern/pattern_iterable.dart
++++ b/lib/src/matcher/pattern/pattern_iterable.dart
+@@ -8,7 +8,7 @@
+ 
+ @immutable
+ class PatternIterable extends IterableBase<ParserMatch> {
+-  const new(this.pattern, this.input, this.start);
++  const PatternIterable(this.pattern, this.input, this.start);
+ 
+   final ParserPattern pattern;
+   final String input;
+--- a/lib/src/matcher/pattern/pattern_iterator.dart
++++ b/lib/src/matcher/pattern/pattern_iterator.dart
+@@ -3,7 +3,7 @@
+ import 'parser_pattern.dart';
+ 
+ class PatternIterator implements Iterator<ParserMatch> {
+-  new(this.pattern, this.parser, this.input, this.start);
++  PatternIterator(this.pattern, this.parser, this.input, this.start);
+ 
+   final ParserPattern pattern;
+   final Parser parser;
+--- a/lib/src/parser/action/cast.dart
++++ b/lib/src/parser/action/cast.dart
+@@ -17,7 +17,7 @@
+ 
+ /// A parser that casts a [Result] to a `Result<R>`.
+ class CastParser<R, S> extends DelegateParser<R, S> {
+-  new(super.delegate);
++  CastParser(super.delegate);
+ 
+   @override
+   Result<S> parseOn(Context context) {
+--- a/lib/src/parser/action/cast_list.dart
++++ b/lib/src/parser/action/cast_list.dart
+@@ -18,7 +18,7 @@
+ 
+ /// A parser that casts a `Result<List>` to a `Result<List<S>>`.
+ class CastListParser<R, S> extends DelegateParser<R, List<S>> {
+-  new(super.delegate);
++  CastListParser(super.delegate);
+ 
+   @override
+   Result<List<S>> parseOn(Context context) {
+--- a/lib/src/parser/action/constant.dart
++++ b/lib/src/parser/action/constant.dart
+@@ -16,7 +16,7 @@
+ 
+ /// A parser that returns a constant value.
+ class ConstantParser<R, S> extends DelegateParser<R, S> {
+-  new(super.delegate, this.value);
++  ConstantParser(super.delegate, this.value);
+ 
+   final S value;
+ 
+--- a/lib/src/parser/action/continuation.dart
++++ b/lib/src/parser/action/continuation.dart
+@@ -42,7 +42,7 @@
+ /// Continuation parser that when activated captures a continuation function
+ /// and passes it together with the current context into the handler.
+ class ContinuationParser<R, S> extends DelegateParser<R, S> {
+-  new(super.delegate, this.handler);
++  ContinuationParser(super.delegate, this.handler);
+ 
+   /// Activation handler of the continuation.
+   final ContinuationHandler<R, S> handler;
+--- a/lib/src/parser/action/flatten.dart
++++ b/lib/src/parser/action/flatten.dart
+@@ -23,7 +23,7 @@
+ /// A parser that discards the result of the delegate and answers the
+ /// sub-string its delegate consumes.
+ class FlattenParser extends DelegateParser<void, String> {
+-  new(super.delegate, [this.message]);
++  FlattenParser(super.delegate, [this.message]);
+ 
+   /// Error message to indicate parse failures with.
+   final String? message;
+--- a/lib/src/parser/action/map.dart
++++ b/lib/src/parser/action/map.dart
+@@ -27,7 +27,7 @@
+ /// A parser that performs a transformation with a given function on the
+ /// successful parse result of the delegate.
+ class MapParser<R, S> extends DelegateParser<R, S> {
+-  new(super.delegate, this.callback, {this.hasSideEffects = false});
++  MapParser(super.delegate, this.callback, {this.hasSideEffects = false});
+ 
+   /// The production action to be called.
+   final Callback<R, S> callback;
+--- a/lib/src/parser/action/permute.dart
++++ b/lib/src/parser/action/permute.dart
+@@ -22,7 +22,7 @@
+ /// A parser that performs a transformation with a given function on the
+ /// successful parse result of the delegate.
+ class PermuteParser<R> extends DelegateParser<List<R>, List<R>> {
+-  new(super.delegate, this.indexes);
++  PermuteParser(super.delegate, this.indexes);
+ 
+   /// Indicates which elements to return from the parsed list.
+   final List<int> indexes;
+--- a/lib/src/parser/action/pick.dart
++++ b/lib/src/parser/action/pick.dart
+@@ -21,7 +21,7 @@
+ /// A parser that performs a transformation with a given function on the
+ /// successful parse result of the delegate.
+ class PickParser<R> extends DelegateParser<List<R>, R> {
+-  new(super.delegate, this.index);
++  PickParser(super.delegate, this.index);
+ 
+   /// Indicates which element to return from the parsed list.
+   final int index;
+--- a/lib/src/parser/action/token.dart
++++ b/lib/src/parser/action/token.dart
+@@ -21,7 +21,7 @@
+ 
+ /// A parser that creates a token of the result its delegate parses.
+ class TokenParser<R> extends DelegateParser<R, Token<R>> {
+-  new(super.delegate);
++  TokenParser(super.delegate);
+ 
+   @override
+   Result<Token<R>> parseOn(Context context) {
+--- a/lib/src/parser/action/trim.dart
++++ b/lib/src/parser/action/trim.dart
+@@ -27,7 +27,7 @@
+ /// its delegate.
+ class TrimmingParser<R> extends DelegateParser<R, R>
+     implements SequentialParser {
+-  new(super.delegate, this.left, this.right);
++  TrimmingParser(super.delegate, this.left, this.right);
+ 
+   /// Parser that consumes input before the delegate.
+   Parser<void> left;
+--- a/lib/src/parser/action/where.dart
++++ b/lib/src/parser/action/where.dart
+@@ -42,7 +42,7 @@
+ 
+ /// A parser that evaluates a predicate on the successful result of its delegate.
+ class WhereParser<R> extends DelegateParser<R, R> {
+-  new(super.parser, this.predicate, this.factory);
++  WhereParser(super.parser, this.predicate, this.factory);
+ 
+   final Predicate<R> predicate;
+   final FailureFactory<R> factory;
+--- a/lib/src/parser/character/predicate/char.dart
++++ b/lib/src/parser/character/predicate/char.dart
+@@ -1,7 +1,7 @@
+ import '../predicate.dart';
+ 
+ class SingleCharPredicate extends CharacterPredicate {
+-  const new(this.charCode);
++  const SingleCharPredicate(this.charCode);
+ 
+   final int charCode;
+ 
+--- a/lib/src/parser/character/predicate/constant.dart
++++ b/lib/src/parser/character/predicate/constant.dart
+@@ -4,7 +4,7 @@
+   static const any = ConstantCharPredicate(true);
+   static const none = ConstantCharPredicate(false);
+ 
+-  const new(this.constant);
++  const ConstantCharPredicate(this.constant);
+ 
+   final bool constant;
+ 
+--- a/lib/src/parser/character/predicate/digit.dart
++++ b/lib/src/parser/character/predicate/digit.dart
+@@ -1,7 +1,7 @@
+ import '../predicate.dart';
+ 
+ class DigitCharPredicate extends CharacterPredicate {
+-  const new();
++  const DigitCharPredicate();
+ 
+   @override
+   bool test(int charCode) => 48 <= charCode && charCode <= 57;
+--- a/lib/src/parser/character/predicate/letter.dart
++++ b/lib/src/parser/character/predicate/letter.dart
+@@ -1,7 +1,7 @@
+ import '../predicate.dart';
+ 
+ class LetterCharPredicate extends CharacterPredicate {
+-  const new();
++  const LetterCharPredicate();
+ 
+   @override
+   bool test(int charCode) =>
+--- a/lib/src/parser/character/predicate/lookup.dart
++++ b/lib/src/parser/character/predicate/lookup.dart
+@@ -7,7 +7,7 @@
+ import 'range.dart';
+ 
+ class LookupCharPredicate extends CharacterPredicate {
+-  new fromRanges(Iterable<RangeCharPredicate> ranges)
++  LookupCharPredicate.fromRanges(Iterable<RangeCharPredicate> ranges)
+     : start = ranges.first.start,
+       stop = ranges.last.stop,
+       bits = Uint32List(size(ranges)) {
+@@ -22,7 +22,7 @@
+     }
+   }
+ 
+-  const new(this.start, this.stop, this.bits);
++  const LookupCharPredicate(this.start, this.stop, this.bits);
+ 
+   final int start;
+   final int stop;
+--- a/lib/src/parser/character/predicate/lowercase.dart
++++ b/lib/src/parser/character/predicate/lowercase.dart
+@@ -1,7 +1,7 @@
+ import '../predicate.dart';
+ 
+ class LowercaseCharPredicate extends CharacterPredicate {
+-  const new();
++  const LowercaseCharPredicate();
+ 
+   @override
+   bool test(int charCode) => 97 <= charCode && charCode <= 122;
+--- a/lib/src/parser/character/predicate/not.dart
++++ b/lib/src/parser/character/predicate/not.dart
+@@ -1,7 +1,7 @@
+ import '../predicate.dart';
+ 
+ class NotCharPredicate extends CharacterPredicate {
+-  const new(this.predicate);
++  const NotCharPredicate(this.predicate);
+ 
+   final CharacterPredicate predicate;
+ 
+--- a/lib/src/parser/character/predicate/range.dart
++++ b/lib/src/parser/character/predicate/range.dart
+@@ -1,7 +1,7 @@
+ import '../predicate.dart';
+ 
+ class RangeCharPredicate extends CharacterPredicate {
+-  const new(this.start, this.stop)
++  const RangeCharPredicate(this.start, this.stop)
+     : assert(start <= stop, 'Invalid range character range: $start-$stop');
+ 
+   final int start;
+--- a/lib/src/parser/character/predicate/ranges.dart
++++ b/lib/src/parser/character/predicate/ranges.dart
+@@ -7,7 +7,7 @@
+ import 'range.dart';
+ 
+ class RangesCharPredicate extends CharacterPredicate {
+-  new fromRanges(Iterable<RangeCharPredicate> ranges)
++  RangesCharPredicate.fromRanges(Iterable<RangeCharPredicate> ranges)
+     : ranges = Uint32List(size(ranges)) {
+     var i = 0;
+     for (final range in ranges) {
+@@ -16,7 +16,7 @@
+     }
+   }
+ 
+-  const new(this.ranges);
++  const RangesCharPredicate(this.ranges);
+ 
+   final Uint32List ranges;
+ 
+--- a/lib/src/parser/character/predicate/uppercase.dart
++++ b/lib/src/parser/character/predicate/uppercase.dart
+@@ -1,7 +1,7 @@
+ import '../predicate.dart';
+ 
+ class UppercaseCharPredicate extends CharacterPredicate {
+-  const new();
++  const UppercaseCharPredicate();
+ 
+   @override
+   bool test(int charCode) => 65 <= charCode && charCode <= 90;
+--- a/lib/src/parser/character/predicate/whitespace.dart
++++ b/lib/src/parser/character/predicate/whitespace.dart
+@@ -1,7 +1,7 @@
+ import '../predicate.dart';
+ 
+ class WhitespaceCharPredicate extends CharacterPredicate {
+-  const new();
++  const WhitespaceCharPredicate();
+ 
+   @override
+   bool test(int charCode) {
+--- a/lib/src/parser/character/predicate/word.dart
++++ b/lib/src/parser/character/predicate/word.dart
+@@ -1,7 +1,7 @@
+ import '../predicate.dart';
+ 
+ class WordCharPredicate extends CharacterPredicate {
+-  const new();
++  const WordCharPredicate();
+ 
+   @override
+   bool test(int charCode) =>
+--- a/lib/src/parser/character/predicate.dart
++++ b/lib/src/parser/character/predicate.dart
+@@ -3,7 +3,7 @@
+ /// Abstract class for character predicates.
+ @immutable
+ abstract class CharacterPredicate {
+-  const new();
++  const CharacterPredicate();
+ 
+   /// Tests if the [charCode] satisfies the predicate.
+   bool test(int charCode);
+--- a/lib/src/parser/combinator/and.dart
++++ b/lib/src/parser/combinator/and.dart
+@@ -20,7 +20,7 @@
+ /// The and-predicate, a parser that succeeds whenever its delegate does, but
+ /// does not consume the input stream.
+ class AndParser<R> extends DelegateParser<R, R> {
+-  new(super.delegate);
++  AndParser(super.delegate);
+ 
+   @override
+   Result<R> parseOn(Context context) {
+--- a/lib/src/parser/combinator/choice.dart
++++ b/lib/src/parser/combinator/choice.dart
+@@ -95,7 +95,7 @@
+ 
+ /// A parser that uses the first parser that succeeds.
+ class ChoiceParser<R> extends ListParser<R, R> {
+-  new(super.children, {FailureJoiner? failureJoiner})
++  ChoiceParser(super.children, {FailureJoiner? failureJoiner})
+     : assert(children.isNotEmpty, 'Choice parser cannot be empty'),
+       failureJoiner = failureJoiner ?? selectLast;
+ 
+--- a/lib/src/parser/combinator/delegate.dart
++++ b/lib/src/parser/combinator/delegate.dart
+@@ -3,7 +3,7 @@
+ /// An abstract parser that delegates to a parser of type [T] and returns a
+ /// result of type [R].
+ abstract class DelegateParser<T, R> extends Parser<R> {
+-  new(this.delegate);
++  DelegateParser(this.delegate);
+ 
+   /// The parser this parser delegates to.
+   Parser<T> delegate;
+--- a/lib/src/parser/combinator/generated/sequence_2.dart
++++ b/lib/src/parser/combinator/generated/sequence_2.dart
+@@ -38,7 +38,7 @@
+ /// 2 positional parse results.
+ class SequenceParser2<R1, R2> extends Parser<(R1, R2)>
+     implements SequentialParser {
+-  new(this.parser1, this.parser2);
++  SequenceParser2(this.parser1, this.parser2);
+ 
+   Parser<R1> parser1;
+   Parser<R2> parser2;
+--- a/lib/src/parser/combinator/generated/sequence_3.dart
++++ b/lib/src/parser/combinator/generated/sequence_3.dart
+@@ -43,7 +43,7 @@
+ /// 3 positional parse results.
+ class SequenceParser3<R1, R2, R3> extends Parser<(R1, R2, R3)>
+     implements SequentialParser {
+-  new(this.parser1, this.parser2, this.parser3);
++  SequenceParser3(this.parser1, this.parser2, this.parser3);
+ 
+   Parser<R1> parser1;
+   Parser<R2> parser2;
+--- a/lib/src/parser/combinator/generated/sequence_4.dart
++++ b/lib/src/parser/combinator/generated/sequence_4.dart
+@@ -44,7 +44,7 @@
+ /// 4 positional parse results.
+ class SequenceParser4<R1, R2, R3, R4> extends Parser<(R1, R2, R3, R4)>
+     implements SequentialParser {
+-  new(this.parser1, this.parser2, this.parser3, this.parser4);
++  SequenceParser4(this.parser1, this.parser2, this.parser3, this.parser4);
+ 
+   Parser<R1> parser1;
+   Parser<R2> parser2;
+--- a/lib/src/parser/combinator/generated/sequence_5.dart
++++ b/lib/src/parser/combinator/generated/sequence_5.dart
+@@ -51,7 +51,7 @@
+ /// 5 positional parse results.
+ class SequenceParser5<R1, R2, R3, R4, R5> extends Parser<(R1, R2, R3, R4, R5)>
+     implements SequentialParser {
+-  new(this.parser1, this.parser2, this.parser3, this.parser4, this.parser5);
++  SequenceParser5(this.parser1, this.parser2, this.parser3, this.parser4, this.parser5);
+ 
+   Parser<R1> parser1;
+   Parser<R2> parser2;
+--- a/lib/src/parser/combinator/generated/sequence_6.dart
++++ b/lib/src/parser/combinator/generated/sequence_6.dart
+@@ -62,7 +62,7 @@
+ class SequenceParser6<R1, R2, R3, R4, R5, R6>
+     extends Parser<(R1, R2, R3, R4, R5, R6)>
+     implements SequentialParser {
+-  new(
++  SequenceParser6(
+     this.parser1,
+     this.parser2,
+     this.parser3,
+--- a/lib/src/parser/combinator/generated/sequence_7.dart
++++ b/lib/src/parser/combinator/generated/sequence_7.dart
+@@ -65,7 +65,7 @@
+ class SequenceParser7<R1, R2, R3, R4, R5, R6, R7>
+     extends Parser<(R1, R2, R3, R4, R5, R6, R7)>
+     implements SequentialParser {
+-  new(
++  SequenceParser7(
+     this.parser1,
+     this.parser2,
+     this.parser3,
+--- a/lib/src/parser/combinator/generated/sequence_8.dart
++++ b/lib/src/parser/combinator/generated/sequence_8.dart
+@@ -77,7 +77,7 @@
+ class SequenceParser8<R1, R2, R3, R4, R5, R6, R7, R8>
+     extends Parser<(R1, R2, R3, R4, R5, R6, R7, R8)>
+     implements SequentialParser {
+-  new(
++  SequenceParser8(
+     this.parser1,
+     this.parser2,
+     this.parser3,
+--- a/lib/src/parser/combinator/generated/sequence_9.dart
++++ b/lib/src/parser/combinator/generated/sequence_9.dart
+@@ -81,7 +81,7 @@
+ class SequenceParser9<R1, R2, R3, R4, R5, R6, R7, R8, R9>
+     extends Parser<(R1, R2, R3, R4, R5, R6, R7, R8, R9)>
+     implements SequentialParser {
+-  new(
++  SequenceParser9(
+     this.parser1,
+     this.parser2,
+     this.parser3,
+--- a/lib/src/parser/combinator/list.dart
++++ b/lib/src/parser/combinator/list.dart
+@@ -2,7 +2,7 @@
+ 
+ /// Abstract parser that parses a list of things in some way.
+ abstract class ListParser<R, S> extends Parser<S> {
+-  new(Iterable<Parser<R>> children)
++  ListParser(Iterable<Parser<R>> children)
+     : children = List<Parser<R>>.of(children, growable: false);
+ 
+   /// The children parsers being delegated to.
+--- a/lib/src/parser/combinator/not.dart
++++ b/lib/src/parser/combinator/not.dart
+@@ -34,7 +34,7 @@
+ /// The not-predicate, a parser that succeeds whenever its delegate does not,
+ /// but consumes no input.
+ class NotParser<R> extends DelegateParser<R, Failure> {
+-  new(super.delegate, this.message);
++  NotParser(super.delegate, this.message);
+ 
+   /// Error message to annotate parse failures with.
+   final String message;
+--- a/lib/src/parser/combinator/optional.dart
++++ b/lib/src/parser/combinator/optional.dart
+@@ -31,7 +31,7 @@
+ 
+ /// A parser that optionally parses its delegate, or answers `null`.
+ class OptionalParser<R> extends DelegateParser<R, R> {
+-  new(super.delegate, this.otherwise);
++  OptionalParser(super.delegate, this.otherwise);
+ 
+   /// The value returned if the [delegate] cannot be parsed.
+   final R otherwise;
+--- a/lib/src/parser/combinator/sequence.dart
++++ b/lib/src/parser/combinator/sequence.dart
+@@ -97,7 +97,7 @@
+ /// A parser that parses a sequence of parsers.
+ class SequenceParser<R> extends ListParser<R, List<R>>
+     implements SequentialParser {
+-  new(super.children);
++  SequenceParser(super.children);
+ 
+   @override
+   @noBoundsChecks
+--- a/lib/src/parser/combinator/settable.dart
++++ b/lib/src/parser/combinator/settable.dart
+@@ -36,7 +36,7 @@
+ /// point in time.
+ class SettableParser<R> extends DelegateParser<R, R>
+     implements ResolvableParser<R> {
+-  new(super.delegate);
++  SettableParser(super.delegate);
+ 
+   /// Sets the receiver to delegate to [parser].
+   void set(Parser<R> parser) => replace(children[0], parser);
+--- a/lib/src/parser/combinator/skip.dart
++++ b/lib/src/parser/combinator/skip.dart
+@@ -25,7 +25,7 @@
+ /// A parser that silently consumes input of another parser before and after
+ /// its delegate.
+ class SkipParser<R> extends DelegateParser<R, R> implements SequentialParser {
+-  new(super.delegate, {required this.before, required this.after});
++  SkipParser(super.delegate, {required this.before, required this.after});
+ 
+   Parser<void> before;
+   Parser<void> after;
+--- a/lib/src/parser/misc/end.dart
++++ b/lib/src/parser/misc/end.dart
+@@ -24,7 +24,7 @@
+ 
+ /// A parser that succeeds at the end of input.
+ class EndOfInputParser extends Parser<void> {
+-  new(this.message);
++  EndOfInputParser(this.message);
+ 
+   /// Error message to annotate parse failures with.
+   final String message;
+--- a/lib/src/parser/misc/epsilon.dart
++++ b/lib/src/parser/misc/epsilon.dart
+@@ -17,7 +17,7 @@
+ 
+ /// A parser that consumes nothing and succeeds.
+ class EpsilonParser<R> extends Parser<R> {
+-  new(this.result);
++  EpsilonParser(this.result);
+ 
+   /// Value to be returned when the parser is activated.
+   final R result;
+--- a/lib/src/parser/misc/failure.dart
++++ b/lib/src/parser/misc/failure.dart
+@@ -13,7 +13,7 @@
+ 
+ /// A parser that consumes nothing and fails.
+ class FailureParser extends Parser<Never> {
+-  new(this.message);
++  FailureParser(this.message);
+ 
+   /// Error message to annotate parse failures with.
+   final String message;
+--- a/lib/src/parser/misc/label.dart
++++ b/lib/src/parser/misc/label.dart
+@@ -19,7 +19,7 @@
+ /// A parser that always defers to its delegate, but that also holds a label
+ /// for debugging purposes.
+ class LabelParser<R> extends DelegateParser<R, R> implements LabeledParser<R> {
+-  new(super.delegate, this.label);
++  LabelParser(super.delegate, this.label);
+ 
+   /// Label of this parser.
+   @override
+--- a/lib/src/parser/misc/newline.dart
++++ b/lib/src/parser/misc/newline.dart
+@@ -14,7 +14,7 @@
+ 
+ /// A parser that consumes newlines platform independently.
+ class NewlineParser extends Parser<String> {
+-  new(this.message);
++  NewlineParser(this.message);
+ 
+   final String message;
+ 
+--- a/lib/src/parser/misc/position.dart
++++ b/lib/src/parser/misc/position.dart
+@@ -13,7 +13,7 @@
+ 
+ /// A parser that reports the current input position.
+ class PositionParser extends Parser<int> {
+-  new();
++  PositionParser();
+ 
+   @override
+   Result<int> parseOn(Context context) => context.success(context.position);
+--- a/lib/src/parser/predicate/character.dart
++++ b/lib/src/parser/predicate/character.dart
+@@ -17,7 +17,7 @@
+   /// By default, the parsers works on UTF-16 code units. If [unicode] is set
+   /// to `true` unicode surrogate pairs are extracted from the input and matched
+   /// against the predicate.
+-  factory(
++  factory CharacterParser(
+     CharacterPredicate predicate,
+     String message, {
+     bool unicode = false,
+@@ -28,7 +28,7 @@
+ 
+   /// Constructs an internal character parser.
+   @internal
+-  new internal(this.predicate, this.message);
++  CharacterParser.internal(this.predicate, this.message);
+ 
+   /// Predicate indicating whether a character can be consumed.
+   final CharacterPredicate predicate;
+--- a/lib/src/parser/predicate/pattern.dart
++++ b/lib/src/parser/predicate/pattern.dart
+@@ -8,7 +8,7 @@
+ /// any implementation of [Pattern], but can lead to very inefficient parsers
+ /// when not used carefully.
+ class PatternParser extends Parser<Match> {
+-  new(this.pattern, this.message);
++  PatternParser(this.pattern, this.message);
+ 
+   /// The [Pattern] matcher this parser uses.
+   final Pattern pattern;
+--- a/lib/src/parser/predicate/predicate.dart
++++ b/lib/src/parser/predicate/predicate.dart
+@@ -17,7 +17,7 @@
+ 
+ /// A parser for a literal satisfying a predicate.
+ class PredicateParser extends Parser<String> {
+-  new(this.length, this.predicate, this.message)
++  PredicateParser(this.length, this.predicate, this.message)
+     : assert(length > 0, 'length must be positive');
+ 
+   /// The length of the input to read.
+--- a/lib/src/parser/predicate/single_character.dart
++++ b/lib/src/parser/predicate/single_character.dart
+@@ -12,13 +12,13 @@
+ class SingleCharacterParser extends CharacterParser {
+   /// Constructs a parser for an individual 16-bit UTF-16 code unit satisfying
+   /// [predicate].
+-  factory(CharacterPredicate predicate, String message) =>
++  factory SingleCharacterParser(CharacterPredicate predicate, String message) =>
+       ConstantCharPredicate.any.isEqualTo(predicate)
+       ? AnySingleCharacterParser.internal(predicate, message)
+       : SingleCharacterParser.internal(predicate, message);
+ 
+   @internal
+-  new internal(super.predicate, super.message) : super.internal();
++  SingleCharacterParser.internal(super.predicate, super.message) : super.internal();
+ 
+   @override
+   @noBoundsChecks
+@@ -46,7 +46,7 @@
+ /// Optimized version of [SingleCharacterParser] that parses any 16-bit UTF-16
+ /// character (including possible surrogate pairs).
+ class AnySingleCharacterParser extends SingleCharacterParser {
+-  new internal(super.predicate, super.message)
++  AnySingleCharacterParser.internal(super.predicate, super.message)
+     : assert(ConstantCharPredicate.any.isEqualTo(predicate)),
+       super.internal();
+ 
+--- a/lib/src/parser/predicate/string.dart
++++ b/lib/src/parser/predicate/string.dart
+@@ -28,7 +28,7 @@
+ 
+ /// A parser for a literal string.
+ class StringParser extends Parser<String> {
+-  new(this.literal, this.message);
++  StringParser(this.literal, this.message);
+ 
+   /// The literal to match.
+   final String literal;
+@@ -64,7 +64,7 @@
+ 
+ /// A parser for a literal string, case-insensitive.
+ class StringIgnoreCaseParser extends StringParser {
+-  new(super.input, super.message);
++  StringIgnoreCaseParser(super.input, super.message);
+ 
+   @override
+   @noBoundsChecks
+--- a/lib/src/parser/predicate/unicode_character.dart
++++ b/lib/src/parser/predicate/unicode_character.dart
+@@ -12,13 +12,13 @@
+ class UnicodeCharacterParser extends CharacterParser {
+   /// Constructs a parser for an individual Unicode code point satisfying
+   /// [predicate].
+-  factory(CharacterPredicate predicate, String message) =>
++  factory UnicodeCharacterParser(CharacterPredicate predicate, String message) =>
+       ConstantCharPredicate.any.isEqualTo(predicate)
+       ? AnyUnicodeCharacterParser.internal(predicate, message)
+       : UnicodeCharacterParser.internal(predicate, message);
+ 
+   @internal
+-  new internal(super.predicate, super.message) : super.internal();
++  UnicodeCharacterParser.internal(super.predicate, super.message) : super.internal();
+ 
+   @override
+   @noBoundsChecks
+@@ -71,7 +71,7 @@
+ /// Optimized version of [UnicodeCharacterParser] that parses any Unicode
+ /// character (including possible surrogate pairs).
+ class AnyUnicodeCharacterParser extends UnicodeCharacterParser {
+-  new internal(super.predicate, super.message)
++  AnyUnicodeCharacterParser.internal(super.predicate, super.message)
+     : assert(ConstantCharPredicate.any.isEqualTo(predicate)),
+       super.internal();
+ 
+--- a/lib/src/parser/repeater/character.dart
++++ b/lib/src/parser/repeater/character.dart
+@@ -83,7 +83,7 @@
+ /// An abstract parser that repeatedly parses between 'min' and 'max' instances
+ /// of its delegate.
+ class RepeatingCharacterParser extends Parser<String> {
+-  new(this.predicate, this.message, this.min, this.max)
++  RepeatingCharacterParser(this.predicate, this.message, this.min, this.max)
+     : assert(0 <= min, 'min must be at least 0, but got $min'),
+       assert(min <= max, 'max must be at least $min, but got $max');
+ 
+--- a/lib/src/parser/repeater/greedy.dart
++++ b/lib/src/parser/repeater/greedy.dart
+@@ -61,7 +61,7 @@
+ /// It aggressively consumes as much input as possible and then backtracks to
+ /// meet the 'limit' condition.
+ class GreedyRepeatingParser<R> extends LimitedRepeatingParser<R> {
+-  new(super.parser, super.limit, super.min, super.max);
++  GreedyRepeatingParser(super.parser, super.limit, super.min, super.max);
+ 
+   @override
+   Result<List<R>> parseOn(Context context) {
+--- a/lib/src/parser/repeater/lazy.dart
++++ b/lib/src/parser/repeater/lazy.dart
+@@ -61,7 +61,7 @@
+ /// It limits its consumption to meet the 'limit' condition as early as
+ /// possible.
+ class LazyRepeatingParser<R> extends LimitedRepeatingParser<R> {
+-  new(super.parser, super.limit, super.min, super.max);
++  LazyRepeatingParser(super.parser, super.limit, super.min, super.max);
+ 
+   @override
+   Result<List<R>> parseOn(Context context) {
+--- a/lib/src/parser/repeater/limited.dart
++++ b/lib/src/parser/repeater/limited.dart
+@@ -8,7 +8,7 @@
+ /// Subclasses provide repeating behavior as typically seen in regular
+ /// expression implementations (non-blind).
+ abstract class LimitedRepeatingParser<R> extends RepeatingParser<R, List<R>> {
+-  new(Parser<R> delegate, this.limit, int min, int max)
++  LimitedRepeatingParser(Parser<R> delegate, this.limit, int min, int max)
+     : super(delegate, min, max);
+ 
+   /// Parser restraining further consumption of the delegate parser.
+--- a/lib/src/parser/repeater/possessive.dart
++++ b/lib/src/parser/repeater/possessive.dart
+@@ -61,7 +61,7 @@
+ /// A greedy parser that repeatedly parses between 'min' and 'max' instances of
+ /// its delegate.
+ class PossessiveRepeatingParser<R> extends RepeatingParser<R, List<R>> {
+-  new(super.parser, super.min, super.max);
++  PossessiveRepeatingParser(super.parser, super.min, super.max);
+ 
+   @override
+   Result<List<R>> parseOn(Context context) {
+--- a/lib/src/parser/repeater/repeating.dart
++++ b/lib/src/parser/repeater/repeating.dart
+@@ -4,7 +4,7 @@
+ /// An abstract parser that repeatedly parses between 'min' and 'max' instances
+ /// of its delegate.
+ abstract class RepeatingParser<T, R> extends DelegateParser<T, R> {
+-  new(super.parser, this.min, this.max)
++  RepeatingParser(super.parser, this.min, this.max)
+     : assert(0 <= min, 'min must be at least 0, but got $min'),
+       assert(min <= max, 'max must be at least $min, but got $max');
+ 
+--- a/lib/src/parser/repeater/separated.dart
++++ b/lib/src/parser/repeater/separated.dart
+@@ -75,7 +75,7 @@
+ class SeparatedRepeatingParser<R, S>
+     extends RepeatingParser<R, SeparatedList<R, S>>
+     implements SequentialParser {
+-  new(super.delegate, this.separator, super.min, super.max);
++  SeparatedRepeatingParser(super.delegate, this.separator, super.min, super.max);
+ 
+   /// Parser consuming input between the repeated elements.
+   Parser<S> separator;
+--- a/lib/src/parser/utils/separated_list.dart
++++ b/lib/src/parser/utils/separated_list.dart
+@@ -2,7 +2,7 @@
+ 
+ /// A list of [elements] and its [separators].
+ class SeparatedList<R, S> {
+-  new(this.elements, this.separators)
++  SeparatedList(this.elements, this.separators)
+     : assert(
+         max(0, elements.length - 1) == separators.length,
+         'Inconsistent number of elements ($elements) and separators ($separators)',
+--- a/lib/src/reflection/analyzer.dart
++++ b/lib/src/reflection/analyzer.dart
+@@ -10,7 +10,7 @@
+ /// Helper to reflect on properties of a grammar.
+ class Analyzer {
+   /// Constructs an analyzer on the parser graph starting at [root].
+-  new(this.root);
++  Analyzer(this.root);
+ 
+   /// The start parser of analysis.
+   final Parser root;
+--- a/lib/src/reflection/internal/linter_rules.dart
++++ b/lib/src/reflection/internal/linter_rules.dart
+@@ -27,7 +27,7 @@
+ import 'utilities.dart';
+ 
+ class CharacterRepeater extends LinterRule {
+-  const new() : super(LinterType.warning, 'Character repeater');
++  const CharacterRepeater() : super(LinterType.warning, 'Character repeater');
+ 
+   @override
+   void run(Analyzer analyzer, Parser parser, LinterCallback callback) {
+@@ -52,7 +52,7 @@
+ }
+ 
+ class DuplicateParser extends LinterRule {
+-  const new() : super(LinterType.info, 'Duplicate parser');
++  const DuplicateParser() : super(LinterType.info, 'Duplicate parser');
+ 
+   @override
+   void run(Analyzer analyzer, Parser parser, LinterCallback callback) {
+@@ -72,7 +72,7 @@
+ }
+ 
+ class LeftRecursion extends LinterRule {
+-  const new() : super(LinterType.error, 'Left recursion');
++  const LeftRecursion() : super(LinterType.error, 'Left recursion');
+ 
+   @override
+   void run(Analyzer analyzer, Parser parser, LinterCallback callback) {
+@@ -92,7 +92,7 @@
+ }
+ 
+ class NestedChoice extends LinterRule {
+-  const new() : super(LinterType.info, 'Nested choice');
++  const NestedChoice() : super(LinterType.info, 'Nested choice');
+ 
+   @override
+   void run(Analyzer analyzer, Parser parser, LinterCallback callback) {
+@@ -116,7 +116,7 @@
+ }
+ 
+ class NullableRepeater extends LinterRule {
+-  const new() : super(LinterType.error, 'Nullable repeater');
++  const NullableRepeater() : super(LinterType.error, 'Nullable repeater');
+ 
+   @override
+   void run(Analyzer analyzer, Parser parser, LinterCallback callback) {
+@@ -139,7 +139,7 @@
+ }
+ 
+ class OverlappingChoice extends LinterRule {
+-  const new() : super(LinterType.info, 'Overlapping choice');
++  const OverlappingChoice() : super(LinterType.info, 'Overlapping choice');
+ 
+   @override
+   void run(Analyzer analyzer, Parser parser, LinterCallback callback) {
+@@ -167,7 +167,7 @@
+ }
+ 
+ class RepeatedChoice extends LinterRule {
+-  const new() : super(LinterType.warning, 'Repeated choice');
++  const RepeatedChoice() : super(LinterType.warning, 'Repeated choice');
+ 
+   @override
+   void run(Analyzer analyzer, Parser parser, LinterCallback callback) {
+@@ -194,7 +194,7 @@
+ }
+ 
+ class UnnecessaryFlatten extends LinterRule {
+-  const new() : super(LinterType.warning, 'Unnecessary flatten');
++  const UnnecessaryFlatten() : super(LinterType.warning, 'Unnecessary flatten');
+ 
+   @override
+   void run(Analyzer analyzer, Parser parser, LinterCallback callback) {
+@@ -220,7 +220,7 @@
+ }
+ 
+ class UnnecessaryResolvable extends LinterRule {
+-  const new() : super(LinterType.warning, 'Unnecessary resolvable');
++  const UnnecessaryResolvable() : super(LinterType.warning, 'Unnecessary resolvable');
+ 
+   @override
+   void run(Analyzer analyzer, Parser parser, LinterCallback callback) {
+@@ -240,7 +240,7 @@
+ }
+ 
+ class UnoptimizedFlatten extends LinterRule {
+-  const new() : super(LinterType.info, 'Unoptimized flatten');
++  const UnoptimizedFlatten() : super(LinterType.info, 'Unoptimized flatten');
+ 
+   @override
+   void run(Analyzer analyzer, Parser parser, LinterCallback callback) {
+@@ -260,7 +260,7 @@
+ }
+ 
+ class UnreachableChoice extends LinterRule {
+-  const new() : super(LinterType.warning, 'Unreachable choice');
++  const UnreachableChoice() : super(LinterType.warning, 'Unreachable choice');
+ 
+   @override
+   void run(Analyzer analyzer, Parser parser, LinterCallback callback) {
+@@ -285,7 +285,7 @@
+ }
+ 
+ class UnresolvedSettable extends LinterRule {
+-  const new() : super(LinterType.error, 'Unresolved settable');
++  const UnresolvedSettable() : super(LinterType.error, 'Unresolved settable');
+ 
+   @override
+   void run(Analyzer analyzer, Parser parser, LinterCallback callback) {
+@@ -304,7 +304,7 @@
+ }
+ 
+ class UnusedResult extends LinterRule {
+-  const new() : super(LinterType.info, 'Unused result');
++  const UnusedResult() : super(LinterType.info, 'Unused result');
+ 
+   @override
+   void run(Analyzer analyzer, Parser parser, LinterCallback callback) {
+--- a/lib/src/reflection/internal/optimize_rules.dart
++++ b/lib/src/reflection/internal/optimize_rules.dart
+@@ -11,7 +11,7 @@
+ import '../optimize.dart';
+ 
+ class CharacterRepeater extends OptimizeRule {
+-  const new();
++  const CharacterRepeater();
+ 
+   @override
+   void run<R>(Analyzer analyzer, Parser<R> parser, ReplaceParser<R> replace) {
+@@ -36,7 +36,7 @@
+ }
+ 
+ class FlattenChoice extends OptimizeRule {
+-  const new();
++  const FlattenChoice();
+ 
+   @override
+   void run<R>(Analyzer analyzer, Parser<R> parser, ReplaceParser<R> replace) {
+@@ -59,7 +59,7 @@
+ }
+ 
+ class RemoveDelegate extends OptimizeRule {
+-  const new();
++  const RemoveDelegate();
+ 
+   @override
+   void run<R>(Analyzer analyzer, Parser<R> parser, ReplaceParser<R> replace) {
+@@ -78,7 +78,7 @@
+ }
+ 
+ class RemoveDuplicate extends OptimizeRule {
+-  const new();
++  const RemoveDuplicate();
+ 
+   @override
+   void run<R>(Analyzer analyzer, Parser<R> parser, ReplaceParser<R> replace) {
+--- a/lib/src/reflection/internal/path.dart
++++ b/lib/src/reflection/internal/path.dart
+@@ -6,7 +6,7 @@
+ /// A continuous path through the parser graph.
+ class ParserPath {
+   /// Constructs a path from a list of parsers and indexes.
+-  new(this.parsers, this.indexes)
++  ParserPath(this.parsers, this.indexes)
+     : assert(parsers.isNotEmpty, 'parsers cannot be empty'),
+       assert(indexes.length == parsers.length - 1, 'indexes wrong size'),
+       assert(
+--- a/lib/src/reflection/iterable.dart
++++ b/lib/src/reflection/iterable.dart
+@@ -16,7 +16,7 @@
+ Iterable<Parser> allParser(Parser root) => _ParserIterable(root);
+ 
+ class _ParserIterable extends Iterable<Parser> {
+-  new(this.root);
++  _ParserIterable(this.root);
+ 
+   final Parser root;
+ 
+@@ -25,7 +25,7 @@
+ }
+ 
+ class _ParserIterator implements Iterator<Parser> {
+-  new(Parser root) : todo = [root], seen = {root};
++  _ParserIterator(Parser root) : todo = [root], seen = {root};
+ 
+   final List<Parser> todo;
+   final Set<Parser> seen;
+--- a/lib/src/reflection/linter.dart
++++ b/lib/src/reflection/linter.dart
+@@ -11,7 +11,7 @@
+ @immutable
+ abstract class LinterRule {
+   /// Constructs a new linter rule.
+-  const new(this.type, this.title);
++  const LinterRule(this.type, this.title);
+ 
+   /// Severity of issues detected by this rule.
+   final LinterType type;
+@@ -32,7 +32,7 @@
+ @immutable
+ class LinterIssue {
+   /// Constructs a new linter issue.
+-  const new(this.rule, this.parser, this.description);
++  const LinterIssue(this.rule, this.parser, this.description);
+ 
+   /// Rule that identified the issue.
+   final LinterRule rule;
+--- a/lib/src/reflection/optimize.dart
++++ b/lib/src/reflection/optimize.dart
+@@ -12,7 +12,7 @@
+ @immutable
+ abstract class OptimizeRule {
+   /// Constructs a new optimization rule.
+-  const new();
++  const OptimizeRule();
+ 
+   /// Executes this rule using the provided [analyzer] on a [parser].
+   void run<R>(Analyzer analyzer, Parser<R> parser, ReplaceParser<R> replace);
+--- a/lib/src/parser/utils/sequential.dart
++++ b/lib/src/parser/utils/sequential.dart
+@@ -1,2 +1,2 @@
+ /// Marker interface of a parser that consumes its children sequentially.
+-abstract class SequentialParser;
++abstract class SequentialParser {}

@@ -1,131 +1,87 @@
-# OHOS Flutter 工具链核查
+# OHOS 工具链验证
 
-核查日期：**2026-10-17（UTC）**。执行环境：Linux x86_64，独立临时 SDK 检出和独立 `PUB_CACHE`。本记录对应应用基线 `849c56b035ac8acf1b4fd677c2c94debe161da8e`，该基线要求 Flutter **3.47.7**、Dart **>=3.13.0**。
+验证日期：2026-10-17 UTC。执行环境：Linux x86_64，独立 Flutter checkout、
+Pub 缓存和构建副本。本轮按照用户最新要求，**只使用官方
+`CPF-Flutter/flutter_flutter:oh-3.44.9-dev`**。上游应用的 `.fvmrc`、SDK 声明
+及原平台构建保持原样，3.44 兼容性只在 OHOS 副本内实现。
 
-## 结论
+## 固定来源与实际执行结果
 
-当前核查到的官方已发布版本及开发分支均未提供满足应用要求的现成 OHOS 工具链。维护者的个人工作仓已有基于 Flutter 3.47.7 的分支，但该分支默认下载的 OHOS Dart SDK 实际为 **3.12.2**，连 `flutter_tools` 自身的依赖解析也未通过。因此，不能把该分支认定为可直接构建本应用的 SDK。
-
-当前适配分支可以继续整理新增的 OHOS 工程、平台依赖与隔离构建入口；完整应用编译和运行验收仍受下述工具链条件约束。应用的 Dart/Flutter 约束和已有组件实现应保持原样。
-
-## 1. 官方仓库与版本证据
-
-官方仓库已迁移至 [CPF-Flutter/flutter_flutter](https://gitcode.com/CPF-Flutter/flutter_flutter)。核查旧地址 `openharmony-sig/flutter_flutter` 与新地址的 Git refs 时，相关提交一致；后续配置应采用新地址。
-
-使用公开 Git 接口取得的相关 refs 如下：
-
-| 来源 | ref | 提交 | 核查含义 |
-| --- | --- | --- | --- |
-| 官方仓库 | `oh-3.41.9-release` / `3.41.9+ohos-1.0.2` | `62357a93d653bf844f730bb1f4b7cc9e2139d14e` | 当前 README 列出的最新稳定系列 |
-| 官方仓库 | `oh-3.44.9-dev` | `3ffe70c6280cc6ddf613bffa59dd70611f238f7e` | 核查时最高的官方 Flutter 开发版本 |
-| 官方仓库 | `3.44.9+ohos-0.0.1-canary1` | `39285df71a97ffe0c23241dcc459d997a9d8b7c6` | 3.44 系列的 canary 标签 |
-
-官方全部 heads/tags 中未发现 3.47 ref。官方 README 的版本规划将 Flutter OH 3.47 排在 **2026 年 12 月**，并明确说明时间为预估；该计划不能代替已发布工具链。
-
-复核命令：
-
-```bash
-git ls-remote --heads --tags https://gitcode.com/CPF-Flutter/flutter_flutter.git
-```
-
-官方 3.44 分支源码的 README 将其基线标记为 Flutter 3.44.9。PiliPlusX 参考分支固定的 `aa76d9bbeee7806a87dbd202d2550dfd11550b82` 也属于 Flutter 3.44.9 / Dart 3.12.2 路线。其降低应用 SDK 约束、调整依赖和回移组件 API 的做法未作为本次适配的工具链解决方案。
-
-## 2. 个人 3.47.7 工作分支的实际验证
-
-发现的候选为 [zhong_ning/flutter_flutter_344t347](https://gitcode.com/zhong_ning/flutter_flutter_344t347)，属于维护者个人工作仓，未作为官方稳定 SDK 发布。
-
-| 项目 | 核查值 |
+| 项目 | 本轮固定或实际读到的值 |
 | --- | --- |
-| 分支 | `oh-3.47.7-dev` |
-| 检出提交 | `08a1121fbe49c37db3dbdc2611a73195ab8204de` |
-| 提交时间 | `2026-10-16T20:05:19+08:00` |
-| README 声明的 Flutter 基线 | 3.47.7 |
-| Flutter 上游基线提交 | `abaf9c523780a608bd46686fd5e53740a07077f8`，与官方 `3.47.7` tag 对应 |
-| `bin/internal/engine.version` | `deb287481e3ce9468f3434937ced4240a70539ca` |
-| `bin/internal/engine.ohos.version` | `10a8d012d86cd7ee13e0acc859fea796c8a01764` |
-| 下载得到的 Dart SDK 版本 | **3.12.2 stable** |
-| 下载得到的 Dart SDK revision | `e7da8dddd3b32b81a1d83cebbb9109ea3f01fca5` |
+| 官方仓库 | `https://gitcode.com/CPF-Flutter/flutter_flutter.git` |
+| 分支 | `oh-3.44.9-dev` |
+| 固定提交 | `3ffe70c6280cc6ddf613bffa59dd70611f238f7e` |
+| 官方版本 tag | `3.44.9+ohos-0.0.1-canary1` |
+| tag 指向 | `39285df71a97ffe0c23241dcc459d997a9d8b7c6` |
+| Flutter 实际版本 | `3.44.9+ohos-0.0.1-canary1` |
+| Dart 实际版本 | `3.12.2` |
+| 主机 engine | `5a2a6a42cce67f965cf540fcecf616faca624aa1` |
+| OHOS engine | `24497d6833225b0445953e1dd05dc6538c16a8dd` |
+| HarmonyOS command line tools | `26.0.0.621` |
+| 随 command line tools 提供的 SDK | `26.0.0.32`，API 26 Beta2 |
+| Java | OpenJDK 17 |
+| 本轮编译目标 | OHOS arm64，release，unsigned |
 
-### 下载可用性
+来源：[官方指定分支](https://gitcode.com/CPF-Flutter/flutter_flutter/tree/oh-3.44.9-dev)、
+[SDK 固定配置](../../tool/ohos/sdk_compat/manifest.json)、
+[PiliPlusX 的原生工具配置](https://github.com/Goodwu/PiliPlusX/blob/997244ba9dfe8177f600c3a85b89d7cf7f112608/.github/workflows/ohos.yml)、
+[固定的 setup-ohos 脚本](https://github.com/ErBWs/setup-ohos/blob/5c8e74d05fc9888a387b6154ba06d0cd9ede3da1/setup.sh)、
+[原生 SDK 发布归档](https://github.com/ErBWs/ohos-sdk/releases/tag/26.0.0.621)。
+原生 SDK 两个 Linux 归档分片均按该发布的 SHA-256 核对后解压。
 
-按该分支 `update_dart_sdk.sh` 和缓存下载代码配置的路径，以以下地址为前缀核查产物：
+## 官方 SDK 准备方式
 
-```text
-https://flutter-ohos.obs.cn-south-1.myhuaweicloud.com/flutter_infra_release/flutter/10a8d012d86cd7ee13e0acc859fea796c8a01764/
+`tool/ohos/prepare_sdk.py` 从官方仓库获取固定提交、真实 tag 及其祖先历史，
+由 Flutter 自身计算版本，随后下载和实际执行 Dart/Flutter 工具。不制造 Git
+标签、不把旧 Dart 标为新版本、不使用其他维护者的 3.47 工作仓。
+
+上游仍要求 Flutter 3.47.7 / Dart >=3.13.0。用户指定 3.44 后，生成副本改为
+Flutter >=3.44.0 <3.45.0 / Dart >=3.12.0 <4.0.0；这个声明调整只有配合实际
+源码兼容补丁、Pub 解析和编译才有意义。原包名 `PiliPlus` 已通过该 SDK 的
+Pub 实测，无需批量小写化导入。
+
+## 上游 Flutter 补丁
+
+保留原 `lib/scripts/patch.ps1` 的默认 22 项补丁语义：19 项原样使用，3 项针对
+3.44/OHOS 的上下文精确回移。涉及的 35 个 SDK 文件固定应用前、应用后摘要。
+脚本通过临时 Git index 预检整条补丁链，然后才改变独立 SDK；原上游补丁文件
+全部只读。详情及回移原因见 [SDK 补丁说明](../../tool/ohos/sdk_compat/README.md)。
+
+已实际验证：
+
+- 准备后的 Flutter 核心库可编译。
+- 4 项 Flutter 控件测试通过：WidgetSpan 原文/偏移映射、OHOS PageView 翻页、
+  TabBarView 手势传递与切页、OHOS 富文本全选保留 WidgetSpan 原文。
+- 重复准备和 `--check` 复验通过。
+- 在隔离工作树中故意破坏最后一个补丁，前面的补丁不会落到实际 SDK 或 Git index。
+- `ohos.py doctor` 检查固定仓库、提交、实际 Flutter/Dart 版本及 HAP 命令，通过。
+
+## 原生宿主构建验证
+
+本轮使用本分支的 OHOS 工程、`PiliPlusPlatformPlugin` 和最小 Flutter 入口
+单独编译宿主。首次 ArkTS 编译发现 SDK 的 `getPlugins()` 返回可空类型，
+已在 `EntryAbility` 明确检查注册表，再注册本地插件。
+
+修复后 `flutter build hap --release --no-codesign --no-pub` 成功，产物约
+19.4 MB，包含 arm64 的 `libapp.so` 和 `libflutter.so`。这证明原生工程、
+后台化通道及 HarmonyOS 构建工具组合能够完成编译。
+
+**宿主夹具使用最小入口，不能作为完整 PiliPlus 已构建、已启动的证据。**
+完整应用的当前解析、编译和设备验证状态记录在 [适配首页](README.md)。
+
+## 复验
+
+```sh
+python3 tool/ohos/prepare_sdk.py \
+  --flutter-root /path/to/dedicated-flutter-ohos \
+  --pub-cache /path/to/dedicated-ohos-pub-cache
+python3 tool/ohos/prepare_sdk.py \
+  --flutter-root /path/to/dedicated-flutter-ohos \
+  --pub-cache /path/to/dedicated-ohos-pub-cache --check
+python3 tool/ohos/ohos.py doctor \
+  --flutter /path/to/dedicated-flutter-ohos/bin/flutter
 ```
 
-以下文件的 HTTP HEAD 均返回 200，服务端报告的修改日期均为 2026-09-03：
-
-- `dart-sdk-linux-x64.zip`
-- `sky_engine.zip`
-- `flutter_patched_sdk.zip`
-- `flutter_patched_sdk_product.zip`
-- `ohos-arm64/artifacts.zip`
-- `ohos-arm64-release/artifacts.zip`
-- `ohos-arm64-release/linux-x64.zip`
-
-这些结果只证明配置指向的文件可以下载。其中仅 Linux Dart SDK 被实际下载和执行；其余文件未进行本地解包或二进制兼容性验证。
-
-### 实际执行结果
-
-在独立临时目录中检出该提交，并使用独立 `PUB_CACHE` 执行：
-
-```bash
-CI=true FLUTTER_SUPPRESS_ANALYTICS=true \
-  PUB_CACHE=/path/to/isolated-pub-cache \
-  /path/to/isolated-flutter-ohos/bin/flutter --version --machine
-
-/path/to/isolated-flutter-ohos/bin/cache/dart-sdk/bin/dart --version
-```
-
-直接执行已下载 Dart 二进制得到：
-
-```text
-Dart SDK version: 3.12.2 (stable) (Tue Aug 11 09:49:18 2026 +0800) on "linux_x64"
-```
-
-`flutter --version --machine` 在构建 Flutter 工具时停止于依赖求解，核心错误为：
-
-```text
-The current Dart SDK version is 3.12.2.
-
-Because flutter_tools depends on dwds >=27.1.2 which requires SDK version
->=3.13.0-107.0.dev <4.0.0, version solving failed.
-```
-
-该提交的 `packages/flutter_tools/pubspec.yaml` 固定 `dwds: 27.1.2`。在明确复现错误后停止了脚本自身的重复尝试，没有调整依赖、替换 Dart 二进制或修改缓存里的版本字段。
-
-据此，本次没有取得成功执行的 Flutter CLI 版本 JSON，没有执行应用的 `pub get`、HAP 构建或设备运行。可下载的旧产物不能证明候选工具链与 Flutter 3.47.7/Dart 3.13 兼容。
-
-## 3. PiliPlus 原有 Flutter SDK 补丁
-
-主线 `lib/scripts/patch.ps1` 的默认分支包含 **22 个 Flutter SDK 补丁**。应用依赖这些补丁公开的接口及既有行为，采用同一个 Flutter 版本仍需核查全部补丁。
-
-在候选 `08a1121fbe49c37db3dbdc2611a73195ab8204de` 的另一个临时 worktree 中，读取原脚本的默认补丁数组，按原顺序逐个运行 `git apply --check`，检查成功后应用该补丁。为收集诊断，检查失败后继续检查后面的补丁；没有执行原 PowerShell 脚本中的全局 Git 配置、重置或公共缓存操作。
-
-结果为 **19 个可应用、3 个发生上下文冲突**：
-
-| 原有补丁 | 首个报告冲突的位置 | 已核查的原因 |
-| --- | --- | --- |
-| `text_selection.patch` | `packages/flutter/lib/src/widgets/text_selection.dart`，补丁原始 hunk 起点 3693 | OHOS SDK 在 `defaultTargetPlatform` 分支中新增了 `TargetPlatform.ohos`，原补丁要求的上下文不再连续 |
-| `selectable_region.patch` | `packages/flutter/lib/src/widgets/selectable_region.dart`，补丁原始 hunk 起点 604 | `_getEffectiveConsecutiveTapCount` 的平台分支包含额外的 `TargetPlatform.ohos`，原补丁要替换的代码块与 SDK 不一致 |
-| `scrollable_gesture.patch` | `packages/flutter/lib/src/widgets/page_view.dart`，补丁原始 hunk 起点 11 | OHOS 候选源码在 `rendering.dart` 与 `basic.dart` 两个 import 之间缺少原补丁上下文中的空行 |
-
-这里的 19 个成功只表示相应文本补丁能够应用。完整原流程会在第 2 个补丁失败处停止；本次诊断没有证明完整补丁集可编译，也没有对冲突补丁完成所有 hunk 的最终合并。
-
-后续应通过**新增的 OHOS SDK 补丁或受校验的适配步骤**对齐这些上下文，并保持 PiliPlus 原补丁的功能语义。每个适配步骤应校验预期源码或摘要，源码漂移时明确失败，再按完整原顺序应用并编译验证。
-
-`patch.ps1` 后续还会处理 `material_ui` 的 **8 个默认补丁**。本次因 Flutter CLI 不能启动，尚未执行应用依赖解析及这些包级补丁的验证；它们不包含在上面的 22 个统计中。
-
-## 4. 工具链验收条件
-
-继续推进完整应用编译前，应满足以下条件并记录证据：
-
-1. **固定可复现的 SDK 来源与提交。** 明确官方发布或审核过的工作分支来源，同时保存对应的 Flutter、Dart 和 OHOS engine revision。
-2. **真实版本满足主线。** `flutter --version --machine` 能成功执行并报告与主线一致的 Flutter 3.47.7 版本；直接执行宿主 Dart 二进制，确认其满足 `>=3.13.0`。不通过改缓存、造标签或放宽应用约束来代替兼容性。
-3. **宿主与目标产物配套。** 宿主 Dart、前端编译器、`sky_engine`、patched SDK、`gen_snapshot` 与目标 OHOS engine 应来自可验证的同一套构建关系，Dart 3.13 运行时和快照格式兼容。用一个较新的宿主 Dart 启动工具，不能单独证明旧 OHOS 目标 engine 可运行生成结果。
-4. **CLI 与平台构建链可用。** OHOS 平台被工具识别，`flutter build hap --help` 可用，平台 SDK/Hvigor 环境检查通过。
-5. **保留完整应用的 SDK 行为。** 22 个 Flutter SDK 补丁及所需包级补丁完成显式适配、顺序应用与编译验证；不跳过失败补丁，不使用精简入口代替 `lib/main.dart`。
-6. **再验证实际依赖和运行。** 在隔离目录中解析完整依赖、构建 HAP，并开展基础启动及现有功能的设备验证。工具链通过验收仍不能代替插件兼容性和设备验收。
-
-当前状态：**工具链未通过验收，未构建 HAP。** 本记录作为后续选择 SDK 和复查阻塞的依据。
+SDK 验证夹具在 `tool/ohos/sdk_compat/validation`，需使用同一 SDK 解析其独立
+依赖后运行 `flutter test`。不要在开发源目录运行会改写原锁文件的 OHOS Pub。

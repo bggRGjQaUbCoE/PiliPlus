@@ -1,0 +1,117 @@
+--- a/lib/pages/blacklist/view.dart
++++ b/lib/pages/blacklist/view.dart
+@@ -27,13 +27,13 @@
+   online('在线'),
+   ;
+ 
+   @override
+   final String label;
+ 
+-  _BlockType(this.label);
++  const _BlockType(this.label);
+ }
+ 
+ class BlackListPage extends StatefulWidget {
+   const BlackListPage({super.key});
+ 
+   @override
+--- a/lib/pages/common/publish/common_publish_page.dart
++++ b/lib/pages/common/publish/common_publish_page.dart
+@@ -163,13 +163,13 @@
+       updatePanelTypeFunc();
+     }
+   }
+ 
+   Future<void> hidePanel([_]) async {
+     if (focusNode.hasFocus) {
+-      await Future.pause(const Duration(milliseconds: 100));
++      await Future<void>.delayed(const Duration(milliseconds: 100));
+       if (!mounted) return;
+       focusNode.unfocus();
+     }
+     updateInputView(isReadOnly: false);
+     if (ChatBottomPanelType.none == controller.currentPanelType) return;
+     controller.updatePanelType(ChatBottomPanelType.none);
+--- a/lib/pages/episode_panel/view.dart
++++ b/lib/pages/episode_panel/view.dart
+@@ -679,13 +679,13 @@
+           tooltip: '跳至当前',
+           icon: const Icon(Icons.my_location),
+           onPressed: () async {
+             final currentTabIndex = _currentTabIndex.value;
+             if (currentTabIndex != widget.initialTabIndex) {
+               _tabController.animateTo(widget.initialTabIndex);
+-              await Future.pause(const Duration(milliseconds: 225));
++              await Future<void>.delayed(const Duration(milliseconds: 225));
+             }
+             _itemScrollController[widget.initialTabIndex].animTo(
+               _calcItemOffset(_currentItemIndex),
+               duration: const Duration(milliseconds: 200),
+             );
+           },
+--- a/lib/pages/live_room/superchat/superchat_card.dart
++++ b/lib/pages/live_room/superchat/superchat_card.dart
+@@ -343,13 +343,13 @@
+     Material(
+       type: .transparency,
+       child: _build(item: item),
+     ),
+     constraints: const BoxConstraints(maxWidth: 400),
+     pixelRatio: 3,
+-    future: Future.pause, // wait for asset async loaded
++    future: () => Future<void>.delayed(Duration.zero), // wait for asset async loaded
+   );
+   final bytes = await image.toByteData(format: .png);
+   image.dispose();
+   final picName =
+       'Bili_SuperChat_${item.roomid}_${item.userInfo.uname}_￥${item.price}_${item.id}';
+   ImageUtils.saveByteImg(
+--- a/lib/utils/reply_utils.dart
++++ b/lib/utils/reply_utils.dart
+@@ -92,13 +92,13 @@
+       }
+       return;
+     }
+ 
+     // CommAntifraud
+     if (!isManual) {
+-      await Future.pause(const Duration(seconds: 8));
++      await Future<void>.delayed(const Duration(seconds: 8));
+     }
+     void showReplyCheckResult(String message, {bool isBan = false}) {
+       showDialog(
+         context: Get.context!,
+         barrierDismissible: isManual,
+         builder: (context) {
+--- a/lib/utils/request_utils.dart
++++ b/lib/utils/request_utils.dart
+@@ -294,13 +294,13 @@
+   //   }
+   // }
+ 
+   static Future<void> insertCreatedDyn(dynamic id) async {
+     if (id != null) {
+       try {
+-        await Future.pause(const Duration(milliseconds: 450));
++        await Future<void>.delayed(const Duration(milliseconds: 450));
+         final res = await DynamicsHttp.dynamicDetail(id: id);
+         if (res case final Success<DynamicItemModel> e) {
+           final ctr = Get.find<DynamicsTabController>(tag: 'all');
+           if (ctr.loadingState.value case Success(:final response?)) {
+             response.insert(0, e.response);
+             ctr.loadingState.refresh();
+@@ -320,13 +320,13 @@
+     bool isManual = false,
+   }) async {
+     if (isManual || Pref.enableCreateDynAntifraud) {
+       try {
+         if (id != null) {
+           if (!isManual) {
+-            await Future.pause(const Duration(seconds: 5));
++            await Future<void>.delayed(const Duration(seconds: 5));
+           }
+           final res = await DynamicsHttp.dynamicDetail(
+             id: id,
+             clearCookie: true,
+           );
+           final isSuccess = res.isSuccess;

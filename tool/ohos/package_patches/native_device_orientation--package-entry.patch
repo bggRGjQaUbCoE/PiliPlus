@@ -1,0 +1,11 @@
+--- a/ohos/oh-package.json5
++++ b/ohos/oh-package.json5
+@@ -2,7 +2,7 @@
+   "name": "native_device_orientation",
+   "version": "1.0.0",
+   "description": "Please describe the basic information.",
+-  "main": "Index.ets",
++  "main": "index.ets",
+   "author": "",
+   "license": "Apache-2.0",
+   "dependencies": {

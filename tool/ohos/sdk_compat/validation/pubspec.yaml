@@ -1,0 +1,11 @@
+name: piliplus_ohos_sdk_validation
+publish_to: none
+environment:
+  sdk: '>=3.12.0 <4.0.0'
+  flutter: '>=3.44.0 <3.45.0'
+dependencies:
+  flutter:
+    sdk: flutter
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

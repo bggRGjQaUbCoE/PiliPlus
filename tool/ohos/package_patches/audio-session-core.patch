@@ -1,0 +1,230 @@
+--- a/lib/src/core.dart
++++ b/lib/src/core.dart
+@@ -1,3 +1,17 @@
++/*
++ * Copyright (c) 2025 Hunan OpenValley Digital Industry Development Co., Ltd.
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *  http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
+ import 'dart:async';
+ import 'dart:io';
+ 
+@@ -8,6 +22,7 @@
+ 
+ import 'android.dart';
+ import 'darwin.dart';
++import 'ohos.dart';
+ 
+ /// Manages a single audio session to be used across different audio plugins in
+ /// your app. [AudioSession] will configure your app by describing to the operating
+@@ -47,6 +62,10 @@
+   final _androidAudioManager =
+       !kIsWeb && Platform.isAndroid ? AndroidAudioManager() : null;
+   final _avAudioSession = !kIsWeb && Platform.isIOS ? AVAudioSession() : null;
++  final _ohosAudionManager =
++      !kIsWeb && defaultTargetPlatform == TargetPlatform.ohos
++          ? OhosAudioManager()
++          : null;
+   AudioSessionConfiguration? _configuration;
+   final _configurationSubject = BehaviorSubject<AudioSessionConfiguration>();
+   final _interruptionEventSubject = PublishSubject<AudioInterruptionEvent>();
+@@ -147,6 +166,24 @@
+         _devicesSubject.add(await getDevices());
+       }
+     });
++    _ohosAudionManager?.setAudioDevicesAddedListener((devices) async {
++      _devicesChangedEventSubject.add(AudioDevicesChangedEvent(
++        devicesAdded: devices.map(_ohosDevice2device).toSet(),
++        devicesRemoved: {},
++      ));
++      if (_devicesSubject.hasListener) {
++        _devicesSubject.add(await getDevices());
++      }
++    });
++    _ohosAudionManager?.setAudioDevicesRemovedListener((devices) async {
++      _devicesChangedEventSubject.add(AudioDevicesChangedEvent(
++        devicesAdded: {},
++        devicesRemoved: devices.map(_ohosDevice2device).toSet(),
++      ));
++      if (_devicesSubject.hasListener) {
++        _devicesSubject.add(await getDevices());
++      }
++    });
+     _channel.setMethodCallHandler((MethodCall call) async {
+       final args = call.arguments as List<dynamic>?;
+       switch (call.method) {
+@@ -228,6 +265,8 @@
+     bool? androidWillPauseWhenDucked,
+     AudioSessionConfiguration fallbackConfiguration =
+         const AudioSessionConfiguration.music(),
++    OhosAudioAttributes? ohosAudioAttributes,
++    AudioConcurrencyMode? ohosAudioConcurrencyMode,
+   }) async {
+     final configuration = _configuration ?? fallbackConfiguration;
+     if (!isConfigured) {
+@@ -290,6 +329,29 @@
+         final success = await _androidAudioManager!.abandonAudioFocus();
+         return success;
+       }
++    } else if (!kIsWeb && defaultTargetPlatform == TargetPlatform.ohos) {
++      AudioConcurrencyMode concurrencyMode = ohosAudioConcurrencyMode ??
++          AudioConcurrencyMode.concurrencyPauseOthers;
++      await _ohosAudionManager!
++          .setActive(active, concurrencyMode: concurrencyMode);
++      final success = await _ohosAudionManager!.setInterruptionEventListener(
++          OhosInterruptListernerRequest(
++              audioAttributes:
++                  ohosAudioAttributes ?? configuration.ohosAudioAttributes,
++              onAudioFocusChanged: (reason) {
++                switch (reason) {
++                  case AudioSessionDeactivatedReason.deactivatedLowerPriority:
++                    _interruptionEventSubject.add(AudioInterruptionEvent(
++                        true, AudioInterruptionType.pause));
++                    break;
++                  case AudioSessionDeactivatedReason.deactivatedTimeout:
++                    _interruptionEventSubject.add(AudioInterruptionEvent(
++                        false, AudioInterruptionType.unknown));
++                    break;
++                }
++              },
++              isOnListener: active));
++      return success;
+     }
+     return true;
+   }
+@@ -328,6 +390,12 @@
+               outputPorts: currentRoute.outputs,
+             )));
+       }
++    } else if (_ohosAudionManager != null) {
++      var flags = DevicesFlags.noneDevicesFlag;
++      if (includeInputs) flags |= DevicesFlags.inputDevicesFlag;
++      if (includeOutputs) flags |= DevicesFlags.outputDevicesFlag;
++      final ohosDevices = await _ohosAudionManager!.getDevices(flags);
++      devices.addAll(ohosDevices.map(_ohosDevice2device).toSet());
+     }
+     return devices;
+   }
+@@ -462,6 +530,41 @@
+       type: _androidType2type(device.type),
+     );
+   }
++
++  static AudioDeviceType _ohosType2type(DeviceType type) {
++    switch (type) {
++      case DeviceType.invalid:
++        return AudioDeviceType.unknown;
++      case DeviceType.earpiece:
++        return AudioDeviceType.builtInEarpiece;
++      case DeviceType.speaker:
++        return AudioDeviceType.builtInSpeaker;
++      case DeviceType.wiredHeadset:
++        return AudioDeviceType.wiredHeadset;
++      case DeviceType.wiredHeadphones:
++        return AudioDeviceType.wiredHeadphones;
++      case DeviceType.bluetoothSco:
++        return AudioDeviceType.bluetoothSco;
++      case DeviceType.bluetoothA2dp:
++        return AudioDeviceType.bluetoothA2dp;
++      case DeviceType.mic:
++        return AudioDeviceType.builtInMic;
++      case DeviceType.usbHeadset:
++        return AudioDeviceType.usbAudio;
++      case DeviceType.defaultDevice:
++        return AudioDeviceType.builtInSpeaker;
++    }
++  }
++
++  static AudioDevice _ohosDevice2device(OhosAudioDeviceDescriptor device) {
++    return AudioDevice(
++      id: device.id.toString(),
++      name: device.displayName,
++      isInput: device.deviceRole == DeviceRole.inputDevice,
++      isOutput: device.deviceRole == DeviceRole.outputDevice,
++      type: _ohosType2type(device.deviceType),
++    );
++  }
+ }
+ 
+ /// A configuration for [AudioSession] describing what type of audio your app
+@@ -482,6 +585,7 @@
+   final AndroidAudioAttributes? androidAudioAttributes;
+   final AndroidAudioFocusGainType androidAudioFocusGainType;
+   final bool? androidWillPauseWhenDucked;
++  final OhosAudioAttributes? ohosAudioAttributes;
+ 
+   /// Creates an audio session configuration from scratch.
+   ///
+@@ -507,6 +611,7 @@
+     this.androidAudioAttributes,
+     this.androidAudioFocusGainType = AndroidAudioFocusGainType.gain,
+     this.androidWillPauseWhenDucked,
++    this.ohosAudioAttributes,
+   });
+ 
+   AudioSessionConfiguration.fromJson(Map<String, dynamic> data)
+@@ -542,6 +647,11 @@
+               .values[data['androidAudioFocusGainType']]!,
+           androidWillPauseWhenDucked:
+               data['androidWillPauseWhenDucked'] as bool?,
++          ohosAudioAttributes: data['ohosAudioAttributes'] == null
++              ? null
++              : OhosAudioAttributes.fromJson(
++                  (data['ohosAudioAttributes'] as Map<dynamic, dynamic>)
++                      .cast<String, dynamic>()),
+         );
+ 
+   /// A recipe for creating an audio configuration for a music player.
+@@ -554,6 +664,9 @@
+             usage: AndroidAudioUsage.media,
+           ),
+           androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
++          ohosAudioAttributes: const OhosAudioAttributes(
++            streamUsage: StreamUsage.music,
++          ),
+         );
+ 
+   /// A recipe for creating an audio configuration for an app that
+@@ -568,6 +681,9 @@
+           ),
+           androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+           androidWillPauseWhenDucked: true,
++          ohosAudioAttributes: const OhosAudioAttributes(
++            streamUsage: StreamUsage.audioBook,
++          ),
+         );
+ 
+   /// Creates a copy of this configuration with the given fields replaced by
+@@ -581,6 +697,7 @@
+     AndroidAudioAttributes? androidAudioAttributes,
+     AndroidAudioFocusGainType? androidAudioFocusGainType,
+     bool? androidWillPauseWhenDucked,
++    OhosAudioAttributes? ohosAudioAttributes,
+   }) =>
+       AudioSessionConfiguration(
+         avAudioSessionCategory:
+@@ -598,6 +715,7 @@
+             androidAudioFocusGainType ?? this.androidAudioFocusGainType,
+         androidWillPauseWhenDucked:
+             androidWillPauseWhenDucked ?? this.androidWillPauseWhenDucked,
++        ohosAudioAttributes: ohosAudioAttributes ?? this.ohosAudioAttributes,
+       );
+ 
+   // Converts this instance to JSON.
+@@ -611,6 +729,7 @@
+         'androidAudioAttributes': androidAudioAttributes?.toJson(),
+         'androidAudioFocusGainType': androidAudioFocusGainType.index,
+         'androidWillPauseWhenDucked': androidWillPauseWhenDucked,
++        'ohosAudioAttributes': ohosAudioAttributes?.toJson(),
+       };
+ }
+ 

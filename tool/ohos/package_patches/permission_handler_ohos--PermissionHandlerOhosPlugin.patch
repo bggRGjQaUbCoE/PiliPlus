@@ -1,0 +1,44 @@
+--- a/ohos/src/main/ets/components/plugin/PermissionHandlerOhosPlugin.ets
++++ b/ohos/src/main/ets/components/plugin/PermissionHandlerOhosPlugin.ets
+@@ -56,12 +56,17 @@
+         result.error('100', 'context is null', 'it should not be null');
+         return;
+       }
+-      let args: ESObject = call.args;
+-      let atManager = abilityAccessCtrl.createAtManager();
+-      let grantStatus: abilityAccessCtrl.GrantStatus = await atManager.checkAccessToken(this.context!
+-        .applicationInfo
+-        .accessTokenId, args as Permissions,);
+-      result.success(grantStatus)
++      try {
++        let args: ESObject = call.args;
++        let atManager = abilityAccessCtrl.createAtManager();
++        let grantStatus: abilityAccessCtrl.GrantStatus = await atManager.checkAccessToken(this.context!
++          .applicationInfo
++          .accessTokenId, args as Permissions,);
++        result.success(grantStatus)
++      } catch (error) {
++        const failure = error as BusinessError;
++        result.error(failure.code.toString(), failure.message, null);
++      }
+     }
+     else if (call.method == "openAppSettings") {
+       if (this.context == null || this.uiContext == null) {
+@@ -81,7 +86,7 @@
+       this.uiContext!.startAbility(wantInfo).then(() => {
+         result.success(true);
+       }).catch((err: BusinessError) => {
+-        console.error(`openAppSettings failed, code is ${err.code}, message is ${err.message}`);
++        result.error(err.code.toString(), err.message, null);
+       })
+ 
+     }
+@@ -113,7 +118,7 @@
+           }
+           result.success(results)
+         }).catch((err: BusinessError) => {
+-          console.error(`requestPermissionsFromUser failed, code is ${err.code}, message is ${err.message}`);
++          result.error(err.code.toString(), err.message, null);
+         })
+       } else {
+         result.error('102', 'permissions is not List<String>', 'make sure you pass the right permissions');

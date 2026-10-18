@@ -17,6 +17,12 @@
 *.cer
 *.csr
 *.log
+/source-manifest.json
+/upstream-files.json
+/dependency-report.json
+/build-defines.json
+/build-result.json
+/build-logs/
 
 # Flutter OHOS generates these from the resolved dependency graph and build mode.
 /entry/src/main/ets/plugins/GeneratedPluginRegistrant.ets

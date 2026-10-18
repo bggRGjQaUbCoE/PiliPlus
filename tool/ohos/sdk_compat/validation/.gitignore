@@ -1,0 +1,10 @@
+# The application's root ignores test*. Keep this SDK regression fixture.
+!/test/
+!/test/**
+
+# Runtime output belongs only to the isolated validation copy.
+/.dart_tool/
+/build/
+/pubspec.lock
+/.flutter-plugins
+/.flutter-plugins-dependencies

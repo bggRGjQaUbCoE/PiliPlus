@@ -4,7 +4,11 @@
     "type": "entry",
     "description": "$string:module_desc",
     "mainElement": "EntryAbility",
-    "deviceTypes": ["phone", "tablet", "2in1"],
+    "deviceTypes": [
+      "phone",
+      "tablet",
+      "2in1"
+    ],
     "deliveryWithInstall": true,
     "installationFree": false,
     "pages": "$profile:main_pages",
@@ -20,15 +24,178 @@
         "exported": true,
         "skills": [
           {
-            "entities": ["entity.system.home"],
-            "actions": ["action.system.home"]
+            "entities": [
+              "entity.system.home"
+            ],
+            "actions": [
+              "action.system.home"
+            ]
+          },
+          {
+            "entities": [
+              "entity.system.browsable"
+            ],
+            "actions": [
+              "ohos.want.action.viewData"
+            ],
+            "uris": [
+              {
+                "scheme": "bilibili"
+              },
+              {
+                "scheme": "http",
+                "host": "b23.tv"
+              },
+              {
+                "scheme": "http",
+                "host": "bilibili.com"
+              },
+              {
+                "scheme": "http",
+                "host": "www.bilibili.com"
+              },
+              {
+                "scheme": "http",
+                "host": "m.bilibili.com"
+              },
+              {
+                "scheme": "http",
+                "host": "live.bilibili.com"
+              },
+              {
+                "scheme": "http",
+                "host": "space.bilibili.com"
+              },
+              {
+                "scheme": "http",
+                "host": "bangumi.bilibili.com"
+              },
+              {
+                "scheme": "http",
+                "host": "bilibili.cn"
+              },
+              {
+                "scheme": "http",
+                "host": "www.bilibili.cn"
+              },
+              {
+                "scheme": "http",
+                "host": "m.bilibili.cn"
+              },
+              {
+                "scheme": "http",
+                "host": "bilibili.tv"
+              },
+              {
+                "scheme": "http",
+                "host": "www.bilibili.tv"
+              },
+              {
+                "scheme": "https",
+                "host": "b23.tv"
+              },
+              {
+                "scheme": "https",
+                "host": "bilibili.com"
+              },
+              {
+                "scheme": "https",
+                "host": "www.bilibili.com"
+              },
+              {
+                "scheme": "https",
+                "host": "m.bilibili.com"
+              },
+              {
+                "scheme": "https",
+                "host": "live.bilibili.com"
+              },
+              {
+                "scheme": "https",
+                "host": "space.bilibili.com"
+              },
+              {
+                "scheme": "https",
+                "host": "bangumi.bilibili.com"
+              },
+              {
+                "scheme": "https",
+                "host": "bilibili.cn"
+              },
+              {
+                "scheme": "https",
+                "host": "www.bilibili.cn"
+              },
+              {
+                "scheme": "https",
+                "host": "m.bilibili.cn"
+              },
+              {
+                "scheme": "https",
+                "host": "bilibili.tv"
+              },
+              {
+                "scheme": "https",
+                "host": "www.bilibili.tv"
+              }
+            ]
           }
-        ]
+        ],
+        "backgroundModes": [
+          "audioPlayback"
+        ],
+        "orientation": "auto_rotation_unspecified"
       }
     ],
     "requestPermissions": [
       {
         "name": "ohos.permission.INTERNET"
+      },
+      {
+        "name": "ohos.permission.GET_NETWORK_INFO",
+        "reason": "$string:network_permission_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.GET_WIFI_INFO",
+        "reason": "$string:wifi_permission_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.READ_PASTEBOARD",
+        "reason": "$string:pasteboard_permission_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.KEEP_BACKGROUND_RUNNING",
+        "reason": "$string:background_audio_permission_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.VIBRATE"
+      },
+      {
+        "name": "ohos.permission.ACCELEROMETER"
       }
     ]
   }

@@ -1,0 +1,93 @@
+name: OHOS arm64 build (media deferred)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/ohos]
+    paths:
+      - '.github/workflows/ohos-build.yml'
+      - 'ohos/**'
+      - 'tool/ohos/**'
+      - 'lib/**'
+      - 'assets/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: piliplus-ohos-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unsigned-hap:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      PUB_CACHE: ${{ runner.temp }}/piliplus-ohos-pub-cache
+      PILIPLUS_OHOS_FLUTTER_ROOT: ${{ runner.temp }}/piliplus-flutter-ohos
+      PILIPLUS_OHOS_BUILD: ${{ runner.temp }}/PiliPlus-ohos-build
+      CI: 'true'
+    steps:
+      - name: Checkout committed source and upstream history
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check source preservation and preparation guards
+        run: |
+          python3 tool/ohos/ohos.py check-source
+          python3 -m unittest discover -s tool/ohos -p 'test_*.py' -v
+      - name: Install host dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl unzip xz-utils zip libglu1-mesa
+      - name: Set up HarmonyOS command line tools
+        uses: ErBWs/setup-ohos@5c8e74d05fc9888a387b6154ba06d0cd9ede3da1
+        with:
+          version: 26.0.0.621
+          cache: true
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Prepare the pinned official CPF Flutter SDK
+        run: |
+          python3 tool/ohos/prepare_sdk.py \
+            --flutter-root "$PILIPLUS_OHOS_FLUTTER_ROOT" --pub-cache "$PUB_CACHE"
+          python3 tool/ohos/ohos.py doctor --flutter "$PILIPLUS_OHOS_FLUTTER_ROOT/bin/flutter"
+      - name: Exercise retained Flutter widget extensions
+        run: |
+          cp -R tool/ohos/sdk_compat/validation "$RUNNER_TEMP/piliplus-ohos-sdk-tests"
+          cd "$RUNNER_TEMP/piliplus-ohos-sdk-tests"
+          "$PILIPLUS_OHOS_FLUTTER_ROOT/bin/flutter" pub get
+          "$PILIPLUS_OHOS_FLUTTER_ROOT/bin/flutter" test --no-pub
+      - name: Export and adapt the isolated application build copy
+        run: python3 tool/ohos/ohos.py prepare-build --output "$PILIPLUS_OHOS_BUILD"
+      - name: Resolve, analyze and build the original application entrypoint
+        run: |
+          python3 "$PILIPLUS_OHOS_BUILD/tool/ohos/build.py" --workspace "$PILIPLUS_OHOS_BUILD" \
+            --flutter-root "$PILIPLUS_OHOS_FLUTTER_ROOT" --pub-cache "$PUB_CACHE"
+      - name: Confirm original tracked files remain unchanged
+        if: always()
+        run: python3 tool/ohos/ohos.py check-source
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ohos-build-diagnostics
+          if-no-files-found: warn
+          path: |
+            ${{ env.PILIPLUS_OHOS_BUILD }}/ohos/source-manifest.json
+            ${{ env.PILIPLUS_OHOS_BUILD }}/ohos/dependency-report.json
+            ${{ env.PILIPLUS_OHOS_BUILD }}/ohos/build-result.json
+            ${{ env.PILIPLUS_OHOS_BUILD }}/ohos/build-logs/
+            ${{ env.PILIPLUS_OHOS_FLUTTER_ROOT }}/bin/cache/piliplus-ohos-sdk.json
+      - name: Upload verified unsigned HAP
+        uses: actions/upload-artifact@v7
+        with:
+          name: PiliPlus-ohos-arm64-media-deferred
+          if-no-files-found: error
+          path: ${{ env.PILIPLUS_OHOS_BUILD }}/build/ohos/hap/entry-default-unsigned.hap

@@ -1,48 +1,78 @@
 # PiliPlus OHOS 适配
 
-## 当前状态
+开发分支：`feature/ohos`。基础是用户指定的 `Goodwu/PiliPlus/main` 提交
+`849c56b035ac8acf1b4fd677c2c94debe161da8e`；PiliPlusX 只作为原生适配参考。
+本轮范围为 OHOS，媒体后端按用户要求暂缓，不包含 HDR 开发。
 
-开发分支：`feature/ohos`。从用户指定的 `Goodwu/PiliPlus/main` 提交
-`849c56b035ac8acf1b4fd677c2c94debe161da8e` 创建，未从仓库默认分支或
-PiliPlusX 的功能分支派生。当前范围仅为 OHOS 适配。
+## 已实现的结构
 
-本次已经落地独立 OHOS 工程壳、源码隔离准备、原有文件差异检查及兼容性审计。
-**尚未完成可运行的 OHOS 应用：没有通过本基线的 HAP 构建、安装或功能验收。**
-当前原有文件修改数为零；应用源码、依赖声明及锁文件、图标来源和原平台工程
-均保持建分支时的上游内容。两个 OHOS 图标复用原图，不另做界面和品牌设计。
+**Git 分支内原有 1,639 个文件保持不变。** 主线 `lib/`、`pubspec.yaml`、
+`pubspec.lock`、`.fvmrc`、原平台工程及工作流均保留。适配实现放在新增的
+`ohos/`、`tool/ohos/`、`docs/ohos/` 和 OHOS 专用工作流中。
 
-| 项目 | 状态 | 记录 |
-| --- | --- | --- |
-| 基线与 OHOS 开发分支 | 已建立 | [来源记录](../../tool/ohos/baseline.json) |
-| OHOS 原生工程壳 | 已新增；静态结构检查通过 | [工程说明](../../ohos/README.md) |
-| 原有文件保护与隔离源码准备 | 已实现；含正向与拒绝路径验证 | [工具说明](../../tool/ohos/README.md) |
-| Flutter / Dart / engine 工具链 | 所检查的组合未满足主线要求 | [实测证据](toolchain-audit.md) |
-| 保持现有 API 的 OHOS 插件和媒体后端 | 待实现、待验证 | [兼容性审计](compatibility-audit.md) |
-| HAP 构建与完整功能验收 | 未完成 | [验收矩阵](compatibility-audit.md#8-功能验收矩阵) |
+构建时从指定提交导出独立副本，并使用该提交自身的规则应用必要补丁。
+**副本内存在真实的应用和依赖修改**，清单写入 `ohos/source-manifest.json`；
+“原文件零修改”指 Git 分支中的主线文件，不意味着兼容层没有维护成本。
 
-`.github/workflows/ohos-source.yml` 只验证源码保护与导出工具。它不构建 HAP，
-其绿色结果也不表示 OHOS 应用能够编译或运行。原有平台的工作流没有修改。
+| 适配部分 | 处理方式 |
+| --- | --- |
+| Flutter | 只使用官方 CPF `oh-3.44.9-dev`，固定提交 `3ffe70c6280cc6ddf613bffa59dd70611f238f7e` |
+| Flutter 扩展 | 保留主线默认 22 项 SDK 补丁语义，针对 3.44/OHOS 回移其中 3 项 |
+| Dart / Flutter 环境 | 仅副本使用 Dart 3.12 / Flutter 3.44 约束，不改变原平台工具链 |
+| 原控件与业务 | 补足 OHOS 平台分支及等价的旧 Dart API 写法，不移植参考分支的功能或主题改动 |
+| 原生依赖 | 固定可追溯的 OHOS 实现，适配主线现有 Dart 接口，校对文件、权限、唤醒锁及音频会话协议 |
+| 系统行为 | 对接真实后台化、文件选择/保存、相册确认、分享、深链与系统插件 |
+| media-kit | 保留现有 Dart 依赖和 API，暂缓 OHOS 初始化及播放入口，明确提示；Live Photo 保留静图查看 |
+| 同步保护 | 检查提交、工作文件与暂存区；补丁或源摘要漂移时停止准备，要求复核 |
 
-## 实施顺序
+插件接口、生成副本的修改路径及功能验收矩阵见
+[兼容性审计](compatibility-audit.md)。原生结构与权限见
+[OHOS 工程说明](../../ohos/README.md)。
 
-1. **先补工具链证据。** 要求真实可运行、host / target 配套的 Flutter OHOS
-   及 Dart 满足原 `pubspec.yaml`，再核对原项目 Flutter SDK patch 链。
-   不根据分支名称或下载成功判断版本兼容。
-2. **再闭合平台依赖。** 保留当前应用调用 API，接入路径、深链、WebView、
-   原生资源构建和 OHOS 媒体后端；来源与原生库均使用固定版本和可验证摘要。
-3. **按实际诊断加入少量应用接入点。** 优先集中于平台判断、初始化及必要的
-   switch 分支。每处记录路径、原因、上游上下文和受影响功能，保持原业务实现。
-4. **构建完整应用并逐项验收。** 从原 `lib/main.dart` 编译 unsigned arm64 HAP，
-   验收登录、原界面、视频/直播、下载、本地播放、音频后台、音量亮度、文件/分享
-   与前后台生命周期。无实现的能力继续记录为未完成。
+## 当前验证状态
 
-完整的逐文件候选、依赖来源和功能验收要求见兼容性审计。没有把参考项目的
-主题替换、隐藏功能或成功空桩作为本项目的适配方案。
+| 阶段 | 当前结果 |
+| --- | --- |
+| 原主线文件保护 | 1,639 个文件，0 个修改 |
+| 源码准备与补丁防护 | Python 回归已通过；包含原文件、暂存区、路径、漂移及指定提交的规则隔离 |
+| 官方 Flutter SDK | 实际运行 Flutter 3.44.9+ohos-0.0.1-canary1 / Dart 3.12.2，来源、host / target engine 已核对 |
+| SDK 控件验证 | 4 项真实 Flutter 控件测试通过 |
+| 最小入口原生宿主 | arm64 release unsigned HAP 构建通过；不代表完整应用 |
+| 完整依赖 | 已完成一次求解；继续验证原生插件注入及干净副本重现 |
+| 完整应用 Dart 分析 | 首次剩 7 个 Dart 3.13 API / 语法兼容错误，修复和复验中 |
+| 完整应用 HAP | 待完整入口构建与产物验证 |
+| 设备功能 | 未验证，当前环境没有连接 OHOS 设备 |
 
-## 后续同步上游
+具体工具链值和宿主验证边界见 [工具链记录](toolchain-audit.md)。
+新的完整构建工具会记录实际退出码、日志、锁文件摘要和 HAP 内容校验，
+只有相应步骤通过才将 `ohos/build-result.json` 中对应阶段标为成功。
 
-保持 `main` 作为上游镜像，本地 OHOS 提交保留在 `feature/ohos`。可以在正常
-同步 `main` 后将其合并到开发分支：
+## 构建入口
+
+详细环境和命令见 [构建工具说明](../../tool/ohos/README.md)。使用已提交的
+源码、独立官方 SDK、Pub 缓存以及 Git checkout 之外的新输出目录：
+
+```sh
+python3 tool/ohos/prepare_sdk.py \
+  --flutter-root /path/to/dedicated-flutter-ohos \
+  --pub-cache /path/to/dedicated-ohos-pub-cache
+python3 tool/ohos/ohos.py prepare-build --output /path/to/PiliPlus-ohos-build
+python3 /path/to/PiliPlus-ohos-build/tool/ohos/build.py \
+  --workspace /path/to/PiliPlus-ohos-build \
+  --flutter-root /path/to/dedicated-flutter-ohos \
+  --pub-cache /path/to/dedicated-ohos-pub-cache
+```
+
+Pub 的原生插件注入阶段就需要 `HOS_SDK_HOME` 和 OHPM 环境。完整构建使用
+原 `lib/main.dart`，自动传入同步了版本和提交信息的 Dart defines，输出
+unsigned HAP；签名和安装验证在设备环境完成。
+
+`.github/workflows/ohos-source.yml` 只做源码保护；新增
+`.github/workflows/ohos-build.yml` 定义完整 SDK、依赖、分析和 HAP 门禁，
+在 `feature/ohos` 相关代码更新时执行，也可手动运行。构建产物名称明确标记
+`media-deferred`，不会作为具备播放功能的正式发布包。
+
+## 同步上游
 
 ```sh
 git fetch origin
@@ -51,19 +81,9 @@ git merge origin/main
 python3 tool/ohos/ohos.py check-source
 ```
 
-检查以本分支已合入的上游提交为比较基准；不会把新同步的上游提交计为本地
-功能修改。真正开始加入少量既有文件改动后，需将“零修改”门禁升级为有理由、
-可审查的逐文件清单，不能简单关闭检查。补丁放在新增文件中也有同步维护成本，
-应让上下文漂移明确失败，并只重新验证受影响的功能。
+检查使用本分支已合入的上游提交为基准。同步后重新准备独立副本，针对实际
+漂移维护 SDK 补丁、应用补丁和依赖接口。新的 main 锁文件需要与
+`dependencies.json` 重新核对；不要把 OHOS 生成的锁文件提交回原主线路径。
 
-## 本地操作入口
-
-```sh
-python3 -m unittest discover -s tool/ohos -p 'test_*.py' -v
-python3 tool/ohos/ohos.py check-source
-python3 tool/ohos/ohos.py prepare --output /tmp/PiliPlus-ohos-source
-python3 tool/ohos/ohos.py doctor --flutter /path/to/flutter-ohos/bin/flutter
-```
-
-`prepare` 导出已提交源码，要求输出目录尚不存在；`doctor` 当前报告已核实的
-工具链/依赖阻塞并返回非零状态。命令的具体边界见工具说明。
+降低 Git 合并冲突并不能免除这些 API 维护。构建工具保留精确来源和差异记录，
+便于上游合并时定位必须调整的适配点。

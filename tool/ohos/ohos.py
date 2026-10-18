@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 from pathlib import Path, PurePosixPath
 import re
@@ -17,6 +18,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import time
 
 
 DEFAULT_ROOT = Path(__file__).resolve().parents[2]
@@ -170,7 +172,16 @@ def doctor(root: Path, flutter: str | None) -> dict:
     required = read_pubspec(root)
     errors = []
     executable = shutil.which(flutter or "flutter")
-    result = {"required_by_upstream": required, "flutter_executable": executable}
+    profile = json.loads((Path(__file__).parent / "sdk_compat/manifest.json").read_text())
+    result = {
+        "required_by_upstream": required,
+        "ohos_sdk_profile": {key: profile[key] for key in (
+            "repository", "branch", "commit", "flutter_version", "dart_version",
+        )},
+        "flutter_executable": executable,
+        "media_backend": "deferred-by-request",
+        "device_functionality_verified": False,
+    }
     if not executable:
         errors.append("Flutter executable not found. Supply --flutter /path/to/flutter-ohos/bin/flutter.")
     else:
@@ -180,20 +191,51 @@ def doctor(root: Path, flutter: str | None) -> dict:
             if not isinstance(actual, dict):
                 raise CheckError("flutter --version --machine did not return an object")
             result["actual_sdk"] = actual
-            errors.extend(sdk_matches(required, actual))
+            sdk_root = Path(executable).resolve().parents[1]
+            revision = commit(sdk_root, "HEAD")
+            repository = git(sdk_root, "remote", "get-url", "origin").decode().strip()
+            result["sdk_commit"] = revision
+            errors.extend(ohos_sdk_matches(profile, actual, revision, repository))
             if not errors:
                 run([executable, "build", "hap", "--help"], root, timeout=60)
                 result["hap_command_available"] = True
         except (CheckError, ValueError) as exc:
             errors.append(str(exc))
-    # Version/CLI checks alone cannot establish plugin API compatibility.
-    # Keep the current known blockers explicit until supported by build evidence.
-    errors.append("The current locked media-kit graph has no OHOS playback backend; its OHOS port is pending.")
-    errors.append("cnativeapi 0.5.2 native-assets build hook has no OHOS target; dependency isolation/port is pending.")
+    # The explicitly deferred media backend does not block non-media adaptation.
+    # A passing SDK check does not assert native plugin or device compatibility.
     result["status"] = "blocked" if errors else "pass"
     result["blockers"] = errors
     result["reference"] = "docs/ohos/compatibility-audit.md"
     return result
+
+
+def ohos_sdk_matches(profile: dict, actual: dict, revision: str, repository: str) -> list[str]:
+    errors = []
+    if repository.removesuffix(".git").rstrip("/") != profile["repository"].removesuffix(".git").rstrip("/"):
+        errors.append("Only the specified CPF-Flutter/flutter_flutter repository is accepted for OHOS")
+    if revision != profile["commit"]:
+        errors.append(f"OHOS SDK must use the reviewed {profile['branch']} commit {profile['commit']}; got {revision}")
+    try:
+        framework = version_tuple(str(actual.get("frameworkVersion", "")))
+        if framework != version_tuple(profile["flutter_version"]):
+            errors.append(f"OHOS Flutter must be {profile['flutter_version']}; got {actual.get('frameworkVersion')}")
+        dart = str(actual.get("dartSdkVersion", "")).split(" ")[0]
+        if version_tuple(dart) != version_tuple(profile["dart_version"]):
+            errors.append(f"OHOS Dart must be {profile['dart_version']}; got {dart}")
+    except CheckError as exc:
+        errors.append(str(exc))
+    return errors
+
+
+def helper(name: str, directory: Path | None = None):
+    directory = directory or Path(__file__).parent
+    spec = importlib.util.spec_from_file_location(name, directory / f"{name}.py")
+    if spec is None or spec.loader is None:
+        raise CheckError(f"Missing OHOS helper: {name}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
 
 
 def export_archive(root: Path, revision: str, output: Path) -> None:
@@ -248,6 +290,15 @@ def prepare(root: Path, output: Path, base_ref: str | None, revision_ref: str) -
         profile["app"]["versionName"] = version.group(1)
         profile["app"]["versionCode"] = int(version.group(2) or "1")
         profile_path.write_text(json.dumps(profile, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        build_defines = {
+            "pili.name": version.group(1),
+            "pili.code": int(version.group(2) or "1"),
+            "pili.hash": report["source_commit"],
+            "pili.time": int(time.time()),
+        }
+        (stage / "ohos/build-defines.json").write_text(
+            json.dumps(build_defines, indent=2) + "\n", encoding="utf-8",
+        )
         manifest = {
             "schema": 1,
             **report,
@@ -256,10 +307,15 @@ def prepare(root: Path, output: Path, base_ref: str | None, revision_ref: str) -
             "application_source_transformations": [],
             "dependency_overrides_applied": False,
             "native_version": spec["version"],
+            "build_defines": "ohos/build-defines.json",
             "hap_built": False,
         }
         (stage / "ohos/source-manifest.json").write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8",
+        )
+        (stage / "ohos/upstream-files.json").write_text(
+            json.dumps({path: {"mode": value[0], "blob": value[2]} for path, value in original.items()}, indent=2) + "\n",
+            encoding="utf-8",
         )
         # rename is atomic on the same filesystem; never replace existing output.
         if output.exists():
@@ -277,12 +333,16 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="command", required=True)
     check = sub.add_parser("check-source", help="reject changes to existing upstream files")
     check.add_argument("--base-ref", help="an incorporated upstream commit; default is merge-base with origin/main")
-    diagnostic = sub.add_parser("doctor", help="check exact upstream SDK requirements and report known blockers")
+    diagnostic = sub.add_parser("doctor", help="check the pinned official OHOS 3.44 SDK; media is deferred")
     diagnostic.add_argument("--flutter", help="path to the OHOS Flutter executable")
     export = sub.add_parser("prepare", help="export a committed source snapshot without rewriting the app")
     export.add_argument("--output", type=Path, required=True)
     export.add_argument("--revision", default="HEAD")
     export.add_argument("--base-ref")
+    build = sub.add_parser("prepare-build", help="export and adapt an isolated OHOS build copy")
+    build.add_argument("--output", type=Path, required=True)
+    build.add_argument("--revision", default="HEAD")
+    build.add_argument("--base-ref")
     args = parser.parse_args(argv)
     root = args.workspace.resolve()
     try:
@@ -292,12 +352,18 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "doctor":
             report = doctor(root, args.flutter)
             code = 0 if report["status"] == "pass" else 2
-        else:
+        elif args.command == "prepare":
             report = prepare(root, args.output, args.base_ref, args.revision)
+            code = 0
+        else:
+            prepare(root, args.output, args.base_ref, args.revision)
+            # A selected revision must use its own committed adaptation rules,
+            # including when this command is invoked from a newer checkout.
+            report = helper("build_profile", args.output.resolve() / "tool/ohos").configure(args.output)
             code = 0
         print(json.dumps(report, ensure_ascii=False, indent=2))
         return code
-    except (CheckError, OSError, ValueError) as exc:
+    except (CheckError, OSError, ValueError, RuntimeError) as exc:
         print(f"OHOS: {exc}", file=sys.stderr)
         return 1
 

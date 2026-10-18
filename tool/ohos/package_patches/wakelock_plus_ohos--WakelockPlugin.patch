@@ -1,0 +1,44 @@
+--- a/ohos/src/main/ets/components/plugin/WakelockPlugin.ets
++++ b/ohos/src/main/ets/components/plugin/WakelockPlugin.ets
+@@ -33,10 +33,11 @@
+ 
+     try {
+ 
+-      if (this.context != null) {
+-        let windowClass = await window.getLastWindow(this.context);
+-        await windowClass.setWindowKeepScreenOn(msg.getEnable());
++      if (this.context == null) {
++        throw new Error('Wakelock requires an attached OHOS UIAbility');
+       }
++      const windowClass = await window.getLastWindow(this.context);
++      await windowClass.setWindowKeepScreenOn(msg.getEnable());
+ 
+       // let isSupported = runningLock.isSupported(runningLock.RunningLockType.BACKGROUND);
+       // if (!isSupported) {
+@@ -52,20 +53,23 @@
+     }
+     catch (err) {
+       console.error('toggle failed, err: ' + err);
++      throw err as Error;
+     }
+   }
+ 
+   async isEnabled(): Promise<IsEnabledMessage> {
+     let isEnabled = false;
+     try {
+-      if (this.context != null) {
+-        let windowClass = await window.getLastWindow(this.context);
+-        isEnabled = isEnabled || await windowClass.getWindowProperties().isKeepScreenOn;
++      if (this.context == null) {
++        throw new Error('Wakelock requires an attached OHOS UIAbility');
+       }
++      const windowClass = await window.getLastWindow(this.context);
++      isEnabled = windowClass.getWindowProperties().isKeepScreenOn;
+       // isEnabled = isEnabled || (this.lock?.isHolding() ?? false);
+     }
+     catch (err) {
+       console.error('toggle failed, err: ' + err);
++      throw err as Error;
+     }
+ 
+     return new IsEnabledMessage(isEnabled);

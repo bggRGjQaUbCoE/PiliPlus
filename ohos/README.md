@@ -1,62 +1,61 @@
-# OHOS 应用工程壳
+# OHOS 原生应用工程
 
-此目录为 `Goodwu/PiliPlus` 的 OHOS 平台入口。应用标识使用
-`com.example.piliplus`，显示名称为 `PiliPlus`；两个原生图标均直接取自
-仓库的 `assets/images/logo/logo.png`，没有重新设计。
+本目录是 PiliPlus 原有 `lib/main.dart` 的 OHOS 平台入口。应用标识为
+`com.example.piliplus`，显示名称为 `PiliPlus`；图标直接复用原仓库
+`assets/images/logo/logo.png`。应用界面与业务保持 PiliPlus 主线，当前媒体
+后端按用户要求暂缓接入。
 
-当前交付状态是**工程壳及静态检查完成，尚未构建或验收 HAP**。它不代表
-现有依赖已经支持 OHOS，也不代表首页、播放或其他功能已经在 OHOS 运行。
-共享 Dart 入口继续使用原有 `lib/main.dart`，本目录没有替代入口或业务界面。
+完整构建入口见 [构建工具](../tool/ohos/README.md)，各阶段实际结果见
+[验证记录](../docs/ohos/README.md)。仅使用官方
+[CPF Flutter oh-3.44.9-dev](https://gitcode.com/CPF-Flutter/flutter_flutter/tree/oh-3.44.9-dev)，
+固定提交、原生工具版本及验证证据见 [工具链记录](../docs/ohos/toolchain-audit.md)。
 
-## 工程边界
+## 宿主与系统交互
 
-- `EntryAbility.ets` 使用标准 `FlutterAbility` 注册流程。
-- `Index.ets` 容纳 `FlutterPage`，并通过 SDK 的 `EVENT_BACK_PRESS` 事件转交返回键。
-- `hvigorconfig.ts` 注入 Flutter 原生模块；不会重写调用者的 `DART_DEFINES`。
-- `build-profile.json5` 声明 HarmonyOS API 15，原生目标为 `arm64-v8a`。
-  这是初始工程配置，不是已经验证的最低系统版本。最终应以选定的 Flutter OHOS
-  SDK、插件清单以及真实 HAP 编译结果共同确定兼容和目标 API。
-- 当前只声明 Flutter 网络应用所需的 `ohos.permission.INTERNET`。文件、媒体服务、
-  相册等功能的权限应随对应的真实平台实现接入；不能仅添加权限便宣称功能可用。
+- `EntryAbility.ets` 使用 `FlutterAbility`，注册工具生成的插件及本地
+  `PiliPlusPlatformPlugin`。SDK 可空的插件注册表已经显式检查。
+- `Index.ets` 使用 `FlutterPage`，通过 SDK 的 `EVENT_BACK_PRESS` 转交返回键。
+- `PiliPlusPlatformPlugin` 提供 `piliplus/ohos` 的 `moveToBackground` 通道，
+  调用真实 `UIAbilityContext.moveAbilityToBackground()`，将系统失败传回 Dart。
+  原主页返回逻辑只在生成副本新增这一平台分支。
+- `hvigorconfig.ts` 注入 Flutter 原生模块，保留调用者传入的 `DART_DEFINES`。
+- 原生目标为 `arm64-v8a`。配置中的 compatible / target SDK 为
+  `5.0.3(15)`；本轮使用 26.0.0.621 command line tools 编译。
+  API 15 设备兼容性尚未通过安装验证。
 
-工程结构参照 Flutter OHOS `oh-3.44.9-dev` 的应用模板，以及
-[PiliPlusX 的 OHOS 工程](https://github.com/Goodwu/PiliPlusX/tree/997244ba9dfe8177f600c3a85b89d7cf7f112608/ohos)。
-该模板来源仅用于确认原生结构，并不是将当前应用降级到 Flutter 3.44 的构建声明。
+模块声明了真实网络状态、Wi-Fi 信息、剪贴板、后台音频、振动及加速度计实现
+所需权限，后台模式包括 `audioPlayback`。相册保存使用 `saver_gallery` 的
+系统逐次保存确认；不会因添加声明而伪造权限或保存成功。
 
-## 生成文件
+`app_links_ohos` 接收系统 Want，继续交给原有 `AppScheme` 路由。模块声明
+`bilibili:` 及 `b23.tv`、Bilibili 根域和常用子域的 HTTP/HTTPS URI；具体列表
+在 `entry/src/main/module.json5`。这不是经过站点所有权验证的 App Linking
+声明，Android 中任意通配子域的匹配及系统选择器行为仍需在设备核对。
 
-`entry/src/main/ets/plugins/GeneratedPluginRegistrant.ets` **由 Flutter OHOS 工具生成**，
-不提交静态插件列表。Flutter 工具的 `injectPlugins` / `_writeOhosPluginRegistrant`
-根据实际解析且声明 OHOS 支持的依赖生成注册表。使用已经完成兼容性核对的 SDK
-执行 `flutter pub get` 后，应确认此文件已经生成，再运行 HAP 构建；直接打开尚未
-准备依赖的 ArkTS 工程会缺少此导入，这不应通过空注册类掩盖。
+结构参考指定 Flutter 模板及
+[PiliPlusX 原生工程](https://github.com/Goodwu/PiliPlusX/tree/997244ba9dfe8177f600c3a85b89d7cf7f112608/ohos)。
+依赖版本和接口适配独立记录在 `tool/ohos/dependencies.json` 与
+`tool/ohos/package_patches/`。
 
-`entry/src/main/resources/base/profile/buildinfo.json5` 保留 Flutter OHOS 模板的
-`enable_impeller` 配置。Flutter 的 HAP 构建流程会将其复制到
-`entry/src/main/resources/rawfile/buildinfo.json5`，并写入实际构建开关；该输出已忽略。
+## 生成内容
 
-`oh_modules`、Flutter 原生库、`flutter_assets` 和 Hvigor 中间文件也由工具生成，
-不从其他分支复制。
+`entry/src/main/ets/plugins/GeneratedPluginRegistrant.ets` 由 Flutter OHOS
+工具按实际解析的插件生成，不提交静态注册表。`flutter pub get` 的 OHOS
+插件注入也需要正确设置 `HOS_SDK_HOME` 和 OHPM 环境。
 
-## 构建前置条件
+`entry/src/main/resources/base/profile/buildinfo.json5` 保留模板的 Impeller
+配置；Flutter 构建时复制到 `rawfile/` 并写入实际开关。`oh_modules`、原生
+库、Flutter assets、Hvigor 中间文件及生成注册器均由构建工具生成。
 
-主线 `pubspec.yaml` 要求 Dart `>=3.13.0`、Flutter `3.47.7`。必须先解决
-OHOS SDK 与该版本及主线插件接口的兼容性，才能按以下顺序尝试完整应用构建：
-
-1. 在隔离的构建目录中准备经核对的 Flutter OHOS SDK、HarmonyOS SDK 和依赖。
-2. 解析依赖，确认生成的 OHOS 插件注册表与选定依赖清单一致。
-3. 使用原有 `lib/main.dart` 构建 arm64 unsigned HAP。
-4. 检查包内模块、ABI、版本及所需原生库；随后单独验收安装、启动与完整功能。
-
-普通 Flutter SDK 不提供该 HAP 构建目标。仅新增此目录、降低 SDK 约束，或让
-缺失插件返回空的成功结果，都不能满足完整应用适配要求。
+构建副本还生成源码与依赖清单、日志、版本 defines 和构建结果。Git 原目录
+只保存适配实现；这些输出不提交到主线的依赖锁文件或原平台工程。
 
 ## 签名与版本
 
-提交的 `signingConfigs` 为空，`enableSignTask` 为 `false`，用于生成 unsigned HAP。
-设备签名在本地构建副本或本地 DevEco 配置中完成；不将证书、私钥、设备 profile
-或本机绝对路径写入本目录的版本记录。
+`signingConfigs` 为空，`enableSignTask` 为 `false`，用于 unsigned HAP。
+设备签名在本地构建副本或 DevEco 配置中完成。
 
-`AppScope/app.json5` 初始版本对应本次主线基线 `2.1.6+1`。正式产物的版本名、
-版本号和 Dart 构建信息必须在构建准备阶段与实际源版本同步，不能把工程壳中的
-初始值当成新的发布版本。
+`prepare-build` 从实际源 `pubspec.yaml` 同步 `AppScope/app.json5` 的版本，
+并生成 `ohos/build-defines.json`，将原有 `BuildConfig` 的 `pili.name`、
+`pili.code`、`pili.hash`、`pili.time` 与所构建源码对应。`tool/ohos/build.py`
+自动传入该文件，并核对产物中的版本、应用标识与 arm64 ELF。

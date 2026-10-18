@@ -1,0 +1,76 @@
+--- a/lib/src/bottom_sheet.dart
++++ b/lib/src/bottom_sheet.dart
+@@ -1303,7 +1303,6 @@
+ ///  * The Material 3 spec at <https://m3.material.io/components/bottom-sheets/overview>.
+ ///  * [AnimationStyle], which is used to override the modal bottom sheet
+ ///    animation duration and reverse animation duration.
+-@awaitNotRequired
+ Future<T?> showModalBottomSheet<T>({
+   required BuildContext context,
+   required WidgetBuilder builder,
+--- a/lib/src/carousel.dart
++++ b/lib/src/carousel.dart
+@@ -1979,7 +1979,6 @@
+   /// direction.
+   ///
+   /// Does nothing if the carousel is not attached to this controller.
+-  @awaitNotRequired
+   Future<void> animateToItem(
+     int index, {
+     Duration duration = const Duration(milliseconds: 300),
+--- a/lib/src/date_picker.dart
++++ b/lib/src/date_picker.dart
+@@ -221,7 +221,6 @@
+ ///  * [DisplayFeatureSubScreen], which documents the specifics of how
+ ///    [DisplayFeature]s can split the screen into sub-screens.
+ ///  * [showTimePicker], which shows a dialog that contains a Material Design time picker.
+-@awaitNotRequired
+ Future<DateTime?> showDatePicker({
+   required BuildContext context,
+   DateTime? initialDate,
+@@ -1199,7 +1198,6 @@
+ ///  * [DateTimeRange], which is used to describe a date range.
+ ///  * [DisplayFeatureSubScreen], which documents the specifics of how
+ ///    [DisplayFeature]s can split the screen into sub-screens.
+-@awaitNotRequired
+ Future<DateTimeRange?> showDateRangePicker({
+   required BuildContext context,
+   DateTimeRange? initialDateRange,
+--- a/lib/src/dialog.dart
++++ b/lib/src/dialog.dart
+@@ -1671,7 +1671,6 @@
+ ///    [DisplayFeature]s can split the screen into sub-screens.
+ ///  * <https://material.io/design/components/dialogs.html>
+ ///  * <https://m3.material.io/components/dialogs>
+-@awaitNotRequired
+ Future<T?> showDialog<T>({
+   required BuildContext context,
+   required WidgetBuilder builder,
+@@ -1757,7 +1756,6 @@
+ ///
+ /// On Cupertino platforms, [barrierColor], [useSafeArea], and
+ /// [traversalEdgeBehavior] are ignored.
+-@awaitNotRequired
+ Future<T?> showAdaptiveDialog<T>({
+   required BuildContext context,
+   required WidgetBuilder builder,
+--- a/lib/src/popup_menu.dart
++++ b/lib/src/popup_menu.dart
+@@ -1174,7 +1174,6 @@
+ ///    calling this method automatically.
+ ///  * [SemanticsConfiguration.namesRoute], for a description of edge triggered
+ ///    semantics.
+-@awaitNotRequired
+ Future<T?> showMenu<T>({
+   required BuildContext context,
+   RelativeRect? position,
+--- a/lib/src/time_picker.dart
++++ b/lib/src/time_picker.dart
+@@ -3264,7 +3264,6 @@
+ ///   typography, and shape of the time picker.
+ /// * [DisplayFeatureSubScreen], which documents the specifics of how
+ ///   [DisplayFeature]s can split the screen into sub-screens.
+-@awaitNotRequired
+ Future<TimeOfDay?> showTimePicker({
+   required BuildContext context,
+   required TimeOfDay initialTime,

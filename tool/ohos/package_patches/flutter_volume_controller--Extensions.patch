@@ -1,0 +1,42 @@
+--- a/ohos/src/main/ets/components/plugin/Extensions.ets
++++ b/ohos/src/main/ets/components/plugin/Extensions.ets
+@@ -101,21 +101,27 @@
+   /**
+    * @param vol - AVVolumePanel receive volume from 0 to 15
+    */
++  private requireReadyNode(): BuilderNode<[VolumeParams]> {
++    if (this.disposed) {
++      throw new Error("The volume panel has been disposed");
++    }
++    const node = this.node;
++    if (node === null) {
++      this.ensureInitialized();
++      throw new Error("The volume panel is not ready");
++    }
++    return node;
++  }
++
+   changeVolume(vol: number) {
++    const node = this.requireReadyNode();
+     this.volumeParams.volume = Math.round(vol);
+-    if (this.node) {
+-      this.node.update(this.volumeParams);
+-      return;
+-    }
+-    this.ensureInitialized();
++    node.update(this.volumeParams);
+   }
+ 
+   changeShowSystemUI(show: boolean) {
++    const node = this.requireReadyNode();
+     this.volumeParams.showSystemUI = show;
+-    if (this.node) {
+-      this.node.update(this.volumeParams);
+-      return;
+-    }
+-    this.ensureInitialized();
++    node.update(this.volumeParams);
+   }
+-}
+\ No newline at end of file
++}

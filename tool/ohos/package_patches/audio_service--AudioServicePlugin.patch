@@ -1,0 +1,20 @@
+--- a/ohos/src/main/ets/AudioServicePlugin.ets
++++ b/ohos/src/main/ets/AudioServicePlugin.ets
+@@ -193,7 +193,7 @@
+         this.onFastForward()
+         break
+       case 'setSpeed':
+-        this.onSeekTo(sessionParameter.params as number)
++        this.onSetPlaybackSpeed(sessionParameter.params as number)
+         break
+       case 'setLoopMode':
+         this.onSetRepeatMode(sessionParameter.params as number)
+@@ -238,7 +238,7 @@
+   onSetRepeatMode(repeatMode: number) {
+     let map: Map<String, Any> = new Map();
+     if (repeatMode == 3) {
+-      map.set('shuffleMode', 0)
++      map.set('shuffleMode', 1)
+       this.invokeMethod('setShuffleMode', map)
+     } else {
+       map.set('repeatMode', repeatMode)

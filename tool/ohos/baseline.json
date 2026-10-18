@@ -1,15 +1,21 @@
 {
-  "schema": 1,
+  "schema": 2,
   "repository": "Goodwu/PiliPlus",
   "development_branch": "feature/ohos",
   "upstream_ref": "origin/main",
   "initial_base_commit": "849c56b035ac8acf1b4fd677c2c94debe161da8e",
   "reference_repository": "Goodwu/PiliPlusX",
   "reference_commit": "997244ba9dfe8177f600c3a85b89d7cf7f112608",
-  "stage": "platform-scaffold",
+  "stage": "ohos-integration-media-deferred",
   "application_entrypoint": "lib/main.dart",
   "original_file_changes": [],
   "dependency_graph_verified": false,
   "hap_build_verified": false,
-  "device_functionality_verified": false
+  "device_functionality_verified": false,
+  "sdk_verified": true,
+  "native_host_fixture_hap_verified": true,
+  "flutter_repository": "https://gitcode.com/CPF-Flutter/flutter_flutter.git",
+  "flutter_branch": "oh-3.44.9-dev",
+  "flutter_commit": "3ffe70c6280cc6ddf613bffa59dd70611f238f7e",
+  "media_backend": "deferred-by-request"
 }

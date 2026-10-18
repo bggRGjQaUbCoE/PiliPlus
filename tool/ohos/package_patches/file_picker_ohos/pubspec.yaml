@@ -1,0 +1,20 @@
+name: file_picker_ohos
+description: OHOS native file picker adapter for the upstream file_picker 13 API.
+version: 13.1.0+ohos.1
+publish_to: none
+environment:
+  sdk: ">=3.12.0 <4.0.0"
+  flutter: ">=3.44.0"
+dependencies:
+  flutter:
+    sdk: flutter
+  file_picker_platform_interface: 4.2.0
+  cross_file: ^0.3.5
+flutter:
+  plugin:
+    implements: file_picker
+    platforms:
+      ohos:
+        package: com.file_picker
+        pluginClass: FilePickerPlugin
+        dartPluginClass: FilePickerOhos

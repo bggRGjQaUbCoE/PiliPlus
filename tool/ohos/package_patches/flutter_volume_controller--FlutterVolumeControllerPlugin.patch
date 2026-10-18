@@ -1,0 +1,103 @@
+--- a/ohos/src/main/ets/components/plugin/FlutterVolumeControllerPlugin.ets
++++ b/ohos/src/main/ets/components/plugin/FlutterVolumeControllerPlugin.ets
+@@ -58,11 +58,16 @@
+   }
+ 
+   onMethodCall(call: MethodCall, result: MethodResult): void {
++    const controller = this.volumeController;
++    if (controller === undefined) {
++      result.error("no_activity", "No UIAbility is attached to the volume controller", null);
++      return;
++    }
+     switch (call.method) {
+       case MethodName.GET_VOLUME:
+         try {
+-          const volume = this.volumeController?.getVolume();
+-          result.success(volume?.toString());
++          const volume = controller.getVolume();
++          result.success(volume.toString());
+         } catch (e) {
+           result.error(ErrorCode.GET_VOLUME, ErrorMessage.GET_VOLUME, (e as BusinessError).message)
+         }
+@@ -70,33 +75,33 @@
+       case MethodName.SET_VOLUME:
+         try {
+           const volume = Number(call.argument(MethodArg.VOLUME));
+-          this.volumeController?.setVolume(volume);
++          controller.setVolume(volume);
++          result.success(null);
+         } catch (e) {
+           result.error(ErrorCode.SET_VOLUME, ErrorMessage.SET_VOLUME, (e as BusinessError).message)
+         }
+-        result.success(null);
+         break;
+       case MethodName.RAISE_VOLUME:
+         try {
+           const step: number | null = call.argument(MethodArg.STEP);
+-          this.volumeController?.raiseVolume(step);
++          controller.raiseVolume(step);
++          result.success(null);
+         } catch (e) {
+           result.error(ErrorCode.RAISE_VOLUME, ErrorMessage.RAISE_VOLUME, (e as BusinessError).message)
+         }
+-        result.success(null);
+         break;
+       case MethodName.LOWER_VOLUME:
+         try {
+           const step: number | null = call.argument(MethodArg.STEP);
+-          this.volumeController?.lowerVolume(step);
++          controller.lowerVolume(step);
++          result.success(null);
+         } catch (e) {
+           result.error(ErrorCode.LOWER_VOLUME, ErrorMessage.LOWER_VOLUME, (e as BusinessError).message)
+         }
+-        result.success(null);
+         break;
+       case MethodName.GET_MUTE:
+         try {
+-          result.success(this.volumeController?.getMute());
++          result.success(controller.getMute());
+         } catch (e) {
+           result.error(ErrorCode.GET_MUTE, ErrorMessage.GET_MUTE, (e as BusinessError).message)
+         }
+@@ -104,32 +109,32 @@
+       case MethodName.SET_MUTE:
+         try {
+           const muted = Boolean(call.argument(MethodArg.IS_MUTED));
+-          this.volumeController?.setMute(muted);
++          controller.setMute(muted);
++          result.success(null);
+         } catch (e) {
+           result.error(ErrorCode.SET_MUTE, ErrorMessage.SET_MUTE, (e as BusinessError).message)
+         }
+-        result.success(null);
+         break;
+       case MethodName.TOGGLE_MUTE:
+         try {
+-          this.volumeController?.toggleMute();
++          controller.toggleMute();
++          result.success(null);
+         } catch (e) {
+           result.error(ErrorCode.TOGGLE_MUTE, ErrorMessage.TOGGLE_MUTE, (e as BusinessError).message)
+         }
+-        result.success(null);
+         break;
+       case MethodName.UPDATE_SHOW_SYSTEM_UI:
+         try {
+           const show = Boolean(call.argument(MethodArg.SHOW_SYSTEM_UI));
+-          this.volumeController?.updateShowSystemUI(show);
++          controller.updateShowSystemUI(show);
++          result.success(null);
+         } catch (e) {
+           result.error(ErrorCode.TOGGLE_MUTE, ErrorMessage.TOGGLE_MUTE, (e as BusinessError).message)
+         }
+-        result.success(null);
+         break;
+       default:
+         result.notImplemented();
+         break;
+     }
+   }
+-}
+\ No newline at end of file
++}

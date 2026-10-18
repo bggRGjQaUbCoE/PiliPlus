@@ -1,0 +1,219 @@
+--- a/ohos/src/main/ets/com/aaassseee/screen_brightness_ohos/ScreenBrightnessOhosPlugin.ets
++++ b/ohos/src/main/ets/com/aaassseee/screen_brightness_ohos/ScreenBrightnessOhosPlugin.ets
+@@ -5,9 +5,9 @@
+   MethodChannel,
+   MethodResult,
+   AbilityPluginBinding,
++  AbilityAware,
+   MethodCallHandler,
+   FlutterManager,
+-  Log,
+   EventChannel
+ } from "@ohos/flutter_ohos";
+ import settings from '@ohos.settings';
+@@ -16,7 +16,7 @@
+ 
+ const TAG = "ScreenBrightnessOhosPlugin"
+ 
+-export default class ScreenBrightnessOhosPlugin implements FlutterPlugin, MethodCallHandler {
++export default class ScreenBrightnessOhosPlugin implements FlutterPlugin, MethodCallHandler, AbilityAware {
+   private methodChannel?: MethodChannel;
+   private systemScreenBrightness?: number;
+   private applicationScreenBrightness?: number;
+@@ -30,8 +30,15 @@
+   private isAnimate: boolean = true;
+ 
+   onMethodCall(call: MethodCall, result: MethodResult): void {
+-    if (!this.mainWindow) {
+-      this.getWindow();
++    if (call.method === "getApplicationScreenBrightness" ||
++      call.method === "setApplicationScreenBrightness" ||
++      call.method === "resetApplicationScreenBrightness") {
++      try {
++        this.getWindow();
++      } catch (e) {
++        result.error("-1", "No application window is attached", null);
++        return;
++      }
+     }
+     switch (call.method) {
+       case "getSystemScreenBrightness":
+@@ -76,6 +83,19 @@
+     return TAG;
+   }
+ 
++  onAttachedToAbility(binding: AbilityPluginBinding): void {
++    this.abilityPluginBinding = binding;
++    this.mainWindow = null;
++    this.applicationScreenBrightness = undefined;
++  }
++
++  onDetachedFromAbility(): void {
++    this.abilityPluginBinding = null;
++    this.mainWindow = null;
++    this.applicationScreenBrightness = undefined;
++    this.systemScreenBrightness = undefined;
++  }
++
+   onAttachedToEngine(binding: FlutterPluginBinding): void {
+     this.methodChannel = new MethodChannel(binding.getBinaryMessenger(), "github.com/aaassseee/screen_brightness");
+     this.methodChannel.setMethodCallHandler(this);
+@@ -86,14 +106,8 @@
+     this.systemScreenBrightnessChangedEventChannel = new EventChannel(binding.getBinaryMessenger(),
+       "github.com/aaassseee/screen_brightness/system_brightness_changed");
+ 
+-    try {
+-      this.systemScreenBrightness = this.getSystemScreenBrightness();
+-    } catch (e) {
+-      Log.e(TAG, e);
+-    }
+-
+     this.systemScreenBrightnessChangedStreamHandler = new ScreenBrightnessChangedStreamHandler(null);
+-    this.systemScreenBrightnessChangedEventChannel.setStreamHandler(this.applicationScreenBrightnessChangedStreamHandler);
++    this.systemScreenBrightnessChangedEventChannel.setStreamHandler(this.systemScreenBrightnessChangedStreamHandler);
+ 
+     this.applicationScreenBrightnessChangedStreamHandler = new ScreenBrightnessChangedStreamHandler(null);
+     this.applicationScreenBrightnessChangedEventChannel.setStreamHandler(this.applicationScreenBrightnessChangedStreamHandler);
+@@ -101,25 +115,50 @@
+ 
+   onDetachedFromEngine(binding: FlutterPluginBinding): void {
+     this.methodChannel?.setMethodCallHandler(null);
++    this.systemScreenBrightnessChangedEventChannel?.setStreamHandler(null);
++    this.applicationScreenBrightnessChangedEventChannel?.setStreamHandler(null);
++    this.systemScreenBrightnessChangedStreamHandler?.onCancel(null);
++    this.applicationScreenBrightnessChangedStreamHandler?.onCancel(null);
++    this.systemScreenBrightnessChangedStreamHandler = null;
++    this.applicationScreenBrightnessChangedStreamHandler = null;
+   }
+ 
+   private getWindow(): void {
++    const binding = this.abilityPluginBinding;
++    if (binding === null) {
++      throw new Error("No UIAbility is attached");
++    }
+     this.mainWindow = FlutterManager.getInstance()
+-      .getWindowStage(FlutterManager.getInstance().getUIAbility(this.abilityPluginBinding?.getAbility().context))
+-      .getMainWindowSync();
++      .getWindowStage(binding.getAbility()).getMainWindowSync();
++    if (this.mainWindow === null) {
++      throw new Error("No main window is available");
++    }
+   }
+ 
+   private getSystemScreenBrightness(): number {
+-    let value = settings.getValueSync(
+-      getContext(this),
++    const binding = this.abilityPluginBinding;
++    if (binding === null) {
++      throw new Error("No UIAbility is attached");
++    }
++    const value = settings.getValueSync(
++      binding.getAbility().context,
+       settings.display.SCREEN_BRIGHTNESS_STATUS,
+-      '100',
++      '',
+     );
+-    return parseFloat(value) / 255;
++    const brightness = Number(value);
++    if (value.trim().length === 0 || !Number.isFinite(brightness) || brightness < 0 || brightness > 255) {
++      throw new Error("System screen brightness is unavailable");
++    }
++    return brightness / 255;
+   }
+ 
+   private handleGetSystemScreenBrightnessMethodCall(result: MethodResult): void {
+-    result.success(this.systemScreenBrightness);
++    try {
++      this.systemScreenBrightness = this.getSystemScreenBrightness();
++      result.success(this.systemScreenBrightness);
++    } catch (e) {
++      result.error("-11", "Unable to read system screen brightness", null);
++    }
+   }
+ 
+   private handleSetSystemScreenBrightnessMethodCall(call: MethodCall, result: MethodResult) {
+@@ -127,44 +166,54 @@
+   }
+ 
+   private handleGetApplicationScreenBrightnessMethodCall(result: MethodResult): void {
+-    let brightness = this.mainWindow?.getWindowProperties().brightness;
+-    if (brightness != undefined && brightness >= 0) {
+-      result.success(brightness);
+-      return;
+-    }
+-
+-    try {
+-      brightness = this.getSystemScreenBrightness();
+-      result.success(brightness);
+-    } catch (e) {
+-      result.error("-11", "Could not found application screen brightness", null);
+-    }
+-  }
+-
+-  private handleSetApplicationScreenBrightnessMethodCall(call: MethodCall, result: MethodResult): void {
+-    let brightness = parseFloat(call.argument("brightness"))
+-    if (brightness == null) {
+-      result.error("-2", "Unexpected error on null brightness", null);
+-      return;
+-    }
+-    try {
+-      this.mainWindow?.setWindowBrightness(brightness);
+-      this.applicationScreenBrightness = this.mainWindow?.getWindowProperties().brightness;
+-      this.handleApplicationScreenBrightnessChanged(brightness);
++    const mainWindow = this.mainWindow;
++    if (mainWindow === null) {
++      result.error("-1", "No application window is attached", null);
++      return;
++    }
++    try {
++      const brightness = mainWindow.getWindowProperties().brightness;
++      result.success(brightness >= 0 ? brightness : this.getSystemScreenBrightness());
++    } catch (e) {
++      result.error("-11", "Unable to read application screen brightness", null);
++    }
++  }
++
++  private async handleSetApplicationScreenBrightnessMethodCall(call: MethodCall, result: MethodResult): Promise<void> {
++    const brightness: number | null = call.argument("brightness");
++    if (brightness === null || !Number.isFinite(brightness) || brightness < 0 || brightness > 1) {
++      result.error("-2", "Brightness must be a finite number between zero and one", null);
++      return;
++    }
++    const mainWindow = this.mainWindow;
++    if (mainWindow === null) {
++      result.error("-1", "No application window is attached", null);
++      return;
++    }
++    try {
++      await mainWindow.setWindowBrightness(brightness);
++      this.applicationScreenBrightness = mainWindow.getWindowProperties().brightness;
++      this.handleApplicationScreenBrightnessChanged(this.applicationScreenBrightness);
+       result.success(null);
+     } catch (e) {
+       result.error("-1", "Unable to change application screen brightness", null);
+     }
+   }
+ 
+-  private handleResetApplicationScreenBrightnessMethodCall(result: MethodResult): void {
+-    try {
+-      this.mainWindow?.setWindowBrightness(-1);
+-      this.applicationScreenBrightness = -1;
+-      this.handleApplicationScreenBrightnessChanged(this.systemScreenBrightness!);
++  private async handleResetApplicationScreenBrightnessMethodCall(result: MethodResult): Promise<void> {
++    const mainWindow = this.mainWindow;
++    if (mainWindow === null) {
++      result.error("-1", "No application window is attached", null);
++      return;
++    }
++    try {
++      await mainWindow.setWindowBrightness(-1);
++      this.applicationScreenBrightness = undefined;
++      this.systemScreenBrightness = this.getSystemScreenBrightness();
++      this.handleApplicationScreenBrightnessChanged(this.systemScreenBrightness);
+       result.success(null);
+     } catch (e) {
+-      result.error("-1", "Unable to change application screen brightness", null);
++      result.error("-1", "Unable to reset application screen brightness", null);
+     }
+   }
+ 

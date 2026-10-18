@@ -1,0 +1,14 @@
+--- a/lib/src/in_app_localhost_server.dart
++++ b/lib/src/in_app_localhost_server.dart
+@@ -101,10 +101,7 @@
+           } catch (e) {
+             print(Uri.decodeFull(path));
+             print(e.toString());
+-            request.response.statusCode = HttpStatus.notFound;
+-            request.response.reasonPhrase = 'Not Found';
+-            request.response.write('Not Found');
+-            await request.response.close();
++            request.response.close();
+             return;
+           }
+ 

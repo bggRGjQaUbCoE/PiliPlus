@@ -1,0 +1,51 @@
+--- a/ohos/src/main/ets/components/plugin/FilePickerPlugin.ets
++++ b/ohos/src/main/ets/components/plugin/FilePickerPlugin.ets
+@@ -21,6 +21,7 @@
+   MethodChannel,
+   MethodResult,
+   AbilityPluginBinding,
++  AbilityAware,
+   BinaryMessenger,
+ } from '@ohos/flutter_ohos';
+ import { UIAbility } from '@kit.AbilityKit';
+@@ -33,7 +34,7 @@
+ const TAG: string = "FilePicker"
+ const EVENT_CHANNEL: string = "miguelruivo.flutter.plugins.filepickerevent"
+ 
+-export default class FilePickerPlugin implements FlutterPlugin, MethodCallHandler {
++export default class FilePickerPlugin implements FlutterPlugin, MethodCallHandler, AbilityAware {
+   private channel: MethodChannel | null = null;
+   private abilityBinding: AbilityPluginBinding | null = null;
+   private pluginBinding: FlutterPluginBinding | null = null;
+@@ -57,12 +58,22 @@
+   }
+ 
+   onDetachedFromEngine(binding: FlutterPluginBinding): void {
++    this.onDetachedFromAbility();
+     this.pluginBinding = null;
+   }
+ 
+   onAttachedToAbility(binding: AbilityPluginBinding): void {
+     this.abilityBinding = binding;
+     this.setup(this.pluginBinding?.getBinaryMessenger() as BinaryMessenger, binding.getAbility(), binding);
++  }
++
++  onDetachedFromAbility(): void {
++    this.delegate?.finishWithError("no_activity", "File picker UIAbility was detached");
++    this.channel?.setMethodCallHandler(null);
++    this.channel = null;
++    this.delegate = null;
++    this.ability = null;
++    this.abilityBinding = null;
+   }
+ 
+   onMethodCall(call: MethodCall, result: MethodResult): void {
+@@ -82,7 +93,7 @@
+       let initialDirectory: string = args.get("initialDirectory") as string;
+       let allowedExtensions: List<string> = args.get("allowedExtensions") as List<string>;
+       let bytes: Uint8Array = args.get("bytes") as Uint8Array;
+-      this.delegate?.saveFile([fileName], type, initialDirectory, this.allowedExtensions as Array<string>, result)
++      this.delegate?.saveFile([fileName], initialDirectory, bytes, result)
+       return;
+     }
+     if (this.fileType == null) {

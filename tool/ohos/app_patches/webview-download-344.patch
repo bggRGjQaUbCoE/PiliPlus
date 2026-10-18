@@ -1,0 +1,18 @@
+--- a/lib/pages/webview/view.dart
++++ b/lib/pages/webview/view.dart
+@@ -473,13 +473,14 @@
+                   //   source: '''
+                   //     document.querySelector('#internationalHeader').remove();
+                   //     document.querySelector('#message-navbar').remove();
+                   //   ''',
+                   // );
+                 },
+-                onDownloadStartRequest: Platform.isAndroid
++                onDownloadStartRequest:
++                    Platform.isAndroid || Platform.isOhos
+                     ? (controller, request) {
+                         showDialog(
+                           context: context,
+                           builder: (context) {
+                             String suggestedFilename = request.suggestedFilename
+                                 .toString();

@@ -1,0 +1,35 @@
+--- a/lib/utils/platform_utils.dart
++++ b/lib/utils/platform_utils.dart
+@@ -1,11 +1,14 @@
+ import 'dart:io' show Platform;
+ 
+ abstract final class PlatformUtils {
+   @pragma("vm:platform-const")
+-  static final bool isMobile = Platform.isAndroid || Platform.isIOS;
++  static final bool isOHOS = Platform.operatingSystem == 'ohos';
++
++  @pragma("vm:platform-const")
++  static final bool isMobile = Platform.isAndroid || Platform.isIOS || isOHOS;
+ 
+   @pragma("vm:platform-const")
+   static final bool isDesktop =
+       Platform.isWindows || Platform.isMacOS || Platform.isLinux;
+ 
+   @pragma("vm:platform-const")
+--- a/lib/common/widgets/image_viewer/gallery_viewer.dart
++++ b/lib/common/widgets/image_viewer/gallery_viewer.dart
+@@ -191,13 +191,13 @@
+           width: size.width,
+           height: size.height,
+         );
+       } else {
+         _hideSystemBar = false;
+       }
+-    } else if (Platform.isIOS) {
++    } else if (Platform.isIOS || PlatformUtils.isOHOS) {
+       _hideSystemBar = showSystemBar_;
+     } else {
+       _hideSystemBar = false;
+     }
+   }
+ 

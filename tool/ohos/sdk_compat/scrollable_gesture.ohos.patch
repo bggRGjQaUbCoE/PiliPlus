@@ -1,0 +1,314 @@
+diff --git a/packages/flutter/lib/src/material/tabs.dart b/packages/flutter/lib/src/material/tabs.dart
+--- a/packages/flutter/lib/src/material/tabs.dart
++++ b/packages/flutter/lib/src/material/tabs.dart
+@@ -9,7 +9,7 @@
+ import 'dart:ui' show SemanticsRole, lerpDouble;
+ 
+ import 'package:flutter/foundation.dart';
+-import 'package:flutter/gestures.dart' show DragStartBehavior;
++import 'package:flutter/gestures.dart' show DragStartBehavior, HorizontalDragGestureRecognizer;
+ import 'package:flutter/rendering.dart';
+ import 'package:flutter/widgets.dart';
+ 
+@@ -2222,7 +2222,16 @@
+     this.dragStartBehavior = DragStartBehavior.start,
+     this.viewportFraction = 1.0,
+     this.clipBehavior = Clip.hardEdge,
++    this.scrollDirection = Axis.horizontal,
++    this.hitTestBehavior = HitTestBehavior.opaque,
++    this.horizontalDragGestureRecognizer = HorizontalDragGestureRecognizer.new,
+   });
++
++  final Axis scrollDirection;
++
++  final HitTestBehavior hitTestBehavior;
++
++  final ValueGetter<HorizontalDragGestureRecognizer> horizontalDragGestureRecognizer;
+ 
+   /// This widget's selection and animation state.
+   ///
+@@ -2525,6 +2534,9 @@
+         dragStartBehavior: widget.dragStartBehavior,
+         clipBehavior: widget.clipBehavior,
+         controller: _pageController,
++        scrollDirection: widget.scrollDirection,
++        hitTestBehavior: widget.hitTestBehavior,
++        horizontalDragGestureRecognizer: widget.horizontalDragGestureRecognizer,
+         physics: widget.physics == null
+             ? const PageScrollPhysics().applyTo(const ClampingScrollPhysics())
+             : const PageScrollPhysics().applyTo(widget.physics),
+diff --git a/packages/flutter/lib/src/widgets/gesture_detector.dart b/packages/flutter/lib/src/widgets/gesture_detector.dart
+--- a/packages/flutter/lib/src/widgets/gesture_detector.dart
++++ b/packages/flutter/lib/src/widgets/gesture_detector.dart
+@@ -1430,7 +1430,7 @@
+ }
+ 
+ /// State for a [RawGestureDetector].
+-class RawGestureDetectorState extends State<RawGestureDetector> {
++class RawGestureDetectorState<T extends RawGestureDetector> extends State<T> {
+   Map<Type, GestureRecognizer>? _recognizers = const <Type, GestureRecognizer>{};
+   SemanticsGestureDelegate? _semantics;
+ 
+@@ -1444,7 +1444,7 @@
+ 
+   @protected
+   @override
+-  void didUpdateWidget(RawGestureDetector oldWidget) {
++  void didUpdateWidget(T oldWidget) {
+     super.didUpdateWidget(oldWidget);
+     if (!(oldWidget.semantics == null && widget.semantics == null)) {
+       _semantics = widget.semantics ?? _DefaultSemanticsGestureDelegate(this);
+@@ -1636,6 +1636,109 @@
+   }
+ }
+ 
++class NestedRawGestureDetector extends RawGestureDetector {
++  const NestedRawGestureDetector({
++    super.key,
++    super.child,
++    super.gestures,
++    super.behavior,
++    super.excludeFromSemantics,
++    super.semantics,
++    required this.ignoring,
++  });
++
++  final ValueGetter<bool> ignoring;
++
++  @override
++  RawGestureDetectorState createState() => NestedRawGestureDetectorState();
++}
++
++class NestedRawGestureDetectorState extends RawGestureDetectorState<NestedRawGestureDetector> {
++  @override
++  Widget build(BuildContext context) {
++    Widget result = NestedListener(
++      onPointerDown: _handlePointerDown,
++      onPointerPanZoomStart: _handlePointerPanZoomStart,
++      behavior: widget.behavior ?? _defaultBehavior,
++      ignoring: widget.ignoring,
++      child: widget.child,
++    );
++    if (!widget.excludeFromSemantics) {
++      result = _GestureSemantics(
++        behavior: widget.behavior ?? _defaultBehavior,
++        assignSemantics: _updateSemanticsForRenderObject,
++        child: result,
++      );
++    }
++    return result;
++  }
++}
++
++class NestedListener extends Listener {
++  const NestedListener({
++    super.key,
++    super.onPointerDown,
++    super.onPointerMove,
++    super.onPointerUp,
++    super.onPointerHover,
++    super.onPointerCancel,
++    super.onPointerPanZoomStart,
++    super.onPointerPanZoomUpdate,
++    super.onPointerPanZoomEnd,
++    super.onPointerSignal,
++    super.behavior,
++    required this.ignoring,
++    super.child,
++  });
++
++  final ValueGetter<bool> ignoring;
++
++  @override
++  RenderPointerListener createRenderObject(BuildContext context) {
++    return _RenderPointerListener(
++      onPointerDown: onPointerDown,
++      onPointerMove: onPointerMove,
++      onPointerUp: onPointerUp,
++      onPointerHover: onPointerHover,
++      onPointerCancel: onPointerCancel,
++      onPointerPanZoomStart: onPointerPanZoomStart,
++      onPointerPanZoomUpdate: onPointerPanZoomUpdate,
++      onPointerPanZoomEnd: onPointerPanZoomEnd,
++      onPointerSignal: onPointerSignal,
++      behavior: behavior,
++      ignoring: ignoring,
++    );
++  }
++
++  @override
++  void updateRenderObject(BuildContext context, _RenderPointerListener renderObject) {
++    super.updateRenderObject(context, renderObject);
++    renderObject.ignoring = ignoring;
++  }
++}
++
++class _RenderPointerListener extends RenderPointerListener {
++  _RenderPointerListener({
++    super.onPointerDown,
++    super.onPointerMove,
++    super.onPointerUp,
++    super.onPointerHover,
++    super.onPointerCancel,
++    super.onPointerPanZoomStart,
++    super.onPointerPanZoomUpdate,
++    super.onPointerPanZoomEnd,
++    super.onPointerSignal,
++    super.behavior,
++    required this.ignoring,
++    super.child,
++  });
++
++  ValueGetter<bool> ignoring;
++
++  @override
++  bool hitTestSelf(Offset position) => behavior == HitTestBehavior.opaque && ignoring();
++}
++
+ typedef _AssignSemantics = void Function(RenderSemanticsGestureHandler);
+ 
+ class _GestureSemantics extends SingleChildRenderObjectWidget {
+diff --git a/packages/flutter/lib/src/widgets/page_view.dart b/packages/flutter/lib/src/widgets/page_view.dart
+--- a/packages/flutter/lib/src/widgets/page_view.dart
++++ b/packages/flutter/lib/src/widgets/page_view.dart
+@@ -10,8 +10,8 @@
+ 
+ import 'dart:math' as math;
+ 
+-import 'package:flutter/foundation.dart' show clampDouble, precisionErrorTolerance;
+-import 'package:flutter/gestures.dart' show DragStartBehavior;
++import 'package:flutter/foundation.dart' show clampDouble, precisionErrorTolerance, ValueGetter;
++import 'package:flutter/gestures.dart' show DragStartBehavior, HorizontalDragGestureRecognizer;
+ import 'package:flutter/rendering.dart';
+ import 'basic.dart';
+ import 'debug.dart';
+@@ -696,6 +696,7 @@
+     this.hitTestBehavior = HitTestBehavior.opaque,
+     this.scrollBehavior,
+     this.padEnds = true,
++    this.horizontalDragGestureRecognizer = HorizontalDragGestureRecognizer.new,
+   }) : assert(
+          scrollCacheExtent == null || (scrollCacheExtent.value > 0.0) == allowImplicitScrolling,
+          'scrollCacheExtent and allowImplicitScrolling must be consistent: '
+@@ -750,6 +751,7 @@
+     this.hitTestBehavior = HitTestBehavior.opaque,
+     this.scrollBehavior,
+     this.padEnds = true,
++    this.horizontalDragGestureRecognizer = HorizontalDragGestureRecognizer.new,
+   }) : assert(
+          scrollCacheExtent == null || (scrollCacheExtent.value > 0.0) == allowImplicitScrolling,
+          'scrollCacheExtent and allowImplicitScrolling must be consistent: '
+@@ -792,6 +794,7 @@
+     this.hitTestBehavior = HitTestBehavior.opaque,
+     this.scrollBehavior,
+     this.padEnds = true,
++    this.horizontalDragGestureRecognizer = HorizontalDragGestureRecognizer.new,
+   }) : assert(
+          scrollCacheExtent == null || (scrollCacheExtent.value > 0.0) == allowImplicitScrolling,
+          'scrollCacheExtent and allowImplicitScrolling must be consistent: '
+@@ -800,6 +803,8 @@
+        ),
+        scrollCacheExtent =
+            scrollCacheExtent ?? ScrollCacheExtent.viewport(allowImplicitScrolling ? 1.0 : 0.0);
++
++  final ValueGetter<HorizontalDragGestureRecognizer> horizontalDragGestureRecognizer;
+ 
+   /// {@template flutter.widgets.PageView.allowImplicitScrolling}
+   /// Controls whether the widget's pages will respond to
+@@ -1020,6 +1025,7 @@
+         physics: physics,
+         restorationId: widget.restorationId,
+         hitTestBehavior: widget.hitTestBehavior,
++        horizontalDragGestureRecognizer: widget.horizontalDragGestureRecognizer,
+         scrollBehavior:
+             widget.scrollBehavior ?? ScrollConfiguration.of(context).copyWith(scrollbars: false),
+         viewportBuilder: (BuildContext context, ViewportOffset position) {
+diff --git a/packages/flutter/lib/src/widgets/scrollable.dart b/packages/flutter/lib/src/widgets/scrollable.dart
+--- a/packages/flutter/lib/src/widgets/scrollable.dart
++++ b/packages/flutter/lib/src/widgets/scrollable.dart
+@@ -44,6 +44,8 @@
+ import 'viewport.dart';
+ 
+ export 'package:flutter/physics.dart' show Tolerance;
++
++const _nestedOuterDebugLabel = 'outer';
+ 
+ // Examples can assume:
+ // late BuildContext context;
+@@ -134,7 +136,10 @@
+     this.scrollBehavior,
+     this.clipBehavior = Clip.hardEdge,
+     this.hitTestBehavior = HitTestBehavior.opaque,
++    this.horizontalDragGestureRecognizer = HorizontalDragGestureRecognizer.new,
+   }) : assert(semanticChildCount == null || semanticChildCount >= 0);
++
++  final ValueGetter<HorizontalDragGestureRecognizer> horizontalDragGestureRecognizer;
+ 
+   /// {@template flutter.widgets.Scrollable.axisDirection}
+   /// The direction in which this widget scrolls.
+@@ -812,8 +817,7 @@
+           _gestureRecognizers = <Type, GestureRecognizerFactory>{
+             HorizontalDragGestureRecognizer:
+                 GestureRecognizerFactoryWithHandlers<HorizontalDragGestureRecognizer>(
+-                  () =>
+-                      HorizontalDragGestureRecognizer(supportedDevices: _configuration.dragDevices),
++                  widget.horizontalDragGestureRecognizer,
+                   (HorizontalDragGestureRecognizer instance) {
+                     instance
+                       ..onDown = _handleDragDown
+@@ -1021,26 +1025,37 @@
+     //
+     // Since notificationContext is pointing to _gestureDetectorKey.context, _ScrollableScope
+     // must be placed above the widget using it: RawGestureDetector
+-    Widget result = _ScrollableScope(
++    Widget result = Semantics(
++      explicitChildNodes: !widget.excludeFromSemantics,
++      child: IgnorePointer(
++        key: _ignorePointerKey,
++        ignoring: _shouldIgnorePointer,
++        child: widget.viewportBuilder(context, position),
++      ),
++    );
++    if (_effectiveScrollController.debugLabel == _nestedOuterDebugLabel) {
++      result = NestedRawGestureDetector(
++        key: _gestureDetectorKey,
++        gestures: _gestureRecognizers,
++        behavior: widget.hitTestBehavior,
++        excludeFromSemantics: widget.excludeFromSemantics,
++        ignoring: () => _shouldIgnorePointer,
++        child: result,
++      );
++    } else {
++      result = RawGestureDetector(
++        key: _gestureDetectorKey,
++        gestures: _gestureRecognizers,
++        behavior: widget.hitTestBehavior,
++        excludeFromSemantics: widget.excludeFromSemantics,
++        child: result,
++      );
++    }
++
++    result = _ScrollableScope(
+       scrollable: this,
+       position: position,
+-      child: Listener(
+-        onPointerSignal: _receivedPointerSignal,
+-        child: RawGestureDetector(
+-          key: _gestureDetectorKey,
+-          gestures: _gestureRecognizers,
+-          behavior: widget.hitTestBehavior,
+-          excludeFromSemantics: widget.excludeFromSemantics,
+-          child: Semantics(
+-            explicitChildNodes: !widget.excludeFromSemantics,
+-            child: IgnorePointer(
+-              key: _ignorePointerKey,
+-              ignoring: _shouldIgnorePointer,
+-              child: widget.viewportBuilder(context, position),
+-            ),
+-          ),
+-        ),
+-      ),
++      child: Listener(onPointerSignal: _receivedPointerSignal, child: result),
+     );
+ 
+     if (!widget.excludeFromSemantics) {

@@ -1,8 +1,10 @@
-"""Regression checks for source preservation and honest toolchain rejection."""
+"""Regression checks for source preservation and explicit SDK profiles."""
 
 from __future__ import annotations
 
 import importlib.util
+import contextlib
+import io
 import json
 from pathlib import Path
 import subprocess
@@ -113,9 +115,27 @@ class SourceTests(unittest.TestCase):
         profile = json.loads((out / "ohos/AppScope/app.json5").read_text())
         self.assertEqual(profile["app"]["versionCode"], 17)
         self.assertEqual(profile["app"]["versionName"], "2.1.6")
+        defines = json.loads((out / "ohos/build-defines.json").read_text())
+        self.assertEqual(defines["pili.name"], "2.1.6")
+        self.assertEqual(defines["pili.code"], 17)
+        self.assertEqual(defines["pili.hash"], report["source_commit"])
+        self.assertLess(defines["pili.time"], 10**11)  # Original BuildConfig uses Unix seconds.
         self.assertEqual(report["application_source_transformations"], [])
         self.assertFalse(report["dependency_overrides_applied"])
         self.assertFalse(report["hap_built"])
+
+    def test_prepare_build_uses_rules_from_selected_commit(self):
+        self.write("tool/ohos/build_profile.py", "def configure(workspace):\n    return {'rule': 'selected-commit'}\n")
+        self.commit("committed adaptation rules")
+        revision = self.git("rev-parse", "HEAD").strip()
+        self.write("tool/ohos/build_profile.py", "def configure(workspace):\n    raise RuntimeError('uncommitted rules must not run')\n")
+        out = self.parent / "selected revision build"
+        captured = io.StringIO()
+        with contextlib.redirect_stdout(captured):
+            code = ohos.main(["--workspace", str(self.root), "prepare-build", "--output", str(out),
+                              "--revision", revision])
+        self.assertEqual(code, 0)
+        self.assertEqual(json.loads(captured.getvalue())["rule"], "selected-commit")
 
     def test_output_cannot_be_inside_checkout_or_replace_existing_directory(self):
         for out in (self.root, self.root / "build-copy"):
@@ -135,6 +155,45 @@ class SourceTests(unittest.TestCase):
         with self.assertRaises(ohos.CheckError):
             ohos.prepare(self.root, out, None, "HEAD")
         self.assertFalse(out.exists())
+
+    def test_ohos_environment_is_only_applied_to_an_export(self):
+        profile = ohos.helper("build_profile")
+        with self.assertRaises(profile.ProfileError):
+            profile.configure(self.root)
+        out = self.parent / "ohos compatible copy"
+        ohos.prepare(self.root, out, None, "HEAD")
+        profile.environment_profile(out)
+        self.assertEqual(ohos.read_pubspec(self.root)["sdk"], ">=3.13.0")
+        self.assertEqual(ohos.read_pubspec(out)["sdk"], ">=3.12.0 <4.0.0")
+        self.assertEqual(ohos.read_pubspec(out)["name"], "PiliPlus")
+        self.assertEqual([change["path"] for change in profile.generated_changes(out)], ["pubspec.yaml"])
+        self.assertEqual((out / "pubspec.lock").read_bytes(), (self.root / "pubspec.lock").read_bytes())
+
+    def test_upstream_patch_drift_fails_before_other_files_are_written(self):
+        profile = ohos.helper("build_profile")
+        out = self.parent / "drifting source copy"
+        ohos.prepare(self.root, out, None, "HEAD")
+        before = (out / "pubspec.yaml").read_bytes()
+        with self.assertRaises(profile.ProfileError):
+            profile.apply_replacements(out, {
+                "pubspec.yaml": [("name: PiliPlus", "name: unrelated")],
+                "lib/main.dart": [("missing upstream anchor", "new code")],
+            })
+        self.assertEqual((out / "pubspec.yaml").read_bytes(), before)
+
+    def test_build_copy_parent_symlink_never_reaches_external_file(self):
+        profile = ohos.helper("build_profile")
+        out = self.parent / "symlink parent copy"
+        ohos.prepare(self.root, out, None, "HEAD")
+        external = self.parent / "external code"
+        (out / "lib").rename(external)
+        (out / "lib").symlink_to(external, target_is_directory=True)
+        before = (external / "main.dart").read_bytes()
+        with self.assertRaises(profile.ProfileError):
+            profile.generated_changes(out)
+        with self.assertRaises(profile.ProfileError):
+            profile.apply_replacements(out, {"lib/main.dart": [("upstream application", "changed")]})
+        self.assertEqual((external / "main.dart").read_bytes(), before)
 
 
 class ToolchainTests(unittest.TestCase):
@@ -162,6 +221,20 @@ class ToolchainTests(unittest.TestCase):
         self.assertTrue(ohos.sdk_matches({"flutter": "3.47.7", "sdk": "^3.13.0"}, {
             "frameworkVersion": "3.47.7", "dartSdkVersion": "3.13.0",
         }))
+
+    def test_official_ohos_profile_accepts_real_version_and_rejects_wrong_origin(self):
+        profile = {
+            "repository": "https://gitcode.com/CPF-Flutter/flutter_flutter.git",
+            "branch": "oh-3.44.9-dev", "commit": "a" * 40,
+            "flutter_version": "3.44.9", "dart_version": "3.12.2",
+        }
+        actual = {"frameworkVersion": "3.44.9+ohos-0.0.1-canary1", "dartSdkVersion": "3.12.2"}
+        self.assertEqual(ohos.ohos_sdk_matches(profile, actual, "a" * 40, profile["repository"]), [])
+        self.assertTrue(ohos.ohos_sdk_matches(profile, actual, "a" * 40, "https://example.invalid/flutter.git"))
+        self.assertTrue(ohos.ohos_sdk_matches(profile, actual, "b" * 40, profile["repository"]))
+        self.assertTrue(ohos.ohos_sdk_matches(profile, {
+            "frameworkVersion": "3.47.7", "dartSdkVersion": "3.12.2",
+        }, "a" * 40, profile["repository"]))
 
 
 if __name__ == "__main__":

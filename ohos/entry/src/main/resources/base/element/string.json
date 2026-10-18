@@ -11,6 +11,22 @@
     {
       "name": "EntryAbility_label",
       "value": "PiliPlus"
+    },
+    {
+      "name": "network_permission_reason",
+      "value": "用于检测网络连接状态，加载视频、弹幕和其他内容。"
+    },
+    {
+      "name": "wifi_permission_reason",
+      "value": "用于识别 Wi-Fi 连接，遵循应用中的网络使用设置。"
+    },
+    {
+      "name": "pasteboard_permission_reason",
+      "value": "用于读取你复制的链接并在应用中打开。"
+    },
+    {
+      "name": "background_audio_permission_reason",
+      "value": "用于在你启用后台播放后继续播放音频。"
     }
   ]
 }

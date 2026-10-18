@@ -1,0 +1,22 @@
+--- a/lib/src/flex/flex_scheme_variant.dart
++++ b/lib/src/flex/flex_scheme_variant.dart
+@@ -572,7 +572,7 @@
+   );
+ 
+   /// The constructor for the [FlexSchemeVariant] enum.
+-  FlexSchemeVariant({
++  const FlexSchemeVariant({
+     required this.variantName,
+     required this.description,
+     required this.configDetails,
+--- a/lib/src/mcu/dynamiccolor/variant.dart
++++ b/lib/src/mcu/dynamiccolor/variant.dart
+@@ -81,7 +81,7 @@
+   fruitSalad('fruit salad', "A playful theme - the source color's hue does not appear in the theme.");
+ 
+   /// Enum constructor
+-  Variant(this.label, this.description);
++  const Variant(this.label, this.description);
+ 
+   /// The label of the variant color scheme.
+   final String label;

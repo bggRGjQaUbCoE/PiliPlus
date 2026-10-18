@@ -1,0 +1,811 @@
+--- a/lib/common/widgets/flutter/vertical_slider.dart
++++ b/lib/common/widgets/flutter/vertical_slider.dart
+@@ -797,12 +797,13 @@
+ 
+       case _SliderType.adaptive:
+         {
+           final ThemeData theme = Theme.of(context);
+           switch (theme.platform) {
+             case TargetPlatform.android:
++            case TargetPlatform.ohos:
+             case TargetPlatform.fuchsia:
+             case TargetPlatform.linux:
+             case TargetPlatform.windows:
+               return _buildMaterialSlider(context);
+             case TargetPlatform.iOS:
+             case TargetPlatform.macOS:
+@@ -961,12 +962,13 @@
+     // in range_slider.dart.
+     Size screenSize() => MediaQuery.sizeOf(context);
+ 
+     VoidCallback? handleDidGainAccessibilityFocus;
+     switch (theme.platform) {
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+       case TargetPlatform.fuchsia:
+       case TargetPlatform.iOS:
+       case TargetPlatform.linux:
+       case TargetPlatform.macOS:
+         break;
+       case TargetPlatform.windows:
+@@ -1547,12 +1549,13 @@
+     switch (_platform) {
+       case TargetPlatform.iOS:
+       case TargetPlatform.macOS:
+         // Matches iOS implementation of material slider.
+         return 0.1;
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+       case TargetPlatform.fuchsia:
+       case TargetPlatform.linux:
+       case TargetPlatform.windows:
+         // Matches Android implementation of material slider.
+         return 0.05;
+     }
+--- a/lib/common/widgets/flutter/text_field/editable.dart
++++ b/lib/common/widgets/flutter/text_field/editable.dart
+@@ -1910,12 +1910,13 @@
+           caretRect.left,
+           caretRect.top + heightDiff / 2,
+           caretRect.width,
+           caretRect.height,
+         );
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+       case TargetPlatform.fuchsia:
+       case TargetPlatform.linux:
+       case TargetPlatform.windows:
+         // Override the height to take the full height of the glyph at the TextPosition
+         // when not on iOS. iOS has special handling that creates a taller caret.
+         // TODO(garyq): see https://github.com/flutter/flutter/issues/120836.
+@@ -2389,12 +2390,13 @@
+           }
+           return TextSelection(
+             baseOffset: previousWord.start,
+             extentOffset: position.offset,
+           );
+         case TargetPlatform.android:
++        case TargetPlatform.ohos:
+           if (readOnly) {
+             if (previousWord == null) {
+               return TextSelection(
+                 baseOffset: position.offset,
+                 extentOffset: position.offset + 1,
+               );
+@@ -2476,12 +2478,13 @@
+           0.0,
+           0.0,
+           cursorWidth,
+           cursorHeight + 2,
+         );
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+       case TargetPlatform.fuchsia:
+       case TargetPlatform.linux:
+       case TargetPlatform.windows:
+         _caretPrototype = Rect.fromLTWH(
+           0.0,
+           _kCaretHeightOffset,
+--- a/lib/common/widgets/flutter/text_field/text_field.dart
++++ b/lib/common/widgets/flutter/text_field/text_field.dart
+@@ -949,12 +949,13 @@
+       case TargetPlatform.iOS:
+       case TargetPlatform.macOS:
+         return CupertinoSpellCheckSuggestionsToolbar.editableText(
+           editableTextState: editableTextState,
+         );
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+       case TargetPlatform.fuchsia:
+       case TargetPlatform.linux:
+       case TargetPlatform.windows:
+         return SpellCheckSuggestionsToolbar.editableText(
+           editableTextState: editableTextState,
+         );
+@@ -1521,21 +1522,23 @@
+       case TargetPlatform.iOS:
+       case TargetPlatform.macOS:
+       case TargetPlatform.linux:
+       case TargetPlatform.windows:
+       case TargetPlatform.fuchsia:
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+         if (cause == SelectionChangedCause.longPress) {
+           _editableText?.bringIntoView(selection.extent);
+         }
+     }
+ 
+     switch (Theme.of(context).platform) {
+       case TargetPlatform.iOS:
+       case TargetPlatform.fuchsia:
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+         break;
+       case TargetPlatform.macOS:
+       case TargetPlatform.linux:
+       case TargetPlatform.windows:
+         if (cause == SelectionChangedCause.drag) {
+           _editableText?.hideToolbar();
+@@ -1673,12 +1676,13 @@
+       case TargetPlatform.macOS:
+         spellCheckConfiguration =
+             CupertinoRichTextField.inferIOSSpellCheckConfiguration(
+               widget.spellCheckConfiguration,
+             );
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+       case TargetPlatform.fuchsia:
+       case TargetPlatform.linux:
+       case TargetPlatform.windows:
+         spellCheckConfiguration =
+             RichTextField.inferAndroidSpellCheckConfiguration(
+               widget.spellCheckConfiguration,
+@@ -1746,12 +1750,13 @@
+         };
+         handleDidLoseAccessibilityFocus = () {
+           _effectiveFocusNode.unfocus();
+         };
+ 
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+       case TargetPlatform.fuchsia:
+         forcePressEnabled = false;
+         textSelectionControls ??= materialTextSelectionHandleControls;
+         paintCursorAboveText = false;
+         cursorOpacityAnimates ??= false;
+         cursorColor = _hasError
+--- a/lib/common/widgets/flutter/text_field/text_selection.dart
++++ b/lib/common/widgets/flutter/text_field/text_selection.dart
+@@ -97,12 +97,13 @@
+ 
+   // Shows the magnifier on supported platforms at the given offset, currently
+   // only Android and iOS.
+   void _showMagnifierIfSupportedByPlatform(Offset positionToShow) {
+     switch (defaultTargetPlatform) {
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+       case TargetPlatform.iOS:
+         editableText.showMagnifier(positionToShow);
+       case TargetPlatform.fuchsia:
+       case TargetPlatform.linux:
+       case TargetPlatform.macOS:
+       case TargetPlatform.windows:
+@@ -114,12 +115,13 @@
+     if (!_isEditableTextMounted) {
+       return;
+     }
+ 
+     switch (defaultTargetPlatform) {
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+       case TargetPlatform.iOS:
+         editableText.hideMagnifier();
+       case TargetPlatform.fuchsia:
+       case TargetPlatform.linux:
+       case TargetPlatform.macOS:
+       case TargetPlatform.windows:
+@@ -367,12 +369,13 @@
+     // It is impossible to extend the selection when the shift key is pressed, if the
+     // renderEditable.selection is invalid.
+     final bool isShiftPressedValid =
+         _isShiftPressed && renderEditable.selection?.baseOffset != null;
+     switch (defaultTargetPlatform) {
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+         if (editableText.widget.stylusHandwritingEnabled) {
+           final bool stylusEnabled = switch (kind) {
+             PointerDeviceKind.stylus || PointerDeviceKind.invertedStylus =>
+               editableText.widget.stylusHandwritingEnabled,
+             _ => false,
+           };
+@@ -515,12 +518,13 @@
+       case TargetPlatform.linux:
+       case TargetPlatform.macOS:
+       case TargetPlatform.windows:
+         break;
+       // On desktop platforms the selection is set on tap down.
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+         editableText.hideToolbar(false);
+         if (isShiftPressedValid) {
+           _extendSelection(details.globalPosition, SelectionChangedCause.tap);
+           return;
+         }
+         renderEditable.selectPosition(cause: SelectionChangedCause.tap);
+@@ -646,12 +650,18 @@
+   ///    this callback.
+   @protected
+   void onSingleLongTapStart(LongPressStartDetails details) {
+     if (!delegate.selectionEnabled) {
+       return;
+     }
++    final TextEditingValue value = editableText.textEditingValue;
++    if (defaultTargetPlatform == TargetPlatform.ohos &&
++        value.composing.isValid &&
++        value.composing.isNormalized) {
++      return;
++    }
+     switch (defaultTargetPlatform) {
+       case TargetPlatform.iOS:
+       case TargetPlatform.macOS:
+         if (!renderEditable.hasFocus) {
+           _longPressStartedWithoutFocus = true;
+           renderEditable.selectWord(cause: SelectionChangedCause.longPress);
+@@ -677,12 +687,13 @@
+             ),
+             offset: Offset.zero,
+           );
+           editableText.updateFloatingCursor(cursorPoint);
+         }
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+       case TargetPlatform.fuchsia:
+       case TargetPlatform.linux:
+       case TargetPlatform.windows:
+         renderEditable.selectWord(cause: SelectionChangedCause.longPress);
+         if (editableText.context.mounted) {
+           Feedback.forLongPress(editableText.context);
+@@ -704,12 +715,18 @@
+   ///
+   ///  * [TextSelectionGestureDetector.onSingleLongTapMoveUpdate], which
+   ///    triggers this callback.
+   @protected
+   void onSingleLongTapMoveUpdate(LongPressMoveUpdateDetails details) {
+     if (!delegate.selectionEnabled) {
++      return;
++    }
++    final TextEditingValue value = editableText.textEditingValue;
++    if (defaultTargetPlatform == TargetPlatform.ohos &&
++        value.composing.isValid &&
++        value.composing.isNormalized) {
+       return;
+     }
+     // Adjust the drag start offset for possible viewport offset changes.
+     final editableOffset = renderEditable.maxLines == 1
+         ? Offset(renderEditable.offset.pixels - _dragStartViewportOffset, 0.0)
+         : Offset(0.0, renderEditable.offset.pixels - _dragStartViewportOffset);
+@@ -742,12 +759,13 @@
+             state: FloatingCursorDragState.Update,
+             offset: details.offsetFromOrigin,
+           );
+           editableText.updateFloatingCursor(cursorPoint);
+         }
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+       case TargetPlatform.fuchsia:
+       case TargetPlatform.linux:
+       case TargetPlatform.windows:
+         renderEditable.selectWordsInRange(
+           from:
+               details.globalPosition -
+@@ -769,12 +787,18 @@
+   /// See also:
+   ///
+   ///  * [TextSelectionGestureDetector.onSingleLongTapEnd], which triggers this
+   ///    callback.
+   @protected
+   void onSingleLongTapEnd(LongPressEndDetails details) {
++    final TextEditingValue value = editableText.textEditingValue;
++    if (defaultTargetPlatform == TargetPlatform.ohos &&
++        value.composing.isValid &&
++        value.composing.isNormalized) {
++      return;
++    }
+     _onSingleLongTapEndOrCancel();
+     if (shouldShowSelectionToolbar) {
+       editableText.showToolbar();
+     }
+   }
+ 
+@@ -807,12 +831,13 @@
+         }
+         if (shouldShowSelectionToolbar) {
+           editableText.hideToolbar();
+           editableText.showToolbar();
+         }
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+       case TargetPlatform.fuchsia:
+       case TargetPlatform.linux:
+       case TargetPlatform.windows:
+         if (!renderEditable.hasFocus) {
+           renderEditable.selectPosition(cause: SelectionChangedCause.tap);
+         }
+@@ -853,12 +878,18 @@
+   /// See also:
+   ///
+   ///  * [TextSelectionGestureDetector.onDoubleTapDown], which triggers this
+   ///    callback.
+   @protected
+   void onDoubleTapDown(TapDragDownDetails details) {
++    final TextEditingValue value = editableText.textEditingValue;
++    if (defaultTargetPlatform == TargetPlatform.ohos &&
++        value.composing.isValid &&
++        value.composing.isNormalized) {
++      return;
++    }
+     if (delegate.selectionEnabled) {
+       renderEditable.selectWord(cause: SelectionChangedCause.doubleTap);
+       if (shouldShowSelectionToolbar) {
+         editableText.showToolbar();
+       }
+     }
+@@ -983,17 +1014,24 @@
+   ///    callback.
+   @protected
+   void onTripleTapDown(TapDragDownDetails details) {
+     if (!delegate.selectionEnabled) {
+       return;
+     }
++    final TextEditingValue value = editableText.textEditingValue;
++    if (defaultTargetPlatform == TargetPlatform.ohos &&
++        value.composing.isValid &&
++        value.composing.isNormalized) {
++      return;
++    }
+     if (renderEditable.maxLines == 1) {
+       editableText.selectAll(SelectionChangedCause.tap);
+     } else {
+       switch (defaultTargetPlatform) {
+         case TargetPlatform.android:
++        case TargetPlatform.ohos:
+         case TargetPlatform.fuchsia:
+         case TargetPlatform.iOS:
+         case TargetPlatform.macOS:
+         case TargetPlatform.windows:
+           _selectParagraphsInRange(
+             from: details.globalPosition,
+@@ -1048,12 +1086,13 @@
+         renderEditable.selection!.isValid) {
+       switch (defaultTargetPlatform) {
+         case TargetPlatform.iOS:
+         case TargetPlatform.macOS:
+           _expandSelection(details.globalPosition, SelectionChangedCause.drag);
+         case TargetPlatform.android:
++        case TargetPlatform.ohos:
+         case TargetPlatform.fuchsia:
+         case TargetPlatform.linux:
+         case TargetPlatform.windows:
+           _extendSelection(details.globalPosition, SelectionChangedCause.drag);
+       }
+     } else {
+@@ -1070,12 +1109,13 @@
+             case PointerDeviceKind.invertedStylus:
+             case PointerDeviceKind.touch:
+             case PointerDeviceKind.unknown:
+             case null:
+           }
+         case TargetPlatform.android:
++        case TargetPlatform.ohos:
+         case TargetPlatform.fuchsia:
+           switch (details.kind) {
+             case PointerDeviceKind.mouse:
+             case PointerDeviceKind.trackpad:
+               renderEditable.selectPositionAt(
+                 from: details.globalPosition,
+@@ -1170,12 +1210,13 @@
+       if (_TextSelectionGestureDetectorState._getEffectiveConsecutiveTapCount(
+             details.consecutiveTapCount,
+           ) ==
+           3) {
+         switch (defaultTargetPlatform) {
+           case TargetPlatform.android:
++          case TargetPlatform.ohos:
+           case TargetPlatform.fuchsia:
+           case TargetPlatform.iOS:
+             switch (details.kind) {
+               case PointerDeviceKind.mouse:
+               case PointerDeviceKind.trackpad:
+                 return _selectParagraphsInRange(
+@@ -1233,12 +1274,13 @@
+             case PointerDeviceKind.unknown:
+             case null:
+               break;
+           }
+           return;
+         case TargetPlatform.android:
++        case TargetPlatform.ohos:
+         case TargetPlatform.fuchsia:
+           // With a precise pointer device, such as a mouse, trackpad, or stylus,
+           // the drag will select the text spanning the origin of the drag to the end of the drag.
+           // With a touch device, the cursor should move with the drag.
+           switch (details.kind) {
+             case PointerDeviceKind.mouse:
+@@ -1541,12 +1583,13 @@
+   //
+   // This method should be used in all instances when details.consecutiveTapCount
+   // would be used.
+   static int _getEffectiveConsecutiveTapCount(int rawCount) {
+     switch (defaultTargetPlatform) {
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+       case TargetPlatform.fuchsia:
+       case TargetPlatform.linux:
+         // From observation, these platform's reset their tap count to 0 when
+         // the number of consecutive taps exceeds 3. For example on Debian Linux
+         // with GTK, when going past a triple click, on the fourth click the
+         // selection is moved to the precise click position, on the fifth click
+@@ -1683,12 +1726,13 @@
+ 
+     if (widget.onDragSelectionStart != null ||
+         widget.onDragSelectionUpdate != null ||
+         widget.onDragSelectionEnd != null) {
+       switch (defaultTargetPlatform) {
+         case TargetPlatform.android:
++        case TargetPlatform.ohos:
+         case TargetPlatform.fuchsia:
+         case TargetPlatform.iOS:
+           gestures[TapAndHorizontalDragGestureRecognizer] =
+               GestureRecognizerFactoryWithHandlers<
+                 TapAndHorizontalDragGestureRecognizer
+               >(
+@@ -2338,12 +2382,13 @@
+           baseOffset: dragStartSelectionNormalized
+               ? _dragStartSelection!.baseOffset
+               : _dragStartSelection!.extentOffset,
+           extentOffset: position.offset,
+         );
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+       case TargetPlatform.fuchsia:
+       case TargetPlatform.linux:
+       case TargetPlatform.windows:
+         if (_selection.isCollapsed) {
+           _selectionOverlay.updateMagnifier(
+             _buildMagnifier(
+@@ -2483,12 +2528,13 @@
+           baseOffset: dragStartSelectionNormalized
+               ? _dragStartSelection!.extentOffset
+               : _dragStartSelection!.baseOffset,
+           extentOffset: position.offset,
+         );
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+       case TargetPlatform.fuchsia:
+       case TargetPlatform.linux:
+       case TargetPlatform.windows:
+         if (_selection.isCollapsed) {
+           _selectionOverlay.updateMagnifier(
+             _buildMagnifier(
+@@ -2993,12 +3039,13 @@
+   set selectionEndpoints(List<TextSelectionPoint> value) {
+     if (!listEquals(_selectionEndpoints, value)) {
+       markNeedsBuild();
+       if (_isDraggingEndHandle || _isDraggingStartHandle) {
+         switch (defaultTargetPlatform) {
+           case TargetPlatform.android:
++          case TargetPlatform.ohos:
+             HapticFeedback.selectionClick();
+           case TargetPlatform.fuchsia:
+           case TargetPlatform.iOS:
+           case TargetPlatform.linux:
+           case TargetPlatform.macOS:
+           case TargetPlatform.windows:
+--- a/lib/common/widgets/flutter/text_field/editable_text.dart
++++ b/lib/common/widgets/flutter/text_field/editable_text.dart
+@@ -1739,13 +1739,13 @@
+   /// The default value for [selectAllOnFocus].
+   static bool get _defaultSelectAllOnFocus {
+     if (kIsWeb) {
+       return true;
+     }
+     return switch (defaultTargetPlatform) {
+-      TargetPlatform.android => false,
++      TargetPlatform.android || TargetPlatform.ohos => false,
+       TargetPlatform.iOS => false,
+       TargetPlatform.fuchsia => false,
+       TargetPlatform.linux => true,
+       TargetPlatform.macOS => true,
+       TargetPlatform.windows => true,
+     };
+@@ -1786,13 +1786,14 @@
+       // If the paste button is enabled, don't render anything until the state
+       // of the clipboard is known, since it's used to determine if paste is
+       // shown.
+ 
+       // On Android, the share button is before the select all button.
+       final showShareBeforeSelectAll =
+-          defaultTargetPlatform == TargetPlatform.android;
++          defaultTargetPlatform == TargetPlatform.android ||
++          defaultTargetPlatform == TargetPlatform.ohos;
+ 
+       resultButtonItem.addAll(<ContextMenuButtonItem>[
+         if (onCut != null)
+           ContextMenuButtonItem(
+             onPressed: onCut,
+             type: ContextMenuButtonType.cut,
+@@ -1868,12 +1869,13 @@
+           // https://github.com/flutter/flutter/issues/134723
+           // Set autocorrect to false to prevent password bar from flashing.
+           return false;
+         }
+       case TargetPlatform.macOS:
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+       case TargetPlatform.fuchsia:
+       case TargetPlatform.linux:
+       case TargetPlatform.windows:
+         break;
+     }
+ 
+@@ -1944,12 +1946,13 @@
+ 
+           final TextInputType? keyboardType = iOSKeyboardType[effectiveHint];
+           if (keyboardType != null) {
+             return keyboardType;
+           }
+         case TargetPlatform.android:
++        case TargetPlatform.ohos:
+         case TargetPlatform.fuchsia:
+         case TargetPlatform.linux:
+         case TargetPlatform.windows:
+           break;
+       }
+     }
+@@ -2423,12 +2426,13 @@
+       case TargetPlatform.macOS:
+         return false;
+       case TargetPlatform.iOS:
+         return textEditingValue.text.isNotEmpty &&
+             textEditingValue.selection.isCollapsed;
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+       case TargetPlatform.fuchsia:
+       case TargetPlatform.linux:
+       case TargetPlatform.windows:
+         return textEditingValue.text.isNotEmpty &&
+             !(textEditingValue.selection.start == 0 &&
+                 textEditingValue.selection.end == textEditingValue.text.length);
+@@ -2459,12 +2463,13 @@
+   }
+ 
+   @override
+   bool get shareEnabled {
+     switch (defaultTargetPlatform) {
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+       case TargetPlatform.iOS:
+         return !widget.obscureText &&
+             !textEditingValue.selection.isCollapsed &&
+             textEditingValue.selection
+                     .textInside(textEditingValue.text)
+                     .trim() !=
+@@ -2527,12 +2532,13 @@
+         case TargetPlatform.iOS:
+         case TargetPlatform.macOS:
+         case TargetPlatform.linux:
+         case TargetPlatform.windows:
+           break;
+         case TargetPlatform.android:
++        case TargetPlatform.ohos:
+         case TargetPlatform.fuchsia:
+           // Collapse the selection and hide the toolbar and handles.
+           userUpdateTextEditingValue(
+             TextEditingValue(
+               text: textEditingValue.text,
+               selection: TextSelection.collapsed(
+@@ -2688,22 +2694,24 @@
+       cause,
+     );
+ 
+     if (cause == SelectionChangedCause.toolbar) {
+       switch (defaultTargetPlatform) {
+         case TargetPlatform.android:
++        case TargetPlatform.ohos:
+         case TargetPlatform.iOS:
+         case TargetPlatform.fuchsia:
+           break;
+         case TargetPlatform.macOS:
+         case TargetPlatform.linux:
+         case TargetPlatform.windows:
+           hideToolbar();
+       }
+       switch (defaultTargetPlatform) {
+         case TargetPlatform.android:
++        case TargetPlatform.ohos:
+         case TargetPlatform.fuchsia:
+         case TargetPlatform.linux:
+         case TargetPlatform.windows:
+           bringIntoView(textEditingValue.selection.extent);
+         case TargetPlatform.macOS:
+         case TargetPlatform.iOS:
+@@ -3218,13 +3226,14 @@
+         }
+         _textInputConnection!.updateStyle(_getTextInputStyle(context));
+       }, debugLabel: 'EditableText.updateStyle');
+     }
+ 
+     if (defaultTargetPlatform != TargetPlatform.iOS &&
+-        defaultTargetPlatform != TargetPlatform.android) {
++        defaultTargetPlatform != TargetPlatform.android &&
++        defaultTargetPlatform != TargetPlatform.ohos) {
+       return;
+     }
+ 
+     // Hide the text selection toolbar on mobile when orientation changes.
+     final Orientation orientation = MediaQuery.orientationOf(context);
+     if (_lastOrientation == null) {
+@@ -3233,13 +3242,14 @@
+     }
+     if (orientation != _lastOrientation) {
+       _lastOrientation = orientation;
+       if (defaultTargetPlatform == TargetPlatform.iOS) {
+         hideToolbar(false);
+       }
+-      if (defaultTargetPlatform == TargetPlatform.android) {
++      if (defaultTargetPlatform == TargetPlatform.android ||
++          defaultTargetPlatform == TargetPlatform.ohos) {
+         hideToolbar();
+       }
+     }
+ 
+     if (_listeningToScrollNotificationObserver) {
+       // Only update subscription when we have previously subscribed to the
+@@ -4104,12 +4114,17 @@
+         // Request autofill AFTER the size and the transform have been sent to
+         // the platform text input plugin.
+         _textInputConnection!.requestAutofill();
+       }
+       _lastKnownRemoteTextEditingValue = localValue;
+     } else {
++      if (defaultTargetPlatform == TargetPlatform.ohos) {
++        _textInputConnection!.updateConfig(
++          _effectiveAutofillClient.textInputConfiguration,
++        );
++      }
+       _textInputConnection!.show();
+     }
+   }
+ 
+   void _closeInputConnectionIfNeeded() {
+     if (_hasInputConnection) {
+@@ -4123,12 +4138,15 @@
+ 
+   void _openOrCloseInputConnectionIfNeeded() {
+     if (_hasFocus && widget.focusNode.consumeKeyboardToken()) {
+       _openInputConnection();
+     } else if (!_hasFocus) {
+       _closeInputConnectionIfNeeded();
++      if (defaultTargetPlatform == TargetPlatform.ohos && _value.composing.isValid) {
++        _formatAndSetValue(_value.copyWith(composing: TextRange.empty), null);
++      }
+       widget.controller.clearComposing();
+     }
+   }
+ 
+   bool _restartConnectionScheduled = false;
+   void _scheduleRestartConnection() {
+@@ -4244,13 +4262,13 @@
+ 
+   final bool _platformSupportsFadeOnScroll = switch (defaultTargetPlatform) {
+     TargetPlatform.android || TargetPlatform.iOS => true,
+     TargetPlatform.fuchsia ||
+     TargetPlatform.linux ||
+     TargetPlatform.macOS ||
+-    TargetPlatform.windows => false,
++    TargetPlatform.windows || TargetPlatform.ohos => false,
+   };
+ 
+   bool _isInternalScrollableNotification(BuildContext? notificationContext) {
+     final ScrollableState? scrollableState = notificationContext
+         ?.findAncestorStateOfType<ScrollableState>();
+     return _scrollableKey.currentContext == scrollableState?.context;
+@@ -4527,14 +4545,20 @@
+     } else {
+       if (_selectionOverlay == null) {
+         _selectionOverlay = _createSelectionOverlay();
+       } else {
+         _selectionOverlay!.update(_value);
+       }
+-      _selectionOverlay!.handlesVisible = widget.showSelectionHandles;
+-      _selectionOverlay!.showHandles();
++      if (defaultTargetPlatform == TargetPlatform.ohos &&
++          _value.composing.isValid &&
++          _value.composing.isNormalized) {
++        _selectionOverlay?.hideHandles();
++      } else {
++        _selectionOverlay!.handlesVisible = widget.showSelectionHandles;
++        _selectionOverlay!.showHandles();
++      }
+     }
+     // TODO(chunhtai): we should make sure selection actually changed before
+     // we call the onSelectionChanged.
+     // https://github.com/flutter/flutter/issues/76349.
+     try {
+       widget.onSelectionChanged?.call(selection, cause);
+@@ -4821,12 +4845,13 @@
+           bringIntoView(newSelection.extent);
+         }
+       case TargetPlatform.linux:
+       case TargetPlatform.windows:
+       case TargetPlatform.fuchsia:
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+         if (cause == SelectionChangedCause.drag) {
+           if (oldSelection.baseOffset != newSelection.baseOffset) {
+             bringIntoView(newSelection.base);
+           } else if (oldSelection.extentOffset != newSelection.extentOffset) {
+             bringIntoView(newSelection.extent);
+           }
+@@ -6195,12 +6220,13 @@
+     if (widget.obscureText) {
+       String text = _value.text;
+       text = widget.obscuringCharacter * text.length;
+       // Reveal the latest character in an obscured field only on mobile.
+       const mobilePlatforms = <TargetPlatform>{
+         TargetPlatform.android,
++        TargetPlatform.ohos,
+         TargetPlatform.fuchsia,
+         TargetPlatform.iOS,
+       };
+       final bool brieflyShowPassword =
+           WidgetsBinding.instance.platformDispatcher.brieflyShowPassword &&
+           mobilePlatforms.contains(defaultTargetPlatform);
+@@ -7131,12 +7157,13 @@
+ 
+   @override
+   void invoke(EditableTextTapOutsideIntent intent, [BuildContext? context]) {
+     // The focus dropping behavior is only present on desktop platforms.
+     switch (defaultTargetPlatform) {
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+       case TargetPlatform.iOS:
+       case TargetPlatform.fuchsia:
+         // On mobile platforms, we don't unfocus on touch events unless they're
+         // in the web browser, but we do unfocus for all other kinds of events.
+         switch (intent.pointerDownEvent.kind) {
+           case ui.PointerDeviceKind.touch:
+--- a/lib/common/widgets/flutter/text_field/cupertino/text_field.dart
++++ b/lib/common/widgets/flutter/text_field/cupertino/text_field.dart
+@@ -1154,12 +1154,13 @@
+               BuildContext context,
+               MagnifierController controller,
+               ValueNotifier<MagnifierInfo> magnifierInfo,
+             ) {
+               switch (defaultTargetPlatform) {
+                 case TargetPlatform.android:
++                case TargetPlatform.ohos:
+                 case TargetPlatform.iOS:
+                   return CupertinoTextMagnifier(
+                     controller: controller,
+                     magnifierInfo: magnifierInfo,
+                   );
+                 case TargetPlatform.fuchsia:
+@@ -1318,21 +1319,23 @@
+       case TargetPlatform.iOS:
+       case TargetPlatform.macOS:
+       case TargetPlatform.linux:
+       case TargetPlatform.windows:
+       case TargetPlatform.fuchsia:
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+         if (cause == SelectionChangedCause.longPress) {
+           _editableText.bringIntoView(selection.extent);
+         }
+     }
+ 
+     switch (defaultTargetPlatform) {
+       case TargetPlatform.iOS:
+       case TargetPlatform.fuchsia:
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+         break;
+       case TargetPlatform.macOS:
+       case TargetPlatform.linux:
+       case TargetPlatform.windows:
+         if (cause == SelectionChangedCause.drag) {
+           _editableText.hideToolbar();
+@@ -1546,12 +1549,13 @@
+     TextSelectionControls? textSelectionControls = widget.selectionControls;
+     VoidCallback? handleDidGainAccessibilityFocus;
+     VoidCallback? handleDidLoseAccessibilityFocus;
+     switch (defaultTargetPlatform) {
+       case TargetPlatform.iOS:
+       case TargetPlatform.android:
++      case TargetPlatform.ohos:
+       case TargetPlatform.fuchsia:
+         textSelectionControls ??= cupertinoTextSelectionHandleControls;
+       case TargetPlatform.linux:
+       case TargetPlatform.macOS:
+       case TargetPlatform.windows:
+         textSelectionControls ??= cupertinoDesktopTextSelectionHandleControls;

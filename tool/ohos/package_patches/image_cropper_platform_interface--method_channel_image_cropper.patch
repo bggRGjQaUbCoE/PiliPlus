@@ -1,0 +1,35 @@
+--- a/lib/src/method_channel/method_channel_image_cropper.dart
++++ b/lib/src/method_channel/method_channel_image_cropper.dart
+@@ -5,6 +5,7 @@
+ import 'dart:io';
+ 
+ import 'package:flutter/services.dart';
++import 'package:flutter/foundation.dart';
+ 
+ import 'package:image_cropper_platform_interface/image_cropper_platform_interface.dart';
+ 
+@@ -72,6 +73,15 @@
+       }
+     }
+ 
++    if (defaultTargetPlatform == TargetPlatform.ohos) {
++      // The reviewed native cropper accepts the same values with ohos.* keys.
++      for (final entry in arguments.entries.toList()) {
++        if (entry.key.startsWith('android.')) {
++          arguments.putIfAbsent('ohos.${entry.key.substring(8)}', () => entry.value);
++        }
++      }
++    }
++
+     final String? resultPath =
+         await _channel.invokeMethod('cropImage', arguments);
+     return resultPath == null ? null : CroppedFile(resultPath);
+@@ -122,7 +132,7 @@
+   ///
+   @override
+   Future<CroppedFile?> recoverImage() async {
+-    if (!Platform.isAndroid) {
++    if (!Platform.isAndroid && defaultTargetPlatform != TargetPlatform.ohos) {
+       return null;
+     }
+     final String? resultPath = await _channel.invokeMethod('recoverImage');

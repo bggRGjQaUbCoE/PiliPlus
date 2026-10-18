@@ -25,11 +25,13 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     env:
-      PUB_CACHE: ${{ runner.temp }}/piliplus-ohos-pub-cache
-      PILIPLUS_OHOS_FLUTTER_ROOT: ${{ runner.temp }}/piliplus-flutter-ohos
-      PILIPLUS_OHOS_BUILD: ${{ runner.temp }}/PiliPlus-ohos-build
       CI: 'true'
     steps:
+      - name: Set isolated runner paths
+        run: |
+          echo "PUB_CACHE=$RUNNER_TEMP/piliplus-ohos-pub-cache" >> "$GITHUB_ENV"
+          echo "PILIPLUS_OHOS_FLUTTER_ROOT=$RUNNER_TEMP/piliplus-flutter-ohos" >> "$GITHUB_ENV"
+          echo "PILIPLUS_OHOS_BUILD=$RUNNER_TEMP/PiliPlus-ohos-build" >> "$GITHUB_ENV"
       - name: Checkout committed source and upstream history
         uses: actions/checkout@v7
         with:

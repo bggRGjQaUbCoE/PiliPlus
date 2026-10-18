@@ -1,14 +1,12 @@
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
-import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/models_new/download/bili_download_media_file_info.dart';
 import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:collection/collection.dart';
@@ -99,22 +97,17 @@ abstract final class DownloadHttp {
         List<Type2File>? audioFileList;
         final List<AudioItem>? audioDashList = dash.audio;
         if (audioDashList != null && audioDashList.isNotEmpty) {
-          final preferAudioQa = Pref.defaultAudioQa;
-          final List<int> audioIds = audioDashList
-              .map((map) => map.id)
-              .toList();
-          int closestNumber = audioIds.findClosestTarget(
-            (e) => e <= preferAudioQa,
-            (a, b) => a > b ? a : b,
+          final preferAudioQa =
+              entry.preferedAudioQuality ?? Pref.defaultAudioQa;
+          final targetAudioQa = response.findAvailableAudioQuality(
+            preferAudioQa,
           );
-          if (!audioIds.contains(preferAudioQa) &&
-              audioIds.any((e) => e > preferAudioQa)) {
-            closestNumber = AudioQuality.k192.code;
-          }
-          final AudioItem audioDash = audioDashList.firstWhere(
-            (e) => e.id == closestNumber,
-            orElse: () => audioDashList.first,
-          );
+          final AudioItem audioDash = targetAudioQa == null
+              ? audioDashList.first
+              : audioDashList.firstWhere(
+                  (e) => e.id == targetAudioQa,
+                  orElse: () => audioDashList.first,
+                );
           final audioUrl = VideoUtils.getCdnUrl(
             audioDash.playUrls,
             isAudio: true,

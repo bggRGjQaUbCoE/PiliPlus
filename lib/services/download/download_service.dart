@@ -119,6 +119,7 @@ class DownloadService extends GetxService {
     VideoDetailData? videoDetail,
     ugc.EpisodeItem? videoArc,
     required VideoQuality videoQuality,
+    int? audioQuality,
     SeasonInfo? seasonInfo,
   }) {
     final cid = page.cid!;
@@ -153,6 +154,7 @@ class DownloadService extends GetxService {
       typeTag: videoQuality.code.toString(),
       cover: (videoDetail?.pic ?? videoArc!.cover!).http2https,
       preferedVideoQuality: videoQuality.code,
+      preferedAudioQuality: audioQuality,
       qualityPithyDescription: videoQuality.desc,
       guessedTotalBytes: 0,
       totalTimeMilli: (page.duration ?? 0) * 1000,
@@ -181,6 +183,7 @@ class DownloadService extends GetxService {
     required PgcInfoModel pgcItem,
     required pgc.EpisodeItem episode,
     required VideoQuality quality,
+    int? audioQuality,
   }) {
     final cid = episode.cid!;
     if (downloadList.indexWhere((e) => e.cid == cid) != -1) {
@@ -222,6 +225,7 @@ class DownloadService extends GetxService {
       typeTag: quality.code.toString(),
       cover: episode.cover!,
       preferedVideoQuality: quality.code,
+      preferedAudioQuality: audioQuality,
       qualityPithyDescription: quality.desc,
       guessedTotalBytes: 0,
       totalTimeMilli:

@@ -68,6 +68,20 @@ class PlayUrlModel {
     }
   }
 
+  /// 选出 dash 中不高于 [preferredQuality] 的最高可用音质，返回其 id。
+  ///
+  /// dash 中不存在音频流时返回 null。
+  int? findAvailableAudioQuality(int preferredQuality) {
+    final audioList = dash?.audio;
+    if (audioList == null || audioList.isEmpty) {
+      return null;
+    }
+    return AudioQuality.selectAvailableCode(
+      audioList.map((e) => e.id),
+      preferredQuality,
+    );
+  }
+
   @pragma('vm:notify-debugger-on-exception')
   int get missingVideoQualityBelowHighest {
     int best = -1;

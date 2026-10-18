@@ -1,0 +1,253 @@
+{
+  "schema": 1,
+  "verified_at_utc": "2026-10-18",
+  "status": "built-unsigned-media-deferred",
+  "source_commit": "fc0ed189d1194974898b33e1d54cef6f8231feef",
+  "source_tree": "99df1695d8ef8393bab59d3b2d2e3b3c2ecf3c4a",
+  "base_commit": "849c56b035ac8acf1b4fd677c2c94debe161da8e",
+  "source_export": "committed git archive; no manual changes in the build copy",
+  "application_entrypoint": "lib/main.dart",
+  "media_backend": "deferred-by-request",
+  "original_files": 1639,
+  "original_file_changes": [],
+  "generated_original_file_changes": [
+    {
+      "path": "lib/common/widgets/flutter/text_field/cupertino/text_field.dart",
+      "upstream_blob": "6ae9c792656a019d38399059731fb535707233fc",
+      "generated_blob": "9db12f322d9c4ddda41439bdcb20466ba2be4a8b"
+    },
+    {
+      "path": "lib/common/widgets/flutter/text_field/editable.dart",
+      "upstream_blob": "4d616e7053ad4c46f2650bdfbb8ffec66fee86ee",
+      "generated_blob": "a169aa6d8069bf1ab9ff00cf8ddc1136b3e59f3b"
+    },
+    {
+      "path": "lib/common/widgets/flutter/text_field/editable_text.dart",
+      "upstream_blob": "92658435e7d51642ab49409ef8d695f35f618a37",
+      "generated_blob": "0299a32a3559c2515baf6d6235e768bdbdd695ee"
+    },
+    {
+      "path": "lib/common/widgets/flutter/text_field/text_field.dart",
+      "upstream_blob": "33f2da0de24d976d28c86a9aa68f771b63cdf30c",
+      "generated_blob": "ece5ff3d863361fec2a8b773859b72cb4857e0da"
+    },
+    {
+      "path": "lib/common/widgets/flutter/text_field/text_selection.dart",
+      "upstream_blob": "9492e41f11f51ae3742d154f871d7fec888b8801",
+      "generated_blob": "6f2ff47d26472a74e805c2c561acf21473dde06f"
+    },
+    {
+      "path": "lib/common/widgets/flutter/vertical_slider.dart",
+      "upstream_blob": "f678eac02bbfc15026a7d252e74c65527a5778c5",
+      "generated_blob": "cbe180951215b6f9ae690324a6ae4bd805deec67"
+    },
+    {
+      "path": "lib/common/widgets/image_viewer/gallery_viewer.dart",
+      "upstream_blob": "d1ce243d84fcd0069ea5e22a20ff81ea6b4c4c37",
+      "generated_blob": "0583aba34d2cd05fc0ce23a8c4d8fb5da92312ef"
+    },
+    {
+      "path": "lib/main.dart",
+      "upstream_blob": "5e31f7b309968a14f6d0c92c37ea5d61a1de427f",
+      "generated_blob": "764da6864c8d820ca11ff8e3e40ec52c2140c696"
+    },
+    {
+      "path": "lib/pages/audio/controller.dart",
+      "upstream_blob": "213d5b4f32f4a6f132aee4e702ed75fce601952c",
+      "generated_blob": "cc816269382acad22271c3127642ad5377c50629"
+    },
+    {
+      "path": "lib/pages/blacklist/view.dart",
+      "upstream_blob": "b7bd473a0db37449f168f8eea036924f782a75d3",
+      "generated_blob": "2652f250a2107e7fbd96071b94eed9dcceb99dde"
+    },
+    {
+      "path": "lib/pages/common/publish/common_publish_page.dart",
+      "upstream_blob": "445ebcbab740ec031b8d7d36e7573e55c8a96317",
+      "generated_blob": "c724020fa287cba9a62395f629d0d86237b8a13d"
+    },
+    {
+      "path": "lib/pages/episode_panel/view.dart",
+      "upstream_blob": "285a40eb61040f919cf4229ffc943468d18947e6",
+      "generated_blob": "6cbc543ce61ced3de371b716fbd03181e0b0d52f"
+    },
+    {
+      "path": "lib/pages/live_room/superchat/superchat_card.dart",
+      "upstream_blob": "0734751987713aa008173a178d60931c75bc81e4",
+      "generated_blob": "f143179c2446635f8c422265526276f410e38563"
+    },
+    {
+      "path": "lib/pages/live_room/view.dart",
+      "upstream_blob": "161158cd75a55bc709c8fa1c526beb10ba1058e8",
+      "generated_blob": "5e9b067b1c011037a19c0113df249fcace4cfc87"
+    },
+    {
+      "path": "lib/pages/main/view.dart",
+      "upstream_blob": "3551a29fc2324ff91ad4ab36f8587c77ba8971d4",
+      "generated_blob": "ac0995ff01a1fa6896c27a1d1aacb880d400295b"
+    },
+    {
+      "path": "lib/pages/webview/view.dart",
+      "upstream_blob": "0e2ce38099f0957e8bc9468c92e166871d451739",
+      "generated_blob": "7309cef421583363a3e09cf880d3532b0e49a638"
+    },
+    {
+      "path": "lib/plugin/pl_player/controller.dart",
+      "upstream_blob": "f4f3d86a49e93e21a0f3545a524769a8df2cdf1d",
+      "generated_blob": "8d75247f801914d7d5e03d792a6c0ab909777a36"
+    },
+    {
+      "path": "lib/plugin/pl_player/view/view.dart",
+      "upstream_blob": "c7a2f92d52dde4b250072e1ef5cda0622f5ce15f",
+      "generated_blob": "ddb9ea148e52460ee7361650adc10ea8b58b85ac"
+    },
+    {
+      "path": "lib/utils/image_utils.dart",
+      "upstream_blob": "3c9221313d27ea41eb41152f80fd76ee23e044ee",
+      "generated_blob": "a816c88c29cf967d2716646fa2cea94e1314d28f"
+    },
+    {
+      "path": "lib/utils/platform_utils.dart",
+      "upstream_blob": "9486fde3531a5d63accd3b5921606f7db8d66165",
+      "generated_blob": "b27fc77596f176b8241aec05c531d3ecb692d548"
+    },
+    {
+      "path": "lib/utils/reply_utils.dart",
+      "upstream_blob": "df95b0940ea7034972b6d5299e01abfc85c04a6a",
+      "generated_blob": "f301ad4d69a7f4a730bf8e689b7a1de4df33ce0d"
+    },
+    {
+      "path": "lib/utils/request_utils.dart",
+      "upstream_blob": "2f940fc1114c4d7456ca1523205b452ab5b15212",
+      "generated_blob": "762ad364005ea7549dfade49a214d4144271ce0c"
+    },
+    {
+      "path": "pubspec.lock",
+      "upstream_blob": "5ed81a197733ecf938950af7934b9d956587251d",
+      "generated_blob": "633ad1b2c5b5f8fce278ec9738fd770549c792a0"
+    },
+    {
+      "path": "pubspec.yaml",
+      "upstream_blob": "8af64ab094abcf98fa2de55464b1d7a8ddc6ba6b",
+      "generated_blob": "e5c85165b9b003590d14ad1ef7d6359b40d697ef"
+    }
+  ],
+  "flutter": {
+    "repository": "https://gitcode.com/CPF-Flutter/flutter_flutter.git",
+    "branch": "oh-3.44.9-dev",
+    "commit": "3ffe70c6280cc6ddf613bffa59dd70611f238f7e",
+    "host_engine_revision": "5a2a6a42cce67f965cf540fcecf616faca624aa1",
+    "ohos_engine_revision": "24497d6833225b0445953e1dd05dc6538c16a8dd",
+    "actual_versions": {
+      "flutter": {
+        "frameworkVersion": "3.44.9+ohos-0.0.1-canary1",
+        "channel": "[user-branch]",
+        "repositoryUrl": "unknown source",
+        "frameworkRevision": "3ffe70c6280cc6ddf613bffa59dd70611f238f7e",
+        "frameworkCommitDate": "2026-10-17 17:29:29 +0800",
+        "engineRevision": "5a2a6a42cce67f965cf540fcecf616faca624aa1",
+        "engineCommitDate": "2026-07-31 18:31:59.000Z",
+        "engineContentHash": "b9499e4c25212536ba3a4eec4f5c1905fb3214fe",
+        "engineBuildDate": "2026-07-31 14:30:03.301",
+        "dartSdkVersion": "3.12.2",
+        "devToolsVersion": "2.57.0",
+        "flutterVersion": "3.44.9+ohos-0.0.1-canary1"
+      },
+      "dart_executable": "Dart SDK version: 3.12.2 (stable) (Tue Aug 11 09:49:18 2026 +0800) on \"linux_x64\""
+    }
+  },
+  "native_toolchain": {
+    "command_line_tools": "26.0.0.621",
+    "sdk": "26.0.0.32",
+    "java_major": 17
+  },
+  "source_tests": {
+    "passed": 31,
+    "log_sha256": "7e04e6817a1de5d5deac0f5042347b29cb0215ed5e6938158bacb2879a3b6f32"
+  },
+  "sdk_widget_tests": {
+    "passed": 4,
+    "log_sha256": "f662b29f7f15e838854df893c84746b92332f57f6f0425d7bcf1fe33659d5b97"
+  },
+  "ui_tests": {
+    "passed": 2,
+    "flex_scheme_cases": 42
+  },
+  "analysis": {
+    "errors": 0,
+    "warnings": 0,
+    "infos": 40
+  },
+  "dependency_packages": 35,
+  "pubspec_lock_sha256": "ac50165134b2f86c1a86bba19d129b2966b12f2ddcdcc9bbfe31bf70468ebb31",
+  "commands": [
+    {
+      "stage": "sdk-check",
+      "exit_code": 0,
+      "log_sha256": "731907f671661cd741b93dbf040592ad4f3ec302fc17277f8323572895ea4bbf",
+      "log": "ohos/build-logs/sdk-check.log"
+    },
+    {
+      "stage": "pub-get",
+      "exit_code": 0,
+      "log_sha256": "7084f342302836c93fdb2f980ef7c13730c24415e953ec75793cca142613b54f",
+      "log": "ohos/build-logs/pub-get.log"
+    },
+    {
+      "stage": "parser-compatibility",
+      "exit_code": 0,
+      "log_sha256": "c3deb00446e40efb45841264bd13f22cc13c5785af0e713be6f61438bb60c5d7",
+      "log": "ohos/build-logs/parser-compatibility.log"
+    },
+    {
+      "stage": "ui-compatibility",
+      "exit_code": 0,
+      "log_sha256": "7db3e8cb149ed17768d9de1588bea5bfd52268981e67f3526dc40f763b724753",
+      "log": "ohos/build-logs/ui-compatibility.log"
+    },
+    {
+      "stage": "analyze",
+      "exit_code": 0,
+      "log_sha256": "b1c084e00d7b780e7ce7ab15493b8eedb27ea35d67e2f92c1a9d044e92fc3242",
+      "log": "ohos/build-logs/analyze.log"
+    },
+    {
+      "stage": "hap",
+      "exit_code": 0,
+      "log_sha256": "189c17f02d32760dbb7e6745edd3390557719e0831ca5852438d3618056815b1",
+      "log": "ohos/build-logs/hap.log"
+    }
+  ],
+  "artifact": {
+    "sha256": "6832db037e25f8c20957f970cccbb2ce867a5596a691b69ddf5cd8330f20ba0b",
+    "bytes": 44165697,
+    "application": {
+      "bundleName": "com.example.piliplus",
+      "versionName": "2.1.6",
+      "versionCode": 1
+    },
+    "libraries": [
+      {
+        "member": "libs/arm64-v8a/libapp.so",
+        "bytes": 22446992,
+        "sha256": "369bd5cabb8aecb0ec9540a5f967d119c076997de5a82976085d2b8afe1e0834"
+      },
+      {
+        "member": "libs/arm64-v8a/libflutter.so",
+        "bytes": 17014776,
+        "sha256": "bb644d00005da19578033f5725de4fb3af336637e675c6686e41cccc75d7f786"
+      }
+    ],
+    "signed": false,
+    "device_verified": false,
+    "path": "build/ohos/hap/entry-default-unsigned.hap"
+  },
+  "device_functionality_verified": false,
+  "verification_limits": [
+    "Unsigned package; installation and startup not exercised on an OHOS device",
+    "media-kit backend deliberately deferred; media playback is unavailable",
+    "Native SDK and plugins retain deprecation, permission and device-capability warnings"
+  ],
+  "published_equivalent_source_commit": "aeadc3e1655e332387f0beea708a87a4df0131e1",
+  "published_equivalence": "Git tree is identical to the locally verified source_tree; build commit/time metadata can vary between runs"
+}

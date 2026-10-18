@@ -112,8 +112,9 @@ python3 tool/ohos/build.py --workspace /tmp/PiliPlus-ohos-build \
   --flutter-root /tmp/piliplus-flutter-ohos --pub-cache "$PUB_CACHE"
 ```
 
-该命令核对 SDK、执行 Pub 解析和依赖来源检查、分析 `lib/`、构建原入口，
-并检查 HAP 内的应用版本和 arm64 ELF。完整日志及实际通过的阶段分别记录在
+该命令核对 SDK、执行 Pub 解析和依赖来源检查、运行 petitparser/XML 解析验证与
+Material/Cupertino/Flex UI 测试、分析 `lib/`、构建原入口，并检查 HAP 内的应用
+版本和 arm64 ELF。完整日志及实际通过的阶段分别记录在
 副本的 `ohos/build-logs/` 和 `ohos/build-result.json`，失败保留诊断并返回非零。
 
 原生配置使用 unsigned 构建，不包含签名密钥。安装和系统功能验收另行记录。

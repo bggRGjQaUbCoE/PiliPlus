@@ -1,6 +1,6 @@
 # OHOS 工具链验证
 
-验证日期：2026-10-17 UTC。执行环境：Linux x86_64，独立 Flutter checkout、
+验证日期：2026-10-17 至 2026-10-18 UTC。执行环境：Linux x86_64，独立 Flutter checkout、
 Pub 缓存和构建副本。本轮按照用户最新要求，**只使用官方
 `CPF-Flutter/flutter_flutter:oh-3.44.9-dev`**。上游应用的 `.fvmrc`、SDK 声明
 及原平台构建保持原样，3.44 兼容性只在 OHOS 副本内实现。
@@ -57,6 +57,12 @@ Pub 实测，无需批量小写化导入。
 - 在隔离工作树中故意破坏最后一个补丁，前面的补丁不会落到实际 SDK 或 Git index。
 - `ohos.py doctor` 检查固定仓库、提交、实际 Flutter/Dart 版本及 HAP 命令，通过。
 
+2026-10-18 从固定来源重新建立独立 SDK，实际运行准备与 `--check`，并重新运行
+上述 4 项控件测试，全部通过。官方固定提交以 detached HEAD 检出时，Flutter
+`--version --machine` 的 `repositoryUrl` 可显示 `unknown source`；记录保留真实值，
+仓库身份由实际 Git origin、提交、官方 tag 和 engine 摘要核对，不通过改写版本字段
+掩盖来源。首次 bootstrap 的下载日志也与机器版本 JSON 分开处理。
+
 ## 原生宿主构建验证
 
 本轮使用本分支的 OHOS 工程、`PiliPlusPlatformPlugin` 和最小 Flutter 入口
@@ -69,6 +75,23 @@ Pub 实测，无需批量小写化导入。
 
 **宿主夹具使用最小入口，不能作为完整 PiliPlus 已构建、已启动的证据。**
 完整应用的当前解析、编译和设备验证状态记录在 [适配首页](README.md)。
+
+## 完整应用构建验证
+
+2026-10-18 使用已经提交的完整应用源码重新导出干净副本，执行副本自身的
+`tool/ohos/build.py`。SDK 身份检查、完整 Pub 与原生插件注入、解析器/XML
+验证、两项 UI 验证、完整 `lib/` 分析、完整 HAP 构建六步全部退出 0。
+其中 UI 验证保留原有 21 种 Flex 配色的明暗主题，以及 OHOS 下的 Material /
+Cupertino 控件；应用分析为 0 错误、0 警告、40 条风格与弃用提示。
+
+实际入口为原 `lib/main.dart`，产物 `entry-default-unsigned.hap` 共
+44,165,697 字节，应用版本 `2.1.6+1`。工具检查了 ZIP CRC、应用标识和版本、
+`libapp.so` 与 `libflutter.so` 的 AArch64 ELF 头及摘要，未发现其他架构的
+原生库。完整来源和摘要见 [验证数据](validation.json)。
+
+该产物明确暂缓 media-kit，未签名，也尚未完成设备安装、启动或功能验收。
+原生 SDK 和插件中的弃用、权限及设备能力警告仍需结合目标设备核查；本轮没有
+通过关闭 ArkTS 错误检查来构建，也没有把编译通过记为设备行为已经通过。
 
 ## 复验
 

@@ -160,7 +160,7 @@ abstract final class ConfigArchive {
       }
     }
 
-    return sb.isEmpty ? null : sb.toString();
+    return sb.toString();
   }
 
   /// 生成合并警告
@@ -188,7 +188,7 @@ abstract final class ConfigArchive {
         '部分数据可能无法正确还原',
       );
     }
-    return warnings.toString();
+    return warnings.isEmpty ? null : warnings.toString();
   }
 
   /// 解析 [主, 次] 格式版本

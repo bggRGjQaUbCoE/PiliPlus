@@ -159,6 +159,18 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
       }
     }
     isEnd = data.cursor.isEnd;
+    if (data.replies.isNotEmpty) {
+      final ids = <Int64>{
+        if (!isRefresh)
+          ...?loadingState.value.dataOrNull?.map((reply) => reply.id),
+      };
+      data.replies.removeWhere((reply) => !ids.add(reply.id));
+      if (!isRefresh && data.replies.isEmpty) {
+        // An overlapping page must not be treated as an empty server response.
+        loadingState.refresh();
+        return true;
+      }
+    }
     return false;
   }
 

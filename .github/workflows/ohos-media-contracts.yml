@@ -1,0 +1,65 @@
+name: OHOS application framework media contracts
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/ohos]
+    paths:
+      - '.github/workflows/ohos-media-contracts.yml'
+      - 'tool/ohos/media_backend*'
+      - 'tool/ohos/sdk_compat/**'
+      - 'tool/ohos/prepare_sdk.py'
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: app
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: Goodwu/media-kit
+          ref: compat/piliplus-zero-change-20261018
+          path: media-sdk
+          persist-credentials: false
+      - name: Install host test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl unzip xz-utils zip libglu1-mesa libmpv-dev
+          mkdir -p "$RUNNER_TEMP/media-contracts"
+          echo "PUB_CACHE=$RUNNER_TEMP/contracts-pub-cache" >> "$GITHUB_ENV"
+      - name: Prepare the same reviewed official framework as the application
+        working-directory: app
+        run: |
+          python3 tool/ohos/prepare_sdk.py --flutter-root "$RUNNER_TEMP/contracts-flutter" --pub-cache "$PUB_CACHE"
+          git rev-parse HEAD > "$RUNNER_TEMP/media-contracts/app-commit.txt"
+          git -C ../media-sdk rev-parse HEAD > "$RUNNER_TEMP/media-contracts/media-sdk-commit.txt"
+          cp "$RUNNER_TEMP/contracts-flutter/bin/cache/piliplus-ohos-sdk.json" "$RUNNER_TEMP/media-contracts/"
+      - name: Resolve and execute the complete current media_kit_video suite
+        working-directory: media-sdk/media_kit_video
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$RUNNER_TEMP/contracts-flutter/bin/flutter" pub get > "$RUNNER_TEMP/media-contracts/pub-get.log" 2>&1
+          set +e
+          "$RUNNER_TEMP/contracts-flutter/bin/flutter" test --no-pub --reporter expanded > "$RUNNER_TEMP/media-contracts/tests.log" 2>&1
+          result=$?
+          cat "$RUNNER_TEMP/media-contracts/tests.log"
+          echo "$result" > "$RUNNER_TEMP/media-contracts/test-exit.txt"
+          exit "$result"
+      - name: Preserve exact framework and host-only test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ohos-application-framework-media-tests
+          path: ${{ runner.temp }}/media-contracts/
+          if-no-files-found: error

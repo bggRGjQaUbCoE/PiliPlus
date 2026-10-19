@@ -128,7 +128,7 @@ abstract final class VideoUtils {
     int preferQuality,
   ) {
     final highestVideoQa = videoList.first.id;
-    if (preferQuality > highestVideoQa) {
+    if (preferQuality >= highestVideoQa) {
       return highestVideoQa;
     }
 

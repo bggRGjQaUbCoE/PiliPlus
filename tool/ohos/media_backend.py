@@ -11,7 +11,7 @@ import importlib.util
 import io
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 import subprocess
 import tarfile
@@ -42,6 +42,38 @@ def run(root: Path, *args: str, data: bytes | None = None) -> bytes:
     return result.stdout
 
 
+
+def source_blob(root: Path, relative: str, mode: str) -> str:
+    """Verify Git data, preserving tracked in-tree links without following reads.
+
+    Darwin SwiftPM sources use relative links to shared classes. A link's Git
+    blob is its literal target text, NOT the target file contents. All targets
+    must nevertheless resolve to existing files inside this same source export.
+    """
+    if mode in ('100644', '100755'):
+        return blob(build_profile.safe_path(root, relative).read_bytes())
+    parts = PurePosixPath(relative)
+    if mode != '120000' or parts.is_absolute() or not parts.parts or '..' in parts.parts or '\\' in relative:
+        raise RuntimeError(f'Unsupported SDK source entry: {relative}')
+    path = root
+    for part in parts.parts[:-1]:
+        path /= part
+        if path.is_symlink():
+            raise RuntimeError(f'SDK source link traverses a linked parent: {relative}')
+    path /= parts.name
+    if not path.is_symlink():
+        raise RuntimeError(f'SDK source link was replaced: {relative}')
+    target = os.readlink(path)
+    if Path(target).is_absolute() or '\\' in target:
+        raise RuntimeError(f'Absolute or non-POSIX SDK source link: {relative}')
+    try:
+        resolved = path.resolve(strict=True)
+    except (OSError, RuntimeError) as exc:
+        raise RuntimeError(f'Dangling or cyclic SDK source link: {relative}') from exc
+    if root.resolve() not in resolved.parents or not resolved.is_file():
+        raise RuntimeError(f'SDK source link escapes its export: {relative}')
+    return blob(os.fsencode(target))
+
 def native_inputs() -> dict:
     values = {key: os.environ.get(key, '') for key in (
         'MEDIA_KIT_OHOS_LIBMPV_ARCHIVE', 'MEDIA_KIT_OHOS_LIBMPV_SHA256',
@@ -61,8 +93,25 @@ def native_inputs() -> dict:
     data = library.read_bytes()
     if len(data) < 64 or data[:6] != b'\x7fELF\x02\x01' or int.from_bytes(data[16:18], 'little') != 3 or int.from_bytes(data[18:20], 'little') != 183:
         raise RuntimeError('Native libmpv must be an AArch64 ELF shared library')
+    manifest_path = library.parent / 'manifest.json'
+    if not manifest_path.is_file() or manifest_path.is_symlink():
+        raise RuntimeError('The current native build manifest must accompany libmpv.so')
+    manifest_bytes = manifest_path.read_bytes()
+    manifest = json.loads(manifest_bytes)
+    features = manifest.get('media_features', {})
+    required = ('CONFIG_LIBWEBP_ENCODER', 'CONFIG_LIBWEBP_ANIM_ENCODER', 'CONFIG_WEBP_MUXER')
+    if manifest.get('platform') != 'ohos-arm64' or any(
+            features.get('required_features', {}).get(name) is not True for name in required):
+        raise RuntimeError('Native build omits required compiled WebP support')
+    artifacts = {item['file']: item['sha256'] for item in manifest.get('artifacts', [])}
+    if (features.get('libmpv_sha256') != sha256(data)
+            or artifacts.get(library.name) != sha256(data)
+            or artifacts.get(archive.name) != digest):
+        raise RuntimeError('Native manifest does not identify these library/archive inputs')
     return {'archive': str(archive), 'archive_sha256': digest,
-            'library': str(library), 'library_sha256': sha256(data)}
+            'library': str(library), 'library_sha256': sha256(data),
+            'manifest': str(manifest_path), 'manifest_sha256': sha256(manifest_bytes),
+            'compiled_features': features['required_features']}
 
 
 def apply_direction_b(workspace: Path, sdk: Path, config: dict) -> dict:
@@ -116,22 +165,23 @@ def prepare_application(workspace: Path) -> dict:
     archive = run(root, 'archive', '--format=tar', 'HEAD')
     with tarfile.open(fileobj=io.BytesIO(archive)) as stream:
         stream.extractall(destination, filter='data')
-    entries = {}
+    entries, modes = {}, {}
     for row in run(root, 'ls-tree', '-rz', 'HEAD').split(b'\0'):
         if not row:
             continue
         meta, path = row.split(b'\t', 1)
         mode, kind, identity = meta.decode().split()
         relative = path.decode()
-        if kind != 'blob' or mode not in ('100644', '100755'):
+        if kind != 'blob' or mode not in ('100644', '100755', '120000'):
             raise RuntimeError(f'Unsupported SDK source entry: {relative}')
-        if blob(build_profile.safe_path(destination, relative).read_bytes()) != identity:
+        if source_blob(destination, relative, mode) != identity:
             raise RuntimeError(f'SDK export changed: {relative}')
         entries[relative] = identity
+        modes[relative] = mode
     direction_b = apply_direction_b(workspace, destination, config)
     report = {'schema': 1, 'backend': 'media-kit-direction-b', 'repository': config['repository'],
               'branch': config['branch'], 'commit': commit, 'tree': tree,
-              'archive_sha256': sha256(archive), 'source_blobs': entries,
+              'archive_sha256': sha256(archive), 'source_blobs': entries, 'source_modes': modes,
               'recipe_sha256': sha256((workspace / 'tool/ohos/media_backend.json').read_bytes()),
               'direction_b': direction_b, 'native': native, 'packages': {},
               'device_verified': False, 'hdr_verified': False}
@@ -173,7 +223,7 @@ def verify(workspace: Path, *, resolved: bool = True) -> dict:
     if report['recipe_sha256'] != sha256((workspace / 'tool/ohos/media_backend.json').read_bytes()):
         raise RuntimeError('Media recipe changed after export')
     for name, identity in report['source_blobs'].items():
-        if blob(build_profile.safe_path(workspace / SNAPSHOT, name).read_bytes()) != identity:
+        if source_blob(workspace / SNAPSHOT, name, report['source_modes'][name]) != identity:
             raise RuntimeError(f'Media SDK source changed after export: {name}')
     for name, identity in report['application_blobs'].items():
         if blob(build_profile.safe_path(workspace, name).read_bytes()) != identity:

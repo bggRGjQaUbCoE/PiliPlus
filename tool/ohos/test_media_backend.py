@@ -45,6 +45,14 @@ class MediaGates(unittest.TestCase):
         self.env = {'MEDIA_KIT_OHOS_LIBMPV_ARCHIVE': str(self.archive),
                     'MEDIA_KIT_OHOS_LIBMPV_SHA256': media.sha256(self.archive.read_bytes()),
                     'PILIPLUS_OHOS_LIBMPV_LIBRARY': str(self.library)}
+        self.manifest = self.root / 'manifest.json'
+        self.manifest.write_text(json.dumps({
+            'platform': 'ohos-arm64',
+            'artifacts': [{'file':self.library.name, 'sha256':media.sha256(self.library.read_bytes())},
+                          {'file':self.archive.name, 'sha256':media.sha256(self.archive.read_bytes())}],
+            'media_features': {'libmpv_sha256':media.sha256(self.library.read_bytes()),
+                'required_features': {name:True for name in
+                    ('CONFIG_LIBWEBP_ENCODER', 'CONFIG_LIBWEBP_ANIM_ENCODER', 'CONFIG_WEBP_MUXER')}}}))
 
     def tearDown(self):
         self.temp.cleanup()
@@ -122,6 +130,49 @@ class MediaGates(unittest.TestCase):
         self.assertNotIn('defer_media(', (root/'build_profile.py').read_text())
         self.assertIn('media_backend.verify_hap', (root/'build.py').read_text())
         self.assertNotIn('built-unsigned-media-deferred', (root/'build.py').read_text())
+
+
+    def test_tracked_relative_sdk_link_hashes_literal_target(self):
+        (self.sdk/'shared').mkdir(); (self.sdk/'shared/source.swift').write_text('shared implementation')
+        (self.sdk/'platform').mkdir(); (self.sdk/'platform/link.swift').symlink_to('../shared/source.swift')
+        self.assertEqual(media.source_blob(self.sdk, 'platform/link.swift', '120000'), media.blob(b'../shared/source.swift'))
+
+    def test_sdk_link_escapes_rejected(self):
+        (self.sdk/'link.swift').symlink_to('../libmpv.so')
+        with self.assertRaisesRegex(RuntimeError, 'escapes'): media.source_blob(self.sdk, 'link.swift', '120000')
+
+    def test_absolute_sdk_link_rejected(self):
+        (self.sdk/'link.swift').symlink_to(self.library)
+        with self.assertRaisesRegex(RuntimeError, 'Absolute'): media.source_blob(self.sdk, 'link.swift', '120000')
+
+    def test_dangling_sdk_link_rejected(self):
+        (self.sdk/'link.swift').symlink_to('missing.swift')
+        with self.assertRaisesRegex(RuntimeError, 'Dangling'): media.source_blob(self.sdk, 'link.swift', '120000')
+
+    def test_replaced_sdk_link_rejected(self):
+        (self.sdk/'link.swift').write_text('not a symlink')
+        with self.assertRaisesRegex(RuntimeError, 'replaced'): media.source_blob(self.sdk, 'link.swift', '120000')
+
+    def test_sdk_link_parent_rejected(self):
+        (self.sdk/'shared').mkdir(); (self.sdk/'shared/link.swift').symlink_to('../manifest.json')
+        (self.sdk/'linked').symlink_to('shared')
+        with self.assertRaisesRegex(RuntimeError, 'linked parent'): media.source_blob(self.sdk, 'linked/link.swift', '120000')
+
+    def test_native_manifest_required(self):
+        self.manifest.unlink()
+        with patch.dict(os.environ, self.env, clear=True):
+            with self.assertRaisesRegex(RuntimeError, 'must accompany'): media.native_inputs()
+
+    def test_native_without_compiled_webp_rejected(self):
+        data=json.loads(self.manifest.read_text()); data.pop('media_features'); self.manifest.write_text(json.dumps(data))
+        with patch.dict(os.environ, self.env, clear=True):
+            with self.assertRaisesRegex(RuntimeError, 'WebP'): media.native_inputs()
+
+    def test_native_manifest_bound_to_exact_bytes(self):
+        data=json.loads(self.manifest.read_text()); data['media_features']['libmpv_sha256']='0'*64
+        self.manifest.write_text(json.dumps(data))
+        with patch.dict(os.environ, self.env, clear=True):
+            with self.assertRaisesRegex(RuntimeError, 'does not identify'): media.native_inputs()
 
 
 if __name__ == '__main__': unittest.main()

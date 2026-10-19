@@ -17,6 +17,7 @@ class ArticleContentModel {
   Code? code;
   L1st? list;
   Text? heading;
+  Blockquote? blockquote;
 
   ArticleContentModel.fromJson(Map<String, dynamic> json) {
     align = json['align'];
@@ -31,6 +32,19 @@ class ArticleContentModel {
     code = json['code'] == null ? null : Code.fromJson(json['code']);
     list = json['list'] == null ? null : L1st.fromJson(json['list']);
     heading = json['heading'] == null ? null : Text.fromJson(json['heading']);
+    blockquote = json['blockquote'] == null
+        ? null
+        : Blockquote.fromJson(json['blockquote']);
+  }
+}
+
+class Blockquote {
+  List<ArticleContentModel>? children;
+
+  Blockquote.fromJson(Map<String, dynamic> json) {
+    children = (json['children'] as List?)
+        ?.map((e) => ArticleContentModel.fromJson(e))
+        .toList();
   }
 }
 

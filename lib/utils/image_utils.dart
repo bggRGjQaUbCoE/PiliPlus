@@ -251,7 +251,7 @@ abstract final class ImageUtils {
           final fileName = _emoteFileName(name, url);
           final isSaved = dir != null
               ? await _saveEmoteToDir(bytes, fileName, hash, dir)
-              : await _saveEmoteToGallery(records!, file.path, fileName, hash);
+              : await _saveEmoteToGallery(records!, bytes, fileName, hash);
           if (isSaved) {
             saved++;
           } else {
@@ -271,9 +271,17 @@ abstract final class ImageUtils {
     }
 
     if (failed > 0) {
-      SmartDialog.showToast(
-        saved > 0 ? '已保存 $saved 个，$failed 个失败' : '保存失败',
-      );
+      if (saved == 0 && skipped == 0) {
+        SmartDialog.showToast('保存失败');
+      } else {
+        SmartDialog.showToast(
+          [
+            if (saved > 0) '已保存 $saved 个',
+            if (skipped > 0) '$skipped 个已保存过',
+            '$failed 个失败',
+          ].join('，'),
+        );
+      }
     } else if (saved == 0) {
       SmartDialog.showToast('已保存过');
     } else if (skipped > 0) {
@@ -336,9 +344,11 @@ abstract final class ImageUtils {
   /// 保存到系统相册，返回 true 表示写入，false 表示内容已存在。
   ///
   /// 移动端无法查询相册，故用 [records] 中「文件名 -> md5」记录判重。
+  /// saver_gallery 按文件路径判断 MIME，而缓存文件通常没有图片扩展名，
+  /// 因此先按目标文件名写入临时目录，保存后删除临时文件。
   static Future<bool> _saveEmoteToGallery(
     Map<String, String> records,
-    String filePath,
+    Uint8List bytes,
     String fileName,
     String hash,
   ) async {
@@ -353,14 +363,26 @@ abstract final class ImageUtils {
         }
         continue;
       }
-      final res = await SaverGallery.saveFile(
-        filePath: filePath,
-        fileName: name,
-        albumPath: _albumPath,
-        skipIfExists: false,
-      );
-      if (!res.isSuccess) {
-        throw StateError(res.errorMessage ?? '保存失败');
+      Directory? tmpDir;
+      try {
+        final tmpRoot = Directory(path.join(tmpDirPath, _emoteDirName));
+        await tmpRoot.create(recursive: true);
+        tmpDir = await tmpRoot.createTemp('emote_');
+        final tmpFile = File(path.join(tmpDir.path, name));
+        await tmpFile.writeAsBytes(bytes, flush: true);
+        final res = await SaverGallery.saveFile(
+          filePath: tmpFile.path,
+          fileName: name,
+          albumPath: _albumPath,
+          skipIfExists: false,
+        );
+        if (!res.isSuccess) {
+          throw StateError(res.errorMessage ?? '保存失败');
+        }
+      } finally {
+        if (tmpDir != null) {
+          await tmpDir.tryDel(recursive: true);
+        }
       }
       records[name] = hash;
       await GStorage.localCache.put(

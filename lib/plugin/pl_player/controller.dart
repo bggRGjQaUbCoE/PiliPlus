@@ -1,4 +1,4 @@
-import 'dart:async' show StreamSubscription, Timer;
+import 'dart:async' show StreamSubscription, Timer, unawaited;
 import 'dart:convert' show ascii, utf8;
 import 'dart:io' show Platform;
 import 'dart:math' show max, min;
@@ -75,7 +75,10 @@ typedef PlayOwner = ({String tag, Type? type});
 
 class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   Player? _videoPlayerController;
-  VideoController? _videoController;
+  RoutedVideoPlayback? _playback;
+  // set when the routed open was rejected and playback fell back to the
+  // ordinary (non-session) output
+  VideoController? _legacyVideoController;
 
   static PlPlayerController? _instance;
 
@@ -173,7 +176,11 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   Player? get videoPlayerController => _videoPlayerController;
 
   /// [videoController] instance of Player
-  VideoController? get videoController => _videoController;
+  VideoController? get videoController =>
+      _playback?.controller.value ?? _legacyVideoController;
+
+  /// [RoutedVideoPlayback] instance owning the player output topology.
+  RoutedVideoPlayback? get playback => _playback;
 
   bool isMuted = false;
 
@@ -756,9 +763,9 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
       if (_playerCount == 0) {
         _removeListeners();
-        _videoPlayerController?.dispose();
+        await _playback?.dispose();
         _videoPlayerController = null;
-        _videoController = null;
+        _playback = null;
         return;
       }
 
@@ -836,8 +843,9 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     }
   }
 
-  Future<Player> _initPlayer() async {
+  Future<Player> _initPlayer({bool routed = true}) async {
     assert(_videoPlayerController == null);
+    assert(routed ? _playback == null : _legacyVideoController == null);
     final opt = {
       'video-sync': Pref.videoSync,
       if (Platform.isAndroid) 'ao': Pref.audioOutput,
@@ -857,16 +865,32 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       ),
     );
 
-    assert(_videoController == null);
+    assert(routed || _playback == null);
 
-    _videoController = await VideoController.create(
-      player,
-      configuration: VideoControllerConfiguration(
-        enableHardwareAcceleration: hwdec != null,
-        androidAttachSurfaceAfterVideoParameters: false,
-        hwdec: hwdec,
-      ),
-    );
+    if (routed) {
+      // RoutedVideoPlayback owns the output topology: on Android the HDR
+      // session planner picks the verified route (native HDR / embed /
+      // texture); other platforms keep the ordinary VideoController output.
+      _playback = await RoutedVideoPlayback.create(
+        player,
+        configuration: VideoControllerConfiguration(
+          enableHardwareAcceleration: hwdec != null,
+          androidAttachSurfaceAfterVideoParameters: false,
+          hwdec: hwdec,
+        ),
+      );
+      // routing-acceptance evidence channel (release builds included)
+      _playback!.errors.listen((e) => debugPrint('routed error: $e'));
+    } else {
+      _legacyVideoController = await VideoController.create(
+        player,
+        configuration: VideoControllerConfiguration(
+          enableHardwareAcceleration: hwdec != null,
+          androidAttachSurfaceAfterVideoParameters: false,
+          hwdec: hwdec,
+        ),
+      );
+    }
 
     if (Platform.isAndroid) {
       // Avoid sizing the surface using mpv's idle window between media loads.
@@ -899,9 +923,9 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       player = await _initPlayer();
       if (_playerCount == 0) {
         _removeListeners();
-        player.dispose();
+        await _playback?.dispose();
         player = null;
-        _videoController = null;
+        _playback = null;
         return;
       }
       _videoPlayerController = player;
@@ -938,14 +962,49 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     }
 
     assert(!isLive || seekTo == null);
-    await player.open(
-      Media(
-        video,
-        start: seekTo,
-        extras: extras.isEmpty ? null : extras,
-      ),
-      play: false,
+    final media = Media(
+      video,
+      start: seekTo,
+      extras: extras.isEmpty ? null : extras,
     );
+    final playback = _playback;
+    if (playback == null) {
+      await player.open(media, play: false);
+      return;
+    }
+    try {
+      await playback.open(
+        media,
+        play: false,
+        // audio-only mode must not hold a video session/output
+        video: !onlyPlayAudio.value,
+      );
+    } catch (e) {
+      // The routed session rejected this open (e.g. decoder identity
+      // review on lazy-attach sources). Fall back to the ordinary
+      // non-session output so playback still works.
+      debugPrint('routed open failed, fallback: $e');
+      await _switchToLegacyOutput();
+      await _videoPlayerController?.open(media, play: false);
+    }
+  }
+
+  /// Rebuild the player without the routed session after its open was
+  /// rejected; [RoutedVideoPlayback.dispose] releases the whole player.
+  Future<void> _switchToLegacyOutput() async {
+    final oldPlayback = _playback;
+    _playback = null;
+    _removeListeners();
+    await oldPlayback?.dispose();
+    _videoPlayerController = null;
+    final player = await _initPlayer(routed: false);
+    if (_playerCount == 0) {
+      await player.dispose();
+      _videoPlayerController = null;
+      _legacyVideoController = null;
+      return;
+    }
+    _videoPlayerController = player;
   }
 
   Future<void>? refreshPlayer() {
@@ -955,7 +1014,19 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     if (_videoPlayerController case final ctr? when (ctr.current.isNotEmpty)) {
       var media = ctr.current.last;
       if (!isLive) media = media.copyWith(start: ctr.state.position);
-      return ctr.open(media, play: true);
+      final playback = _playback;
+      if (playback == null) {
+        return ctr.open(media, play: true);
+      }
+      return () async {
+        try {
+          await playback.open(media, play: true, video: !onlyPlayAudio.value);
+        } catch (e) {
+          debugPrint('routed refresh failed, fallback: $e');
+          await _switchToLegacyOutput();
+          await _videoPlayerController?.open(media, play: true);
+        }
+      }();
     }
     return null;
   }
@@ -1184,7 +1255,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     }
     danmakuController?.clear();
     try {
-      await _videoPlayerController?.seek(position);
+      await (_playback?.seek(position) ?? _videoPlayerController?.seek(position));
       _updateIOSPip(position);
     } catch (e) {
       if (kDebugMode) debugPrint('seek failed: $e');
@@ -1244,7 +1315,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       await seekTo(Duration.zero, isSeek: false);
     }
 
-    await _videoPlayerController?.play();
+    await (_playback?.play() ?? _videoPlayerController?.play());
 
     audioSessionHandler?.setActive(true);
 
@@ -1253,7 +1324,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   /// 暂停播放
   Future<void> pause({bool notify = true, bool isInterrupt = false}) async {
-    await _videoPlayerController?.pause();
+    await (_playback?.pause() ?? _videoPlayerController?.pause());
     playerStatus = .paused;
 
     // 主动暂停时让出音频焦点
@@ -1701,9 +1772,10 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     if (kDebugMode) {
       debugPrint('dispose player');
     }
-    _videoPlayerController?.dispose();
     _videoPlayerController = null;
-    _videoController = null;
+    // RoutedVideoPlayback.dispose also disposes the underlying player.
+    unawaited(_playback?.dispose());
+    _playback = null;
     _instance = null;
     videoPlayerServiceHandler?.clear();
   }

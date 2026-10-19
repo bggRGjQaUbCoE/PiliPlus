@@ -1,0 +1,33 @@
+# Local source integration. Keep a current media-kit checkout next to this repo.
+# Mirrors PiliPlusX: all media_kit packages resolve to ../media-kit path sources.
+dependency_overrides:
+  flutter_inappwebview_android:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git
+      path: flutter_inappwebview_android
+      ref: v6.1.5
+  flutter_inappwebview_windows:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git
+      path: flutter_inappwebview_windows
+      ref: v6.1.5
+  media_kit:
+    path: ../media-kit/media_kit
+  media_kit_video:
+    path: ../media-kit/media_kit_video
+  media_kit_android_dataspace_vendor:
+    path: ../media-kit/libs/android/media_kit_android_dataspace_vendor
+  media_kit_libs_android_video:
+    path: ../media-kit/libs/android/media_kit_libs_android_video
+  media_kit_libs_ios_video:
+    path: ../media-kit/libs/ios/media_kit_libs_ios_video
+  media_kit_libs_macos_video:
+    path: ../media-kit/libs/macos/media_kit_libs_macos_video
+  media_kit_libs_linux:
+    path: ../media-kit/libs/linux/media_kit_libs_linux
+  media_kit_libs_ohos:
+    path: ../media-kit/libs/ohos/media_kit_libs_ohos
+  media_kit_libs_video:
+    path: ../media-kit/libs/universal/media_kit_libs_video
+  media_kit_libs_windows_video:
+    path: ../media-kit/libs/windows/media_kit_libs_windows_video

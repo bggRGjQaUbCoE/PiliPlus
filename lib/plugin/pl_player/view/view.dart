@@ -131,7 +131,6 @@ class PLVideoPlayer extends StatefulWidget {
 class _PLVideoPlayerState extends State<PLVideoPlayer>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   late AnimationController _animationController;
-  late VideoController videoController;
   late final CommonIntroController introController = widget.introController!;
   late final VideoDetailController videoDetailController =
       widget.videoDetailController!;
@@ -265,7 +264,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       vsync: this,
       duration: const Duration(milliseconds: 100),
     );
-    videoController = plPlayerController.videoController!;
 
     if (PlatformUtils.isMobile) {
       Future.microtask(() {
@@ -1357,12 +1355,35 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             child: IgnorePointer(
               ignoring: !plPlayerController.enableDragSubtitle,
               child: Obx(
-                () => SubtitleView(
-                  controller: videoController,
-                  configuration: plPlayerController.subtitleConfig.value,
-                  enableDragSubtitle: plPlayerController.enableDragSubtitle,
-                  onUpdatePadding: plPlayerController.onUpdatePadding,
-                ),
+                () {
+                  final playback = plPlayerController.playback;
+                  final legacy = plPlayerController.videoController;
+                  if (playback != null) {
+                    // the routed binding may replace the controller
+                    // (topology rebuild); subtitles follow the current output
+                    return ValueListenableBuilder<VideoController?>(
+                      valueListenable: playback.controller,
+                      builder: (_, controller, __) => controller == null
+                          ? const SizedBox.shrink()
+                          : SubtitleView(
+                              controller: controller,
+                              configuration:
+                                  plPlayerController.subtitleConfig.value,
+                              enableDragSubtitle:
+                                  plPlayerController.enableDragSubtitle,
+                              onUpdatePadding:
+                                  plPlayerController.onUpdatePadding,
+                            ),
+                    );
+                  }
+                  if (legacy == null) return const SizedBox.shrink();
+                  return SubtitleView(
+                    controller: legacy,
+                    configuration: plPlayerController.subtitleConfig.value,
+                    enableDragSubtitle: plPlayerController.enableDragSubtitle,
+                    onUpdatePadding: plPlayerController.onUpdatePadding,
+                  );
+                },
               ),
             ),
           ),
@@ -2037,11 +2058,20 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   child: FittedBox(
                     fit: videoFit.boxFit,
                     alignment: widget.alignment,
-                    child: SimpleVideo(
-                      controller: plPlayerController.videoController!,
-                      fill: widget.fill,
-                      aspectRatio: videoFit.aspectRatio,
-                    ),
+                    child: plPlayerController.playback != null
+                        ? RoutedSimpleVideo(
+                            playback: plPlayerController.playback!,
+                            fill: widget.fill,
+                            // reserve a real rect before the session's
+                            // controller arrives (null placeholder would
+                            // otherwise be a 1px box and layout never binds)
+                            aspectRatio: videoFit.aspectRatio ?? 16 / 9,
+                          )
+                        : SimpleVideo(
+                            controller: plPlayerController.videoController!,
+                            fill: widget.fill,
+                            aspectRatio: videoFit.aspectRatio,
+                          ),
                   ),
                 );
               },

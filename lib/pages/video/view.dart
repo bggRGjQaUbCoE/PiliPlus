@@ -1222,7 +1222,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       () =>
           !videoDetailController.videoState.value ||
               !videoDetailController.autoPlay ||
-              plPlayerController?.videoController == null
+              // routed output binding requires this view mounted before open
+              (plPlayerController?.videoController == null &&
+                  plPlayerController?.playback == null)
           ? const SizedBox.shrink()
           : PLVideoPlayer(
               maxWidth: width,

@@ -184,7 +184,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
                     ? const Icon(Icons.image, size: 22)
                     : const Icon(Icons.image_not_supported, size: 22),
                 onPressed: widget.canUploadPic
-                    ? onPickImage
+                    ? onPickImageThrottle
                     : () => SmartDialog.showToast('当前评论区不支持发送图片'),
               ),
             ],

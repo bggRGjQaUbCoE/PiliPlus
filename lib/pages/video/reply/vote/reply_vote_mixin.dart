@@ -12,10 +12,14 @@ mixin ReplyVoteMixin on CommonListController<MainListReply, ReplyInfo> {
       final res = response.response;
       if (res.hasVoteCard()) {
         voteCard = res.voteCard;
-      } else {
-        voteCard = null;
       }
     }
     return super.customHandleResponse(isRefresh, response);
+  }
+
+  @override
+  Future<void> onRefresh() {
+    voteCard = null;
+    return super.onRefresh();
   }
 }

@@ -117,7 +117,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
       final blockColorful = DanmakuOptions.blockColorful;
       final danmakuWeight = DanmakuOptions.danmakuWeight;
       for (DanmakuElem e in currentDanmakuList) {
-        if (e.weight < danmakuWeight) return;
+        if (e.weight < danmakuWeight) continue;
         if (e.mode == 7) {
           try {
             _controller!.addDanmaku(

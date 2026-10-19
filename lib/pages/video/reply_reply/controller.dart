@@ -1,7 +1,8 @@
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show ReplyInfo, DetailListReply, Mode;
+    show ReplyInfo, DetailListReply;
 import 'package:PiliPlus/grpc/reply.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/models/common/reply/reply_sort_type.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_mention/item.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/pages/common/reply_controller.dart';
@@ -17,7 +18,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
 class VideoReplyReplyController extends ReplyController
-    with GetSingleTickerProviderStateMixin {
+    with GetSingleTickerProviderStateMixin, ReplyLocateMixin {
   VideoReplyReplyController({
     required this.hasRoot,
     required this.id,
@@ -100,11 +101,11 @@ class VideoReplyReplyController extends ReplyController
   dynamic get sourceId => replyType == 1 ? IdUtils.av2bv(oid) : oid;
 
   @override
+  ReplySortType get prefSortType => Pref.reply2SortType;
+
+  @override
   void onInit() {
     super.onInit();
-    final cacheSortType = Pref.reply2SortType;
-    sortType.value = cacheSortType;
-    mode = cacheSortType == .time ? Mode.MAIN_LIST_TIME : Mode.MAIN_LIST_HOT;
     // 父面板已过滤掉被屏蔽评论，这里继承其收集结果以重建占位
     if (removedReplies case final removedReplies?) {
       _removedReplies.addAll(removedReplies);
@@ -188,7 +189,7 @@ class VideoReplyReplyController extends ReplyController
   @pragma('vm:notify-debugger-on-exception')
   void jumpToItem(int index) {
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      animController.forward(from: 0);
+      colorAnimController.forward(from: 0);
       try {
         // ignore: invalid_use_of_visible_for_testing_member
         final offset = listController.getOffsetToReveal(index, 0.25);

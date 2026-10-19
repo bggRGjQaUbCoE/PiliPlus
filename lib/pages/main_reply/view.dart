@@ -49,16 +49,17 @@ class _MainReplyPageState extends State<MainReplyPage>
   );
 
   late EdgeInsets padding;
+  late ColorScheme colorScheme;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     padding = MediaQuery.viewPaddingOf(context);
+    colorScheme = ColorScheme.of(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = ColorScheme.of(context);
     return SimpleScaffold(
       appBar: AppBar(title: const Text('查看评论')),
       body: fabAnimWrapper(
@@ -72,10 +73,8 @@ class _MainReplyPageState extends State<MainReplyPage>
             child: CustomScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
-                buildReplyHeader(colorScheme),
-                Obx(
-                  () => _buildBody(colorScheme, _controller.loadingState.value),
-                ),
+                buildReplyHeader(),
+                Obx(() => _buildBody(_controller.loadingState.value)),
               ],
             ),
           ),
@@ -108,10 +107,7 @@ class _MainReplyPageState extends State<MainReplyPage>
     );
   }
 
-  Widget _buildBody(
-    ColorScheme colorScheme,
-    LoadingState<List<ReplyInfo>?> loadingState,
-  ) {
+  Widget _buildBody(LoadingState<List<ReplyInfo>?> loadingState) {
     return switch (loadingState) {
       Loading() => const SliverPrototypeExtentList(
         prototypeItem: VideoReplySkeleton(),
@@ -143,8 +139,7 @@ class _MainReplyPageState extends State<MainReplyPage>
                     return ReplyItemGrpc(
                       replyItem: response[index],
                       replyLevel: 1,
-                      replyReply: (replyItem, id) =>
-                          replyReply(context, replyItem, id, colorScheme),
+                      replyReply: throttleReplyReply,
                       onReply: _controller.onReply,
                       onDelete: (item, subIndex) =>
                           _controller.onRemove(index, item, subIndex),
@@ -171,7 +166,7 @@ class _MainReplyPageState extends State<MainReplyPage>
     };
   }
 
-  Widget buildReplyHeader(ColorScheme colorScheme) {
+  Widget buildReplyHeader() {
     final secondary = colorScheme.secondary;
     return SliverFloatingHeaderWidget(
       backgroundColor: colorScheme.surface,
@@ -205,40 +200,39 @@ class _MainReplyPageState extends State<MainReplyPage>
     );
   }
 
-  void replyReply(
-    BuildContext context,
-    ReplyInfo replyItem,
-    int? id,
-    ColorScheme colorScheme,
-  ) {
-    EasyThrottle.throttle('replyReply', const Duration(milliseconds: 500), () {
-      int oid = replyItem.oid.toInt();
-      int rpid = replyItem.id.toInt();
-      Get.to(
-        SimpleScaffold(
-          appBar: AppBar(
-            title: const Text('评论详情'),
-            shape: Border(
-              bottom: BorderSide(
-                color: colorScheme.outline.withValues(alpha: 0.1),
-              ),
+  void throttleReplyReply(ReplyInfo replyItem, int? id) {
+    EasyThrottle.throttle(
+      'replyReply',
+      const Duration(milliseconds: 500),
+      () => replyReply(replyItem, id),
+    );
+  }
+
+  void replyReply(ReplyInfo replyItem, int? id) {
+    Get.to(
+      SimpleScaffold(
+        appBar: AppBar(
+          title: const Text('评论详情'),
+          shape: Border(
+            bottom: BorderSide(
+              color: colorScheme.outline.withValues(alpha: 0.1),
             ),
           ),
-          body: ViewSafeArea(
-            child: VideoReplyReplyPanel(
-              enableSlide: false,
-              id: id,
-              oid: oid,
-              rpid: rpid,
-              isVideoDetail: false,
-              replyType: _controller.replyType,
-              firstFloor: replyItem,
-              upMid: _controller.upMid,
-            ),
-          ).constraintWidth(),
         ),
-        routeName: 'dynamicDetail-Copy',
-      );
-    });
+        body: ViewSafeArea(
+          child: VideoReplyReplyPanel(
+            enableSlide: false,
+            id: id,
+            oid: replyItem.oid.toInt(),
+            rpid: replyItem.id.toInt(),
+            isVideoDetail: false,
+            replyType: _controller.replyType,
+            firstFloor: replyItem,
+            upMid: _controller.upMid,
+          ),
+        ).constraintWidth(),
+      ),
+      routeName: 'dynamicDetail-Copy',
+    );
   }
 }

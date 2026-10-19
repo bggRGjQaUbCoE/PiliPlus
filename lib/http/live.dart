@@ -80,7 +80,7 @@ abstract final class LiveHttp {
 
   static Future<LoadingState<RoomPlayInfoData>> liveRoomInfo({
     required Object roomId,
-    Object? qn,
+    int? qn,
     bool onlyAudio = false,
   }) async {
     final res = await Request().get(
@@ -790,6 +790,22 @@ abstract final class LiveHttp {
     );
     if (res.data['code'] == 0) {
       return const Success(null);
+    } else {
+      return Error(res.data['message']);
+    }
+  }
+
+  static Future<LoadingState<String?>> liveMedalName(Object uid) async {
+    final res = await Request().get(
+      Api.liveMasterInfo,
+      queryParameters: {'uid': uid},
+    );
+    if (res.data['code'] == 0) {
+      try {
+        return Success(res.data['data']['medal_name'] as String);
+      } catch (e) {
+        return Error(e.toString());
+      }
     } else {
       return Error(res.data['message']);
     }

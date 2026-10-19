@@ -10,7 +10,5 @@ Installed-Size: size_need_change
 Description: third-party Bilibili client developed in Flutter
 Homepage: https://github.com/bggRGjQaUbCoE/PiliPlus
 Depends: libgtk-3-0t64,
-         libmpv2,
-         gir1.2-ayatanaappindicator3-0.1,
-         libayatana-appindicator3-1
+         libmpv2
 

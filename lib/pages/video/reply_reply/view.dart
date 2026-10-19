@@ -24,7 +24,6 @@ import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/extension/widget_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
-import 'package:PiliPlus/utils/parse_string.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
@@ -68,17 +67,13 @@ class VideoReplyReplyPanel extends CommonSlidePage {
   final bool isNested;
   final Int64? upMid;
 
-  @override
-  State<VideoReplyReplyPanel> createState() => _VideoReplyReplyPanelState();
-
   static Future<void>? toReply({
     required int oid,
     required int rootId,
-    String? rpIdStr,
+    int? rpId,
     required int type,
     Uri? uri,
   }) {
-    final rpId = parseIntOrNull(rpIdStr);
     return Get.to(
       arguments: {
         'oid': oid,
@@ -114,6 +109,9 @@ class VideoReplyReplyPanel extends CommonSlidePage {
       ),
     );
   }
+
+  @override
+  State<VideoReplyReplyPanel> createState() => _VideoReplyReplyPanelState();
 }
 
 class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>

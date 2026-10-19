@@ -659,13 +659,10 @@ class ReplyItemGrpc extends StatelessWidget {
                             ),
                             const TextSpan(text: ' '),
                           ],
-                          TextSpan(
-                            text: childReply.root == childReply.parent
-                                ? ': '
-                                : childReply.mid == upMid
-                                ? ''
-                                : ' ',
-                          ),
+                          if (childReply.root == childReply.parent)
+                            const TextSpan(text: ': ')
+                          else if (childReply.mid != upMid)
+                            const TextSpan(text: ' '),
                           _buildMessage(
                             context,
                             colorScheme,

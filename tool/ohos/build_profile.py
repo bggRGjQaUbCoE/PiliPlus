@@ -85,60 +85,6 @@ def environment_profile(workspace: Path) -> list[dict]:
     ]})
 
 
-def defer_media(workspace: Path) -> list[dict]:
-    """Allow application startup while the user-selected media port is pending.
-
-    Keep the existing media-kit Dart API graph. Playback takes the application's
-    existing error path, and live photos remain viewable as still images with an
-    explicit notice. No player, success response, or native decoder is faked.
-    """
-    message = "当前 OHOS 开发构建暂未接入播放后端"
-    return apply_replacements(workspace, {
-        "lib/main.dart": [
-            ("  MediaKit.ensureInitialized();\n", "  // OHOS media-kit is deferred until its supported branch is supplied.\n  if (!Platform.isOhos) MediaKit.ensureInitialized();\n"),
-            ("      'MPV Api Version':\n          '${NativePlayer.apiVersion >> 16}.${NativePlayer.apiVersion & 0xFFFF}',",
-             "      'MPV Api Version': Platform.isOhos\n          ? 'OHOS backend deferred'\n          : '${NativePlayer.apiVersion >> 16}.${NativePlayer.apiVersion & 0xFFFF}',"),
-        ],
-        "lib/plugin/pl_player/controller.dart": [
-            ("  Future<Player> _initPlayer() async {\n    assert(_videoPlayerController == null);",
-             "  Future<Player> _initPlayer() async {\n    if (Platform.isOhos) {\n      SmartDialog.showToast('" + message + "');\n      throw UnsupportedError('OHOS media-kit backend is deferred');\n    }\n    assert(_videoPlayerController == null);"),
-            ("  Future<void> play({bool repeat = false, bool hideControls = true}) async {\n    if (_playerCount == 0) return;",
-             "  Future<void> play({bool repeat = false, bool hideControls = true}) async {\n    if (Platform.isOhos) {\n      SmartDialog.showToast('" + message + "');\n      return;\n    }\n    if (_playerCount == 0) return;"),
-        ],
-        "lib/common/widgets/image_viewer/gallery_viewer.dart": [
-            ("import 'package:get/get.dart';", "import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';\nimport 'package:get/get.dart';"),
-            ("  Future<void> _initPlayer() async {\n    assert(_player == null);",
-             "  Future<void> _initPlayer() async {\n    if (Platform.isOhos) {\n      SmartDialog.showToast('" + message + "');\n      return;\n    }\n    assert(_player == null);"),
-            ("    final Widget child;\n    switch (item.sourceType) {\n      case SourceType.fileImage:",
-             "    final Widget child;\n    // Keep the original image viewer for the still component of a live photo.\n    final sourceType = Platform.isOhos && item.sourceType == SourceType.livePhoto\n        ? SourceType.networkImage\n        : item.sourceType;\n    switch (sourceType) {\n      case SourceType.fileImage:"),
-        ],
-        "lib/pages/audio/controller.dart": [
-            ("  }) async {\n    await _initPlayerIfNeeded();\n    final extras = audioFilterExtras(volume);",
-             "  }) async {\n    if (Platform.isOhos) {\n      SmartDialog.showToast('" + message + "');\n      return;\n    }\n    await _initPlayerIfNeeded();\n    final extras = audioFilterExtras(volume);"),
-        ],
-        "lib/pages/live_room/view.dart": [
-            ("  late final GlobalKey playerKey = GlobalKey();\n\n  @override\n  void initState() {",
-             "  late final GlobalKey playerKey = GlobalKey();\n\n  Worker? _ohosChatLoadWorker;\n  bool _ohosChatRouteActive = true;\n  bool _ohosChatStartedForRoute = false;\n\n  void _startOhosChatIfReady() {\n    if (Platform.isOhos &&\n        mounted &&\n        _ohosChatRouteActive &&\n        !_ohosChatStartedForRoute &&\n        !_liveRoomController.isClosed &&\n        _liveRoomController.isLoaded.value) {\n      _ohosChatStartedForRoute = true;\n      _liveRoomController.startLiveMsg();\n    }\n  }\n\n  @override\n  void initState() {"),
-            ("    PlPlayerController.setPlayCallBack(plPlayerController.play);\n    if (plPlayerController.removeSafeArea) {",
-             "    PlPlayerController.setPlayCallBack(plPlayerController.play);\n    if (Platform.isOhos) {\n      _ohosChatLoadWorker = ever<bool>(\n        _liveRoomController.isLoaded,\n        (_) => _startOhosChatIfReady(),\n      );\n      _startOhosChatIfReady();\n    }\n    if (plPlayerController.removeSafeArea) {"),
-            ("  @override\n  Future<void> didPopNext() async {\n    addObserverMobile(this);",
-             "  @override\n  void didPop() {\n    _ohosChatRouteActive = false;\n    super.didPop();\n  }\n\n  @override\n  Future<void> didPopNext() async {\n    _ohosChatRouteActive = true;\n    addObserverMobile(this);"),
-            ("    _liveRoomController.startLiveTimer();\n    if (plPlayerController.playerStatus.isPlaying &&",
-             "    _liveRoomController.startLiveTimer();\n    _startOhosChatIfReady();\n    if (plPlayerController.playerStatus.isPlaying &&"),
-            ("  void didPushNext() {\n    removeObserverMobile(this);",
-             "  void didPushNext() {\n    _ohosChatRouteActive = false;\n    _ohosChatStartedForRoute = false;\n    removeObserverMobile(this);"),
-            ("  void dispose() {\n    removeObserverMobile(this);",
-             "  void dispose() {\n    _ohosChatRouteActive = false;\n    _ohosChatLoadWorker?.dispose();\n    _ohosChatLoadWorker = null;\n    removeObserverMobile(this);"),
-            ("        if (_liveRoomController.isLoaded.value && plPlayerController.isLive) {\n          final roomInfoH5 = _liveRoomController.roomInfoH5.value;",
-             "        if (_liveRoomController.isLoaded.value && plPlayerController.isLive) {\n          if (Platform.isOhos) {\n            // Keep room details and chat available without constructing a null player.\n            return const Center(\n              child: Text('" + message + "', style: TextStyle(color: baseWhite)),\n            );\n          }\n          final roomInfoH5 = _liveRoomController.roomInfoH5.value;"),
-        ],
-        "lib/plugin/pl_player/view/view.dart": [
-            ("  Future<void> _screenshotWebp() async {\n    final videoInfo = videoDetailController.data;",
-             "  Future<void> _screenshotWebp() async {\n    if (Platform.isOhos) {\n      SmartDialog.showToast('" + message + "');\n      return;\n    }\n    final videoInfo = videoDetailController.data;"),
-        ],
-    })
-
-
 def platform_integration(workspace: Path) -> list[dict]:
     return apply_replacements(workspace, {
         "lib/main.dart": [
@@ -185,10 +131,11 @@ def configure(workspace: Path) -> dict:
     try:
         update_manifest(workspace, stage="configuring-ohos-build-copy")
         environment = environment_profile(workspace)
+        media = load_helper("media_backend").prepare_application(workspace)
         application = load_helper("app_compat").prepare_application(workspace, normalize_package_name=False)
         platform = platform_integration(workspace)
-        media = defer_media(workspace)
         dependencies = load_helper("dependencies").prepare(workspace)
+        media = load_helper("media_backend").configure_dependencies(workspace)
         result = update_manifest(
             workspace,
             stage="ohos-build-copy-prepared",
@@ -198,7 +145,7 @@ def configure(workspace: Path) -> dict:
             environment_transformations=environment,
             application_source_transformations=application,
             platform_transformations=platform,
-            media_backend="deferred-by-request",
+            media_backend="media-kit-direction-b",
             media_transformations=media,
             dependencies=dependencies,
             dependency_overrides_applied=True,

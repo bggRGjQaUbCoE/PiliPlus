@@ -14,6 +14,7 @@ import time
 import zipfile
 
 import build_profile
+import media_backend
 
 
 def digest(path: Path) -> str:
@@ -73,7 +74,7 @@ def build(workspace: Path, flutter_root: Path, pub_cache: Path) -> dict:
     receipt = {
         "schema": 1, "source_commit": source["source_commit"],
         "base_commit": source["base_commit"], "application_entrypoint": "lib/main.dart",
-        "media_backend": "deferred-by-request", "started_at_unix": int(time.time()),
+        "media_backend": "media-kit-direction-b", "started_at_unix": int(time.time()),
         "dependency_resolution_verified": False, "analysis_passed": False,
         "parser_compatibility_verified": False,
         "ui_compatibility_verified": False,
@@ -105,12 +106,14 @@ def build(workspace: Path, flutter_root: Path, pub_cache: Path) -> dict:
     try:
         build_profile.update_manifest(workspace, dependency_resolution_verified=False,
                                       analysis_passed=False, hap_built=False)
+        receipt["media"] = media_backend.verify(workspace, resolved=False)
         scripts = workspace / "tool/ohos"
         execute("sdk-check", [sys.executable, str(scripts / "prepare_sdk.py"),
                 "--flutter-root", str(flutter_root), "--pub-cache", str(pub_cache),
                 "--workspace", str(workspace), "--check"])
         execute("pub-get", [str(flutter), "pub", "get"])
         dependencies = build_profile.load_helper("dependencies").patch(workspace, pub_cache)
+        receipt["media"] = media_backend.verify(workspace)
         receipt["dependency_resolution_verified"] = True
         receipt["dependencies"] = dependencies
         receipt["pubspec_lock_sha256"] = digest(workspace / "pubspec.lock")
@@ -130,8 +133,10 @@ def build(workspace: Path, flutter_root: Path, pub_cache: Path) -> dict:
                 "--target", "lib/main.dart", "--dart-define-from-file=ohos/build-defines.json"])
         artifact = workspace / "build/ohos/hap/entry-default-unsigned.hap"
         receipt["artifact"] = inspect_hap(artifact, expected_app)
+        receipt["media_native_identity"] = media_backend.verify_hap(workspace, artifact)
+        receipt["media"] = media_backend.verify(workspace)
         receipt["hap_built"] = True
-        receipt["status"] = "built-unsigned-media-deferred"
+        receipt["status"] = "built-unsigned-media-integrated-device-unverified"
         build_profile.update_manifest(workspace, analysis_passed=True, hap_built=True,
                                       artifact=receipt["artifact"], device_functionality_verified=False)
     except Exception as exc:

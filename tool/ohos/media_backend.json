@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "repository": "https://github.com/Goodwu/media-kit.git",
+  "branch": "compat/piliplus-zero-change-20261018",
+  "direction": "B",
+  "patch": "tool/piliplus_compat/direction_b/player-integration.patch",
+  "manifest": "tool/piliplus_compat/direction_b/manifest.json",
+  "patch_sha256": "2109c3c44c8f93febf04636d557f863d6c05b15fa5a1287ed3f86f2a8474443b",
+  "required_packages": [
+    "media_kit",
+    "media_kit_video",
+    "media_kit_libs_video",
+    "media_kit_libs_ohos"
+  ],
+  "device_verified": false
+}

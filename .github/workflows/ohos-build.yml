@@ -1,4 +1,4 @@
-name: OHOS arm64 build (media deferred)
+name: OHOS arm64 build (current media-kit)
 
 on:
   workflow_dispatch:
@@ -26,70 +26,121 @@ jobs:
     timeout-minutes: 90
     env:
       CI: 'true'
+      PYTHONDONTWRITEBYTECODE: '1'
     steps:
       - name: Set isolated runner paths
         run: |
           echo "PUB_CACHE=$RUNNER_TEMP/piliplus-ohos-pub-cache" >> "$GITHUB_ENV"
           echo "PILIPLUS_OHOS_FLUTTER_ROOT=$RUNNER_TEMP/piliplus-flutter-ohos" >> "$GITHUB_ENV"
           echo "PILIPLUS_OHOS_BUILD=$RUNNER_TEMP/PiliPlus-ohos-build" >> "$GITHUB_ENV"
-      - name: Checkout committed source and upstream history
-        uses: actions/checkout@v7
+          echo "PILIPLUS_MEDIA_KIT_ROOT=$GITHUB_WORKSPACE/media-sdk" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/native-evidence"
+      - name: Checkout committed application and upstream history
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: false
+          path: app
+      - name: Resolve current media-kit implementation branch
+        uses: actions/checkout@v4
+        with:
+          repository: Goodwu/media-kit
+          ref: compat/piliplus-zero-change-20261018
+          persist-credentials: false
+          path: media-sdk
+      - name: Resolve current maintained OHOS native build recipe
+        uses: actions/checkout@v4
+        with:
+          repository: Goodwu/libmpv-ohos-build
+          ref: main
+          persist-credentials: false
+          path: native-build
       - name: Check source preservation and preparation guards
+        working-directory: app
         run: |
           python3 tool/ohos/ohos.py check-source
-          python3 -m unittest discover -s tool/ohos -p 'test_*.py' -v
-      - name: Install host dependencies
+          python3 -B -m unittest discover -s tool/ohos -p 'test_*.py' -v
+      - name: Install host and native build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y curl unzip xz-utils zip libglu1-mesa
+          sudo apt-get install -y gperf git jq ninja-build pkg-config python3-venv ripgrep unzip zip curl wget xz-utils libglu1-mesa cmake libmpv-dev
+          python3 -m venv "$RUNNER_TEMP/native-tools"
+          "$RUNNER_TEMP/native-tools/bin/python" -m pip install meson==1.6.1 PyYAML
+          echo "$RUNNER_TEMP/native-tools/bin" >> "$GITHUB_PATH"
       - name: Set up HarmonyOS command line tools
         uses: ErBWs/setup-ohos@5c8e74d05fc9888a387b6154ba06d0cd9ede3da1
         with:
           version: 26.0.0.621
           cache: true
       - name: Set up Java 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-      - name: Prepare the pinned official CPF Flutter SDK
+      - name: Compile this run's native source inputs (no binary cache)
+        working-directory: native-build
+        shell: bash
         run: |
-          python3 tool/ohos/prepare_sdk.py \
-            --flutter-root "$PILIPLUS_OHOS_FLUTTER_ROOT" --pub-cache "$PUB_CACHE"
+          set -euo pipefail
+          for source in app media-sdk native-build; do
+            git -C "$GITHUB_WORKSPACE/$source" rev-parse HEAD > "$RUNNER_TEMP/native-evidence/$source-commit.txt"
+          done
+          git archive --format=tar.gz -o "$RUNNER_TEMP/native-evidence/native-recipe.tar.gz" HEAD
+          chmod +x *.sh download/*.sh scripts/*.sh
+          set +e
+          ./bundle.sh > "$RUNNER_TEMP/native-evidence/native-build.log" 2>&1
+          result=$?
+          set -e
+          tail -n 100 "$RUNNER_TEMP/native-evidence/native-build.log"
+          echo "$result" > "$RUNNER_TEMP/native-evidence/native-exit.txt"
+          test "$result" = 0
+          (cd libmpv/arm64-build && sha256sum -c SHA256SUMS)
+          cp reproducibility/source-lock.json "$RUNNER_TEMP/native-evidence/"
+          cp libmpv/arm64-build/{manifest.json,sbom.cdx.json,SHA256SUMS,libmpv_aarch64.zip,libmpv.so} "$RUNNER_TEMP/native-evidence/"
+          archive="$GITHUB_WORKSPACE/native-build/libmpv/arm64-build/libmpv_aarch64.zip"
+          echo "MEDIA_KIT_OHOS_LIBMPV_ARCHIVE=$archive" >> "$GITHUB_ENV"
+          echo "MEDIA_KIT_OHOS_LIBMPV_SHA256=$(sha256sum "$archive" | cut -d' ' -f1)" >> "$GITHUB_ENV"
+          echo "PILIPLUS_OHOS_LIBMPV_LIBRARY=$GITHUB_WORKSPACE/native-build/libmpv/arm64-build/libmpv.so" >> "$GITHUB_ENV"
+      - name: Prepare the application's reviewed official CPF Flutter SDK
+        working-directory: app
+        run: |
+          python3 tool/ohos/prepare_sdk.py --flutter-root "$PILIPLUS_OHOS_FLUTTER_ROOT" --pub-cache "$PUB_CACHE"
           python3 tool/ohos/ohos.py doctor --flutter "$PILIPLUS_OHOS_FLUTTER_ROOT/bin/flutter"
       - name: Exercise retained Flutter widget extensions
+        working-directory: app
         run: |
           cp -R tool/ohos/sdk_compat/validation "$RUNNER_TEMP/piliplus-ohos-sdk-tests"
           cd "$RUNNER_TEMP/piliplus-ohos-sdk-tests"
           "$PILIPLUS_OHOS_FLUTTER_ROOT/bin/flutter" pub get
           "$PILIPLUS_OHOS_FLUTTER_ROOT/bin/flutter" test --no-pub
-      - name: Export and adapt the isolated application build copy
+      - name: Export and adapt the complete application with direction B media
+        working-directory: app
         run: python3 tool/ohos/ohos.py prepare-build --output "$PILIPLUS_OHOS_BUILD"
-      - name: Resolve, analyze and build the original application entrypoint
+      - name: Resolve, test, analyze and build the actual lib/main.dart application
         run: |
           python3 "$PILIPLUS_OHOS_BUILD/tool/ohos/build.py" --workspace "$PILIPLUS_OHOS_BUILD" \
             --flutter-root "$PILIPLUS_OHOS_FLUTTER_ROOT" --pub-cache "$PUB_CACHE"
-      - name: Confirm original tracked files remain unchanged
+      - name: Confirm original application files remain unchanged
         if: always()
+        working-directory: app
         run: python3 tool/ohos/ohos.py check-source
-      - name: Upload build diagnostics
+      - name: Upload build and native-source diagnostics
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
-          name: ohos-build-diagnostics
+          name: ohos-media-integration-evidence
           if-no-files-found: warn
           path: |
             ${{ env.PILIPLUS_OHOS_BUILD }}/ohos/source-manifest.json
+            ${{ env.PILIPLUS_OHOS_BUILD }}/ohos/media-backend.json
             ${{ env.PILIPLUS_OHOS_BUILD }}/ohos/dependency-report.json
             ${{ env.PILIPLUS_OHOS_BUILD }}/ohos/build-result.json
             ${{ env.PILIPLUS_OHOS_BUILD }}/ohos/build-logs/
             ${{ env.PILIPLUS_OHOS_FLUTTER_ROOT }}/bin/cache/piliplus-ohos-sdk.json
-      - name: Upload verified unsigned HAP
-        uses: actions/upload-artifact@v7
+            ${{ runner.temp }}/native-evidence/
+      - name: Upload verified unsigned application HAP (not device certification)
+        uses: actions/upload-artifact@v4
         with:
-          name: PiliPlus-ohos-arm64-media-deferred
+          name: PiliPlus-ohos-arm64-media-integrated-unsigned
           if-no-files-found: error
           path: ${{ env.PILIPLUS_OHOS_BUILD }}/build/ohos/hap/entry-default-unsigned.hap

@@ -82,6 +82,27 @@ abstract final class Utils {
     return uri.substring(slash + 1, (fileExt || dot == -1) ? qMark : dot);
   }
 
+  static final _illegalCharRe = RegExp(r'[<>:"/\\|?*\x00-\x1F]');
+  static final _winReservedRe = RegExp(
+    r'^(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\..*)?$',
+    caseSensitive: false,
+  );
+
+  /// 将字符串转为各平台（Windows/macOS/Android/iOS/Linux）安全的文件名：
+  /// 非法字符与控制字符替换为 `_`，去掉首尾空白与结尾的点（Windows 限制），
+  /// 规避 Windows 保留设备名；方括号 `[x_x]` 全平台合法，予以保留。
+  static String safeFileName(String name, {String fallback = 'emote'}) {
+    String result = name.replaceAll(_illegalCharRe, '_').trim();
+    result = result.replaceAll(RegExp(r'^\.+'), '');
+    result = result.replaceAll(RegExp(r'\.+$'), '');
+    if (result.isEmpty) {
+      result = fallback;
+    } else if (_winReservedRe.hasMatch(result)) {
+      result = '_$result';
+    }
+    return result;
+  }
+
   /// When calling this from a `catch` block consider annotating the method
   /// containing the `catch` block with
   /// `@pragma('vm:notify-debugger-on-exception')` to allow an attached debugger

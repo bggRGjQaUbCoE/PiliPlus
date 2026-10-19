@@ -1,5 +1,5 @@
 import 'dart:async' show FutureOr;
-import 'dart:io' show File, Platform;
+import 'dart:io' show Directory, File, Platform;
 import 'dart:math' as math;
 import 'dart:typed_data' show Uint8List;
 
@@ -14,8 +14,11 @@ import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/permission_handler.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/share_utils.dart';
+import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:crypto/crypto.dart' show md5;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:live_photo_maker/live_photo_maker.dart';
@@ -194,6 +197,190 @@ abstract final class ImageUtils {
     } finally {
       if (!silentDownImg) SmartDialog.dismiss(status: .loading);
     }
+  }
+
+  static const _emoteDirName = 'emote';
+  static const _maxEmoteNameConflict = 1000;
+  static final _emoteExtRegex = RegExp(
+    r'^\.(?:png|jpe?g|gif|webp|avif|bmp)$',
+    caseSensitive: false,
+  );
+
+  /// 下载评论表情（`[x_x]` 形式的图片表情）。
+  ///
+  /// [emotes] 每项为 `(表情名, 图片地址)`，表情名形如 `[x_x]`。
+  /// 同名文件已存在时按内容 md5 判重：内容一致视为已保存，不重复写入；
+  /// 内容不同则依次追加 `_1`、`_2` 后缀。
+  /// 桌面端扫描下载目录下的 `emote` 子目录并读取文件哈希；
+  /// 移动端没有相册查询 API，改用 [LocalCacheKey.emoteSaved] 中
+  /// 「文件名 -> md5」的本地记录判重。
+  static Future<bool> downloadEmotes(List<(String, String)> emotes) async {
+    final items = <String, String>{};
+    for (final (name, url) in emotes) {
+      if (url.isEmpty) continue;
+      // 同一张表情出现多次时只下载一次
+      items.putIfAbsent(url.http2https, () => name);
+    }
+    if (items.isEmpty) {
+      SmartDialog.showToast('未找到表情');
+      return false;
+    }
+    if (PlatformUtils.isMobile && !await checkPermissionDependOnSdkInt()) {
+      return false;
+    }
+    if (!silentDownImg) {
+      SmartDialog.showLoading(msg: '正在下载表情');
+    }
+
+    var saved = 0;
+    var skipped = 0;
+    var failed = 0;
+    try {
+      final Directory? dir = PlatformUtils.isMobile ? null : await _emoteDir();
+      final Map<String, String>? records = PlatformUtils.isMobile
+          ? _loadEmoteRecords()
+          : null;
+      for (final MapEntry(key: url, value: name) in items.entries) {
+        try {
+          final file = await CacheManager.manager.getSingleFile(url);
+          final bytes = await file.readAsBytes();
+          if (bytes.isEmpty) {
+            throw StateError('emote is empty');
+          }
+          final hash = md5.convert(bytes).toString();
+          final fileName = _emoteFileName(name, url);
+          final isSaved = dir != null
+              ? await _saveEmoteToDir(bytes, fileName, hash, dir)
+              : await _saveEmoteToGallery(records!, file.path, fileName, hash);
+          if (isSaved) {
+            saved++;
+          } else {
+            skipped++;
+          }
+        } catch (_) {
+          failed++;
+        }
+      }
+    } catch (_) {
+      // 目标目录不可用等异常：剩余表情记为失败
+      failed = items.length - saved - skipped;
+    } finally {
+      if (!silentDownImg) {
+        SmartDialog.dismiss(status: SmartStatus.loading);
+      }
+    }
+
+    if (failed > 0) {
+      SmartDialog.showToast(
+        saved > 0 ? '已保存 $saved 个，$failed 个失败' : '保存失败',
+      );
+    } else if (saved == 0) {
+      SmartDialog.showToast('已保存过');
+    } else if (skipped > 0) {
+      SmartDialog.showToast('已保存 $saved 个，$skipped 个已保存过');
+    } else {
+      SmartDialog.showToast('已保存 $saved 个表情');
+    }
+    return saved > 0;
+  }
+
+  static Future<Directory> _emoteDir() async {
+    final dir = Directory(path.join(downloadPath, _emoteDirName));
+    if (!dir.existsSync()) {
+      await dir.create(recursive: true);
+    }
+    return dir;
+  }
+
+  static String _emoteFileName(String name, String url) {
+    var ext = path.extension(Uri.tryParse(url)?.path ?? '');
+    if (!_emoteExtRegex.hasMatch(ext)) {
+      ext = '.png';
+    }
+    return '${Utils.safeFileName(name)}$ext';
+  }
+
+  static String _emoteSuffixedFileName(String fileName, int index) {
+    final ext = path.extension(fileName);
+    final base = ext.isEmpty
+        ? fileName
+        : fileName.substring(0, fileName.length - ext.length);
+    return '${base}_$index$ext';
+  }
+
+  /// 保存到桌面端目录，返回 true 表示写入，false 表示内容已存在。
+  static Future<bool> _saveEmoteToDir(
+    Uint8List bytes,
+    String fileName,
+    String hash,
+    Directory dir,
+  ) async {
+    for (var index = 0; index < _maxEmoteNameConflict; index++) {
+      final name = index == 0
+          ? fileName
+          : _emoteSuffixedFileName(fileName, index);
+      final file = File(path.join(dir.path, name));
+      if (file.existsSync()) {
+        final existingHash = md5.convert(await file.readAsBytes()).toString();
+        if (existingHash == hash) {
+          return false;
+        }
+        continue;
+      }
+      await file.writeAsBytes(bytes, flush: true);
+      return true;
+    }
+    throw StateError('too many emote name conflicts');
+  }
+
+  /// 保存到系统相册，返回 true 表示写入，false 表示内容已存在。
+  ///
+  /// 移动端无法查询相册，故用 [records] 中「文件名 -> md5」记录判重。
+  static Future<bool> _saveEmoteToGallery(
+    Map<String, String> records,
+    String filePath,
+    String fileName,
+    String hash,
+  ) async {
+    for (var index = 0; index < _maxEmoteNameConflict; index++) {
+      final name = index == 0
+          ? fileName
+          : _emoteSuffixedFileName(fileName, index);
+      final savedHash = records[name];
+      if (savedHash != null) {
+        if (savedHash == hash) {
+          return false;
+        }
+        continue;
+      }
+      final res = await SaverGallery.saveFile(
+        filePath: filePath,
+        fileName: name,
+        albumPath: _albumPath,
+        skipIfExists: false,
+      );
+      if (!res.isSuccess) {
+        throw StateError(res.errorMessage ?? '保存失败');
+      }
+      records[name] = hash;
+      await GStorage.localCache.put(
+        LocalCacheKey.emoteSaved,
+        Map<String, String>.from(records),
+      );
+      return true;
+    }
+    throw StateError('too many emote name conflicts');
+  }
+
+  static Map<String, String> _loadEmoteRecords() {
+    final saved = GStorage.localCache.get(LocalCacheKey.emoteSaved);
+    if (saved is Map) {
+      return {
+        for (final entry in saved.entries)
+          entry.key.toString(): entry.value.toString(),
+      };
+    }
+    return <String, String>{};
   }
 
   static final _suffixRegex = RegExp(

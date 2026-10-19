@@ -991,6 +991,12 @@ class ReplyItemGrpc extends StatelessWidget {
     return TextSpan(children: spanChildren);
   }
 
+  static String _emoteDownloadUrl(Emote emote) {
+    if (emote.hasGifUrl()) return emote.gifUrl;
+    if (emote.hasUrl()) return emote.url;
+    return emote.webpUrl;
+  }
+
   Widget morePanel({
     required BuildContext context,
     required ReplyInfo item,
@@ -1003,6 +1009,12 @@ class ReplyItemGrpc extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final errorColor = colorScheme.error;
     final style = theme.textTheme.titleSmall!;
+    // 评论内容里形如 [x_x] 的表情，取可下载的图片地址
+    final emoteList = [
+      for (final e in item.content.emotes.entries)
+        if (e.key.startsWith('[') && e.key.endsWith(']'))
+          (e.key, _emoteDownloadUrl(e.value)),
+    ].where((e) => e.$2.isNotEmpty).toList();
 
     return Padding(
       padding: .only(
@@ -1226,6 +1238,16 @@ class ReplyItemGrpc extends StatelessWidget {
             leading: const Icon(Icons.copy_outlined, size: 19),
             title: Text('自由复制', style: style),
           ),
+          if (emoteList.isNotEmpty)
+            ListTile(
+              onTap: () {
+                Get.back();
+                ImageUtils.downloadEmotes(emoteList);
+              },
+              minLeadingWidth: 0,
+              leading: const Icon(Icons.download_outlined, size: 19),
+              title: Text('下载表情', style: style),
+            ),
           ListTile(
             onTap: () {
               Get.back();

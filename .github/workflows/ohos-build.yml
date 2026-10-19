@@ -1,6 +1,16 @@
 name: OHOS arm64 build (current media-kit)
 
 on:
+  workflow_call:
+    inputs:
+      media_kit_ref:
+        description: Exact SDK revision supplied by the media-kit workflow
+        required: true
+        type: string
+      application_ref:
+        description: Application branch or commit to export and build
+        default: feature/ohos
+        type: string
   workflow_dispatch:
   push:
     branches: [feature/ohos]
@@ -17,7 +27,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: piliplus-ohos-${{ github.ref }}
+  group: piliplus-ohos-${{ github.repository }}-${{ github.sha }}-${{ inputs.media_kit_ref || 'current' }}
   cancel-in-progress: true
 
 jobs:
@@ -38,6 +48,8 @@ jobs:
       - name: Checkout committed application and upstream history
         uses: actions/checkout@v4
         with:
+          repository: Goodwu/PiliPlus
+          ref: ${{ inputs.application_ref || github.sha }}
           fetch-depth: 0
           persist-credentials: false
           path: app
@@ -45,7 +57,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Goodwu/media-kit
-          ref: compat/piliplus-zero-change-20261018
+          ref: ${{ inputs.media_kit_ref || 'compat/piliplus-zero-change-20261018' }}
           persist-credentials: false
           path: media-sdk
       - name: Resolve current maintained OHOS native build recipe
@@ -67,6 +79,8 @@ jobs:
           python3 -m venv "$RUNNER_TEMP/native-tools"
           "$RUNNER_TEMP/native-tools/bin/python" -m pip install meson==1.6.1 PyYAML
           echo "$RUNNER_TEMP/native-tools/bin" >> "$GITHUB_PATH"
+      - name: Strict SDK native-input and HAP identity checks
+        run: python3 -B -m unittest discover -s media-sdk/tool/ohos -p 'test_*.py' -v
       - name: Set up HarmonyOS command line tools
         uses: ErBWs/setup-ohos@5c8e74d05fc9888a387b6154ba06d0cd9ede3da1
         with:

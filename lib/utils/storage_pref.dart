@@ -1072,4 +1072,7 @@ abstract final class Pref {
 
   static int? get blockReplyAtCount =>
       _setting.get(SettingBoxKey.blockReplyAtCount);
+
+  static bool get filterIntro =>
+      _setting.get(SettingBoxKey.filterIntro, defaultValue: false);
 }

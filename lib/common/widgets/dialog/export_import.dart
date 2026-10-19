@@ -1,14 +1,18 @@
 import 'dart:async' show FutureOr;
 import 'dart:convert' show utf8, jsonDecode;
+import 'dart:io';
 import 'dart:typed_data' show Uint8List;
 
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/utils/config_archive.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
+import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:archive/archive.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart' show Clipboard;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -207,20 +211,49 @@ void importFromInput<T>(
 }
 
 Future<void> _exportAllDataToArchive() async {
-  final Uint8List bytes;
-  try {
-    bytes = await ConfigArchive.export();
-  } catch (e) {
-    SmartDialog.showToast('导出失败：$e');
-    return;
+  final name =
+      'piliplus_data_'
+      '${DateFormatUtils.only0_9.format(DateTime.now())}.zip';
+  if (PlatformUtils.isDesktop) {
+    final path = await FilePicker.saveFile(
+      allowedExtensions: const ['zip'],
+      type: FileType.custom,
+      fileName: name,
+      bytes: Uint8List(0),
+    );
+    if (path == null) {
+      SmartDialog.showToast("取消保存");
+      return;
+    }
+    try {
+      final out = OutputFileStream(path.toFilePath());
+      ConfigArchive.export(out);
+      await out.close();
+    } catch (e) {
+      SmartDialog.showToast('导出失败：$e');
+      File.fromUri(path).tryDel();
+      return;
+    }
+  } else {
+    final out = OutputMemoryStream();
+    try {
+      ConfigArchive.export(out);
+    } catch (e) {
+      out.closeSync();
+      SmartDialog.showToast('导出失败：$e');
+      return;
+    }
+    final path = await FilePicker.saveFile(
+      allowedExtensions: const ['zip'],
+      type: FileType.custom,
+      fileName: name,
+      bytes: out.getBytes(),
+    );
+    out.closeSync();
+    if (path == null) {
+      SmartDialog.showToast("取消保存");
+    }
   }
-  await StorageUtils.saveBytes2File(
-    name:
-        'piliplus_data_'
-        '${DateFormatUtils.only0_9.format(DateTime.now())}.zip',
-    bytes: bytes,
-    allowedExtensions: const ['zip'],
-  );
 }
 
 Future<void> _importAllDataFromArchive(BuildContext context) async {
@@ -232,75 +265,61 @@ Future<void> _importAllDataFromArchive(BuildContext context) async {
 
   final Uint8List bytes;
   try {
-    bytes = await result.xFile.readAsBytes();
+    bytes = await result.readAsBytes();
   } catch (e) {
     SmartDialog.showToast('导入失败：$e');
     return;
   }
 
-  late final ImportResult outcome;
+  if (!context.mounted) return;
+
+  final actions = [
+    TextButton(
+      onPressed: Get.back,
+      child: Text(
+        '取消',
+        style: TextStyle(color: ColorScheme.of(context).outline),
+      ),
+    ),
+    TextButton(
+      onPressed: () => Get.back(result: true),
+      child: const Text('继续'),
+    ),
+  ];
+
+  final res = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('导入所有数据？'),
+      content: const Text('将用压缩包内的设置、账号信息、历史评论、搜索记录、黑名单、自定义字体覆盖当前数据，此操作不可撤销。'),
+      actions: actions,
+    ),
+  );
+
+  if (res != true) return;
+
   try {
-    outcome = await ConfigArchive.import(
+    final res = await ConfigArchive.import(
       bytes,
       onWarning: (warning) async {
         if (!context.mounted) return false;
-        final colorScheme = ColorScheme.of(context);
         return await showDialog<bool>(
               context: context,
               builder: (context) => AlertDialog(
                 title: const Text('注意'),
                 content: Text(warning),
-                actions: [
-                  TextButton(
-                    onPressed: Get.back,
-                    child: Text(
-                      '取消',
-                      style: TextStyle(color: colorScheme.outline),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => Get.back(result: true),
-                    child: const Text('继续'),
-                  ),
-                ],
-              ),
-            ) ??
-            false;
-      },
-      onConfirm: () async {
-        if (!context.mounted) return false;
-        final colorScheme = ColorScheme.of(context);
-        return await showDialog<bool>(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('导入所有数据？'),
-                content: const Text('将用压缩包内的设置、账号信息、历史评论、搜索记录、黑名单、自定义字体覆盖当前数据，此操作不可撤销。'),
-                actions: [
-                  TextButton(
-                    onPressed: Get.back,
-                    child: Text(
-                      '取消',
-                      style: TextStyle(color: colorScheme.outline),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => Get.back(result: true),
-                    child: const Text('继续'),
-                  ),
-                ],
+                actions: actions,
               ),
             ) ??
             false;
       },
     );
+    if (res != null) {
+      SmartDialog.showToast(res.isEmpty ? '导入成功' : '导入成功，但$res');
+    }
   } catch (e) {
     SmartDialog.showToast('导入失败：$e');
-    return;
   }
-
-  if (!outcome.applied) return;
-  final message = outcome.message;
-  SmartDialog.showToast(message == null ? '导入成功' : '导入成功，但$message');
 }
 
 Future<void> showDataImportExportDialog(BuildContext context) {

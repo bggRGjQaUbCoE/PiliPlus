@@ -34,9 +34,8 @@ abstract final class GrpcReq {
     final length = ByteData.sublistView(data, 1, 5).getInt32(0, Endian.big);
 
     if (data[0] == 1) {
-      return const GZipDecoder().decodeBytes(
-        Uint8List.sublistView(data, 5, length + 5),
-      );
+      return Request.gzip.convert(Uint8List.sublistView(data, 5, length + 5))
+          as Uint8List;
     } else {
       return Uint8List.sublistView(data, 5, length + 5);
     }

@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/services/logger.dart';
-import 'package:brotli/brotli.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -294,7 +294,7 @@ class LiveMessageStream {
             decompressedData = _zlib.convert(Uint8List.sublistView(data, 0x10));
             break;
           case 3:
-            decompressedData = const BrotliDecoder().convert(
+            decompressedData = Request.brotli.convert(
               Uint8List.sublistView(data, 0x10),
             );
           //debugPrint('Body: ${utf8.decode()}');

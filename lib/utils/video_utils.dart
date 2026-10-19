@@ -127,14 +127,16 @@ abstract final class VideoUtils {
     List<int>? acceptQuality,
     int preferQuality,
   ) {
+    final highestVideoQa = videoList.first.id;
+    if (preferQuality > highestVideoQa) {
+      return highestVideoQa;
+    }
+
     if (acceptQuality != null && acceptQuality.isNotEmpty) {
       return acceptQuality.findTargetMedia((e) => e, preferQuality);
     }
 
-    return videoList
-        .findTargetMedia((e) => e.quality.code, preferQuality)
-        .quality
-        .code;
+    return videoList.findTargetMedia((e) => e.id, preferQuality).quality.code;
   }
 
   static (
@@ -169,7 +171,7 @@ abstract final class VideoUtils {
     );
 
     final targetQaVideoList = videoList
-        .where((e) => e.quality.code == targetQuality)
+        .where((e) => e.id == targetQuality)
         .toList();
 
     final targetVideo = targetQaVideoList.firstWhere(

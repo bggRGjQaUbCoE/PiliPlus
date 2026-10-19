@@ -794,4 +794,20 @@ abstract final class LiveHttp {
       return Error(res.data['message']);
     }
   }
+
+  static Future<LoadingState<String?>> liveMedalName(Object uid) async {
+    final res = await Request().get(
+      Api.liveMasterInfo,
+      queryParameters: {'uid': uid},
+    );
+    if (res.data['code'] == 0) {
+      try {
+        return Success(res.data['data']['medal_name'] as String);
+      } catch (e) {
+        return Error(e.toString());
+      }
+    } else {
+      return Error(res.data['message']);
+    }
+  }
 }

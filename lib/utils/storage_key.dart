@@ -161,7 +161,8 @@ abstract final class SettingBoxKey {
       mineTabs = 'mineTabs',
       buvid = 'buvid',
       blockAtOnlyReply = 'blockAtOnlyReply',
-      blockReplyAtCount = 'blockReplyAtCount';
+      blockReplyAtCount = 'blockReplyAtCount',
+      filterIntro = 'filterIntro';
 
   static const String minimizeOnExit = 'minimizeOnExit',
       windowSize = 'windowSize',

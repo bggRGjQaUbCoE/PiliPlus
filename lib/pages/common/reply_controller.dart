@@ -142,6 +142,19 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
     }
   }
 
+  late final _filterIntro = Pref.filterIntro;
+  String? intro;
+  @pragma('vm:prefer-inline')
+  void _removeIntro(MainListReply data) {
+    final intro = this.intro;
+    if (intro != null &&
+        intro.isNotEmpty &&
+        _filterIntro &&
+        data.replies.isNotEmpty) {
+      data.replies.removeWhere((i) => i.content.message.trim() == intro);
+    }
+  }
+
   @override
   bool customHandleResponse(bool isRefresh, Success<R> response) {
     final data = response.response as MainListReply;
@@ -159,6 +172,9 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
       }
     }
     isEnd = data.cursor.isEnd;
+
+    _removeIntro(data);
+
     return false;
   }
 

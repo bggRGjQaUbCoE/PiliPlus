@@ -27,15 +27,17 @@ abstract final class ReplyGrpc {
   //   );
   // }
 
+  static bool _hasGoods(Url url) =>
+      url.hasExtra() &&
+      (url.extra.goodsCmControl == Int64.ONE ||
+          url.extra.hasGoodsItemId() ||
+          url.extra.hasGoodsPrefetchedCache());
+
   // ref BiliRoamingX
-  static bool needRemoveGoodGrpc(ReplyInfo reply) {
+  @pragma('vm:prefer-inline')
+  static bool _needRemoveGoodGrpc(ReplyInfo reply) {
     return (reply.content.urls.isNotEmpty &&
-            reply.content.urls.values.any((url) {
-              return url.hasExtra() &&
-                  (url.extra.goodsCmControl == Int64.ONE ||
-                      url.extra.hasGoodsItemId() ||
-                      url.extra.hasGoodsPrefetchedCache());
-            })) ||
+            reply.content.urls.values.any(_hasGoods)) ||
         reply.content.message.contains(Constants.goodsUrlPrefix);
   }
 
@@ -119,8 +121,8 @@ abstract final class ReplyGrpc {
     return GlobalData().blackMids.contains(reply.mid.toInt()) ||
         _blockReplyAtCount(reply) ||
         _blockAtOnlyReply(reply) ||
-        (enableFilter && replyRegExp.hasMatch(reply.content.message)) ||
-        (antiGoodsReply && needRemoveGoodGrpc(reply));
+        (antiGoodsReply && _needRemoveGoodGrpc(reply)) ||
+        (enableFilter && replyRegExp.hasMatch(reply.content.message));
   }
 
   static Future<LoadingState<MainListReply>> mainList({

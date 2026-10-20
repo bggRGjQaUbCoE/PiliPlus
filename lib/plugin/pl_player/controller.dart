@@ -1732,6 +1732,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   late final RxBool showPreview = false.obs;
   late final showSeekPreview = Pref.showSeekPreview;
   late final showHoverPreview = Pref.showHoverPreview;
+  late final seekPreviewPosition = Pref.seekPreviewPosition;
   final hoverPosition = RxnInt();
   late final previewIndex = RxnInt();
   int _previewGeneration = 0;

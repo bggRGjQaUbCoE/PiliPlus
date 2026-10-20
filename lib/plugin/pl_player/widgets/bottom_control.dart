@@ -17,6 +17,7 @@ class BottomControl extends StatelessWidget {
     required this.controller,
     required this.buildBottomControl,
     required this.videoDetailController,
+    this.progressBarKey,
   });
 
   final double maxWidth;
@@ -24,6 +25,7 @@ class BottomControl extends StatelessWidget {
   final PlPlayerController controller;
   final ValueGetter<Widget> buildBottomControl;
   final VideoDetailController videoDetailController;
+  final Key? progressBarKey;
 
   void onDragStart(ThumbDragDetails duration) {
     feedBack();
@@ -70,6 +72,7 @@ class BottomControl extends StatelessWidget {
                   children: [
                     Obx(
                       () => ProgressBar(
+                        key: progressBarKey,
                         progress: controller.progress,
                         buffered: controller.buffered.value,
                         total: controller.duration.value,

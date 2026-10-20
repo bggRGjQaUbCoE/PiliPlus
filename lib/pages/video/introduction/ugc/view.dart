@@ -197,19 +197,19 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                           ),
                         ),
                       ),
-                  ],
-                  if (videoDetail.hasParts)
-                    NoTranslucentArea(
-                      child: Obx(
-                        () => PagesPanel(
-                          key: ValueKey(introController.videoDetail.value),
-                          heroTag: widget.heroTag,
-                          ugcIntroController: introController,
-                          bvid: introController.bvid,
-                          showEpisodes: widget.showEpisodes,
+                    if (videoDetail.hasParts)
+                      NoTranslucentArea(
+                        child: Obx(
+                          () => PagesPanel(
+                            key: ValueKey(introController.videoDetail.value),
+                            heroTag: widget.heroTag,
+                            ugcIntroController: introController,
+                            bvid: introController.bvid,
+                            showEpisodes: widget.showEpisodes,
+                          ),
                         ),
                       ),
-                    ),
+                  ],
                 ],
               ),
             ),

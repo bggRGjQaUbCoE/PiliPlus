@@ -1447,7 +1447,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                 child: Obx(
                   () => AnimatedOpacity(
                     curve: Curves.easeInOut,
-                    opacity: plPlayerController.isSeeking.value ? 1.0 : 0.0,
+                    opacity:
+                        plPlayerController.isSeeking.value ||
+                            plPlayerController.hoverPosition.value != null
+                        ? 1.0
+                        : 0.0,
                     duration: const Duration(milliseconds: 150),
                     child: Container(
                       decoration: const BoxDecoration(
@@ -1466,7 +1470,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                           Obx(
                             () => Text(
                               DurationUtils.formatDuration(
-                                plPlayerController.seekPosition.value,
+                                plPlayerController.hoverPosition.value ??
+                                    plPlayerController.seekPosition.value,
                               ),
                               style: textStyle,
                             ),
@@ -1744,7 +1749,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                           thumbGlowColor: thumbGlowColor,
                           barHeight: 3.5,
                           thumbRadius: 2.5,
-                        ),
+                        ).withPreview(plPlayerController),
                       ),
                       if (plPlayerController.enableBlock &&
                           videoDetailController.segmentProgressList.isNotEmpty)
@@ -1789,12 +1794,16 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             ),
           ),
 
-        if (!isLive && plPlayerController.showSeekPreview)
-          buildSeekPreviewWidget(
-            plPlayerController,
-            maxWidth,
-            maxHeight,
-            () => mounted,
+        if (!isLive &&
+            (plPlayerController.showSeekPreview ||
+                plPlayerController.showHoverPreview))
+          IgnorePointer(
+            child: buildSeekPreviewWidget(
+              plPlayerController,
+              maxWidth,
+              maxHeight,
+              () => mounted,
+            ),
           ),
 
         if (isFullScreen || plPlayerController.isDesktopPip) ...[

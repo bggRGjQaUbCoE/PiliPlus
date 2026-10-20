@@ -133,6 +133,12 @@ List<SettingsModel> get playSettings => [
     defaultVal: true,
   ),
   const SwitchModel(
+    title: '鼠标在进度条上悬停预览视频缩略图',
+    leading: Icon(Icons.preview_outlined),
+    setKey: SettingBoxKey.showHoverPreview,
+    defaultVal: false,
+  ),
+  const SwitchModel(
     title: '显示高能进度条',
     subtitle: '高能进度条反应了在时域上，单位时间内弹幕发送量的变化趋势',
     leading: Icon(Icons.show_chart),

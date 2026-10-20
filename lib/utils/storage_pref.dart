@@ -502,6 +502,9 @@ abstract final class Pref {
   static bool get showSeekPreview =>
       _setting.get(SettingBoxKey.showSeekPreview, defaultValue: true);
 
+  static bool get showHoverPreview =>
+      _setting.get(SettingBoxKey.showHoverPreview, defaultValue: false);
+
   static bool get showDmChart =>
       _setting.get(SettingBoxKey.showDmChart, defaultValue: false);
 

@@ -28,6 +28,7 @@ class BottomControl extends StatelessWidget {
   void onDragStart(ThumbDragDetails duration) {
     feedBack();
     controller.onSeekStart(duration.seconds);
+    onDragUpdate(duration);
   }
 
   void onDragUpdate(ThumbDragDetails duration) {
@@ -83,7 +84,7 @@ class BottomControl extends StatelessWidget {
                         onDragStart: onDragStart,
                         onDragUpdate: onDragUpdate,
                         onSeek: onSeek,
-                      ),
+                      ).withPreview(controller),
                     ),
                     if (controller.enableBlock &&
                         videoDetailController.segmentProgressList.isNotEmpty)
@@ -120,6 +121,30 @@ class BottomControl extends StatelessWidget {
           buildBottomControl(),
         ],
       ),
+    );
+  }
+}
+
+extension ProgressBarPreview on ProgressBar {
+  Widget withPreview(PlPlayerController controller) {
+    if (!controller.showHoverPreview) return this;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        void update(PointerEvent event) {
+          final width = constraints.maxWidth - barHeight;
+          if (total <= 0 || width <= 0) return;
+          final fraction = ((event.localPosition.dx - barHeight / 2) / width)
+              .clamp(0.0, 1.0);
+          controller.updateHoverPreview((fraction * total).round());
+        }
+
+        return MouseRegion(
+          onEnter: update,
+          onHover: update,
+          onExit: (_) => controller.endHoverPreview(),
+          child: this,
+        );
+      },
     );
   }
 }

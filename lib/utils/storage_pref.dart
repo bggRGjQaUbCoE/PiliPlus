@@ -827,6 +827,14 @@ abstract final class Pref {
   static double get bufferSec =>
       _setting.get(SettingBoxKey.bufferSec, defaultValue: 16.0);
 
+  /// 直播流前向缓冲区大小（MB），0 表示跟随 [bufferSize] 的两倍
+  static double get liveBufferSize =>
+      _setting.get(SettingBoxKey.liveBufferSize, defaultValue: 0.0);
+
+  /// 直播流缓冲时长上限（s），0 表示不限制
+  static double get liveBufferSec =>
+      _setting.get(SettingBoxKey.liveBufferSec, defaultValue: 0.0);
+
   static Map<String, String> initBuffer([double playbackSpeed = 1.0]) {
     final bufSec = Pref.bufferSec * playbackSpeed;
     final bufSiz = (Pref.bufferSize * 0x100000).toStringAsFixed(0);
@@ -839,12 +847,39 @@ abstract final class Pref {
     };
   }
 
-  static Map<String, String> initLiveBuffer() {
-    return {
+  /// 直播流无后向缓冲，全部给前向（mpv 的 --demuxer-max-bytes 与
+  /// --demuxer-max-back-bytes）。未单独设置时保持旧实现的默认值：
+  /// 前向缓冲为 [bufferSize] 的两倍且不限制时长。
+  static Map<String, String> initLiveBuffer() => buildLiveBuffer(
+    sizeMb: liveBufferSize,
+    sec: liveBufferSec,
+    fallbackSizeMb: bufferSize,
+  );
+
+  /// 构造直播流使用的 mpv 额外参数。
+  ///
+  /// [sizeMb] 为前向缓冲大小（MB），小于等于 0 时使用
+  /// [fallbackSizeMb]（缺省为 [bufferSize]）的两倍；
+  /// [sec] 为缓冲时长上限（s），小于等于 0 时不限制。
+  @visibleForTesting
+  static Map<String, String> buildLiveBuffer({
+    double sizeMb = 0,
+    double sec = 0,
+    double? fallbackSizeMb,
+  }) {
+    final effectiveSizeMb = sizeMb > 0
+        ? sizeMb
+        : (fallbackSizeMb ?? bufferSize) * 2;
+    final buffer = <String, String>{
       'cache': 'yes',
-      'demuxer-max-bytes': (Pref.bufferSize * 0x200000).toStringAsFixed(0),
+      'demuxer-max-bytes': (effectiveSizeMb * 0x100000).toStringAsFixed(0),
       'demuxer-max-back-bytes': '0',
     };
+    if (sec > 0) {
+      buffer['cache-secs'] = sec.toStringAsFixed(3);
+      buffer['demuxer-hysteresis-secs'] = (sec / 1.5).toStringAsFixed(3);
+    }
+    return buffer;
   }
 
   static String get audioOutput => _setting.get(

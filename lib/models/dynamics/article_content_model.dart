@@ -60,9 +60,9 @@ class Pic {
 
   Pic.fromJson(Map<String, dynamic> json) {
     url = json['url'];
-    width = (json['width'] as num?)?.toDouble();
-    height = (json['height'] as num?)?.toDouble();
-    size = json['size'];
+    width = parseDimension(json['width']);
+    height = parseDimension(json['height']);
+    size = parseDimension(json['size']);
     pics = (json['pics'] as List?)?.map((item) => Pic.fromJson(item)).toList();
     style = json['style'];
     liveUrl = json['live_url'];

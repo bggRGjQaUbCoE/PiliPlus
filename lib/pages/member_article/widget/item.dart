@@ -9,7 +9,7 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
 class MemberArticleItem extends StatelessWidget {
-  const MemberArticleItem({super.key, required this.item});
+  const MemberArticleItem(this.item, {super.key});
 
   final SpaceArticleItem item;
 

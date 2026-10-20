@@ -18,7 +18,6 @@
 import 'dart:collection' show HashSet;
 import 'dart:math' as math;
 
-import 'package:PiliPlus/common/style.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/rendering.dart'
     show
@@ -40,28 +39,94 @@ import 'package:material_ui/material_ui.dart';
 
 const kFooterId = Object();
 
-const double _mainAxisExtent = 48;
-const double kOpusChildRatio = 0.85;
-const double _maxCrossAxisExtent = 144;
-const double _mainAxisSpacing = Style.safeSpace;
-const double _crossAxisSpacing = Style.safeSpace;
-
 typedef OpusGridInfo = ({
   int crossAxisCount,
   double childCrossAxisExtent,
   double childMainAxisExtent,
 });
 
+class OpusGridDelegate {
+  const OpusGridDelegate({
+    required this.maxCrossAxisExtent,
+    this.mainAxisSpacing = 0,
+    this.crossAxisSpacing = 0,
+    required this.childAspectRatio,
+    this.mainAxisExtent = 0,
+  });
+
+  final double maxCrossAxisExtent;
+  final double mainAxisSpacing;
+  final double crossAxisSpacing;
+  final double childAspectRatio;
+  final double mainAxisExtent;
+
+  OpusGridInfo calcCrossAxisCount(BoxConstraints constraints) {
+    final crossAxisCount = math.max(
+      1,
+      (constraints.maxWidth / (maxCrossAxisExtent + crossAxisSpacing)).ceil(),
+    );
+    final double usableCrossAxisExtent = math.max(
+      0.0,
+      constraints.maxWidth - crossAxisSpacing * (crossAxisCount - 1),
+    );
+    final double childCrossAxisExtent = usableCrossAxisExtent / crossAxisCount;
+    final double childMainAxisExtent =
+        mainAxisExtent + childCrossAxisExtent / childAspectRatio;
+    return (
+      crossAxisCount: crossAxisCount,
+      childMainAxisExtent: childMainAxisExtent,
+      childCrossAxisExtent: childCrossAxisExtent,
+    );
+  }
+
+  bool shouldRelayout(OpusGridDelegate oldDelegate) {
+    return oldDelegate.maxCrossAxisExtent != maxCrossAxisExtent ||
+        oldDelegate.mainAxisSpacing != mainAxisSpacing ||
+        oldDelegate.crossAxisSpacing != crossAxisSpacing ||
+        oldDelegate.childAspectRatio != childAspectRatio ||
+        oldDelegate.mainAxisExtent != mainAxisExtent;
+  }
+}
+
+class OpusGridDelegateFixedMainAxisExtent extends OpusGridDelegate {
+  const OpusGridDelegateFixedMainAxisExtent({
+    required super.maxCrossAxisExtent,
+    super.mainAxisSpacing,
+    super.crossAxisSpacing,
+    required super.mainAxisExtent,
+  }) : super(childAspectRatio: 1);
+
+  @override
+  OpusGridInfo calcCrossAxisCount(BoxConstraints constraints) {
+    final crossAxisCount = math.max(
+      1,
+      (constraints.maxWidth / (maxCrossAxisExtent + crossAxisSpacing)).ceil(),
+    );
+    final double usableCrossAxisExtent = math.max(
+      0.0,
+      constraints.maxWidth - crossAxisSpacing * (crossAxisCount - 1),
+    );
+    final double childCrossAxisExtent = usableCrossAxisExtent / crossAxisCount;
+    return (
+      crossAxisCount: crossAxisCount,
+      childMainAxisExtent: mainAxisExtent,
+      childCrossAxisExtent: childCrossAxisExtent,
+    );
+  }
+}
+
 class OpusGridBuilder extends RenderObjectWidget {
   const OpusGridBuilder({
     super.key,
-    required this.expand,
+    this.expand = false,
     required this.childCount,
+    required this.gridDelegate,
     required this.builder,
   });
 
   final bool expand;
   final int childCount;
+  final OpusGridDelegate gridDelegate;
   final List<Widget> Function(BuildContext context, OpusGridInfo opusGridInfo)
   builder;
 
@@ -74,7 +139,11 @@ class OpusGridBuilder extends RenderObjectWidget {
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return RenderOpusGrid(expand: expand, childCount: childCount);
+    return RenderOpusGrid(
+      expand: expand,
+      childCount: childCount,
+      gridDelegate: gridDelegate,
+    );
   }
 
   @override
@@ -82,7 +151,8 @@ class OpusGridBuilder extends RenderObjectWidget {
     super.updateRenderObject(context, renderObject);
     renderObject
       .._expand = expand
-      .._childCount = childCount;
+      .._childCount = childCount
+      ..gridDelegate = gridDelegate;
   }
 }
 
@@ -94,11 +164,21 @@ class RenderOpusGrid extends RenderBox
   RenderOpusGrid({
     required this._expand,
     required this._childCount,
+    required this._gridDelegate,
   });
 
   bool _expand;
   int _childCount;
   OpusGridInfo? _opusGridInfo;
+
+  OpusGridDelegate _gridDelegate;
+  OpusGridDelegate get gridDelegate => _gridDelegate;
+  set gridDelegate(OpusGridDelegate value) {
+    if (_gridDelegate == value) return;
+    final shouldRelayout = value.shouldRelayout(_gridDelegate);
+    _gridDelegate = value;
+    if (shouldRelayout) markNeedsLayout();
+  }
 
   bool noNeedsRebuild(OpusGridInfo opusGridInfo, bool? lastExpand) {
     return lastExpand == _expand &&
@@ -144,14 +224,24 @@ class RenderOpusGrid extends RenderBox
       height: childHeight,
     );
     RenderBox? child = firstChild;
-    int index = 0;
+
+    bool hasFooter = false;
     double gridHeight = 0;
     double footerHeight = 0;
+
+    void calcGridHeight() {
+      final row = ((hasFooter ? childCount - 1 : childCount) / crossAxisCount)
+          .ceil();
+      gridHeight =
+          row * childHeight + gridDelegate.crossAxisSpacing * (row - 1);
+    }
+
+    int index = 0;
     while (child != null) {
       final childParentData = child.parentData as MultiChildLayoutParentData;
       if (childParentData.id == kFooterId) {
-        final row = ((childCount - 1) / crossAxisCount).ceil();
-        gridHeight = row * childHeight + _crossAxisSpacing * (row - 1);
+        hasFooter = true;
+        calcGridHeight();
         footerHeight =
             (child..layout(constraints.loosen(), parentUsesSize: true))
                 .size
@@ -161,13 +251,16 @@ class RenderOpusGrid extends RenderBox
       } else {
         child.layout(childConstraints);
         childParentData.offset = Offset(
-          (childWidth + _mainAxisSpacing) * (index % crossAxisCount),
-          (childHeight + _crossAxisSpacing) * (index ~/ crossAxisCount),
+          (childWidth + gridDelegate.mainAxisSpacing) *
+              (index % crossAxisCount),
+          (childHeight + gridDelegate.crossAxisSpacing) *
+              (index ~/ crossAxisCount),
         );
       }
       child = childParentData.nextSibling;
       index++;
     }
+    if (!hasFooter) calcGridHeight();
     size = constraints.constrainDimensions(
       constraints.maxWidth,
       gridHeight + footerHeight,
@@ -365,30 +458,11 @@ class OpusGridRenderObjectElement extends RenderObjectElement {
   BoxConstraints? _previousLayoutInfo;
   bool _needsBuild = true;
 
-  static OpusGridInfo _calcCrossAxisCount(BoxConstraints layoutInfo) {
-    final crossAxisCount = math.max(
-      1,
-      (layoutInfo.maxWidth / (_maxCrossAxisExtent + _crossAxisSpacing)).ceil(),
-    );
-    final double usableCrossAxisExtent = math.max(
-      0.0,
-      layoutInfo.maxWidth - _crossAxisSpacing * (crossAxisCount - 1),
-    );
-    final double childCrossAxisExtent = usableCrossAxisExtent / crossAxisCount;
-    final double childMainAxisExtent =
-        _mainAxisExtent + childCrossAxisExtent / kOpusChildRatio;
-    return (
-      crossAxisCount: crossAxisCount,
-      childMainAxisExtent: childMainAxisExtent,
-      childCrossAxisExtent: childCrossAxisExtent,
-    );
-  }
-
   bool? expand;
   void _rebuildWithConstraints(Constraints _) {
     final BoxConstraints layoutInfo = renderObject.layoutInfo;
-
-    final opusGridInfo = _calcCrossAxisCount(layoutInfo);
+    final widget = this.widget as OpusGridBuilder;
+    final opusGridInfo = widget.gridDelegate.calcCrossAxisCount(layoutInfo);
     if (renderObject.noNeedsRebuild(opusGridInfo, expand)) {
       renderObject._opusGridInfo = opusGridInfo;
       return;
@@ -400,10 +474,7 @@ class OpusGridRenderObjectElement extends RenderObjectElement {
       List<Widget> built;
       try {
         assert(layoutInfo == renderObject.layoutInfo);
-        built = (widget as OpusGridBuilder).builder(
-          this,
-          renderObject._opusGridInfo = opusGridInfo,
-        );
+        built = widget.builder(this, renderObject._opusGridInfo = opusGridInfo);
       } catch (e, stack) {
         built = [
           ErrorWidget.builder(

@@ -8,10 +8,7 @@ import 'package:material_ui/material_ui.dart';
 
 // 视频卡片 - 垂直布局
 class PgcCardVMemberPgc extends StatelessWidget {
-  const PgcCardVMemberPgc({
-    super.key,
-    required this.item,
-  });
+  const PgcCardVMemberPgc(this.item, {super.key});
 
   final SpaceArchiveItem item;
 

@@ -1,13 +1,19 @@
-import 'dart:io' show Platform;
+import 'dart:io' show Directory, Platform;
 
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
+import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/grpc/reply.dart';
 import 'package:PiliPlus/models/common/reply/reply_sort_type.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:PiliPlus/utils/path_utils.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/utils.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -117,6 +123,13 @@ List<SettingsModel> get replySettings => [
     setKey: SettingBoxKey.emoteDownAll,
     defaultVal: true,
   ),
+  if (PlatformUtils.isDesktop)
+    NormalModel(
+      title: '表情保存路径',
+      getSubtitle: () => ImageUtils.emoteSavePath,
+      leading: const Icon(Icons.emoji_emotions_outlined),
+      onTap: _showEmotePathDialog,
+    ),
   PopupModel(
     title: '评论展示',
     leading: const Icon(Icons.whatshot_outlined),
@@ -172,6 +185,64 @@ void _showReplyLengthDialog(BuildContext context, VoidCallback setState) {
             }
           },
           child: const Text('确定'),
+        ),
+      ],
+    ),
+  );
+}
+
+void _showEmotePathDialog(BuildContext context, VoidCallback setState) {
+  showDialog(
+    context: context,
+    builder: (context) => SimpleDialog(
+      clipBehavior: Clip.hardEdge,
+      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+      children: [
+        DialogOption(
+          onPressed: () async {
+            Get.back();
+            try {
+              final dir = Directory(ImageUtils.emoteSavePath);
+              if (!dir.existsSync()) {
+                await dir.create(recursive: true);
+              }
+              await PathUtils.openDir(dir.path);
+            } catch (e) {
+              SmartDialog.showToast(e.toString());
+            }
+          },
+          child: const Text('打开'),
+        ),
+        DialogOption(
+          onPressed: () {
+            Get.back();
+            Utils.copyText(ImageUtils.emoteSavePath);
+          },
+          child: const Text('复制', style: TextStyle(fontSize: 14)),
+        ),
+        DialogOption(
+          onPressed: () {
+            Get.back();
+            GStorage.setting
+                .delete(SettingBoxKey.emotePath)
+                .whenComplete(setState);
+          },
+          child: const Text('重置', style: TextStyle(fontSize: 14)),
+        ),
+        DialogOption(
+          onPressed: () async {
+            Get.back();
+            final emotePath = ImageUtils.emoteSavePath;
+            final path = await FilePicker.getDirectoryPath(
+              initialDirectory: Directory(emotePath).existsSync()
+                  ? emotePath
+                  : null,
+            );
+            if (path == null || path.isEmpty) return;
+            await GStorage.setting.put(SettingBoxKey.emotePath, path);
+            setState();
+          },
+          child: const Text('设置新路径', style: TextStyle(fontSize: 14)),
         ),
       ],
     ),

@@ -52,12 +52,6 @@ List<SettingsModel> get extraSettings => [
       leading: const Icon(Icons.storage),
       onTap: _showDownPathDialog,
     ),
-    NormalModel(
-      title: '表情保存路径',
-      getSubtitle: () => ImageUtils.emoteSavePath,
-      leading: const Icon(Icons.emoji_emotions_outlined),
-      onTap: _showEmotePathDialog,
-    ),
   ] else if (Platform.isAndroid)
     SwitchModel(
       title: '允许三方APP访问私有存储',
@@ -331,56 +325,6 @@ void _showDownPathDialog(BuildContext context, VoidCallback setState) {
             setState();
             Get.find<DownloadService>().initDownloadList();
             GStorage.setting.put(SettingBoxKey.downloadPath, path);
-          },
-          child: const Text('设置新路径', style: TextStyle(fontSize: 14)),
-        ),
-      ],
-    ),
-  );
-}
-
-void _showEmotePathDialog(BuildContext context, VoidCallback setState) {
-  showDialog(
-    context: context,
-    builder: (context) => SimpleDialog(
-      clipBehavior: Clip.hardEdge,
-      contentPadding: const EdgeInsets.symmetric(vertical: 12),
-      children: [
-        DialogOption(
-          onPressed: () {
-            Get.back();
-            PathUtils.openDir(ImageUtils.emoteSavePath);
-          },
-          child: const Text('打开'),
-        ),
-        DialogOption(
-          onPressed: () {
-            Get.back();
-            Utils.copyText(ImageUtils.emoteSavePath);
-          },
-          child: const Text('复制', style: TextStyle(fontSize: 14)),
-        ),
-        DialogOption(
-          onPressed: () {
-            Get.back();
-            GStorage.setting
-                .delete(SettingBoxKey.emotePath)
-                .whenComplete(setState);
-          },
-          child: const Text('重置', style: TextStyle(fontSize: 14)),
-        ),
-        DialogOption(
-          onPressed: () async {
-            Get.back();
-            final emotePath = ImageUtils.emoteSavePath;
-            final path = await FilePicker.getDirectoryPath(
-              initialDirectory: Directory(emotePath).existsSync()
-                  ? emotePath
-                  : null,
-            );
-            if (path == null || path.isEmpty) return;
-            await GStorage.setting.put(SettingBoxKey.emotePath, path);
-            setState();
           },
           child: const Text('设置新路径', style: TextStyle(fontSize: 14)),
         ),

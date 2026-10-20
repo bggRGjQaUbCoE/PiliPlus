@@ -41,7 +41,9 @@ void showEmoteDownloadSheet(
               ),
             ),
             ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 360),
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(context).height * 0.6,
+              ),
               child: ListView(
                 shrinkWrap: true,
                 children: [

@@ -147,6 +147,25 @@ class ReplyItemGrpc extends StatelessWidget {
     );
   }
 
+  /// 时间行（时间 + IP 属地）需要的自然宽度。
+  ///
+  /// 回复头部文本列的宽度有限（头像 + 间距 + 内边距已占掉一部分），
+  /// `yyyy-MM-dd HH:mm:ss • IP属地：xx` 在中文系统字体下约需 320 逻辑像素，
+  /// 比可用宽度更宽。不先测量直接排版会出现两种坏结果：IP 属地被折到
+  /// 第二行，或被省略号截断。这里先量一次，再决定是"一行放全"还是
+  /// "时间 / 属地各占一行"。
+  double _timeLineWidth(BuildContext context, String text) {
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: const TextStyle(fontSize: 11)),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final width = painter.width;
+    painter.dispose();
+    return width;
+  }
+
   Widget _buildHeader(BuildContext context, ColorScheme colorScheme) {
     final member = replyItem.member;
     Widget header = GestureDetector(
@@ -168,7 +187,11 @@ class ReplyItemGrpc extends StatelessWidget {
                 ? member.garbPendantImage
                 : null,
           ),
-          Flexible(
+          // 必须用 Expanded 而不是 Flexible：Flexible + mainAxisSize.min 会让
+          // 文本列按"最宽的一行"收缩。时间行（含秒 + IP 属地）比昵称行长，
+          // 列被收缩到差几个像素时时间行就会折行，IP 属地被挤到第二行，
+          // 分享/保存出来的图片里时间显示错位。
+          Expanded(
             child: Column(
               mainAxisSize: .min,
               crossAxisAlignment: .start,
@@ -217,30 +240,51 @@ class ReplyItemGrpc extends StatelessWidget {
                       ),
                   ],
                 ),
-                Row(
-                  mainAxisSize: .min,
-                  children: [
-                    Text(
-                      replyLevel == 0
-                          ? DateFormatUtils.format(
-                              replyItem.ctime.toInt(),
-                              format: DateFormatUtils.longFormatDs,
-                            )
-                          : DateFormatUtils.dateFormat(replyItem.ctime.toInt()),
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: colorScheme.outline,
-                      ),
-                    ),
-                    if (replyItem.replyControl.hasLocation())
-                      Text(
-                        ' • ${replyItem.replyControl.location}',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: colorScheme.outline,
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final timeText = replyLevel == 0
+                        ? DateFormatUtils.format(
+                            replyItem.ctime.toInt(),
+                            format: DateFormatUtils.longFormatDs,
+                          )
+                        : DateFormatUtils.dateFormat(replyItem.ctime.toInt());
+                    // 服务端下发的 location 本身就是可直接展示的整段文本
+                    // （形如「IP属地：山东」），不要再拼任何前缀，否则会显示成
+                    // 「IP属地：IP属地：山东」。
+                    final location = replyItem.replyControl.hasLocation()
+                        ? replyItem.replyControl.location.trim()
+                        : '';
+                    final style = TextStyle(
+                      fontSize: 11,
+                      color: colorScheme.outline,
+                    );
+                    // 先按"一行放全"排版；放不下就拆成
+                    // 「时间」+「属地原文」两行，保证属地完整显示、不被省略号吃掉。
+                    final onOneLine = location.isEmpty ||
+                        _timeLineWidth(context, '$timeText • $location') <=
+                            constraints.maxWidth;
+                    if (onOneLine) {
+                      return Text(
+                        location.isEmpty ? timeText : '$timeText • $location',
+                        maxLines: 1,
+                        softWrap: false,
+                        style: style,
+                      );
+                    }
+                    return Column(
+                      mainAxisSize: .min,
+                      crossAxisAlignment: .start,
+                      children: [
+                        Text(
+                          timeText,
+                          maxLines: 1,
+                          softWrap: false,
+                          style: style,
                         ),
-                      ),
-                  ],
+                        Text(location, style: style),
+                      ],
+                    );
+                  },
                 ),
               ],
             ),

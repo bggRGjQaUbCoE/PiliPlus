@@ -334,6 +334,40 @@ class _SavePanelState extends State<SavePanel> {
     }
   }
 
+  /// 视频卡片里日期可用的宽度很小（封面 + 内外边距已占掉大半），
+  /// `yyyy-MM-dd HH:mm:ss` 在中文系统字体下会超出并折成两行，
+  /// 把标题挤成半行、看起来像被日期盖住。
+  ///
+  /// 这里按可用宽度从长到短挑第一个能单行放下的格式，全部放不下才交给
+  /// 调用方的省略号兜底——保证永远不换行。
+  String _fitPubdate(BuildContext context, double maxWidth) {
+    final candidates = <DateFormat>[
+      dateFormat,
+      if (dateFormat != DateFormatUtils.longFormatD)
+        DateFormatUtils.longFormatD,
+      if (dateFormat != DateFormatUtils.longFormat) DateFormatUtils.longFormat,
+    ];
+    // 与日期 Text 实际继承的字体一致（不含只影响颜色的部分）
+    final style = DefaultTextStyle.of(context).style;
+    final textScaler = MediaQuery.textScalerOf(context);
+    final textDirection = Directionality.of(context);
+    for (final format in candidates) {
+      final text = DateFormatUtils.format(pubdate, format: format);
+      final painter = TextPainter(
+        text: TextSpan(text: text, style: style),
+        textDirection: textDirection,
+        textScaler: textScaler,
+        maxLines: 1,
+      )..layout();
+      final width = painter.width;
+      painter.dispose();
+      if (width <= maxWidth) {
+        return text;
+      }
+    }
+    return DateFormatUtils.format(pubdate, format: dateFormat);
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = ColorScheme.of(context);
@@ -387,7 +421,9 @@ class _SavePanelState extends State<SavePanel> {
                       if (cover?.isNotEmpty == true &&
                           title?.isNotEmpty == true)
                         Container(
-                          height: 81,
+                          // 高度跟随字号：封面本身是 scale(65)，固定 81 在
+                          // 大字号下会让封面/文字溢出。上下内边距各 8。
+                          height: coverSize + 16,
                           margin: const .symmetric(horizontal: 12),
                           padding: const .all(8),
                           decoration: BoxDecoration(
@@ -418,14 +454,23 @@ class _SavePanelState extends State<SavePanel> {
                                       ),
                                     ),
                                     if (pubdate != null)
-                                      Text(
-                                        DateFormatUtils.format(
-                                          pubdate,
-                                          format: dateFormat,
-                                        ),
-                                        style: TextStyle(
-                                          color: colorScheme.outline,
-                                        ),
+                                      // 日期必须单行：折成两行会把标题挤成
+                                      // 半行、看起来像被日期盖住。宽度不够时
+                                      // 自动降级格式，而不是换行。
+                                      LayoutBuilder(
+                                        builder: (context, constraints) =>
+                                            Text(
+                                              _fitPubdate(
+                                                context,
+                                                constraints.maxWidth,
+                                              ),
+                                              maxLines: 1,
+                                              softWrap: false,
+                                              overflow: .ellipsis,
+                                              style: TextStyle(
+                                                color: colorScheme.outline,
+                                              ),
+                                            ),
                                       ),
                                   ],
                                 ),

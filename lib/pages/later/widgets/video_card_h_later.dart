@@ -190,9 +190,9 @@ Future<void> onPushLater(
   }
   if (item.isPgc ?? false) {
     if (item.bangumi?.epId != null) {
-      PageUtils.viewPgc(epId: item.bangumi!.epId);
+      PageUtils.viewPgc(epId: item.bangumi!.epId, viewLater: true);
     } else if (item.redirectUrl?.isNotEmpty == true) {
-      PageUtils.viewPgcFromUri(item.redirectUrl!);
+      PageUtils.viewPgcFromUri(item.redirectUrl!, viewLater: true);
     }
     return;
   }

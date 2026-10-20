@@ -110,6 +110,13 @@ List<SettingsModel> get replySettings => [
     setKey: SettingBoxKey.defaultShowComment,
     defaultVal: false,
   ),
+  const SwitchModel(
+    title: '下载表情默认保存全部',
+    subtitle: '关闭后点击「下载表情」先选择；长按「下载表情」始终可选择单个',
+    leading: Icon(Icons.download_for_offline_outlined),
+    setKey: SettingBoxKey.emoteDownAll,
+    defaultVal: true,
+  ),
   PopupModel(
     title: '评论展示',
     leading: const Icon(Icons.whatshot_outlined),

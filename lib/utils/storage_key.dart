@@ -148,6 +148,8 @@ abstract final class SettingBoxKey {
       setSystemBrightness = 'setSystemBrightness',
       downloadPath = 'downloadPath',
       imageSavePath = 'imageSavePath',
+      emotePath = 'emotePath',
+      emoteDownAll = 'emoteDownAll',
       followOrderType = 'followOrderType',
       enableImgMenu = 'enableImgMenu',
       showDynDispute = 'showDynDispute',

@@ -1,5 +1,74 @@
 part of 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 
+void showEmoteDownloadSheet(
+  BuildContext context,
+  List<(String, String)> emotes,
+) {
+  showModalBottomSheet(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    constraints: BoxConstraints(
+      maxWidth: min(640, context.mediaQueryShortestSide),
+    ),
+    builder: (context) {
+      final theme = Theme.of(context);
+      return Padding(
+        padding: .only(
+          bottom: MediaQuery.viewPaddingOf(context).bottom + 12,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const .fromLTRB(16, 16, 8, 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '选择要保存的表情',
+                      style: theme.textTheme.titleMedium,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Get.back();
+                      ImageUtils.downloadEmotes(emotes);
+                    },
+                    child: const Text('全部保存'),
+                  ),
+                ],
+              ),
+            ),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 360),
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  for (final (name, url) in emotes)
+                    ListTile(
+                      leading: NetworkImgLayer(
+                        src: url,
+                        type: .emote,
+                        width: 36,
+                        height: 36,
+                      ),
+                      title: Text(name),
+                      onTap: () {
+                        Get.back();
+                        ImageUtils.downloadEmotes([(name, url)]);
+                      },
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
 void showReplyCopyDialog(
   BuildContext context,
   String message,

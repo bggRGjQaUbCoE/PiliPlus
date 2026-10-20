@@ -1242,11 +1242,24 @@ class ReplyItemGrpc extends StatelessWidget {
             ListTile(
               onTap: () {
                 Get.back();
-                ImageUtils.downloadEmotes(emoteList);
+                if (emoteList.length == 1 || Pref.emoteDownAll) {
+                  ImageUtils.downloadEmotes(emoteList);
+                } else {
+                  showEmoteDownloadSheet(context, emoteList);
+                }
               },
+              onLongPress: emoteList.length > 1
+                  ? () {
+                      Get.back();
+                      showEmoteDownloadSheet(context, emoteList);
+                    }
+                  : null,
               minLeadingWidth: 0,
               leading: const Icon(Icons.download_outlined, size: 19),
               title: Text('下载表情', style: style),
+              subtitle: emoteList.length > 1 && Pref.emoteDownAll
+                  ? const Text('长按选择单个表情')
+                  : null,
             ),
           ListTile(
             onTap: () {

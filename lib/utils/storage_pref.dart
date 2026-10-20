@@ -1011,6 +1011,11 @@ abstract final class Pref {
 
   static String? get imageSavePath => _setting.get(SettingBoxKey.imageSavePath);
 
+  static String? get emotePath => _setting.get(SettingBoxKey.emotePath);
+
+  static bool get emoteDownAll =>
+      _setting.get(SettingBoxKey.emoteDownAll, defaultValue: true);
+
   static String? get liveCdnUrl => _setting.get(SettingBoxKey.liveCdnUrl);
 
   static bool get showBatteryLevel => _setting.get(

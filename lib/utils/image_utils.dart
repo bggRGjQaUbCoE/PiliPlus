@@ -211,7 +211,7 @@ abstract final class ImageUtils {
   /// [emotes] 每项为 `(表情名, 图片地址)`，表情名形如 `[x_x]`。
   /// 同名文件已存在时按内容 md5 判重：内容一致视为已保存，不重复写入；
   /// 内容不同则依次追加 `_1`、`_2` 后缀。
-  /// 桌面端扫描下载目录下的 `emote` 子目录并读取文件哈希；
+  /// 桌面端扫描表情保存目录（默认下载目录下的 `emote` 子目录）并读取文件哈希；
   /// 移动端没有相册查询 API，改用 [LocalCacheKey.emoteSaved] 中
   /// 「文件名 -> md5」的本地记录判重。
   static Future<bool> downloadEmotes(List<(String, String)> emotes) async {
@@ -292,8 +292,17 @@ abstract final class ImageUtils {
     return saved > 0;
   }
 
+  /// 桌面端表情保存目录：设置过则用设置值，否则默认「下载目录/emote」。
+  static String get emoteSavePath {
+    final custom = Pref.emotePath;
+    if (custom != null && custom.isNotEmpty) {
+      return custom;
+    }
+    return path.join(downloadPath, _emoteDirName);
+  }
+
   static Future<Directory> _emoteDir() async {
-    final dir = Directory(path.join(downloadPath, _emoteDirName));
+    final dir = Directory(emoteSavePath);
     if (!dir.existsSync()) {
       await dir.create(recursive: true);
     }

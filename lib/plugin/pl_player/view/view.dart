@@ -2076,10 +2076,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                         ? RoutedSimpleVideo(
                             playback: plPlayerController.playback!,
                             fill: widget.fill,
-                            // reserve a real rect before the session's
-                            // controller arrives (null placeholder would
-                            // otherwise be a 1px box and layout never binds)
-                            aspectRatio: videoFit.aspectRatio ?? 16 / 9,
+                            // Keep the viewport reserved before the session's
+                            // controller arrives so the native surface can bind.
+                            aspectRatio: videoFit.aspectRatio,
+                            fit: videoFit.boxFit,
                             viewport: Size(maxWidth, maxHeight),
                           )
                         : SimpleVideo(

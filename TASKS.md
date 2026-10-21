@@ -98,3 +98,8 @@ adb -s <serial> install -r build/app/outputs/flutter-apk/app-arm64-v8a-release.a
 - 依赖接线：`pubspec_overrides.yaml`；构建输入变化后重跑 pub get。
 - media-kit 侧对应任务/设计：`../media-kit/TASKS.md` MK-ROUTING 段、`../media-kit/docs/plans/review-gate-invariants-auto-routing-20261020.md`。
 - 本轮证据：`/tmp/pili-verify-20261020/`（lya-final/lg-final/marble-final 含 HdrDiag 全序列与 SF 帧率）。
+
+## MARBLE-DV-ASPECT-RATIO-20261022
+
+- **真实 HDR/DV 比例实机验收通过**：用户更正此前结果来自 SDR后撤回；本次在 marble 安装的当前源码 Release dev APK 上，播放 DJI Air 3 杜比视界源，MediaMetrics 确认 `mime=video/dolby-vision` 且解码器为 `c2.dolby.decoder.hevc`。同一播放会话反复切换比例：4:3 原生视口 `[480,0][1920,1080]`（1440×1080），16:9 原生视口 `[240,0][2160,1080]`（1920×1080），返回4:3再次得到1440×1080；切换截图 `/tmp/pili-marble-aspect-hdr/land-controls-visible.png`（4:3）与 `/tmp/pili-marble-aspect-hdr/after-169.png`（16:9），独立视觉复核确认可见宽高与黑边变化。两张截图来自播放中不同时间点，原生视口尺寸及所选比例状态为主要几何证据。根因是 media-kit 旧布局只覆盖 `gpu-next`，未覆盖 marble DV 的 `mediacodec_embed`；现已统一让 Android PlatformView 按当前 fit/layout 更新原生边界，保留 gpu-next 专属输出缓冲策略。布局回归9/9、目标 analyze、V1复核通过。临时设备全屏已用返回键退出，自动旋转仍为开启、用户旋转为0、window rotation mode为free。此前 failed Debug build 清理与 Release source build 记录见 context；media-kit `real.dart` 及原有 dirty work 保留。context：[marble-dv-aspect-ratio-20261022.md](archives/conversations/marble-dv-aspect-ratio-20261022.md)。
+- **自动画幅回到原始比例修复并实机确认**：media-kit 的 `VideoViewParameters.copyWith` 与 Android/Web `VideoState.update` 现区分“未传 aspectRatio”（保留）和显式 `null`（清除），因此先选4:3或16:9后选自动会回到原始比例；数值参数仍兼容整数并归一化为 double。当前源码 Release APK 已装 marble，播放 DJI Air 3 Dolby Vision 时 MediaMetrics 仍显示 `c2.dolby.decoder.hevc`；用户手工确认“没有问题”。V1 复核最终差异通过。APK、截图及完整验收上下文见上方 context。

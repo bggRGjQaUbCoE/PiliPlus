@@ -244,7 +244,7 @@ mixin FavMixin on TripleMixin {
             this.hasFav.toggle();
             SmartDialog.showToast('${hasFav ? '取消' : ''}收藏成功');
           } else {
-            res.toast();
+            result.toast();
           }
         } else {
           SmartDialog.dismiss();

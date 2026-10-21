@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
@@ -37,48 +38,63 @@ class SettingPage extends StatefulWidget {
 }
 
 class _SettingPageState extends State<SettingPage> {
-  late SettingType _type = SettingType.privacySetting;
+  late SettingType _type = .privacySetting;
   final RxBool _noAccount = Accounts.account.isEmpty.obs;
   late bool _isPortrait;
   late ThemeData theme;
 
   static const List<_SettingsModel> _items = [
     _SettingsModel(
-      type: SettingType.privacySetting,
+      type: .privacySetting,
       subtitle: '黑名单',
       icon: Icon(Icons.privacy_tip_outlined),
     ),
     _SettingsModel(
-      type: SettingType.recommendSetting,
+      type: .recommendSetting,
       subtitle: '推荐来源（web/app）、刷新保留内容、过滤器',
       icon: Icon(Icons.explore_outlined),
     ),
     _SettingsModel(
-      type: SettingType.videoSetting,
+      type: .videoSetting,
       subtitle: '画质、音质、解码、缓冲、音频输出等',
       icon: Icon(Icons.video_settings_outlined),
     ),
     _SettingsModel(
-      type: SettingType.playSetting,
+      type: .playSetting,
       subtitle: '双击/长按、全屏、后台播放、弹幕、字幕、底部进度条等',
       icon: Icon(Icons.touch_app_outlined),
     ),
     _SettingsModel(
-      type: SettingType.styleSetting,
+      type: .dmSetting,
+      subtitle: '点击弹幕、弹幕行高、彩色弹幕、合并弹幕',
+      icon: Icon(CustomIcons.dm_settings),
+    ),
+    _SettingsModel(
+      type: .replySetting,
+      subtitle: '过滤、屏蔽、记录、默认展示等',
+      icon: Icon(Icons.comment_outlined),
+    ),
+    _SettingsModel(
+      type: .dynSetting,
+      subtitle: '过滤、屏蔽、默认展示等',
+      icon: Icon(CustomIcons.motion_photos_on_outlined),
+    ),
+    _SettingsModel(
+      type: .styleSetting,
       subtitle: '横屏适配（平板）、侧栏、列宽、首页、动态红点、主题、字号、图片、帧率等',
       icon: Icon(Icons.style_outlined),
     ),
     _SettingsModel(
-      type: SettingType.extraSetting,
+      type: .extraSetting,
       subtitle: '震动、搜索、收藏、ai、评论、动态、代理、更新检查等',
       icon: Icon(Icons.extension_outlined),
     ),
     _SettingsModel(
-      type: SettingType.webdavSetting,
+      type: .webdavSetting,
       icon: Icon(MdiIcons.databaseCogOutline),
     ),
     _SettingsModel(
-      type: SettingType.about,
+      type: .about,
       icon: Icon(Icons.info_outline),
     ),
   ];
@@ -114,19 +130,11 @@ class _SettingPageState extends State<SettingPage> {
                   Expanded(
                     flex: 6,
                     child: switch (_type) {
-                      .privacySetting ||
-                      .recommendSetting ||
-                      .videoSetting ||
-                      .playSetting ||
-                      .styleSetting ||
-                      .extraSetting => CommonSetting(
-                        settingType: _type,
-                        showAppBar: false,
-                      ),
                       .webdavSetting => const WebDavSettingPage(
                         showAppBar: false,
                       ),
                       .about => const AboutPage(showAppBar: false),
+                      _ => CommonSetting(settingType: _type, showAppBar: false),
                     },
                   ),
                 ],
@@ -145,14 +153,9 @@ class _SettingPageState extends State<SettingPage> {
     if (_isPortrait) {
       Get.to(
         () => switch (type) {
-          .privacySetting ||
-          .recommendSetting ||
-          .videoSetting ||
-          .playSetting ||
-          .styleSetting ||
-          .extraSetting => CommonSetting(settingType: type),
           .webdavSetting => const WebDavSettingPage(),
           .about => const AboutPage(),
+          _ => CommonSetting(settingType: type),
         },
       );
     } else {

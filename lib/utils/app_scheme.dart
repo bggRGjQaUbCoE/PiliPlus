@@ -17,6 +17,7 @@ import 'package:PiliPlus/pages/follow_type/followed/view.dart';
 import 'package:PiliPlus/pages/live/view.dart';
 import 'package:PiliPlus/pages/rank/view.dart';
 import 'package:PiliPlus/pages/subscription_detail/view.dart';
+import 'package:PiliPlus/pages/video/reply_reply/view.dart';
 import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/desktop/window_controller.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
@@ -232,14 +233,14 @@ abstract final class PiliScheme {
               // bilibili://comment/msg_fold/11/22222/33333/11111/?enterUri=bilibili://following/detail/44444 (dynId)
               final pathSegs = uri.pathSegments;
               final queryParams = uri.queryParameters;
-              final type = pathSegs[1]; // business_id
+              final type = int.parse(pathSegs[1]); // business_id
               final oid = pathSegs[2]; // subject_id
               final rootRpId = int.parse(pathSegs[3]); // root_id // target_id
               final anchor = queryParams['anchor']; // comment_secondary_id
               final secondRpId = anchor != null ? int.tryParse(anchor) : null;
               if (BiliUtils.isDynOrArticle(type)) {
                 String? dynId;
-                if (type == '17') {
+                if (type == 17) {
                   dynId = oid;
                 } else {
                   final enterUri = queryParams['enterUri'];
@@ -254,12 +255,32 @@ abstract final class PiliScheme {
                   secondRpId: secondRpId,
                 );
               } else {
-                videoPush(
-                  int.parse(oid),
-                  null,
-                  rootRpId: rootRpId,
-                  secondRpId: secondRpId,
-                );
+                if (type == 1) {
+                  videoPush(
+                    int.parse(oid),
+                    null,
+                    rootRpId: rootRpId,
+                    secondRpId: secondRpId,
+                  );
+                } else {
+                  // TODO:
+                  final enterUri = queryParams['enterUri'];
+                  VideoReplyReplyPanel.toReply(
+                    oid: int.parse(oid),
+                    rootId: rootRpId,
+                    rpId: secondRpId,
+                    type: type,
+                    uri: enterUri != null
+                        ? Uri.parse(enterUri)
+                        : const [11, 16, 17].contains(type)
+                        ? Uri(
+                            scheme: 'bilibili',
+                            host: 'following',
+                            path: 'detail/$oid',
+                          )
+                        : null,
+                  );
+                }
               }
               return true;
             }

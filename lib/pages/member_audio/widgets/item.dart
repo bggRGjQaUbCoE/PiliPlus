@@ -12,7 +12,7 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
 class MemberAudioItem extends StatelessWidget {
-  const MemberAudioItem({super.key, required this.item});
+  const MemberAudioItem(this.item, {super.key});
 
   final SpaceAudioItem item;
 

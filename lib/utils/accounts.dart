@@ -91,4 +91,16 @@ abstract final class Accounts {
   static Account get(AccountType key) {
     return accountMode[key.index];
   }
+
+  static Future<void> importJsonAccount(Map<String, dynamic> json) async {
+    final res = json.map(
+      (key, value) => MapEntry(key, LoginAccount.fromJson(value)),
+    );
+    await Accounts.account.putAll(res);
+    await Accounts.refresh();
+    MineController.anonymity.value = !Accounts.heartbeat.isLogin;
+    if (Accounts.main.isLogin) {
+      await LoginUtils.onLoginMain();
+    }
+  }
 }

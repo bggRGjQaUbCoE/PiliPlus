@@ -220,20 +220,34 @@ class OpusContent extends StatelessWidget {
           switch (element.paraType) {
             case 1 || 4:
               final isQuote = element.paraType == 4;
+              List<InlineSpan>? spans;
+              if (element.text?.nodes case final nodes?) {
+                spans = nodes
+                    .map(
+                      (item) => _node2Widget(
+                        item: item,
+                        opusId: opusId,
+                        colorScheme: colorScheme,
+                        surfaceLuminance: getSurfaceLuminance,
+                      ),
+                    )
+                    .toList();
+              } else if (element.blockquote?.children case final children?) {
+                spans = [
+                  for (final child in children)
+                    ...?child.text?.nodes?.map(
+                      (item) => _node2Widget(
+                        item: item,
+                        opusId: opusId,
+                        colorScheme: colorScheme,
+                        surfaceLuminance: getSurfaceLuminance,
+                      ),
+                    ),
+                ];
+              }
               Widget widget = Text.rich(
                 textAlign: element.align == 1 ? TextAlign.center : null,
-                TextSpan(
-                  children: element.text?.nodes
-                      ?.map(
-                        (item) => _node2Widget(
-                          item: item,
-                          opusId: opusId,
-                          colorScheme: colorScheme,
-                          surfaceLuminance: getSurfaceLuminance,
-                        ),
-                      )
-                      .toList(),
-                ),
+                TextSpan(children: spans),
               );
               if (isQuote) {
                 widget = Container(

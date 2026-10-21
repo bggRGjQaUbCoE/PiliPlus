@@ -575,37 +575,23 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             widget.showEpisodes?.call();
             return;
           }
-          int? index;
-          int currentCid = plPlayerController.cid!;
-          String bvid = plPlayerController.bvid;
-          List<ugc.BaseEpisodeItem> episodes = [];
-          if (isSeason) {
-            final sections = videoDetail.ugcSeason!.sections!;
-            for (int i = 0; i < sections.length; i++) {
-              final episodesList = sections[i].episodes!;
-              for (final item in episodesList) {
-                if (item.cid == currentCid) {
-                  index = i;
-                  episodes = episodesList;
-                  break;
-                }
-              }
-            }
-          } else if (isPart) {
+          final bvid = plPlayerController.bvid;
+          List<ugc.BaseEpisodeItem>? episodes;
+          if (isPart) {
             episodes = videoDetail.pages!;
           } else if (isPgc) {
             episodes =
                 (introController as PgcIntroController).pgcItem.episodes!;
           }
           widget.showEpisodes?.call(
-            index,
+            isSeason ? videoDetailController.seasonIndex.value : null,
             isSeason ? videoDetail.ugcSeason! : null,
             isSeason ? null : episodes,
             bvid,
             IdUtils.bv2av(bvid),
-            isSeason && isPart
-                ? videoDetailController.seasonCid ?? currentCid
-                : currentCid,
+            isSeason
+                ? videoDetailController.seasonCid
+                : plPlayerController.cid!,
           );
         },
       ),

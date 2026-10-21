@@ -86,9 +86,7 @@ class _MemberBangumiState extends State<MemberBangumi>
                   if (index == response.length - 1) {
                     _controller.onLoadMore();
                   }
-                  return PgcCardVMemberPgc(
-                    item: response[index],
-                  );
+                  return PgcCardVMemberPgc(response[index]);
                 },
                 itemCount: response.length,
               )

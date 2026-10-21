@@ -112,11 +112,15 @@ class LiveRoomController extends GetxController {
   int builtLength = 0;
   final messages = <dynamic>[].obs;
   bool get shouldRefresh => builtLength != messages.length;
-  late final fsSC = Rxn<SuperChatItem>();
   late final RxList<SuperChatItem> superChatMsg = <SuperChatItem>[].obs;
   final disableAutoScroll = false.obs;
   bool autoScroll = true;
   LiveMessageStream? _msgStream;
+
+  late final fsSC = Rxn<SuperChatItem>();
+  late final enableFSSC = Pref.enableFullScreenSC;
+  late final fsSCScale = Pref.fullScreenSCScale;
+  late final fsSCOpacity = Pref.fullScreenSCOpacity;
 
   List<String> _keywordList = const [];
   Set<int> _shieldUids = const {};
@@ -514,7 +518,9 @@ class LiveRoomController extends GetxController {
     messages.clear();
     if (showSuperChat) {
       superChatMsg.clear();
-      fsSC.value = null;
+      if (enableFSSC) {
+        fsSC.value = null;
+      }
     }
     scrollController
       ..removeListener(listener)
@@ -635,6 +641,7 @@ class LiveRoomController extends GetxController {
           final item = SuperChatItem.fromJson(obj['data'], roomId);
           superChatMsg.insert(0, item);
           addDm(item);
+          if (!enableFSSC) return;
           if (Platform.isAndroid && AndroidHelper.isPipMode) return;
           if (plPlayerController.showDanmaku &&
               (isFullScreen || plPlayerController.isDesktopPip)) {

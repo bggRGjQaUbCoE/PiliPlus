@@ -83,9 +83,6 @@ class RenderTranslucentColumn extends RenderFlex {
             if (child is RenderAnimatedHeight) {
               return hit;
             }
-            if (hit) {
-              return true;
-            }
             if (child is RenderNoTranslucentArea) {
               return false;
             }

@@ -241,12 +241,7 @@ class DetailItem extends StatelessWidget {
                       },
                     ),
                   ),
-                  PBadge(
-                    text: entry.qualityPithyDescription,
-                    right: 6.0,
-                    top: 6.0,
-                    type: PBadgeType.gray,
-                  ),
+                  entry.qaBadge,
                   if (progress != null)
                     ListenableBuilder(
                       listenable: progress!,

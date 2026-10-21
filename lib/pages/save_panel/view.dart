@@ -419,6 +419,7 @@ class _SavePanelState extends State<SavePanel> {
                                     ),
                                     if (pubdate != null)
                                       Text(
+                                        softWrap: false,
                                         DateFormatUtils.format(
                                           pubdate,
                                           format: dateFormat,

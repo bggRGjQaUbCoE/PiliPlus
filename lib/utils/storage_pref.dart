@@ -970,20 +970,15 @@ abstract final class Pref {
 
     value = _localCache.get(SettingBoxKey.buvid);
     if (value != null) {
-      _setting
-          .put(SettingBoxKey.buvid, value)
-          .whenComplete(() => _localCache.delete(SettingBoxKey.buvid));
-      return value;
-    }
-
-    if (value == null) {
-      buvid = value = LoginUtils.generateBuvid();
+      _setting.put(SettingBoxKey.buvid, value);
+      _localCache.delete(SettingBoxKey.buvid);
+    } else {
+      value = LoginUtils.generateBuvid();
+      GStorage.setting.put(SettingBoxKey.buvid, value);
     }
 
     return value;
   }
-
-  static set buvid(String value) => _setting.put(SettingBoxKey.buvid, value);
 
   static bool get showMemberShop =>
       _setting.get(SettingBoxKey.showMemberShop, defaultValue: false);

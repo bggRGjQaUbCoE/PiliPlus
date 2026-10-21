@@ -244,10 +244,13 @@ class _MainAppState extends PopScopeState<MainApp>
           child: MediaQuery.removePadding(
             context: context,
             removeRight: true,
-            child: DrawerTheme(
-              data: DrawerThemeData(width: 130 + _padding.left),
-              child: Obx(
-                () => NavigationDrawer(
+            child: Obx(() {
+              final hideLabel = _mainController.hideSideBarLabel.value;
+              return DrawerTheme(
+                data: DrawerThemeData(
+                  width: (hideLabel ? 80 : 130) + _padding.left,
+                ),
+                child: NavigationDrawer(
                   /// apply `lib/scripts/navigation_drawer.patch`
                   flex: 5,
                   backgroundColor: Colors.transparent,
@@ -261,7 +264,12 @@ class _MainAppState extends PopScopeState<MainApp>
                   children: _mainController.navigationBars
                       .map(
                         (e) => NavigationDrawerDestination(
-                          label: Text(e.label),
+                          label: hideLabel
+                              ? Semantics(
+                                  label: e.label,
+                                  child: const SizedBox.shrink(),
+                                )
+                              : Text(e.label),
                           icon: _buildIcon(type: e),
                           selectedIcon: _buildIcon(
                             type: e,
@@ -271,15 +279,17 @@ class _MainAppState extends PopScopeState<MainApp>
                       )
                       .toList(),
                 ),
-              ),
-            ),
+              );
+            }),
           ),
         );
       }
-      return Obx(
-        () => NavigationRail(
+      return Obx(() {
+        final hideLabel = _mainController.hideSideBarLabel.value;
+        return NavigationRail(
           groupAlignment: 0.5,
-          labelType: .selected,
+          labelType: hideLabel ? .none : .selected,
+          minWidth: hideLabel ? 56 : null,
           leading: userAndSearchVertical(),
           backgroundColor: Colors.transparent,
           onDestinationSelected: _mainController.setIndex,
@@ -293,8 +303,8 @@ class _MainAppState extends PopScopeState<MainApp>
                 ),
               )
               .toList(),
-        ),
-      );
+        );
+      });
     }
     return Container(
       width: 80,

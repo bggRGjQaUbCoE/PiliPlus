@@ -6,6 +6,10 @@
 
 ## PLAYBACK-LOW-FPS-20261021
 
+- **SDR embed恢复已验收 / 按授权本地提交归档，不推送**：库legacy桥接恢复SDK既有默认SDR mediacodec_embed直出，App代码零新增。旧挂载互等/idle post-frame饥饿的基线修复已补因果回归并在实机绑定闭环确认；同时修PQ→SDR诊断三字段残留。最终1084+8skip/App16/V2通过；最终源码包241aabdf已装LG，原片真实4K AVC native约30fps；最终包冷启动/真实退出重进/明确DV-PQ与SDR往返通过，绑定132–261ms。暂停继续/EOF重播/HOME重建在前一候选验证，未计作最终包重测。最终4K AVC全屏留场；无新增超时规避/机型分支，原有OOM未宣告根治，GL与其它设备边界不扩大。context沿用下方。
+
+- **2026-10-21 再诊断（未改实现）**：当前4K SDR稳定呈现约8–9fps，VTS44–45°C、GPU上限214MHz/大核979MHz，明确热限频；缺少PQ层对SDR正常，不能作错误路由依据。追溯发现库已有SDR AVC mediacodec_embed→SurfaceView优化（旧LG受控约30fps），当前legacy桥接显式sdrEmbed:false禁用了它；false源自26a2c2c6的outputBind挂起规避，并非新生命周期迁移引入。下一步若恢复该路由须复核输出绑定与生命周期，当前只读定位、无实现变更。context沿用下方。
+
 - **migrated / 生产候选已装LG，按授权本地提交归档，不推送**：对齐已验收基线后将完整fallback/实例生命周期迁入media-kit，App净减202行，保留业务请求与仅SDR兜底授权。43定向、库1081+8skip/App16全量、V2通过；源码包284acf6c已装，原片PQ硬解/format43/30.02及29.91fps。探针同进程SDR fallback→refresh（rate1.25/volume65）及→新HDR源通过；HDR异常拒绝降SDR成立，但随后切页复现既有Flutter位图OOM，此恢复场景未通过，不声称全实机验收完成。context沿用下方。
 
 - **fixed / 候选已装LG，未提交**：fallback限定当前request；下一次切源/refresh在owner slot内退休legacy并重试routed，refresh保留rate/volume。8定向/20全量/analyze/V2通过；一次性故障注入实机验证同进程fallback→refresh及fallback→新源均恢复PQ。撤掉注入后源码重建APK `b15dcd1b...`已装，原片PQ verified、SF format43、29.91fps，零FATAL/回退。初始异常及独立位图OOM仍未闭合。context：[playback-low-fps-20261021.md](archives/conversations/playback-low-fps-20261021.md)。

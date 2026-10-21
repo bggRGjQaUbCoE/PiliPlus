@@ -729,8 +729,11 @@ class VideoDetailController extends GetxController
   Future<void> playerInit({
     bool? autoplay,
     bool autoFullScreenFlag = false,
+    bool restartCompleted = false,
   }) async {
-    Duration? seek = defaultST ?? playedTime;
+    Duration? seek =
+        defaultST ?? (restartCompleted ? Duration.zero : playedTime);
+    // A zero start still follows the existing first-segment intro policy.
     if (seek == .zero) seek = null;
     seek ??= getFirstSegment();
     await plPlayerController.setDataSource(

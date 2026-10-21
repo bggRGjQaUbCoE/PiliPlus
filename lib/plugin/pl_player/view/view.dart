@@ -150,6 +150,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   Offset? _initialFocalPoint;
 
   bool _pauseDueToPauseUponEnteringBackgroundMode = false;
+  Future<void> Function()? _resumePausedOutput;
+  bool Function()? _pausedOutputIsCurrent;
 
   StreamSubscription? _brightnessListener;
   void _onBrightnessChanged(double value) {
@@ -334,16 +336,26 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     // Keep playing in the PiP window.
     if (Platform.isIOS && IOSPipHelper.isActive) return;
     if (!plPlayerController.continuePlayInBackground.value) {
-      late final player = plPlayerController.videoPlayerController;
       if (const <AppLifecycleState>[.paused, .detached].contains(state)) {
-        if (player != null && player.state.playing) {
+        final player = plPlayerController.videoPlayerController;
+        final binding = plPlayerController.playback;
+        final current = plPlayerController.capturePlaybackOwnerCheck();
+        if (player != null && player.state.playing && current()) {
           _pauseDueToPauseUponEnteringBackgroundMode = true;
-          player.pause();
+          _resumePausedOutput = () => binding?.play() ?? player.play();
+          _pausedOutputIsCurrent = current;
+          unawaited(binding?.pause() ?? player.pause());
         }
       } else {
         if (_pauseDueToPauseUponEnteringBackgroundMode) {
           _pauseDueToPauseUponEnteringBackgroundMode = false;
-          player?.play();
+          final resume = _resumePausedOutput;
+          final current = _pausedOutputIsCurrent;
+          _resumePausedOutput = null;
+          _pausedOutputIsCurrent = null;
+          if (current?.call() == true && resume != null) {
+            unawaited(resume());
+          }
         }
       }
     }

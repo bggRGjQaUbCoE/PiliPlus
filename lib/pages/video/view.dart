@@ -124,7 +124,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   bool get pipNoDanmaku =>
       videoDetailController.plPlayerController.pipNoDanmaku;
 
-  bool isShowing = true;
+  final RxBool isShowing = true.obs;
 
   bool get isFullScreen =>
       videoDetailController.plPlayerController.isFullScreen.value;
@@ -213,7 +213,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   }
 
   Future<void>? playCallBack() {
-    if (!isShowing) {
+    if (!isShowing.value) {
       plPlayerController
         ?..addStatusLister(playerListener)
         ..addPositionListener(positionListener);
@@ -379,7 +379,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   // 离开当前页面时
   void didPushNext() {
     super.didPushNext();
-    isShowing = false;
+    isShowing.value = false;
 
     removeObserverMobile(this);
 
@@ -411,8 +411,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     if (videoDetailController.plPlayerController.isCloseAll) {
       return;
     }
+    final resumeStatus = videoDetailController.playerStatus;
 
-    isShowing = true;
+    isShowing.value = true;
 
     addObserverMobile(this);
 
@@ -449,12 +450,15 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       ..addPositionListener(positionListener);
     if (videoDetailController.autoPlay) {
       videoDetailController.playerInit(
-        autoplay: videoDetailController.playerStatus?.isPlaying ?? false,
+        autoplay: resumeStatus?.isPlaying ?? false,
+        restartCompleted: resumeStatus == PlayerStatus.completed,
       );
     } else if (videoDetailController.plPlayerController.preInitPlayer &&
         !videoDetailController.isQuerying &&
         videoDetailController.videoUrl != null) {
-      videoDetailController.playerInit();
+      videoDetailController.playerInit(
+        restartCompleted: resumeStatus == PlayerStatus.completed,
+      );
     }
   }
 
@@ -1220,8 +1224,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         videoDetailController.plPlayerController.onPopInvokedWithResult,
     child: Obx(
       () =>
-          (!videoDetailController.videoState.value &&
-              plPlayerController?.playback == null) ||
+          !isShowing.value ||
+              (!videoDetailController.videoState.value &&
+                  plPlayerController?.playback == null) ||
               !videoDetailController.autoPlay ||
               // routed output binding requires this view mounted before open
               (plPlayerController?.videoController == null &&

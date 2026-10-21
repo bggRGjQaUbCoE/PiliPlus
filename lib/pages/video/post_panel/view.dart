@@ -518,37 +518,64 @@ class _PostPanelState extends State<PostPanel>
             onPressed: () async {
               final player = plPlayerController.videoPlayerController;
               if (player != null) {
+                final binding = plPlayerController.playback;
+                final ownsOutput =
+                    plPlayerController.capturePlaybackOwnerCheck();
+                StreamSubscription<Duration>? posSub;
+                Timer? timer;
+                void cancelPreview() {
+                  timer?.cancel();
+                  posSub?.cancel();
+                }
+
+                bool current() {
+                  if (ownsOutput()) return true;
+                  cancelPreview();
+                  return false;
+                }
+
+                Future<bool> seekPreview(Duration position) async {
+                  if (!current()) return false;
+                  await plPlayerController.seek(position);
+                  return current();
+                }
+
+                if (!current()) return;
                 final start = (item.segment.first * 1000).round();
-                Future<void> seekTo() => plPlayerController.seek(
+                Future<bool> seekTo() => seekPreview(
                   Duration(milliseconds: (item.segment.second * 1000).round()),
                 );
                 if (start <= 0) {
-                  seekTo();
+                  if (!await seekTo() || !current()) return;
                   if (!player.state.playing) {
-                    await player.play();
+                    await (binding?.play() ?? player.play());
                   }
                   return;
                 }
                 final seek = max(0, start - 2000);
-                await plPlayerController.seek(Duration(milliseconds: seek));
-                if (!player.state.playing) {
-                  await player.play();
+                if (!await seekPreview(Duration(milliseconds: seek)) ||
+                    !current()) {
+                  return;
                 }
+                if (!player.state.playing) {
+                  await (binding?.play() ?? player.play());
+                }
+                if (!current()) return;
                 if (start > seek) {
-                  final posSub = player.stream.position.listen(
+                  posSub = player.stream.position.listen(
                     null,
                     cancelOnError: true,
                   );
-                  final timer = Timer(
+                  timer = Timer(
                     const Duration(seconds: 10),
-                    posSub.cancel,
+                    cancelPreview,
                   );
                   final duration = Duration(milliseconds: start);
                   posSub.onData((pos) {
+                    if (!current()) return;
                     if (pos >= duration) {
                       seekTo();
-                      timer.cancel();
-                      posSub.cancel();
+                      cancelPreview();
                     }
                   });
                 } else {

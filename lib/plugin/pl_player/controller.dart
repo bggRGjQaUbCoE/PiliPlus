@@ -29,6 +29,7 @@ import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/danmaku_options.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
+import 'package:PiliPlus/plugin/pl_player/utils/player_source_lifecycle.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
@@ -76,11 +77,13 @@ typedef PlayOwner = ({String tag, Type? type});
 class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   Player? _videoPlayerController;
   RoutedVideoPlayback? _playback;
+  final PlayerSourceLifecycle _sourceLifecycle = PlayerSourceLifecycle();
   // set when the routed open was rejected and playback fell back to the
   // ordinary (non-session) output
   VideoController? _legacyVideoController;
 
   static PlPlayerController? _instance;
+  static final _playerOwner = PlayerOwnerSlot();
 
   PlayerStatus playerStatus = .paused;
 
@@ -560,9 +563,20 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   static PlayOwner? _playOwner;
   static PlayOwner? get playOwner => _playOwner;
   static PlayCallback? _playCallBack;
+  final SourceCallbackRequestScope _callbackRequestScope =
+      SourceCallbackRequestScope();
 
-  static Future<void>? playIfExists() {
-    return _playCallBack?.call();
+  static Future<void>? playIfExists({int? sourceRequest}) {
+    final controller = _instance;
+    if (sourceRequest == null || controller == null) {
+      return _playCallBack?.call();
+    }
+    return controller._playForSource(sourceRequest);
+  }
+
+  Future<void> _playForSource(int request) async {
+    if (!_isCurrentSourceRequest(request)) return;
+    await _callbackRequestScope.dispatch(request, () => _playCallBack?.call());
   }
 
   // try to get PlayerStatus
@@ -727,7 +741,10 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     Volume? volume,
     bool autoFullScreenFlag = false,
   }) async {
+    final request = _sourceLifecycle.beginRequest();
+    bool current() => _isCurrentSourceRequest(request);
     try {
+      if (!current()) return;
       _processing = true;
       this.isLive = isLive;
       _videoType = videoType ?? VideoType.ugc;
@@ -752,44 +769,46 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       cancelLongPressTimer();
       if (_videoPlayerController != null &&
           _videoPlayerController!.state.playing) {
-        await pause(notify: false);
+        await pause(notify: false, sourceRequest: request);
       }
+      if (!current()) return;
 
-      if (_playerCount == 0) {
-        return;
-      }
       // 配置Player 音轨、字幕等等
-      await _createVideoController(dataSource, seekTo, volume);
+      await _createVideoController(dataSource, seekTo, volume, request);
+      if (!current()) return;
+      final player = _videoPlayerController;
+      if (player == null) return;
 
-      if (_playerCount == 0) {
-        _removeListeners();
-        await _playback?.dispose();
-        _videoPlayerController = null;
-        _playback = null;
-        return;
-      }
-
-      updateDuration(duration ?? _videoPlayerController!.state.duration);
+      updateDuration(duration ?? player.state.duration);
       position.value = buffered.value = seekTo?.inSeconds ?? 0;
-
       dataStatus.value = .loaded;
 
       if (autoFullScreenFlag && autoEnterFullScreen) {
         triggerFullScreen(status: true);
       }
-
-      await _initializePlayer();
+      await _initializePlayer(request);
+      if (!current()) return;
       onInit?.call();
+    } on RoutedOpenSuperseded {
+      // A newer open owns the shared Player and its visible state.
+      return;
     } catch (err, stackTrace) {
-      dataStatus.value = DataStatus.error;
-      if (kDebugMode) {
-        debugPrint(stackTrace.toString());
-        debugPrint('plPlayer err:  $err');
+      if (current()) {
+        dataStatus.value = DataStatus.error;
+        if (kDebugMode) {
+          debugPrint(stackTrace.toString());
+          debugPrint('plPlayer err:  $err');
+        }
       }
     } finally {
-      _processing = false;
+      if (current()) _processing = false;
     }
   }
+
+  bool _isCurrentSourceRequest(int request) =>
+      _sourceLifecycle.isCurrent(request) &&
+      _playerCount > 0 &&
+      identical(_instance, this);
 
   String? shadersDirPath;
   Future<String> get copyShadersToExternalDirectory async {
@@ -807,7 +826,14 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   late final isAnim = _pgcType == 1 || _pgcType == 4;
   late final Rx<SuperResolutionType> superResolutionType =
       (isAnim ? Pref.superResolutionType : SuperResolutionType.disable).obs;
-  Future<void> setShader([SuperResolutionType? type, NativePlayer? pp]) async {
+  Future<void> setShader([SuperResolutionType? type, NativePlayer? pp]) =>
+      _setShader(type, pp);
+
+  Future<void> _setShader(
+    SuperResolutionType? type,
+    NativePlayer? pp, {
+    int? sourceRequest,
+  }) async {
     if (type == null) {
       type = superResolutionType.value;
     } else {
@@ -821,31 +847,50 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       case SuperResolutionType.disable:
         return pp.command(const ['change-list', 'glsl-shaders', 'clr', '']);
       case SuperResolutionType.efficiency:
+        final shaderDir = await copyShadersToExternalDirectory;
+        if (sourceRequest != null && !_isCurrentSourceRequest(sourceRequest)) {
+          return;
+        }
         return pp.command([
           'change-list',
           'glsl-shaders',
           'set',
           PathUtils.buildShadersAbsolutePath(
-            await copyShadersToExternalDirectory,
+            shaderDir,
             Assets.mpvAnime4KShadersLite,
           ),
         ]);
       case SuperResolutionType.quality:
+        final shaderDir = await copyShadersToExternalDirectory;
+        if (sourceRequest != null && !_isCurrentSourceRequest(sourceRequest)) {
+          return;
+        }
         return pp.command([
           'change-list',
           'glsl-shaders',
           'set',
           PathUtils.buildShadersAbsolutePath(
-            await copyShadersToExternalDirectory,
+            shaderDir,
             Assets.mpvAnime4KShaders,
           ),
         ]);
     }
   }
 
-  Future<Player> _initPlayer({bool routed = true}) async {
-    assert(_videoPlayerController == null);
-    assert(routed ? _playback == null : _legacyVideoController == null);
+  Future<Player?> _initPlayer({bool routed = true}) {
+    return _playerOwner.transition((owner) async {
+      if (_playerCount == 0 || !identical(_instance, this)) return null;
+      final existing = _videoPlayerController;
+      if (existing != null) return existing;
+      return _createPlayer(owner, routed: routed);
+    });
+  }
+
+  Future<Player?> _createPlayer(
+    PlayerOwnerTransition owner, {
+    required bool routed,
+    bool Function()? stillWanted,
+  }) async {
     final opt = {
       'video-sync': Pref.videoSync,
       if (Platform.isAndroid) 'ao': Pref.audioOutput,
@@ -865,43 +910,85 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       ),
     );
 
-    assert(routed || _playback == null);
+    RoutedVideoPlayback? playback;
+    VideoController? legacy;
+    try {
+      if (routed) {
+        // RoutedVideoPlayback owns the output topology: on Android the HDR
+        // session planner picks the verified route (native HDR / embed /
+        // texture); other platforms keep the ordinary VideoController output.
+        playback = await RoutedVideoPlayback.create(
+          player,
+          configuration: VideoControllerConfiguration(
+            enableHardwareAcceleration: hwdec != null,
+            androidAttachSurfaceAfterVideoParameters: false,
+            hwdec: hwdec,
+          ),
+        );
+        // routing-acceptance evidence channel (release builds included)
+        playback.errors.listen((e) => debugPrint('routed error: $e'));
+      } else {
+        legacy = await VideoController.create(
+          player,
+          configuration: VideoControllerConfiguration(
+            enableHardwareAcceleration: hwdec != null,
+            androidAttachSurfaceAfterVideoParameters: false,
+            hwdec: hwdec,
+          ),
+        );
+      }
 
-    if (routed) {
-      // RoutedVideoPlayback owns the output topology: on Android the HDR
-      // session planner picks the verified route (native HDR / embed /
-      // texture); other platforms keep the ordinary VideoController output.
-      _playback = await RoutedVideoPlayback.create(
-        player,
-        configuration: VideoControllerConfiguration(
-          enableHardwareAcceleration: hwdec != null,
-          androidAttachSurfaceAfterVideoParameters: false,
-          hwdec: hwdec,
-        ),
+      if (_playerCount == 0 ||
+          !identical(_instance, this) ||
+          (stillWanted != null && !stillWanted())) {
+        await _disposeUnpublishedOwner(owner, player, playback, legacy);
+        return null;
+      }
+
+      _playback = playback;
+      _legacyVideoController = legacy;
+      _videoPlayerController = player;
+
+      if (Platform.isAndroid) {
+        // Avoid sizing the surface using mpv's idle window between media loads.
+        player.setProperty('force-window', 'no');
+      }
+
+      player.setMediaHeader(
+        userAgent: BrowserUa.pc,
+        referer: HttpString.baseUrl,
       );
-      // routing-acceptance evidence channel (release builds included)
-      _playback!.errors.listen((e) => debugPrint('routed error: $e'));
-    } else {
-      _legacyVideoController = await VideoController.create(
-        player,
-        configuration: VideoControllerConfiguration(
-          enableHardwareAcceleration: hwdec != null,
-          androidAttachSurfaceAfterVideoParameters: false,
-          hwdec: hwdec,
-        ),
-      );
+
+      _startListeners(player);
+
+      return player;
+    } catch (_) {
+      if (identical(_videoPlayerController, player)) {
+        _removeListeners();
+        _videoPlayerController = null;
+        _playback = null;
+        _legacyVideoController = null;
+      }
+      await _disposeUnpublishedOwner(owner, player, playback, legacy);
+      rethrow;
     }
+  }
 
-    if (Platform.isAndroid) {
-      // Avoid sizing the surface using mpv's idle window between media loads.
-      player.setProperty('force-window', 'no');
-    }
-
-    player.setMediaHeader(userAgent: BrowserUa.pc, referer: HttpString.baseUrl);
-
-    _startListeners(player);
-
-    return player;
+  Future<void> _disposeUnpublishedOwner(
+    PlayerOwnerTransition transition,
+    Player player,
+    RoutedVideoPlayback? playback,
+    VideoController? legacy,
+  ) async {
+    final owner = playback ?? legacy ?? player;
+    await transition.retire(owner, () async {
+      if (playback != null) {
+        await playback.dispose();
+      } else {
+        if (legacy != null) await legacy.disposeForRebuild();
+        await player.dispose();
+      }
+    });
   }
 
   late final buffer = Pref.initBuffer(_playbackSpeed.value);
@@ -912,27 +999,20 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     DataSource dataSource,
     Duration? seekTo,
     Volume? volume,
+    int request,
   ) async {
     isBuffering.value = false;
     _heartDuration = 0;
     danmakuController?.clear();
 
-    var player = _videoPlayerController;
-
-    if (player == null) {
-      player = await _initPlayer();
-      if (_playerCount == 0) {
-        _removeListeners();
-        await _playback?.dispose();
-        player = null;
-        _playback = null;
-        return;
-      }
-      _videoPlayerController = player;
-      if (isAnim && superResolutionType.value != .disable) {
-        await setShader();
-      }
+    final player = await _initPlayer();
+    if (!_isCurrentSourceRequest(request) || player == null) return;
+    _videoPlayerController = player;
+    if (_playback == null && _legacyVideoController == null) return;
+    if (isAnim && superResolutionType.value != .disable) {
+      await _setShader(null, null, sourceRequest: request);
     }
+    if (!_isCurrentSourceRequest(request)) return;
 
     final Map<String, String> extras = {
       if (dataSource is FileSource)
@@ -979,32 +1059,49 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
         // audio-only mode must not hold a video session/output
         video: !onlyPlayAudio.value,
       );
+    } on RoutedOpenSuperseded {
+      rethrow;
     } catch (e) {
+      if (!_isCurrentSourceRequest(request) ||
+          !identical(_playback, playback)) {
+        return;
+      }
       // The routed session rejected this open (e.g. decoder identity
       // review on lazy-attach sources). Fall back to the ordinary
       // non-session output so playback still works.
       debugPrint('routed open failed, fallback: $e');
-      await _switchToLegacyOutput();
-      await _videoPlayerController?.open(media, play: false);
+      final fallback = await _switchToLegacyOutput(request, playback);
+      if (!_isCurrentSourceRequest(request) || fallback == null) return;
+      await fallback.open(media, play: false);
     }
   }
 
   /// Rebuild the player without the routed session after its open was
   /// rejected; [RoutedVideoPlayback.dispose] releases the whole player.
-  Future<void> _switchToLegacyOutput() async {
-    final oldPlayback = _playback;
-    _playback = null;
-    _removeListeners();
-    await oldPlayback?.dispose();
-    _videoPlayerController = null;
-    final player = await _initPlayer(routed: false);
-    if (_playerCount == 0) {
-      await player.dispose();
+  Future<Player?> _switchToLegacyOutput(
+    int request,
+    RoutedVideoPlayback expectedPlayback,
+  ) {
+    return _playerOwner.transition((owner) async {
+      if (!_isCurrentSourceRequest(request) ||
+          !identical(_playback, expectedPlayback)) {
+        return null;
+      }
+      _removeListeners();
       _videoPlayerController = null;
+      _playback = null;
       _legacyVideoController = null;
-      return;
-    }
-    _videoPlayerController = player;
+      await owner.retire(
+        expectedPlayback,
+        expectedPlayback.dispose,
+      );
+      if (!_isCurrentSourceRequest(request)) return null;
+      return _createPlayer(
+        owner,
+        routed: false,
+        stillWanted: () => _isCurrentSourceRequest(request),
+      );
+    });
   }
 
   Future<void>? refreshPlayer() {
@@ -1014,17 +1111,35 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     if (_videoPlayerController case final ctr? when (ctr.current.isNotEmpty)) {
       var media = ctr.current.last;
       if (!isLive) media = media.copyWith(start: ctr.state.position);
-      final playback = _playback;
-      if (playback == null) {
-        return ctr.open(media, play: true);
-      }
+      final request = _sourceLifecycle.beginRequest();
+      bool current() => _isCurrentSourceRequest(request);
+      _processing = true;
       return () async {
         try {
-          await playback.open(media, play: true, video: !onlyPlayAudio.value);
-        } catch (e) {
-          debugPrint('routed refresh failed, fallback: $e');
-          await _switchToLegacyOutput();
-          await _videoPlayerController?.open(media, play: true);
+          final player = await _initPlayer();
+          if (!current() || player == null) return;
+          final playback = _playback;
+          if (playback == null) {
+            await player.open(media, play: true);
+            return;
+          }
+          try {
+            await playback.open(media, play: true, video: !onlyPlayAudio.value);
+          } on RoutedOpenSuperseded {
+            return;
+          } catch (e) {
+            if (!current() || !identical(_playback, playback)) return;
+            debugPrint('routed refresh failed, fallback: $e');
+            final fallback = await _switchToLegacyOutput(request, playback);
+            if (!current() || fallback == null) return;
+            await fallback.open(media, play: true);
+          }
+        } catch (e, st) {
+          if (current() && kDebugMode) {
+            debugPrint('refresh player failed: $e\n$st');
+          }
+        } finally {
+          if (current()) _processing = false;
         }
       }();
     }
@@ -1032,20 +1147,23 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   // 开始播放
-  Future<void> _initializePlayer() async {
-    if (_instance == null) return;
+  Future<void> _initializePlayer(int request) async {
+    if (!_isCurrentSourceRequest(request)) return;
     // 设置倍速
     if (_videoPlayerController != null) {
       final speed = isLive ? 1.0 : playbackSpeed;
       if (_videoPlayerController!.state.rate != speed) {
-        await setPlaybackSpeed(speed);
+        await setPlaybackSpeed(speed, sourceRequest: request);
       }
     }
+    if (!_isCurrentSourceRequest(request)) return;
     _initVideoFit();
 
     // 自动播放
     if (_autoPlay) {
-      playIfExists();
+      if (_isCurrentSourceRequest(request)) {
+        await playIfExists(sourceRequest: request);
+      }
     }
   }
 
@@ -1255,7 +1373,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     }
     danmakuController?.clear();
     try {
-      await (_playback?.seek(position) ?? _videoPlayerController?.seek(position));
+      await (_playback?.seek(position) ??
+          _videoPlayerController?.seek(position));
       _updateIOSPip(position);
     } catch (e) {
       if (kDebugMode) debugPrint('seek failed: $e');
@@ -1285,12 +1404,19 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   /// 设置倍速
-  Future<void> setPlaybackSpeed(double speed) async {
+  Future<void> setPlaybackSpeed(double speed, {int? sourceRequest}) async {
+    if (sourceRequest != null && !_isCurrentSourceRequest(sourceRequest)) {
+      return;
+    }
     lastPlaybackSpeed = playbackSpeed;
 
-    if (speed == _videoPlayerController?.state.rate) return;
+    final player = _videoPlayerController;
+    if (speed == player?.state.rate) return;
+    await player?.setRate(speed);
+    if (sourceRequest != null && !_isCurrentSourceRequest(sourceRequest)) {
+      return;
+    }
 
-    await _videoPlayerController?.setRate(speed);
     if (!isLive) _playbackSpeed.value = speed;
     _updatePlaybackState();
     if (danmakuController != null) {
@@ -1306,16 +1432,30 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   /// 播放视频
-  Future<void> play({bool repeat = false, bool hideControls = true}) async {
+  Future<void> play({
+    bool repeat = false,
+    bool hideControls = true,
+    int? sourceRequest,
+  }) async {
+    sourceRequest = _callbackRequestScope.capture(sourceRequest);
+    if (sourceRequest != null && !_isCurrentSourceRequest(sourceRequest)) {
+      return;
+    }
     if (_playerCount == 0) return;
     // 播放时自动隐藏控制条
     controls = !hideControls;
     // repeat为true，将从头播放
     if (repeat) {
       await seekTo(Duration.zero, isSeek: false);
+      if (sourceRequest != null && !_isCurrentSourceRequest(sourceRequest)) {
+        return;
+      }
     }
 
     await (_playback?.play() ?? _videoPlayerController?.play());
+    if (sourceRequest != null && !_isCurrentSourceRequest(sourceRequest)) {
+      return;
+    }
 
     audioSessionHandler?.setActive(true);
 
@@ -1323,14 +1463,22 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   /// 暂停播放
-  Future<void> pause({bool notify = true, bool isInterrupt = false}) async {
-    await (_playback?.pause() ?? _videoPlayerController?.pause());
-    playerStatus = .paused;
-
-    // 主动暂停时让出音频焦点
-    if (!isInterrupt) {
-      audioSessionHandler?.setActive(false);
+  Future<void> pause({
+    bool notify = true,
+    bool isInterrupt = false,
+    int? sourceRequest,
+  }) async {
+    if (sourceRequest != null && !_isCurrentSourceRequest(sourceRequest)) {
+      return;
     }
+    await (_playback?.pause() ?? _videoPlayerController?.pause());
+    if (sourceRequest != null && !_isCurrentSourceRequest(sourceRequest)) {
+      return;
+    }
+
+    playerStatus = .paused;
+    // 主动暂停时让出音频焦点
+    if (!isInterrupt) audioSessionHandler?.setActive(false);
   }
 
   bool tripling = false;
@@ -1461,13 +1609,35 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       videoPlayerController!.state.completed ||
       durationInMilliseconds - positionInMilliseconds <= 50;
 
+  bool Function() capturePlaybackOwnerCheck() {
+    final request = _sourceLifecycle.currentRequest;
+    final player = _videoPlayerController;
+    final binding = _playback;
+    return () =>
+        request != null &&
+        player != null &&
+        _isCurrentSourceRequest(request) &&
+        identical(_videoPlayerController, player) &&
+        identical(_playback, binding);
+  }
+
   // 双击播放、暂停
   Future<void> onDoubleTapCenter() async {
-    if (!isLive && isCompleted) {
-      await videoPlayerController!.seek(Duration.zero);
-      videoPlayerController!.play();
+    final current = capturePlaybackOwnerCheck();
+    final player = _videoPlayerController;
+    final binding = _playback;
+    if (player == null || !current()) return;
+
+    final completed =
+        !isLive &&
+        (player.state.completed ||
+            durationInMilliseconds - positionInMilliseconds <= 50);
+    if (completed) {
+      await (binding?.seek(Duration.zero) ?? player.seek(Duration.zero));
+      if (!current()) return;
+      await (binding?.play() ?? player.play());
     } else {
-      videoPlayerController!.playOrPause();
+      await (binding?.playOrPause() ?? player.playOrPause());
     }
   }
 
@@ -1719,6 +1889,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   void dispose() {
+    if (_playerCount == 0 || !identical(_instance, this)) return;
     // 每次减1，最后销毁
     resetScreenRotation();
     cancelLongPressTimer();
@@ -1730,6 +1901,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     }
 
     _playerCount = 0;
+    _sourceLifecycle.close();
     if (removeSafeArea) {
       showSystemBar();
     }
@@ -1772,12 +1944,37 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     if (kDebugMode) {
       debugPrint('dispose player');
     }
+    final playback = _playback;
+    final legacy = _legacyVideoController;
+    final player = _videoPlayerController;
     _videoPlayerController = null;
-    // RoutedVideoPlayback.dispose also disposes the underlying player.
-    unawaited(_playback?.dispose());
     _playback = null;
+    _legacyVideoController = null;
     _instance = null;
+    if (playback != null) {
+      unawaited(_disposeOwnerAfterClose(playback, playback.dispose));
+    } else if (legacy != null && player != null) {
+      unawaited(
+        _disposeOwnerAfterClose(legacy, () async {
+          await legacy.disposeForRebuild();
+          await player.dispose();
+        }),
+      );
+    } else if (player != null) {
+      unawaited(_disposeOwnerAfterClose(player, player.dispose));
+    }
     videoPlayerServiceHandler?.clear();
+  }
+
+  Future<void> _disposeOwnerAfterClose(
+    Object owner,
+    Future<void> Function() disposeOwner,
+  ) async {
+    try {
+      await _playerOwner.retire(owner, disposeOwner);
+    } catch (e, st) {
+      debugPrint('player dispose deferred for retry: $e\n$st');
+    }
   }
 
   static void updatePlayCount() {

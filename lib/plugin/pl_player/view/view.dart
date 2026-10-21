@@ -65,7 +65,6 @@ import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:collection/collection.dart';
@@ -1317,7 +1316,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   }
 
   void _onPointerSignal(PointerSignalEvent event) {
-    if (event is PointerScrollEvent && Pref.enableScrollVolume) {
+    if (event is PointerScrollEvent) {
       final offset = -event.scrollDelta.dy / 4000;
       final volume = clampDouble(
         plPlayerController.volume.value + offset,
@@ -2007,7 +2006,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       child: Obx(
         () => MouseInteractiveViewer(
           scaleEnabled: !plPlayerController.controlsLock.value,
-          pointerSignalFallback: _onPointerSignal,
+          pointerSignalFallback: plPlayerController.enableScrollVolume
+              ? _onPointerSignal
+              : null,
           onPointerPanZoomUpdate: _onPointerPanZoomUpdate,
           onPointerPanZoomEnd: _onPointerPanZoomEnd,
           onPointerDown: _onPointerDown,

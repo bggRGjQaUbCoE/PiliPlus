@@ -213,18 +213,24 @@ SettingsModel getBanWordModel({
   String? banScope,
 }) {
   String banWord = GStorage.setting.get(key, defaultValue: '');
+  String getDisplayValue() => banWord
+      .split(RegExp(r'[\n|]'))
+      .map((e) => e.trim())
+      .where((e) => e.isNotEmpty)
+      .join('\n');
   return NormalModel(
     leading: const Icon(Icons.filter_alt_outlined),
     title: title,
     getSubtitle: () {
-      final subtitle = banWord.isEmpty ? "点击添加" : banWord;
+      final subtitle = banWord.isEmpty ? "点击添加" : getDisplayValue();
       if (banScope != null) {
         return '作用域: $banScope\n$subtitle';
       }
       return subtitle;
     },
     onTap: (context, setState) {
-      String editValue = banWord;
+      String editValue = getDisplayValue();
+      final scrollController = ScrollController();
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -234,14 +240,20 @@ SettingsModel getBanWordModel({
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('使用|隔开，如：尝试|测试'),
-              TextFormField(
-                autofocus: true,
-                initialValue: editValue,
-                textInputAction: TextInputAction.newline,
-                minLines: 1,
-                maxLines: 4,
-                onChanged: (value) => editValue = value,
+              const Text('每行一个关键词，如：\n尝试\n测试'),
+              Scrollbar(
+                controller: scrollController,
+                thumbVisibility: true,
+                child: TextFormField(
+                  scrollController: scrollController,
+                  autofocus: true,
+                  initialValue: editValue,
+                  keyboardType: TextInputType.multiline,
+                  textInputAction: TextInputAction.newline,
+                  minLines: 2,
+                  maxLines: 4,
+                  onChanged: (value) => editValue = value,
+                ),
               ),
             ],
           ),
@@ -257,16 +269,21 @@ SettingsModel getBanWordModel({
               child: const Text('保存'),
               onPressed: () {
                 Get.back();
-                banWord = editValue;
+                final keywords = editValue
+                    .split('\n')
+                    .map((e) => e.trim())
+                    .where((e) => e.isNotEmpty)
+                    .toList();
+                banWord = keywords.join('|');
                 setState();
-                onChanged(RegExp(banWord, caseSensitive: false));
+                onChanged(RegExp(keywords.join('|'), caseSensitive: false));
                 SmartDialog.showToast('已保存');
                 GStorage.setting.put(key, banWord);
               },
             ),
           ],
         ),
-      );
+      ).whenComplete(scrollController.dispose);
     },
   );
 }

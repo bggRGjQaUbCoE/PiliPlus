@@ -75,12 +75,30 @@ typedef PlayCallback = Future<void>? Function();
 typedef PlayOwner = ({String tag, Type? type});
 
 class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
-  Player? _videoPlayerController;
-  RoutedVideoPlayback? _playback;
   final PlayerSourceLifecycle _sourceLifecycle = PlayerSourceLifecycle();
-  // set when the routed open was rejected and playback fell back to the
-  // ordinary (non-session) output
-  VideoController? _legacyVideoController;
+  late final ManagedVideoPlayback _managedPlayback = ManagedVideoPlayback(
+    slot: _playerOwner,
+    createPlayer: _createNativePlayer,
+    configuration: VideoControllerConfiguration(
+      enableHardwareAcceleration: hwdec != null,
+      androidAttachSurfaceAfterVideoParameters: false,
+      hwdec: hwdec,
+    ),
+    preparePlayer: (player) async {
+      if (Platform.isAndroid) {
+        await player.setProperty('force-window', 'no');
+      }
+      player.setMediaHeader(
+        userAgent: BrowserUa.pc,
+        referer: HttpString.baseUrl,
+      );
+    },
+    onChanged: _onManagedPlaybackChanged,
+    onError: (error) => debugPrint('routed error: $error'),
+    onFallback: (error) => debugPrint('routed open failed, fallback: $error'),
+  );
+  final RxInt _playbackRevision = 0.obs;
+  Player? _listenerPlayer;
 
   static PlPlayerController? _instance;
   static final _playerOwner = PlayerOwnerSlot();
@@ -176,14 +194,32 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   double get longPressSpeed => _longPressSpeed.value;
 
   /// [videoPlayerController] instance of Player
-  Player? get videoPlayerController => _videoPlayerController;
+  Player? get videoPlayerController {
+    _playbackRevision.value;
+    return _managedPlayback.player;
+  }
 
   /// [videoController] instance of Player
-  VideoController? get videoController =>
-      _playback?.controller.value ?? _legacyVideoController;
+  VideoController? get videoController {
+    _playbackRevision.value;
+    return _managedPlayback.controller;
+  }
 
   /// [RoutedVideoPlayback] instance owning the player output topology.
-  RoutedVideoPlayback? get playback => _playback;
+  RoutedVideoPlayback? get playback {
+    _playbackRevision.value;
+    return _managedPlayback.routed;
+  }
+
+  void _onManagedPlaybackChanged() {
+    final player = _managedPlayback.player;
+    if (!identical(player, _listenerPlayer)) {
+      _removeListeners();
+      _listenerPlayer = player;
+      if (player != null) _startListeners(player);
+    }
+    _playbackRevision.value++;
+  }
 
   bool isMuted = false;
 
@@ -411,7 +447,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   void _updateIOSPip([Duration? position]) {
     if (Platform.isIOS && IOSPipHelper.needsUpdate) {
-      if (_videoPlayerController case final player?) {
+      if (videoPlayerController case final player?) {
         IOSPipHelper.update(_iosPipState(player.state, position));
       }
     }
@@ -767,8 +803,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
         _clearPreview();
       }
       cancelLongPressTimer();
-      if (_videoPlayerController != null &&
-          _videoPlayerController!.state.playing) {
+      if (videoPlayerController != null &&
+          videoPlayerController!.state.playing) {
         await pause(notify: false, sourceRequest: request);
       }
       if (!current()) return;
@@ -776,7 +812,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       // 配置Player 音轨、字幕等等
       await _createVideoController(dataSource, seekTo, volume, request);
       if (!current()) return;
-      final player = _videoPlayerController;
+      final player = videoPlayerController;
       if (player == null) return;
 
       updateDuration(duration ?? player.state.duration);
@@ -842,7 +878,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
         setting.put(SettingBoxKey.superResolutionType, type.index);
       }
     }
-    pp ??= _videoPlayerController!;
+    pp ??= videoPlayerController!;
     switch (type) {
       case SuperResolutionType.disable:
         return pp.command(const ['change-list', 'glsl-shaders', 'clr', '']);
@@ -877,20 +913,13 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     }
   }
 
-  Future<Player?> _initPlayer({bool routed = true}) {
-    return _playerOwner.transition((owner) async {
-      if (_playerCount == 0 || !identical(_instance, this)) return null;
-      final existing = _videoPlayerController;
-      if (existing != null) return existing;
-      return _createPlayer(owner, routed: routed);
-    });
-  }
+  Future<Player?> _initPlayer({required int request}) =>
+      _managedPlayback.ensure(
+        request: request,
+        isCurrent: () => _isCurrentSourceRequest(request),
+      );
 
-  Future<Player?> _createPlayer(
-    PlayerOwnerTransition owner, {
-    required bool routed,
-    bool Function()? stillWanted,
-  }) async {
+  Future<Player> _createNativePlayer() async {
     final opt = {
       'video-sync': Pref.videoSync,
       if (Platform.isAndroid) 'ao': Pref.audioOutput,
@@ -910,85 +939,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       ),
     );
 
-    RoutedVideoPlayback? playback;
-    VideoController? legacy;
-    try {
-      if (routed) {
-        // RoutedVideoPlayback owns the output topology: on Android the HDR
-        // session planner picks the verified route (native HDR / embed /
-        // texture); other platforms keep the ordinary VideoController output.
-        playback = await RoutedVideoPlayback.create(
-          player,
-          configuration: VideoControllerConfiguration(
-            enableHardwareAcceleration: hwdec != null,
-            androidAttachSurfaceAfterVideoParameters: false,
-            hwdec: hwdec,
-          ),
-        );
-        // routing-acceptance evidence channel (release builds included)
-        playback.errors.listen((e) => debugPrint('routed error: $e'));
-      } else {
-        legacy = await VideoController.create(
-          player,
-          configuration: VideoControllerConfiguration(
-            enableHardwareAcceleration: hwdec != null,
-            androidAttachSurfaceAfterVideoParameters: false,
-            hwdec: hwdec,
-          ),
-        );
-      }
-
-      if (_playerCount == 0 ||
-          !identical(_instance, this) ||
-          (stillWanted != null && !stillWanted())) {
-        await _disposeUnpublishedOwner(owner, player, playback, legacy);
-        return null;
-      }
-
-      _playback = playback;
-      _legacyVideoController = legacy;
-      _videoPlayerController = player;
-
-      if (Platform.isAndroid) {
-        // Avoid sizing the surface using mpv's idle window between media loads.
-        player.setProperty('force-window', 'no');
-      }
-
-      player.setMediaHeader(
-        userAgent: BrowserUa.pc,
-        referer: HttpString.baseUrl,
-      );
-
-      _startListeners(player);
-
-      return player;
-    } catch (_) {
-      if (identical(_videoPlayerController, player)) {
-        _removeListeners();
-        _videoPlayerController = null;
-        _playback = null;
-        _legacyVideoController = null;
-      }
-      await _disposeUnpublishedOwner(owner, player, playback, legacy);
-      rethrow;
-    }
-  }
-
-  Future<void> _disposeUnpublishedOwner(
-    PlayerOwnerTransition transition,
-    Player player,
-    RoutedVideoPlayback? playback,
-    VideoController? legacy,
-  ) async {
-    final owner = playback ?? legacy ?? player;
-    await transition.retire(owner, () async {
-      if (playback != null) {
-        await playback.dispose();
-      } else {
-        if (legacy != null) await legacy.disposeForRebuild();
-        await player.dispose();
-      }
-    });
+    return player;
   }
 
   late final buffer = Pref.initBuffer(_playbackSpeed.value);
@@ -1005,10 +956,9 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     _heartDuration = 0;
     danmakuController?.clear();
 
-    final player = await _initPlayer();
+    final player = await _initPlayer(request: request);
     if (!_isCurrentSourceRequest(request) || player == null) return;
-    _videoPlayerController = player;
-    if (_playback == null && _legacyVideoController == null) return;
+    if (!_managedPlayback.hasOutput) return;
     if (isAnim && superResolutionType.value != .disable) {
       await _setShader(null, null, sourceRequest: request);
     }
@@ -1047,93 +997,40 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       start: seekTo,
       extras: extras.isEmpty ? null : extras,
     );
-    final playback = _playback;
-    if (playback == null) {
-      await player.open(media, play: false);
-      return;
-    }
-    try {
-      await playback.open(
-        media,
-        play: false,
-        // audio-only mode must not hold a video session/output
-        video: !onlyPlayAudio.value,
-      );
-    } on RoutedOpenSuperseded {
-      rethrow;
-    } catch (e) {
-      if (!_isCurrentSourceRequest(request) ||
-          !identical(_playback, playback)) {
-        return;
-      }
-      // The routed session rejected this open (e.g. decoder identity
-      // review on lazy-attach sources). Fall back to the ordinary
-      // non-session output so playback still works.
-      debugPrint('routed open failed, fallback: $e');
-      final fallback = await _switchToLegacyOutput(request, playback);
-      if (!_isCurrentSourceRequest(request) || fallback == null) return;
-      await fallback.open(media, play: false);
-    }
-  }
-
-  /// Rebuild the player without the routed session after its open was
-  /// rejected; [RoutedVideoPlayback.dispose] releases the whole player.
-  Future<Player?> _switchToLegacyOutput(
-    int request,
-    RoutedVideoPlayback expectedPlayback,
-  ) {
-    return _playerOwner.transition((owner) async {
-      if (!_isCurrentSourceRequest(request) ||
-          !identical(_playback, expectedPlayback)) {
-        return null;
-      }
-      _removeListeners();
-      _videoPlayerController = null;
-      _playback = null;
-      _legacyVideoController = null;
-      await owner.retire(
-        expectedPlayback,
-        expectedPlayback.dispose,
-      );
-      if (!_isCurrentSourceRequest(request)) return null;
-      return _createPlayer(
-        owner,
-        routed: false,
-        stillWanted: () => _isCurrentSourceRequest(request),
-      );
-    });
+    await _managedPlayback.open(
+      media,
+      request: request,
+      isCurrent: () => _isCurrentSourceRequest(request),
+      play: false,
+      // audio-only mode must not hold a video session/output
+      video: !onlyPlayAudio.value,
+      allowLegacyFallback: dataSource.allowLegacyFallback,
+    );
   }
 
   Future<void>? refreshPlayer() {
     if (dataSource is FileSource) {
       return null;
     }
-    if (_videoPlayerController case final ctr? when (ctr.current.isNotEmpty)) {
+    if (videoPlayerController case final ctr? when (ctr.current.isNotEmpty)) {
       var media = ctr.current.last;
       if (!isLive) media = media.copyWith(start: ctr.state.position);
+      final allowLegacyFallback = dataSource.allowLegacyFallback;
       final request = _sourceLifecycle.beginRequest();
       bool current() => _isCurrentSourceRequest(request);
       _processing = true;
       return () async {
         try {
-          final player = await _initPlayer();
-          if (!current() || player == null) return;
-          final playback = _playback;
-          if (playback == null) {
-            await player.open(media, play: true);
-            return;
-          }
-          try {
-            await playback.open(media, play: true, video: !onlyPlayAudio.value);
-          } on RoutedOpenSuperseded {
-            return;
-          } catch (e) {
-            if (!current() || !identical(_playback, playback)) return;
-            debugPrint('routed refresh failed, fallback: $e');
-            final fallback = await _switchToLegacyOutput(request, playback);
-            if (!current() || fallback == null) return;
-            await fallback.open(media, play: true);
-          }
+          if (!current()) return;
+          await _managedPlayback.open(
+            media,
+            request: request,
+            isCurrent: current,
+            play: true,
+            video: !onlyPlayAudio.value,
+            allowLegacyFallback: allowLegacyFallback,
+            preservePlaybackSettings: true,
+          );
         } catch (e, st) {
           if (current() && kDebugMode) {
             debugPrint('refresh player failed: $e\n$st');
@@ -1150,9 +1047,9 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   Future<void> _initializePlayer(int request) async {
     if (!_isCurrentSourceRequest(request)) return;
     // 设置倍速
-    if (_videoPlayerController != null) {
+    if (videoPlayerController != null) {
       final speed = isLive ? 1.0 : playbackSpeed;
-      if (_videoPlayerController!.state.rate != speed) {
+      if (videoPlayerController!.state.rate != speed) {
         await setPlaybackSpeed(speed, sourceRequest: request);
       }
     }
@@ -1196,7 +1093,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       playerStatus,
       isBuffering.value,
       isLive,
-      position: position ?? _videoPlayerController!.state.position,
+      position: position ?? videoPlayerController!.state.position,
       speed: playbackSpeed,
       debugLabel: debugLabel,
     );
@@ -1369,12 +1266,11 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   Future<void> seek(Duration position, {bool isSeek = false}) async {
     if (isSeek) {
       /// 拖动进度条调节时，不等待第一帧，防止抖动
-      await _videoPlayerController?.stream.buffer.first;
+      await videoPlayerController?.stream.buffer.first;
     }
     danmakuController?.clear();
     try {
-      await (_playback?.seek(position) ??
-          _videoPlayerController?.seek(position));
+      await (playback?.seek(position) ?? videoPlayerController?.seek(position));
       _updateIOSPip(position);
     } catch (e) {
       if (kDebugMode) debugPrint('seek failed: $e');
@@ -1410,9 +1306,9 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     }
     lastPlaybackSpeed = playbackSpeed;
 
-    final player = _videoPlayerController;
+    final player = videoPlayerController;
     if (speed == player?.state.rate) return;
-    await player?.setRate(speed);
+    await _managedPlayback.setRate(speed);
     if (sourceRequest != null && !_isCurrentSourceRequest(sourceRequest)) {
       return;
     }
@@ -1430,6 +1326,9 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       } catch (_) {}
     }
   }
+
+  Future<void> setNativePlayerVolume(double volume) =>
+      _managedPlayback.setVolume(volume);
 
   /// 播放视频
   Future<void> play({
@@ -1452,7 +1351,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       }
     }
 
-    await (_playback?.play() ?? _videoPlayerController?.play());
+    await (playback?.play() ?? videoPlayerController?.play());
     if (sourceRequest != null && !_isCurrentSourceRequest(sourceRequest)) {
       return;
     }
@@ -1471,7 +1370,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     if (sourceRequest != null && !_isCurrentSourceRequest(sourceRequest)) {
       return;
     }
-    await (_playback?.pause() ?? _videoPlayerController?.pause());
+    await (playback?.pause() ?? videoPlayerController?.pause());
     if (sourceRequest != null && !_isCurrentSourceRequest(sourceRequest)) {
       return;
     }
@@ -1518,7 +1417,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       this.volume.value = volume;
       try {
         if (PlatformUtils.isDesktop) {
-          await _videoPlayerController!.setVolume(volume * 100);
+          await _managedPlayback.setVolume(volume * 100);
         } else {
           FlutterVolumeController.updateShowSystemUI(false);
           await FlutterVolumeController.setVolume(volume);
@@ -1611,21 +1510,21 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   bool Function() capturePlaybackOwnerCheck() {
     final request = _sourceLifecycle.currentRequest;
-    final player = _videoPlayerController;
-    final binding = _playback;
+    final player = videoPlayerController;
+    final binding = playback;
     return () =>
         request != null &&
         player != null &&
         _isCurrentSourceRequest(request) &&
-        identical(_videoPlayerController, player) &&
-        identical(_playback, binding);
+        identical(videoPlayerController, player) &&
+        identical(playback, binding);
   }
 
   // 双击播放、暂停
   Future<void> onDoubleTapCenter() async {
     final current = capturePlaybackOwnerCheck();
-    final player = _videoPlayerController;
-    final binding = _playback;
+    final player = videoPlayerController;
+    final binding = playback;
     if (player == null || !current()) return;
 
     final completed =
@@ -1944,37 +1843,15 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     if (kDebugMode) {
       debugPrint('dispose player');
     }
-    final playback = _playback;
-    final legacy = _legacyVideoController;
-    final player = _videoPlayerController;
-    _videoPlayerController = null;
-    _playback = null;
-    _legacyVideoController = null;
+    _removeListeners();
+    _listenerPlayer = null;
     _instance = null;
-    if (playback != null) {
-      unawaited(_disposeOwnerAfterClose(playback, playback.dispose));
-    } else if (legacy != null && player != null) {
-      unawaited(
-        _disposeOwnerAfterClose(legacy, () async {
-          await legacy.disposeForRebuild();
-          await player.dispose();
-        }),
-      );
-    } else if (player != null) {
-      unawaited(_disposeOwnerAfterClose(player, player.dispose));
-    }
+    unawaited(
+      _managedPlayback.dispose().catchError((Object error, StackTrace stack) {
+        debugPrint('player dispose deferred for retry: $error\n$stack');
+      }),
+    );
     videoPlayerServiceHandler?.clear();
-  }
-
-  Future<void> _disposeOwnerAfterClose(
-    Object owner,
-    Future<void> Function() disposeOwner,
-  ) async {
-    try {
-      await _playerOwner.retire(owner, disposeOwner);
-    } catch (e, st) {
-      debugPrint('player dispose deferred for retry: $e\n$st');
-    }
   }
 
   static void updatePlayCount() {

@@ -4,10 +4,12 @@ import 'package:path/path.dart' as path;
 sealed class DataSource {
   final String videoSource;
   final String? audioSource;
+  final bool allowLegacyFallback;
 
   DataSource({
     required this.videoSource,
     required this.audioSource,
+    this.allowLegacyFallback = false,
   });
 }
 
@@ -15,6 +17,7 @@ class NetworkSource extends DataSource {
   NetworkSource({
     required super.videoSource,
     required super.audioSource,
+    super.allowLegacyFallback = false,
   });
 }
 

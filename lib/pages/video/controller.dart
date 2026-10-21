@@ -77,6 +77,9 @@ import 'package:hive_ce/hive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:media_kit/media_kit.dart' hide Subtitle;
 
+bool allowsLegacyFallbackForVideoId(int? videoId) =>
+    const {6, 16, 32, 64, 74, 80, 100, 112, 116, 120}.contains(videoId);
+
 class VideoDetailController extends GetxController
     with GetTickerProviderStateMixin, BlockMixin {
   /// 路由传参
@@ -747,6 +750,9 @@ class VideoDetailController extends GetxController
           : NetworkSource(
               videoSource: videoUrl!,
               audioSource: audioUrl,
+              allowLegacyFallback: allowsLegacyFallbackForVideoId(
+                firstVideo.id,
+              ),
             ),
       seekTo: seek,
       duration: data.timeLength == null

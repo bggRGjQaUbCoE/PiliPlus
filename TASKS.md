@@ -4,6 +4,12 @@
 姊妹仓：本地 media-kit checkout 在 `../media-kit`（compat 分支），本仓的一切播放器行为变化先看其 `TASKS.md` 的 MK-ROUTING 段。
 **镜像红线（2026-10-17 起）**：本仓 `main/dev/dom` 与全部 tag 由 `ci/upstream-sync` 孤儿分支每日强镜像自上游（force+prune），自有提交只能放特性分支（当前工作分支 `feature/ohos`，不受镜像影响）。
 
+## PLAYBACK-LOW-FPS-20261021
+
+- **migrated / 生产候选已装LG，按授权本地提交归档，不推送**：对齐已验收基线后将完整fallback/实例生命周期迁入media-kit，App净减202行，保留业务请求与仅SDR兜底授权。43定向、库1081+8skip/App16全量、V2通过；源码包284acf6c已装，原片PQ硬解/format43/30.02及29.91fps。探针同进程SDR fallback→refresh（rate1.25/volume65）及→新HDR源通过；HDR异常拒绝降SDR成立，但随后切页复现既有Flutter位图OOM，此恢复场景未通过，不声称全实机验收完成。context沿用下方。
+
+- **fixed / 候选已装LG，未提交**：fallback限定当前request；下一次切源/refresh在owner slot内退休legacy并重试routed，refresh保留rate/volume。8定向/20全量/analyze/V2通过；一次性故障注入实机验证同进程fallback→refresh及fallback→新源均恢复PQ。撤掉注入后源码重建APK `b15dcd1b...`已装，原片PQ verified、SF format43、29.91fps，零FATAL/回退。初始异常及独立位图OOM仍未闭合。context：[playback-low-fps-20261021.md](archives/conversations/playback-low-fps-20261021.md)。
+
 ## ANDROID-LOCAL-MEDIA-KIT-20261020（本地 media-kit 构建与路由播放主线）
 
 - 2026-10-21 **所有权管理下沉完成，LG短测及15min恢复通过，按授权提交推送**：用户授权将播放器替换串行队列、旧 owner 清理重试迁至 media-kit 的显式共享实例；App 保留页面/源请求/业务判断并精简辅助包装。App净减79行；slot10/App2定向、App14/库1048+8skip全量、V2及源码构建通过，新包6155accc LG切页/快速返回/EOF重播20s/EOF拖动/暂停拖动/HDR-SDR/退出重进通过；Home仍有20秒恢复迟滞。用户改为15min，实际939.565秒同源零输入静置后单次重播20s及再次EOF直接拖动通过；不声称本轮30min覆盖，系统媒体位置基准同步缺口单列。本次提交正式修复和验收记录，临时transport诊断及独立仓迁移/配置改动排除。context：[`playback-eof-replay-20261021.md`](archives/conversations/playback-eof-replay-20261021.md)。

@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:PiliPlus/pages/video/controller.dart'
+    show allowsLegacyFallbackForVideoId;
+import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/player_source_lifecycle.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -37,10 +40,28 @@ void main() {
 
       lifecycle.beginRequest();
       // A manual play during A's pending future has no inherited token.
-      final manualRequest = scope.capture();
-      expect(manualRequest, isNull);
+      expect(scope.capture(), isNull);
       pending.complete();
       await autoplay;
+    });
+  });
+  group('legacy fallback policy', () {
+    test('only known SDR video IDs authorize legacy fallback', () {
+      for (final id in const [6, 16, 32, 64, 74, 80, 100, 112, 116, 120]) {
+        expect(allowsLegacyFallbackForVideoId(id), isTrue, reason: '$id');
+      }
+      for (final id in const [125, 126, 127, 129, 999]) {
+        expect(allowsLegacyFallbackForVideoId(id), isFalse, reason: '$id');
+      }
+      expect(allowsLegacyFallbackForVideoId(null), isFalse);
+    });
+
+    test('network sources default to no legacy fallback', () {
+      final source = NetworkSource(
+        videoSource: 'https://example/video',
+        audioSource: null,
+      );
+      expect(source.allowLegacyFallback, isFalse);
     });
   });
 }

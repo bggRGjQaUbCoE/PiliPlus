@@ -1,0 +1,35 @@
+Video gray cleanup evidence, 2026-10-21
+Final APK sha256: 1686aeb3fd2cba04145f0f6472774d0957b85b122835f0764ecea74d56c3c308
+Final packaged libmpv sha256: 3a3edc4732c92732b9706373afecfe26838f4f0969b4749bb2aa93c199e5085d
+media_kit_video full suite: 1023 passed, 8 skipped
+Android vendor remains registered after moving dependency to the video bundle.
+
+hdr-cold
+10-21 10:20:56.708 30853 30853 I flutter : HdrDiag HDR decision: phase=plan gen=1 origin=none source=none,none,none,none,none,none,unknown class=sdr selected=sdrDirect maturity=verified presentation=sdr confidence=verified vo=gpu-next hwdec=mediacodec-copy output=sdr topology=texture surface=none stripRpu=false hwdecCurrent=none requested=none path=none readback=none verified=false degrade=none candidates=sdrDirect:ok,sdrDirect:ok
+10-21 10:21:07.163 30853 30853 I flutter : HdrDiag HDR decision: phase=applied gen=1 origin=decoder source=hevc,hlg,bt.2020,dolbyVision,8,4,false class=dvP84 selected=baseLayerConvert maturity=verified presentation=nativeHdr confidence=verified vo=gpu-next hwdec=surfacetexture output=pq topology=platformView surface=pq stripRpu=true hwdecCurrent=surfacetexture requested=pq path=ext:lg-pq readback=none verified=true degrade=none candidates=nativeDolbyVision:nativeDvUnavailable,metadataReshape:pqRgbPresentationUnavailable,baseLayerDirect:displayLacksTransfer,baseLayerConvert:ok,toneMapSdr:displayLacksTransfer,toneMapSdr:displayLacksTransfer
+
+hdr-reenter
+10-21 10:22:50.260 30853 30853 I flutter : HdrDiag HDR decision: phase=plan gen=1 origin=none source=none,none,none,none,none,none,unknown class=sdr selected=sdrDirect maturity=verified presentation=sdr confidence=verified vo=gpu-next hwdec=mediacodec-copy output=sdr topology=texture surface=none stripRpu=false hwdecCurrent=none requested=none path=none readback=none verified=false degrade=none candidates=sdrDirect:ok,sdrDirect:ok
+10-21 10:22:56.653 30853 30853 I flutter : HdrDiag HDR decision: phase=applied gen=1 origin=decoder source=hevc,hlg,bt.2020,dolbyVision,8,4,false class=dvP84 selected=baseLayerConvert maturity=verified presentation=nativeHdr confidence=verified vo=gpu-next hwdec=surfacetexture output=pq topology=platformView surface=pq stripRpu=true hwdecCurrent=surfacetexture requested=pq path=ext:lg-pq readback=none verified=true degrade=none candidates=nativeDolbyVision:nativeDvUnavailable,metadataReshape:pqRgbPresentationUnavailable,baseLayerDirect:displayLacksTransfer,baseLayerConvert:ok,toneMapSdr:displayLacksTransfer,toneMapSdr:displayLacksTransfer
+
+sdr
+10-21 10:23:23.487 31591 31591 I flutter : HdrDiag HDR decision: phase=plan gen=1 origin=none source=none,none,none,none,none,none,unknown class=sdr selected=sdrDirect maturity=verified presentation=sdr confidence=verified vo=gpu-next hwdec=mediacodec-copy output=sdr topology=texture surface=none stripRpu=false hwdecCurrent=none requested=none path=none readback=none verified=false degrade=none candidates=sdrDirect:ok,sdrDirect:ok
+10-21 10:23:26.376 31591 31591 I flutter : HdrDiag HDR decision: phase=applied gen=1 origin=decoder source=h264,bt.1886,bt.709,none,none,none,false class=sdr selected=sdrDirect maturity=verified presentation=sdr confidence=verified vo=gpu-next hwdec=mediacodec-copy output=sdr topology=texture surface=none stripRpu=false hwdecCurrent=mediacodec-copy requested=none path=none readback=none verified=true degrade=none candidates=sdrDirect:ok,sdrDirect:ok
+
+hdr-second
+10-21 10:23:59.579 31777 31777 I flutter : HdrDiag HDR decision: phase=plan gen=1 origin=none source=none,none,none,none,none,none,unknown class=sdr selected=sdrDirect maturity=verified presentation=sdr confidence=verified vo=gpu-next hwdec=mediacodec-copy output=sdr topology=texture surface=none stripRpu=false hwdecCurrent=none requested=none path=none readback=none verified=false degrade=none candidates=sdrDirect:ok,sdrDirect:ok
+
+hdr-final
+10-21 10:24:18.556 31971 31971 I flutter : HdrDiag HDR decision: phase=plan gen=1 origin=none source=none,none,none,none,none,none,unknown class=sdr selected=sdrDirect maturity=verified presentation=sdr confidence=verified vo=gpu-next hwdec=mediacodec-copy output=sdr topology=texture surface=none stripRpu=false hwdecCurrent=none requested=none path=none readback=none verified=false degrade=none candidates=sdrDirect:ok,sdrDirect:ok
+
+HDR Surface geometry: 1440x720 at (0,141), transform [1,0;0,1], vendor format 43.
+Human acceptance: final minimal APK explicitly accepted by user: picture and controls both normal.
+Final minimal APK has machine regression evidence and explicit human panel acceptance.
+
+hdr-second-complete
+10-21 10:25:17.227 32201 32201 I flutter : HdrDiag HDR decision: phase=plan gen=1 origin=none source=none,none,none,none,none,none,unknown class=sdr selected=sdrDirect maturity=verified presentation=sdr confidence=verified vo=gpu-next hwdec=mediacodec-copy output=sdr topology=texture surface=none stripRpu=false hwdecCurrent=none requested=none path=none readback=none verified=false degrade=none candidates=sdrDirect:ok,sdrDirect:ok
+10-21 10:25:29.670 32201 32201 I flutter : HdrDiag HDR review: entry=1 openedAfterEpoch=0 outcome=success iter=17 elapsedMs=11946 loadedMs=6496 phase=complete identityOk=ok a=current-tracks/video/decoder=hevc_mediacodec,current-tracks/video/decoder-desc=,hwdec-current=mediacodec-copy,android-mediacodec-info={"api":1,"mime":"video/hevc","codec":"OMX.qcom.video.decoder.hevc"…
+10-21 10:25:35.727 32201 32201 I flutter : HdrDiag HDR review: entry=2 openedAfterEpoch=1 outcome=success iter=9 elapsedMs=5202 loadedMs=1449 phase=complete identityOk=ok a=current-tracks/video/decoder=hevc_mediacodec,current-tracks/video/decoder-desc=,hwdec-current=surfacetexture,android-mediacodec-info={"api":1,"mime":"video/hevc","codec":"OMX.qcom.video.decoder.hevc",…
+10-21 10:25:35.728 32201 32201 I flutter : HdrDiag HDR decision: phase=applied gen=1 origin=decoder source=hevc,hlg,bt.2020,dolbyVision,8,4,false class=dvP84 selected=baseLayerConvert maturity=verified presentation=nativeHdr confidence=verified vo=gpu-next hwdec=surfacetexture output=pq topology=platformView surface=pq stripRpu=true hwdecCurrent=surfacetexture requested=pq path=ext:lg-pq readback=none verified=true degrade=none candidates=nativeDolbyVision:nativeDvUnavailable,metadataReshape:pqRgbPresentationUnavailable,baseLayerDirect:displayLacksTransfer,baseLayerConvert:ok,toneMapSdr:displayLacksTransfer,toneMapSdr:displayLacksTransfer
+
+hdr-return

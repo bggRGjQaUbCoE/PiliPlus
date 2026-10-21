@@ -1220,7 +1220,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         videoDetailController.plPlayerController.onPopInvokedWithResult,
     child: Obx(
       () =>
-          !videoDetailController.videoState.value ||
+          (!videoDetailController.videoState.value &&
+              plPlayerController?.playback == null) ||
               !videoDetailController.autoPlay ||
               // routed output binding requires this view mounted before open
               (plPlayerController?.videoController == null &&

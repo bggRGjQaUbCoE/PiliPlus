@@ -1356,6 +1356,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
               ignoring: !plPlayerController.enableDragSubtitle,
               child: Obx(
                 () {
+                  // Read the Rx before the nested listenable builder runs.
+                  final subtitleConfiguration =
+                      plPlayerController.subtitleConfig.value;
                   final playback = plPlayerController.playback;
                   final legacy = plPlayerController.videoController;
                   if (playback != null) {
@@ -1367,8 +1370,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                           ? const SizedBox.shrink()
                           : SubtitleView(
                               controller: controller,
-                              configuration:
-                                  plPlayerController.subtitleConfig.value,
+                              configuration: subtitleConfiguration,
                               enableDragSubtitle:
                                   plPlayerController.enableDragSubtitle,
                               onUpdatePadding:
@@ -1379,7 +1381,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   if (legacy == null) return const SizedBox.shrink();
                   return SubtitleView(
                     controller: legacy,
-                    configuration: plPlayerController.subtitleConfig.value,
+                    configuration: subtitleConfiguration,
                     enableDragSubtitle: plPlayerController.enableDragSubtitle,
                     onUpdatePadding: plPlayerController.onUpdatePadding,
                   );
@@ -2066,6 +2068,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                             // controller arrives (null placeholder would
                             // otherwise be a 1px box and layout never binds)
                             aspectRatio: videoFit.aspectRatio ?? 16 / 9,
+                            viewport: Size(maxWidth, maxHeight),
                           )
                         : SimpleVideo(
                             controller: plPlayerController.videoController!,

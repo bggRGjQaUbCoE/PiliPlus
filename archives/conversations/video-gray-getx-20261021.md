@@ -2,6 +2,12 @@
 
 ## Current State
 
+### HDR 亮度调整（面板验收通过，本地提交归档，2026-10-21）
+
+用户取消与 PiliPlusX 对比（其高光有过曝），改为保守整体提亮；初期要求不提交，现已授权先提交已验收代码。LG 基线 driver `hdr_mode=1`、背光255/255、thermal=0，不能据此宣称实测峰值或亮度达标。基线 `/tmp/pili-brightness-20261021/baseline/summary.json`。当前方案仅在 media-kit 的已验证 LG YUV HLG→PQ 路由对中性 gamma 做 +3 调整，保持 target-peak=1000；保留非中性用户值并在会话结束恢复。候选定向23项、全量1031通过/8跳过，V1独立复核通过；已修正跨session重新捕获gamma，覆盖浮点回读、scope、非0用户偏好、重复配置和失败恢复。源码APK `pili-brightness-20261021-release.apk` 已构建安装LG，SHA256 `16bd9761a71d6df26f0c31b9c4e49472b8ebe8faee610eb52cfe2c39a58869ff`；同PID HDR→SDR→HDR均applied verified=true，零已观察GetX/FATAL/ANR。gamma数值不单独打日志，applied与源码的条件/配置回读串联，不能冒称直接runtime property采样。临时App亮度随重启/退出恢复，背光从基线255降为100/255（系统auto1、window override=-1），没有写系统设置；已请用户按常用播放器亮度确认；用户明确回复“亮度合适，高光正常”，本候选的北海道HDR亮度与高光面板验收通过。用户回复时的最终背光数值未另采样，不据此推断物理峰值。用户现授权本地提交已验收提亮代码和记录，不推送；media-kit提亮修复已本地提交为 `98c611a3`（`fix(android): 小幅提亮 LG HLG 视频并保留高光`）；后续EOF调查的临时诊断留工作区、不纳入本次提交。永久证据：`../evidence/hdr-brightness-20261021.txt`。PiliPlus业务代码和mpv保持不变。
+
+### 已完成灰层修复
+
 灰层根因已闭合：字幕 Obx 的同步作用域未读取 Rx，Release ErrorWidget 用 `F0C0C0C0` 覆盖整个视频。最小修复版已获用户“画面正常，控件可见”确认。
 
 跨目录复核、回退和上游同步精简已完成。PiliPlus 相对本次提交前 HEAD 的业务代码只剩两个文件（8行新增、4行删除）：页面挂载条件、字幕同步Rx读取、viewport参数。vendor依赖迁入media-kit视频聚合包，App pubspec/lock/controller/styles/macOS配置/gitignore已恢复HEAD。mpv仅保留占位尺寸的有效初始化；SDK源文件与快照完全一致。完整处理清单：`../../docs/plans/video-gray-cleanup-audit-20261021.md`。回退前125文件备份已校验：`/Users/wuweiwei1/.local/state/piliplus-review/20261021-095952/`。

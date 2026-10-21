@@ -1,0 +1,17 @@
+LG HDR brightness candidate, 2026-10-21; human panel acceptance passed
+PiliPlusX comparison cancelled by user. User later authorized local commit of the accepted brightness change; no push.
+Change: media-kit only, neutral gamma -> +3 on validated LG HLG YUV baseLayerConvert; existing nonzero preference preserved; owned reset and recapture. PQ/full/target-peak1000 unchanged.
+Focused tests 23 passed; full tests 1031 passed, 8 skipped; V1 review passed.
+APK: /Users/wuweiwei1/src/PiliPlus/build/app/outputs/flutter-apk/pili-brightness-20261021-release.apk
+APK sha256: 16bd9761a71d6df26f0c31b9c4e49472b8ebe8faee610eb52cfe2c39a58869ff
+Packaged and source-built libmpv sha256: 81386a07de9af47ff5deff8ad99c44574ac9b11cd01a34f99143322c79616a1a
+Baseline backlight255/255; candidate after restart100/255, global100 automatic1 windowoverride=-1 thermal0 hdr_mode1. No system brightness/mode written. These values do not measure physical nits.
+Gamma value is not printed in device log; applied follows strict configure/readback. No separate on-device property probe.
+HDR -> SDR -> HDR in same PID; no observed GetX improper-use, FATAL or ANR.
+Raw evidence: /tmp/pili-brightness-20261021/candidate
+
+10-21 11:14:59.006  3277  3277 I flutter : HdrDiag HDR decision: phase=applied gen=1 origin=decoder source=hevc,hlg,bt.2020,dolbyVision,8,4,false class=dvP84 selected=baseLayerConvert maturity=verified presentation=nativeHdr confidence=verified vo=gpu-next hwdec=surfacetexture output=pq topology=platformView surface=pq stripRpu=true hwdecCurrent=surfacetexture requested=pq path=ext:lg-pq readback=none verified=true degrade=none candidates=nativeDolbyVision:nativeDvUnavailable,metadataReshape:pqRgbPresentationUnavailable,baseLayerDirect:displayLacksTransfer,baseLayerConvert:ok,toneMapSdr:displayLacksTransfer,toneMapSdr:displayLacksTransfer
+10-21 11:15:38.460  3277  3277 I flutter : HdrDiag HDR decision: phase=applied gen=1 origin=decoder source=h264,bt.1886,bt.709,none,none,none,false class=sdr selected=sdrDirect maturity=verified presentation=sdr confidence=verified vo=gpu-next hwdec=mediacodec-copy output=sdr topology=texture surface=none stripRpu=false hwdecCurrent=mediacodec-copy requested=none path=none readback=none verified=true degrade=none candidates=sdrDirect:ok,sdrDirect:ok
+10-21 11:16:01.800  3277  3277 I flutter : HdrDiag HDR decision: phase=applied gen=1 origin=decoder source=hevc,hlg,bt.2020,dolbyVision,8,4,false class=dvP84 selected=baseLayerConvert maturity=verified presentation=nativeHdr confidence=verified vo=gpu-next hwdec=surfacetexture output=pq topology=platformView surface=pq stripRpu=true hwdecCurrent=surfacetexture requested=pq path=ext:lg-pq readback=none verified=true degrade=none candidates=nativeDolbyVision:nativeDvUnavailable,metadataReshape:pqRgbPresentationUnavailable,baseLayerDirect:displayLacksTransfer,baseLayerConvert:ok,toneMapSdr:displayLacksTransfer,toneMapSdr:displayLacksTransfer
+
+Human acceptance: user explicitly replied “亮度合适，高光正常” for this installed candidate. Final backlight at human acceptance was not re-sampled. No physical peak-nit claim. Accepted brightness change and related records are archived by the current local commits; no push. Temporary EOF transport diagnostics are excluded.

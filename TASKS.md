@@ -6,6 +6,10 @@
 
 ## ANDROID-LOCAL-MEDIA-KIT-20261020（本地 media-kit 构建与路由播放主线）
 
+- 2026-10-21 **播放结束后无法重播/拖动，调查中，未提交**：旧现场已保存复现；用户确认EOF后停留>30min，短EOF/熄屏/全屏退出均通过，15:33→16:04做31min原页被动停留。尚未定位修复；context：[`playback-eof-replay-20261021.md`](archives/conversations/playback-eof-replay-20261021.md)。
+
+- 2026-10-21 **HDR提亮验收通过，本地提交归档**：取消PiliPlusX对比，media-kit侧保守gamma候选，保持peak1000；定向23项/全量1031通过8跳过、V1通过；源码包已装LG，HDR→SDR→HDR applied通过；用户确认“亮度合适，高光正常”，面板验收通过；确认时最终背光未另采样。用户现授权本地提交已验收修复及记录：media-kit `98c611a3`，本仓仅相关记录。不推送，临时EOF诊断不提交。context：[`video-gray-getx-20261021.md`](archives/conversations/video-gray-getx-20261021.md) 顶部Current State。
+
 - 本次按用户授权分别本地提交：配套 `mpv@1af17925fb`、`media-kit@917405a7`；App保留修复与本任务/验收记录随当前提交归档。不推送，不含环境配置。
 
 - 2026-10-21（三）**灰屏根因修复、跨仓回退与上游同步精简已完成（本地提交归档，不推送）**：真实灰层为字幕Obx异常的Release ErrorWidget，原修复版用户确认画面及控件正常。最终App业务差异只剩两个文件（8新增/4删除）；vendor依赖已迁到media-kit；mpv只保留有效占位初始化；SDK项目补丁保留。最终源码1023测试通过/8跳过，精简包已装LG，HDR/SDR/重进真实复核通过；末版用户已明确确认“画面和控件都正常”，本次灰屏修复与精简验收完成。详见 [`archives/conversations/video-gray-getx-20261021.md`](archives/conversations/video-gray-getx-20261021.md) 与 [`docs/plans/video-gray-cleanup-audit-20261021.md`](docs/plans/video-gray-cleanup-audit-20261021.md)。以下旧透明洞根因和实验结论仅作历史，已被本条更正。

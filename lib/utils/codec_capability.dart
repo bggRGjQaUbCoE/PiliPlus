@@ -4,6 +4,8 @@ import 'package:PiliPlus/models/common/video/video_decode_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models/video/play/url.dart'
     show FormatItem, VideoItem;
+import 'package:PiliPlus/utils/storage.dart';
+import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:media_kit_video/media_kit_video.dart'
@@ -170,6 +172,73 @@ abstract final class CodecCapability {
   static Future<void> ensureSelectionSupport(List<VideoItem> videoList) async {
     await ensureDisplayCapability();
     await ensureDecodeSupport(videoList);
+  }
+
+  /// 初始化自动配置的首选解码格式顺序（DV > HEVC > AV1 > AVC）。
+  static const _preferCodecOrder = [
+    VideoDecodeFormatType.DVH1,
+    VideoDecodeFormatType.HEVC,
+    VideoDecodeFormatType.AV1,
+    VideoDecodeFormatType.AVC,
+  ];
+
+  /// 族级能力探测的代表性 codec 串，配合 1080p30 基准规格：
+  /// 只判定"有无该编码硬件解码器"（与置灰同规则），具体流在选流时
+  /// 仍按各自分辨率/帧率逐条过滤。
+  static VideoSourceSpec? _probeSpecOf(VideoDecodeFormatType format) {
+    const codecs = {
+      VideoDecodeFormatType.DVH1: 'dvh1.08.07',
+      VideoDecodeFormatType.HEVC: 'hev1.1.6.L120.90',
+      VideoDecodeFormatType.AV1: 'av01.0.08M.08',
+      VideoDecodeFormatType.AVC: 'avc1.640032',
+    };
+    try {
+      return VideoSourceSpec(
+        codec: codecs[format]!,
+        width: 1920,
+        height: 1080,
+        frameRate: 30,
+      );
+    } on ArgumentError {
+      return null;
+    }
+  }
+
+  /// 应用初始化时按设备能力自动配置首选解码格式（preferCodecs）：
+  /// **仅在设置从未写入过时执行一次**，不覆盖用户手动排序。显示轮排除
+  /// SDR 面板的 DV（DV 只出现在 HDR 画质档），解码轮（仅 Android）
+  /// 排除无硬件解码器的编码族，其余按 DV > HEVC > AV1 > AVC 写入设置。
+  /// 查询失败/未知一律按支持保留（宁可漏配）；全部被排除时不写入。
+  static Future<void> autoConfigurePreferCodecs() async {
+    if (GStorage.setting.get(SettingBoxKey.preferCodecs) != null) {
+      return;
+    }
+    await ensureDisplayCapability();
+    final configured = <VideoDecodeFormatType>[];
+    for (final format in _preferCodecOrder) {
+      if (format == VideoDecodeFormatType.DVH1 &&
+          _displayHdrTypes?.isEmpty == true) {
+        continue;
+      }
+      if (!Platform.isAndroid) {
+        configured.add(format);
+        continue;
+      }
+      final spec = _probeSpecOf(format);
+      if (spec == null) {
+        configured.add(format);
+        continue;
+      }
+      await _queryDecodeSupport([spec]);
+      if (_decodeVerdicts[spec.key] ?? true) {
+        configured.add(format);
+      }
+    }
+    if (configured.isEmpty) return;
+    await GStorage.setting.put(
+      SettingBoxKey.preferCodecs,
+      configured.map((e) => e.name).toList(),
+    );
   }
 
   static VideoSourceSpec? _specOf(VideoItem item) {

@@ -16,6 +16,7 @@ import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/services/logger.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
+import 'package:PiliPlus/utils/codec_capability.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/desktop/calc_window_position.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
@@ -112,6 +113,9 @@ void main() async {
     CacheManager.ensureInitialized(),
     ?FontUtils.init(),
   ]);
+
+  // 按设备能力自动配置首选解码格式（不阻塞启动）
+  CodecCapability.autoConfigurePreferCodecs();
   Get
     ..lazyPut(AccountService.new)
     ..lazyPut(DownloadService.new);

@@ -28,6 +28,8 @@
 
 ## ANDROID-LOCAL-MEDIA-KIT-20261020（本地 media-kit 构建与路由播放主线）
 
+- **2026-10-22 勘误+LG 覆盖确认:此前"测试链 libmpv android26 编译在 API24 不可加载"结论错误**——LG 上 dlopen 失败真因是缺 libc++_shared.so。实测:mks 链 libmpv(android26-clang 编译,未 vkweak)在 LG API24 上 **dlopen 成功且 native check 三 CLI 582/0 全绿**;APK minSdk=24 可直接安装。两链(发布/测试)其实同为 android26 crossfile 编译,差别仅是发布 JAR 额外做了 vkweak(弱化 vkGetPhysicalDeviceProperties2/QueueFamilyProperties2 两个 Vulkan 1.1 导入)——而当前 mks 库根本不导入这两个符号,故无需弱化。r23 已装 LG:应用启动、视频页打开、**首帧解码渲染成功**,但播放未推进(media session state=0、帧间差 0)——LG 播放行为属该机既有专项边界(挂载门/embed 载体历史),不在本次"测试链覆盖"范围。LG native check 现场保留在 /data/local/tmp/pnp(含 libc++_shared)。
+
 - 2026-10-21 **所有权管理下沉完成，LG短测及15min恢复通过，按授权提交推送**：用户授权将播放器替换串行队列、旧 owner 清理重试迁至 media-kit 的显式共享实例；App 保留页面/源请求/业务判断并精简辅助包装。App净减79行；slot10/App2定向、App14/库1048+8skip全量、V2及源码构建通过，新包6155accc LG切页/快速返回/EOF重播20s/EOF拖动/暂停拖动/HDR-SDR/退出重进通过；Home仍有20秒恢复迟滞。用户改为15min，实际939.565秒同源零输入静置后单次重播20s及再次EOF直接拖动通过；不声称本轮30min覆盖，系统媒体位置基准同步缺口单列。本次提交正式修复和验收记录，临时transport诊断及独立仓迁移/配置改动排除。context：[`playback-eof-replay-20261021.md`](archives/conversations/playback-eof-replay-20261021.md)。
 
 - 2026-10-21 **重播/切页恢复短测通过，31min静置后恢复未验证，未提交**：两类本轮HDR接入回归已修正：隐藏页挂载/旧请求fallback竞争、raw重播与routed seek意图失配；另以真实completed保存状态修正返回末帧不能重播边界，不扩大50ms判断。第三源码包完成单次重播20s、普通近尾paused返回、Home迟滞自动恢复；第二包EOF直接拖/主动暂停拖/SDR-HDR通过。库focused59/59、全量1038/8，Apphelper6/6、V2通过。gen6真EOF完成1876.879秒零输入/源变化静置；首次点空白处控件未显示，未点play/seek，保留现场，不能记长时重播通过。计时前极近尾seek缓冲及未明refresh单独保留。context：[`playback-eof-replay-20261021.md`](archives/conversations/playback-eof-replay-20261021.md)。

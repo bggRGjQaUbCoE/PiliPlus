@@ -51,6 +51,7 @@ import 'package:PiliPlus/plugin/pl_player/widgets/mpv_convert_webp.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/play_pause_btn.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
+import 'package:PiliPlus/utils/codec_capability.dart';
 import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/desktop/window_controller.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
@@ -797,6 +798,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             return const SizedBox.shrink();
           }
           final videoFormat = videoInfo.supportFormats!;
+          final videoList = videoInfo.dash!.video!;
           final availableQa = videoInfo.dash!.video!.availableVideoQualities;
           return PopupMenuButton<int>(
             tooltip: '画质',
@@ -808,7 +810,17 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                 videoFormat.length,
                 (index) {
                   final item = videoFormat[index];
-                  final enabled = availableQa.contains(item.quality);
+                  // 会员置灰 + 能力置灰（显示轮/解码轮，见 CodecCapability）；
+                  // 当前已选项保持可选，避免被锁死无法切走
+                  final unsupportedReason =
+                      CodecCapability.qualityUnsupportedReason(
+                    VideoQuality.fromCode(item.quality!),
+                    videoList,
+                  );
+                  final enabled =
+                      currentVideoQa.code == item.quality ||
+                      (availableQa.contains(item.quality) &&
+                          unsupportedReason == null);
                   return PopupMenuItem<int>(
                     enabled: enabled,
                     height: 35,

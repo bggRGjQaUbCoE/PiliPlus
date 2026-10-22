@@ -53,6 +53,7 @@ import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/codec_capability.dart';
 import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/nested_scroll_ext.dart';
@@ -659,8 +660,11 @@ class VideoDetailController extends GetxController
   }
 
   VideoItem findVideoByQa(int qa, {bool setCodecs = false}) {
-    /// 根据currentVideoQa和currentDecodeFormats 重新设置videoUrl
-    final videoList = data.dash!.video!.where((i) => i.id == qa).toList();
+    /// 根据currentVideoQa和currentDecodeFormats 重新设置videoUrl；
+    /// 能力过滤（显示轮+解码轮），全部被排除时回退原列表
+    final videoList = CodecCapability.playableVideosOf(
+      data.dash!.video!.where((i) => i.id == qa).toList(),
+    );
 
     final currentCodes = currentDecodeFormats.codes;
     VideoItem? bestVideo;
@@ -962,7 +966,7 @@ class VideoDetailController extends GetxController
         FormatItem targetFormat,
         VideoDecodeFormatType targetDecode,
         VideoItem targetVideo,
-      ) = VideoUtils.findTargetVideo(
+      ) = await CodecCapability.findPlayableTargetVideo(
         dash.video!,
         cacheVideoQa,
         response.acceptQuality,

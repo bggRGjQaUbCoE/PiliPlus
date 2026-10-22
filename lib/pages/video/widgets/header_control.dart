@@ -44,6 +44,7 @@ import 'package:PiliPlus/services/shutdown_timer_service.dart'
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
+import 'package:PiliPlus/utils/codec_capability.dart';
 import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
@@ -906,7 +907,7 @@ class HeaderControlState extends State<HeaderControl>
   }
 
   /// 选择画质
-  void showSetVideoQa() {
+  Future<void> showSetVideoQa() async {
     if (videoInfo.dash == null) {
       SmartDialog.showToast('当前视频不支持选择画质');
       return;
@@ -915,7 +916,11 @@ class HeaderControlState extends State<HeaderControl>
     if (currentVideoQa == null) return;
 
     final List<FormatItem> videoFormat = videoInfo.supportFormats!;
+    final videoList = videoInfo.dash!.video!;
     final availableQa = videoInfo.dash!.video!.availableVideoQualities;
+
+    // 预取能力（有缓存时近零开销）；查询失败按未知处理，不置灰
+    await CodecCapability.ensureSelectionSupport(videoList);
 
     showBottomSheet(
       (context, setState) {
@@ -931,9 +936,9 @@ class HeaderControlState extends State<HeaderControl>
                 SliverToBoxAdapter(
                   child: SizedBox(
                     height: 45,
-                    child: GestureDetector(
-                      onTap: () => SmartDialog.showToast(
-                        '标灰画质需要bilibili会员（已是会员？请关闭无痕模式）；4k和杜比视界播放效果可能不佳',
+                  child: GestureDetector(
+                    onTap: () => SmartDialog.showToast(
+                        '标灰画质需要bilibili会员（已是会员？请关闭无痕模式）或设备不支持该格式；4k和杜比视界播放效果可能不佳',
                       ),
                       child: Row(
                         spacing: 8,
@@ -955,6 +960,13 @@ class HeaderControlState extends State<HeaderControl>
                   itemBuilder: (context, index) {
                     final item = videoFormat[index];
                     final isCurr = currentVideoQa.code == item.quality;
+                    // 显示轮（面板 HDR 能力）+ 解码轮（该画质全部流均无
+                    // 硬解才置灰）；当前已选项保持可选，避免被锁死无法切走
+                    final unsupportedReason =
+                        CodecCapability.qualityUnsupportedReason(
+                      VideoQuality.fromCode(item.quality!),
+                      videoList,
+                    );
                     return ListTile(
                       dense: true,
                       onTap: () async {
@@ -982,11 +994,16 @@ class HeaderControlState extends State<HeaderControl>
                         }
                       },
                       // 可能包含会员解锁画质
-                      enabled: availableQa.contains(item.quality),
+                      enabled: isCurr ||
+                          (availableQa.contains(item.quality) &&
+                              unsupportedReason == null),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 20,
                       ),
                       title: Text(item.newDesc!),
+                      subtitle: unsupportedReason == null
+                          ? null
+                          : Text(unsupportedReason, style: subTitleStyle),
                       trailing: isCurr
                           ? Icon(
                               Icons.done,
@@ -1087,7 +1104,7 @@ class HeaderControlState extends State<HeaderControl>
   }
 
   // 选择解码格式
-  void showSetDecodeFormats() {
+  Future<void> showSetDecodeFormats() async {
     final firstCode = videoDetailCtr.firstVideo.quality.code;
     // 当前视频可用的解码格式
     final videoFormat = videoInfo.supportFormats!;
@@ -1097,6 +1114,15 @@ class HeaderControlState extends State<HeaderControl>
       SmartDialog.showToast('当前视频不支持选择解码格式');
       return;
     }
+
+    final videoList = videoInfo.dash?.video;
+    if (videoList == null) {
+      SmartDialog.showToast('当前视频不支持选择解码格式');
+      return;
+    }
+
+    // 预取解码能力（有缓存时近零开销）
+    await CodecCapability.ensureSelectionSupport(videoList);
 
     // 当前选中的解码格式
     final curCodecs = videoDetailCtr.currentDecodeFormats.codes;
@@ -1126,6 +1152,13 @@ class HeaderControlState extends State<HeaderControl>
                           final item = list[index];
                           final format = VideoDecodeFormatType.fromString(item);
                           final isCurr = curCodecs.any(item.startsWith);
+                          // 解码轮：按当前画质下该编码格式的实际流
+                          // （编码串 + 分辨率 + 帧率）判定硬解支持
+                          final unsupportedReason =
+                              CodecCapability.decodeFormatUnsupportedReason(
+                                format,
+                                videoList.where((e) => e.id == firstCode),
+                              );
                           return ListTile(
                             dense: true,
                             onTap: () {
@@ -1136,9 +1169,23 @@ class HeaderControlState extends State<HeaderControl>
                                 ..updatePlayer();
                               SmartDialog.showToast("解码已变为：${format.name}");
                             },
+                            // 当前已选项保持可选，避免被锁死无法切走
+                            enabled: isCurr || unsupportedReason == null,
                             contentPadding: const .symmetric(horizontal: 20),
                             title: Text(format.description),
-                            subtitle: Text(item, style: subTitleStyle),
+                            subtitle: unsupportedReason == null
+                                ? Text(item, style: subTitleStyle)
+                                : Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(item, style: subTitleStyle),
+                                      Text(
+                                        unsupportedReason,
+                                        style: subTitleStyle,
+                                      ),
+                                    ],
+                                  ),
                             trailing: isCurr
                                 ? Icon(Icons.done, color: colorScheme.primary)
                                 : null,

@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/hit_test.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/models/common/member/contribute_type.dart';
 import 'package:PiliPlus/models_new/space/space/tab2.dart';
@@ -53,34 +54,38 @@ class _MemberContributeState extends State<MemberContribute>
     final theme = Theme.of(context);
     return _controller.tabs != null
         ? Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: .stretch,
             children: [
-              TabBar(
-                overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-                splashFactory: NoSplash.splashFactory,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                isScrollable: true,
-                tabs: _controller.tabs!,
-                tabAlignment: TabAlignment.start,
-                controller: _controller.tabController,
-                dividerHeight: 0,
-                indicatorWeight: 0,
-                indicatorPadding: const EdgeInsets.symmetric(
-                  horizontal: 3,
-                  vertical: 8,
+              HitTestWidget(
+                child: TabBar(
+                  overlayColor: const WidgetStatePropertyAll(
+                    Colors.transparent,
+                  ),
+                  splashFactory: NoSplash.splashFactory,
+                  padding: const .symmetric(horizontal: 8),
+                  isScrollable: true,
+                  tabs: _controller.tabs!,
+                  tabAlignment: .start,
+                  controller: _controller.tabController,
+                  dividerHeight: 0,
+                  indicatorWeight: 0,
+                  indicatorPadding: const .symmetric(
+                    horizontal: 3,
+                    vertical: 8,
+                  ),
+                  indicator: BoxDecoration(
+                    color: theme.colorScheme.secondaryContainer,
+                    borderRadius: const BorderRadius.all(Radius.circular(20)),
+                  ),
+                  indicatorSize: .tab,
+                  labelStyle:
+                      TabBarTheme.of(
+                        context,
+                      ).labelStyle?.copyWith(fontSize: 14) ??
+                      const TextStyle(fontSize: 14),
+                  labelColor: theme.colorScheme.onSecondaryContainer,
+                  unselectedLabelColor: theme.colorScheme.outline,
                 ),
-                indicator: BoxDecoration(
-                  color: theme.colorScheme.secondaryContainer,
-                  borderRadius: const BorderRadius.all(Radius.circular(20)),
-                ),
-                indicatorSize: TabBarIndicatorSize.tab,
-                labelStyle:
-                    TabBarTheme.of(
-                      context,
-                    ).labelStyle?.copyWith(fontSize: 14) ??
-                    const TextStyle(fontSize: 14),
-                labelColor: theme.colorScheme.onSecondaryContainer,
-                unselectedLabelColor: theme.colorScheme.outline,
               ),
               Expanded(
                 child: TabBarView(

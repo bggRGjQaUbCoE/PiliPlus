@@ -244,10 +244,14 @@ class _MainAppState extends PopScopeState<MainApp>
           child: MediaQuery.removePadding(
             context: context,
             removeRight: true,
-            child: DrawerTheme(
-              data: DrawerThemeData(width: 130 + _padding.left),
-              child: Obx(
-                () => NavigationDrawer(
+            child: Obx(
+              () => DrawerTheme(
+                data: DrawerThemeData(
+                  width:
+                      (_mainController.hideSideBarLabel ? 80 : 130) +
+                      _padding.left,
+                ),
+                child: NavigationDrawer(
                   /// apply `lib/scripts/navigation_drawer.patch`
                   flex: 5,
                   backgroundColor: Colors.transparent,
@@ -255,13 +259,22 @@ class _MainAppState extends PopScopeState<MainApp>
                   selectedIndex: _mainController.selectedIndex.value,
                   header: Expanded(flex: 4, child: userAndSearchVertical()),
                   tilePadding: const .symmetric(vertical: 5, horizontal: 12),
-                  indicatorShape: const RoundedRectangleBorder(
-                    borderRadius: .all(.circular(16)),
-                  ),
+                  indicatorShape: _mainController.hideSideBarLabel
+                      ? const RoundedRectangleBorder(
+                          borderRadius: .all(.circular(12)),
+                        )
+                      : const RoundedRectangleBorder(
+                          borderRadius: .all(.circular(16)),
+                        ),
                   children: _mainController.navigationBars
                       .map(
                         (e) => NavigationDrawerDestination(
-                          label: Text(e.label),
+                          label: _mainController.hideSideBarLabel
+                              ? Semantics(
+                                  label: e.label,
+                                  child: const SizedBox.shrink(),
+                                )
+                              : Text(e.label),
                           icon: _buildIcon(type: e),
                           selectedIcon: _buildIcon(
                             type: e,
@@ -279,7 +292,7 @@ class _MainAppState extends PopScopeState<MainApp>
       return Obx(
         () => NavigationRail(
           groupAlignment: 0.5,
-          labelType: .selected,
+          labelType: _mainController.hideSideBarLabel ? .none : .selected,
           leading: userAndSearchVertical(),
           backgroundColor: Colors.transparent,
           onDestinationSelected: _mainController.setIndex,

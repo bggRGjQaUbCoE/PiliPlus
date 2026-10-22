@@ -39,7 +39,7 @@ void main() {
                 thumbColor: const Color(0xFFFFFFFF),
                 thumbGlowColor: const Color(0xFFFFFFFF),
                 onSeek: (_) => seeks++,
-              ).withPreview(controller),
+              ).withPreview(controller, kAlwaysCompleteAnimation),
             ),
           ),
         );
@@ -68,4 +68,75 @@ void main() {
       expect(controller.exits, 2);
     },
   );
+
+  testWidgets('hover previews wait for controls to finish opening', (
+    tester,
+  ) async {
+    final controller = _HoverController();
+    final animation = AnimationController(
+      vsync: tester,
+      duration: const Duration(milliseconds: 100),
+    );
+    addTearDown(animation.dispose);
+    await tester.pumpWidget(
+      Center(
+        child: SizedBox(
+          width: 400,
+          height: 200,
+          child: Center(
+            child: SlideTransition(
+              position: animation.drive(
+                Tween<Offset>(begin: const Offset(0, 1.2), end: Offset.zero),
+              ),
+              child: const ProgressBar(
+                progress: 12,
+                total: 100,
+                barHeight: 3.5,
+                baseBarColor: Color(0x33000000),
+                progressBarColor: Color(0xFFFFFFFF),
+                bufferedBarColor: Color(0xFFFFFFFF),
+                thumbColor: Color(0xFFFFFFFF),
+                thumbGlowColor: Color(0xFFFFFFFF),
+              ).withPreview(controller, animation),
+            ),
+          ),
+        ),
+      ),
+    );
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await mouse.addPointer(location: Offset.zero);
+    await mouse.moveTo(tester.getCenter(find.byType(ProgressBar)));
+    expect(controller.positions, isEmpty);
+
+    animation.forward();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(animation.status, AnimationStatus.forward);
+    await mouse.moveTo(tester.getCenter(find.byType(ProgressBar)));
+    expect(controller.positions, isEmpty);
+
+    await tester.pumpAndSettle();
+    expect(animation.status, AnimationStatus.completed);
+    await mouse.moveTo(Offset.zero);
+    await mouse.moveTo(tester.getCenter(find.byType(ProgressBar)));
+    expect(controller.positions, contains(50));
+
+    controller.positions.clear();
+    animation.reverse();
+    await mouse.moveTo(
+      tester.getCenter(find.byType(ProgressBar)) + const Offset(5, 0),
+    );
+    expect(controller.positions, isEmpty);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(animation.status, AnimationStatus.reverse);
+    await mouse.moveTo(tester.getCenter(find.byType(ProgressBar)));
+    expect(controller.positions, isEmpty);
+    await tester.pumpAndSettle();
+    expect(animation.status, AnimationStatus.dismissed);
+    await mouse.moveTo(tester.getCenter(find.byType(ProgressBar)));
+    expect(controller.positions, isEmpty);
+    await mouse.removePointer();
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
 }

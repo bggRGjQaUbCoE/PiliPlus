@@ -15,6 +15,7 @@ class BottomControl extends StatelessWidget {
     required this.maxWidth,
     required this.isFullScreen,
     required this.controller,
+    required this.controlsAnimation,
     required this.buildBottomControl,
     required this.videoDetailController,
     this.progressBarKey,
@@ -23,6 +24,7 @@ class BottomControl extends StatelessWidget {
   final double maxWidth;
   final bool isFullScreen;
   final PlPlayerController controller;
+  final Animation<double> controlsAnimation;
   final ValueGetter<Widget> buildBottomControl;
   final VideoDetailController videoDetailController;
   final Key? progressBarKey;
@@ -87,7 +89,7 @@ class BottomControl extends StatelessWidget {
                         onDragStart: onDragStart,
                         onDragUpdate: onDragUpdate,
                         onSeek: onSeek,
-                      ).withPreview(controller),
+                      ).withPreview(controller, controlsAnimation),
                     ),
                     if (controller.enableBlock &&
                         videoDetailController.segmentProgressList.isNotEmpty)
@@ -129,11 +131,15 @@ class BottomControl extends StatelessWidget {
 }
 
 extension ProgressBarPreview on ProgressBar {
-  Widget withPreview(PlPlayerController controller) {
+  Widget withPreview(
+    PlPlayerController controller,
+    Animation<double> controlsAnimation,
+  ) {
     if (!controller.showHoverPreview) return this;
     return LayoutBuilder(
       builder: (context, constraints) {
         void update(PointerEvent event) {
+          if (!controlsAnimation.isCompleted) return;
           final width = constraints.maxWidth - barHeight;
           if (total <= 0 || width <= 0) return;
           final fraction = ((event.localPosition.dx - barHeight / 2) / width)

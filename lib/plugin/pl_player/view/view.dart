@@ -1680,6 +1680,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                         widget.bottomControl ??
                         BottomControl(
                           progressBarKey: _progressBarKey,
+                          controlsAnimation: _animationController,
                           maxWidth: maxWidth,
                           isFullScreen: isFullScreen,
                           controller: plPlayerController,
@@ -1806,7 +1807,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                           thumbGlowColor: thumbGlowColor,
                           barHeight: 3.5,
                           thumbRadius: 2.5,
-                        ).withPreview(plPlayerController),
+                        ),
                       ),
                       if (plPlayerController.enableBlock &&
                           videoDetailController.segmentProgressList.isNotEmpty)

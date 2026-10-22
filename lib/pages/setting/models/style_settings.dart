@@ -84,14 +84,13 @@ List<SettingsModel> get styleSettings => [
     defaultVal: false,
     needReboot: true,
   ),
-  SwitchModel(
+  const SwitchModel(
     title: '隐藏侧边栏文字',
     subtitle: '仅显示图标，减少侧边栏占用宽度',
-    leading: const Icon(Icons.label_off_outlined),
+    leading: Icon(Icons.label_off_outlined),
     setKey: SettingBoxKey.hideSideBarLabel,
     defaultVal: false,
-    onChanged: (value) =>
-        Get.find<MainController>().hideSideBarLabel.value = value,
+    needReboot: true,
   ),
   NormalModel(
     title: 'App字体设置',

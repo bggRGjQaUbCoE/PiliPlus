@@ -244,11 +244,12 @@ class _MainAppState extends PopScopeState<MainApp>
           child: MediaQuery.removePadding(
             context: context,
             removeRight: true,
-            child: Obx(() {
-              final hideLabel = _mainController.hideSideBarLabel.value;
-              return DrawerTheme(
+            child: Obx(
+              () => DrawerTheme(
                 data: DrawerThemeData(
-                  width: (hideLabel ? 80 : 130) + _padding.left,
+                  width:
+                      (_mainController.hideSideBarLabel ? 80 : 130) +
+                      _padding.left,
                 ),
                 child: NavigationDrawer(
                   /// apply `lib/scripts/navigation_drawer.patch`
@@ -258,13 +259,17 @@ class _MainAppState extends PopScopeState<MainApp>
                   selectedIndex: _mainController.selectedIndex.value,
                   header: Expanded(flex: 4, child: userAndSearchVertical()),
                   tilePadding: const .symmetric(vertical: 5, horizontal: 12),
-                  indicatorShape: const RoundedRectangleBorder(
-                    borderRadius: .all(.circular(16)),
-                  ),
+                  indicatorShape: _mainController.hideSideBarLabel
+                      ? const RoundedRectangleBorder(
+                          borderRadius: .all(.circular(12)),
+                        )
+                      : const RoundedRectangleBorder(
+                          borderRadius: .all(.circular(16)),
+                        ),
                   children: _mainController.navigationBars
                       .map(
                         (e) => NavigationDrawerDestination(
-                          label: hideLabel
+                          label: _mainController.hideSideBarLabel
                               ? Semantics(
                                   label: e.label,
                                   child: const SizedBox.shrink(),
@@ -279,17 +284,15 @@ class _MainAppState extends PopScopeState<MainApp>
                       )
                       .toList(),
                 ),
-              );
-            }),
+              ),
+            ),
           ),
         );
       }
-      return Obx(() {
-        final hideLabel = _mainController.hideSideBarLabel.value;
-        return NavigationRail(
+      return Obx(
+        () => NavigationRail(
           groupAlignment: 0.5,
-          labelType: hideLabel ? .none : .selected,
-          minWidth: hideLabel ? 56 : null,
+          labelType: _mainController.hideSideBarLabel ? .none : .selected,
           leading: userAndSearchVertical(),
           backgroundColor: Colors.transparent,
           onDestinationSelected: _mainController.setIndex,
@@ -303,8 +306,8 @@ class _MainAppState extends PopScopeState<MainApp>
                 ),
               )
               .toList(),
-        );
-      });
+        ),
+      );
     }
     return Container(
       width: 80,

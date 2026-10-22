@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/skeleton/video_reply.dart';
 import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/mini_scaffold.dart';
@@ -244,7 +245,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
       child: Padding(
         padding: const .fromLTRB(12, 2.5, 6, 2.5),
         child: Row(
-          mainAxisAlignment: .spaceBetween,
+          spacing: 8,
           children: [
             Obx(
               () {
@@ -256,6 +257,36 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
                       )
                     : const SizedBox.shrink();
               },
+            ),
+            Obx(
+              () => _controller.replyTree.value == null
+                  ? IconButton(
+                      visualDensity: .compact,
+                      onPressed: () {
+                        if (_controller.isEnd) {
+                          _controller.buildTree();
+                        } else if (_controller.inFetchReply) {
+                          SmartDialog.showToast('正在拉取评论，请稍后');
+                        } else {
+                          showConfirmDialog(
+                            context: context,
+                            title: const Text('是否加载全部评论以显示线程化评论？'),
+                            content: const Text('这可能会消耗一定流量\n并导致IP或账号风控'),
+                            onConfirm: _controller.nextReplyRound,
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.view_comfortable_outlined),
+                      color: colorScheme.outline,
+                      tooltip: '线程化展示',
+                    )
+                  : const SizedBox.shrink(),
+            ),
+            Expanded(
+              child: Obx(
+                () =>
+                    LinearProgressIndicator(value: _controller.progress.value),
+              ),
             ),
             TextButton.icon(
               style: Style.buttonStyle,
@@ -279,46 +310,68 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
     LoadingState<List<ReplyInfo>?> loadingState,
   ) {
     final jumpIndex = _controller.index.value;
-    return switch (loadingState) {
-      Loading() => const SliverPrototypeExtentList(
-        prototypeItem: VideoReplySkeleton(),
-        delegate: SliverSingleChildDelegate(
-          count: 8,
-          child: VideoReplySkeleton(),
-        ),
-      ),
-      Success(:final response!) => SuperSliverList.builder(
-        listController: _controller.listController,
-        itemBuilder: (context, index) {
-          if (index == response.length) {
-            _controller.onLoadMore();
-            return Container(
-              height: 125,
-              alignment: Alignment.center,
-              margin: .only(bottom: MediaQuery.viewPaddingOf(context).bottom),
-              child: Text(
-                _controller.isEnd ? '没有更多了' : '加载中...',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: colorScheme.outline,
-                ),
-              ),
-            );
-          }
-          final child = _replyItem(context, response[index], index);
-          if (jumpIndex == index) {
-            return _controller.colorAnimWrapper(colorScheme, child);
-          }
-          return child;
-        },
-        itemCount: response.length + 1,
-      ),
-      Error(:final errMsg) => HttpError(
-        errMsg: errMsg,
-        onReload: _controller.onReload,
-      ),
-    };
+    switch (loadingState) {
+      case Loading():
+        return const SliverPrototypeExtentList(
+          prototypeItem: VideoReplySkeleton(),
+          delegate: SliverSingleChildDelegate(
+            count: 8,
+            child: VideoReplySkeleton(),
+          ),
+        );
+      case Success(:final response!):
+        if (_controller.replyTree.value case final tree?) {
+          return SuperSliverList.builder(
+            listController: _controller.listController,
+            itemCount: tree.length,
+            itemBuilder: (context, index) {
+              return ReplyItemGrpc(
+                replyItem: tree[index].reply,
+                replyLevel: isDialogue ? 3 : 2,
+                upMid: _controller.upMid,
+                onCheckReply: _controller.onCheckReply,
+                depth: tree[index].depth,
+                needDivider: false,
+              );
+            },
+          );
+        } else {
+          return SuperSliverList.builder(
+            listController: _controller.listController,
+            itemBuilder: (context, index) {
+              if (index == response.length) {
+                _controller.onLoadMore();
+                return Container(
+                  height: 125,
+                  alignment: Alignment.center,
+                  margin: .only(
+                    bottom: MediaQuery.viewPaddingOf(context).bottom,
+                  ),
+                  child: Text(
+                    _controller.isEnd ? '没有更多了' : '加载中...',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: colorScheme.outline,
+                    ),
+                  ),
+                );
+              }
+              final child = _replyItem(context, response[index], index);
+              if (jumpIndex == index) {
+                return _controller.colorAnimWrapper(colorScheme, child);
+              }
+              return child;
+            },
+            itemCount: response.length + 1,
+          );
+        }
+      case Error(:final errMsg):
+        return HttpError(
+          errMsg: errMsg,
+          onReload: _controller.onReload,
+        );
+    }
   }
 
   Widget _replyItem(BuildContext context, ReplyInfo replyItem, int index) {

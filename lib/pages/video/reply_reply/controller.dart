@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:collection';
+
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo, DetailListReply;
 import 'package:PiliPlus/grpc/reply.dart';
@@ -7,11 +10,13 @@ import 'package:PiliPlus/models_new/dynamic/dyn_mention/item.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/pages/common/reply_controller.dart';
 import 'package:PiliPlus/pages/video/reply_new/view.dart';
+import 'package:PiliPlus/pages/video/reply_reply/tree.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
@@ -213,5 +218,83 @@ class VideoReplyReplyController extends ReplyController
             }
           }
         });
+  }
+
+  Timer? _replyTimer;
+  Future<void>? _inflightReply;
+  final progress = RxDouble(0);
+
+  bool get inFetchReply => _replyTimer != null || _inflightReply != null;
+
+  void _cancelReplyTimer() {
+    _replyTimer?.cancel();
+    _replyTimer = null;
+  }
+
+  void nextReplyRound() {
+    _replyTimer = null;
+    _inflightReply = _fetchNextReply();
+  }
+
+  void _createReplyTimer() {
+    _replyTimer = Timer(const Duration(milliseconds: 300), nextReplyRound);
+  }
+
+  Future<void> _fetchNextReply() async {
+    await queryData(false);
+    _inflightReply = null;
+    if (isEnd) {
+      progress.value = 1;
+      SmartDialog.showToast('已完成拉取');
+    } else {
+      progress.value = count.rawValue > 0
+          ? (loadingState.rawValue.dataOrNull?.length ?? 0) / count.rawValue
+          : 0;
+      _createReplyTimer();
+    }
+  }
+
+  @override
+  Future<void> onLoadMore() {
+    if (_replyTimer != null) {
+      assert(_inflightReply == null);
+      _cancelReplyTimer();
+      return _inflightReply = _fetchNextReply();
+    } else if (_inflightReply != null) {
+      return _inflightReply!;
+    }
+    return super.onLoadMore();
+  }
+
+  @override
+  Future<void> onRefresh() async {
+    if (_inflightReply != null) await _inflightReply;
+    _cancelReplyTimer();
+    return super.onRefresh();
+  }
+
+  @override
+  void onClose() {
+    _cancelReplyTimer();
+    super.onClose();
+  }
+
+  final replyTree = Rxn<ReplyTree>();
+
+  void buildTree() {
+    final data = loadingState.rawValue.data!;
+    final seen = HashSet<Int64>();
+    data.retainWhere((i) => seen.add(i.id));
+    replyTree.value = ReplyTree.build(
+      data: data,
+      seen: seen,
+      rootId: firstFloor.rawValue?.id ?? data.first.root,
+      removed: const {},
+    );
+  }
+
+  void toggleCollapseTree(int index) {
+    replyTree.rawValue!.toggleCollapse(index);
+    replyTree.refresh();
   }
 }

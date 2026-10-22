@@ -25,6 +25,7 @@ import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/pages/member/widget/medal_widget.dart';
 import 'package:PiliPlus/pages/save_panel/view.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
+import 'package:PiliPlus/pages/video/reply/widgets/reply_threaded_indent_box.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/zan_grpc.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
@@ -77,13 +78,14 @@ class ReplyItemGrpc extends StatelessWidget {
     this.onViewImage,
     this.onCheckReply,
     this.onToggleTop,
+    this.depth = -1,
   });
   final ReplyInfo replyItem;
   final int replyLevel;
-  final Function(ReplyInfo replyItem, int? rpid)? replyReply;
+  final void Function(ReplyInfo replyItem, int? rpid)? replyReply;
   final bool needDivider;
   final ValueChanged<ReplyInfo>? onReply;
-  final Function(ReplyInfo replyItem, int? subIndex)? onDelete;
+  final void Function(ReplyInfo replyItem, int? subIndex)? onDelete;
   final Int64? upMid;
   final VoidCallback? dialogueCallback;
   final ValueGetter<Iterable<ReplyInfo>>? getReplyChain;
@@ -91,6 +93,7 @@ class ReplyItemGrpc extends StatelessWidget {
   final VoidCallback? onViewImage;
   final ValueChanged<ReplyInfo>? onCheckReply;
   final ValueChanged<ReplyInfo>? onToggleTop;
+  final int depth;
 
   static final _voteRegExp = RegExp(r"^\{vote:\d+?\}$");
   static final _timeRegExp = RegExp(r'^(?:\d+[:：])?\d+[:：]\d+$');
@@ -122,6 +125,22 @@ class ReplyItemGrpc extends StatelessWidget {
       padding: const .fromLTRB(12, 14, 8, 5),
       child: _buildContent(context, colorScheme),
     );
+    if (depth >= 0) {
+      child = ReplyThreadedIndentBox(
+        depth: depth,
+        colors: const [
+          Colors.redAccent,
+          Colors.orangeAccent,
+          Colors.yellowAccent,
+          Colors.greenAccent,
+          Colors.cyanAccent,
+          Colors.blueAccent,
+          Colors.purpleAccent,
+        ],
+        divColor: colorScheme.outline.withValues(alpha: 0.08),
+        child: child,
+      );
+    }
     if (needDivider) {
       child = Column(
         mainAxisSize: .min,

@@ -25,6 +25,7 @@ import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/pages/member/widget/medal_widget.dart';
 import 'package:PiliPlus/pages/save_panel/view.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
+import 'package:PiliPlus/pages/video/reply/widgets/reply_threaded_indent_box.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/zan_grpc.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
@@ -77,25 +78,47 @@ class ReplyItemGrpc extends StatelessWidget {
     this.onViewImage,
     this.onCheckReply,
     this.onToggleTop,
+    this.depth = -1,
   });
   final ReplyInfo replyItem;
   final int replyLevel;
-  final Function(ReplyInfo replyItem, int? rpid)? replyReply;
+  final void Function(ReplyInfo replyItem, int? rpid)? replyReply;
   final bool needDivider;
   final ValueChanged<ReplyInfo>? onReply;
-  final Function(ReplyInfo replyItem, int? subIndex)? onDelete;
+  final void Function(ReplyInfo replyItem, int? subIndex)? onDelete;
   final Int64? upMid;
   final VoidCallback? dialogueCallback;
   final ValueGetter<Iterable<ReplyInfo>>? getReplyChain;
-  final Function? getTag;
+  final ValueGetter<String>? getTag;
   final VoidCallback? onViewImage;
   final ValueChanged<ReplyInfo>? onCheckReply;
   final ValueChanged<ReplyInfo>? onToggleTop;
+  final int depth;
 
   static final _voteRegExp = RegExp(r"^\{vote:\d+?\}$");
   static final _timeRegExp = RegExp(r'^(?:\d+[:：])?\d+[:：]\d+$');
   static bool enableWordRe = Pref.enableWordRe;
   static int? replyLengthLimit = Pref.replyLengthLimit;
+
+  static final _colorsLight = [
+    Colors.redAccent,
+    Colors.orangeAccent,
+    Colors.yellowAccent.shade400,
+    Colors.greenAccent,
+    Colors.cyanAccent,
+    Colors.blueAccent,
+    Colors.purpleAccent,
+  ];
+
+  static final _colorsDark = [
+    Colors.red.shade900,
+    Colors.orange.shade900,
+    Colors.yellow.shade800,
+    Colors.green.shade900,
+    Colors.cyan.shade900,
+    Colors.blue.shade900,
+    Colors.deepPurple.shade900,
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -122,6 +145,17 @@ class ReplyItemGrpc extends StatelessWidget {
       padding: const .fromLTRB(12, 14, 8, 5),
       child: _buildContent(context, colorScheme),
     );
+    if (depth >= 0) {
+      child = ReplyThreadedIndentBox(
+        depth: depth,
+        colors: colorScheme.isLight ? _colorsLight : _colorsDark,
+        divColor: colorScheme.outline.withValues(alpha: 0.08),
+        onTapLine: () => debugPrint('onTapLine'),
+        onTapDot: (i) => debugPrint('onTapDot: $i'),
+        onScrollLeft: () => debugPrint('onScrollLeft'),
+        child: child,
+      );
+    }
     if (needDivider) {
       child = Column(
         mainAxisSize: .min,

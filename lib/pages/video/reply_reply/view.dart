@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/skeleton/video_reply.dart';
 import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/mini_scaffold.dart';
@@ -246,7 +247,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
       child: Padding(
         padding: const .fromLTRB(12, 2.5, 6, 2.5),
         child: Row(
-          mainAxisAlignment: .spaceBetween,
+          spacing: 8,
           children: [
             Obx(
               () {
@@ -258,6 +259,35 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
                       )
                     : const SizedBox.shrink();
               },
+            ),
+            Obx(
+              () => controller.replyTree.value == null
+                  ? IconButton(
+                      visualDensity: .compact,
+                      onPressed: () {
+                        if (controller.isEnd) {
+                          controller.buildTree();
+                        } else if (controller.inFetchReply) {
+                          SmartDialog.showToast('正在拉取评论，请稍后');
+                        } else {
+                          showConfirmDialog(
+                            context: context,
+                            title: const Text('是否加载全部评论以显示线程化评论？'),
+                            content: const Text('这将消耗一定流量\n且可能导致IP或账号风控'),
+                            onConfirm: controller.nextReplyRound,
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.view_comfortable_outlined),
+                      color: colorScheme.outline,
+                      tooltip: '线程化展示',
+                    )
+                  : const SizedBox.shrink(),
+            ),
+            Expanded(
+              child: Obx(
+                () => LinearProgressIndicator(value: controller.progress.value),
+              ),
             ),
             TextButton.icon(
               style: Style.buttonStyle,
@@ -278,34 +308,54 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
 
   Widget _buildBody(LoadingState<List<ReplyInfo>?> loadingState) {
     final jumpIndex = controller.index.value;
-    return switch (loadingState) {
-      Loading() => const SliverPrototypeExtentList(
-        prototypeItem: VideoReplySkeleton(),
-        delegate: SliverSingleChildDelegate(
-          count: 8,
-          child: VideoReplySkeleton(),
-        ),
-      ),
-      Success(:final response!) => SuperSliverList.builder(
-        listController: controller.listController,
-        itemBuilder: (context, index) {
-          if (index == response.length) {
-            return buildFooter();
-          }
+    switch (loadingState) {
+      case Loading():
+        return const SliverPrototypeExtentList(
+          prototypeItem: VideoReplySkeleton(),
+          delegate: SliverSingleChildDelegate(
+            count: 8,
+            child: VideoReplySkeleton(),
+          ),
+        );
+      case Success(:final response!):
+        if (controller.replyTree.value case final tree?) {
+          return SuperSliverList.builder(
+            listController: controller.listController,
+            itemCount: tree.length,
+            itemBuilder: (context, index) {
+              return ReplyItemGrpc(
+                replyItem: tree[index].reply,
+                replyLevel: isDialogue ? 3 : 2,
+                upMid: controller.upMid,
+                onCheckReply: controller.onCheckReply,
+                needDivider: false,
+                depth: tree[index].depth,
+              );
+            },
+          );
+        } else {
+          return SuperSliverList.builder(
+            listController: controller.listController,
+            itemBuilder: (context, index) {
+              if (index == response.length) {
+                return buildFooter();
+              }
 
-          final child = _replyItem(context, response[index], index);
-          if (jumpIndex == index) {
-            return controller.colorAnimWrapper(theme.colorScheme, child);
-          }
-          return child;
-        },
-        itemCount: response.length + 1,
-      ),
-      Error(:final errMsg) => HttpError(
-        errMsg: errMsg,
-        onReload: controller.onReload,
-      ),
-    };
+              final child = _replyItem(context, response[index], index);
+              if (jumpIndex == index) {
+                return controller.colorAnimWrapper(theme.colorScheme, child);
+              }
+              return child;
+            },
+            itemCount: response.length + 1,
+          );
+        }
+      case Error(:final errMsg):
+        return HttpError(
+          errMsg: errMsg,
+          onReload: controller.onReload,
+        );
+    }
   }
 
   Widget _replyItem(BuildContext context, ReplyInfo replyItem, int index) {
@@ -313,7 +363,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
       replyItem: replyItem,
       replyLevel: isDialogue ? 3 : 2,
       onReply: (replyItem) => controller.onReply(replyItem, index: index),
-      onDelete: (item, subIndex) => controller.onRemove(index, item, null),
+      onDelete: (item, subIndex) => controller.onRemove(index, item, subIndex),
       upMid: controller.upMid,
       dialogueCallback: isDialogue
           ? () {

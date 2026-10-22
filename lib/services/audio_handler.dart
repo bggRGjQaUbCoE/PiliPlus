@@ -19,6 +19,7 @@ import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:audio_service/audio_service.dart';
+import 'package:audio_service_mpris/audio_service_mpris.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:get/get_core/src/get_main.dart';
@@ -26,6 +27,17 @@ import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:path/path.dart' as path;
 
 Future<VideoPlayerServiceHandler> initAudioService() {
+  if (Platform.isLinux) {
+    AudioServiceMpris.init(
+      dBusName: 'com.example.piliplus.audio',
+      identity: 'Audio Service ${Constants.appName}',
+      canGoNext: true,
+      canGoPrevious: true,
+      canPlay: true,
+      canPause: true,
+      canControl: true,
+    );
+  }
   return AudioService.init(
     builder: VideoPlayerServiceHandler.new,
     config: const AudioServiceConfig(

@@ -943,6 +943,9 @@ abstract final class Pref {
   static bool get tempPlayerConf =>
       _setting.get(SettingBoxKey.tempPlayerConf, defaultValue: false);
 
+  static bool get showPlaybackDiagBar =>
+      _setting.get(SettingBoxKey.showPlaybackDiagBar, defaultValue: false);
+
   static Color? get reduceLuxColor {
     final int? color = _setting.get(SettingBoxKey.reduceLuxColor);
     if (color != null && color != 0xFFFFFFFF) {

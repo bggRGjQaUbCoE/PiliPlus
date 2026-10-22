@@ -381,6 +381,13 @@ List<SettingsModel> get playSettings => [
         .put(SettingBoxKey.btmProgressBehavior, value.index)
         .whenComplete(setState),
   ),
+  const SwitchModel(
+    title: '播放诊断信息',
+    subtitle: '在播放器控制栏显示路由与解码信息',
+    leading: Icon(Icons.info_outline),
+    setKey: SettingBoxKey.showPlaybackDiagBar,
+    defaultVal: false,
+  ),
   if (PlatformUtils.isMobile)
     SwitchModel(
       title: '后台音频服务',

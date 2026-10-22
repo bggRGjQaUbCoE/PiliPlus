@@ -3,6 +3,7 @@ import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/view/view.dart';
+import 'package:PiliPlus/plugin/pl_player/widgets/playback_diag_bar.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -58,6 +59,8 @@ class BottomControl extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // 播放诊断信息：随控制栏显示，开关判断在组件内部
+          PlaybackDiagBar(controller: controller),
           Padding(
             padding: const EdgeInsets.fromLTRB(10, 0, 10, 7),
             child: Obx(

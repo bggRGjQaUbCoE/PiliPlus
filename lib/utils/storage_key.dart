@@ -248,6 +248,7 @@ abstract final class SettingBoxKey {
       msgUnReadTypeV2 = 'msgUnReadTypeV2',
       navBarSort = 'navBarSort',
       tempPlayerConf = 'tempPlayerConf',
+      showPlaybackDiagBar = 'showPlaybackDiagBar',
       reduceLuxColor = 'reduceLuxColor',
       liveCdnUrl = 'liveCdnUrl',
       saveReply = 'saveReply',

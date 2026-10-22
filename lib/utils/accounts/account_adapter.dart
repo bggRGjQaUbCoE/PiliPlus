@@ -35,7 +35,7 @@ class LoginAccountAdapter extends TypeAdapter<LoginAccount> {
       ..writeByte(3)
       ..write(obj.type.toList())
       ..writeByte(4)
-      ..writeString(obj.buvid);
+      ..write(obj.buvid);
   }
 
   @override

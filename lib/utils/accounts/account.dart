@@ -61,7 +61,7 @@ class LoginAccount extends Account {
   @HiveField(3)
   final Set<AccountType> type;
 
-  String _buvid;
+  late String _buvid = AnonymousAccount()._buvid;
   @override
   @HiveField(4)
   String get buvid => _buvid;
@@ -129,8 +129,8 @@ class LoginAccount extends Account {
     this.refresh, [
     Set<AccountType>? type,
     String? buvid,
-  ]) : type = type ?? {},
-       _buvid = buvid ?? AnonymousAccount().buvid {
+  ]) : type = type ?? {} {
+    if (buvid != null) _buvid = buvid;
     cookieJar.setBuvid3();
   }
 
@@ -174,7 +174,7 @@ class AnonymousAccount extends Account {
   @override
   bool activated = false;
 
-  String _buvid = Pref.buvid;
+  late String _buvid = Pref.buvid;
   @override
   String get buvid => _buvid;
   @override

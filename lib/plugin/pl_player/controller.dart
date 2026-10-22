@@ -74,6 +74,29 @@ import 'package:window_manager/window_manager.dart';
 typedef PlayCallback = Future<void>? Function();
 typedef PlayOwner = ({String tag, Type? type});
 
+/// Reviewed source facts remembered per exact media URI (EDL with final URLs).
+/// Owned by the app layer so the library keeps its no-URI-cache invariant.
+/// Only in-process; a changed playurl (new token URLs) keys differently and
+/// falls back to the ordinary probe path, so a stale entry can never pick a
+/// wrong route permanently.
+class _VerifiedSourceHints {
+  static const _capacity = 8;
+  static final _hints = <String, HdrSourceDescriptor>{};
+
+  static HdrSourceDescriptor? of(String uri) => _hints[uri];
+
+  /// Only records verified facts; never deletes, so an in-flight reopen of
+  /// the same URI cannot drop the previous verified entry.
+  static void remember(String uri, HdrSourceDescriptor? hint) {
+    if (hint == null) return;
+    _hints.remove(uri);
+    _hints[uri] = hint;
+    while (_hints.length > _capacity) {
+      _hints.remove(_hints.keys.first);
+    }
+  }
+}
+
 class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   final PlayerSourceLifecycle _sourceLifecycle = PlayerSourceLifecycle();
   late final ManagedVideoPlayback _managedPlayback = ManagedVideoPlayback(
@@ -1005,7 +1028,16 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       // audio-only mode must not hold a video session/output
       video: !onlyPlayAudio.value,
       allowLegacyFallback: dataSource.allowLegacyFallback,
+      sourceHint: _VerifiedSourceHints.of(media.uri) ??
+          (dataSource is NetworkSource ? dataSource.sourceHint : null),
     );
+    if (_isCurrentSourceRequest(request)) {
+      _rememberVerifiedSourceHint(media.uri);
+    }
+  }
+
+  void _rememberVerifiedSourceHint(String uri) {
+    _VerifiedSourceHints.remember(uri, _managedPlayback.verifiedSourceHint);
   }
 
   Future<void>? refreshPlayer() {
@@ -1030,7 +1062,11 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
             video: !onlyPlayAudio.value,
             allowLegacyFallback: allowLegacyFallback,
             preservePlaybackSettings: true,
+            sourceHint: _VerifiedSourceHints.of(media.uri),
           );
+          if (current()) {
+            _rememberVerifiedSourceHint(media.uri);
+          }
         } catch (e, st) {
           if (current() && kDebugMode) {
             debugPrint('refresh player failed: $e\n$st');

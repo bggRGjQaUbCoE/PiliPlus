@@ -24,6 +24,7 @@ import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models/common/video/video_decode_type.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
+import 'package:PiliPlus/utils/hdr_source_hint.dart';
 import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
 import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
@@ -753,6 +754,7 @@ class VideoDetailController extends GetxController
               allowLegacyFallback: allowsLegacyFallbackForVideoId(
                 firstVideo.id,
               ),
+              sourceHint: HdrDescriptorDerivation.fromPlayUrlItem(firstVideo),
             ),
       seekTo: seek,
       duration: data.timeLength == null
@@ -826,7 +828,9 @@ class VideoDetailController extends GetxController
 
   Future<void> _supplementVideoQualities() async {
     final quality = data.missingVideoQualityBelowHighest;
-    if (quality == -1) return;
+    if (quality == -1) {
+      return;
+    }
     final result = await _getVideoUrl(quality);
     if (result case Success(:final response)) {
       data.dash!.video!.merge(response.dash?.video);
@@ -876,7 +880,9 @@ class VideoDetailController extends GetxController
 
     if (result case Success(:final response)) {
       data = response;
-      if (data.dash != null) await _supplementVideoQualities();
+      if (data.dash != null) {
+        await _supplementVideoQualities();
+      }
 
       languages.value = data.language?.items;
       currLang.value = data.curLanguage;

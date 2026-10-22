@@ -1,4 +1,6 @@
 import 'package:PiliPlus/utils/path_utils.dart';
+import 'package:media_kit_video/media_kit_video.dart'
+    show HdrSourceDescriptor;
 import 'package:path/path.dart' as path;
 
 sealed class DataSource {
@@ -18,7 +20,13 @@ class NetworkSource extends DataSource {
     required super.videoSource,
     required super.audioSource,
     super.allowLegacyFallback = false,
+    this.sourceHint,
   });
+
+  /// Source facts derived from the playurl API metadata. Used only when the
+  /// player has no verified facts for these exact URLs yet; a wrong guess
+  /// costs one review correction rebuild, never a wrong route.
+  final HdrSourceDescriptor? sourceHint;
 }
 
 class FileSource extends DataSource {

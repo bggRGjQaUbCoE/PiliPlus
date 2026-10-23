@@ -112,6 +112,8 @@ Linux/Windows App 在编译前另运行 `tool/native/check_api.py`，重新验�
 
 Android 的 Vulkan 版本检测保留 mpv 的 `>= 1.3.238` 要求。Meson 1.6.1 的系统依赖检测需要运行目标程序，交叉编译时会将满足要求的 NDK r27c 头文件识别为 unknown。producer 改为用对应 ABI 的 NDK 编译器读取真实版本宏，再通过静态断言和 `vkGetInstanceProcAddr` 链接检查后生成 `vulkan.pc`；实际 NDK 头文件版本为 1.3.275。版本不足、宏格式变化或 loader 缺符号均直接失败，编译检查不代表设备支持所有 Vulkan 功能。
 
+Apple 的真实应用编译还发现 media-kit 共享 Darwin 源码调用 `handleRouteCapabilitiesMethodCall` 时缺少定义要求的 `result:` 参数标签，iOS/macOS 同时报错。已仅修正该调用并固定新的 SDK 提交，显示能力查询逻辑保持一致；对应平台继续通过真实 Xcode 编译验收。
+
 ## OHOS 保留当前应用集成
 
 当前应用已经包含 Managed/Routed playback 和宿主合成能力，旧 Direction B 迁移 patch 不能重复应用。新入口显式选择 `approved-integration`，由提交中的 policy 和固定 SHA256 验证批准基线、关键源码及依赖锁；只允许后续 CI/tooling/docs 变动，仍拒绝应用源码或工作区漂移。

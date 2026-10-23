@@ -213,77 +213,129 @@ SettingsModel getBanWordModel({
   String? banScope,
 }) {
   String banWord = GStorage.setting.get(key, defaultValue: '');
-  String getDisplayValue() => banWord
-      .split(RegExp(r'[\n|]'))
-      .map((e) => e.trim())
-      .where((e) => e.isNotEmpty)
-      .join('\n');
   return NormalModel(
     leading: const Icon(Icons.filter_alt_outlined),
     title: title,
     getSubtitle: () {
-      final subtitle = banWord.isEmpty ? "点击添加" : getDisplayValue();
+      final subtitle = banWord.isEmpty
+          ? "点击添加" : banWord;
       if (banScope != null) {
         return '作用域: $banScope\n$subtitle';
       }
       return subtitle;
     },
     onTap: (context, setState) {
-      String editValue = getDisplayValue();
-      final scrollController = ScrollController();
+      final keywords = banWord
+          .split(RegExp(r'[\n|]'))
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
+      final textController = TextEditingController();
+      final listController = ScrollController();
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          constraints: Style.dialogFixedConstraints,
-          title: Text(title),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('每行一个关键词，如：\n尝试\n测试'),
-              Scrollbar(
-                controller: scrollController,
-                thumbVisibility: true,
-                child: TextFormField(
-                  scrollController: scrollController,
-                  autofocus: true,
-                  initialValue: editValue,
-                  keyboardType: TextInputType.multiline,
-                  textInputAction: TextInputAction.newline,
-                  minLines: 2,
-                  maxLines: 4,
-                  onChanged: (value) => editValue = value,
+        builder: (context) => StatefulBuilder(
+          builder: (context, setDialogState) {
+            void addKeyword() {
+              final text = textController.text.trim();
+              if (text.isEmpty || keywords.contains(text)) {
+                return;
+              }
+              setDialogState(() {
+                keywords.add(text);
+                textController.clear();
+              });
+            }
+            return AlertDialog(
+              constraints: Style.dialogFixedConstraints,
+              title: Text(title),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (keywords.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: Center(child: Text('暂无关键词')),
+                    )
+                  else
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 240),
+                      child: Scrollbar(
+                        controller: listController,
+                        thumbVisibility: true,
+                        child: ListView.builder(
+                          controller: listController,
+                          shrinkWrap: true,
+                          itemCount: keywords.length,
+                          itemBuilder: (context, index) => ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(Icons.label_outline),
+                            title: Text(keywords[index]),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.close),
+                              tooltip: '删除',
+                              onPressed: () => setDialogState(
+                                () => keywords.removeAt(index),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: textController,
+                          autofocus: true,
+                          textInputAction: TextInputAction.done,
+                          onSubmitted: (_) => addKeyword(),
+                          decoration: const InputDecoration(
+                            isDense: true,
+                            hintText: '输入关键词后点击添加',
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton.filled(
+                        onPressed: addKeyword,
+                        icon: const Icon(Icons.add),
+                        tooltip: '添加',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: Get.back,
+                  child: Text(
+                    '取消',
+                    style: TextStyle(color: ColorScheme.of(context).outline),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: Get.back,
-              child: Text(
-                '取消',
-                style: TextStyle(color: ColorScheme.of(context).outline),
-              ),
-            ),
-            TextButton(
-              child: const Text('保存'),
-              onPressed: () {
-                Get.back();
-                final keywords = editValue
-                    .split('\n')
-                    .map((e) => e.trim())
-                    .where((e) => e.isNotEmpty)
-                    .toList();
-                banWord = keywords.join('|');
-                setState();
-                onChanged(RegExp(keywords.join('|'), caseSensitive: false));
-                SmartDialog.showToast('已保存');
-                GStorage.setting.put(key, banWord);
-              },
-            ),
-          ],
+                TextButton(
+                  child: const Text('保存'),
+                  onPressed: () {
+                    Get.back();
+                    banWord = keywords.join('|');
+                    setState();
+                    onChanged(RegExp(banWord, caseSensitive: false));
+                    SmartDialog.showToast('已保存');
+                    GStorage.setting.put(key, banWord);
+                  },
+                ),
+              ],
+            );
+          },
         ),
-      ).whenComplete(scrollController.dispose);
+      ).whenComplete(() {
+        textController.dispose();
+        listController.dispose();
+      });
     },
   );
 }

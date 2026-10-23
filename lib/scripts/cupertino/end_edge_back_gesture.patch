@@ -1,0 +1,514 @@
+diff --git a/lib/src/route.dart b/lib/src/route.dart
+index 2b3b510..54d2675 100644
+--- a/lib/src/route.dart
++++ b/lib/src/route.dart
+@@ -594,7 +594,11 @@ class _CupertinoPageTransitionState extends State<CupertinoPageTransition> {
+       child: SlideTransition(
+         position: _primaryPositionAnimation,
+         textDirection: textDirection,
+-        child: DecoratedBoxTransition(decoration: _primaryShadowAnimation, child: widget.child),
++        child: DecoratedBoxTransition(
++          decoration: _primaryShadowAnimation,
++          // PiliPlus: back gesture from the end (right) edge
++          child: _CupertinoEndEdgeBackGestureDetector(child: widget.child),
++        ),
+       ),
+     );
+   }
+@@ -1639,3 +1643,496 @@ class CupertinoPageTransitionsBuilder extends PageTransitionsBuilder {
+     );
+   }
+ }
++
++// PiliPlus: back gesture from the end (right) edge.
++//
++// Dragging from the end edge towards the start edge plays the regular back
++// transition (the page slides towards the end edge and reveals the previous
++// page), while an Android style indicator bulges out of the edge at the
++// finger. Once dragged past [CupertinoEndEdgeBackGesture.armDistance] the
++// gesture is armed, and releasing it pops the route; dragging back before
++// releasing cancels. While a bottom sheet (local history entry) is open, the
++// page stays put and releasing closes the sheet instead.
++
++/// Configuration of the end edge back gesture added by PiliPlus.
++abstract final class CupertinoEndEdgeBackGesture {
++  /// Whether the gesture is recognized at all.
++  static bool enabled = false;
++
++  /// Called whenever the gesture becomes armed (`true`, releasing now goes
++  /// back) or disarmed (`false`).
++  static ValueChanged<bool>? onArmedChanged;
++
++  /// Distance the finger has to travel before the gesture is armed.
++  static double armDistance(double width) => clampDouble(width * 0.2, 64.0, 120.0);
++
++  /// Key of the edge indicator, for tests.
++  static const Key indicatorKey = ValueKey<String>('CupertinoEndEdgeBackIndicator');
++}
++
++class _CupertinoEndEdgeBackGestureDetector extends StatefulWidget {
++  const _CupertinoEndEdgeBackGestureDetector({required this.child});
++
++  final Widget child;
++
++  @override
++  State<_CupertinoEndEdgeBackGestureDetector> createState() =>
++      _CupertinoEndEdgeBackGestureDetectorState();
++}
++
++class _CupertinoEndEdgeBackGestureDetectorState
++    extends State<_CupertinoEndEdgeBackGestureDetector> {
++  late final HorizontalDragGestureRecognizer _recognizer;
++
++  ModalRoute<Object?>? _route;
++  _CupertinoEndEdgeBackGestureController? _backGestureController;
++  _EndEdgeBackIndicatorModel? _indicator;
++
++  double _width = 0.0;
++  double _distance = 0.0;
++  bool _dragging = false;
++
++  /// A bottom sheet (local history entry) is open: the swipe closes it
++  /// instead of leaving the page, so the page does not move.
++  bool _closeSheet = false;
++
++  @override
++  void initState() {
++    super.initState();
++    _recognizer = HorizontalDragGestureRecognizer(debugOwner: this)
++      // count the distance from the touch down, including the slop
++      ..dragStartBehavior = DragStartBehavior.down
++      ..onStart = _handleDragStart
++      ..onUpdate = _handleDragUpdate
++      ..onEnd = _handleDragEnd
++      ..onCancel = _handleDragCancel;
++  }
++
++  @override
++  void dispose() {
++    _recognizer.dispose();
++    final _CupertinoEndEdgeBackGestureController? controller = _backGestureController;
++    final _EndEdgeBackIndicatorModel? indicator = _indicator;
++    _backGestureController = null;
++    _indicator = null;
++    if (controller != null || indicator != null) {
++      WidgetsBinding.instance.addPostFrameCallback((_) {
++        controller?.stop();
++        indicator?.dismiss(committed: false);
++      });
++    }
++    super.dispose();
++  }
++
++  bool get _isLtr => Directionality.of(context) == TextDirection.ltr;
++
++  void _handleDragStart(DragStartDetails details) {
++    final ModalRoute<Object?>? route = _route;
++    if (route == null || !route.isCurrent || route.navigator == null) {
++      return;
++    }
++    _width = context.size!.width;
++    _distance = 0.0;
++    _dragging = true;
++    if (!_closeSheet) {
++      _backGestureController ??= _CupertinoEndEdgeBackGestureController(route);
++    }
++    final OverlayState? overlay = Overlay.maybeOf(context);
++    if (overlay != null && _indicator == null) {
++      final RenderBox overlayBox = overlay.context.findRenderObject()! as RenderBox;
++      _indicator = _EndEdgeBackIndicatorModel(
++        overlay: overlay,
++        isLtr: _isLtr,
++        armDistance: CupertinoEndEdgeBackGesture.armDistance(_width),
++        y: overlayBox.globalToLocal(details.globalPosition).dy,
++      );
++    }
++  }
++
++  void _handleDragUpdate(DragUpdateDetails details) {
++    if (!_dragging) {
++      return;
++    }
++    // positive: the finger moves away from the end edge
++    final double delta = _isLtr ? -details.primaryDelta! : details.primaryDelta!;
++    _distance = max(0.0, _distance + delta);
++    _backGestureController?.setProgress(_distance / _width);
++    final _EndEdgeBackIndicatorModel? indicator = _indicator;
++    if (indicator != null) {
++      final RenderBox overlayBox =
++          indicator.overlay.context.findRenderObject()! as RenderBox;
++      indicator.update(
++        distance: _distance,
++        y: overlayBox.globalToLocal(details.globalPosition).dy,
++      );
++    }
++  }
++
++  void _handleDragEnd(DragEndDetails details) {
++    final double velocity = _isLtr
++        ? -details.velocity.pixelsPerSecond.dx
++        : details.velocity.pixelsPerSecond.dx;
++    // a quick flick back towards the edge cancels even when armed
++    final bool cancelFling = velocity / max(_width, 1.0) <= -_kMinFlingVelocity;
++    _finish(armed: (_indicator?.armed ?? _armed) && !cancelFling);
++  }
++
++  bool get _armed => _distance >= CupertinoEndEdgeBackGesture.armDistance(_width);
++
++  void _handleDragCancel() {
++    _finish(armed: false);
++  }
++
++  void _finish({required bool armed}) {
++    if (!_dragging) {
++      return;
++    }
++    _dragging = false;
++    bool committed;
++    if (_closeSheet) {
++      final ModalRoute<Object?>? route = _route;
++      committed =
++          armed &&
++          route != null &&
++          route.isCurrent &&
++          route.willHandlePopInternally &&
++          route.navigator != null;
++      if (committed) {
++        // removes the newest local history entry, which closes the sheet
++        route.navigator!.maybePop();
++      }
++    } else {
++      final _CupertinoEndEdgeBackGestureController? controller = _backGestureController;
++      _backGestureController = null;
++      committed = controller?.dragEnd(pop: armed) ?? false;
++    }
++    _indicator?.dismiss(committed: committed);
++    _indicator = null;
++  }
++
++  void _handlePointerDown(PointerDownEvent event) {
++    final ModalRoute<Object?>? route = _route;
++    if (!CupertinoEndEdgeBackGesture.enabled ||
++        _dragging ||
++        route == null ||
++        (route is PageRoute<Object?> && route.fullscreenDialog)) {
++      return;
++    }
++    if (route.popGestureEnabled) {
++      _closeSheet = false;
++      _recognizer.addPointer(event);
++    } else if (route.isCurrent && route.willHandlePopInternally) {
++      _closeSheet = true;
++      _recognizer.addPointer(event);
++    }
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    assert(debugCheckHasDirectionality(context));
++    _route = ModalRoute.of(context);
++    // For devices with notches, the drag area needs to be larger on the side
++    // that has the notch.
++    final double dragAreaWidth = switch (Directionality.of(context)) {
++      TextDirection.rtl => MediaQuery.paddingOf(context).left,
++      TextDirection.ltr => MediaQuery.paddingOf(context).right,
++    };
++    return Stack(
++      fit: StackFit.passthrough,
++      children: <Widget>[
++        widget.child,
++        PositionedDirectional(
++          end: 0.0,
++          width: max(dragAreaWidth, _kBackGestureWidth),
++          top: 0.0,
++          bottom: 0.0,
++          child: Listener(onPointerDown: _handlePointerDown, behavior: HitTestBehavior.translucent),
++        ),
++      ],
++    );
++  }
++}
++
++/// Drives the route's animation exactly like the regular back swipe.
++class _CupertinoEndEdgeBackGestureController {
++  _CupertinoEndEdgeBackGestureController(this.route)
++    : navigator = route.navigator!,
++      controller = route.controller! { // protected access
++    navigator.didStartUserGesture();
++  }
++
++  final ModalRoute<Object?> route;
++  final NavigatorState navigator;
++  final AnimationController controller;
++
++  bool _stopped = false;
++
++  /// [progress] is the dragged fraction of the width, 0.0 to 1.0.
++  void setProgress(double progress) {
++    controller.value = 1.0 - clampDouble(progress, 0.0, 1.0);
++  }
++
++  /// Returns whether the route is popped.
++  bool dragEnd({required bool pop}) {
++    const Curve animationCurve = Curves.fastEaseInToSlowEaseOut;
++    final bool isCurrent = route.isCurrent;
++    final bool animateForward = isCurrent ? !pop : route.isActive;
++
++    if (animateForward) {
++      controller.animateTo(
++        1.0,
++        duration: _kDroppedSwipePageAnimationDuration,
++        curve: animationCurve,
++      );
++    } else {
++      if (isCurrent) {
++        navigator.pop();
++      }
++      if (controller.isAnimating) {
++        controller.animateBack(
++          0.0,
++          duration: _kDroppedSwipePageAnimationDuration,
++          curve: animationCurve,
++        );
++      }
++    }
++
++    if (controller.isAnimating) {
++      // keep the transition linear until the page has settled
++      late AnimationStatusListener animationStatusCallback;
++      animationStatusCallback = (AnimationStatus status) {
++        controller.removeStatusListener(animationStatusCallback);
++        stop();
++      };
++      controller.addStatusListener(animationStatusCallback);
++    } else {
++      stop();
++    }
++    return !animateForward && isCurrent;
++  }
++
++  void stop() {
++    if (_stopped) {
++      return;
++    }
++    _stopped = true;
++    if (navigator.mounted) {
++      navigator.didStopUserGesture();
++    }
++  }
++}
++
++/// State of the edge indicator, shown in the navigator's overlay so it stays
++/// pinned to the screen edge while the page moves.
++class _EndEdgeBackIndicatorModel extends ChangeNotifier {
++  _EndEdgeBackIndicatorModel({
++    required this.overlay,
++    required this.isLtr,
++    required this.armDistance,
++    required this.y,
++  }) {
++    _entry = OverlayEntry(
++      builder: (BuildContext context) => _EndEdgeBackIndicator(model: this),
++    );
++    overlay.insert(_entry!);
++  }
++
++  final OverlayState overlay;
++  final bool isLtr;
++  final double armDistance;
++
++  OverlayEntry? _entry;
++
++  double y;
++  double distance = 0.0;
++  bool armed = false;
++
++  /// null while dragging, otherwise whether the release popped the route
++  bool? committed;
++
++  void update({required double distance, required double y}) {
++    this.distance = distance;
++    this.y = y;
++    final bool armed = distance >= armDistance;
++    if (armed != this.armed) {
++      this.armed = armed;
++      CupertinoEndEdgeBackGesture.onArmedChanged?.call(armed);
++    }
++    notifyListeners();
++  }
++
++  void dismiss({required bool committed}) {
++    if (this.committed != null || _entry == null) {
++      return;
++    }
++    this.committed = committed;
++    notifyListeners();
++  }
++
++  void remove() {
++    _entry?.remove();
++    _entry?.dispose();
++    _entry = null;
++    dispose();
++  }
++}
++
++class _EndEdgeBackIndicator extends StatefulWidget {
++  const _EndEdgeBackIndicator({required this.model});
++
++  final _EndEdgeBackIndicatorModel model;
++
++  @override
++  State<_EndEdgeBackIndicator> createState() => _EndEdgeBackIndicatorState();
++}
++
++class _EndEdgeBackIndicatorState extends State<_EndEdgeBackIndicator>
++    with TickerProviderStateMixin {
++  /// 0: straight line, 1: arrow (armed)
++  late final AnimationController _arm = AnimationController(
++    vsync: this,
++    duration: const Duration(milliseconds: 180),
++  );
++
++  /// retracts the panel after release
++  late final AnimationController _exit = AnimationController(
++    vsync: this,
++    duration: const Duration(milliseconds: 220),
++  );
++
++  /// stretch of the panel, eased towards the finger distance
++  late final AnimationController _stretch = AnimationController.unbounded(vsync: this);
++
++  @override
++  void initState() {
++    super.initState();
++    widget.model.addListener(_onModelChanged);
++    _exit.addStatusListener((AnimationStatus status) {
++      if (status.isCompleted) {
++        widget.model.remove();
++      }
++    });
++  }
++
++  void _onModelChanged() {
++    final _EndEdgeBackIndicatorModel model = widget.model;
++    if (model.committed != null) {
++      if (!_exit.isAnimating && !_exit.isCompleted) {
++        _exit.forward();
++      }
++      return;
++    }
++    if (model.armed) {
++      _arm.forward();
++    } else {
++      _arm.reverse();
++    }
++    _stretch.value = model.distance;
++    setState(() {});
++  }
++
++  @override
++  void dispose() {
++    widget.model.removeListener(_onModelChanged);
++    _arm.dispose();
++    _exit.dispose();
++    _stretch.dispose();
++    super.dispose();
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    return IgnorePointer(
++      child: RepaintBoundary(
++        child: CustomPaint(
++          key: CupertinoEndEdgeBackGesture.indicatorKey,
++          size: Size.infinite,
++          painter: _EndEdgeBackIndicatorPainter(
++            model: widget.model,
++            arm: _arm,
++            exit: _exit,
++            stretch: _stretch,
++          ),
++        ),
++      ),
++    );
++  }
++}
++
++class _EndEdgeBackIndicatorPainter extends CustomPainter {
++  _EndEdgeBackIndicatorPainter({
++    required this.model,
++    required this.arm,
++    required this.exit,
++    required this.stretch,
++  }) : super(repaint: Listenable.merge(<Listenable>[model, arm, exit, stretch]));
++
++  final _EndEdgeBackIndicatorModel model;
++  final Animation<double> arm;
++  final Animation<double> exit;
++  final Animation<double> stretch;
++
++  static const double _panelHeight = 168.0;
++  static const double _maxBulge = 36.0;
++  static const double _arrowHalfHeight = 9.0;
++
++  @override
++  void paint(Canvas canvas, Size size) {
++    final double armT = Curves.easeOut.transform(arm.value);
++    final double exitT = Curves.easeIn.transform(exit.value);
++    final bool committed = model.committed ?? false;
++
++    // rubber band: follows the finger, then resists
++    final double progress = clampDouble(stretch.value / model.armDistance, 0.0, 1.0);
++    double bulge = _maxBulge * (1.0 - exp(-stretch.value / (model.armDistance * 0.55)));
++    bulge += 4.0 * armT; // small pop when armed
++    // retract after release; a committed back pops out a bit first
++    bulge *= committed ? (1.0 + 0.15 * sin(pi * exitT)) * (1.0 - exitT) : 1.0 - exitT;
++    final double opacity = clampDouble(progress * 1.6, 0.0, 1.0) * (1.0 - exitT);
++    if (bulge <= 0.1 || opacity <= 0.0) {
++      return;
++    }
++
++    final double half = _panelHeight / 2.0;
++    final double cy = clampDouble(model.y, half, max(half, size.height - half));
++    // draw for the right edge, mirror for rtl
++    if (!model.isLtr) {
++      canvas.translate(size.width, 0.0);
++      canvas.scale(-1.0, 1.0);
++    }
++    final double edge = size.width;
++    final double tip = edge - bulge;
++
++    final Path panel = Path()
++      ..moveTo(edge, cy - half)
++      ..cubicTo(edge, cy - half * 0.45, tip, cy - half * 0.42, tip, cy)
++      ..cubicTo(tip, cy + half * 0.42, edge, cy + half * 0.45, edge, cy + half)
++      ..close();
++    canvas.drawPath(
++      panel,
++      Paint()..color = Color.fromRGBO(0, 0, 0, 0.62 * opacity),
++    );
++
++    // a vertical line that bends into a back arrow once armed
++    final double cx = edge - bulge * 0.48;
++    final double h = _arrowHalfHeight * (1.0 + 0.12 * armT);
++    final double bend = h * 0.62 * armT;
++    final Path arrow = Path()
++      ..moveTo(cx + bend * 0.5, cy - h)
++      ..lineTo(cx - bend * 0.5, cy)
++      ..lineTo(cx + bend * 0.5, cy + h);
++    canvas.drawPath(
++      arrow,
++      Paint()
++        ..color = Color.fromRGBO(255, 255, 255, (0.55 + 0.45 * armT) * opacity)
++        ..style = PaintingStyle.stroke
++        ..strokeWidth = 2.6
++        ..strokeCap = StrokeCap.round
++        ..strokeJoin = StrokeJoin.round,
++    );
++  }
++
++  @override
++  bool shouldRepaint(_EndEdgeBackIndicatorPainter oldDelegate) =>
++      oldDelegate.model != model;
++}

@@ -788,6 +788,9 @@ abstract final class Pref {
         defaultValue: Transition.native.index,
       )];
 
+  static bool get endEdgeBackGesture =>
+      _setting.get(SettingBoxKey.endEdgeBackGesture, defaultValue: false);
+
   static bool get enableQuickDouble =>
       _setting.get(SettingBoxKey.enableQuickDouble, defaultValue: true);
 

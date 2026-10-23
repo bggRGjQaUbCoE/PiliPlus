@@ -31,6 +31,7 @@ import 'package:PiliPlus/pages/setting/widgets/multi_select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/ordered_multi_select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/slider_dialog.dart';
+import 'package:PiliPlus/utils/end_edge_back_gesture.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
@@ -125,6 +126,16 @@ List<SettingsModel> get styleSettings => [
     getSubtitle: () => '当前：${Pref.pageTransition.name}',
     onTap: _showTransitionDialog,
   ),
+  if (Platform.isIOS)
+    const SwitchModel(
+      title: '右侧边缘返回手势',
+      subtitle:
+          '从屏幕右边缘向左滑动返回上一页，松手生效；打开评论等底部面板时则关闭面板。'
+          '震动随「震动反馈」设置（页面过渡动画需为 native 或 cupertino）',
+      leading: Icon(Icons.swipe_left_outlined),
+      setKey: SettingBoxKey.endEdgeBackGesture,
+      onChanged: EndEdgeBackGesture.setEnabled,
+    ),
   const SwitchModel(
     title: '优化平板导航栏',
     leading: Icon(Icons.auto_fix_high),

@@ -275,7 +275,11 @@ foreach ($patch in $patches_material) {
 
 $BottomSheetIOSFlutterPatchCupertino = "lib/scripts/cupertino/bottom_sheet_ios_flutter.patch"
 
-$patches_cupertino = @()
+# back gesture from the right edge (iOS setting), applied on every platform
+# because the app references `CupertinoEndEdgeBackGesture`
+$EndEdgeBackGesturePatchCupertino = "lib/scripts/cupertino/end_edge_back_gesture.patch"
+
+$patches_cupertino = @($EndEdgeBackGesturePatchCupertino)
 
 switch ($platform.ToLower()) {
     "android" {

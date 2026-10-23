@@ -4,6 +4,13 @@
 姊妹仓：本地 media-kit checkout 在 `../media-kit`（compat 分支），本仓的一切播放器行为变化先看其 `TASKS.md` 的 MK-ROUTING 段。
 **镜像红线（2026-10-17 起；改名后仅适用于旧仓 PiliPlus.old）**：旧仓 `main/dev/dom` 与全部 tag 由 `ci/upstream-sync` 孤儿分支每日强镜像自上游（force+prune），自有提交只能放特性分支（当前工作分支 `feature/ohos`，不受镜像影响）。
 
+## CODEC-GRAY-PRE29-KIND-20261023
+
+- **已修复并实机验证 / media-kit 已本地提交（不推送），本仓仅文档，提交事实以 Git log 为准**：用户报障"P10 Plus 所有格式选项全灰"。根因在姊妹仓：`VideoRouteCapabilities.decoderKind` 在 API<29 永不返回 hardware（厂商 OMX 归 unknown），App `_decodableAtSize` 把"无 hardware 解码器"判不可播 → VKY（API28）/LG G6（API24）三族全灰。决策依据（AOSP 源码核实）：API29 `isHardwareAccelerated` 对 OMX 组件本就是"非 OMX.google 前缀+无 software-codec 声明"的命名推导，pre-29 镜像它同级可信；参考 Parseus/codecinfo 实机验证软解黑名单。修复仅改 media-kit（decoderKind pre-29 分支 + `isSoftwareDecoderName` 黑名单；API≥29 行为不变），**App 侧按用户指令零改动**。
+- 验证（dev 变体 77.9MB，5 台全装）：VKY 探测旧版三连灰→新版仅 av01 灰、流级仅 AV1 各档灰（正确）、1080P 硬解实跑（OMX.hisi + `hwdecCurrent=mediacodec-copy verified=true`）；LG G6 同闭合；LYA（API29）回归通过零置灰。用户另报"无法加载解码器"toast：查明为**预先存在**（旧 APK 对照复现相同序列）——路由 planner 对 VKY 规划 `hwdec=mediacodec` 直接模式，hisi OMX 直接模式缓冲分配失败（DynamicANWBuffer/buffer count 全拒）→ 首轮落软解并外泄错误事件成 toast → 路由 degrade → 重开 `mediacodec-copy` 硬解成功（最终硬解非软解）；与 decoderKind 修复及 libmpv 换链无关，修复方向候选见归档，待用户定夺。
+- 工程教训（已入姊妹仓 TASKS.md）：构建须 `ORG_GRADLE_PROJECT_dev=true`+`JAVA_HOME=openjdk@21`；忘带 dev 属性时 `adb install -r` 对无后缀包报 Success 实为并列新装，复测跑旧包——install 后必须核对 on-device base.apk 尺寸/lastUpdateTime。
+- context：[codec-capability-graying-20261022.md](archives/conversations/codec-capability-graying-20261022.md)（2026-10-23 晚追加段）；姊妹仓 TASKS.md `DECODER-KIND-PRE29-20261023`。
+
 ## PLAYBACK-DIAG-BAR-20261022
 
 - **implemented（工作区未提交）**：视频页底部控制栏新增"播放诊断信息"行（设置→播放设置→"播放诊断信息"开关，默认关）。一行格式：`路由段 | hwdec=xx | codec 宽x高 pixelformat[ hw:xx] | 当前页面路由`；路由段 routed:ok/routed:...（`playback.ready` ValueListenable）/legacy（videoController 非空）/idle。全部走既有公开 API（`PlPlayerController.playback/videoController` getter、`getProperty('hwdec-current')` 同步快照、`player.stream.tracks/videoParams` 驱动刷新），**media-kit 与 view.dart/controller.dart 零改动**。改动足迹：新增 `lib/plugin/pl_player/widgets/playback_diag_bar.dart`；`bottom_control.dart` +2 行；开关三层 `storage_key`/`storage_pref`/`play_settings`。验收：flutter analyze（3.47.7）改动前后 72 issues 零新增、diff 逐字节一致；独立 review 可交付，2 条建议级观察按受控残留（player null 防御分支不重订阅→诊断行停更不崩溃，由页面挂载门控兜底；运行中切换开关显隐等下一次流事件）。**未实机验收**：需开开关后真机确认显示内容与随控制栏滑出动画。live 页独立 bottom_control 不受影响。

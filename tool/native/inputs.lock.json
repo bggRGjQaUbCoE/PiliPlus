@@ -1,0 +1,297 @@
+{
+  "schema": 1,
+  "media_kit": {
+    "repository": "Goodwu/media-kit",
+    "commit": "24f97cb8ac6b051e0278fba33f62b5ebd6192cae"
+  },
+  "flutter": {
+    "version": "3.47.7"
+  },
+  "platforms": {
+    "android": {
+      "runner": "ubuntu-24.04",
+      "architectures": [
+        "arm64-v8a",
+        "armeabi-v7a",
+        "x86",
+        "x86_64"
+      ],
+      "application_architectures": [
+        "arm64-v8a",
+        "armeabi-v7a",
+        "x86_64"
+      ],
+      "default_mode": "source",
+      "source": {
+        "producer": {
+          "repository": "Goodwu/libmpv-android-video-build-dv-experiment",
+          "commit": "a48aecf2027d30f6f403caae653dd69e41da2777"
+        },
+        "sources": {
+          "mpv": {
+            "repository": "https://github.com/Goodwu/mpv.git",
+            "branch": "codex/piliplus-dovi-capabilities-20261023",
+            "commit": "e0dc99d0467957ffc16c4afbb4e9f7c3f2a8667d"
+          },
+          "ffmpeg": {
+            "repository": "https://github.com/Goodwu/FFmpeg.git",
+            "branch": "routing/MK-ROUTING-20261011",
+            "commit": "9aba43cfbee182ade060cdccbe15340a0fbe3e83"
+          },
+          "libplacebo": {
+            "repository": "https://github.com/Goodwu/libplacebo.git",
+            "branch": "optimize/dovi-linear-decode",
+            "commit": "ea700489fbf27703d8c1f64874a1c6138f17ad28"
+          },
+          "media-kit-android-helper": {
+            "repository": "https://github.com/Predidit/media-kit-android-helper.git",
+            "branch": "main",
+            "commit": "b768ce102cfa9b5ddec618bb939d689d1b0899fa"
+          }
+        },
+        "toolchain": {
+          "ndk": "27.2.12479018",
+          "build_tools": "34.0.0",
+          "android_api": 26,
+          "meson": "1.6.1"
+        },
+        "required_capabilities": [
+          "mpv.pl-external-yuv",
+          "mpv.pl-dovi-linear-disable",
+          "mpv.lavf-initial-dovi-hvcc"
+        ]
+      }
+    },
+    "windows": {
+      "runner": "windows-2025",
+      "architectures": [
+        "x86_64"
+      ],
+      "default_mode": "upstream",
+      "source": {
+        "producer": {
+          "repository": "Predidit/libmpv-win32-video-cmake",
+          "commit": "fdf75129fc694b5ca555ce73cffc43bb6943ae13"
+        },
+        "sources_lock": "tool/native/desktop/desktop-sources.lock.json",
+        "required_capabilities": [
+          "libmpv",
+          "dxgi"
+        ]
+      },
+      "upstream": {
+        "profile": "predidit-dxgi-20260811",
+        "recipe": {
+          "repository": "Predidit/libmpv-win32-video-cmake",
+          "commit": "6ef6f2ea5ebb5d60bc329ef59b6a751ff6fd9633"
+        },
+        "sources": {
+          "mpv": {
+            "repository": "https://github.com/mpv-player/mpv.git",
+            "commit": "ad59ff1b4a7479e15cb01a96f64ada4fb4df4951"
+          }
+        },
+        "capabilities": [
+          "libmpv",
+          "dxgi"
+        ],
+        "archives": [
+          {
+            "role": "sdk",
+            "url": "https://github.com/Predidit/libmpv-win32-video-cmake/releases/download/20260811/mpv-dev-x86_64-20260811-git-ad59ff1.7z",
+            "sha256": "0161ad026f9ebd418a9b660c8e8c569f7959b5bb8e5f4a63e462ffc73327d4d8"
+          }
+        ]
+      }
+    },
+    "linux": {
+      "runner": "ubuntu-24.04",
+      "architectures": [
+        "x86_64"
+      ],
+      "default_mode": "upstream",
+      "source": {
+        "producer": {
+          "repository": "Goodwu/mpv",
+          "commit": "e0dc99d0467957ffc16c4afbb4e9f7c3f2a8667d"
+        },
+        "sources": {
+          "mpv": {
+            "repository": "https://github.com/Goodwu/mpv.git",
+            "branch": "codex/piliplus-dovi-capabilities-20261023",
+            "commit": "e0dc99d0467957ffc16c4afbb4e9f7c3f2a8667d"
+          },
+          "ffmpeg": {
+            "repository": "https://github.com/Goodwu/FFmpeg.git",
+            "branch": "routing/MK-ROUTING-20261011",
+            "commit": "9aba43cfbee182ade060cdccbe15340a0fbe3e83"
+          },
+          "libplacebo": {
+            "repository": "https://github.com/Goodwu/libplacebo.git",
+            "branch": "optimize/dovi-linear-decode",
+            "commit": "ea700489fbf27703d8c1f64874a1c6138f17ad28"
+          }
+        },
+        "sources_lock": "tool/native/desktop/desktop-sources.lock.json",
+        "required_capabilities": [
+          "libmpv",
+          "opengl"
+        ]
+      },
+      "upstream": {
+        "profile": "predidit-20260810",
+        "recipe": {
+          "repository": "Predidit/libmpv-linux-build",
+          "release": "20260810"
+        },
+        "sources": {},
+        "capabilities": [
+          "libmpv",
+          "opengl"
+        ],
+        "archives": [
+          {
+            "role": "runtime",
+            "url": "https://github.com/Predidit/libmpv-linux-build/releases/download/20260810/libmpv_x86_64.zip",
+            "sha256": "45922100e5240bf69a72fa2ae140d5b54e1ed03993a8a3746dc798e3ae8ad6e4"
+          },
+          {
+            "role": "headers",
+            "url": "https://github.com/Predidit/libmpv-linux-build/releases/download/20260810/libmpv_x86_64_header.zip",
+            "sha256": "c654ee0145167694c7ab55c02810d59b5e73e09c5404b32c0b037b53e42c164d"
+          }
+        ]
+      }
+    },
+    "ios": {
+      "runner": "macos-26",
+      "architectures": [
+        "arm64",
+        "x86_64"
+      ],
+      "default_mode": "upstream",
+      "source": {
+        "producer": {
+          "repository": "Goodwu/libmpv-darwin-build",
+          "commit": "159669981e7d852badf1f3fb167e58175d645cb0"
+        },
+        "toolchain": {
+          "xcode_path": "/Applications/Xcode_16.1.0.app"
+        },
+        "required_capabilities": [
+          "libmpv",
+          "opengl"
+        ]
+      },
+      "upstream": {
+        "profile": "default-0.6.8",
+        "recipe": {
+          "repository": "Predidit/libmpv-darwin-build",
+          "commit": "93008b73d515268d099b7d0110ccf3ebf7b38b92"
+        },
+        "sources": {
+          "mpv": {
+            "version": "0.36.0"
+          },
+          "ffmpeg": {
+            "version": "6.0"
+          }
+        },
+        "capabilities": [
+          "libmpv",
+          "opengl"
+        ],
+        "archives": [
+          {
+            "role": "frameworks",
+            "url": "https://github.com/Predidit/libmpv-darwin-build/releases/download/0.6.8/libmpv-xcframeworks_0.6.8_ios-universal-video-default.tar.gz",
+            "sha256": "d428641cc6c100de8234eae04e229966e46949eb73fcabd526a008a02e9bf968"
+          },
+          {
+            "role": "headers",
+            "url": "https://github.com/mpv-player/mpv/archive/refs/tags/v0.36.0.tar.gz",
+            "sha256": "29abc44f8ebee013bb2f9fe14d80b30db19b534c679056e4851ceadf5a5e8bf6"
+          }
+        ]
+      }
+    },
+    "macos": {
+      "runner": "macos-26",
+      "architectures": [
+        "arm64",
+        "x86_64"
+      ],
+      "default_mode": "upstream",
+      "source": {
+        "producer": {
+          "repository": "Goodwu/libmpv-darwin-build",
+          "commit": "159669981e7d852badf1f3fb167e58175d645cb0"
+        },
+        "toolchain": {
+          "xcode_path": "/Applications/Xcode_16.1.0.app"
+        },
+        "required_capabilities": [
+          "libmpv",
+          "opengl"
+        ]
+      },
+      "upstream": {
+        "profile": "default-0.6.8",
+        "recipe": {
+          "repository": "Predidit/libmpv-darwin-build",
+          "commit": "93008b73d515268d099b7d0110ccf3ebf7b38b92"
+        },
+        "sources": {
+          "mpv": {
+            "version": "0.36.0"
+          },
+          "ffmpeg": {
+            "version": "6.0"
+          }
+        },
+        "capabilities": [
+          "libmpv",
+          "opengl"
+        ],
+        "archives": [
+          {
+            "role": "frameworks",
+            "url": "https://github.com/Predidit/libmpv-darwin-build/releases/download/0.6.8/libmpv-xcframeworks_0.6.8_macos-universal-video-default.tar.gz",
+            "sha256": "c396976a267eaaa64bc603f3cc1a2ee02d27c7d5d57935d2458f364afdf0f3cb"
+          },
+          {
+            "role": "headers",
+            "url": "https://github.com/mpv-player/mpv/archive/refs/tags/v0.36.0.tar.gz",
+            "sha256": "29abc44f8ebee013bb2f9fe14d80b30db19b534c679056e4851ceadf5a5e8bf6"
+          }
+        ]
+      }
+    },
+    "ohos": {
+      "runner": "ubuntu-24.04",
+      "architectures": [
+        "arm64"
+      ],
+      "default_mode": "source",
+      "source": {
+        "producer": {
+          "repository": "Goodwu/libmpv-ohos-build",
+          "commit": "09376a5c3970dccd885750cf3da22367fa0baa8e"
+        },
+        "toolchain": {
+          "sdk": "26.0.0.621",
+          "meson": "1.6.1",
+          "rust": "1.97.0",
+          "cargo_c": "0.10.26+cargo-0.100.0"
+        },
+        "required_capabilities": [
+          "libmpv",
+          "webp-encode",
+          "webp-animated-encode",
+          "webp-mux"
+        ]
+      },
+      "application_source_policy_sha256": "f589951566bbe37dd5b0d9f40e239c858e50fd31d0fdcb71622670cb16d2489b"
+    }
+  }
+}

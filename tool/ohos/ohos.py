@@ -92,8 +92,60 @@ def compare_trees(root: Path, base: str, revision: str) -> dict:
     }
 
 
-def check_source(root: Path, base_ref: str | None, revision_ref: str = "HEAD", *, worktree: bool = True) -> dict:
+def approved_source(root: Path, revision: str, base_ref: str | None, *, worktree: bool,
+                    policy_manifest: str, policy_sha256: str | None) -> dict:
+    rules = helper("source_policy")
+    name = rules.relative(policy_manifest)
+    if not name.startswith("tool/ohos/"):
+        raise CheckError("Approved source policy must be committed under tool/ohos")
+    # Read the selected commit, never an uncommitted replacement approval file.
+    policy = rules.document(git(root, "show", f"{revision}:{name}"), policy_sha256)
+    base = commit(root, policy["baseline_commit"])
+    if base_ref is not None and commit(root, base_ref) != base:
+        raise CheckError("--base-ref differs from the explicitly approved integration baseline")
+    git(root, "merge-base", "--is-ancestor", base, revision)
+    actual_tree = git(root, "rev-parse", f"{base}^{{tree}}").decode().strip()
+    if actual_tree != policy["baseline_tree"]:
+        raise CheckError("Approved integration baseline tree does not match its lock")
+    before, after = tree(root, base), tree(root, revision)
+    for path, expected in policy["integration"]["files"].items():
+        entry = before.get(path)
+        if entry is None or entry[:2] != ("100644", "blob"):
+            raise CheckError(f"Approved integration file is not a regular baseline source: {path}")
+        if rules.sha256(git(root, "cat-file", "blob", entry[2])) != expected:
+            raise CheckError(f"Approved integration file hash differs from baseline: {path}")
+    result = compare_trees(root, base, revision)
+    changed = set(result["original_file_changes"]) | set(result["added_files"])
+    result["approved_build_metadata_changes"] = sorted(path for path in changed if rules.permits_build_metadata(policy, path))
+    result["original_file_changes"] = [path for path in result["original_file_changes"]
+                                       if not rules.permits_build_metadata(policy, path)]
+    result["unapproved_additions"] = [path for path in result["added_files"]
+                                      if not rules.permits_build_metadata(policy, path)]
+    result["worktree_changes"] = []
+    if worktree:
+        if commit(root, "HEAD") != revision:
+            raise CheckError("Check out the selected approved revision before checking its worktree")
+        changes = git(root, "diff", "--name-only", "--no-renames", "-z", revision, "--").split(b"\0")
+        changes += git(root, "diff", "--cached", "--name-only", "--no-renames", "-z", revision, "--").split(b"\0")
+        result["worktree_changes"] = sorted({path.decode() for path in changes if path})
+    result["source_policy"] = {
+        "mode": rules.MODE, "manifest": name, "manifest_sha256": policy_sha256,
+        "baseline_tree": actual_tree, "integration": policy["integration"]["name"],
+    }
+    result["status"] = "fail" if any(result[key] for key in (
+        "original_file_changes", "unapproved_additions", "worktree_changes")) else "pass"
+    return result
+
+
+def check_source(root: Path, base_ref: str | None, revision_ref: str = "HEAD", *, worktree: bool = True,
+                 source_policy: str = "addition-only", policy_manifest: str = "tool/ohos/approved_integration.json",
+                 policy_sha256: str | None = None) -> dict:
     revision = commit(root, revision_ref)
+    if source_policy == "approved-integration":
+        return approved_source(root, revision, base_ref, worktree=worktree,
+                               policy_manifest=policy_manifest, policy_sha256=policy_sha256)
+    if source_policy != "addition-only" or policy_sha256 is not None:
+        raise CheckError("A source-policy hash is accepted only with --source-policy approved-integration")
     base = select_base(root, revision, base_ref)
     result = compare_trees(root, base, revision)
     if worktree:
@@ -109,10 +161,17 @@ def check_source(root: Path, base_ref: str | None, revision_ref: str = "HEAD", *
             {path.decode() for path in changed if path and path.decode() in original}
         )
     result["status"] = "pass" if not result["original_file_changes"] else "fail"
+    result["source_policy"] = {"mode": "addition-only"}
     return result
 
 
 def require_originals_unchanged(report: dict) -> None:
+    if report.get("source_policy", {}).get("mode") == "approved-integration":
+        if report["status"] != "pass":
+            paths = set(report["original_file_changes"]) | set(report["unapproved_additions"]) | set(report["worktree_changes"])
+            raise CheckError("Approved application source or worktree changed; review and pin a new baseline:\n  "
+                             + "\n  ".join(sorted(paths)))
+        return
     if report["original_file_changes"]:
         raise CheckError(
             "Original upstream files changed; this scaffold currently permits additions only:\n  "
@@ -179,7 +238,7 @@ def doctor(root: Path, flutter: str | None) -> dict:
             "repository", "branch", "commit", "flutter_version", "dart_version",
         )},
         "flutter_executable": executable,
-        "media_backend": "deferred-by-request",
+        "media_backend": "validated-separately-during-prepare-build",
         "device_functionality_verified": False,
     }
     if not executable:
@@ -201,7 +260,6 @@ def doctor(root: Path, flutter: str | None) -> dict:
                 result["hap_command_available"] = True
         except (CheckError, ValueError) as exc:
             errors.append(str(exc))
-    # The explicitly deferred media backend does not block non-media adaptation.
     # A passing SDK check does not assert native plugin or device compatibility.
     result["status"] = "blocked" if errors else "pass"
     result["blockers"] = errors
@@ -257,13 +315,17 @@ def export_archive(root: Path, revision: str, output: Path) -> None:
             archive.extractall(output, filter="data")
 
 
-def prepare(root: Path, output: Path, base_ref: str | None, revision_ref: str) -> dict:
+def prepare(root: Path, output: Path, base_ref: str | None, revision_ref: str, *,
+            source_policy: str = "addition-only", policy_manifest: str = "tool/ohos/approved_integration.json",
+            policy_sha256: str | None = None) -> dict:
     root, output = root.resolve(), output.resolve()
     if output == root or root in output.parents:
         raise CheckError("The output must be outside the source checkout")
     if output.exists():
         raise CheckError(f"The output already exists: {output}")
-    report = check_source(root, base_ref, revision_ref, worktree=False)
+    approved = source_policy == "approved-integration"
+    report = check_source(root, base_ref, revision_ref, worktree=approved, source_policy=source_policy,
+                          policy_manifest=policy_manifest, policy_sha256=policy_sha256)
     require_originals_unchanged(report)
     selected = tree(root, report["source_commit"])
     if "ohos/AppScope/app.json5" not in selected:
@@ -273,7 +335,10 @@ def prepare(root: Path, output: Path, base_ref: str | None, revision_ref: str) -
     stage = Path(tempfile.mkdtemp(prefix=f".{output.name}-", dir=output.parent))
     try:
         export_archive(root, report["source_commit"], stage)
-        original = tree(root, report["base_commit"])
+        # An approved integration exports its selected commit exactly, including
+        # later committed build-tool updates. Its application tree was already
+        # checked against the separately pinned approval baseline above.
+        original = selected if approved else tree(root, report["base_commit"])
         for path, (mode, kind, sha) in original.items():
             if kind != "blob" or mode not in ("100644", "100755"):
                 raise CheckError(f"Unsupported original Git entry: {path} ({mode}, {kind})")
@@ -286,10 +351,24 @@ def prepare(root: Path, output: Path, base_ref: str | None, revision_ref: str) -
         if not version:
             raise CheckError(f"Review OHOS version mapping for {spec['version']!r}")
         profile_path = stage / "ohos/AppScope/app.json5"
+        original_profile = profile_path.read_bytes()
         profile = json.loads(profile_path.read_text(encoding="utf-8"))
         profile["app"]["versionName"] = version.group(1)
         profile["app"]["versionCode"] = int(version.group(2) or "1")
         profile_path.write_text(json.dumps(profile, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        preparation_changes = []
+        profile_bytes = profile_path.read_bytes()
+        if profile_bytes != original_profile:
+            preparation_changes.append({
+                "path": "ohos/AppScope/app.json5", "reason": "synchronize source version metadata",
+                "before_sha256": hashlib.sha256(original_profile).hexdigest(),
+                "after_sha256": hashlib.sha256(profile_bytes).hexdigest(),
+            })
+        inventory = {path: {"mode": value[0], "blob": value[2]} for path, value in original.items()}
+        if approved:
+            inventory["ohos/AppScope/app.json5"]["blob"] = hashlib.sha1(
+                b"blob " + str(len(profile_bytes)).encode() + b"\0" + profile_bytes).hexdigest()
+        inventory_bytes = (json.dumps(inventory, indent=2) + "\n").encode()
         build_defines = {
             "pili.name": version.group(1),
             "pili.code": int(version.group(2) or "1"),
@@ -305,6 +384,9 @@ def prepare(root: Path, output: Path, base_ref: str | None, revision_ref: str) -
             "stage": "source-preparation-only",
             "application_entrypoint": "lib/main.dart",
             "application_source_transformations": [],
+            "source_preparation_transformations": preparation_changes,
+            "source_inventory_sha256": hashlib.sha256(inventory_bytes).hexdigest(),
+            "snapshot_baseline_commit": report["source_commit"] if approved else report["base_commit"],
             "dependency_overrides_applied": False,
             "native_version": spec["version"],
             "build_defines": "ohos/build-defines.json",
@@ -313,10 +395,7 @@ def prepare(root: Path, output: Path, base_ref: str | None, revision_ref: str) -
         (stage / "ohos/source-manifest.json").write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8",
         )
-        (stage / "ohos/upstream-files.json").write_text(
-            json.dumps({path: {"mode": value[0], "blob": value[2]} for path, value in original.items()}, indent=2) + "\n",
-            encoding="utf-8",
-        )
+        (stage / "ohos/upstream-files.json").write_bytes(inventory_bytes)
         # rename is atomic on the same filesystem; never replace existing output.
         if output.exists():
             raise CheckError(f"The output appeared while exporting: {output}")
@@ -331,9 +410,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workspace", type=Path, default=DEFAULT_ROOT)
     sub = parser.add_subparsers(dest="command", required=True)
-    check = sub.add_parser("check-source", help="reject changes to existing upstream files")
+    check = sub.add_parser("check-source", help="check additions-only or an explicitly approved integration baseline")
     check.add_argument("--base-ref", help="an incorporated upstream commit; default is merge-base with origin/main")
-    diagnostic = sub.add_parser("doctor", help="check the pinned official OHOS 3.44 SDK; media is deferred")
+    diagnostic = sub.add_parser("doctor", help="check the pinned official OHOS 3.44 SDK identity and HAP command")
     diagnostic.add_argument("--flutter", help="path to the OHOS Flutter executable")
     export = sub.add_parser("prepare", help="export a committed source snapshot without rewriting the app")
     export.add_argument("--output", type=Path, required=True)
@@ -343,20 +422,28 @@ def main(argv: list[str] | None = None) -> int:
     build.add_argument("--output", type=Path, required=True)
     build.add_argument("--revision", default="HEAD")
     build.add_argument("--base-ref")
+    for command in (check, export, build):
+        command.add_argument("--source-policy", choices=("addition-only", "approved-integration"), default="addition-only")
+        command.add_argument("--source-policy-manifest", default="tool/ohos/approved_integration.json")
+        command.add_argument("--source-policy-sha256", help="expected digest from the application/native dependency lock")
     args = parser.parse_args(argv)
     root = args.workspace.resolve()
+    policy = {} if args.command == "doctor" else {
+        "source_policy": args.source_policy, "policy_manifest": args.source_policy_manifest,
+        "policy_sha256": args.source_policy_sha256,
+    }
     try:
         if args.command == "check-source":
-            report = check_source(root, args.base_ref)
+            report = check_source(root, args.base_ref, **policy)
             code = 0 if report["status"] == "pass" else 1
         elif args.command == "doctor":
             report = doctor(root, args.flutter)
             code = 0 if report["status"] == "pass" else 2
         elif args.command == "prepare":
-            report = prepare(root, args.output, args.base_ref, args.revision)
+            report = prepare(root, args.output, args.base_ref, args.revision, **policy)
             code = 0
         else:
-            prepare(root, args.output, args.base_ref, args.revision)
+            prepare(root, args.output, args.base_ref, args.revision, **policy)
             # A selected revision must use its own committed adaptation rules,
             # including when this command is invoked from a newer checkout.
             report = helper("build_profile", args.output.resolve() / "tool/ohos").configure(args.output)

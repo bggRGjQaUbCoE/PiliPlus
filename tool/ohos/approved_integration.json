@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "mode": "approved-integration",
+  "repository": "https://github.com/Goodwu/PiliPlus",
+  "baseline_commit": "30525d964b71b742637fc4ade4764bf94aafda45",
+  "baseline_tree": "775f8d3ba19c294e698af51d323ff16e1aad2ef0",
+  "reason": "Preserve the existing committed ManagedVideoPlayback/RoutedVideoPlayback integration and host composition fixes; do not replay the older Direction B player patch.",
+  "mutable_paths": [
+    "tool/ohos/",
+    "tool/native/",
+    ".github/workflows/",
+    "docs/",
+    "README.md",
+    "README.en.md",
+    "TASKS.md"
+  ],
+  "integration": {
+    "name": "ManagedVideoPlayback/RoutedVideoPlayback",
+    "files": {
+      "lib/common/widgets/image_viewer/gallery_viewer.dart": "031c0b28f3bd8b255dde07ce965f29cf5e3794f5b88e17e49706978595de4225",
+      "lib/main.dart": "d38994e617e83466636e8ba9233fac57a45cd77338b187c23048ce9ea2185702",
+      "lib/pages/audio/controller.dart": "5d524284b9eed675445fbbb7482a0249993d12cd1de933dc58e83140867b1cb8",
+      "lib/pages/live_room/view.dart": "8033e5d711a44bd5c9e696edea73b077878ad83d247618cc8b536606bc000d92",
+      "lib/pages/video/introduction/local/controller.dart": "16fc3f3402f2a155307ea4e975c0f016448cb48d059ef5024b0618e733181fbc",
+      "lib/pages/video/post_panel/view.dart": "23873a8792282d69323dc010f8b0c97bad8163c9a2191a80566a941e49117875",
+      "lib/pages/video/view.dart": "890acc182a03384ccbefa1ccac3093c237d1a3199a8ef90fb3809df73f1f3d39",
+      "lib/plugin/pl_player/controller.dart": "148e0e041bffc96b765a2b2858e7ad9495b5b2e27a1b1617e088ea043557a76e",
+      "lib/plugin/pl_player/models/data_source.dart": "47c98661b2c2f36a7dae8242943d83a47253fe42c2f4891a91c04ab0758df95c",
+      "lib/plugin/pl_player/utils/player_source_lifecycle.dart": "8cf231f02e084cc816a65fb28e4eea5b44766c6bd54292c57d8257cbbcda35bc",
+      "lib/plugin/pl_player/view/view.dart": "4b30163cde10fc41dddb4cfadc67f3b224cec3c6aeebf29a062af1ef78c729c2",
+      "lib/plugin/pl_player/widgets/mpv_convert_webp.dart": "daff35ab5a42df37b584d83c9cde5a88ad7144b57d5eca08f8be5f36f4eb95e8",
+      "lib/utils/codec_capability.dart": "5994612b5acf5275da3015b8fb8563b6c5f825adbbb4b1596b25d4461eb873c1",
+      "lib/utils/hdr_source_hint.dart": "994a337892a4287ed69a955cb676c127b2350437fec8ca6a277be994cb2e6032"
+    }
+  },
+  "dependencies": {
+    "lock_sha256": "eadc9acfa38ea5126995562bfc1e844bfb3775ec3a6c877b1ee1a31353a4918e",
+    "overrides_sha256": "525fe8e1f6878b4af4e20d7cedfe5a9fa50794834a586a9a6c8faf7041a3dc24",
+    "recipe_sha256": "13fbe32ddcbb5acf9e958fe2f45c250ff3537a79f0bceb754829afdf2853d09f",
+    "compatibility_decisions": [
+      {
+        "package": "material_ui",
+        "application_lock": "1.8.0",
+        "ohos_recipe": "1.6.0",
+        "reason": "Retain the reviewed Flutter 3.44 / Dart 3.12 package patches; require fresh analysis and HAP compilation for this application baseline."
+      },
+      {
+        "package": "cupertino_ui",
+        "application_lock": "1.1.4",
+        "ohos_recipe": "1.1.2",
+        "reason": "Retain the reviewed Flutter 3.44 / Dart 3.12 package patches; require fresh analysis and HAP compilation for this application baseline."
+      },
+      {
+        "package": "hive_ce",
+        "application_lock": "2.22.0",
+        "ohos_recipe": "2.21.0",
+        "reason": "Keep the existing OHOS dependency recipe pinned while validating the new application export."
+      },
+      {
+        "package": "cached_network_image_ce / cached_network_image_platform_interface_ce",
+        "application_lock": "b1597d6d58ad3bc5bcf2d93022bc893add7ce66b",
+        "ohos_recipe": "733d4aae9cadaafa9e16f20a6f6a3682c935de01",
+        "reason": "Keep the exact OHOS recipe source; the transformed dependency graph and package sources are recorded separately from the original application lock."
+      },
+      {
+        "package": "media_kit*",
+        "application_lock": "sibling ../media-kit path overrides",
+        "ohos_recipe": "the explicitly selected committed Goodwu/media-kit snapshot",
+        "reason": "Replace the original sibling paths only in the exported OHOS copy, then verify every resolved media package points into that snapshot."
+      }
+    ]
+  }
+}

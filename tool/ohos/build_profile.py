@@ -49,10 +49,15 @@ def validate_workspace(workspace: Path) -> dict:
     if (workspace / ".git").exists():
         raise ProfileError("Only an exported build copy may be adapted; Git checkouts are refused")
     manifest_path = safe_path(workspace, "ohos/source-manifest.json")
-    safe_path(workspace, "ohos/upstream-files.json")
+    inventory_path = safe_path(workspace, "ohos/upstream-files.json")
     manifest = json.loads(manifest_path.read_text())
     if manifest.get("original_file_changes"):
         raise ProfileError("The exported source does not preserve the original upstream files")
+    policy = load_helper("source_policy").from_export(workspace, manifest)
+    inventory_sha256 = manifest.get("source_inventory_sha256")
+    if (policy is not None or inventory_sha256 is not None) and (
+            inventory_sha256 != hashlib.sha256(inventory_path.read_bytes()).hexdigest()):
+        raise ProfileError("Exported source inventory changed after preparation")
     return manifest
 
 
@@ -145,7 +150,7 @@ def configure(workspace: Path) -> dict:
             environment_transformations=environment,
             application_source_transformations=application,
             platform_transformations=platform,
-            media_backend="media-kit-direction-b",
+            media_backend=media["backend"],
             media_transformations=media,
             dependencies=dependencies,
             dependency_overrides_applied=True,

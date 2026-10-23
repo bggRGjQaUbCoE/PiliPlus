@@ -1,0 +1,172 @@
+{
+  "app_upstream_integration": [
+    {
+      "actual_app_upstream_and_safe_extract": true,
+      "app_verify_policy": true,
+      "common_create_and_verify": true,
+      "framework_count": 18,
+      "origin": "upstream-binary",
+      "platform": "ios",
+      "validation": {
+        "compiled": false,
+        "device": false,
+        "runtime": false
+      }
+    },
+    {
+      "actual_app_upstream_and_safe_extract": true,
+      "app_verify_policy": true,
+      "common_create_and_verify": true,
+      "framework_count": 18,
+      "origin": "upstream-binary",
+      "platform": "macos",
+      "validation": {
+        "compiled": false,
+        "device": false,
+        "runtime": false
+      }
+    }
+  ],
+  "headers": {
+    "all_packaged_mpv_slice_headers_byte_equal": true,
+    "files_sha256": {
+      "client.h": "287181025de368777fa30f6f636c1915e77cc551ffe132993528f08ff4a64ae4",
+      "render.h": "0a93aa38bd3994f96860c1d68adafeba87c97b174456d13ec0b18a855180bd19",
+      "render_gl.h": "7bb28b46420b7c85247ac316cec5e2146469418f03d4c78d7b268beeeb9882f2",
+      "stream_cb.h": "5d835aedd37cf76c14b7bfdcf91741bdf5fe052623d1ae1253d8de09a7f9bc34"
+    },
+    "sha256": "29abc44f8ebee013bb2f9fe14d80b30db19b534c679056e4851ceadf5a5e8bf6",
+    "url": "https://github.com/mpv-player/mpv/archive/refs/tags/v0.36.0.tar.gz"
+  },
+  "inspected_on": "2026-10-23",
+  "legacy_rpath_finding": "Pinned upstream Mach-O files retain Nix build-machine LC_RPATH search entries. Non-system dynamic dependencies reference frameworks included in the archive. The static package schema accepts the unchanged binaries; runtime execution was not performed.",
+  "platforms": {
+    "ios": {
+      "all_binary_architectures_match_plist": true,
+      "all_non_system_dylib_dependencies_bundled": true,
+      "archive_sha256": "d428641cc6c100de8234eae04e229966e46949eb73fcabd526a008a02e9bf968",
+      "basic_mpv_client_and_render_exports_present": true,
+      "common_create_verify_passed": true,
+      "framework_count": 18,
+      "frameworks": [
+        "Ass.xcframework",
+        "Avcodec.xcframework",
+        "Avfilter.xcframework",
+        "Avformat.xcframework",
+        "Avutil.xcframework",
+        "Dav1d.xcframework",
+        "Freetype.xcframework",
+        "Fribidi.xcframework",
+        "Harfbuzz.xcframework",
+        "Mbedcrypto.xcframework",
+        "Mbedtls.xcframework",
+        "Mbedx509.xcframework",
+        "Mpv.xcframework",
+        "Png16.xcframework",
+        "Swresample.xcframework",
+        "Swscale.xcframework",
+        "Uchardet.xcframework",
+        "Xml2.xcframework"
+      ],
+      "mpv_slices": {
+        "ios/": [
+          {
+            "architecture": "arm64",
+            "target": {
+              "minimum": "9.0.0",
+              "platform": 2,
+              "sdk": "18.1.0"
+            }
+          }
+        ],
+        "ios/simulator": [
+          {
+            "architecture": "x86_64",
+            "target": {
+              "minimum": "9.0.0",
+              "platform": 2,
+              "sdk": "18.1.0"
+            }
+          },
+          {
+            "architecture": "arm64",
+            "target": {
+              "minimum": "14.0.0",
+              "platform": 7,
+              "sdk": "18.1.0"
+            }
+          }
+        ]
+      },
+      "unique_legacy_build_rpath_count": 15
+    },
+    "macos": {
+      "all_binary_architectures_match_plist": true,
+      "all_non_system_dylib_dependencies_bundled": true,
+      "archive_sha256": "c396976a267eaaa64bc603f3cc1a2ee02d27c7d5d57935d2458f364afdf0f3cb",
+      "basic_mpv_client_and_render_exports_present": true,
+      "common_create_verify_passed": true,
+      "framework_count": 18,
+      "frameworks": [
+        "Ass.xcframework",
+        "Avcodec.xcframework",
+        "Avfilter.xcframework",
+        "Avformat.xcframework",
+        "Avutil.xcframework",
+        "Dav1d.xcframework",
+        "Freetype.xcframework",
+        "Fribidi.xcframework",
+        "Harfbuzz.xcframework",
+        "Mbedcrypto.xcframework",
+        "Mbedtls.xcframework",
+        "Mbedx509.xcframework",
+        "Mpv.xcframework",
+        "Png16.xcframework",
+        "Swresample.xcframework",
+        "Swscale.xcframework",
+        "Uchardet.xcframework",
+        "Xml2.xcframework"
+      ],
+      "mpv_slices": {
+        "macos/": [
+          {
+            "architecture": "x86_64",
+            "target": {
+              "minimum": "10.9.0",
+              "platform": 1,
+              "sdk": "15.1.0"
+            }
+          },
+          {
+            "architecture": "arm64",
+            "target": {
+              "minimum": "11.0.0",
+              "platform": 1,
+              "sdk": "15.1.0"
+            }
+          }
+        ]
+      },
+      "unique_legacy_build_rpath_count": 10
+    }
+  },
+  "runner": {
+    "architecture": "arm64",
+    "build": "16B40",
+    "evidence": "https://github.com/actions/runner-images/blob/c87f6f636fffa43205bc05328efe9958af0f984f/images/macos/macos-15-arm64-Readme.md#xcode",
+    "label": "macos-15",
+    "path": "/Applications/Xcode_16.1.app",
+    "provided_alias": "/Applications/Xcode_16.1.0.app",
+    "sdk_versions": [
+      "macOS 15.1",
+      "iOS 18.1",
+      "iOS Simulator 18.1"
+    ],
+    "selected_xcode": "16.1"
+  },
+  "runtime_executed": false,
+  "schema": 1,
+  "scope": "downloaded-pinned-Apple-SDK-static-inspection",
+  "source_recipe_fix": "Delete Nix/Homebrew LC_RPATH entries from thin dylibs before merging architectures; retain application-relative rpaths. The source exporter rejects any remaining build-machine runtime path.",
+  "upstream_release": "https://github.com/Predidit/libmpv-darwin-build/releases/tag/0.6.8"
+}

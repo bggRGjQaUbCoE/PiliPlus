@@ -23,6 +23,8 @@ import tempfile
 from urllib.parse import unquote, urljoin, urlparse
 from urllib.request import urlopen
 
+import source_policy
+
 
 HERE = Path(__file__).resolve().parent
 MANIFEST = HERE / "dependencies.json"
@@ -52,7 +54,7 @@ def _guard(workspace: Path) -> Path:
     required = ("ohos/source-manifest.json", "ohos/upstream-files.json", "ohos/build-profile.json5",
                 "pubspec.yaml", "pubspec.lock")
     outputs = (".ohos-dependencies/prepared.json", ".dart_tool/package_config.json",
-               "pubspec_overrides.yaml", "ohos/dependency-report.json")
+               "pubspec_overrides.yaml", "ohos/dependency-report.json", "ohos/source-pubspec-overrides.yaml")
     for relative in (*required, *outputs):
         target = workspace
         for part in Path(relative).parts:
@@ -372,6 +374,51 @@ def _adapt_packages(workspace: Path, directory: Path, manifest: dict, cache: Pat
             "native_modules": _local_native_modules(workspace, directory, manifest)}
 
 
+def dependency_inputs(workspace: Path, manifest: dict) -> dict:
+    """Accept either the old lock or the explicitly approved integrated lock.
+
+    Existing overrides are replaceable only when their exact source bytes and
+    the retained OHOS recipe were both named in the approved source policy.
+    """
+    policy = source_policy.from_export(workspace)
+    lock_digest = hashlib.sha256((workspace / "pubspec.lock").read_bytes()).hexdigest()
+    override_path = workspace / "pubspec_overrides.yaml"
+    result = {"mode": "addition-only", "source_lock_sha256": lock_digest,
+              "source_overrides_sha256": None, "compatibility_decisions": []}
+    expected = manifest["baseline_lock_sha256"]
+    if policy is not None:
+        approved = policy["dependencies"]
+        if approved["recipe_sha256"] != hashlib.sha256(MANIFEST.read_bytes()).hexdigest():
+            raise RuntimeError("OHOS dependency recipe differs from the approved integration policy")
+        expected = approved["lock_sha256"]
+        original_overrides = source_policy.safe_file(workspace, "pubspec_overrides.yaml").read_bytes()
+        if hashlib.sha256(original_overrides).hexdigest() != approved["overrides_sha256"]:
+            raise RuntimeError("Approved application dependency overrides changed")
+        result.update(mode=source_policy.MODE, source_overrides_sha256=approved["overrides_sha256"],
+                      retained_recipe_sha256=approved["recipe_sha256"],
+                      compatibility_decisions=approved.get("compatibility_decisions", []))
+    elif override_path.exists():
+        raise RuntimeError("Refusing to overwrite an existing pubspec_overrides.yaml without an approved source policy")
+    if lock_digest != expected:
+        raise RuntimeError("The upstream lock changed; review dependencies against the approved source policy before preparing OHOS")
+    return result
+
+
+def write_overrides(workspace: Path, overrides: dict, inputs: dict) -> None:
+    target = workspace / "pubspec_overrides.yaml"
+    expected = inputs["source_overrides_sha256"]
+    if expected is not None:
+        original = source_policy.safe_file(workspace, "pubspec_overrides.yaml").read_bytes()
+        if hashlib.sha256(original).hexdigest() != expected:
+            raise RuntimeError("Approved application dependency overrides changed during preparation")
+        # Preserve the exact input for the final build receipt and human review.
+        with (workspace / "ohos/source-pubspec-overrides.yaml").open("xb") as stream:
+            stream.write(original)
+    elif target.exists() or target.is_symlink():
+        raise RuntimeError("Refusing to overwrite an existing pubspec_overrides.yaml")
+    target.write_text(json.dumps({"dependency_overrides": overrides}, indent=2) + "\n")
+
+
 def prepare(workspace: Path, cache: Path | None = None) -> dict:
     workspace = _guard(workspace)
     manifest = json.loads(MANIFEST.read_text())
@@ -386,9 +433,8 @@ def prepare(workspace: Path, cache: Path | None = None) -> dict:
         return report
     if directory.exists():
         raise RuntimeError("Incomplete dependency directory exists; prepare a fresh export or remove only .ohos-dependencies")
-    original_lock_digest = hashlib.sha256((workspace / "pubspec.lock").read_bytes()).hexdigest()
-    if original_lock_digest != manifest["baseline_lock_sha256"]:
-        raise RuntimeError("The upstream lock changed; review dependencies.json against the new upstream before preparing OHOS")
+    inputs = dependency_inputs(workspace, manifest)
+    original_lock_digest = inputs["source_lock_sha256"]
     cache = (cache or Path(os.environ.get("PILIPLUS_OHOS_SOURCE_CACHE", workspace / ".ohos-source-cache"))).resolve()
     cache.mkdir(parents=True, exist_ok=True)
     directory.mkdir()
@@ -420,19 +466,19 @@ def prepare(workspace: Path, cache: Path | None = None) -> dict:
         overrides[name] = {"path": f".ohos-dependencies/{name}"}
         if spec.get("direct"):
             _dependency(workspace, name, "any")
-    override_path = workspace / "pubspec_overrides.yaml"
-    if override_path.exists():
-        raise RuntimeError("Refusing to overwrite an existing pubspec_overrides.yaml")
-    override_path.write_text(json.dumps({"dependency_overrides": overrides}, indent=2) + "\n")
+    write_overrides(workspace, overrides, inputs)
+    media_bound = (workspace / "ohos/media-backend.json").is_file()
     report = {
         "schema": 1, "manifest_sha256": manifest_digest,
         "recipe_sha256": recipe_digest, "upstream_lock_sha256": original_lock_digest,
+        "source_policy": inputs,
         "package_source_sha256": _package_hashes(directory),
         "status": "dependency-sources-prepared", "pub_get_passed": False,
         "hap_built": False, "device_validated": False,
         "packages": {name: spec for name, spec in manifest["packages"].items() if name != "cnativeapi"},
         "desktop_isolation": "nativeapi's upstream generated pure-Dart unsupported mirror; cnativeapi C hook removed from this graph",
-        "deferred": manifest["deferred"],
+        "deferred": {name: value for name, value in manifest["deferred"].items()
+                     if name != "media_kit" or not media_bound},
         "device_validation_required": manifest["device_validation_required"], **compatibility,
     }
     marker.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")

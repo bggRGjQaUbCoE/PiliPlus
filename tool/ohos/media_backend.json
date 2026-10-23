@@ -6,6 +6,10 @@
   "patch": "tool/piliplus_compat/direction_b/player-integration.patch",
   "manifest": "tool/piliplus_compat/direction_b/manifest.json",
   "patch_sha256": "2109c3c44c8f93febf04636d557f863d6c05b15fa5a1287ed3f86f2a8474443b",
+  "existing_integration": {
+    "source_policy": "tool/ohos/approved_integration.json",
+    "source_policy_sha256": "f589951566bbe37dd5b0d9f40e239c858e50fd31d0fdcb71622670cb16d2489b"
+  },
   "required_packages": [
     "media_kit",
     "media_kit_video",

@@ -66,6 +66,67 @@ class MediaGates(unittest.TestCase):
         for name, identity in self.files.items():
             self.assertEqual(media.blob((self.workspace / name).read_bytes()), identity['after'])
 
+    def approved_application(self):
+        rules = media.build_profile.load_helper('source_policy')
+        main = self.workspace / 'lib/main.dart'
+        main.write_text('void main() { MediaKit.ensureInitialized(); }\n')
+        policy = {
+            'schema': 1, 'mode': rules.MODE, 'baseline_commit': 'a' * 40, 'baseline_tree': 'b' * 40,
+            'mutable_paths': ['tool/ohos/'],
+            'integration': {'name': 'existing managed playback', 'files': {
+                'lib/main.dart': media.sha256(main.read_bytes()),
+                **{name: media.sha256((self.workspace / name).read_bytes()) for name in self.files}}},
+            'dependencies': {key: 'c' * 64 for key in ('lock_sha256', 'overrides_sha256', 'recipe_sha256')},
+        }
+        policy_file = self.workspace / rules.DEFAULT_MANIFEST
+        policy_file.parent.mkdir(parents=True)
+        policy_file.write_text(json.dumps(policy))
+        digest = media.sha256(policy_file.read_bytes())
+        receipt = {'schema': 1, 'status': 'pass', 'source_commit': 'd' * 40, 'base_commit': 'a' * 40,
+                   'original_file_changes': [], 'unapproved_additions': [], 'worktree_changes': [],
+                   'source_policy': {'mode': rules.MODE, 'manifest': rules.DEFAULT_MANIFEST,
+                                     'manifest_sha256': digest, 'baseline_tree': 'b' * 40}}
+        (self.workspace / 'ohos').mkdir()
+        (self.workspace / 'ohos/source-manifest.json').write_text(json.dumps(receipt))
+        self.config['existing_integration'] = {'source_policy': rules.DEFAULT_MANIFEST,
+                                                'source_policy_sha256': digest}
+        return policy
+
+    def test_approved_existing_integration_never_reapplies_direction_b(self):
+        policy = self.approved_application()
+        before = {name: (self.workspace / name).read_bytes() for name in policy['integration']['files']}
+        (self.sdk / 'patch.diff').unlink()
+        with patch.object(media, 'apply_direction_b', side_effect=AssertionError('old patch must not run')):
+            report = media.application_integration(self.workspace, self.sdk, self.config)
+        self.assertEqual(report['mode'], 'existing-integration')
+        self.assertFalse(report['patch_applied'])
+        self.assertEqual(report['files'], policy['integration']['files'])
+        self.assertEqual(before, {name: (self.workspace / name).read_bytes() for name in before})
+
+    def test_existing_integration_file_drift_has_no_legacy_fallback(self):
+        self.approved_application()
+        (self.workspace / 'lib/main.dart').write_text('// changed after approval\n')
+        with patch.object(media, 'apply_direction_b', side_effect=AssertionError('no fallback')):
+            with self.assertRaisesRegex(RuntimeError, 'integration source drift'):
+                media.application_integration(self.workspace, self.sdk, self.config)
+
+    def test_existing_integration_requires_matching_media_recipe_hash(self):
+        self.approved_application()
+        self.config['existing_integration']['source_policy_sha256'] = '0' * 64
+        with self.assertRaisesRegex(RuntimeError, 'does not approve'):
+            media.application_integration(self.workspace, self.sdk, self.config)
+
+    def test_checked_in_integration_policy_matches_current_application_sources(self):
+        root = Path(__file__).resolve().parents[2]
+        rules = media.build_profile.load_helper('source_policy')
+        config = json.loads((root / 'tool/ohos/media_backend.json').read_text())
+        approval = config['existing_integration']
+        policy = rules.document((root / approval['source_policy']).read_bytes(), approval['source_policy_sha256'])
+        rules.verify_integration(root, policy)
+        self.assertEqual(policy['dependencies']['lock_sha256'], media.sha256((root / 'pubspec.lock').read_bytes()))
+        self.assertEqual(policy['dependencies']['overrides_sha256'], media.sha256((root / 'pubspec_overrides.yaml').read_bytes()))
+        self.assertEqual(policy['dependencies']['recipe_sha256'], media.sha256((root / 'tool/ohos/dependencies.json').read_bytes()))
+
     def test_preimage_drift_rejected_before_any_other_write(self):
         name = list(self.files)[-1]
         (self.workspace / name).write_text('new upstream\n')

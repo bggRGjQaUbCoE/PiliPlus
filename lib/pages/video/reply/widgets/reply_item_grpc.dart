@@ -96,6 +96,7 @@ Widget _replyItemLayout({
   bool needDivider = true,
   VoidCallback? onTap,
   VoidCallback? onLongPress,
+  VoidCallback? onScrollLeft,
 }) {
   final colorScheme = ColorScheme.of(context);
   Widget child = Padding(
@@ -110,7 +111,7 @@ Widget _replyItemLayout({
       divColor: colorScheme.outline.withValues(alpha: 0.08),
       onTapLine: () => debugPrint('onTapLine'),
       onTapDot: (i) => debugPrint('onTapDot: $i'),
-      onScrollLeft: () => debugPrint('onLeftDrag'),
+      onScrollLeft: onScrollLeft,
       child: child,
     );
   }
@@ -410,8 +411,10 @@ class ReplyItemGrpc extends StatelessWidget {
     this.onViewImage,
     this.onCheckReply,
     this.onToggleTop,
+
     this.depth = -1,
     this.reason,
+    this.onScrollLeft,
   });
   final ReplyInfo replyItem;
   final int replyLevel;
@@ -420,14 +423,16 @@ class ReplyItemGrpc extends StatelessWidget {
   final ValueChanged<ReplyInfo>? onReply;
   final void Function(ReplyInfo replyItem, int? subIndex)? onDelete;
   final Int64? upMid;
-  final VoidCallback? dialogueCallback;
+  final ValueChanged<ReplyInfo>? dialogueCallback;
   final ValueGetter<Iterable<ReplyInfo>>? getReplyChain;
   final ValueGetter<String>? getTag;
   final VoidCallback? onViewImage;
   final ValueChanged<ReplyInfo>? onCheckReply;
   final ValueChanged<ReplyInfo>? onToggleTop;
+
   final int depth;
   final ReasonType? reason;
+  final VoidCallback? onScrollLeft;
 
   static final _voteRegExp = RegExp(r"^\{vote:\d+?\}$");
   static final _timeRegExp = RegExp(r'^(?:\d+[:：])?\d+[:：]\d+$');
@@ -464,6 +469,7 @@ class ReplyItemGrpc extends StatelessWidget {
       depth: depth,
       needDivider: needDivider,
       onTap: () {}, // 使InkWell能点着玩
+      onScrollLeft: onScrollLeft,
       content: _replyContentLayout(
         noPad: replyLevel == 0,
         header: _buildHeader(context, colorScheme),
@@ -488,6 +494,7 @@ class ReplyItemGrpc extends StatelessWidget {
       needDivider: needDivider,
       onTap: replyReply == null ? null : () => replyReply!(replyItem, null),
       onLongPress: replyLevel == 0 ? null : () => _showMore(context),
+      onScrollLeft: onScrollLeft,
       content: _replyContentLayout(
         noPad: replyLevel == 0,
         header: _buildHeader(context, colorScheme),
@@ -763,13 +770,13 @@ class ReplyItemGrpc extends StatelessWidget {
       dialogBtn = _replyTextButton(
         label: '查看对话',
         textStyle: textStyle,
-        onPressed: dialogueCallback,
+        onPressed: () => dialogueCallback?.call(replyItem),
       );
     } else if (replyLevel == 3 && replyItem.parent != replyItem.root) {
       dialogBtn = _replyTextButton(
         label: '跳转回复',
         textStyle: textStyle,
-        onPressed: dialogueCallback,
+        onPressed: () => dialogueCallback?.call(replyItem),
       );
     }
 

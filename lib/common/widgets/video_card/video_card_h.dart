@@ -191,7 +191,7 @@ class VideoCardH extends StatelessWidget {
               fontSize: 12,
               height: 1,
               color: theme.colorScheme.outline,
-              overflow: .clip,
+              overflow: .ellipsis,
             ),
           ),
           if (videoItem.isLive != true) ...[

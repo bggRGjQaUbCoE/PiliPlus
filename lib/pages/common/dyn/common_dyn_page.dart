@@ -244,6 +244,8 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
     return ReplyItemGrpc(
       replyItem: item,
       replyLevel: 1,
+      floorResolver: controller.floorResolver,
+      floorBySearch: item.replyControl.isUpTop,
       replyReply: (item, id) => throttleReplyReply(context, item, id),
       onReply: controller.onReply,
       onDelete: (item, subIndex) => controller.onRemove(index, item, subIndex),

@@ -28,6 +28,12 @@ abstract class CommonDynController extends ReplyController<MainListReply>
     with ReplyVoteMixin, BaseReplyFoldMixin<MainListReply>, ReplyFoldMixin {
   CommonDynController({super.count});
 
+  @override
+  int? get floorOid => oid;
+
+  @override
+  int? get floorType => replyType;
+
   MentionItem? get mentionItem => null;
 
   late final RxBool showTitle = false.obs;

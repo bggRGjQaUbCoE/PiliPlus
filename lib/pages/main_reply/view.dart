@@ -133,6 +133,8 @@ class _MainReplyPageState extends State<MainReplyPage>
                   return ReplyItemGrpc(
                     replyItem: response[index],
                     replyLevel: 1,
+                    floorResolver: controller.floorResolver,
+                    floorBySearch: response[index].replyControl.isUpTop,
                     replyReply: throttleReplyReply,
                     onReply: controller.onReply,
                     onDelete: (item, subIndex) =>

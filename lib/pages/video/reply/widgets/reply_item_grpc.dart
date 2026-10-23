@@ -18,6 +18,7 @@ import 'package:PiliPlus/common/widgets/translucent_row.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo, ReplyControl, Content, Url, ReplyControl_VoteOption, Emote;
 import 'package:PiliPlus/grpc/reply.dart';
+import 'package:PiliPlus/pages/common/reply/reply_floor_tag.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/reply.dart';
 import 'package:PiliPlus/http/video.dart';
@@ -48,6 +49,7 @@ import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/reply_floor.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
@@ -405,6 +407,8 @@ class ReplyItemGrpc extends StatelessWidget {
     required this.replyItem,
     required this.replyLevel,
     this.replyReply,
+    this.floorResolver,
+    this.floorBySearch = false,
     this.needDivider = true,
     this.onReply,
     this.onDelete,
@@ -425,6 +429,13 @@ class ReplyItemGrpc extends StatelessWidget {
   final ReplyInfo replyItem;
   final int replyLevel;
   final void Function(ReplyInfo replyItem, int? rpid)? replyReply;
+
+  /// Shows the floor (#N) of this top level comment when set.
+  final ReplyFloorResolver? floorResolver;
+
+  /// The reply is not part of the list sorted by time (e.g. pinned): find
+  /// its floor by search instead of walking down to it.
+  final bool floorBySearch;
   final bool needDivider;
   final ValueChanged<ReplyInfo>? onReply;
   final void Function(ReplyInfo replyItem, int? subIndex)? onDelete;
@@ -624,13 +635,22 @@ class ReplyItemGrpc extends StatelessWidget {
                   format: DateFormatUtils.longFormatDs,
                 )
               : DateFormatUtils.dateFormat(replyItem.ctime.toInt()),
-          children: replyItem.replyControl.hasLocation()
-              ? [
-                  TextSpan(
-                    text: ' • ${replyItem.replyControl.location}',
-                  ),
-                ]
-              : null,
+          children: [
+            if (replyItem.replyControl.hasLocation())
+              TextSpan(text: ' • ${replyItem.replyControl.location}'),
+            if (floorResolver case final resolver?
+                when floorBySearch || !replyItem.replyControl.isUpTop)
+              WidgetSpan(
+                alignment: .baseline,
+                baseline: .alphabetic,
+                child: ReplyFloorTag(
+                  resolver: resolver,
+                  reply: replyItem,
+                  search: floorBySearch,
+                  style: TextStyle(fontSize: 11, color: colorScheme.outline),
+                ),
+              ),
+          ],
         ),
       ),
     );

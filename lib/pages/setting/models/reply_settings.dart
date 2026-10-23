@@ -126,6 +126,16 @@ List<SettingsModel> get replySettings => [
         .put(SettingBoxKey.replySortType, value.index)
         .whenComplete(setState),
   ),
+  const SwitchModel(
+    title: '显示评论楼层号',
+    subtitle:
+        '按时间排序（「最新」）的一级评论显示 #楼层号。'
+        '楼层号需额外请求逐条确认，有延迟：会在评论加载后几秒内陆续出现，'
+        '评论越多、被删评论越多越慢，并会增加流量',
+    leading: Icon(Icons.tag),
+    setKey: SettingBoxKey.showReplyFloor,
+    defaultVal: false,
+  ),
   PopupModel(
     title: '楼中楼评论展示',
     leading: const Icon(Icons.subdirectory_arrow_right_outlined),

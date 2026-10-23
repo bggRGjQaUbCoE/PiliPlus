@@ -13,6 +13,7 @@ class ReplyThreadedIndentBox extends SingleChildRenderObjectWidget {
     this.divColor,
     this.onTapLine,
     this.onTapDot,
+    this.onScrollLeft,
     required Widget super.child,
   }) : assert(depth >= 0);
 
@@ -21,6 +22,7 @@ class ReplyThreadedIndentBox extends SingleChildRenderObjectWidget {
   final Color? divColor;
   final VoidCallback? onTapLine;
   final ValueChanged<int>? onTapDot;
+  final VoidCallback? onScrollLeft;
 
   @override
   RenderObject createRenderObject(BuildContext context) =>
@@ -30,6 +32,7 @@ class ReplyThreadedIndentBox extends SingleChildRenderObjectWidget {
         divColor: divColor,
         onTapLine: onTapLine,
         onTapDot: onTapDot,
+        onScrollLeft: onScrollLeft,
       );
 
   @override
@@ -42,17 +45,19 @@ class ReplyThreadedIndentBox extends SingleChildRenderObjectWidget {
       ..colors = colors
       ..divColor = divColor
       ..onTapLine = onTapLine
-      ..onTapDot = onTapDot;
+      ..onTapDot = onTapDot
+      ..onScrollLeft = onScrollLeft;
   }
 }
 
 class RenderReplyThreadedIndentBox extends RenderBox
     with RenderObjectWithChildMixin<RenderBox> {
-  static const double indentStep = 6;
-  static const double lineW = 2.5;
+  static const double indentStep = 8;
+  static const double lineW = 3;
   static const double dotRadius = 3;
-  static const double halfLinePadV = 12;
+  static const double halfLinePadV = 8;
   static const double hitRadius = 5;
+  static const double dragMaxOffset = 60;
 
   static const double _halfLineW = lineW / 2;
   static double indentWidthOf(int depth) => (depth + 1) * indentStep;
@@ -63,6 +68,7 @@ class RenderReplyThreadedIndentBox extends RenderBox
     required this._divColor,
     this.onTapLine,
     this.onTapDot,
+    this._onScrollLeft,
   }) : assert(hitRadius < indentStep);
 
   /// 避免与 [RenderObject.depth] 重名
@@ -77,7 +83,7 @@ class RenderReplyThreadedIndentBox extends RenderBox
   List<Color> _colors;
   set colors(List<Color> value) {
     if (_colors != value) {
-      assert(!listEquals(_colors, value), 'colors不应在build中创建');
+      assert(!listEquals(_colors, value), '引用不等但值等，colors不应在build中创建');
       _colors = value;
       markNeedsPaint();
     }
@@ -91,11 +97,24 @@ class RenderReplyThreadedIndentBox extends RenderBox
     }
   }
 
+  VoidCallback? _onScrollLeft;
+  set onScrollLeft(VoidCallback? value) {
+    if (_onScrollLeft != value) {
+      _onScrollLeft = value;
+      markNeedsSemanticsUpdate();
+    }
+  }
+
   VoidCallback? onTapLine;
   ValueChanged<int>? onTapDot;
 
-  late final TapGestureRecognizer _tapRecognizer = TapGestureRecognizer()
-    ..onTapUp = _handleTapUp;
+  late final _tapRecognizer = TapGestureRecognizer()..onTapUp = _handleTapUp;
+  late final _dragRecognizer = HorizontalDragGestureRecognizer()
+    ..onUpdate = _handleDragUpdate
+    ..onEnd = _handleDragEnd
+    ..onCancel = _handleDragCancel;
+
+  double _dragDelta = 0;
 
   double get _indentWidth => indentWidthOf(_indentDepth);
 
@@ -159,15 +178,16 @@ class RenderReplyThreadedIndentBox extends RenderBox
       final paint = Paint();
       final size = this.size;
 
-      final indentX = offset.dx + _indentWidth;
-      final startX = indentX - _halfLineW;
+      final baseIndentX = offset.dx + _indentWidth;
+      final dragIndentX = baseIndentX + _dragDelta;
+      final lineX = dragIndentX - _halfLineW;
       final offsetY = offset.dy;
 
       // 2. 顶部分割线
       if (_divColor case final div?) {
         final dy = offsetY + 0.75;
         canvas.drawLine(
-          Offset(startX, dy),
+          Offset(baseIndentX - _halfLineW, dy),
           Offset(offset.dx + size.width, dy),
           paint
             ..color = div
@@ -175,33 +195,82 @@ class RenderReplyThreadedIndentBox extends RenderBox
         );
       }
 
-      // 3. 祖先淡点
-      if (_indentDepth > 3) {
-        paint.strokeWidth = 0;
-        final halfH = offsetY + size.height / 2;
-        final base = offset.dx - dotRadius;
-        for (int k = 3; k < _indentDepth; k += 3) {
-          canvas.drawCircle(
-            Offset(base + indentWidthOf(k), halfH),
-            dotRadius,
-            paint..color = _colors.elementAtLoop(k).withValues(alpha: .55),
-          );
-        }
+      if (_dragDelta < 0) {
+        canvas.clipRect(offset & size);
       }
 
-      // 4. 自己的彩线
-      canvas.drawLine(
-        Offset(startX, offsetY + halfLinePadV),
-        Offset(startX, offsetY + size.height - halfLinePadV),
-        // Bad state: A Dart object attempted to access a native peer, but the native peer has been collected (nullptr)
-        paint
-          ..color = _colors.elementAtLoop(_indentDepth)
-          ..strokeWidth = lineW
-          ..strokeCap = StrokeCap.round,
-      );
+      if (lineX >= -_halfLineW) {
+        // 3. 祖先淡点
+        if (_indentDepth > 3) {
+          paint.strokeWidth = 0;
+          final halfH = offsetY + size.height / 2;
+          final base = offset.dx + _dragDelta - dotRadius;
+          for (int k = 3; k < _indentDepth; k += 3) {
+            final circX = base + indentWidthOf(k);
+            if (circX < -dotRadius) continue;
+            canvas.drawCircle(
+              Offset(circX, halfH),
+              dotRadius,
+              paint..color = _colors.elementAtLoop(k).withValues(alpha: .55),
+            );
+          }
+        }
 
-      // 1. 子节点右移绘制
-      context.paintChild(child, Offset(indentX, offsetY));
+        // 4. 自己的彩线
+        canvas.drawLine(
+          Offset(lineX, offsetY + halfLinePadV),
+          Offset(lineX, offsetY + size.height - halfLinePadV),
+          paint
+            ..color = _colors.elementAtLoop(_indentDepth)
+            ..strokeWidth = lineW
+            ..strokeCap = .round,
+        );
+
+        paint.strokeCap = .butt;
+      } else {
+        paint.color = _colors.elementAt(_indentDepth);
+      }
+
+      // 5. 跳转示意。TODO: 需要更合适的图案
+      if (_dragDelta < 0) {
+        final eX = offset.dx + size.width;
+        final sX = eX + _dragDelta;
+        final rect = Rect.fromLTRB(sX, offsetY, eX, offsetY + size.height);
+        canvas.drawRect(rect, paint..strokeWidth = 0);
+        final triY = math.min(size.height - halfLinePadV * 2, dragMaxOffset);
+        final path = Path()
+          ..moveTo(
+            sX + indentStep + dragMaxOffset / 3,
+            offsetY + halfLinePadV * 2,
+          )
+          ..lineTo(sX + indentStep, offsetY + triY)
+          ..relativeLineTo(40, 0)
+          ..close();
+        canvas
+          ..drawPath(path, paint..color = Colors.white)
+          ..drawLine(
+            Offset(
+              sX + indentStep + dragMaxOffset / 3,
+              offsetY + halfLinePadV * 2,
+            ),
+            Offset(
+              sX + indentStep + dragMaxOffset / 3,
+              offsetY + size.height - halfLinePadV * 2,
+            ),
+            paint,
+          )
+          ..drawLine(
+            Offset(sX + indentStep, offsetY + size.height - halfLinePadV * 2),
+            Offset(
+              sX + indentStep + dragMaxOffset * 2 / 3,
+              offsetY + size.height - halfLinePadV * 2,
+            ),
+            paint,
+          );
+      }
+
+      // 6. 子节点右移绘制
+      context.paintChild(child, Offset(dragIndentX, offsetY));
     }
   }
 
@@ -209,7 +278,7 @@ class RenderReplyThreadedIndentBox extends RenderBox
   bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
     if (child case final child?) {
       return result.addWithPaintOffset(
-        offset: Offset(_indentWidth, 0),
+        offset: Offset(_indentWidth + _dragDelta, 0),
         position: position,
         hitTest: (result, transformed) {
           return child.hitTest(result, position: transformed);
@@ -222,7 +291,16 @@ class RenderReplyThreadedIndentBox extends RenderBox
 
   @override
   void applyPaintTransform(RenderObject child, Matrix4 transform) {
-    transform.translateByDouble(_indentWidth, 0, 0, 1);
+    transform.translateByDouble(_indentWidth + _dragDelta, 0, 0, 1);
+  }
+
+  @override
+  void describeSemanticsConfiguration(SemanticsConfiguration config) {
+    super.describeSemanticsConfiguration(config);
+    config.label = '第${depth + 1}层';
+    if (_onScrollLeft != null) {
+      config.onScrollLeft = _onScrollLeft;
+    }
   }
 
   int _hitDepth(Offset offset) {
@@ -250,13 +328,19 @@ class RenderReplyThreadedIndentBox extends RenderBox
 
   @override
   bool hitTestSelf(Offset position) {
-    return _hitDepth(position) != -1;
+    return _onScrollLeft != null || _hitDepth(position) != -1;
   }
 
   @override
   void handleEvent(PointerEvent event, BoxHitTestEntry entry) {
-    if (event is PointerDownEvent && _hitDepth(event.localPosition) != -1) {
-      _tapRecognizer.addPointer(event);
+    if (event is PointerDownEvent) {
+      if (_hitDepth(event.localPosition) != -1) {
+        _tapRecognizer.addPointer(event);
+      } else if (_onScrollLeft != null) {
+        _dragRecognizer.addPointer(event);
+      }
+    } else if (_onScrollLeft != null && event is PointerPanZoomStartEvent) {
+      _dragRecognizer.addPointerPanZoom(event);
     }
   }
 
@@ -269,9 +353,28 @@ class RenderReplyThreadedIndentBox extends RenderBox
     }
   }
 
+  void _handleDragUpdate(DragUpdateDetails details) {
+    _dragDelta = clampDouble(_dragDelta + details.delta.dx, -dragMaxOffset, 0);
+    markNeedsPaint();
+  }
+
+  void _handleDragEnd(DragEndDetails details) {
+    if (_dragDelta <= indentStep - dragMaxOffset) {
+      _onScrollLeft?.call();
+    }
+    _dragDelta = 0;
+    markNeedsPaint();
+  }
+
+  void _handleDragCancel() {
+    _dragDelta = 0;
+    markNeedsPaint();
+  }
+
   @override
   void dispose() {
     _tapRecognizer.dispose();
+    _dragRecognizer.dispose();
     super.dispose();
   }
 }

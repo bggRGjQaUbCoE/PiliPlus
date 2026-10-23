@@ -271,7 +271,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
                           showConfirmDialog(
                             context: context,
                             title: const Text('是否加载全部评论以显示线程化评论？'),
-                            content: const Text('这可能会消耗一定流量\n并导致IP或账号风控'),
+                            content: const Text('这将消耗一定流量\n且可能导致IP或账号风控'),
                             onConfirm: _controller.nextReplyRound,
                           );
                         }
@@ -330,8 +330,8 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
                 replyLevel: isDialogue ? 3 : 2,
                 upMid: _controller.upMid,
                 onCheckReply: _controller.onCheckReply,
-                depth: tree[index].depth,
                 needDivider: false,
+                depth: tree[index].depth,
               );
             },
           );
@@ -379,7 +379,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
       replyItem: replyItem,
       replyLevel: isDialogue ? 3 : 2,
       onReply: (replyItem) => _controller.onReply(replyItem, index: index),
-      onDelete: (item, subIndex) => _controller.onRemove(index, item, null),
+      onDelete: (item, subIndex) => _controller.onRemove(index, item, subIndex),
       upMid: _controller.upMid,
       dialogueCallback: isDialogue
           ? () {

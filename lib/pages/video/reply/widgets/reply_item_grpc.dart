@@ -89,7 +89,7 @@ class ReplyItemGrpc extends StatelessWidget {
   final Int64? upMid;
   final VoidCallback? dialogueCallback;
   final ValueGetter<Iterable<ReplyInfo>>? getReplyChain;
-  final Function? getTag;
+  final ValueGetter<String>? getTag;
   final VoidCallback? onViewImage;
   final ValueChanged<ReplyInfo>? onCheckReply;
   final ValueChanged<ReplyInfo>? onToggleTop;
@@ -99,6 +99,26 @@ class ReplyItemGrpc extends StatelessWidget {
   static final _timeRegExp = RegExp(r'^(?:\d+[:：])?\d+[:：]\d+$');
   static bool enableWordRe = Pref.enableWordRe;
   static int? replyLengthLimit = Pref.replyLengthLimit;
+
+  static final _colorsLight = [
+    Colors.redAccent,
+    Colors.orangeAccent,
+    Colors.yellowAccent.shade400,
+    Colors.greenAccent,
+    Colors.cyanAccent,
+    Colors.blueAccent,
+    Colors.purpleAccent,
+  ];
+
+  static final _colorsDark = [
+    Colors.red.shade900,
+    Colors.orange.shade900,
+    Colors.yellow.shade800,
+    Colors.green.shade900,
+    Colors.cyan.shade900,
+    Colors.blue.shade900,
+    Colors.deepPurple.shade900,
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -128,16 +148,11 @@ class ReplyItemGrpc extends StatelessWidget {
     if (depth >= 0) {
       child = ReplyThreadedIndentBox(
         depth: depth,
-        colors: const [
-          Colors.redAccent,
-          Colors.orangeAccent,
-          Colors.yellowAccent,
-          Colors.greenAccent,
-          Colors.cyanAccent,
-          Colors.blueAccent,
-          Colors.purpleAccent,
-        ],
+        colors: colorScheme.isLight ? _colorsLight : _colorsDark,
         divColor: colorScheme.outline.withValues(alpha: 0.08),
+        onTapLine: () => debugPrint('onTapLine'),
+        onTapDot: (i) => debugPrint('onTapDot: $i'),
+        onScrollLeft: () => debugPrint('onScrollLeft'),
         child: child,
       );
     }

@@ -23,8 +23,10 @@
 
 ## LYA-DV-TRANSLUCENT-RESIDUE-20261022
 
-- **修复已装机 LYA（候选 `e6e5f6ae…`，00:20:42 装；待用户横屏目检；mpv/App/media-kit 均未提交）**：mpv `context_android.c` 每帧 swap 前对含 alpha 的展示表面做仅 alpha 通道 masked clear（alpha=1.0，rgb 不动；`window_has_alpha`=EGL_ALPHA_SIZE>0 且非 YUV diag 门控，GL 状态全量保存恢复）。根因：RGBA_1010102 的 2-bit alpha 渲染链从不定义→SF 按 PREMULTIPLIED 混合垃圾 alpha→视频半透明，透出下方冻结的 Flutter 主表面旧帧（启动期缓冲 logo+文字，残留像素 max 217 vs 控件 255）。构建：`~/src/mpv/_build-arm64-mks` ninja 增量→zip 换装 mks JAR `f5461124…`→`-PmediaKitLocalArm64Jar` 通道进 APK（钉住发布 JAR 未动）。已验：HdrDiag applied nativeHdr/lya-pq 不变、竖屏无残留簇、零 FATAL/ANR；**横屏全屏目检待用户**（adb 点击进不了全屏）。通过后 mpv 提交+发布 JAR 更新方式待定。
-- 诊断轮结论（证据 `/tmp/lya-dv-residue/`，验证证据 `/tmp/lya-opaque-verify/`）：SF 层 `SurfaceView#1` isOpaque=0/blend=PREMULTIPLIED；uiautomator 语义树无缓冲控件节点（widget 已移除、像素为下层旧帧）；marble（embed 载体）与 SDR 不受影响；LG 待同法取证。context：[lya-dv-translucent-residue-20261022.md](archives/conversations/lya-dv-translucent-residue-20261022.md)。
+- **已验收 / 用户授权本地提交归档（不推送）**：texture正式修复保留；用户确认去除alpha清除补丁后的LYA候选横竖屏、全屏进出及控件显隐“全部正常，无残留”。无alpha APK SHA `fd1882ecb327e491a79856b5a0f158a7ccab52c68056e7e56d6e997cae72fda9`，其 `libmpv` 为 `c9c6c89900da7eaa42be10e95852c37a5459960ef227aa74f298d13a4c742520`；独立设备核验确认 texture 根视图、OMX.hisi 硬解、10-bit BT2020_PQ、帧推进，无FATAL/ANR。用户授权本任务本地提交归档，不推送；提交事实与hash以Git log为准。
+- **实现与根因边界**：media-kit/vendor `requiresFlutterTextureView` 默认false，由LYA适配器在既有能力范围自报true；App通过通用能力查询并按Activity缓存，无机型分支。视频Surface、硬解及真实PQ HDR路径未改。texture对照支持旧Flutter根Surface/合成拓扑参与残留；alpha清除和GL/Vulkan临时打点已从mpv源码撤回并备份于 `.git/diagnostic-backups/lya-alpha-removal-20261023-104644/`。具体alpha状态或HWC/驱动因果根因未定，不作定案。mpv当前无本任务diff；`f_decoder_wrapper.c` 的既有改动属于其它任务，不纳入本任务提交。
+- **已知现象（用户决定不处理）**：同一暂停帧且控件隐藏时，竖屏与横屏全屏亮度/色彩仍明显变化；用户决定接受现状，不再定位或修复。它不是本残留修复的阻塞项。
+- context：[lya-dv-translucent-residue-20261022.md](archives/conversations/lya-dv-translucent-residue-20261022.md)。
 
 ## CODEC-CAPABILITY-GRAYING-20261022
 

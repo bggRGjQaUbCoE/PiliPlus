@@ -58,6 +58,9 @@ def build(platform, output):
         run(sys.executable, "tool/ohos/ohos.py", "check-source", *policy_args, env=env)
         shutil.copy2(exported / "build/ohos/hap/entry-default-unsigned.hap", output / "PiliPlus-ohos-arm64-unsigned.hap")
         return
+    if platform in ("linux", "windows"):
+        run(sys.executable, ROOT / "tool/native/check_api.py", "--platform", platform,
+            "--media-kit", ROOT.parent / "media-kit", "--output", output / "native-api-check.json", env=env)
     run("pwsh", "-NoLogo", "-NoProfile", "-File", "lib/scripts/build.ps1", platform, env=env)
     run("pwsh", "-NoLogo", "-NoProfile", "-File", "lib/scripts/patch.ps1", platform, env=env)
     common = ("--release", "--dart-define-from-file=pili_release.json", "--no-pub")

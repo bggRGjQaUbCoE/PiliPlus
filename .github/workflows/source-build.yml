@@ -14,14 +14,10 @@ on:
         default: auto
   push:
     branches: ['ci/native-packages-*']
-    paths: ['.github/workflows/source-build.yml', 'tool/native/**', 'tool/ohos/**']
+    paths: ['.github/workflows/source-build.yml', '.github/workflows/build-platform.yml', 'tool/native/**', 'tool/ohos/**']
 
 permissions:
   contents: read
-
-concurrency:
-  group: source-build-${{ github.ref }}-${{ inputs.native_mode || 'auto' }}
-  cancel-in-progress: true
 
 jobs:
   plan:
@@ -46,229 +42,18 @@ jobs:
       - name: Check native transport contracts
         run: python -m unittest discover -s tool/native/tests -v
 
-  native:
-    name: Native / ${{ matrix.platform }} / ${{ matrix.mode }}
+  build:
+    name: Build / ${{ matrix.platform }}
     needs: plan
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
-    runs-on: ${{ matrix.native_runner }}
-    timeout-minutes: 300
-    env:
-      PYTHONDONTWRITEBYTECODE: '1'
-      CI: 'true'
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          path: app
-          persist-credentials: false
-      - uses: actions/checkout@v4
-        with:
-          repository: Goodwu/media-kit
-          ref: ${{ needs.plan.outputs.media_kit_ref }}
-          path: media-kit
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Restore this exact native input set
-        id: cache
-        uses: actions/cache/restore@v4
-        with:
-          path: ${{ runner.temp }}/native-transport
-          key: ${{ matrix.cache_key }}
-      - name: Verify a restored package before use
-        if: steps.cache.outputs.cache-hit == 'true'
-        shell: bash
-        run: |
-          python app/tool/native/ci.py consume --platform '${{ matrix.platform }}' --mode '${{ matrix.mode }}' \
-            --media-kit media-kit --transport "$RUNNER_TEMP/native-transport" --output "$RUNNER_TEMP/cache-verification"
-      - name: Discard any inexact prefix cache match
-        if: steps.cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: rm -rf -- "$RUNNER_TEMP/native-transport"
-      - name: Install Linux native build tools
-        if: steps.cache.outputs.cache-hit != 'true' && runner.os == 'Linux'
-        shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential autoconf automake libtool pkg-config nasm ninja-build cmake clang lld binutils gperf jq ripgrep p7zip-full python3-venv wget unzip zip xz-utils
-          python -m pip install meson==1.6.1 jinja2 jsonschema PyYAML
-      - name: Set up Android native Java
-        if: steps.cache.outputs.cache-hit != 'true' && matrix.platform == 'android' && matrix.mode == 'source'
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Install the selected desktop source toolchain
-        if: steps.cache.outputs.cache-hit != 'true' && matrix.mode == 'source' && (matrix.platform == 'linux' || matrix.platform == 'windows')
-        shell: bash
-        run: bash app/tool/native/desktop/setup.sh '${{ matrix.platform }}'
-      - name: Install the locked Android NDK
-        if: steps.cache.outputs.cache-hit != 'true' && matrix.platform == 'android' && matrix.mode == 'source'
-        shell: bash
-        run: |
-          sudo apt-get install -y gcc-multilib
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" \
-            'ndk;27.2.12479018' 'platforms;android-35' 'build-tools;34.0.0' 'cmake;3.22.1' </dev/null
-      - name: Set up the locked OHOS native SDK
-        if: steps.cache.outputs.cache-hit != 'true' && matrix.platform == 'ohos' && matrix.mode == 'source'
-        uses: ErBWs/setup-ohos@5c8e74d05fc9888a387b6154ba06d0cd9ede3da1
-        with:
-          version: 26.0.0.621
-          cache: true
-      - name: Set up Nix for Apple source builds
-        if: steps.cache.outputs.cache-hit != 'true' && runner.os == 'macOS'
-        uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25
-        with:
-          extra-conf: |
-            sandbox = true
-            sandbox-fallback = false
-      - name: Restore immutable Nix derivations
-        if: steps.cache.outputs.cache-hit != 'true' && runner.os == 'macOS'
-        uses: DeterminateSystems/magic-nix-cache-action@565684385bcd71bad329742eefe8d12f2e765b39
-        with:
-          use-flakehub: false
-      - name: Produce the selected native package
-        if: steps.cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          python app/tool/native/ci.py build-native --platform '${{ matrix.platform }}' --mode '${{ matrix.mode }}' \
-            --media-kit media-kit --work "$RUNNER_TEMP/native-work" --transport "$RUNNER_TEMP/native-transport" \
-            2>&1 | tee "$RUNNER_TEMP/native-build.log"
-      - name: Cache only a successfully verified complete package
-        if: steps.cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: ${{ runner.temp }}/native-transport
-          key: ${{ matrix.cache_key }}
-      - name: Upload native package and receipt
-        uses: actions/upload-artifact@v4
-        with:
-          name: native-${{ matrix.platform }}
-          path: ${{ runner.temp }}/native-transport/
-          if-no-files-found: error
-          compression-level: 0
-      - name: Preserve native failure diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: native-diagnostics-${{ matrix.platform }}
-          if-no-files-found: ignore
-          path: |
-            ${{ runner.temp }}/native-build.log
-            ${{ runner.temp }}/native-work/producer/buildscripts/routing-native-evidence/
-            ${{ runner.temp }}/native-work/producer/libmpv/arm64-build/*.json
-            ${{ runner.temp }}/native-work/desktop/root/evidence/
-
-  application:
-    name: App / ${{ matrix.platform }}
-    needs: [plan, native]
-    # A failed native target does not suppress the other platforms' App jobs.
-    if: always() && needs.plan.result == 'success' && !cancelled()
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
-    runs-on: ${{ matrix.app_runner }}
-    timeout-minutes: 120
-    env:
-      PYTHONDONTWRITEBYTECODE: '1'
-      CI: 'true'
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          path: app
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: actions/checkout@v4
-        with:
-          repository: Goodwu/media-kit
-          ref: ${{ needs.plan.outputs.media_kit_ref }}
-          path: media-kit
-          persist-credentials: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Download this platform's completed native package
-        uses: actions/download-artifact@v4
-        with:
-          name: native-${{ matrix.platform }}
-          path: ${{ runner.temp }}/native-transport
-      - name: Authenticate and activate the explicit native package
-        shell: bash
-        run: |
-          python app/tool/native/ci.py consume --platform '${{ matrix.platform }}' --mode '${{ matrix.mode }}' \
-            --media-kit media-kit --transport "$RUNNER_TEMP/native-transport" --output "$RUNNER_TEMP/native-package"
-      - name: Check the native consumer contracts
-        shell: bash
-        run: python -m unittest discover -s media-kit/tool/native_package/tests -v
-      - name: Install Linux application dependencies
-        if: matrix.platform == 'linux' || matrix.platform == 'ohos'
-        shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build cmake pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev libasound2-dev libepoxy-dev libglu1-mesa libva2 libva-drm2 libva-x11-2 libva-wayland2 libvdpau1 libunwind8 liblcms2-2 libarchive13t64 libpulse0 unzip zip jq ripgrep
-          python -m pip install PyYAML
-      - name: Set up Android application Java
-        if: matrix.platform == 'android'
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-      - name: Set up the pinned Flutter application SDK
-        if: matrix.platform != 'ohos'
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ needs.plan.outputs.flutter_version }}
-          channel: stable
-          # patch.ps1 edits the SDK; each job needs an unmodified SDK checkout.
-          cache: false
-      - name: Select the verified CocoaPods native consumer
-        if: matrix.platform == 'ios' || matrix.platform == 'macos'
-        shell: bash
-        run: flutter config --no-enable-swift-package-manager
-      - name: Build the application with its existing Flutter patches
-        if: matrix.platform != 'ohos'
-        shell: bash
-        run: python app/tool/native/build_application.py --platform '${{ matrix.platform }}' --output "$RUNNER_TEMP/application-artifacts"
-      - name: Set up OHOS application tools
-        if: matrix.platform == 'ohos'
-        uses: ErBWs/setup-ohos@5c8e74d05fc9888a387b6154ba06d0cd9ede3da1
-        with:
-          version: 26.0.0.621
-          cache: true
-      - name: Set up OHOS application Java
-        if: matrix.platform == 'ohos'
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Export, test and compile the approved current OHOS integration
-        if: matrix.platform == 'ohos'
-        shell: bash
-        run: python app/tool/native/build_application.py --platform ohos --output "$RUNNER_TEMP/application-artifacts"
-      - name: Record application, SDK and native package identities
-        shell: bash
-        run: |
-          python app/tool/native/ci.py provenance --platform '${{ matrix.platform }}' --media-kit media-kit \
-            --receipt "$RUNNER_TEMP/consumed-native.json" --artifacts "$RUNNER_TEMP/application-artifacts" \
-            --output "$RUNNER_TEMP/application-artifacts/build-provenance.json"
-      - name: Upload application artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: PiliPlus-${{ matrix.platform }}-${{ github.sha }}
-          path: ${{ runner.temp }}/application-artifacts/
-          if-no-files-found: error
-          compression-level: 0
-      - name: Preserve application diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: application-diagnostics-${{ matrix.platform }}
-          if-no-files-found: ignore
-          path: |
-            ${{ runner.temp }}/application-build.log
-            ${{ runner.temp }}/consumed-native.json
-            ${{ runner.temp }}/PiliPlus-ohos-build/ohos/*.json
-            ${{ runner.temp }}/PiliPlus-ohos-build/ohos/build-logs/
+    uses: ./.github/workflows/build-platform.yml
+    with:
+      platform: ${{ matrix.platform }}
+      mode: ${{ matrix.mode }}
+      native_runner: ${{ matrix.native_runner }}
+      app_runner: ${{ matrix.app_runner }}
+      cache_key: ${{ matrix.cache_key }}
+      media_kit_ref: ${{ needs.plan.outputs.media_kit_ref }}
+      flutter_version: ${{ needs.plan.outputs.flutter_version }}

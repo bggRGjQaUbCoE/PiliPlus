@@ -323,13 +323,16 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
             listController: controller.listController,
             itemCount: tree.length,
             itemBuilder: (context, index) {
+              final node = tree[index];
               return ReplyItemGrpc(
-                replyItem: tree[index].reply,
-                replyLevel: isDialogue ? 3 : 2,
+                replyItem: node.reply,
+                replyLevel: 2,
                 upMid: controller.upMid,
                 onCheckReply: controller.onCheckReply,
                 needDivider: false,
-                depth: tree[index].depth,
+                depth: node.depth,
+                reason: node.reason,
+                onReply: (_) => debugPrint('onReply'),
               );
             },
           );

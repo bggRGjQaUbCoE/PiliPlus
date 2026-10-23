@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import contextlib
+import hashlib
 import io
 import json
 from pathlib import Path
@@ -194,6 +195,89 @@ class SourceTests(unittest.TestCase):
         with self.assertRaises(profile.ProfileError):
             profile.apply_replacements(out, {"lib/main.dart": [("upstream application", "changed")]})
         self.assertEqual((external / "main.dart").read_bytes(), before)
+
+
+class SdkBuildInfoMigrationTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.workspace = Path(self.temp.name).resolve()
+        self.profile = ohos.helper("build_profile")
+        self.migration = self.profile.SDK_BUILDINFO_MIGRATION
+        self.body = b'{"string":[{"name":"enable_impeller","value":"true"}]}\n'
+        self.blob = hashlib.sha1(b"blob " + str(len(self.body)).encode() + b"\0" + self.body).hexdigest()
+        self.source = self.write(self.migration["source"], self.body)
+        self.destination = self.workspace / self.migration["destination"]
+        self.destination.parent.mkdir(parents=True)
+        self.write("lib/main.dart", b"void main() {}\n")
+        self.write("ohos/upstream-files.json", json.dumps({
+            self.migration["source"]: {"blob": self.blob},
+            "lib/main.dart": {"blob": hashlib.sha1(b"blob 15\0void main() {}\n").hexdigest()},
+        }).encode())
+        self.write("tool/ohos/sdk_compat/manifest.json", json.dumps({
+            key: self.migration["sdk"][key] for key in ("repository", "commit")
+        }).encode())
+
+    def write(self, relative, body):
+        path = self.workspace / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(body)
+        return path
+
+    def move(self):
+        self.source.rename(self.destination)
+
+    def test_exact_sdk_move_is_recorded_only_after_verified_hap(self):
+        self.move()
+        with self.assertRaisesRegex(self.profile.ProfileError, "Expected a regular"):
+            self.profile.generated_changes(self.workspace)
+        changes = self.profile.generated_changes(self.workspace, after_verified_hap=True)
+        self.assertEqual(len(changes), 1)
+        self.assertEqual(changes[0]["path"], self.migration["source"])
+        self.assertEqual(changes[0]["operation"], "move")
+        self.assertIsNone(changes[0]["generated_blob"])
+        self.assertEqual(changes[0]["destination"], self.migration["destination"])
+        self.assertEqual(changes[0]["destination_blob"], self.blob)
+        self.assertEqual(changes[0]["sdk"], self.migration["sdk"])
+
+    def test_move_requires_unchanged_contents(self):
+        self.move()
+        self.destination.write_bytes(self.body.replace(b"true", b"false"))
+        with self.assertRaisesRegex(self.profile.ProfileError, "changed the original"):
+            self.profile.generated_changes(self.workspace, after_verified_hap=True)
+
+    def test_other_missing_originals_still_fail_after_verified_hap(self):
+        self.move()
+        (self.workspace / "lib/main.dart").unlink()
+        with self.assertRaisesRegex(self.profile.ProfileError, "Expected a regular.*lib/main.dart"):
+            self.profile.generated_changes(self.workspace, after_verified_hap=True)
+
+    def test_missing_destination_is_not_a_completed_move(self):
+        self.source.unlink()
+        with self.assertRaisesRegex(self.profile.ProfileError, "Expected a regular.*rawfile"):
+            self.profile.generated_changes(self.workspace, after_verified_hap=True)
+
+    def test_destination_symlink_is_rejected(self):
+        self.source.unlink()
+        target = self.write("same-bytes.json", self.body)
+        self.destination.symlink_to(target)
+        with self.assertRaisesRegex(self.profile.ProfileError, "does not follow symlinks"):
+            self.profile.generated_changes(self.workspace, after_verified_hap=True)
+
+    def test_source_symlink_is_not_treated_as_sdk_deletion(self):
+        self.move()
+        self.source.symlink_to(self.workspace / "missing.json")
+        with self.assertRaisesRegex(self.profile.ProfileError, "does not follow symlinks"):
+            self.profile.generated_changes(self.workspace, after_verified_hap=True)
+
+    def test_sdk_change_requires_migration_review(self):
+        self.move()
+        manifest = self.workspace / "tool/ohos/sdk_compat/manifest.json"
+        metadata = json.loads(manifest.read_text())
+        metadata["commit"] = "0" * 40
+        manifest.write_text(json.dumps(metadata))
+        with self.assertRaisesRegex(self.profile.ProfileError, "changed OHOS SDK"):
+            self.profile.generated_changes(self.workspace, after_verified_hap=True)
 
 
 class ApprovedIntegrationTests(unittest.TestCase):

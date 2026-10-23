@@ -139,7 +139,7 @@ def build(workspace: Path, flutter_root: Path, pub_cache: Path) -> dict:
         receipt["media"] = media_backend.verify(workspace)
         receipt["hap_built"] = True
         receipt["status"] = "built-unsigned-media-integrated-device-unverified"
-        build_profile.update_manifest(workspace, analysis_passed=True, hap_built=True,
+        build_profile.update_manifest(workspace, after_verified_hap=True, analysis_passed=True, hap_built=True,
                                       artifact=receipt["artifact"], device_functionality_verified=False)
     except Exception as exc:
         receipt["status"] = "failed"

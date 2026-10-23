@@ -19,7 +19,19 @@ class ProfileError(RuntimeError):
     pass
 
 
-def safe_path(workspace: Path, relative: str) -> Path:
+SDK_BUILDINFO_MIGRATION = {
+    "source": "ohos/entry/src/main/resources/base/profile/buildinfo.json5",
+    "destination": "ohos/entry/src/main/resources/rawfile/buildinfo.json5",
+    "sdk": {
+        "repository": "https://gitcode.com/CPF-Flutter/flutter_flutter.git",
+        "commit": "3ffe70c6280cc6ddf613bffa59dd70611f238f7e",
+        "path": "packages/flutter_tools/lib/src/ohos/ohos_builder.dart",
+        "sha256": "a2d28944fbb558e63492697cee8bc3dce53a2ba8147a3c5333885e2668e7613d",
+    },
+}
+
+
+def safe_path(workspace: Path, relative: str, *, allow_missing: bool = False) -> Path:
     parts = PurePosixPath(relative)
     if parts.is_absolute() or not parts.parts or ".." in parts.parts or "\\" in relative:
         raise ProfileError(f"Unsafe build-copy path: {relative}")
@@ -28,7 +40,8 @@ def safe_path(workspace: Path, relative: str) -> Path:
         target /= part
         if target.is_symlink():
             raise ProfileError(f"Build profile does not follow symlinks: {relative}")
-    if not target.is_file():
+    if not target.is_file() and not (
+            allow_missing and not target.exists() and target.parent.is_dir()):
         raise ProfileError(f"Expected a regular build-copy file: {relative}")
     if workspace not in target.resolve().parents:
         raise ProfileError(f"Build-copy path escapes its workspace: {relative}")
@@ -105,11 +118,29 @@ def platform_integration(workspace: Path) -> list[dict]:
     })
 
 
-def generated_changes(workspace: Path) -> list[dict]:
+def generated_changes(workspace: Path, *, after_verified_hap: bool = False) -> list[dict]:
     baseline = json.loads(safe_path(workspace, "ohos/upstream-files.json").read_text())
     changes = []
     for relative, info in baseline.items():
-        path = safe_path(workspace, relative)
+        migrated = after_verified_hap and relative == SDK_BUILDINFO_MIGRATION["source"]
+        path = safe_path(workspace, relative, allow_missing=migrated)
+        if migrated and not path.exists():
+            # The pinned SDK's copyFlutterBuildInfoFile copies this one resource
+            # to rawfile and removes its former path. Only accept that exact
+            # move after HAP/native verification; other deletions remain errors.
+            sdk = SDK_BUILDINFO_MIGRATION["sdk"]
+            sdk_manifest = json.loads(safe_path(workspace, "tool/ohos/sdk_compat/manifest.json").read_text())
+            if any(sdk_manifest.get(key) != sdk[key] for key in ("repository", "commit")):
+                raise ProfileError("Review the buildinfo migration for the changed OHOS SDK")
+            destination = SDK_BUILDINFO_MIGRATION["destination"]
+            body = safe_path(workspace, destination).read_bytes()
+            moved_blob = hashlib.sha1(b"blob " + str(len(body)).encode() + b"\0" + body).hexdigest()
+            if moved_blob != info["blob"]:
+                raise ProfileError("SDK buildinfo migration changed the original resource contents")
+            changes.append({"path": relative, "upstream_blob": info["blob"], "generated_blob": None,
+                            "operation": "move", "destination": destination,
+                            "destination_blob": moved_blob, "sdk": dict(sdk)})
+            continue
         body = path.read_bytes()
         blob = hashlib.sha1(b"blob " + str(len(body)).encode() + b"\0" + body).hexdigest()
         if blob != info["blob"]:
@@ -117,10 +148,10 @@ def generated_changes(workspace: Path) -> list[dict]:
     return changes
 
 
-def update_manifest(workspace: Path, **values) -> dict:
+def update_manifest(workspace: Path, *, after_verified_hap: bool = False, **values) -> dict:
     manifest = validate_workspace(workspace)
     manifest.update(values)
-    manifest["generated_original_file_changes"] = generated_changes(workspace)
+    manifest["generated_original_file_changes"] = generated_changes(workspace, after_verified_hap=after_verified_hap)
     path = safe_path(workspace, "ohos/source-manifest.json")
     path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return manifest

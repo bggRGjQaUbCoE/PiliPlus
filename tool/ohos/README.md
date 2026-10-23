@@ -164,6 +164,12 @@ Material/Cupertino/Flex UI 测试、分析 `lib/`、构建原入口，并检查 
 版本和 arm64 ELF。完整日志及实际通过的阶段分别记录在
 副本的 `ohos/build-logs/` 和 `ohos/build-result.json`，失败保留诊断并返回非零。
 
+锁定的 Flutter OHOS SDK 会将 `entry/src/main/resources/base/profile/buildinfo.json5`
+移至 `entry/src/main/resources/rawfile/buildinfo.json5`。只有 HAP 和包内原生库身份
+检查通过后，最终源码清单才接受并记录这一个迁移：原位置必须缺失，目标必须是
+无符号链接的普通文件，内容必须与导出基线逐字节一致。记录包含原 Git blob、
+目标路径及 blob，以及 SDK 提交和迁移实现文件的 SHA256；其他文件缺失仍然失败。
+
 原生配置使用 unsigned 构建，不包含签名密钥。安装和系统功能验收另行记录。
 请以 [当前验证记录](../../docs/ohos/README.md) 为准，区分源码保护、依赖解析、
 Dart 编译、ArkTS/HAP 构建和真机验收；本工具不把其中任一步代称为全部完成。

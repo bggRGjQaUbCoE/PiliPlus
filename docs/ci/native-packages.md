@@ -114,6 +114,8 @@ Android 的 Vulkan 版本检测保留 mpv 的 `>= 1.3.238` 要求。Meson 1.6.1 
 
 Apple 的真实应用编译还发现 media-kit 共享 Darwin 源码调用 `handleRouteCapabilitiesMethodCall` 时缺少定义要求的 `result:` 参数标签，iOS/macOS 同时报错。已仅修正该调用并固定新的 SDK 提交，显示能力查询逻辑保持一致；对应平台继续通过真实 Xcode 编译验收。
 
+Windows 的真实 MSVC 编译发现现有 Advanced Color 查询将 `DISPLAYCONFIG_DEVICE_INFO_GET_ADVANCED_COLOR_INFO` 枚举名当作结构体类型。已按 Win32 SDK 改为 `DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO`，保留请求枚举和查询流程，并通过真实 Windows 头文件的目标平台语法编译；完整 App 继续以对应 MSVC CI 为准。
+
 ## OHOS 保留当前应用集成
 
 当前应用已经包含 Managed/Routed playback 和宿主合成能力，旧 Direction B 迁移 patch 不能重复应用。新入口显式选择 `approved-integration`，由提交中的 policy 和固定 SHA256 验证批准基线、关键源码及依赖锁；只允许后续 CI/tooling/docs 变动，仍拒绝应用源码或工作区漂移。

@@ -146,21 +146,42 @@ extension type ReplyTree._(List<ReplyTreeNode> _vis)
     // 只登记未实体化的 dialog id；2b 后有 kids 才进桶，幽灵直接丢弃
     final deferred = <Int64>[];
 
-    // 从 kids 提取 mention / minC。flat[i].ctime 此刻已定（含已实体化的 2b 合成）。
-    ReplyInfo synthDialog(Int64 p, List<ReplyInfo> kids) {
+    ReplyInfo synthReply(
+      Int64 p,
+      List<ReplyInfo> kids, [
+      bool needAnchor = false,
+    ]) {
       assert(kids.isNotEmpty, '节点 $p kids isEmpty');
+      var mKidCtime = Int64.MAX_VALUE;
+
       Member? mention;
-      var mCtime = Int64.MAX_VALUE;
+      var mPri = 1 << 30;
+      var mMentCtime = Int64.MIN_VALUE;
+
+      Int64? anchor;
+
       for (final r in kids) {
-        mention ??= _extractMention(r);
-        if (r.ctime < mCtime) mCtime = r.ctime;
+        if (r.ctime < mKidCtime) mKidCtime = r.ctime;
+
+        final (pri, m) = _extractMention(r);
+        if (pri < mPri || (pri == mPri && r.ctime > mMentCtime)) {
+          mention = m;
+          mPri = pri;
+          mMentCtime = r.ctime;
+        }
+
+        if (needAnchor && anchor == null) {
+          final d = r.dialog;
+          if (d != p && seen.contains(d)) anchor = d;
+        }
       }
+
       return ReplyInfo(
         id: p,
-        parent: rootId,
-        dialog: p,
+        parent: anchor ?? rootId,
+        dialog: anchor ?? p,
         root: rootId,
-        ctime: mCtime,
+        ctime: mKidCtime,
         mid: mention?.mid,
         member: mention,
       );
@@ -177,7 +198,7 @@ extension type ReplyTree._(List<ReplyTreeNode> _vis)
       }
 
       if (children[p] case final kids?) {
-        addNode(synthDialog(p, kids));
+        addNode(synthReply(p, kids));
         suppressed[p] = ReasonType.deleted;
       } else {
         seen.add(p);
@@ -191,27 +212,7 @@ extension type ReplyTree._(List<ReplyTreeNode> _vis)
     // children[p] 非空：p 由上溯触发时其触发节点已建桶。
     for (final p in toSynthParents) {
       if (children[p] case final kids?) {
-        Member? mention;
-        var mCtime = Int64.MAX_VALUE;
-        Int64? anchor;
-        for (final r in kids) {
-          mention ??= _extractMention(r);
-          if (r.ctime < mCtime) mCtime = r.ctime;
-          if (anchor == null) {
-            final d = r.dialog;
-            if (d != p && seen.contains(d)) anchor = d;
-          }
-        }
-        final syn = ReplyInfo(
-          id: p,
-          parent: anchor ?? rootId,
-          dialog: anchor ?? p,
-          root: rootId,
-          ctime: mCtime,
-          mid: mention?.mid,
-          member: mention,
-        );
-        addNode(syn);
+        addNode(synthReply(p, kids, true));
         suppressed[p] = ReasonType.deleted;
       } else {
         assert(false, '幽灵节点：$p');
@@ -222,7 +223,7 @@ extension type ReplyTree._(List<ReplyTreeNode> _vis)
     // ── 2c. 实体化 deferred：3b 已挂 children[p] ──
     for (final p in deferred) {
       if (children[p] case final kids?) {
-        addNode(synthDialog(p, kids));
+        addNode(synthReply(p, kids));
         suppressed[p] = ReasonType.deleted;
       } else {
         assert(false, '幽灵节点：$p');
@@ -406,29 +407,29 @@ extension type ReplyTree._(List<ReplyTreeNode> _vis)
   }
 
   /// 从 [ReplyInfo.parentReplyMember] 提取被回复者信息，用于合成占位父。
-  static Member? _extractMention(ReplyInfo reply) {
+  static (int, Member?) _extractMention(ReplyInfo reply) {
     // 合成节点无parentReplyMember
-    if (!reply.hasParentReplyMember()) return null;
+    if (!reply.hasParentReplyMember()) return const (1 << 30, null);
     final parent = reply.parentReplyMember;
     final members = reply.content.members;
 
     // 1) 名字命中成员表：直接用
     if (members[parent.name] case final m?) {
-      return m;
+      return (1, m);
     }
     // 2) 改名：原名字不在成员表，但 mid 相同，认为是同一人
     if (parent.hasMid()) {
       final mid = parent.mid;
       if (members.values.firstWhereOrNull((i) => i.mid == mid) case final m?) {
-        return m;
+        return (1, m);
       }
     }
     // 3) 自回复：无mid属性
     if (parent.name == reply.member.name) {
-      return reply.member;
+      return (2, reply.member);
     }
     // 4) 可能自回复但改名，也可能是古早回复无member信息
-    return Member(name: parent.name, mid: parent.mid);
+    return (3, Member(name: parent.name, mid: parent.mid));
   }
 }
 
@@ -472,10 +473,11 @@ extension ReplyTreeNodeUi on ReplyTreeNode {
   }
 }
 
-extension ReplyList<T> on List<T> {
+extension ReplyList<T> on Iterable<T> {
+  /// Do NOT invoke it on non [IndexedIterable] object.
   int reverseIdentityIndexOf(T element, [int? end]) {
     for (int i = end ?? length - 1; i >= 0; i--) {
-      if (identical(element, this[i])) {
+      if (identical(element, elementAt(i))) {
         return i;
       }
     }

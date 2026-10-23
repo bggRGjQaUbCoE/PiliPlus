@@ -91,7 +91,7 @@ receipt 记录 archive、manifest、identity 与 CI inputs 四种摘要。`ident
 
 这是填写格式，示例值不能通过校验。长期地址不是当前用户权限下任意 artifact 的替代凭证；当前实现支持公开或 runner 可直接访问的 HTTPS 下载。不要把访问令牌放进仓库 URL。没有长期包时同一 repository 的 Actions cache 已可复用成功产物。
 
-Android producer 同时输出可移动的四 ABI development SDK；四 ABI 契约 fixture 已通过移位后的 pkg-config + 静态链接验证，真实 ARM64 还已从锁定源码完成核心和完整 SDK 的移位链接，记录见 [ARM64 源码与 SDK 审计](https://github.com/Goodwu/libmpv-android-video-build-dv-experiment/blob/32ee4501b1365d76362e316a4e7d444e8ef04d72/docs/arm64-source-smoke-20261023.md)。完整四 ABI 源码、helper/JAR 和 APK 验证以对应 CI 结果为准。SDK 保留 dav1d LTO，由同一 NDK 的 `llvm-dis` 验证原始 bitcode 目标；移除不在消费契约内的 `.la`，并证明 pkg-config 中 NDK 库路径的精确替换，任意宿主路径仍被拒绝。
+Android producer 同时输出可移动的四 ABI development SDK；四 ABI 契约 fixture 已通过移位后的 pkg-config + 静态链接验证，真实 ARM64 还已从锁定源码完成核心和完整 SDK 的移位链接，记录见 [ARM64 源码与 SDK 审计](https://github.com/Goodwu/libmpv-android-video-build-dv-experiment/blob/3605f300ecfe16bc084addd0b403d2cd55ef6a81/docs/arm64-source-smoke-20261023.md)。第3轮 CI 已完成四 ABI 原生编译、helper 与四个 JAR，但最终来源校验发现 FreeType 的 dlg 子模块未初始化。producer 已增加编译前的递归 gitlink 初始化及校验，最终来源门槛保持不变；完整四 ABI SDK 导出和 APK 仍需后续 CI 通过。SDK 保留 dav1d LTO，由同一 NDK 的 `llvm-dis` 验证原始 bitcode 目标；移除不在消费契约内的 `.la`，并证明 pkg-config 中 NDK 库路径的精确替换，任意宿主路径仍被拒绝。
 
 当前完整包入口用于 Flutter 应用编译，fresh source 路径仍完整构建依赖。仅用该 SDK 重编 mpv 的增量 producer 应独立记录 parent SDK identity，不能在 fresh source 入口下回填旧 prefix 并声称全新构建。
 

@@ -25,7 +25,7 @@
       "source": {
         "producer": {
           "repository": "Goodwu/libmpv-android-video-build-dv-experiment",
-          "commit": "32ee4501b1365d76362e316a4e7d444e8ef04d72"
+          "commit": "3605f300ecfe16bc084addd0b403d2cd55ef6a81"
         },
         "sources": {
           "mpv": {

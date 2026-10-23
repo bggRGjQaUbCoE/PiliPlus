@@ -10,6 +10,7 @@ import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo, MainListReply;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/common/fab_mixin.dart';
+import 'package:PiliPlus/pages/common/reply/classic_reply_head.dart';
 import 'package:PiliPlus/pages/common/reply/reply_footer_mixin.dart';
 import 'package:PiliPlus/pages/main_reply/controller.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
@@ -123,31 +124,7 @@ class _MainReplyPageState extends State<MainReplyPage>
       ),
       Success(:final response) =>
         response != null && response.isNotEmpty
-            ? SliverList.builder(
-                itemCount: response.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == response.length) {
-                    return buildFooter();
-                  }
-
-                  return ReplyItemGrpc(
-                    replyItem: response[index],
-                    replyLevel: 1,
-                    replyReply: throttleReplyReply,
-                    onReply: controller.onReply,
-                    onDelete: (item, subIndex) =>
-                        controller.onRemove(index, item, subIndex),
-                    upMid: controller.upMid,
-                    onCheckReply: controller.onCheckReply,
-                    onToggleTop: (item) => controller.onToggleTop(
-                      item,
-                      index,
-                      controller.oid,
-                      controller.replyType,
-                    ),
-                  );
-                },
-              )
+            ? _buildList(response)
             : emptyWidget(),
       Error(:final errMsg) => HttpError(
         errMsg: errMsg,
@@ -223,6 +200,63 @@ class _MainReplyPageState extends State<MainReplyPage>
         ).constraintWidth(),
       ),
       routeName: 'dynamicDetail-Copy',
+    );
+  }
+
+  /// A pinned or hot reply in the classic head.
+  Widget _buildClassicItem(ReplyInfo item) => ReplyItemGrpc(
+    replyItem: item,
+    replyLevel: 1,
+    replyReply: throttleReplyReply,
+    onReply: controller.onReply,
+    onDelete: controller.onRemoveClassic,
+    upMid: controller.upMid,
+    onCheckReply: controller.onCheckReply,
+    onToggleTop: (item) => controller.onToggleTop(
+      item,
+      -1,
+      controller.oid,
+      controller.replyType,
+    ),
+  );
+
+  Widget _buildList(List<ReplyInfo> response) {
+    final head = buildClassicReplyHead(
+      controller: controller,
+      colorScheme: colorScheme,
+      buildItem: _buildClassicItem,
+    );
+    // classic: replies shown in the head are left out below
+    final indices = controller.classicListIndices(response);
+    final listLength = indices?.length ?? response.length;
+    return SliverList.builder(
+      itemCount: listLength + 1 + head.length,
+      itemBuilder: (context, index) {
+        if (index < head.length) {
+          return head[index];
+        }
+        index -= head.length;
+        if (index == listLength) {
+          return buildFooter();
+        }
+        index = indices?[index] ?? index;
+        return ReplyItemGrpc(
+          replyItem: response[index],
+          replyLevel: 1,
+          replyReply: throttleReplyReply,
+          onReply: controller.onReply,
+          onDelete: (item, subIndex) =>
+              controller.onRemove(index, item, subIndex),
+          upMid: controller.upMid,
+          onCheckReply: controller.onCheckReply,
+          onToggleTop: (item) => controller.onToggleTop(
+            item,
+            index,
+            controller.oid,
+            controller.replyType,
+          ),
+        );
+      },
     );
   }
 }

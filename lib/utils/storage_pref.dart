@@ -414,6 +414,11 @@ abstract final class Pref {
     defaultValue: horizontalScreen,
   );
 
+  /// Upper bound of hot replies shown before "更多热门评论" in the classic
+  /// layout.
+  static int get classicHotReplyCount =>
+      _setting.get(SettingBoxKey.classicHotReplyCount, defaultValue: 3);
+
   static int? get replyLengthLimit {
     int length = _setting.get(SettingBoxKey.replyLengthLimit, defaultValue: 6);
     if (length <= 0) {

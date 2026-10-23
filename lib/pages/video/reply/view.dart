@@ -9,6 +9,7 @@ import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo, MainListReply;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/common/fab_mixin.dart';
+import 'package:PiliPlus/pages/common/reply/classic_reply_head.dart';
 import 'package:PiliPlus/pages/common/reply/reply_footer_mixin.dart';
 import 'package:PiliPlus/pages/common/reply/vote/reply_vote_item.dart';
 import 'package:PiliPlus/pages/video/reply/controller.dart';
@@ -156,7 +157,15 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
         );
       case Success(:final response):
         if (response != null && response.isNotEmpty) {
-          var count = response.length + 1;
+          final head = buildClassicReplyHead(
+            controller: controller,
+            colorScheme: colorScheme,
+            buildItem: _buildClassicItem,
+          );
+          // classic: replies shown in the head are left out below
+          final indices = controller.classicListIndices(response);
+          final listLength = indices?.length ?? response.length;
+          var count = listLength + 1 + head.length;
           final voteCard = controller.voteCard;
           final hasVote = voteCard != null;
           if (hasVote) {
@@ -171,9 +180,14 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
                   index--;
                 }
               }
-              if (index == response.length) {
+              if (index < head.length) {
+                return head[index];
+              }
+              index -= head.length;
+              if (index == listLength) {
                 return buildFooter();
               } else {
+                index = indices?[index] ?? index;
                 final item = response[index];
                 final child = ReplyItemGrpc(
                   replyItem: item,
@@ -224,4 +238,22 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
         );
     }
   }
+
+  /// A pinned or hot reply in the classic head.
+  Widget _buildClassicItem(ReplyInfo item) => ReplyItemGrpc(
+    replyItem: item,
+    replyLevel: widget.replyLevel,
+    replyReply: controller.replyReply,
+    onReply: controller.onReply,
+    onDelete: controller.onRemoveClassic,
+    upMid: controller.upMid,
+    getTag: () => heroTag,
+    onCheckReply: controller.onCheckReply,
+    onToggleTop: (item) => controller.onToggleTop(
+      item,
+      -1,
+      controller.videoCtr.aid,
+      controller.replyType,
+    ),
+  );
 }

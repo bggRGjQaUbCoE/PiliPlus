@@ -1,3 +1,5 @@
+import 'dart:math' show ln2, log, max, min;
+
 import 'package:PiliPlus/common/widgets/colored_box_transition.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
@@ -130,9 +132,154 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
   @override
   void onInit() {
     super.onInit();
-    final cacheSortType = prefSortType;
+    var cacheSortType = prefSortType;
+    if (cacheSortType == .classic && !supportsClassic) {
+      cacheSortType = .hot;
+    }
     sortType = cacheSortType.obs;
-    mode = cacheSortType == .time ? Mode.MAIN_LIST_TIME : Mode.MAIN_LIST_HOT;
+    mode = cacheSortType == .hot ? Mode.MAIN_LIST_HOT : Mode.MAIN_LIST_TIME;
+  }
+
+  // ---- 经典: a few hot replies first, then all replies by time ----
+
+  /// Only the top level comment list offers the classic layout.
+  bool get supportsClassic => this is ReplyController<MainListReply>;
+
+  bool get isClassic => sortType.value == ReplySortType.classic;
+
+  /// Upper bound of hot replies shown before "更多热门评论" (setting).
+  late final int classicHotCount = Pref.classicHotReplyCount;
+
+  /// Hot replies shown for a comment area of [total] comments, at most
+  /// [cap]: none while everything fits on one page, then one more each time
+  /// the area doubles (1 from 20 comments, 2 from 40, 3 from 80, ...).
+  static int classicHotCountFor(int total, int cap) {
+    if (total < 20 || cap <= 0) return 0;
+    return min(cap, max(1, (log(total / 10) / ln2 + 1e-9).floor()));
+  }
+
+  /// Hot replies shown before "更多热门评论" in this area.
+  int get classicHotLimit => classicHotCountFor(count.value, classicHotCount);
+
+  /// Loaded hot replies worth showing: a reply nobody liked is not hot.
+  List<ReplyInfo> get classicHotCandidates =>
+      classicHot.where((e) => e.like > Int64.ZERO).toList();
+
+  /// Hot replies currently shown in the head (reads reactive state).
+  List<ReplyInfo> get classicHotShown {
+    if (!isClassic) return const [];
+    final limit = classicHotLimit;
+    if (limit == 0) return const [];
+    final hot = classicHotCandidates;
+    return classicHotExpanded.value ? hot : hot.take(limit).toList();
+  }
+
+  /// Indices of the by-time list to show in the classic layout, leaving out
+  /// replies already shown in the head; null shows the whole list.
+  List<int>? classicListIndices(List<ReplyInfo> list) {
+    if (!isClassic) return null;
+    final ids = {
+      for (final e in classicHotShown) e.id,
+      ?classicUpTop.value?.id,
+    };
+    if (ids.isEmpty) return null;
+    return [
+      for (var i = 0; i < list.length; i++)
+        if (!ids.contains(list[i].id)) i,
+    ];
+  }
+
+  final classicHot = RxList<ReplyInfo>();
+  final classicUpTop = Rxn<ReplyInfo>();
+  final classicHotExpanded = false.obs;
+  final classicHotLoading = false.obs;
+  bool classicHotEnd = true;
+  String? _classicHotOffset;
+
+  void _clearClassic() {
+    classicHot.clear();
+    classicUpTop.value = null;
+    classicHotExpanded.value = false;
+    classicHotEnd = true;
+    _classicHotOffset = null;
+  }
+
+  /// Requests a page of hot replies without touching the paging state of the
+  /// main (by time) list.
+  Future<MainListReply?> _fetchHotPage(String? offset) async {
+    final savedMode = mode;
+    final savedOffset = nextOffset;
+    mode = Mode.MAIN_LIST_HOT;
+    nextOffset = offset;
+    try {
+      final res = await customGetData();
+      if (res case Success(:final response)) {
+        final data = response as MainListReply;
+        _removeIntro(data);
+        final next = data.paginationReply.nextOffset;
+        classicHotEnd = data.cursor.isEnd || next.isEmpty || next == offset;
+        _classicHotOffset = next;
+        return data;
+      }
+      return null;
+    } finally {
+      mode = savedMode;
+      nextOffset = savedOffset;
+    }
+  }
+
+  @override
+  Future<void> queryData([bool isRefresh = true]) async {
+    if (isRefresh && !isLoading) {
+      if (isClassic) {
+        isLoading = true;
+        final data = await _fetchHotPage(null);
+        isLoading = false;
+        classicHotExpanded.value = false;
+        classicHot.assignAll(data?.replies ?? const []);
+      } else {
+        _clearClassic();
+      }
+    }
+    return super.queryData(isRefresh);
+  }
+
+  /// "更多热门评论": expand the loaded hot replies, then load more pages.
+  Future<void> onClassicHotMore() async {
+    if (!classicHotExpanded.value) {
+      classicHotExpanded.value = true;
+      if (classicHotCandidates.length > classicHotLimit || classicHotEnd) {
+        return;
+      }
+    }
+    if (classicHotEnd || classicHotLoading.value) return;
+    classicHotLoading.value = true;
+    final data = await _fetchHotPage(_classicHotOffset);
+    classicHotLoading.value = false;
+    if (data != null && isClassic) {
+      final ids = {for (final e in classicHot) e.id};
+      classicHot.addAll(data.replies.where((e) => ids.add(e.id)));
+    }
+  }
+
+  void onClassicHotCollapse() => classicHotExpanded.value = false;
+
+  /// Removes a reply shown in the classic head (pinned or hot).
+  void onRemoveClassic(ReplyInfo item, int? subIndex) {
+    if (subIndex == null) {
+      if (identical(classicUpTop.value, item)) {
+        classicUpTop.value = null;
+      } else {
+        classicHot.remove(item);
+      }
+    } else {
+      item
+        ..count -= 1
+        ..replies.removeAt(subIndex);
+      classicHot.refresh();
+      classicUpTop.refresh();
+    }
+    count.value -= 1;
   }
 
   @override
@@ -165,7 +312,11 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
     count.value = data.subjectControl.count.toInt();
     if (isRefresh) {
       handleSubjectControl(data.subjectControl);
-      if (hasUpTop = data.hasUpTop()) {
+      if (isClassic) {
+        // the pinned reply leads the classic head, above the hot replies
+        hasUpTop = false;
+        classicUpTop.value = data.hasUpTop() ? data.upTop : null;
+      } else if (hasUpTop = data.hasUpTop()) {
         data.replies.insert(0, data.upTop);
       }
       if (subjectControl?.title == ReplySortType.select.desc) {
@@ -209,6 +360,12 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
         mode = Mode.MAIN_LIST_HOT;
         break;
       case ReplySortType.hot:
+        sortType.value = supportsClassic
+            ? ReplySortType.classic
+            : ReplySortType.time;
+        mode = Mode.MAIN_LIST_TIME;
+        break;
+      case ReplySortType.classic:
         sortType.value = ReplySortType.time;
         mode = Mode.MAIN_LIST_TIME;
         break;
@@ -355,7 +512,16 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
     );
     if (res.isSuccess) {
       item.replyControl.isUpTop = !isUpTop;
-      if (!isUpTop && index != 0) {
+      if (isClassic) {
+        // the pinned reply lives in the classic head, not in the list
+        if (!isUpTop) {
+          classicUpTop.value?.replyControl.isUpTop = false;
+          classicUpTop.value = item;
+        } else if (identical(classicUpTop.value, item)) {
+          classicUpTop.value = null;
+        }
+        classicUpTop.refresh();
+      } else if (!isUpTop && index != 0) {
         final list = loadingState.value.data!;
         list
           ..first.replyControl.isUpTop = false

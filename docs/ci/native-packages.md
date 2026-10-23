@@ -18,13 +18,13 @@
 | macOS | ARM64/x86_64 `.app` ZIP | 0.6.8 XCFramework + 同源 headers | 相同 Darwin recipe 的 macOS target |
 | OHOS | ARM64 未签名 HAP | 锁定的 OHOS source recipe，包含 WebP 编码能力 | 相同锁定源码 |
 
-Android 原生 SDK 同时保留 x86 ABI，Flutter 应用输出沿用项目支持的三个 ABI。该定制 native profile 的部署目标为 Android API 26，构建副本的 APK minSdk 取 Flutter 要求与 26 的较大值，App 插件使用同一锁定 NDK；这些生成修改写入应用构建 patch 证据。Android 未配置正式签名证书时使用项目已有的 debug signing fallback；这些构建产物不自动发布到 Release。iOS/HAP 需要在相应分发流程中签名；macOS 不在这里申请 notarization。
+Android 原生 SDK 同时保留 x86 ABI，Flutter 应用输出沿用项目支持的三个 ABI。该定制 native profile 的部署目标为 Android API 26，构建副本的 APK minSdk 取 Flutter 要求与 26 的较大值，App 模块固定使用该 native profile 的 NDK；这些生成修改写入应用构建 patch 证据。Flutter 插件可有各自的 NDK 声明，不能据 App 模块配置声称所有插件使用同一工具链。 本轮实际 HDR/vendor 桥带 r28c 标记，cnativeapi 带 r27d 标记；对三个 APK 共 30 个 ELF 的可达依赖和动态 C++ 符号/版本核查未发现缺失项，包内共享 libc++ 来源仍由锁定 r27.2 输入的精确 strip 重放确认。详见 [Android NDK 兼容性核查](android-ndk-compatibility-20261023.json)，这不替代设备播放验收。Android 未配置正式签名证书时使用项目已有的 debug signing fallback；这些构建产物不自动发布到 Release。iOS/HAP 需要在相应分发流程中签名；macOS 不在这里申请 notarization。
 
 平台和应用架构范围沿用当前项目的发布目标；media-kit 本身支持额外 native 架构并不代表 PiliPlus 已发布该架构。iOS native 开发包另含 ARM64/x86_64 模拟器切片，IPA 使用真机 ARM64。
 
 Apple 的 default profile 如实使用其现有 mpv 0.36.0 / FFmpeg 6.0 依赖。它不声称包含定制 `opengl-next` 或 shared-core 私有 ABI。要切换该候选，应新增独立 profile、完整 portable native bundle 和功能验收，不能只替换一个 dylib。
 
-Linux bundle 仍要求兼容的 GTK、WebKit、图形、字体和音频系统库。manifest 中 `runtime-dependencies.json` 记录 libmpv 的实际系统 SONAME，App job 使用 `ldd` 拒绝未解析依赖。这里不把 Ubuntu bundle 描述为任意发行版上的静态可执行文件。
+Linux bundle 仍要求兼容的 GTK、WebKit、图形、字体和音频系统库。原生包的依赖证据记录 libmpv 的实际系统 SONAME：upstream 使用 `runtime-dependencies.json`，source 使用 `evidence/runtime-closure.json`；两者都由 manifest 校验。App job 使用 `ldd` 拒绝未解析依赖。这里不把 Ubuntu bundle 描述为任意发行版上的静态可执行文件。
 
 ## 选择构建模式
 
@@ -41,9 +41,13 @@ workflow 的 `platforms` 参数是 JSON 数组，例如：
 - `upstream`：只允许选择已登记 upstream profile 的 Windows、Linux、iOS、macOS。Android/OHOS 的定制能力不能退回普通上游包，因此对它们显式选择此模式会失败。
 - `package`：只消费 `packages.lock.json` 中已审核的完整包；缺记录、任何摘要不匹配或 source inputs 已变化都会失败。
 
+当前提交的 `packages.lock.json` 中 `packages` 为空；`package` 模式需要先登记真实包地址和 receipt 摘要。默认 `auto` 已可使用同仓库的精确 Actions cache，无需先配置外部包托管。
+
 缓存没有前缀恢复或“最近一次成功”的模糊回退。key 包含原生源码、recipe、配置、平台和打包适配器；显式 package 还包含其 archive hash。应用或 Dart SDK 代码变化不单独导致 native 重建。缓存恢复后仍重新执行完整 manifest、文件、身份和能力校验。
 
-调试分支 `ci/native-packages-*` 对本工作流、`tool/native/` 或 `tool/ohos/` 的 push 会触发默认六平台构建。工作流合入常用分支后可在 Actions 中按需选择平台和模式。原有发布工作流保持独立，本入口只上传 artifacts。
+目标开发分支 `goodwu-dev-rebased` 和调试分支 `ci/native-packages-*` 的 push 会触发默认六平台构建；只有 `docs/**` 或 Markdown 文档发生变化时跳过。应用代码、原始 Flutter/Material 补丁、资源、六个平台目录、依赖锁、整个 `tool/` 和构建配置均在触发范围。开发分支的 push 入口不依赖仓库默认分支。
+
+工作流文件进入仓库默认分支 `main` 后，可在 Actions 中用 Run workflow 按需选择分支、平台和模式；这是 GitHub `workflow_dispatch` 的要求，仅合入 `goodwu-dev-rebased` 不会让手动入口自动出现在 `main`。当前验证通过隔离分支 push 运行，原有发布工作流保持独立，本入口只上传 artifacts。
 
 ## 输入和产物如何关联
 
@@ -91,7 +95,7 @@ receipt 记录 archive、manifest、identity 与 CI inputs 四种摘要。`ident
 
 这是填写格式，示例值不能通过校验。长期地址不是当前用户权限下任意 artifact 的替代凭证；当前实现支持公开或 runner 可直接访问的 HTTPS 下载。不要把访问令牌放进仓库 URL。没有长期包时同一 repository 的 Actions cache 已可复用成功产物。
 
-Android producer 同时输出可移动的四 ABI development SDK；四 ABI 契约 fixture 已通过移位后的 pkg-config + 静态链接验证，真实 ARM64 还已从锁定源码完成核心和完整 SDK 的移位链接，记录见 [ARM64 源码与 SDK 审计](https://github.com/Goodwu/libmpv-android-video-build-dv-experiment/blob/3605f300ecfe16bc084addd0b403d2cd55ef6a81/docs/arm64-source-smoke-20261023.md)。第3轮 CI 已完成四 ABI 原生编译、helper 与四个 JAR，但最终来源校验发现 FreeType 的 dlg 子模块未初始化。producer 已增加编译前的递归 gitlink 初始化及校验，最终来源门槛保持不变；完整四 ABI SDK 导出和 APK 仍需后续 CI 通过。SDK 保留 dav1d LTO，由同一 NDK 的 `llvm-dis` 验证原始 bitcode 目标；移除不在消费契约内的 `.la`，并证明 pkg-config 中 NDK 库路径的精确替换，任意宿主路径仍被拒绝。
+Android producer 同时输出可移动的四 ABI development SDK；四 ABI 契约 fixture 已通过移位后的 pkg-config + 静态链接验证，真实 ARM64 还已从锁定源码完成核心和完整 SDK 的移位链接，记录见 [ARM64 源码与 SDK 审计](https://github.com/Goodwu/libmpv-android-video-build-dv-experiment/blob/3605f300ecfe16bc084addd0b403d2cd55ef6a81/docs/arm64-source-smoke-20261023.md)。第3轮 CI 的最终来源校验发现 FreeType 的 dlg 子模块未初始化；producer 已增加编译前的递归 gitlink 初始化及校验，最终来源门槛保持不变。修复后的第6轮已完成全部四 ABI 原生编译、helper、JAR、完整 SDK 导出及封装；下载后再次通过精确输入、完整 inventory 和 consumer 校验，实际包含 2,833 个文件、32 个安全内部链接，每 ABI 19 个静态开发库。完整来源、NDK、功能报告和摘要见 `android-source-audit-20261023.json`；三个目标 APK 也已完成 Release 编译，并通过下载后的 provenance、架构、minSdk 26 和实际 APK 签名验证；证据见 `application-artifacts-20261023.json`。APK 内 mpv/helper 与对应 JAR 逐字节相同；libc++ 经相同 NDK 重放 AGP 的 strip 命令后也逐字节相同。SDK 保留 dav1d LTO，由同一 NDK 的 `llvm-dis` 验证原始 bitcode 目标；移除不在消费契约内的 `.la`，并证明 pkg-config 中 NDK 库路径的精确替换，任意宿主路径仍被拒绝。
 
 当前完整包入口用于 Flutter 应用编译，fresh source 路径仍完整构建依赖。仅用该 SDK 重编 mpv 的增量 producer 应独立记录 parent SDK identity，不能在 fresh source 入口下回填旧 prefix 并声称全新构建。
 
@@ -114,9 +118,9 @@ Linux/Windows App 在编译前另运行 `tool/native/check_api.py`，重新验�
 
 Android 的 Vulkan 版本检测保留 mpv 的 `>= 1.3.238` 要求。Meson 1.6.1 的系统依赖检测需要运行目标程序，交叉编译时会将满足要求的 NDK r27c 头文件识别为 unknown。producer 改为用对应 ABI 的 NDK 编译器读取真实版本宏，再通过静态断言和 `vkGetInstanceProcAddr` 链接检查后生成 `vulkan.pc`；实际 NDK 头文件版本为 1.3.275。版本不足、宏格式变化或 loader 缺符号均直接失败，编译检查不代表设备支持所有 Vulkan 功能。
 
-Apple 的真实应用编译还发现 media-kit 共享 Darwin 源码调用 `handleRouteCapabilitiesMethodCall` 时缺少定义要求的 `result:` 参数标签，iOS/macOS 同时报错。已仅修正该调用并固定新的 SDK 提交，显示能力查询逻辑保持一致；对应平台继续通过真实 Xcode 编译验收。
+Apple 的真实应用编译还发现 media-kit 共享 Darwin 源码调用 `handleRouteCapabilitiesMethodCall` 时缺少定义要求的 `result:` 参数标签，iOS/macOS 同时报错。已仅修正该调用并固定新的 SDK 提交，显示能力查询逻辑保持一致；修复后的 iOS ARM64 IPA 与 macOS ARM64/x86_64 通用 App 已通过真实 Xcode Release 编译、artifact 下载、摘要及 Mach-O 架构检查。
 
-Windows 的真实 MSVC 编译发现现有 Advanced Color 查询将 `DISPLAYCONFIG_DEVICE_INFO_GET_ADVANCED_COLOR_INFO` 枚举名当作结构体类型。已按 Win32 SDK 改为 `DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO`，保留请求枚举和查询流程，并通过真实 Windows 头文件的目标平台语法编译；完整 App 继续以对应 MSVC CI 为准。
+Windows 的真实 MSVC 编译发现现有 Advanced Color 查询将 `DISPLAYCONFIG_DEVICE_INFO_GET_ADVANCED_COLOR_INFO` 枚举名当作结构体类型。已按 Win32 SDK 改为 `DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO`，保留请求枚举和查询流程，并通过真实 Windows 头文件的目标平台语法编译；修复后的完整 Windows x64 App 已通过对应 MSVC Release CI，下载后确认 App 内 libmpv 与所消费的 native 包逐字节相同。
 
 ## OHOS 保留当前应用集成
 
@@ -144,3 +148,11 @@ python3 ../media-kit/tool/native_package/package.py verify \
 该次产物 manifest SHA256 为 `7b630c36c046a5d594219916c1a304e9e50739a95496e48741322dec4073e6fc`，identity SHA256 为 `ae4071af9f15e66f1d6d3ededfab128821cd687a8734e4c1d9dbb8607bcadfaa`。这是 native 编译和基础加载证据；尚未进行 Flutter 产品启动、GPU 播放或设备验收，因此 manifest 仍记录 `compiled=true, runtime=false, device=false`。Windows source 已验证完整依赖冻结、真实 CMake 配置和 PE 依赖闭包，完整 LLVM/MinGW 产品构建仍待对应 source CI。
 
 随后已使用同一 native 包、Flutter 3.47.7 和隔离的 App/media-kit checkout，实际执行当前 `build_application.py --platform linux` 并完成 Release 应用编译。22 个 Flutter 补丁、8 个 material_ui 补丁、pub 解析、Dart/AOT、原生插件编译链接、逐 SO 的 `ldd` 检查均通过；App bundle 的 60 个原生 SO 全部与 source manifest 对应文件逐字节相同。记录见 `linux-source-audit-20261023.json`。本地浅克隆的版本计数仅用于编译验证，该测试包没有发布；正式 CI 使用完整应用 Git 历史。
+
+## 本轮六平台产品验证
+
+2026-10-23 的 [完整构建 run 39984863955](https://github.com/Goodwu/PiliPlus/actions/runs/39984863955) 已成功，六个平台全部完成实际应用编译、打包、上传及独立下载校验。共同应用提交为 `01257f9e933bda7add3ed4639c8336dddd7b32ba`，media-kit 为 `d76622180dc9d082c9e690dd7d355f418627fb4a`。Android/Windows/Linux/OHOS 产物来自 attempt 1；iOS/macOS 首次因托管 runner 容量不足而没有执行任何编译步骤，attempt 2 重试后实际完成构建。各包的真实 attempt、文件摘要、native receipt、架构与下载入口保存在 [应用产物审计](application-artifacts-20261023.json)。
+
+默认模式的六平台成功不代表每个平台的 source profile 都已完整实编。Windows 的 LLVM/MinGW 完整工具链及 Darwin Nix source-profile 产品构建仍未执行；这两组默认使用已实际验证的上游开发包。Android/OHOS source 以及 Linux source → App 的独立实编已完成。应用运行、GPU、HDR/DV、设备播放和正式分发签名仍须各自验收。
+
+产品构建证据固定于上述提交。后续收尾只补充本轮记录、完善开发分支的 push 过滤（actionlint 通过）及纠正 Linux INSTALL.txt 中依赖证据的一句话，不改变 native locks、jobs 或构建命令。

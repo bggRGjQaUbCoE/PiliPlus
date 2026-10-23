@@ -106,7 +106,7 @@ def build(platform, output):
         (output / "INSTALL.txt").write_text(
             "Extract the archive and run PiliPlus/piliplus.\n"
             "This Ubuntu 24.04 build requires compatible GTK3, WebKit2GTK4.1, graphics, font and audio libraries.\n"
-            "Native package runtime-dependencies.json records libmpv's required system SONAMEs.\n"
+            "The native package dependency evidence records libmpv's required system SONAMEs.\n"
             "Compilation and dependency resolution were checked; device playback was not exercised by this workflow.\n")
         with tarfile.open(output / "PiliPlus-linux-x86_64.tar.gz", "w:gz") as archive:
             archive.add(bundle, arcname="PiliPlus")

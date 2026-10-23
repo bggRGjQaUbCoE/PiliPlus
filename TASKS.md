@@ -2,13 +2,14 @@
 
 ## ALL-PLATFORM-NATIVE-CI-20261023
 
-- **实施中**：独立 `ci/native-packages-20261023` 分支接入六平台 source/upstream/package 模式；固定 media-kit/producer/source 输入，原生包与应用分别打包并关联 provenance，显式输入校验失败即停止。保留当前 30525d9 的播放器和宿主合成修复，OHOS 改用明确批准的 existing-integration 导出政策，不重复应用旧 Direction B patch。
-- **已验证**：原生传输/输入19项、桌面ELF/PE契约7项、OHOS75项宿主测试；Windows/Linux及iOS/macOS已锁定真实上游开发包的归一化与公共manifest验证及首轮CI native job通过。Linux三仓真实源码编译、60个运行库打包、同源consumer链接及实际libmpv基础加载通过，随后实际Flutter Release应用构建和ldd检查通过，App中60个原生SO全部与source包逐字节一致。Android builder 的HLS实际对象编译、四ABI SDK契约fixture链接及79项host contracts已过；新增真实ARM64核心源码构建和完整SDK移位链接通过（19个静态库、1480成员含50个LTO bitcode），Vulkan交叉检测与开发元数据可移动性已修复；首轮CI的TLS补丁布局不匹配已修复并通过精确源码正反向检查。media-kit公共消费者已修复macOS/Windows路径与符号链接测试差异，在符号链接TMPDIR下20项通过；OHOS聚合native job补齐ripgrep。完整六平台CI应用构建与设备验证仍以相应CI/设备结果为准。
-- **API 复用实测**：Linux upstream headers 2.3/runtime 2.5 与 source 2.6/2.6 均通过新 desktop 检查入口，172 个非 generated Dart 文件中实际使用的 26 个 public 符号均存在，load/create/destroy 通过；upstream 缺少的可选 batch 扩展走既有 fallback。入口拒绝未审核的 API major、过旧 runtime、bindings 漂移和包校验失败，并隔离 native crash、保存阶段诊断。证据见 `docs/ci/linux-api-audit-20261023.json`。
-- **真实 CI 进展**：第4轮 Linux App 已完成 Release 编译、依赖检查、provenance 和 artifact 上传；Windows/Linux 的真实 runner 均通过26符号及动态库加载/创建/销毁检查。OHOS 完整 native 源码包已成功并复用精确缓存，HAP 编译及包内 native 身份检查已通过；最终清单遇到锁定 SDK 将 buildinfo 从 profile 移至 rawfile 的正常行为，现仅在 HAP/native 验证之后接受该路径和内容完全相符的迁移，保留其他缺失/符号链接/内容变化拒绝，新增7项回归后 OHOS 宿主测试75/75通过。
-- **五平台应用已通过**：第5轮 App `283c82eb` / media-kit `d7662218` 的 Windows、Linux、iOS、universal macOS、OHOS 均完成实际 Release 构建和 artifact 上传；下载后核验 provenance、归档摘要、架构及包内 native 身份。Swift `result:` 标签、Windows Advanced Color 结构体类型和 OHOS buildinfo 迁移适配均已通过真实产品编译。
-- **Android 完整编译与来源修复**：第3轮四 ABI 原生库、helper 和四 JAR 均完成，最终来源检查正确拒绝 FreeType 未初始化的 dlg gitlink。producer 已统一在长编译前验证父 SHA、初始化缺失递归 gitlink，并拒绝已改变或冲突的子模块；真实源码全12依赖通过原检查，新增嵌套 Git 正负例后79/79测试通过。已更新精确 producer pin，完整四 ABI SDK 包和三个 APK 等待新 CI；不据编译完成推断设备播放。
-- context：[全平台源码与原生包构建](docs/ci/native-packages.md)。
+- **已实施**：独立 `ci/native-packages-20261023` 分支接入 Android、Windows、Linux、iOS、macOS、OHOS 六平台 `auto/source/upstream/package` 构建，六个关联 draft PR 已发布。固定 App/media-kit/producer/source 输入，完整 native 包及最终应用分别打包并关联 provenance，显式输入校验失败即停止。目标开发分支 `goodwu-dev-rebased` 和 CI 调试分支的非文档 push 自动构建，保留原有发布入口。
+- **宿主及接口验证**：原生传输/输入19项、桌面ELF/PE契约7项、OHOS75项、Android producer79项通过；media-kit公共消费者跨Windows/macOS的路径及符号链接差异已修复。Windows/Linux真实runner均通过26个现用public导出和load/create/destroy；未审核API major、过旧runtime、bindings漂移、包校验错误均被拒绝。旧bindings声明1.109的验收范围是已审核现用子集，不是全部历史声明。
+- **Android 已完成**：第6轮四ABI源码、helper/JAR、可移动完整SDK和三个Release APK全部编译成功。下载后完整包校验通过（2,833文件、32安全链接、每ABI19静态库），三APK的mpv/helper逐字节匹配对应JAR，libc++经锁定NDK精确重放AGP strip后匹配；实际minSdk26、Android Debug证书v2签名均核验通过。FreeType递归gitlink、HLS/TLS补丁、Vulkan交叉检测、开发元数据迁移及LTO目标检查的修复均包含在已验证producer中。
+- **桌面及OHOS已完成**：第6轮Windows x64、Linux x64、OHOS arm64完整应用构建成功；当前App `01257f9e` / SDK `d7662218` 的实际下载归档、全部provenance文件哈希、架构和native字节均匹配。OHOS保持30525d9批准基线的Managed/Routed及宿主合成集成，不重复应用Direction B旧patch；锁定SDK的buildinfo路径迁移只在HAP/native校验后接受原字节，不放宽其他源身份检查。
+- **Apple 构建**：第6轮首次因GitHub macOS ARM64容量无runner取消；attempt2重试取得runner后，iOS arm64、macOS universal均完成真实编译、上传和下载验证。当前App/SDK提交、所有provenance文件摘要、主程序及Mpv架构均正确；六平台完整workflow最终success。Swift `result:` 标签修复通过Xcode产品构建。
+- **Linux source 与运行检查**：锁定Goodwu FFmpeg/libplacebo/mpv完成真实源码编译和Flutter Release App，App内60个SO与source包逐字节相同，ldd通过。当前media-kit公开Dart Player对source和upstream两包均完成H.264/AAC打开、推进、暂停、seek、属性、EOF、dispose/native destruction；这是软件解码和空输出实测，不是GUI/GPU/HDR/DV或设备验收。
+- **边界**：Windows完整LLVM/MinGW及Darwin Nix source-profile产品构建尚未实跑；默认上游组合已有真实产品验证。完整native包可通过精确cache或登记包复用，任意既有依赖SDK仅重编mpv的增量producer未实现。外部`packages.lock.json`当前为空；正式分发签名、设备播放另验。
+- context：[全平台源码与原生包构建](docs/ci/native-packages.md)；[六平台应用产物证据](docs/ci/application-artifacts-20261023.json)；[Android四ABI源码包证据](docs/ci/android-source-audit-20261023.json)。
 
 任务事实源：只保留当前状态、验收门槛和下一步；按各项 `context` 查看持续更新的依据。
 姊妹仓：本地 media-kit checkout 在 `../media-kit`（compat 分支），本仓的一切播放器行为变化先看其 `TASKS.md` 的 MK-ROUTING 段。

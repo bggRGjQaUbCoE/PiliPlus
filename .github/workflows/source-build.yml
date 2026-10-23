@@ -13,8 +13,8 @@ on:
         options: [auto, source, upstream, package]
         default: auto
   push:
-    branches: ['ci/native-packages-*']
-    paths: ['.github/workflows/source-build.yml', '.github/workflows/build-platform.yml', 'tool/native/**', 'tool/ohos/**']
+    branches: ['goodwu-dev-rebased', 'ci/native-packages-*']
+    paths-ignore: ['docs/**', '**/*.md']
 
 permissions:
   contents: read

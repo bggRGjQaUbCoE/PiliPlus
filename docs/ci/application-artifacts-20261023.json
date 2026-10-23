@@ -2,137 +2,1162 @@
   "schema": 1,
   "date": "2026-10-23",
   "kind": "downloaded-application-artifact-verification",
-  "scope": "Actual application builds and downloaded package checks; no application GUI or physical-device acceptance",
+  "scope": "Actual application builds and independent downloaded package checks, with per-artifact application/SDK commits and run attempts; no application GUI or physical-device acceptance",
   "platforms": {
+    "android": {
+      "provenance": {
+        "application": {
+          "commit": "01257f9e933bda7add3ed4639c8336dddd7b32ba",
+          "repository": "Goodwu/PiliPlus"
+        },
+        "application_files": {
+          "PiliPlus-arm64-v8a-release.apk": "808256be9d16a01c8612ee1637552ffa9995bbd47c7d42226285d69230dae96d",
+          "PiliPlus-armeabi-v7a-release.apk": "bc52ce8c0b7329dce1ff9b02aaf8c4246e56bbe1647f21af90199d5965586224",
+          "PiliPlus-x86_64-release.apk": "034ee8dee07a01304438ab2cbf2e254a6dd3a1ea8df6157054f5f9a6a305d0cd",
+          "application-build.patch": "56543d0d18592de2fccd128eacb406b60f4c62ecbfff41ca034d96d19cf049f5"
+        },
+        "media_kit": {
+          "commit": "d76622180dc9d082c9e690dd7d355f418627fb4a",
+          "repository": "Goodwu/media-kit"
+        },
+        "native": {
+          "archive_sha256": "8156f346f813fa28e17dd7daa8ca661df43a052baaa5b68cb87a21b2e5473f08",
+          "identity_sha256": "eeabbbcc86548067ef3d127805cdc2d012cd8ce915e0062de97be1040a83b9f1",
+          "inputs_sha256": "403003b458659438312843ecaccb60dc8cef78e09e5a6219faa570ce7783a15b",
+          "manifest_sha256": "32c1f5ee89aecfa911bd4ead36fd3f3ba582e1d33ab5ea3c264cbc369fca1f99",
+          "mode": "source",
+          "platform": "android",
+          "schema": 1
+        },
+        "platform": "android",
+        "run": {
+          "attempt": "1",
+          "id": "39984863955"
+        },
+        "schema": 1,
+        "validation": {
+          "application_compiled": true,
+          "device": false,
+          "runtime": false
+        }
+      },
+      "artifact_sha256": "5cc073d26c998f3c6730336eea56b01dc7f5812f2e76323d0e33ecff0cd28586",
+      "native_verification": {
+        "root": "/tmp/android-run6-verified/root",
+        "manifest": "/tmp/android-run6-verified/root/manifest.json",
+        "manifest_sha256": "32c1f5ee89aecfa911bd4ead36fd3f3ba582e1d33ab5ea3c264cbc369fca1f99",
+        "identity_sha256": "eeabbbcc86548067ef3d127805cdc2d012cd8ce915e0062de97be1040a83b9f1",
+        "platform": "android",
+        "architectures": [
+          "arm64-v8a",
+          "armeabi-v7a",
+          "x86",
+          "x86_64"
+        ],
+        "profile": "goodwu-android-dv",
+        "capabilities": [
+          "mpv.lavf-initial-dovi-hvcc",
+          "mpv.pl-dovi-linear-disable",
+          "mpv.pl-external-yuv"
+        ],
+        "validation": {
+          "compiled": true,
+          "device": false,
+          "runtime": false
+        },
+        "layout": {
+          "jars": {
+            "arm64-v8a": {
+              "path": "/tmp/android-run6-verified/root/runtime/default-arm64-v8a.jar",
+              "sha256": "6e6168cf515722409effdca94ee541050e8f5481a6f2e653b6a76d49a18646cf"
+            },
+            "armeabi-v7a": {
+              "path": "/tmp/android-run6-verified/root/runtime/default-armeabi-v7a.jar",
+              "sha256": "bc4c8fe2e700ea550794f7851c90649189e09207a3354ac9fec6362f77a056b7"
+            },
+            "x86": {
+              "path": "/tmp/android-run6-verified/root/runtime/default-x86.jar",
+              "sha256": "f558cd196e47af9c38f2e9da7dc90080a05bc996c277d8e44ec74e22ff3b4fb3"
+            },
+            "x86_64": {
+              "path": "/tmp/android-run6-verified/root/runtime/default-x86_64.jar",
+              "sha256": "d4e0846d13354c98c550bb917e35a3c0e04b33108c08f67bc09d168157d9e946"
+            }
+          },
+          "sdk_prefixes": {
+            "arm64-v8a": "/tmp/android-run6-verified/root/sdk/arm64-v8a",
+            "armeabi-v7a": "/tmp/android-run6-verified/root/sdk/armeabi-v7a",
+            "x86": "/tmp/android-run6-verified/root/sdk/x86",
+            "x86_64": "/tmp/android-run6-verified/root/sdk/x86_64"
+          }
+        }
+      },
+      "native_identity": {
+        "options": {
+          "android_api": 26,
+          "artifact_types": [
+            "runtime",
+            "development-sdk"
+          ],
+          "ci_inputs_sha256": "403003b458659438312843ecaccb60dc8cef78e09e5a6219faa570ce7783a15b",
+          "flavor": "default",
+          "mpv_config_sha256": {
+            "arm64-v8a": "aca9b6b3b78f8241b046cb05a6bebcbd345d6741a98b34c3c7a02a2518686811",
+            "armeabi-v7a": "aca9b6b3b78f8241b046cb05a6bebcbd345d6741a98b34c3c7a02a2518686811",
+            "x86": "aca9b6b3b78f8241b046cb05a6bebcbd345d6741a98b34c3c7a02a2518686811",
+            "x86_64": "aca9b6b3b78f8241b046cb05a6bebcbd345d6741a98b34c3c7a02a2518686811"
+          },
+          "sdk_libmpv": "packaged-runtime",
+          "stl": "c++_shared"
+        },
+        "origin": "source",
+        "patches": {
+          "patches/ffmpeg/ffmpeg-hls-kazumi-combined.patch": "e776d1512c1316f457caec799555d25b7cf0916fb733277133e45fcbacda568a",
+          "patches/libplacebo/fix_gles_shader_compile_error.patch": "bea829fa3878a14495e19e2f3f2b1767e532d45a75deed73f96293b14bdc9270",
+          "patches/libplacebo/fix_shaderc_vulkan_dismatch.patch": "ad5e5690f3b31c66d77bcf0e23f0349a20767ae7386c18a5326367975aaaa1f7",
+          "patches/mpv/mpv_lavc_set_java_vm.patch": "f31987340793c47bc496c4908f44c3c2ba57128343a2145255fca5b952b90ff6",
+          "patches/mpv/mpv_restore_tls_verify_default.patch": "5830e49b54fddf8d5406b9758415e227520e5fb30a72d93cfa48610df374d37b"
+        },
+        "recipe": {
+          "commit": "3605f300ecfe16bc084addd0b403d2cd55ef6a81",
+          "repository": "https://github.com/Goodwu/libmpv-android-video-build-dv-experiment.git",
+          "tree": "e98f63c20b83da7745aa6826067407c4e33b8e8c"
+        },
+        "sources": {
+          "dav1d": {
+            "commit": "676a864a11af2c0522e1f992e770589543894686",
+            "repository": "https://code.videolan.org/videolan/dav1d.git",
+            "submodules": "",
+            "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "tree": "65da0bf96ec68ae50665345ed934ecab308179b5"
+          },
+          "ffmpeg": {
+            "commit": "9aba43cfbee182ade060cdccbe15340a0fbe3e83",
+            "repository": "https://github.com/Goodwu/FFmpeg.git",
+            "submodules": "",
+            "tracked_diff_sha256": "3242f7a00a0bf7aacf24acf855735461fa77fc174b2075edb4f073ec14a0868b",
+            "tree": "48f0b23552271d95b9ceaa6843d9acbc72024988"
+          },
+          "freetype": {
+            "commit": "de8b92dd7ec634e9e2b25ef534c54a3537555c11",
+            "repository": "https://gitlab.freedesktop.org/freetype/freetype.git",
+            "submodules": "d142e646e263c89f93663e027c2f0d03739ab42d subprojects/dlg (v0.2.2-38-gd142e64)",
+            "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "tree": "4b3e621364527dc640081afefdfe861b287a9845"
+          },
+          "fribidi": {
+            "commit": "6428d8469e536bcbb6e12c7b79ba6659371c435a",
+            "repository": "https://github.com/fribidi/fribidi.git",
+            "submodules": "",
+            "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "tree": "66ddf35c13034f07b5f94f04b6465b3fe7f8701a"
+          },
+          "harfbuzz": {
+            "commit": "a321c4fee56b15247c10f9aa3db7e7ccb3b8173b",
+            "repository": "https://github.com/harfbuzz/harfbuzz.git",
+            "submodules": "",
+            "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "tree": "97761d2f654989758434192dfba0e88ba6ce4458"
+          },
+          "lcms2": {
+            "commit": "5176347635785e53ee5cee92328f76fda766ecc6",
+            "repository": "https://github.com/mm2/Little-CMS.git",
+            "submodules": "",
+            "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "tree": "01d9f13d80bbad5690fbba272510b755a76f2f3b"
+          },
+          "libass": {
+            "commit": "e8ad72accd3a84268275a9385beb701c9284e5b3",
+            "repository": "https://github.com/libass/libass.git",
+            "submodules": "",
+            "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "tree": "eab3bd56da74caec6249a2de4cdfe53d85e2be50"
+          },
+          "libplacebo": {
+            "commit": "ea700489fbf27703d8c1f64874a1c6138f17ad28",
+            "repository": "https://github.com/Goodwu/libplacebo.git",
+            "submodules": "74d8a6cb930c68ef617b202c3ff3c59d919e086b 3rdparty/Vulkan-Headers (v1.4.345)\n 97b54ca9e75f5303507699d27c6b4f4efe4641a1 3rdparty/fast_float (v6.1.0-275-g97b54ca)\n 73db193f853e2ee079bf3ca8a64aa2eaf6459043 3rdparty/glad (v0.1.11a-302-g73db193)\n 15206881c006c79667fe5154fe80c01c65410679 3rdparty/jinja (3.1.6)\n 297fc8e356e6836a62087949245d09a28e9f1b13 3rdparty/markupsafe (3.0.3)\n 242f35efa067a46c595645eeda7b1771ea1f83b1 demos/3rdparty/nuklear (4.12.8)",
+            "tracked_diff_sha256": "ed2e959046cf5ca656108758f578d03806455f867bd682800a874cca2fdb4d20",
+            "tree": "178c15385ae9f3e955a4fde49a6e6d499bf46f0a"
+          },
+          "libxml2": {
+            "commit": "f507d167f1755b7eaea09fb1a44d29aab828b6d1",
+            "repository": "https://github.com/GNOME/libxml2.git",
+            "submodules": "",
+            "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "tree": "d0553a8037968f8f28001b1920dd3980af0fd648"
+          },
+          "mbedtls": {
+            "commit": "1873d3bfc2da771672bd8e7e8f41f57e0af77f33",
+            "repository": "https://github.com/Mbed-TLS/mbedtls.git",
+            "submodules": "",
+            "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "tree": "7401f86a914b9f8b14c558be199091e9eddea1aa"
+          },
+          "media-kit-android-helper": {
+            "commit": "b768ce102cfa9b5ddec618bb939d689d1b0899fa",
+            "repository": "https://github.com/Predidit/media-kit-android-helper.git",
+            "submodules": "",
+            "tracked_diff_sha256": "e1c46c74235cd001160cb5ed05d878775e4422a4e97f1d5d45d0eb3a5220fe63",
+            "tree": "f5dcd75b172d65e301c5b8adf8ef3e28278f4720"
+          },
+          "mpv": {
+            "commit": "e0dc99d0467957ffc16c4afbb4e9f7c3f2a8667d",
+            "repository": "https://github.com/Goodwu/mpv.git",
+            "submodules": "",
+            "tracked_diff_sha256": "20a92b73f048a96ef7830c2fd65bf56b9a87ac43fa74e3b05e35a99af7f5b752",
+            "tree": "3f5f0bca12996e4c6c9dea152b334d49d86f80fd"
+          }
+        },
+        "toolchain": {
+          "compiler": "Android (12470979, +pgo, +bolt, +lto, +mlgo, based on r522817c) clang version 18.0.3 (https://android.googlesource.com/toolchain/llvm-project d8003a456d14a3deb8054cdaa529ffbf02d9b262)\nTarget: x86_64-unknown-linux-gnu\nThread model: posix\nInstalledDir: /home/runner/work/_temp/native-work/producer/buildscripts/sdk/android-sdk-linux/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/bin",
+          "compiler_files": {
+            "clang": "a871130d810536f7bb924c8aeaff57c66de27bed9b13d0ccafba25fdcc8bd02d",
+            "llvm-dis": "7396e7536a7f0c07287cee2d5ae5749b5405cce2e4799bb1a6e43dfc25daa62f",
+            "source.properties": "70f1c5165e6d997b18782a49cff71da7a3caacd0c4cd811da24c43359fb83cf6"
+          },
+          "ndk": "27.2.12479018",
+          "ndk_source_properties_sha256": "70f1c5165e6d997b18782a49cff71da7a3caacd0c4cd811da24c43359fb83cf6",
+          "shaderc_source": "selected-ndk/sources/third_party/shaderc"
+        }
+      },
+      "application_architectures": [
+        "arm64-v8a",
+        "armeabi-v7a",
+        "x86_64"
+      ],
+      "apks": {
+        "arm64-v8a": {
+          "file": "PiliPlus-arm64-v8a-release.apk",
+          "sha256": "808256be9d16a01c8612ee1637552ffa9995bbd47c7d42226285d69230dae96d",
+          "bytes": 28023974,
+          "native_package_libraries": {
+            "libmpv.so": {
+              "apk_sha256": "b1bb8e061966b5ddc41bdebf6a312666dd67f007c0dd035ea0ac2daa201ff142",
+              "jar_sha256": "b1bb8e061966b5ddc41bdebf6a312666dd67f007c0dd035ea0ac2daa201ff142",
+              "bytes_equal": true,
+              "bytes": 21813104,
+              "elf": {
+                "class": 2,
+                "machine": 183
+              }
+            },
+            "libmediakitandroidhelper.so": {
+              "apk_sha256": "44f3ff2546a2c4e8b5bdc4bd5a3532dc3ac787848f3ffe276cb5759aed424a8c",
+              "jar_sha256": "44f3ff2546a2c4e8b5bdc4bd5a3532dc3ac787848f3ffe276cb5759aed424a8c",
+              "bytes_equal": true,
+              "bytes": 398496,
+              "elf": {
+                "class": 2,
+                "machine": 183
+              }
+            },
+            "libc++_shared.so": {
+              "apk_sha256": "4397241b4bd20a8e579bfb41d21107857e12985f6a01ca0c2a5f83380d1270b4",
+              "jar_sha256": "f9992c4ba6b7c5a716e3a202fceb1ce029d6a2b0605838ac6b3219f489dd7970",
+              "bytes_equal": false,
+              "bytes": 1292904,
+              "elf": {
+                "class": 2,
+                "machine": 183
+              },
+              "identity_verified_after_declared_strip": true,
+              "postprocessing": "AGP 9.1.0 --strip-unneeded using NDK 27.2.12479018; exact byte replay, same ELF/build-id"
+            }
+          },
+          "app_compiled_sdk_bridges": {
+            "libmedia_kit_video_hdr_bridge.so": {
+              "sha256": "f1abb952f68da45f18d704016abee96c7ffc1e9c57d7a437b68c8295f89b7237",
+              "bytes": 363576,
+              "elf": {
+                "class": 2,
+                "machine": 183
+              },
+              "origin": "compiled from the pinned media-kit source during App build"
+            },
+            "libmedia_kit_dataspace_vendor.so": {
+              "sha256": "b4e6dbea972a46c8b4416801a6cddff3022f0810b555d9c752ff57c152948d8c",
+              "bytes": 261872,
+              "elf": {
+                "class": 2,
+                "machine": 183
+              },
+              "origin": "compiled from the pinned media-kit source during App build"
+            }
+          },
+          "all_native_members": [
+            "lib/arm64-v8a/libapp.so",
+            "lib/arm64-v8a/libc++_shared.so",
+            "lib/arm64-v8a/libcnativeapi.so",
+            "lib/arm64-v8a/libdartjni.so",
+            "lib/arm64-v8a/libdatastore_shared_counter.so",
+            "lib/arm64-v8a/libflutter.so",
+            "lib/arm64-v8a/libmedia_kit_dataspace_vendor.so",
+            "lib/arm64-v8a/libmedia_kit_video_hdr_bridge.so",
+            "lib/arm64-v8a/libmediakitandroidhelper.so",
+            "lib/arm64-v8a/libmpv.so"
+          ],
+          "manifest": {
+            "min_sdk": 26,
+            "target_sdk": 37
+          },
+          "signature": {
+            "signature_verified": true,
+            "schemes": {
+              "v1": false,
+              "v2": true,
+              "v3": false,
+              "v31": false
+            },
+            "certificates": [
+              {
+                "sha256": "c56c1be44ea2dc9765f537fa08ac15de698f408a4276ab170b845089a307d20c",
+                "subject": "C=US,O=Android,CN=Android Debug",
+                "issuer": "C=US,O=Android,CN=Android Debug",
+                "not_before": "2026-10-23T17:01:37Z",
+                "not_after": "2056-10-15T17:01:37Z",
+                "key_algorithm": "RSA"
+              }
+            ],
+            "errors": [],
+            "warnings": []
+          }
+        },
+        "armeabi-v7a": {
+          "file": "PiliPlus-armeabi-v7a-release.apk",
+          "sha256": "bc52ce8c0b7329dce1ff9b02aaf8c4246e56bbe1647f21af90199d5965586224",
+          "bytes": 27218454,
+          "native_package_libraries": {
+            "libmpv.so": {
+              "apk_sha256": "fc352a873e905b60160b533cf1fca16d1c69f83d9ce04cb159d2ee9444bff3ea",
+              "jar_sha256": "fc352a873e905b60160b533cf1fca16d1c69f83d9ce04cb159d2ee9444bff3ea",
+              "bytes_equal": true,
+              "bytes": 18203980,
+              "elf": {
+                "class": 1,
+                "machine": 40
+              }
+            },
+            "libmediakitandroidhelper.so": {
+              "apk_sha256": "8ca444bfc0e4e2d703e318c0b82e06a3335c1e1ddc3f4afd760a87a0d50a5cc5",
+              "jar_sha256": "8ca444bfc0e4e2d703e318c0b82e06a3335c1e1ddc3f4afd760a87a0d50a5cc5",
+              "bytes_equal": true,
+              "bytes": 244836,
+              "elf": {
+                "class": 1,
+                "machine": 40
+              }
+            },
+            "libc++_shared.so": {
+              "apk_sha256": "91b49f121b3120538faff020fcf535ade1d945e65ccd793fc0b815b5799bbdf0",
+              "jar_sha256": "4df8b2e81690dd1393a94f65c18b41e5b91494b10b21415823a94ab6bb81018a",
+              "bytes_equal": false,
+              "bytes": 872872,
+              "elf": {
+                "class": 1,
+                "machine": 40
+              },
+              "identity_verified_after_declared_strip": true,
+              "postprocessing": "AGP 9.1.0 --strip-unneeded using NDK 27.2.12479018; exact byte replay, same ELF/build-id"
+            }
+          },
+          "app_compiled_sdk_bridges": {
+            "libmedia_kit_video_hdr_bridge.so": {
+              "sha256": "e43b9fa6c715765ac04bd3f53bf48d467da0b5946da0e7d39780720d576b27d6",
+              "bytes": 225744,
+              "elf": {
+                "class": 1,
+                "machine": 40
+              },
+              "origin": "compiled from the pinned media-kit source during App build"
+            },
+            "libmedia_kit_dataspace_vendor.so": {
+              "sha256": "c0a6c6376f9c8677e8df92d612f850fd46ddd98eea941f5b080b7811daef66fd",
+              "bytes": 6748,
+              "elf": {
+                "class": 1,
+                "machine": 40
+              },
+              "origin": "compiled from the pinned media-kit source during App build"
+            }
+          },
+          "all_native_members": [
+            "lib/armeabi-v7a/libapp.so",
+            "lib/armeabi-v7a/libc++_shared.so",
+            "lib/armeabi-v7a/libcnativeapi.so",
+            "lib/armeabi-v7a/libdartjni.so",
+            "lib/armeabi-v7a/libdatastore_shared_counter.so",
+            "lib/armeabi-v7a/libflutter.so",
+            "lib/armeabi-v7a/libmedia_kit_dataspace_vendor.so",
+            "lib/armeabi-v7a/libmedia_kit_video_hdr_bridge.so",
+            "lib/armeabi-v7a/libmediakitandroidhelper.so",
+            "lib/armeabi-v7a/libmpv.so"
+          ],
+          "manifest": {
+            "min_sdk": 26,
+            "target_sdk": 37
+          },
+          "signature": {
+            "signature_verified": true,
+            "schemes": {
+              "v1": false,
+              "v2": true,
+              "v3": false,
+              "v31": false
+            },
+            "certificates": [
+              {
+                "sha256": "c56c1be44ea2dc9765f537fa08ac15de698f408a4276ab170b845089a307d20c",
+                "subject": "C=US,O=Android,CN=Android Debug",
+                "issuer": "C=US,O=Android,CN=Android Debug",
+                "not_before": "2026-10-23T17:01:37Z",
+                "not_after": "2056-10-15T17:01:37Z",
+                "key_algorithm": "RSA"
+              }
+            ],
+            "errors": [],
+            "warnings": []
+          }
+        },
+        "x86_64": {
+          "file": "PiliPlus-x86_64-release.apk",
+          "sha256": "034ee8dee07a01304438ab2cbf2e254a6dd3a1ea8df6157054f5f9a6a305d0cd",
+          "bytes": 28987996,
+          "native_package_libraries": {
+            "libmpv.so": {
+              "apk_sha256": "38ae358a93f6f5c4fb5199c84759ffc16f430f71713e2ce0b1de70fd7607d269",
+              "jar_sha256": "38ae358a93f6f5c4fb5199c84759ffc16f430f71713e2ce0b1de70fd7607d269",
+              "bytes_equal": true,
+              "bytes": 25554040,
+              "elf": {
+                "class": 2,
+                "machine": 62
+              }
+            },
+            "libmediakitandroidhelper.so": {
+              "apk_sha256": "19167e26b25476ff6155eb0678ea63641ed75d52f2c8f81bc2ecc7a403d4abca",
+              "jar_sha256": "19167e26b25476ff6155eb0678ea63641ed75d52f2c8f81bc2ecc7a403d4abca",
+              "bytes_equal": true,
+              "bytes": 377952,
+              "elf": {
+                "class": 2,
+                "machine": 62
+              }
+            },
+            "libc++_shared.so": {
+              "apk_sha256": "db9609240e60ca18b816a5e95a6bbc784e799261efbd5b30c8e2e03b540b3fa8",
+              "jar_sha256": "cd110349c4a6d0a3efb4aee6beb1a621e243d2a9bc5566c96fbe0c38c9ca9d39",
+              "bytes_equal": false,
+              "bytes": 1252080,
+              "elf": {
+                "class": 2,
+                "machine": 62
+              },
+              "identity_verified_after_declared_strip": true,
+              "postprocessing": "AGP 9.1.0 --strip-unneeded using NDK 27.2.12479018; exact byte replay, same ELF/build-id"
+            }
+          },
+          "app_compiled_sdk_bridges": {
+            "libmedia_kit_video_hdr_bridge.so": {
+              "sha256": "06f4e15b99b1cf31f81c0f16364d35085c5422be55672cf5a143238d6fc8b95c",
+              "bytes": 355856,
+              "elf": {
+                "class": 2,
+                "machine": 62
+              },
+              "origin": "compiled from the pinned media-kit source during App build"
+            },
+            "libmedia_kit_dataspace_vendor.so": {
+              "sha256": "320ec6493b331c7f1083a90c33f89d626012f4742e0d1d123c5a700f3c51d55a",
+              "bytes": 8664,
+              "elf": {
+                "class": 2,
+                "machine": 62
+              },
+              "origin": "compiled from the pinned media-kit source during App build"
+            }
+          },
+          "all_native_members": [
+            "lib/x86_64/libapp.so",
+            "lib/x86_64/libc++_shared.so",
+            "lib/x86_64/libcnativeapi.so",
+            "lib/x86_64/libdartjni.so",
+            "lib/x86_64/libdatastore_shared_counter.so",
+            "lib/x86_64/libflutter.so",
+            "lib/x86_64/libmedia_kit_dataspace_vendor.so",
+            "lib/x86_64/libmedia_kit_video_hdr_bridge.so",
+            "lib/x86_64/libmediakitandroidhelper.so",
+            "lib/x86_64/libmpv.so"
+          ],
+          "manifest": {
+            "min_sdk": 26,
+            "target_sdk": 37
+          },
+          "signature": {
+            "signature_verified": true,
+            "schemes": {
+              "v1": false,
+              "v2": true,
+              "v3": false,
+              "v31": false
+            },
+            "certificates": [
+              {
+                "sha256": "c56c1be44ea2dc9765f537fa08ac15de698f408a4276ab170b845089a307d20c",
+                "subject": "C=US,O=Android,CN=Android Debug",
+                "issuer": "C=US,O=Android,CN=Android Debug",
+                "not_before": "2026-10-23T17:01:37Z",
+                "not_after": "2056-10-15T17:01:37Z",
+                "key_algorithm": "RSA"
+              }
+            ],
+            "errors": [],
+            "warnings": []
+          }
+        }
+      },
+      "runtime_tested": false,
+      "device_tested": false,
+      "all_native_package_runtime_bytes_equal": false,
+      "status": "verified-build-and-package-identity-device-unverified",
+      "artifact": {
+        "id": 12517489694,
+        "run_attempt": 1,
+        "job_id": 120539728812,
+        "bytes": 84233711,
+        "sha256": "5cc073d26c998f3c6730336eea56b01dc7f5812f2e76323d0e33ecff0cd28586",
+        "url": "https://github.com/Goodwu/PiliPlus/actions/runs/39984863955/artifacts/12517489694"
+      },
+      "all_native_package_runtime_origins_verified": true,
+      "raw_byte_comparison_note": "libmpv and helper are byte-identical in every APK. libc++ differs only by the exact, independently replayed AGP strip operation; raw bytes_equal=false is preserved.",
+      "strip_verification": {
+        "agp_version": "9.1.0",
+        "agp_source_url": "https://dl.google.com/dl/android/maven2/com/android/tools/build/gradle/9.1.0/gradle-9.1.0-sources.jar",
+        "agp_source_jar_sha256": "48d1ba4f8096c9bff57a684c7dcb00044e94fbf3a7f1b605f1941da788de3709",
+        "agp_task": "com/android/build/gradle/internal/tasks/StripDebugSymbolsTask.kt",
+        "agp_task_sha256": "ffaacfe2603684a51b7322757545f64ebf5dc3c8c239c1a2814e272cdf836906",
+        "ndk_version": "27.2.12479018",
+        "ndk_source_properties_sha256": "70f1c5165e6d997b18782a49cff71da7a3caacd0c4cd811da24c43359fb83cf6",
+        "strip_sha256": "31a3cb87fbf7c040aa82e853458cc6dc6dd95526123fc33c88ee8116a0c91c32",
+        "strip_version": "llvm-strip, compatible with GNU strip\nLLVM (http://llvm.org/):\n  LLVM version 18.0.3\n  Optimized build.",
+        "command": [
+          "llvm-strip",
+          "--strip-unneeded",
+          "-o",
+          "output",
+          "input"
+        ],
+        "abis": {
+          "arm64-v8a": {
+            "input_sha256": "f9992c4ba6b7c5a716e3a202fceb1ce029d6a2b0605838ac6b3219f489dd7970",
+            "input_bytes": 1794776,
+            "stripped_sha256": "4397241b4bd20a8e579bfb41d21107857e12985f6a01ca0c2a5f83380d1270b4",
+            "stripped_bytes": 1292904,
+            "apk_sha256": "4397241b4bd20a8e579bfb41d21107857e12985f6a01ca0c2a5f83380d1270b4",
+            "apk_bytes": 1292904,
+            "stripped_bytes_equal_apk": true,
+            "build_id_preserved": true,
+            "elf": {
+              "input": {
+                "build_id": "b04675a35ad96f8a9dcaa073e3bd31d4536f00ad",
+                "class": "ELF64",
+                "machine": "AArch64"
+              },
+              "stripped": {
+                "build_id": "b04675a35ad96f8a9dcaa073e3bd31d4536f00ad",
+                "class": "ELF64",
+                "machine": "AArch64"
+              },
+              "apk": {
+                "build_id": "b04675a35ad96f8a9dcaa073e3bd31d4536f00ad",
+                "class": "ELF64",
+                "machine": "AArch64"
+              }
+            }
+          },
+          "armeabi-v7a": {
+            "input_sha256": "4df8b2e81690dd1393a94f65c18b41e5b91494b10b21415823a94ab6bb81018a",
+            "input_bytes": 1301936,
+            "stripped_sha256": "91b49f121b3120538faff020fcf535ade1d945e65ccd793fc0b815b5799bbdf0",
+            "stripped_bytes": 872872,
+            "apk_sha256": "91b49f121b3120538faff020fcf535ade1d945e65ccd793fc0b815b5799bbdf0",
+            "apk_bytes": 872872,
+            "stripped_bytes_equal_apk": true,
+            "build_id_preserved": true,
+            "elf": {
+              "input": {
+                "build_id": "a760c680b329de8439f344bcfd47a1b7f0fdb446",
+                "class": "ELF32",
+                "machine": "ARM"
+              },
+              "stripped": {
+                "build_id": "a760c680b329de8439f344bcfd47a1b7f0fdb446",
+                "class": "ELF32",
+                "machine": "ARM"
+              },
+              "apk": {
+                "build_id": "a760c680b329de8439f344bcfd47a1b7f0fdb446",
+                "class": "ELF32",
+                "machine": "ARM"
+              }
+            }
+          },
+          "x86_64": {
+            "input_sha256": "cd110349c4a6d0a3efb4aee6beb1a621e243d2a9bc5566c96fbe0c38c9ca9d39",
+            "input_bytes": 1617608,
+            "stripped_sha256": "db9609240e60ca18b816a5e95a6bbc784e799261efbd5b30c8e2e03b540b3fa8",
+            "stripped_bytes": 1252080,
+            "apk_sha256": "db9609240e60ca18b816a5e95a6bbc784e799261efbd5b30c8e2e03b540b3fa8",
+            "apk_bytes": 1252080,
+            "stripped_bytes_equal_apk": true,
+            "build_id_preserved": true,
+            "elf": {
+              "input": {
+                "build_id": "29792d29860a216fdc2b694a7e435e459abfc194",
+                "class": "ELF64",
+                "machine": "Advanced Micro Devices X86-64"
+              },
+              "stripped": {
+                "build_id": "29792d29860a216fdc2b694a7e435e459abfc194",
+                "class": "ELF64",
+                "machine": "Advanced Micro Devices X86-64"
+              },
+              "apk": {
+                "build_id": "29792d29860a216fdc2b694a7e435e459abfc194",
+                "class": "ELF64",
+                "machine": "Advanced Micro Devices X86-64"
+              }
+            }
+          }
+        },
+        "all_exact_replays_passed": true
+      },
+      "signature_verification_tool": {
+        "name": "Google apksig",
+        "version": "9.1.0",
+        "url": "https://dl.google.com/dl/android/maven2/com/android/tools/build/apksig/9.1.0/apksig-9.1.0.jar",
+        "sha256": "562cd0a88890960d2ece48e116c61f12872222f1dcc306890799382bc019b201"
+      },
+      "validation": {
+        "application_compiled": true,
+        "full_native_manifest": true,
+        "application_provenance": true,
+        "three_apk_abi_coverage": true,
+        "runtime_library_origins": true,
+        "actual_min_sdk_26": true,
+        "apk_signature_verified": true,
+        "runtime": false,
+        "device": false
+      },
+      "application_build_log": {
+        "path": "/tmp/android-run6-application.log",
+        "sha256": "a425f8f68edb57272960840aad0f13c01db0ec729516bad8d68035def3d2db80"
+      },
+      "compilation_warnings": [
+        {
+          "kind": "ndk_versions_differ",
+          "app_module": "27.2.12479018",
+          "build_succeeded": true,
+          "native_libcxx_origin": "Verified exact NDK 27.2 package input after AGP strip; not substituted by plugin NDK 28.2",
+          "plugin_effective_gradle_ndk": "28.2.13676358",
+          "warning_plugin_count": 30,
+          "warning_is_not_per_plugin_compiler_evidence": true,
+          "all_app_plugins_use_one_locked_ndk": false,
+          "actual_compiler_command_paths": null,
+          "actual_elf_toolchain_stamps": {
+            "hdr_bridge": "r28c/13676358",
+            "dataspace_vendor": "r28c/13676358",
+            "dartjni_C_sources": "r28c/13676358",
+            "cnativeapi_cpp_hook": "r27d/13750724",
+            "mpv_and_mediakit_helper": "r27c/12479018"
+          },
+          "packaged_libcxx_embedded_note": "r27-beta1/11883388; provenance is established by exact NDK27.2 JAR input plus AGP strip replay, not this embedded note",
+          "hdr_vendor_dt_needed_libcxx": false,
+          "static_cpp_closure": {
+            "libraries": 30,
+            "missing_strong": 0,
+            "unresolved_weak": 0,
+            "system_provider": "NDK27.2 API26 system link stubs"
+          },
+          "supplemental_report": {
+            "file": "android-run6-ndk-cxx-supplement.json",
+            "sha256": "422d94cb0a8fc93f84a6d7006eaa316ce0f8d282a4fab5adb76868db8be228b3"
+          },
+          "runtime_or_device_compatibility_claim": false
+        }
+      ],
+      "repository_ndk_compatibility_report": "android-ndk-compatibility-20261023.json"
+    },
     "windows": {
       "platform": "windows",
-      "artifact_id": 12513735285,
-      "github_zip_sha256": "93a3c5f12035f60af641a23279da16f4df700268b5c4f5d340d7709857278fd7",
+      "artifact_id": 12516455234,
+      "artifact_url": "https://github.com/Goodwu/PiliPlus/actions/runs/39984863955/artifacts/12516455234",
+      "outer_bytes": 37892705,
+      "outer_sha256": "eebee85436679d3ba85b8d4c8802ea69c8c7db2f7dd367692b2c03e2dc810292",
       "application_archive": "PiliPlus-windows-x86_64.zip",
-      "application_archive_sha256": "72c68604d37ec0fda329d25e8c08d3a24d3c3f2a0308e954ef037635b09f8dcd",
-      "application_commit": "283c82eb9511a8292ae043c283ebbd664bf5a786",
-      "media_kit_commit": "d76622180dc9d082c9e690dd7d355f418627fb4a",
-      "run": {
-        "attempt": "1",
-        "id": "39977924252"
+      "application_archive_bytes": 37847102,
+      "application_archive_sha256": "002e64302bce561733886e2dd336862e9e31470f9e9d447ed2ad65e4d91b12b0",
+      "provenance": {
+        "application": {
+          "commit": "01257f9e933bda7add3ed4639c8336dddd7b32ba",
+          "repository": "Goodwu/PiliPlus"
+        },
+        "application_files": {
+          "PiliPlus-windows-x86_64.zip": "002e64302bce561733886e2dd336862e9e31470f9e9d447ed2ad65e4d91b12b0",
+          "application-build.patch": "7e5fd5282b36cb9dcab733e0d017b1711d7468d0a3a6a41fc7a9fa71d0e1612d",
+          "native-api-check.json": "bd8cc97d1d114b4855a8cf59069f71aa83b29e7ab7e9c6368f3cee322780ef42"
+        },
+        "media_kit": {
+          "commit": "d76622180dc9d082c9e690dd7d355f418627fb4a",
+          "repository": "Goodwu/media-kit"
+        },
+        "native": {
+          "archive_sha256": "769793329184b00e0ae069e0433a8d692f2dbfedcf7b7a206085837531ed07e0",
+          "identity_sha256": "de86411b3b0909ff65ce2899b0f6436686059cf5267a3ad6dc4c4c2fe44a79d7",
+          "inputs_sha256": "5fa8b54dda8cab7f511c87afc67f1185156be3091c15c8bf2145f385f535a0bf",
+          "manifest_sha256": "dcd8e5df7e0988d65e2fe12c65c4a40819212368726f9fa32ac7621fca7f93c3",
+          "mode": "upstream",
+          "platform": "windows",
+          "schema": 1
+        },
+        "platform": "windows",
+        "run": {
+          "attempt": "1",
+          "id": "39984863955"
+        },
+        "schema": 1,
+        "validation": {
+          "application_compiled": true,
+          "device": false,
+          "runtime": false
+        }
       },
-      "manifest_sha256": "dcd8e5df7e0988d65e2fe12c65c4a40819212368726f9fa32ac7621fca7f93c3",
-      "identity_sha256": "de86411b3b0909ff65ce2899b0f6436686059cf5267a3ad6dc4c4c2fe44a79d7",
-      "runtime": {
-        "path": "libmpv-2.dll",
+      "native_manifest_file_count_verified": 7,
+      "native_archive_reused_from_prior_verified_run": true,
+      "native_manifest_origin": "upstream-binary",
+      "native_runtime": {
+        "manifest_path": "libmpv-2.dll",
+        "packaged_path": "libmpv-2.dll",
         "sha256": "24e848f59c047c9442501fdbe619ad39b98be7d4dd402691f79931c852c0070a",
-        "matches_manifest": true
+        "bytes": 39142912,
+        "matches_manifest": true,
+        "matches_native_archive_bytes": true,
+        "format": "PE",
+        "bits": 64,
+        "machine": 34404,
+        "architecture": "x86_64"
       },
-      "compiled_files": {
-        "executable": {
-          "path": "piliplus.exe",
-          "sha256": "4dd42489419033eda681b66aea364273250a23c113da9decef929d9fe4edaba4"
+      "binary_architecture_checks": [
+        {
+          "path": "WebView2Loader.dll",
+          "bytes": 165440,
+          "sha256": "9468470d6a4d11179ec179183d130465a380e0dedfdbe1fc2ab404c86c45a85e",
+          "format": "PE",
+          "bits": 64,
+          "machine": 34404,
+          "architecture": "x86_64"
         },
-        "video_plugin": {
+        {
+          "path": "app_links_plugin.dll",
+          "bytes": 150528,
+          "sha256": "1a9e37de3611c4b2025d5921298eab5f38adea6606287775425c4f611683d0e0",
+          "format": "PE",
+          "bits": 64,
+          "machine": 34404,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "battery_plus_plugin.dll",
+          "bytes": 96768,
+          "sha256": "1889f09fe6099aa53551ea3897fae3f09dee9b82d3a1b4811d9d308ac79535d8",
+          "format": "PE",
+          "bits": 64,
+          "machine": 34404,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "cnativeapi.dll",
+          "bytes": 1281024,
+          "sha256": "66a08419053fb2378c5075a56fb921ea174c5d0900672504d5c27f740bd32374",
+          "format": "PE",
+          "bits": 64,
+          "machine": 34404,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "connectivity_plus_plugin.dll",
+          "bytes": 101888,
+          "sha256": "ca41f98dd8207c5486005984b75eabcab5d9efb03269d473086a9bb35e6e8e97",
+          "format": "PE",
+          "bits": 64,
+          "machine": 34404,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "dartjni.dll",
+          "bytes": 58368,
+          "sha256": "c53dd2b92da983c184696f8a5ab138271b8027fda2f115835c094b717ce056fd",
+          "format": "PE",
+          "bits": 64,
+          "machine": 34404,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "data/app.so",
+          "bytes": 26690440,
+          "sha256": "f14717f2595fb0de0e1a7a193562e99430debbf45199115ef499e80ba412ebe4",
+          "format": "ELF",
+          "bits": 64,
+          "machine": 62,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "dynamic_color_plugin.dll",
+          "bytes": 80384,
+          "sha256": "1665010bd8f8141e9d5773638dc775386cd80f7d34e5b0306664eb8b4dffe7c1",
+          "format": "PE",
+          "bits": 64,
+          "machine": 34404,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "file_selector_windows_plugin.dll",
+          "bytes": 110592,
+          "sha256": "90d14b9770a162658a59531bb4a6983f546f94de14f85ccdde1ea7022f5da7fd",
+          "format": "PE",
+          "bits": 64,
+          "machine": 34404,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "flutter_inappwebview_windows_plugin.dll",
+          "bytes": 984064,
+          "sha256": "9337d68a8237891857faa4407edf5282b3acbbccf50c99ca1b935fc6809a1a9f",
+          "format": "PE",
+          "bits": 64,
+          "machine": 34404,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "flutter_volume_controller_plugin.dll",
+          "bytes": 107008,
+          "sha256": "2c3c74d22014e3f9bff45650009dcb135ef3362777e4c73077340a6e8c04c8fc",
+          "format": "PE",
+          "bits": 64,
+          "machine": 34404,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "flutter_windows.dll",
+          "bytes": 21274112,
+          "sha256": "7b03815958c49d72385be497fbd0eb1bb2ae27d24989d6c9aee83eafbd93e9d3",
+          "format": "PE",
+          "bits": 64,
+          "machine": 34404,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "libmpv-2.dll",
+          "bytes": 39142912,
+          "sha256": "24e848f59c047c9442501fdbe619ad39b98be7d4dd402691f79931c852c0070a",
+          "format": "PE",
+          "bits": 64,
+          "machine": 34404,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "media_kit_libs_windows_video_plugin.dll",
+          "bytes": 12288,
+          "sha256": "28be1d56d1398c720edbb96ce241cdb1dc3b586e687a45edc5af950bb4413867",
+          "format": "PE",
+          "bits": 64,
+          "machine": 34404,
+          "architecture": "x86_64"
+        },
+        {
           "path": "media_kit_video_plugin.dll",
-          "sha256": "0879d765dd87b0d3c16b0b9169564124c76d2d94b82674df0060cd457e15e326"
+          "bytes": 165888,
+          "sha256": "2b1fd7b6aeb05ee7f4628e5aadf670454060d5ba384f1e7c256ec2fe0f9adeb5",
+          "format": "PE",
+          "bits": 64,
+          "machine": 34404,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "piliplus.exe",
+          "bytes": 236032,
+          "sha256": "adfc004757fcbabdeb83bcdb21318a082466d672ab9291b810d03d465dae9a7c",
+          "format": "PE",
+          "bits": 64,
+          "machine": 34404,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "share_plus_plugin.dll",
+          "bytes": 133120,
+          "sha256": "b7eb60b459e8327555ba966ab8fe0b4cc4522f13395282e06a69112b46d3f7a4",
+          "format": "PE",
+          "bits": 64,
+          "machine": 34404,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "url_launcher_windows_plugin.dll",
+          "bytes": 98304,
+          "sha256": "d9c33e5fed79f2245d9037887a7c66ed85033c593bc250c3e82a0bd0b14f8b5b",
+          "format": "PE",
+          "bits": 64,
+          "machine": 34404,
+          "architecture": "x86_64"
         }
-      },
-      "api": {
-        "status": "passed",
-        "header": {
+      ],
+      "all_provenance_file_hashes_verified": true,
+      "runtime_or_device_tests_repeated": false,
+      "recorded_ci_api_probe": {
+        "header_api": {
           "major": 2,
           "minor": 5,
           "value": 131077
         },
-        "runtime": {
+        "runtime_api": {
           "major": 2,
           "minor": 5,
           "value": 131077
         },
+        "load_create_destroy": true,
         "required_symbols_count": 26,
-        "load": true,
-        "created": true,
-        "destroyed": true,
-        "optional": {
-          "mpv_mediakit_get_property_strings": false
-        }
-      },
-      "application_compiled": true,
-      "device": false,
-      "playback": false,
-      "artifact_url": "https://github.com/Goodwu/PiliPlus/actions/runs/39977924252/artifacts/12513735285"
+        "playback": false
+      }
     },
     "linux": {
       "platform": "linux",
-      "artifact_id": 12512326792,
-      "github_zip_sha256": "7759b8aa87b986c52e56e0232f457088dfeade76fb39be7a83a9f035b3df8f64",
+      "artifact_id": 12516018749,
+      "artifact_url": "https://github.com/Goodwu/PiliPlus/actions/runs/39984863955/artifacts/12516018749",
+      "outer_bytes": 27665902,
+      "outer_sha256": "a3c890e4a63670530166d9b2087d0cf12b8bf0a4cbf758bb8b44d61f3f5de3e4",
       "application_archive": "PiliPlus-linux-x86_64.tar.gz",
-      "application_archive_sha256": "26f75da004981e069c9bd9fdc0cc550e6883b24776c81301b9b1ec38e1fead40",
-      "application_commit": "283c82eb9511a8292ae043c283ebbd664bf5a786",
-      "media_kit_commit": "d76622180dc9d082c9e690dd7d355f418627fb4a",
-      "run": {
-        "attempt": "1",
-        "id": "39977924252"
-      },
-      "manifest_sha256": "47ac565cfcee986b5520bbbb2a1f5308fe57426900d542f9f0f1bb235f1cef1a",
-      "identity_sha256": "81f4f918a10525258a7f6ac5e35f9165c44cc3c6416d4657d1468359edafd65a",
-      "runtime": {
-        "path": "lib/libmpv.so.2",
-        "sha256": "6c74ad711f48b7ee32ff651a5c761665e8e675b4112d6d8d929b025ac8239443",
-        "matches_manifest": true
-      },
-      "compiled_files": {
-        "executable": {
-          "path": "PiliPlus/piliplus",
-          "sha256": "4590e7ddeaf97a8119c1cfdbfdeb415fe242575ffa17321b051105f4d8b1efaa"
+      "application_archive_bytes": 27620947,
+      "application_archive_sha256": "388f7f48a2ed9248a9a4c32ce97bb49a687fdb15d7e9d1e78b64d5c6ebb38cba",
+      "provenance": {
+        "application": {
+          "commit": "01257f9e933bda7add3ed4639c8336dddd7b32ba",
+          "repository": "Goodwu/PiliPlus"
+        },
+        "application_files": {
+          "INSTALL.txt": "5af9e1b392e184fbfb715bd245fc90a9a6e7ef796dd112c5ac422a1f25303f6b",
+          "PiliPlus-linux-x86_64.tar.gz": "388f7f48a2ed9248a9a4c32ce97bb49a687fdb15d7e9d1e78b64d5c6ebb38cba",
+          "application-build.patch": "318e29ce628cb45291f9ad589fdfaa9465f02522005bcd25d13c7570414db1e8",
+          "native-api-check.json": "0a068443ed16e96bf4f4f8383958bbdd7afd5bb5418deeeb69f7bcd69783bb87"
+        },
+        "media_kit": {
+          "commit": "d76622180dc9d082c9e690dd7d355f418627fb4a",
+          "repository": "Goodwu/media-kit"
+        },
+        "native": {
+          "archive_sha256": "883b730bb790880289e029d696563b54e19ff6e4516981da092a5238f29bb39e",
+          "identity_sha256": "81f4f918a10525258a7f6ac5e35f9165c44cc3c6416d4657d1468359edafd65a",
+          "inputs_sha256": "204048ea6c0e254b936eff0e2ec5a531190d15e1530e676468a2143c26012b41",
+          "manifest_sha256": "47ac565cfcee986b5520bbbb2a1f5308fe57426900d542f9f0f1bb235f1cef1a",
+          "mode": "upstream",
+          "platform": "linux",
+          "schema": 1
+        },
+        "platform": "linux",
+        "run": {
+          "attempt": "1",
+          "id": "39984863955"
+        },
+        "schema": 1,
+        "validation": {
+          "application_compiled": true,
+          "device": false,
+          "runtime": false
         }
       },
-      "api": {
-        "status": "passed",
-        "header": {
+      "native_manifest_file_count_verified": 6,
+      "native_archive_reused_from_prior_verified_run": true,
+      "native_manifest_origin": "upstream-binary",
+      "native_runtime": {
+        "manifest_path": "lib/libmpv.so.2",
+        "packaged_path": "PiliPlus/lib/libmpv.so.2",
+        "sha256": "6c74ad711f48b7ee32ff651a5c761665e8e675b4112d6d8d929b025ac8239443",
+        "bytes": 22218936,
+        "matches_manifest": true,
+        "matches_native_archive_bytes": true,
+        "format": "ELF",
+        "bits": 64,
+        "machine": 62,
+        "architecture": "x86_64"
+      },
+      "binary_architecture_checks": [
+        {
+          "path": "PiliPlus/lib/libapp.so",
+          "bytes": 26133384,
+          "sha256": "ccbba9a1e9cd86780878c6fbc809953da064ceee69f7ccc72f0a9cfb732ccf40",
+          "format": "ELF",
+          "bits": 64,
+          "machine": 62,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "PiliPlus/lib/libapp_links_linux_plugin.so",
+          "bytes": 23552,
+          "sha256": "e616ab62ac2f6a95dffed43beb725e440ddb68e4e839fe1048dca5d6daebc81e",
+          "format": "ELF",
+          "bits": 64,
+          "machine": 62,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "PiliPlus/lib/libcnativeapi.so",
+          "bytes": 2229360,
+          "sha256": "3b3bb5260fd606bb4e18a27c8d149bbf97ab556299d2936c88fed52560ab9d67",
+          "format": "ELF",
+          "bits": 64,
+          "machine": 62,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "PiliPlus/lib/libdartjni.so",
+          "bytes": 157320,
+          "sha256": "fe35d502b24fa2dfda9ae09b5f82d80330628b9dd9398ad2ba95754e06d2bded",
+          "format": "ELF",
+          "bits": 64,
+          "machine": 62,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "PiliPlus/lib/libdynamic_color_plugin.so",
+          "bytes": 22584,
+          "sha256": "9993a7eda87c7aed40de1aeeff677a97a2a964a9cf05800929fe7dfbafe37e3b",
+          "format": "ELF",
+          "bits": 64,
+          "machine": 62,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "PiliPlus/lib/libfile_selector_linux_plugin.so",
+          "bytes": 51680,
+          "sha256": "4766db237b63993acdd84ec5ffa1296fc12909f4926250047083e0c35731aeb9",
+          "format": "ELF",
+          "bits": 64,
+          "machine": 62,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "PiliPlus/lib/libflutter_linux_gtk.so",
+          "bytes": 17218152,
+          "sha256": "f16d6efcacd3d2419cda30ac6e2ac30b7c760b0653b434de6449d629a917a948",
+          "format": "ELF",
+          "bits": 64,
+          "machine": 62,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "PiliPlus/lib/libflutter_volume_controller_plugin.so",
+          "bytes": 41280,
+          "sha256": "e846bc7f311d01fc9d164d22dc8ce34300eb907eb62c29a79b5ac42153da03cb",
+          "format": "ELF",
+          "bits": 64,
+          "machine": 62,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "PiliPlus/lib/libmedia_kit_libs_linux_plugin.so",
+          "bytes": 15744,
+          "sha256": "4b08c5d6a217e1365e8ec215efb4817d082d93b7494ab3057b2778bfdddda493",
+          "format": "ELF",
+          "bits": 64,
+          "machine": 62,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "PiliPlus/lib/libmedia_kit_video_plugin.so",
+          "bytes": 70952,
+          "sha256": "9139bde344653051fb4c06cd2f3614a8bf83cfde3be096443aa73bfd39524daa",
+          "format": "ELF",
+          "bits": 64,
+          "machine": 62,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "PiliPlus/lib/libmpv.so.2",
+          "bytes": 22218936,
+          "sha256": "6c74ad711f48b7ee32ff651a5c761665e8e675b4112d6d8d929b025ac8239443",
+          "format": "ELF",
+          "bits": 64,
+          "machine": 62,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "PiliPlus/lib/liburl_launcher_linux_plugin.so",
+          "bytes": 30776,
+          "sha256": "a0522f2d0bbdb4fd80c1781ae889107c550eae8467dbae7835c2b21140b57553",
+          "format": "ELF",
+          "bits": 64,
+          "machine": 62,
+          "architecture": "x86_64"
+        },
+        {
+          "path": "PiliPlus/piliplus",
+          "bytes": 63656,
+          "sha256": "4590e7ddeaf97a8119c1cfdbfdeb415fe242575ffa17321b051105f4d8b1efaa",
+          "format": "ELF",
+          "bits": 64,
+          "machine": 62,
+          "architecture": "x86_64"
+        }
+      ],
+      "all_provenance_file_hashes_verified": true,
+      "runtime_or_device_tests_repeated": false,
+      "recorded_ci_api_probe": {
+        "header_api": {
           "major": 2,
           "minor": 3,
           "value": 131075
         },
-        "runtime": {
+        "runtime_api": {
           "major": 2,
           "minor": 5,
           "value": 131077
         },
+        "load_create_destroy": true,
         "required_symbols_count": 26,
-        "load": true,
-        "created": true,
-        "destroyed": true,
-        "optional": {
-          "mpv_mediakit_get_property_strings": false
-        }
-      },
-      "application_compiled": true,
-      "device": false,
-      "playback": false,
-      "artifact_url": "https://github.com/Goodwu/PiliPlus/actions/runs/39977924252/artifacts/12512326792"
+        "playback": false
+      }
     },
     "ios": {
-      "artifact_id": 12513465100,
-      "artifact_url": "https://github.com/Goodwu/PiliPlus/actions/runs/39977924252/artifacts/12513465100",
-      "artifact_bytes": 24825495,
-      "artifact_sha256": "391fc941fae2887809aa9764dc4516c746cea506a3f837c1a98edaceff7ad3ee",
-      "payload": "PiliPlus-ios-unsigned.ipa",
-      "payload_bytes": 24809455,
-      "payload_sha256": "e1ddf77033171244e886f09c8d46e4eba214459a32f4feca80f414564f2b22db",
+      "all_provenance_application_files_verified": true,
+      "application_compiled": true,
+      "artifact_bytes": 24825484,
+      "artifact_id": 12518866320,
+      "artifact_sha256": "0e7b0bb0f2123905094e8c0f6e5a1646365aa68042fab8aa42078991b16c5163",
+      "artifact_url": "https://github.com/Goodwu/PiliPlus/actions/runs/39984863955/artifacts/12518866320",
+      "bundle_identifier": "com.example.piliplus",
+      "device": false,
+      "embedded_mpv": "Payload/Runner.app/Frameworks/Mpv.framework/Mpv",
+      "embedded_mpv_architectures": [
+        "arm64"
+      ],
+      "embedded_mpv_sha256": "f18de6f421f81db29c0dd184345f34594b94d58bb2d0458fbac1ab70b0d34382",
+      "github_outer_digest_verified": true,
       "main_binary": "Payload/Runner.app/Runner",
       "main_binary_architectures": [
         "arm64"
       ],
-      "embedded_mpv_architectures": [
-        "arm64"
-      ],
-      "bundle_identifier": "com.example.piliplus",
-      "version": "2.1.6",
+      "main_binary_sha256": "17c4bf80bcfe921aabfde60b9db8c610941a82e9ae5988c6b3d85bef3c60547d",
+      "native_receipt_matches_run5": true,
+      "payload": "PiliPlus-ios-unsigned.ipa",
+      "payload_bytes": 24809444,
+      "payload_sha256": "fc31bf208630612625cfffe34d3ccb5fa985ed0acf2105e5deedd459e72f890b",
       "provenance": {
         "application": {
-          "commit": "283c82eb9511a8292ae043c283ebbd664bf5a786",
+          "commit": "01257f9e933bda7add3ed4639c8336dddd7b32ba",
           "repository": "Goodwu/PiliPlus"
         },
         "application_files": {
-          "PiliPlus-ios-unsigned.ipa": "e1ddf77033171244e886f09c8d46e4eba214459a32f4feca80f414564f2b22db",
-          "application-build.patch": "069ff21115d64b467f775a960bf1c3a90d00d33235e9143d275eb6baa31d1321"
+          "PiliPlus-ios-unsigned.ipa": "fc31bf208630612625cfffe34d3ccb5fa985ed0acf2105e5deedd459e72f890b",
+          "application-build.patch": "ff4333ac08d1386cff288961fed200066cc3f0ae77c535338610eaec51ab83e1"
         },
         "media_kit": {
           "commit": "d76622180dc9d082c9e690dd7d355f418627fb4a",
@@ -149,8 +1174,8 @@
         },
         "platform": "ios",
         "run": {
-          "attempt": "1",
-          "id": "39977924252"
+          "attempt": "2",
+          "id": "39984863955"
         },
         "schema": 1,
         "validation": {
@@ -158,35 +1183,44 @@
           "device": false,
           "runtime": false
         }
-      }
+      },
+      "runtime": false,
+      "version": "2.1.6"
     },
     "macos": {
-      "artifact_id": 12512966915,
-      "artifact_url": "https://github.com/Goodwu/PiliPlus/actions/runs/39977924252/artifacts/12512966915",
-      "artifact_bytes": 54238590,
-      "artifact_sha256": "40738fe924396b78e4417d2b148121febb74ad2c48a2416f2e85e85edc80db79",
-      "payload": "PiliPlus-macos-universal.zip",
-      "payload_bytes": 54224402,
-      "payload_sha256": "877ea9d3dc74d4d85130a28719b7381552974f94c88f7674c2b1594a0ac9db12",
+      "all_provenance_application_files_verified": true,
+      "application_compiled": true,
+      "artifact_bytes": 54238084,
+      "artifact_id": 12519120991,
+      "artifact_sha256": "1ce5c8c9cf4c6ccbd1bddbc985922d63fe8eedbe55bce2d0f06bcf7292d7db48",
+      "artifact_url": "https://github.com/Goodwu/PiliPlus/actions/runs/39984863955/artifacts/12519120991",
+      "bundle_identifier": "com.example.piliplus",
+      "device": false,
+      "embedded_mpv": "PiliPlus.app/Contents/Frameworks/Mpv.framework/Versions/A/Mpv",
+      "embedded_mpv_architectures": [
+        "arm64",
+        "x86_64"
+      ],
+      "embedded_mpv_sha256": "c4944574fa7a44e16a31b954057eaa6925cc7f4835a4a3455ad8d1d0540cab70",
+      "github_outer_digest_verified": true,
       "main_binary": "PiliPlus.app/Contents/MacOS/PiliPlus",
       "main_binary_architectures": [
         "arm64",
         "x86_64"
       ],
-      "embedded_mpv_architectures": [
-        "arm64",
-        "x86_64"
-      ],
-      "bundle_identifier": "com.example.piliplus",
-      "version": "2.1.6",
+      "main_binary_sha256": "49606f6151fb55b974b8e1959892ffb6f53a844f4db915cdb4576e8ec45af3a3",
+      "native_receipt_matches_run5": true,
+      "payload": "PiliPlus-macos-universal.zip",
+      "payload_bytes": 54223896,
+      "payload_sha256": "dcaa24733e370027a9d708878094a82063069d359624eb428e09e6a50ebad79d",
       "provenance": {
         "application": {
-          "commit": "283c82eb9511a8292ae043c283ebbd664bf5a786",
+          "commit": "01257f9e933bda7add3ed4639c8336dddd7b32ba",
           "repository": "Goodwu/PiliPlus"
         },
         "application_files": {
-          "PiliPlus-macos-universal.zip": "877ea9d3dc74d4d85130a28719b7381552974f94c88f7674c2b1594a0ac9db12",
-          "application-build.patch": "97d879ed4b86c6385d4141ef51000d2bcb005b4562cae3bb633e37a0a75fd99b"
+          "PiliPlus-macos-universal.zip": "dcaa24733e370027a9d708878094a82063069d359624eb428e09e6a50ebad79d",
+          "application-build.patch": "9ced248564f485be0420bcf7963953df7ab6b8a2b2feeba7b70cfa7ca1f2cc32"
         },
         "media_kit": {
           "commit": "d76622180dc9d082c9e690dd7d355f418627fb4a",
@@ -203,8 +1237,8 @@
         },
         "platform": "macos",
         "run": {
-          "attempt": "1",
-          "id": "39977924252"
+          "attempt": "2",
+          "id": "39984863955"
         },
         "schema": 1,
         "validation": {
@@ -212,144 +1246,157 @@
           "device": false,
           "runtime": false
         }
-      }
+      },
+      "runtime": false,
+      "version": "2.1.6"
     },
     "ohos": {
-      "artifact_id": 12513060704,
-      "artifact_url": "https://github.com/Goodwu/PiliPlus/actions/runs/39977924252/artifacts/12513060704",
-      "audit": {
-        "source_commit": "283c82eb9511a8292ae043c283ebbd664bf5a786",
-        "source_policy": {
-          "mode": "approved-integration",
-          "manifest": "tool/ohos/approved_integration.json",
-          "manifest_sha256": "f589951566bbe37dd5b0d9f40e239c858e50fd31d0fdcb71622670cb16d2489b",
-          "baseline_tree": "775f8d3ba19c294e698af51d323ff16e1aad2ef0",
-          "integration": "ManagedVideoPlayback/RoutedVideoPlayback"
+      "platform": "ohos",
+      "artifact_id": 12514813724,
+      "artifact_url": "https://github.com/Goodwu/PiliPlus/actions/runs/39984863955/artifacts/12514813724",
+      "outer_bytes": 81183467,
+      "outer_sha256": "c00dbd76c0f9b1ec394dc588a7893a947acd8bfbc0ae51c3d480aa47146412a3",
+      "application_archive": "PiliPlus-ohos-arm64-unsigned.hap",
+      "application_archive_bytes": 81182142,
+      "application_archive_sha256": "705866ef7ebaa6bb8ff5254814b3109dbaf35f4eb5f4308b12faef832d515527",
+      "provenance": {
+        "application": {
+          "commit": "01257f9e933bda7add3ed4639c8336dddd7b32ba",
+          "repository": "Goodwu/PiliPlus"
         },
-        "status": "built-unsigned-media-integrated-device-unverified",
-        "dependency_resolution_verified": true,
-        "analysis_passed": true,
-        "parser_compatibility_verified": true,
-        "ui_compatibility_verified": true,
-        "hap_built": true,
-        "device_functionality_verified": false,
-        "artifact": {
-          "path": "/home/runner/work/_temp/PiliPlus-ohos-build/build/ohos/hap/entry-default-unsigned.hap",
-          "sha256": "19124c130360dff6e9ed628f6254dfa0681c0895bdb6e7facd4162d86aa98205",
-          "bytes": 81182142,
-          "application": {
-            "bundleName": "com.example.piliplus",
-            "versionName": "2.1.6",
-            "versionCode": 1
-          },
-          "libraries": [
-            {
-              "member": "libs/arm64-v8a/libapp.so",
-              "bytes": 23446416,
-              "sha256": "819a0d35b21ccf3189204de90c3d094f8c2751635f102b4cea8cffe66a8ec94a"
-            },
-            {
-              "member": "libs/arm64-v8a/libflutter.so",
-              "bytes": 17014776,
-              "sha256": "bb644d00005da19578033f5725de4fb3af336637e675c6686e41cccc75d7f786"
-            }
-          ],
-          "signed": false,
-          "device_verified": false
+        "application_files": {
+          "PiliPlus-ohos-arm64-unsigned.hap": "705866ef7ebaa6bb8ff5254814b3109dbaf35f4eb5f4308b12faef832d515527"
         },
-        "media_native_identity": {
-          "schema": 1,
-          "scope": "PiliPlus-feature-ohos-application-native-identity",
-          "hap": "entry-default-unsigned.hap",
-          "hapSha256": "19124c130360dff6e9ed628f6254dfa0681c0895bdb6e7facd4162d86aa98205",
-          "abi": "arm64-v8a",
-          "libmpvSha256": "167bb6c3042753bbfb74d1e35c3109e048d74a8a532f5a4a598d4b7980c73a17",
-          "bridgeSha256": {
-            "libs/arm64-v8a/libmediakit_ohos_hdr.so": "704f21f84f955c8daedfa81c4ae2871359c0e8812723059928e6c272a93ce794",
-            "libs/arm64-v8a/libmediakit_ohos_sw.so": "fa09c5ae1a39f29e708dd53087ed1847f47d867ac1a7e75f754f56d51decc1c6"
-          },
-          "nativeLibraryMatchesCurrentBuild": true,
-          "applicationPiliPlusBuilt": true,
-          "devicePlayback": "not-run",
-          "hdrDisplayVerification": "not-run"
+        "media_kit": {
+          "commit": "d76622180dc9d082c9e690dd7d355f418627fb4a",
+          "repository": "Goodwu/media-kit"
         },
-        "generated_resource_moves": [
-          {
-            "path": "ohos/entry/src/main/resources/base/profile/buildinfo.json5",
-            "upstream_blob": "3a9faed980cf56b3f9e3039b75bb60a32aede2d8",
-            "generated_blob": null,
-            "operation": "move",
-            "destination": "ohos/entry/src/main/resources/rawfile/buildinfo.json5",
-            "destination_blob": "3a9faed980cf56b3f9e3039b75bb60a32aede2d8",
-            "sdk": {
-              "repository": "https://gitcode.com/CPF-Flutter/flutter_flutter.git",
-              "commit": "3ffe70c6280cc6ddf613bffa59dd70611f238f7e",
-              "path": "packages/flutter_tools/lib/src/ohos/ohos_builder.dart",
-              "sha256": "a2d28944fbb558e63492697cee8bc3dce53a2ba8147a3c5333885e2668e7613d"
-            }
-          }
-        ],
-        "command_stages": [
-          "sdk-check",
-          "pub-get",
-          "parser-compatibility",
-          "ui-compatibility",
-          "analyze",
-          "hap"
-        ],
-        "provenance": {
-          "application": {
-            "commit": "283c82eb9511a8292ae043c283ebbd664bf5a786",
-            "repository": "Goodwu/PiliPlus"
-          },
-          "application_files": {
-            "PiliPlus-ohos-arm64-unsigned.hap": "19124c130360dff6e9ed628f6254dfa0681c0895bdb6e7facd4162d86aa98205"
-          },
-          "media_kit": {
-            "commit": "d76622180dc9d082c9e690dd7d355f418627fb4a",
-            "repository": "Goodwu/media-kit"
-          },
-          "native": {
-            "archive_sha256": "a1e07f42f3cd2f3ee1379eadd33ac62736f1fd69873009f6ca74654e0b3e5adc",
-            "identity_sha256": "dd694add4e7738357ec56404e3846663916f8ce6fe5ba9c82ba60a6f9719a043",
-            "inputs_sha256": "9d3682226c60f0ff82d4a0d1029b0f1e3fe9282362dd1e3d5ce70f227896e9ed",
-            "manifest_sha256": "c557f3d204e77bc07da1c12c91f005110b927bcb8449911e07f7253732d2857b",
-            "mode": "source",
-            "platform": "ohos",
-            "schema": 1
-          },
+        "native": {
+          "archive_sha256": "a1e07f42f3cd2f3ee1379eadd33ac62736f1fd69873009f6ca74654e0b3e5adc",
+          "identity_sha256": "dd694add4e7738357ec56404e3846663916f8ce6fe5ba9c82ba60a6f9719a043",
+          "inputs_sha256": "9d3682226c60f0ff82d4a0d1029b0f1e3fe9282362dd1e3d5ce70f227896e9ed",
+          "manifest_sha256": "c557f3d204e77bc07da1c12c91f005110b927bcb8449911e07f7253732d2857b",
+          "mode": "source",
           "platform": "ohos",
-          "run": {
-            "attempt": "1",
-            "id": "39977924252"
-          },
-          "schema": 1,
-          "validation": {
-            "application_compiled": true,
-            "device": false,
-            "runtime": false
-          }
+          "schema": 1
         },
-        "download_verification": {
-          "outer_zip_sha256": "a4f3b04e5faca9a119b0b8eeea403afed855ecec90627c54decaa7e955280981",
-          "hap_crc_valid": true,
-          "native_libmpv_bytes_match": true,
-          "packaged_buildinfo_member": "resources/rawfile/buildinfo.json5",
-          "packaged_buildinfo_blob": "3a9faed980cf56b3f9e3039b75bb60a32aede2d8"
+        "platform": "ohos",
+        "run": {
+          "attempt": "1",
+          "id": "39984863955"
+        },
+        "schema": 1,
+        "validation": {
+          "application_compiled": true,
+          "device": false,
+          "runtime": false
         }
-      }
+      },
+      "native_manifest_file_count_verified": 13,
+      "native_archive_reused_from_prior_verified_run": false,
+      "native_manifest_origin": "source",
+      "native_runtime": {
+        "manifest_path": "lib/libmpv.so",
+        "packaged_path": "libs/arm64-v8a/libmpv.so",
+        "sha256": "167bb6c3042753bbfb74d1e35c3109e048d74a8a532f5a4a598d4b7980c73a17",
+        "bytes": 35924496,
+        "matches_manifest": true,
+        "matches_native_archive_bytes": true,
+        "format": "ELF",
+        "bits": 64,
+        "machine": 183,
+        "architecture": "arm64"
+      },
+      "binary_architecture_checks": [
+        {
+          "path": "libs/arm64-v8a/libapp.so",
+          "bytes": 23446416,
+          "sha256": "34fa18f376f46d99f69713a39bd69b5919e4e2a32e349d07f923dc559ebcfae1",
+          "format": "ELF",
+          "bits": 64,
+          "machine": 183,
+          "architecture": "arm64"
+        },
+        {
+          "path": "libs/arm64-v8a/libc++_shared.so",
+          "bytes": 1262504,
+          "sha256": "f69947af100b652e349ae51e4a4888bcc7a327db9085272d318176ef1782bf0f",
+          "format": "ELF",
+          "bits": 64,
+          "machine": 183,
+          "architecture": "arm64"
+        },
+        {
+          "path": "libs/arm64-v8a/libflutter.so",
+          "bytes": 17014776,
+          "sha256": "bb644d00005da19578033f5725de4fb3af336637e675c6686e41cccc75d7f786",
+          "format": "ELF",
+          "bits": 64,
+          "machine": 183,
+          "architecture": "arm64"
+        },
+        {
+          "path": "libs/arm64-v8a/libinappwebview.so",
+          "bytes": 5992,
+          "sha256": "00c976a3e6ec1b6e8808677dd00a78769d2a4a3b6887fb8140599c53cb5cc67b",
+          "format": "ELF",
+          "bits": 64,
+          "machine": 183,
+          "architecture": "arm64"
+        },
+        {
+          "path": "libs/arm64-v8a/libmediakit_ohos_hdr.so",
+          "bytes": 5672,
+          "sha256": "704f21f84f955c8daedfa81c4ae2871359c0e8812723059928e6c272a93ce794",
+          "format": "ELF",
+          "bits": 64,
+          "machine": 183,
+          "architecture": "arm64"
+        },
+        {
+          "path": "libs/arm64-v8a/libmediakit_ohos_sw.so",
+          "bytes": 60320,
+          "sha256": "fa09c5ae1a39f29e708dd53087ed1847f47d867ac1a7e75f754f56d51decc1c6",
+          "format": "ELF",
+          "bits": 64,
+          "machine": 183,
+          "architecture": "arm64"
+        },
+        {
+          "path": "libs/arm64-v8a/libmpv.so",
+          "bytes": 35924496,
+          "sha256": "167bb6c3042753bbfb74d1e35c3109e048d74a8a532f5a4a598d4b7980c73a17",
+          "format": "ELF",
+          "bits": 64,
+          "machine": 183,
+          "architecture": "arm64"
+        }
+      ],
+      "all_provenance_file_hashes_verified": true,
+      "runtime_or_device_tests_repeated": false,
+      "packaged_buildinfo_git_blob": "3a9faed980cf56b3f9e3039b75bb60a32aede2d8",
+      "native_artifact_id": 12514543099,
+      "native_artifact_outer_sha256": "1cd18c0c4df89347d3f6ef955ea32fc9d4c882f4f990dc6e3519c43d9f5ea534",
+      "unsigned": true
     }
-  },
-  "android": {
-    "status": "awaiting-repaired-four-abi-package-and-apk-ci",
-    "run_id": 39984863955,
-    "application_commit": "01257f9e933bda7add3ed4639c8336dddd7b32ba",
-    "producer_commit": "3605f300ecfe16bc084addd0b403d2cd55ef6a81"
   },
   "limitations": [
     "Windows LLVM/MinGW and Darwin Nix source-profile product builds have not been executed in this validation.",
     "Linux source-profile application build is recorded separately in linux-source-audit-20261023.json.",
     "The headless public Dart Player comparison is recorded separately in dart-runtime-audit-20261023.json.",
     "Signed distribution, GPU rendering, HDR/Dolby Vision display and physical devices require their own acceptance."
-  ]
+  ],
+  "run_id": 39984863955,
+  "run_url": "https://github.com/Goodwu/PiliPlus/actions/runs/39984863955",
+  "workflow_conclusion": "success",
+  "workflow_latest_attempt": 2,
+  "application_commit": "01257f9e933bda7add3ed4639c8336dddd7b32ba",
+  "media_kit_commit": "d76622180dc9d082c9e690dd7d355f418627fb4a",
+  "apple_retry": {
+    "first_attempt": "cancelled-before-any-step-ran",
+    "runner_id": 0,
+    "reason": "GitHub hosted macOS arm64 runner capacity constraints",
+    "retry_attempt": 2,
+    "retry_result": "both applications compiled, uploaded and downloaded artifacts independently verified"
+  }
 }

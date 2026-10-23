@@ -1,0 +1,355 @@
+{
+  "schema": 1,
+  "date": "2026-10-23",
+  "kind": "downloaded-application-artifact-verification",
+  "scope": "Actual application builds and downloaded package checks; no application GUI or physical-device acceptance",
+  "platforms": {
+    "windows": {
+      "platform": "windows",
+      "artifact_id": 12513735285,
+      "github_zip_sha256": "93a3c5f12035f60af641a23279da16f4df700268b5c4f5d340d7709857278fd7",
+      "application_archive": "PiliPlus-windows-x86_64.zip",
+      "application_archive_sha256": "72c68604d37ec0fda329d25e8c08d3a24d3c3f2a0308e954ef037635b09f8dcd",
+      "application_commit": "283c82eb9511a8292ae043c283ebbd664bf5a786",
+      "media_kit_commit": "d76622180dc9d082c9e690dd7d355f418627fb4a",
+      "run": {
+        "attempt": "1",
+        "id": "39977924252"
+      },
+      "manifest_sha256": "dcd8e5df7e0988d65e2fe12c65c4a40819212368726f9fa32ac7621fca7f93c3",
+      "identity_sha256": "de86411b3b0909ff65ce2899b0f6436686059cf5267a3ad6dc4c4c2fe44a79d7",
+      "runtime": {
+        "path": "libmpv-2.dll",
+        "sha256": "24e848f59c047c9442501fdbe619ad39b98be7d4dd402691f79931c852c0070a",
+        "matches_manifest": true
+      },
+      "compiled_files": {
+        "executable": {
+          "path": "piliplus.exe",
+          "sha256": "4dd42489419033eda681b66aea364273250a23c113da9decef929d9fe4edaba4"
+        },
+        "video_plugin": {
+          "path": "media_kit_video_plugin.dll",
+          "sha256": "0879d765dd87b0d3c16b0b9169564124c76d2d94b82674df0060cd457e15e326"
+        }
+      },
+      "api": {
+        "status": "passed",
+        "header": {
+          "major": 2,
+          "minor": 5,
+          "value": 131077
+        },
+        "runtime": {
+          "major": 2,
+          "minor": 5,
+          "value": 131077
+        },
+        "required_symbols_count": 26,
+        "load": true,
+        "created": true,
+        "destroyed": true,
+        "optional": {
+          "mpv_mediakit_get_property_strings": false
+        }
+      },
+      "application_compiled": true,
+      "device": false,
+      "playback": false,
+      "artifact_url": "https://github.com/Goodwu/PiliPlus/actions/runs/39977924252/artifacts/12513735285"
+    },
+    "linux": {
+      "platform": "linux",
+      "artifact_id": 12512326792,
+      "github_zip_sha256": "7759b8aa87b986c52e56e0232f457088dfeade76fb39be7a83a9f035b3df8f64",
+      "application_archive": "PiliPlus-linux-x86_64.tar.gz",
+      "application_archive_sha256": "26f75da004981e069c9bd9fdc0cc550e6883b24776c81301b9b1ec38e1fead40",
+      "application_commit": "283c82eb9511a8292ae043c283ebbd664bf5a786",
+      "media_kit_commit": "d76622180dc9d082c9e690dd7d355f418627fb4a",
+      "run": {
+        "attempt": "1",
+        "id": "39977924252"
+      },
+      "manifest_sha256": "47ac565cfcee986b5520bbbb2a1f5308fe57426900d542f9f0f1bb235f1cef1a",
+      "identity_sha256": "81f4f918a10525258a7f6ac5e35f9165c44cc3c6416d4657d1468359edafd65a",
+      "runtime": {
+        "path": "lib/libmpv.so.2",
+        "sha256": "6c74ad711f48b7ee32ff651a5c761665e8e675b4112d6d8d929b025ac8239443",
+        "matches_manifest": true
+      },
+      "compiled_files": {
+        "executable": {
+          "path": "PiliPlus/piliplus",
+          "sha256": "4590e7ddeaf97a8119c1cfdbfdeb415fe242575ffa17321b051105f4d8b1efaa"
+        }
+      },
+      "api": {
+        "status": "passed",
+        "header": {
+          "major": 2,
+          "minor": 3,
+          "value": 131075
+        },
+        "runtime": {
+          "major": 2,
+          "minor": 5,
+          "value": 131077
+        },
+        "required_symbols_count": 26,
+        "load": true,
+        "created": true,
+        "destroyed": true,
+        "optional": {
+          "mpv_mediakit_get_property_strings": false
+        }
+      },
+      "application_compiled": true,
+      "device": false,
+      "playback": false,
+      "artifact_url": "https://github.com/Goodwu/PiliPlus/actions/runs/39977924252/artifacts/12512326792"
+    },
+    "ios": {
+      "artifact_id": 12513465100,
+      "artifact_url": "https://github.com/Goodwu/PiliPlus/actions/runs/39977924252/artifacts/12513465100",
+      "artifact_bytes": 24825495,
+      "artifact_sha256": "391fc941fae2887809aa9764dc4516c746cea506a3f837c1a98edaceff7ad3ee",
+      "payload": "PiliPlus-ios-unsigned.ipa",
+      "payload_bytes": 24809455,
+      "payload_sha256": "e1ddf77033171244e886f09c8d46e4eba214459a32f4feca80f414564f2b22db",
+      "main_binary": "Payload/Runner.app/Runner",
+      "main_binary_architectures": [
+        "arm64"
+      ],
+      "embedded_mpv_architectures": [
+        "arm64"
+      ],
+      "bundle_identifier": "com.example.piliplus",
+      "version": "2.1.6",
+      "provenance": {
+        "application": {
+          "commit": "283c82eb9511a8292ae043c283ebbd664bf5a786",
+          "repository": "Goodwu/PiliPlus"
+        },
+        "application_files": {
+          "PiliPlus-ios-unsigned.ipa": "e1ddf77033171244e886f09c8d46e4eba214459a32f4feca80f414564f2b22db",
+          "application-build.patch": "069ff21115d64b467f775a960bf1c3a90d00d33235e9143d275eb6baa31d1321"
+        },
+        "media_kit": {
+          "commit": "d76622180dc9d082c9e690dd7d355f418627fb4a",
+          "repository": "Goodwu/media-kit"
+        },
+        "native": {
+          "archive_sha256": "779c8f421e7ff7acc73a6b840fc948d78c75b435680ccda09bbfe385a6780b91",
+          "identity_sha256": "79a9e3abd786afd7b0e116747acedf28ef61c3970e3dc677d660ca2a8f8787bb",
+          "inputs_sha256": "c6ce8a8f1d2752d35cd1d17e928435dbc0349d910923463bcad56de2f1921282",
+          "manifest_sha256": "cacf6393768271490f15c92fb549a590651e6e96f769201d24f669a4ef4a60ba",
+          "mode": "upstream",
+          "platform": "ios",
+          "schema": 1
+        },
+        "platform": "ios",
+        "run": {
+          "attempt": "1",
+          "id": "39977924252"
+        },
+        "schema": 1,
+        "validation": {
+          "application_compiled": true,
+          "device": false,
+          "runtime": false
+        }
+      }
+    },
+    "macos": {
+      "artifact_id": 12512966915,
+      "artifact_url": "https://github.com/Goodwu/PiliPlus/actions/runs/39977924252/artifacts/12512966915",
+      "artifact_bytes": 54238590,
+      "artifact_sha256": "40738fe924396b78e4417d2b148121febb74ad2c48a2416f2e85e85edc80db79",
+      "payload": "PiliPlus-macos-universal.zip",
+      "payload_bytes": 54224402,
+      "payload_sha256": "877ea9d3dc74d4d85130a28719b7381552974f94c88f7674c2b1594a0ac9db12",
+      "main_binary": "PiliPlus.app/Contents/MacOS/PiliPlus",
+      "main_binary_architectures": [
+        "arm64",
+        "x86_64"
+      ],
+      "embedded_mpv_architectures": [
+        "arm64",
+        "x86_64"
+      ],
+      "bundle_identifier": "com.example.piliplus",
+      "version": "2.1.6",
+      "provenance": {
+        "application": {
+          "commit": "283c82eb9511a8292ae043c283ebbd664bf5a786",
+          "repository": "Goodwu/PiliPlus"
+        },
+        "application_files": {
+          "PiliPlus-macos-universal.zip": "877ea9d3dc74d4d85130a28719b7381552974f94c88f7674c2b1594a0ac9db12",
+          "application-build.patch": "97d879ed4b86c6385d4141ef51000d2bcb005b4562cae3bb633e37a0a75fd99b"
+        },
+        "media_kit": {
+          "commit": "d76622180dc9d082c9e690dd7d355f418627fb4a",
+          "repository": "Goodwu/media-kit"
+        },
+        "native": {
+          "archive_sha256": "af2709d75633b415afa03ed0fd77317d3ab843fed9587760fb15cdadf162ee7e",
+          "identity_sha256": "7c2bddb731c7f2a7bd393ee8b55bbc3e00538711fa13a9722518ec9491b6081b",
+          "inputs_sha256": "398b8108d7607c21d46c3dfc3d0fdfb09ccf626dd75e4b94f8e3fb1071d15adc",
+          "manifest_sha256": "e23dfff603e33b3abdb09ecb49a9bb2b93f6412dc0de16751bb1dfd186e19c8f",
+          "mode": "upstream",
+          "platform": "macos",
+          "schema": 1
+        },
+        "platform": "macos",
+        "run": {
+          "attempt": "1",
+          "id": "39977924252"
+        },
+        "schema": 1,
+        "validation": {
+          "application_compiled": true,
+          "device": false,
+          "runtime": false
+        }
+      }
+    },
+    "ohos": {
+      "artifact_id": 12513060704,
+      "artifact_url": "https://github.com/Goodwu/PiliPlus/actions/runs/39977924252/artifacts/12513060704",
+      "audit": {
+        "source_commit": "283c82eb9511a8292ae043c283ebbd664bf5a786",
+        "source_policy": {
+          "mode": "approved-integration",
+          "manifest": "tool/ohos/approved_integration.json",
+          "manifest_sha256": "f589951566bbe37dd5b0d9f40e239c858e50fd31d0fdcb71622670cb16d2489b",
+          "baseline_tree": "775f8d3ba19c294e698af51d323ff16e1aad2ef0",
+          "integration": "ManagedVideoPlayback/RoutedVideoPlayback"
+        },
+        "status": "built-unsigned-media-integrated-device-unverified",
+        "dependency_resolution_verified": true,
+        "analysis_passed": true,
+        "parser_compatibility_verified": true,
+        "ui_compatibility_verified": true,
+        "hap_built": true,
+        "device_functionality_verified": false,
+        "artifact": {
+          "path": "/home/runner/work/_temp/PiliPlus-ohos-build/build/ohos/hap/entry-default-unsigned.hap",
+          "sha256": "19124c130360dff6e9ed628f6254dfa0681c0895bdb6e7facd4162d86aa98205",
+          "bytes": 81182142,
+          "application": {
+            "bundleName": "com.example.piliplus",
+            "versionName": "2.1.6",
+            "versionCode": 1
+          },
+          "libraries": [
+            {
+              "member": "libs/arm64-v8a/libapp.so",
+              "bytes": 23446416,
+              "sha256": "819a0d35b21ccf3189204de90c3d094f8c2751635f102b4cea8cffe66a8ec94a"
+            },
+            {
+              "member": "libs/arm64-v8a/libflutter.so",
+              "bytes": 17014776,
+              "sha256": "bb644d00005da19578033f5725de4fb3af336637e675c6686e41cccc75d7f786"
+            }
+          ],
+          "signed": false,
+          "device_verified": false
+        },
+        "media_native_identity": {
+          "schema": 1,
+          "scope": "PiliPlus-feature-ohos-application-native-identity",
+          "hap": "entry-default-unsigned.hap",
+          "hapSha256": "19124c130360dff6e9ed628f6254dfa0681c0895bdb6e7facd4162d86aa98205",
+          "abi": "arm64-v8a",
+          "libmpvSha256": "167bb6c3042753bbfb74d1e35c3109e048d74a8a532f5a4a598d4b7980c73a17",
+          "bridgeSha256": {
+            "libs/arm64-v8a/libmediakit_ohos_hdr.so": "704f21f84f955c8daedfa81c4ae2871359c0e8812723059928e6c272a93ce794",
+            "libs/arm64-v8a/libmediakit_ohos_sw.so": "fa09c5ae1a39f29e708dd53087ed1847f47d867ac1a7e75f754f56d51decc1c6"
+          },
+          "nativeLibraryMatchesCurrentBuild": true,
+          "applicationPiliPlusBuilt": true,
+          "devicePlayback": "not-run",
+          "hdrDisplayVerification": "not-run"
+        },
+        "generated_resource_moves": [
+          {
+            "path": "ohos/entry/src/main/resources/base/profile/buildinfo.json5",
+            "upstream_blob": "3a9faed980cf56b3f9e3039b75bb60a32aede2d8",
+            "generated_blob": null,
+            "operation": "move",
+            "destination": "ohos/entry/src/main/resources/rawfile/buildinfo.json5",
+            "destination_blob": "3a9faed980cf56b3f9e3039b75bb60a32aede2d8",
+            "sdk": {
+              "repository": "https://gitcode.com/CPF-Flutter/flutter_flutter.git",
+              "commit": "3ffe70c6280cc6ddf613bffa59dd70611f238f7e",
+              "path": "packages/flutter_tools/lib/src/ohos/ohos_builder.dart",
+              "sha256": "a2d28944fbb558e63492697cee8bc3dce53a2ba8147a3c5333885e2668e7613d"
+            }
+          }
+        ],
+        "command_stages": [
+          "sdk-check",
+          "pub-get",
+          "parser-compatibility",
+          "ui-compatibility",
+          "analyze",
+          "hap"
+        ],
+        "provenance": {
+          "application": {
+            "commit": "283c82eb9511a8292ae043c283ebbd664bf5a786",
+            "repository": "Goodwu/PiliPlus"
+          },
+          "application_files": {
+            "PiliPlus-ohos-arm64-unsigned.hap": "19124c130360dff6e9ed628f6254dfa0681c0895bdb6e7facd4162d86aa98205"
+          },
+          "media_kit": {
+            "commit": "d76622180dc9d082c9e690dd7d355f418627fb4a",
+            "repository": "Goodwu/media-kit"
+          },
+          "native": {
+            "archive_sha256": "a1e07f42f3cd2f3ee1379eadd33ac62736f1fd69873009f6ca74654e0b3e5adc",
+            "identity_sha256": "dd694add4e7738357ec56404e3846663916f8ce6fe5ba9c82ba60a6f9719a043",
+            "inputs_sha256": "9d3682226c60f0ff82d4a0d1029b0f1e3fe9282362dd1e3d5ce70f227896e9ed",
+            "manifest_sha256": "c557f3d204e77bc07da1c12c91f005110b927bcb8449911e07f7253732d2857b",
+            "mode": "source",
+            "platform": "ohos",
+            "schema": 1
+          },
+          "platform": "ohos",
+          "run": {
+            "attempt": "1",
+            "id": "39977924252"
+          },
+          "schema": 1,
+          "validation": {
+            "application_compiled": true,
+            "device": false,
+            "runtime": false
+          }
+        },
+        "download_verification": {
+          "outer_zip_sha256": "a4f3b04e5faca9a119b0b8eeea403afed855ecec90627c54decaa7e955280981",
+          "hap_crc_valid": true,
+          "native_libmpv_bytes_match": true,
+          "packaged_buildinfo_member": "resources/rawfile/buildinfo.json5",
+          "packaged_buildinfo_blob": "3a9faed980cf56b3f9e3039b75bb60a32aede2d8"
+        }
+      }
+    }
+  },
+  "android": {
+    "status": "awaiting-repaired-four-abi-package-and-apk-ci",
+    "run_id": 39984863955,
+    "application_commit": "01257f9e933bda7add3ed4639c8336dddd7b32ba",
+    "producer_commit": "3605f300ecfe16bc084addd0b403d2cd55ef6a81"
+  },
+  "limitations": [
+    "Windows LLVM/MinGW and Darwin Nix source-profile product builds have not been executed in this validation.",
+    "Linux source-profile application build is recorded separately in linux-source-audit-20261023.json.",
+    "The headless public Dart Player comparison is recorded separately in dart-runtime-audit-20261023.json.",
+    "Signed distribution, GPU rendering, HDR/Dolby Vision display and physical devices require their own acceptance."
+  ]
+}

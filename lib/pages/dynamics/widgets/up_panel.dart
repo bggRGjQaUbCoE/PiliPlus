@@ -231,6 +231,7 @@ class _UpPanelState extends State<UpPanel> {
                   isTop ? '${item.uname}\n' : item.uname!,
                   maxLines: 2,
                   textAlign: .center,
+                  overflow: .ellipsis,
                   style: TextStyle(
                     color: currentMid == item.mid
                         ? theme.colorScheme.primary

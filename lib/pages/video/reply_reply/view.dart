@@ -15,6 +15,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/pages/video/reply_reply/controller.dart';
+import 'package:PiliPlus/pages/video/reply_reply/tree.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/extension/widget_ext.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
@@ -326,7 +327,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
             itemCount: tree.length,
             itemBuilder: (context, index) {
               final node = tree[index];
-              return ReplyItemGrpc(
+              final child = ReplyItemGrpc(
                 replyItem: node.reply,
                 replyLevel: 2,
                 upMid: _controller.upMid,
@@ -335,7 +336,14 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
                 depth: node.depth,
                 reason: node.reason,
                 onReply: (_) => debugPrint('onReply'),
+                onScrollLeft: node.depth > 0
+                    ? () => _controller.setIndexByTreeNode(index, node.parent)
+                    : null,
               );
+              if (jumpIndex == index) {
+                return _controller.colorAnimWrapper(colorScheme, child);
+              }
+              return child;
             },
           );
         } else {
@@ -384,25 +392,29 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
       onReply: (replyItem) => _controller.onReply(replyItem, index: index),
       onDelete: (item, subIndex) => _controller.onRemove(index, item, subIndex),
       upMid: _controller.upMid,
-      dialogueCallback: isDialogue
-          ? () {
-              if (!_controller.setIndexById(replyItem.parent)) {
-                SmartDialog.showToast('评论可能已被删除');
-              }
-            }
-          : () => MiniScaffold.of(context).showBottomSheet(
-              constraints: const BoxConstraints(),
-              (context) => VideoReplyReplyPanel(
-                oid: replyItem.oid.toInt(),
-                rpid: replyItem.root.toInt(),
-                dialog: replyItem.dialog.toInt(),
-                replyType: widget.replyType,
-                isVideoDetail: true,
-                isNested: widget.isNested,
-              ),
-            ),
+      dialogueCallback: isDialogue ? _onJumpToParent : _showDialogue,
       getReplyChain: () => _controller.getParentChain(index, firstFloor),
       onCheckReply: _controller.onCheckReply,
+    );
+  }
+
+  void _onJumpToParent(ReplyInfo replyItem) {
+    if (!_controller.setIndexById(replyItem.parent)) {
+      SmartDialog.showToast('评论可能已被删除');
+    }
+  }
+
+  void _showDialogue(ReplyInfo replyItem) {
+    MiniScaffold.of(context).showBottomSheet(
+      constraints: const BoxConstraints(),
+      (context) => VideoReplyReplyPanel(
+        oid: replyItem.oid.toInt(),
+        rpid: replyItem.root.toInt(),
+        dialog: replyItem.dialog.toInt(),
+        replyType: widget.replyType,
+        isVideoDetail: true,
+        isNested: widget.isNested,
+      ),
     );
   }
 }

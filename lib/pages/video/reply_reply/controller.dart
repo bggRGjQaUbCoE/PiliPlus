@@ -317,4 +317,16 @@ class VideoReplyReplyController extends ReplyController
       ..rawValue!.toggleCollapse(index)
       ..refresh();
   }
+
+  bool setIndexByTreeNode(int end, ReplyTreeNode? node) {
+    if (node != null) {
+      final index = replyTree.rawValue!.reverseIdentityIndexOf(node, end);
+      if (index != -1) {
+        this.index.value = index;
+        jumpToItem(index);
+        return true;
+      }
+    }
+    return false;
+  }
 }

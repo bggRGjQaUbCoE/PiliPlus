@@ -463,6 +463,8 @@ extension ReplyTreeNodeUi on ReplyTreeNode {
     return p;
   }
 
+  ReplyTreeNode? get parent => _parent;
+
   bool _debugAncestorsExpanded() {
     for (var p = _parent; p != null; p = p._parent) {
       if (p.collapsed != 0) {

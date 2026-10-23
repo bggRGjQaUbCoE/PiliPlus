@@ -3,6 +3,7 @@ import 'dart:collection';
 
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo, DetailListReply;
+import 'package:PiliPlus/grpc/bilibili/pagination.pb.dart';
 import 'package:PiliPlus/grpc/reply.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/reply/reply_sort_type.dart';
@@ -70,8 +71,11 @@ class VideoReplyReplyController extends ReplyController
 
     subjectControl = data.subjectControl;
     upMid ??= data.subjectControl.upMid;
-    paginationReply = data.paginationReply;
-    isEnd = data.cursor.isEnd;
+    final FeedPaginationReply paginationReply = data.paginationReply;
+    isEnd =
+        data.cursor.isEnd ||
+        paginationReply.nextOffset == this.paginationReply?.nextOffset;
+    this.paginationReply = paginationReply;
 
     // reply2Reply // isDialogue.not
     if (data is DetailListReply) {
@@ -241,16 +245,28 @@ class VideoReplyReplyController extends ReplyController
   }
 
   Future<void> _fetchNextReply() async {
-    await queryData(false);
-    _inflightReply = null;
+    try {
+      await queryData(false);
+    } finally {
+      _inflightReply = null;
+    }
+    if (!isClosed) {
+      if (isEnd) {
+        SmartDialog.showToast('已完成拉取');
+      } else {
+        _createReplyTimer();
+      }
+    }
+  }
+
+  @override
+  Future<void> queryData([bool isRefresh = true]) async {
+    await super.queryData(isRefresh);
     if (isEnd) {
       progress.value = 1;
-      SmartDialog.showToast('已完成拉取');
-    } else {
-      progress.value = count.rawValue > 0
-          ? (loadingState.rawValue.dataOrNull?.length ?? 0) / count.rawValue
-          : 0;
-      _createReplyTimer();
+    } else if (count.rawValue > 0) {
+      progress.value =
+          (loadingState.rawValue.dataOrNull?.length ?? 0) / count.rawValue;
     }
   }
 
@@ -260,8 +276,8 @@ class VideoReplyReplyController extends ReplyController
       assert(_inflightReply == null);
       _cancelReplyTimer();
       return _inflightReply = _fetchNextReply();
-    } else if (_inflightReply != null) {
-      return _inflightReply!;
+    } else if (_inflightReply case final future?) {
+      return future;
     }
     return super.onLoadMore();
   }
@@ -294,7 +310,8 @@ class VideoReplyReplyController extends ReplyController
   }
 
   void toggleCollapseTree(int index) {
-    replyTree.rawValue!.toggleCollapse(index);
-    replyTree.refresh();
+    replyTree
+      ..rawValue!.toggleCollapse(index)
+      ..refresh();
   }
 }

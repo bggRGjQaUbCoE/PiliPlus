@@ -7,22 +7,20 @@ class ActionRowLineItem extends StatelessWidget {
     required this.selectStatus,
     this.onTap,
     this.text,
-    this.isLoading = false,
     this.iconData,
     this.icon,
   });
   final bool selectStatus;
-  final Function? onTap;
-  final bool isLoading;
+  final VoidCallback? onTap;
   final String? text;
   final IconData? iconData;
   final Widget? icon;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final colorScheme = ColorScheme.of(context);
     return Material(
-      color: selectStatus ? theme.colorScheme.secondaryContainer : null,
+      color: selectStatus ? colorScheme.secondaryContainer : null,
       type: selectStatus ? MaterialType.canvas : MaterialType.transparency,
       borderRadius: const BorderRadius.all(Radius.circular(30)),
       child: InkWell(
@@ -38,7 +36,7 @@ class ActionRowLineItem extends StatelessWidget {
             border: Border.all(
               color: selectStatus
                   ? Colors.transparent
-                  : theme.colorScheme.secondaryContainer,
+                  : colorScheme.secondaryContainer,
             ),
           ),
           child: Row(
@@ -49,25 +47,65 @@ class ActionRowLineItem extends StatelessWidget {
                   iconData,
                   size: 13,
                   color: selectStatus
-                      ? theme.colorScheme.onSecondaryContainer
-                      : theme.colorScheme.outline,
+                      ? colorScheme.onSecondaryContainer
+                      : colorScheme.outline,
                 )
               else
                 ?icon,
-              AnimatedOpacity(
-                opacity: isLoading ? 0 : 1,
-                duration: const Duration(milliseconds: 200),
-                child: Text(
-                  text!,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: selectStatus
-                        ? theme.colorScheme.onSecondaryContainer
-                        : theme.colorScheme.outline,
-                  ),
+              Text(
+                text!,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: selectStatus
+                      ? colorScheme.onSecondaryContainer
+                      : colorScheme.outline,
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ActionIconItem extends StatelessWidget {
+  const ActionIconItem({
+    super.key,
+    required this.tooltip,
+    required this.onTap,
+    required this.iconData,
+  });
+
+  final String tooltip;
+  final VoidCallback onTap;
+  final IconData iconData;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = ColorScheme.of(context);
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        type: .transparency,
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: () => {
+            feedBack(),
+            onTap(),
+          },
+          child: Container(
+            padding: const .all(5),
+            decoration: BoxDecoration(
+              shape: .circle,
+              border: Border.all(color: colorScheme.secondaryContainer),
+            ),
+            child: Icon(
+              iconData,
+              size: 20,
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
       ),

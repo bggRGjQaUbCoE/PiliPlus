@@ -13400,6 +13400,7 @@ const SectionOpusCollection$json = {
       '6': '.bilibili.app.dynamic.v2.OpusCollectionWithCover',
       '10': 'allCollections'
     },
+    {'1': 'expand', '3': 100, '4': 1, '5': 8, '10': 'expand'},
   ],
 };
 
@@ -13407,7 +13408,7 @@ const SectionOpusCollection$json = {
 final $typed_data.Uint8List sectionOpusCollectionDescriptor = $convert.base64Decode(
     'ChVTZWN0aW9uT3B1c0NvbGxlY3Rpb24SFAoFdGl0bGUYASABKAlSBXRpdGxlElkKD2FsbF9jb2'
     'xsZWN0aW9ucxgCIAMoCzIwLmJpbGliaWxpLmFwcC5keW5hbWljLnYyLk9wdXNDb2xsZWN0aW9u'
-    'V2l0aENvdmVyUg5hbGxDb2xsZWN0aW9ucw==');
+    'V2l0aENvdmVyUg5hbGxDb2xsZWN0aW9ucxIWCgZleHBhbmQYZCABKAhSBmV4cGFuZA==');
 
 @$core.Deprecated('Use selectedClassificationAndSortTypeDescriptor instead')
 const SelectedClassificationAndSortType$json = {

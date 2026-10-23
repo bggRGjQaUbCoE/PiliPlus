@@ -1,6 +1,11 @@
+import 'package:PiliPlus/common/widgets/badge.dart';
+import 'package:PiliPlus/common/widgets/progress_bar/video_progress_indicator.dart';
 import 'package:PiliPlus/models_new/history/history.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
+import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
+import 'package:material_ui/material_ui.dart'
+    show ColorScheme, Widget, Positioned;
 
 class HistoryItemModel with MultiSelectData {
   String? title;
@@ -16,10 +21,52 @@ class HistoryItemModel with MultiSelectData {
   String? badge;
   String? showTitle;
   int? duration;
+  bool get hasDuration => duration != null && duration != 0;
   int? isFav;
   int? kid;
   String? tagName;
   int? liveStatus;
+
+  Widget? get label => isFav == 1
+      ? const PBadge(
+          text: '已收藏',
+          top: 6.0,
+          right: 6.0,
+          type: .gray,
+        )
+      : badge?.isNotEmpty == true
+      ? PBadge(
+          text: badge,
+          top: 6.0,
+          right: 6.0,
+          type: history.business == 'live' && liveStatus != 1
+              ? .gray
+              : .primary,
+        )
+      : null;
+
+  Iterable<Widget> progressIndicator(ColorScheme colorScheme) sync* {
+    yield PBadge(
+      text: progress == -1
+          ? '已看完'
+          : '${DurationUtils.formatDuration(progress)}/${DurationUtils.formatDuration(duration)}',
+      right: 6.0,
+      bottom: 8.0,
+      type: .gray,
+    );
+    if (progress != null && progress != 0) {
+      yield Positioned(
+        left: 0,
+        right: 0,
+        bottom: 0,
+        child: VideoProgressIndicator(
+          color: colorScheme.primary,
+          backgroundColor: colorScheme.secondaryContainer,
+          progress: progress == -1 ? 1 : progress! / duration!,
+        ),
+      );
+    }
+  }
 
   /// The history API uses seconds as the progress unit
   /// while the player expects milliseconds.

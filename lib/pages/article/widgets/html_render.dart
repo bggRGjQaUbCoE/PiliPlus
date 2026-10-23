@@ -43,6 +43,7 @@ Widget htmlRender({
           if (clazz?.contains('cut-off') == true || height != null) {
             return CachedNetworkImage(
               width: maxWidth,
+              gaplessPlayback: true,
               memCacheWidth: maxWidth.cacheSize(context),
               height: height != null ? double.parse(height) : null,
               imageUrl: ImageUtils.thumbnailUrl(imgUrl),
@@ -60,6 +61,7 @@ Widget htmlRender({
               tag: imgUrl,
               child: CachedNetworkImage(
                 width: width,
+                gaplessPlayback: true,
                 height: isEmote ? 22.0 : null,
                 memCacheWidth: width.cacheSize(context),
                 imageUrl: ImageUtils.thumbnailUrl(imgUrl, 60),

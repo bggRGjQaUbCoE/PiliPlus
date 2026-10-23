@@ -1,5 +1,8 @@
+import 'package:PiliPlus/models/common/video/base_quality.dart';
 import 'package:PiliPlus/models/common/video/cdn_type.dart';
 import 'package:PiliPlus/models/common/video/video_decode_type.dart';
+import 'package:PiliPlus/models/video/play/url.dart'
+    show AudioItem, VideoItem, FormatItem;
 import 'package:PiliPlus/models_new/live/live_room_play_info/codec.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -117,5 +120,78 @@ abstract final class VideoUtils {
       }
     }
     return VideoDecodeFormatType.fromString(codecs.first);
+  }
+
+  static int _findAvailableVideoQuality(
+    List<VideoItem> videoList,
+    List<int>? acceptQuality,
+    int preferQuality,
+  ) {
+    final highestVideoQa = videoList.first.id;
+    if (preferQuality >= highestVideoQa) {
+      return highestVideoQa;
+    }
+
+    if (acceptQuality != null && acceptQuality.isNotEmpty) {
+      return acceptQuality.findTargetMedia((e) => e, preferQuality);
+    }
+
+    return videoList.findTargetMedia((e) => e.id, preferQuality).quality.code;
+  }
+
+  static (
+    int targetQuality,
+    FormatItem targetFormat,
+    VideoDecodeFormatType targetDecode,
+    VideoItem targetVideo,
+  )
+  findTargetVideo(
+    List<VideoItem> videoList,
+    int preferQuality,
+    List<int>? acceptQuality,
+    List<FormatItem> supportFormats,
+    List<VideoDecodeFormatType> preferCodecs,
+  ) {
+    assert(videoList.isNotEmpty);
+
+    final targetQuality = _findAvailableVideoQuality(
+      videoList,
+      acceptQuality,
+      preferQuality,
+    );
+
+    final targetFormat = supportFormats.firstWhere(
+      (e) => e.quality == targetQuality,
+      orElse: () => supportFormats.first,
+    );
+
+    final targetDecode = VideoUtils.selectCodec(
+      targetFormat.codecs!,
+      preferCodecs,
+    );
+
+    final targetQaVideoList = videoList
+        .where((e) => e.id == targetQuality)
+        .toList();
+
+    final targetVideo = targetQaVideoList.firstWhere(
+      (e) => targetDecode.codes.any(e.codecs!.startsWith),
+      orElse: () => targetQaVideoList.first,
+    );
+
+    return (targetQuality, targetFormat, targetDecode, targetVideo);
+  }
+
+  static AudioItem findTargetAudio(
+    List<AudioItem> audioList,
+    int preferQuality,
+  ) {
+    assert(audioList.isNotEmpty);
+
+    final preferredRank = AudioQuality.fromCode(preferQuality).rank;
+    return audioList.findTargetMedia(
+      (audio) => AudioQuality.fromCode(audio.id).rank,
+      preferredRank,
+    );
   }
 }

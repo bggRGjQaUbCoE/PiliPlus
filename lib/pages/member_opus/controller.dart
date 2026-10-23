@@ -1,15 +1,15 @@
+import 'package:PiliPlus/grpc/bilibili/app/dynamic/v2.pb.dart'
+    show OpusSpaceFlowResp, OpusFlowItem, SectionOpusCollection;
+import 'package:PiliPlus/grpc/space.dart';
 import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/member.dart';
 import 'package:PiliPlus/models_new/space/space/tab2.dart';
-import 'package:PiliPlus/models_new/space/space_opus/data.dart';
-import 'package:PiliPlus/models_new/space/space_opus/item.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/pages/member/controller.dart';
 import 'package:collection/collection.dart';
 import 'package:get/get.dart';
 
 class MemberOpusController
-    extends CommonListController<SpaceOpusData, SpaceOpusItemModel> {
+    extends CommonListController<OpusSpaceFlowResp, OpusFlowItem> {
   MemberOpusController({
     required this.heroTag,
     required this.mid,
@@ -18,13 +18,14 @@ class MemberOpusController
   final String? heroTag;
   final int mid;
 
-  String offset = '';
+  String? next;
   Rx<SpaceTabFilter> type = const SpaceTabFilter(
     text: "全部图文",
     meta: "all",
     tabName: "图文",
   ).obs;
   List<SpaceTabFilter>? filter;
+  SectionOpusCollection? collection;
 
   @override
   void onInit() {
@@ -39,24 +40,38 @@ class MemberOpusController
 
   @override
   Future<void> onRefresh() {
-    offset = '';
+    next = null;
+    collection = null;
     return super.onRefresh();
   }
 
   @override
-  List<SpaceOpusItemModel>? getDataList(SpaceOpusData response) {
-    offset = response.offset ?? '';
-    if (response.hasMore == false) {
+  List<OpusFlowItem>? getDataList(OpusSpaceFlowResp response) {
+    final next = response.nextPage.next;
+    if (next.isNotEmpty) {
+      this.next = next;
+    } else {
       isEnd = true;
     }
-    return response.items;
+    return response.itemList;
   }
 
   @override
-  Future<LoadingState<SpaceOpusData>> customGetData() => MemberHttp.spaceOpus(
-    hostMid: mid,
-    page: page,
-    offset: offset,
-    type: type.value.meta,
-  );
+  bool customHandleResponse(
+    bool isRefresh,
+    Success<OpusSpaceFlowResp> response,
+  ) {
+    if (isRefresh && response.response.hasHostUpOpusCollection()) {
+      collection = response.response.hostUpOpusCollection;
+    }
+    return super.customHandleResponse(isRefresh, response);
+  }
+
+  @override
+  Future<LoadingState<OpusSpaceFlowResp>> customGetData() =>
+      SpaceGrpc.opusSpaceFlow(
+        hostMid: mid,
+        next: next,
+        filterType: type.value.meta,
+      );
 }

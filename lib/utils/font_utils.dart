@@ -23,6 +23,7 @@ abstract final class FontUtils {
   static final _fonts = <String>{};
   static bool _initialized = false;
 
+  static const kFontName = 'customFont.otf';
   static const _kFontExts = ['ttf', 'ttc', 'otf'];
 
   static AppFont _appFont = _initAppFont();
@@ -53,7 +54,7 @@ abstract final class FontUtils {
   static String? get fontFamily => _appFont.fontFamily;
   static bool get isCustom => _appFont.isCustom;
 
-  static final fontFile = File(path.join(appSupportDirPath, 'customFont.otf'));
+  static final fontFile = File(path.join(appSupportDirPath, kFontName));
 
   static Future<void>? init() {
     if (isCustom) {

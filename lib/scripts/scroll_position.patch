@@ -9,7 +9,7 @@ index 96d77f67008..85e42540728 100644
 -    updateUserScrollDirection(delta > 0.0 ? ScrollDirection.forward : ScrollDirection.reverse);
 -    setPixels(pixels - physics.applyPhysicsToUserOffset(this, delta));
 +    final newPixels = pixels - physics.applyPhysicsToUserOffset(this, delta);
-+    if (_userScrollDirection == ScrollDirection.idle || (newPixels != setPixels(newPixels) && newPixels >= 0)) {
++    if (newPixels != setPixels(newPixels) || _userScrollDirection == ScrollDirection.idle) {
 +      updateUserScrollDirection(
 +        delta > 0.0 ? ScrollDirection.forward : ScrollDirection.reverse,
 +      );

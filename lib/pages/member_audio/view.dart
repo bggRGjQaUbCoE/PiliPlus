@@ -113,9 +113,7 @@ class _MemberAudioState extends State<MemberAudio>
                       if (index == response.length - 1) {
                         _controller.onLoadMore();
                       }
-                      return MemberAudioItem(
-                        item: response[index],
-                      );
+                      return MemberAudioItem(response[index]);
                     },
                     itemCount: response.length,
                   ),

@@ -10,6 +10,7 @@ import 'package:PiliPlus/models/model_avatar.dart';
 import 'package:PiliPlus/models_new/article/article_view/data.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_mention/item.dart';
 import 'package:PiliPlus/pages/common/dyn/common_dyn_controller.dart';
+import 'package:PiliPlus/pages/common/reply_controller.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
@@ -18,7 +19,12 @@ import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
-class ArticleController extends CommonDynController {
+class ArticleController extends CommonDynController
+    with
+        GetSingleTickerProviderStateMixin,
+        ReplyLocateMixin,
+        MainReplyLocateMixin,
+        DynReplyLocateMixin {
   late String id;
   late String type;
 

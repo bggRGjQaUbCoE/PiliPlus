@@ -5,16 +5,14 @@ import 'package:PiliPlus/common/widgets/sliver/sliver_constrained_cross_axis.dar
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:flutter/rendering.dart' show SliverConstraints;
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart'
+    show SliverSimpleGridDelegate;
 import 'package:material_ui/material_ui.dart';
-import 'package:waterfall_flow/waterfall_flow.dart'
-    show SliverWaterfallFlowDelegate;
 
 mixin DynMixin {
-  late final dynGridDelegate =
-      SliverWaterfallFlowDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: Grid.smallCardWidth * 2,
-        crossAxisSpacing: 4,
-      );
+  late final dynGridDelegate = SliverSimpleGridDelegateWithMaxCrossAxisExtent_(
+    maxCrossAxisExtent: Grid.smallCardWidth * 2,
+  );
 
   Widget buildPage(Widget child) {
     if (GlobalData().dynamicsWaterfallFlow) {
@@ -54,23 +52,18 @@ mixin DynMixin {
   }
 }
 
-class SliverWaterfallFlowDelegateWithMaxCrossAxisExtent
-    extends SliverWaterfallFlowDelegate {
-  /// Creates a delegate that makes masonry layouts with tiles that have a maximum
+// ignore: camel_case_types
+class SliverSimpleGridDelegateWithMaxCrossAxisExtent_
+    extends SliverSimpleGridDelegate {
+  /// Creates a delegate that makes grid layouts with tiles that have a maximum
   /// cross-axis extent.
   ///
-  /// All of the arguments must not be null. The [maxCrossAxisExtent],
-  /// [mainAxisSpacing], and [crossAxisSpacing] arguments must not be negative.
-  SliverWaterfallFlowDelegateWithMaxCrossAxisExtent({
+  /// The [maxCrossAxisExtent] argument must be greater than zero.
+  SliverSimpleGridDelegateWithMaxCrossAxisExtent_({
     required this.maxCrossAxisExtent,
-    super.mainAxisSpacing,
-    super.crossAxisSpacing,
-    super.lastChildLayoutTypeBuilder,
-    super.collectGarbage,
-    super.viewportBuilder,
-    super.closeToTrailing,
-  }) : assert(maxCrossAxisExtent >= 0);
+  }) : assert(maxCrossAxisExtent > 0);
 
+  /// {@template fsgv.global.maxCrossAxisExtent}
   /// The maximum extent of tiles in the cross axis.
   ///
   /// This delegate will select a cross-axis extent for the tiles that is as
@@ -82,13 +75,17 @@ class SliverWaterfallFlowDelegateWithMaxCrossAxisExtent
   /// For example, if the grid is vertical, the grid is 500.0 pixels wide, and
   /// [maxCrossAxisExtent] is 150.0, this delegate will create a grid with 4
   /// columns that are 125.0 pixels wide.
+  /// {@endtemplate}
   final double maxCrossAxisExtent;
 
   int? crossAxisCount;
   double? crossAxisExtent;
 
   @override
-  int getCrossAxisCount(SliverConstraints constraints) {
+  int getCrossAxisCount(
+    SliverConstraints constraints,
+    double crossAxisSpacing,
+  ) {
     final crossAxisExtent = constraints.crossAxisExtent;
     if (crossAxisCount != null && this.crossAxisExtent == crossAxisExtent) {
       return crossAxisCount!;
@@ -100,12 +97,10 @@ class SliverWaterfallFlowDelegateWithMaxCrossAxisExtent
   }
 
   @override
-  bool shouldRelayout(SliverWaterfallFlowDelegate oldDelegate) {
-    final flag =
-        (oldDelegate.runtimeType != runtimeType) ||
-        (oldDelegate is SliverWaterfallFlowDelegateWithMaxCrossAxisExtent &&
-            (oldDelegate.maxCrossAxisExtent != maxCrossAxisExtent ||
-                super.shouldRelayout(oldDelegate)));
+  bool shouldRelayout(
+    SliverSimpleGridDelegateWithMaxCrossAxisExtent_ oldDelegate,
+  ) {
+    final flag = oldDelegate.maxCrossAxisExtent != maxCrossAxisExtent;
     if (flag) {
       crossAxisCount = null;
     }

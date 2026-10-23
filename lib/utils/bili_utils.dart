@@ -65,4 +65,10 @@ abstract final class BiliUtils {
     7 => '综艺',
     _ => null,
   };
+
+  static bool isDynOrArticle(Object? type) => switch (type) {
+    String() => type == '11' || type == '17' || type == '12',
+    int() => type == 11 || type == 17 || type == 12,
+    _ => false,
+  };
 }

@@ -21,7 +21,7 @@ version: 2.1.6+1
 
 environment:
   sdk: ">=3.13.0"
-  flutter: 3.47.6
+  flutter: 3.47.7
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -50,7 +50,7 @@ dependencies:
   brotli: ^0.6.0
   cached_network_image_ce:
     git:
-      url: https://github.com/My-Responsitories/flutter_cached_network_image_ce.git
+      url: https://github.com/bggRGjQaUbCoE/flutter_cached_network_image_ce.git
       path: cached_network_image
       ref: develop
   canvas_danmaku:
@@ -102,6 +102,7 @@ dependencies:
     git:
       url: https://github.com/bggRGjQaUbCoE/flutter_sortable_wrap.git
       ref: master
+  flutter_staggered_grid_view: ^0.7.0
   flutter_svg: ^2.0.14
   flutter_volume_controller: ^2.0.0
   font_awesome_flutter:
@@ -133,6 +134,7 @@ dependencies:
   media_kit_libs_video: 1.0.5
   media_kit_video: 1.2.5
   mime: ^2.0.0
+  nativeapi: ^0.5.2
   native_device_orientation:
     git:
       url: https://github.com/bggRGjQaUbCoE/flutter_native_device_orientation.git
@@ -140,6 +142,7 @@ dependencies:
   package_info_plus: ^10.1.0
   path: ^1.9.1
   path_provider: ^2.1.5
+  path_provider_platform_interface: ^2.1.3
   permission_handler_android: ^14.0.0
   permission_handler_apple: ^9.4.7
   permission_handler_platform_interface: ^4.3.0
@@ -148,7 +151,7 @@ dependencies:
   re_highlight: ^0.0.3
   saver_gallery: ^5.0.2
   screen_brightness_platform_interface: ^2.1.0
-  screen_retriever: ^0.2.0
+  screen_retriever: ^0.3.0
   share_plus: ^13.1.0
   stream_transform: ^2.1.1
   super_sliver_list:
@@ -156,12 +159,11 @@ dependencies:
       url: https://github.com/bggRGjQaUbCoE/super_sliver_list.git
       ref: mod
   synchronized: ^3.3.0
-  tray_manager: ^0.5.1
+  tray_manager: ^0.8.0
   url_launcher: ^6.3.1
   uuid: ^4.5.1
   vector_math: ^2.2.0
   wakelock_plus: ^1.2.8
-  waterfall_flow: ^3.1.0
   web_socket_channel: ^3.0.3
   webdav_client:
     git:
@@ -170,8 +172,7 @@ dependencies:
   win32: ^6.3.0
   window_manager:
     git:
-      url: https://github.com/bggRGjQaUbCoE/window_manager.git
-      path: packages/window_manager
+      url: https://github.com/leanflutter/window_manager.git
       ref: main
 
 dependency_overrides:
@@ -220,11 +221,6 @@ dependency_overrides:
       url: https://github.com/bggRGjQaUbCoE/media-kit.git
       path: media_kit_video
       ref: native
-  cached_network_image_ce:
-    git:
-      url: https://github.com/My-Responsitories/flutter_cached_network_image_ce.git
-      path: cached_network_image
-      ref: develop
 
 dev_dependencies:
   flutter_test:

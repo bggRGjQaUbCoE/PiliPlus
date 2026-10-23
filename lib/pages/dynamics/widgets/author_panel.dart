@@ -15,6 +15,7 @@ import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/controller.dart';
 import 'package:PiliPlus/pages/save_panel/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/bili_utils.dart';
 import 'package:PiliPlus/utils/color_utils.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
@@ -258,6 +259,7 @@ class AuthorPanel extends StatelessWidget {
         );
       }
     } catch (_) {}
+    final commentType = item.basic!.commentType;
 
     showModalBottomSheet(
       context: context,
@@ -329,26 +331,27 @@ class AuthorPanel extends StatelessWidget {
                 },
                 minLeadingWidth: 0,
               ),
-              if ((item.basic!.commentType == 17 ||
-                      item.basic!.commentType == 11) &&
+              if (BiliUtils.isDynOrArticle(commentType) &&
                   item.modules.moduleDynamic?.major?.blocked == null)
                 ListTile(
-                  title: Text(
-                    '分享至消息',
-                    style: theme.textTheme.titleSmall,
-                  ),
+                  title: Text('分享至消息', style: theme.textTheme.titleSmall),
                   leading: const Icon(Icons.forward_to_inbox, size: 19),
                   onTap: () {
                     Get.back();
                     try {
-                      bool isDyn = item.basic!.commentType == 17;
-                      String id = isDyn ? item.idStr : item.basic!.ridStr!;
-                      int source = isDyn ? 11 : 2;
+                      final isDyn = commentType == 17;
+                      final id = isDyn ? item.idStr : item.basic!.ridStr!;
+                      final source = switch (commentType) {
+                        11 => 2,
+                        12 => 6,
+                        17 => 11,
+                        _ => throw UnsupportedError(commentType.toString()),
+                      };
                       final moduleDynamic = item.modules.moduleDynamic!;
                       final title =
                           moduleDynamic.desc?.text ??
                           moduleDynamic.major!.opus!.summary!.text!;
-                      String? thumb = isDyn
+                      final thumb = isDyn
                           ? moduleAuthor.face
                           : moduleDynamic.major?.opus?.pics?.firstOrNull?.url;
                       PageUtils.pmShare(
@@ -421,7 +424,7 @@ class AuthorPanel extends StatelessWidget {
                       Get.back();
                       final res = await ReplyHttp.replyInteraction(
                         oid: item.basic!.commentIdStr!,
-                        type: item.basic!.commentType!,
+                        type: commentType!,
                       );
                       if (res case Success(:final response)) {
                         if (context.mounted) {

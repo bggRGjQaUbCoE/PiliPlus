@@ -23,7 +23,7 @@ class MouseInteractiveViewer extends StatefulWidget {
     this.maxScale = 2.5,
     this.minScale = 0.8,
     this.interactionEndFrictionCoefficient = _kDrag,
-    required this.pointerSignalFallback,
+    this.pointerSignalFallback,
     this.onPointerPanZoomUpdate,
     this.onPointerPanZoomEnd,
     this.onPointerUp,
@@ -60,7 +60,7 @@ class MouseInteractiveViewer extends StatefulWidget {
   final double maxScale;
   final double minScale;
   final double interactionEndFrictionCoefficient;
-  final PointerSignalEventListener pointerSignalFallback;
+  final PointerSignalEventListener? pointerSignalFallback;
   final PointerPanZoomUpdateEventListener? onPointerPanZoomUpdate;
   final PointerPanZoomEndEventListener? onPointerPanZoomEnd;
   final PointerUpEventListener? onPointerUp;
@@ -561,7 +561,7 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
         _handleMouseWheelPanAsScale(event, local, global, shift);
         return;
       }
-      widget.pointerSignalFallback(event);
+      widget.pointerSignalFallback?.call(event);
     }
   }
 

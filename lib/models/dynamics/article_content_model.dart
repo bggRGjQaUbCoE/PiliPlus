@@ -1,4 +1,6 @@
 import 'package:PiliPlus/common/style.dart' as common_style;
+import 'package:PiliPlus/models/dynamics/eva3_opus.dart';
+import 'package:PiliPlus/models/dynamics/eva3_video.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/models/dynamics/vote_model.dart';
 import 'package:PiliPlus/utils/color_utils.dart';
@@ -15,6 +17,7 @@ class ArticleContentModel {
   Code? code;
   L1st? list;
   Text? heading;
+  Blockquote? blockquote;
 
   ArticleContentModel.fromJson(Map<String, dynamic> json) {
     align = json['align'];
@@ -29,6 +32,19 @@ class ArticleContentModel {
     code = json['code'] == null ? null : Code.fromJson(json['code']);
     list = json['list'] == null ? null : L1st.fromJson(json['list']);
     heading = json['heading'] == null ? null : Text.fromJson(json['heading']);
+    blockquote = json['blockquote'] == null
+        ? null
+        : Blockquote.fromJson(json['blockquote']);
+  }
+}
+
+class Blockquote {
+  List<ArticleContentModel>? children;
+
+  Blockquote.fromJson(Map<String, dynamic> json) {
+    children = (json['children'] as List?)
+        ?.map((e) => ArticleContentModel.fromJson(e))
+        .toList();
   }
 }
 
@@ -44,9 +60,9 @@ class Pic {
 
   Pic.fromJson(Map<String, dynamic> json) {
     url = json['url'];
-    width = (json['width'] as num?)?.toDouble();
-    height = (json['height'] as num?)?.toDouble();
-    size = json['size'];
+    width = parseDimension(json['width']);
+    height = parseDimension(json['height']);
+    size = parseDimension(json['size']);
     pics = (json['pics'] as List?)?.map((item) => Pic.fromJson(item)).toList();
     style = json['style'];
     liveUrl = json['live_url'];
@@ -215,6 +231,9 @@ class Card {
   SimpleVoteInfo? vote;
   Music? music;
   Goods? goods;
+  Eva3Video? eva3Video;
+  Eva3Opus? eva3Opus;
+  // archive, match, reserve, upower_lottery, eva3_comment, eva3_user, eva3_vote
 
   Card.fromJson(Map<String, dynamic> json) {
     oid = json['oid'];
@@ -229,6 +248,12 @@ class Card {
     vote = json['vote'] == null ? null : SimpleVoteInfo.fromJson(json['vote']);
     music = json['music'] == null ? null : Music.fromJson(json['music']);
     goods = json['goods'] == null ? null : Goods.fromJson(json['goods']);
+    eva3Video = json['eva3_video'] == null
+        ? null
+        : Eva3Video.fromJson(json['eva3_video']);
+    eva3Opus = json['eva3_opus'] == null
+        ? null
+        : Eva3Opus.fromJson(json['eva3_opus']);
   }
 }
 
@@ -393,11 +418,25 @@ class LinkCard {
 
 class L1st {
   List<Item>? items;
+  List<Child>? children;
   int? style;
 
   L1st.fromJson(Map<String, dynamic> json) {
     items = (json['items'] as List?)?.map((e) => Item.fromJson(e)).toList();
+    children = (json['children'] as List?)
+        ?.map((e) => Child.fromJson(e))
+        .toList();
     style = json['style'];
+  }
+}
+
+class Child {
+  List<ArticleContentModel>? children;
+
+  Child.fromJson(Map<String, dynamic> json) {
+    children = (json['children'] as List?)
+        ?.map((e) => ArticleContentModel.fromJson(e))
+        .toList();
   }
 }
 

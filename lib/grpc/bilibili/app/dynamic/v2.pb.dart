@@ -39726,10 +39726,12 @@ class SectionOpusCollection extends $pb.GeneratedMessage {
   factory SectionOpusCollection({
     $core.String? title,
     $core.Iterable<OpusCollectionWithCover>? allCollections,
+    $core.bool? expand,
   }) {
     final result = SectionOpusCollection._();
     if (title != null) result.title = title;
     if (allCollections != null) result.allCollections.addAll(allCollections);
+    if (expand != null) result.expand = expand;
     return result;
   }
 
@@ -39750,6 +39752,7 @@ class SectionOpusCollection extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'title')
     ..pPM<OpusCollectionWithCover>(2, _omitFieldNames ? '' : 'allCollections',
         subBuilder: OpusCollectionWithCover.$_createMessage)
+    ..aOB(100, _omitFieldNames ? '' : 'expand')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -39787,6 +39790,15 @@ class SectionOpusCollection extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(2)
   $pb.PbList<OpusCollectionWithCover> get allCollections => $_getList(1);
+
+  @$pb.TagNumber(100)
+  $core.bool get expand => $_getBF(2);
+  @$pb.TagNumber(100)
+  set expand($core.bool value) => $_setBool(2, value);
+  @$pb.TagNumber(100)
+  $core.bool hasExpand() => $_has(2);
+  @$pb.TagNumber(100)
+  void clearExpand() => $_clearField(100);
 }
 
 class SelectedClassificationAndSortType extends $pb.GeneratedMessage {

@@ -1,16 +1,12 @@
 import 'package:PiliPlus/common/style.dart';
-import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/progress_bar/video_progress_indicator.dart';
 import 'package:PiliPlus/common/widgets/select_mask.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/http/search.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/later/list.dart';
 import 'package:PiliPlus/pages/later/controller.dart';
-import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -48,33 +44,7 @@ class VideoCardHLater extends StatelessWidget {
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         onTap: enableMultiSelect
             ? () => ctr.onSelect(videoItem)
-            : () async {
-                if (videoItem.isPugv ?? false) {
-                  PageUtils.viewPugv(seasonId: videoItem.aid);
-                  return;
-                }
-                if (videoItem.isPgc ?? false) {
-                  if (videoItem.bangumi?.epId != null) {
-                    PageUtils.viewPgc(epId: videoItem.bangumi!.epId);
-                  } else if (videoItem.redirectUrl?.isNotEmpty == true) {
-                    PageUtils.viewPgcFromUri(videoItem.redirectUrl!);
-                  }
-                  return;
-                }
-                try {
-                  final cid =
-                      videoItem.cid ??
-                      await SearchHttp.ab2c(
-                        aid: videoItem.aid,
-                        bvid: videoItem.bvid,
-                      );
-                  if (cid != null) {
-                    onViewLater(cid);
-                  }
-                } catch (err) {
-                  SmartDialog.showToast(err.toString());
-                }
-              },
+            : () => onPushLater(videoItem, onViewLater: onViewLater),
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: Style.safeSpace,
@@ -89,7 +59,6 @@ class VideoCardHLater extends StatelessWidget {
                   builder: (context, boxConstraints) {
                     final double maxWidth = boxConstraints.maxWidth;
                     final double maxHeight = boxConstraints.maxHeight;
-                    num? progress = videoItem.progress;
                     return Stack(
                       clipBehavior: Clip.none,
                       children: [
@@ -99,62 +68,8 @@ class VideoCardHLater extends StatelessWidget {
                           height: maxHeight,
                           cacheWidth: videoItem.dimension?.cacheWidth,
                         ),
-                        if (videoItem.isCharging == true)
-                          const PBadge(
-                            text: '充电专属',
-                            top: 6.0,
-                            right: 6.0,
-                            type: PBadgeType.error,
-                          )
-                        else if (videoItem.rights?.isCooperation == 1)
-                          const PBadge(
-                            text: '合作',
-                            top: 6.0,
-                            right: 6.0,
-                          )
-                        else if (videoItem.pgcLabel != null)
-                          PBadge(
-                            text: videoItem.pgcLabel,
-                            top: 6.0,
-                            right: 6.0,
-                          )
-                        else if (videoItem.isPugv ?? false)
-                          const PBadge(
-                            text: '课堂',
-                            top: 6.0,
-                            right: 6.0,
-                          ),
-                        if (progress != null && progress != 0) ...[
-                          PBadge(
-                            text: progress == -1
-                                ? '已看完'
-                                : '${DurationUtils.formatDuration(progress)}/${DurationUtils.formatDuration(videoItem.duration)}',
-                            right: 6,
-                            bottom: 8,
-                            type: PBadgeType.gray,
-                          ),
-                          Positioned(
-                            left: 0,
-                            bottom: 0,
-                            right: 0,
-                            child: VideoProgressIndicator(
-                              color: theme.colorScheme.primary,
-                              backgroundColor:
-                                  theme.colorScheme.secondaryContainer,
-                              progress: progress == -1
-                                  ? 1
-                                  : progress / videoItem.duration!,
-                            ),
-                          ),
-                        ] else if (videoItem.duration! > 0)
-                          PBadge(
-                            text: DurationUtils.formatDuration(
-                              videoItem.duration,
-                            ),
-                            right: 6.0,
-                            bottom: 6.0,
-                            type: PBadgeType.gray,
-                          ),
+                        ?videoItem.label,
+                        ...videoItem.progressIndicator(theme.colorScheme),
                         Positioned.fill(
                           child: selectMask(
                             theme.colorScheme,
@@ -262,5 +177,47 @@ class VideoCardHLater extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+Future<void> onPushLater(
+  LaterItemModel item, {
+  ValueChanged<int>? onViewLater,
+}) async {
+  if (item.isPugv ?? false) {
+    PageUtils.viewPugv(seasonId: item.aid);
+    return;
+  }
+  if (item.isPgc ?? false) {
+    if (item.bangumi?.epId != null) {
+      PageUtils.viewPgc(epId: item.bangumi!.epId, viewLater: true);
+    } else if (item.redirectUrl?.isNotEmpty == true) {
+      PageUtils.viewPgcFromUri(item.redirectUrl!, viewLater: true);
+    }
+    return;
+  }
+  try {
+    final cid =
+        item.cid ??
+        await SearchHttp.ab2c(
+          aid: item.aid,
+          bvid: item.bvid,
+        );
+    if (cid != null) {
+      if (onViewLater != null) {
+        onViewLater(cid);
+      } else {
+        await PageUtils.toVideoPage(
+          bvid: item.bvid,
+          cid: cid,
+          cover: item.pic,
+          title: item.title,
+          dimension: item.dimension,
+          extraArguments: const {'viewLater': true},
+        );
+      }
+    }
+  } catch (err) {
+    SmartDialog.showToast(err.toString());
   }
 }

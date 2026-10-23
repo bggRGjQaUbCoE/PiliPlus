@@ -2,7 +2,7 @@
   "schema": 1,
   "media_kit": {
     "repository": "Goodwu/media-kit",
-    "commit": "24f97cb8ac6b051e0278fba33f62b5ebd6192cae"
+    "commit": "2d922f0ed79073b2d2d0574746dbda36060a23cb"
   },
   "flutter": {
     "version": "3.47.7"
@@ -25,7 +25,7 @@
       "source": {
         "producer": {
           "repository": "Goodwu/libmpv-android-video-build-dv-experiment",
-          "commit": "a48aecf2027d30f6f403caae653dd69e41da2777"
+          "commit": "dd2db5faeac32838a71f689ae09d684dec0d9b18"
         },
         "sources": {
           "mpv": {

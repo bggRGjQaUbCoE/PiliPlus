@@ -3,7 +3,7 @@
 ## ALL-PLATFORM-NATIVE-CI-20261023
 
 - **实施中**：独立 `ci/native-packages-20261023` 分支接入六平台 source/upstream/package 模式；固定 media-kit/producer/source 输入，原生包与应用分别打包并关联 provenance，显式输入校验失败即停止。保留当前 30525d9 的播放器和宿主合成修复，OHOS 改用明确批准的 existing-integration 导出政策，不重复应用旧 Direction B patch。
-- **已验证**：原生传输/输入18项、OHOS68项宿主测试；Windows/Linux及iOS/macOS已锁定真实上游开发包的归一化与公共manifest验证通过。Android builder 的HLS实际对象编译、四ABI可移动SDK consumer链接及75项host contracts已过；media-kit公共消费者配置测试已过。完整产品构建与设备验证必须以相应CI/设备结果为准，尚未据此宣称全平台构建成功。
+- **已验证**：原生传输/输入19项、桌面ELF/PE契约7项、OHOS68项宿主测试；Windows/Linux及iOS/macOS已锁定真实上游开发包的归一化与公共manifest验证及首轮CI native job通过。Linux三仓真实源码编译、60个运行库打包、同源consumer链接及实际libmpv基础加载通过，随后实际Flutter Release应用构建和ldd检查通过，App中60个原生SO全部与source包逐字节一致。Android builder 的HLS实际对象编译、四ABI可移动SDK consumer链接及75项host contracts已过；首轮CI的TLS补丁布局不匹配已修复并通过精确源码正反向检查。media-kit公共消费者已修复macOS/Windows路径与符号链接测试差异，在符号链接TMPDIR下20项通过；OHOS聚合native job补齐ripgrep。完整六平台CI应用构建与设备验证仍以相应CI/设备结果为准。
 - context：[全平台源码与原生包构建](docs/ci/native-packages.md)。
 
 任务事实源：只保留当前状态、验收门槛和下一步；按各项 `context` 查看持续更新的依据。

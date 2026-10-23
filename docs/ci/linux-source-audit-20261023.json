@@ -1,0 +1,76 @@
+{
+  "application": {
+    "commit": "cde8b4767b32a428350fb55b26f0be302d89d192",
+    "commit_is_local": true,
+    "equivalent_remote_commit": "66c57919b9222c2f7d89753862f3966b5365134d",
+    "local_release_metadata": {
+      "pili.code": 2,
+      "pili.hash": "cde8b4767b32a428350fb55b26f0be302d89d192",
+      "pili.name": "2.1.6",
+      "pili.time": 1792765872
+    },
+    "repository": "Goodwu/PiliPlus",
+    "tree": "7fed4d4e05759cd895d168090c3fb21062ca6fef"
+  },
+  "artifact": {
+    "bytes": 53727981,
+    "name": "PiliPlus-linux-x86_64.tar.gz",
+    "published": false,
+    "sha256": "282adb6e78c85658c0268360b3b147deaec327a73c5e789505248e59dea85cc0"
+  },
+  "date": "2026-10-23",
+  "flutter": {
+    "archive": "stable/linux/flutter_linux_3.47.7-stable.tar.xz",
+    "channel": "stable",
+    "dart_sdk_arch": "x64",
+    "dart_sdk_version": "3.13.5",
+    "hash": "abaf9c523780a608bd46686fd5e53740a07077f8",
+    "release_date": "2026-10-08T23:42:24.132074Z",
+    "sha256": "af7455f540df951184c7953fbe3cf884766e7541dacf8571f9f582db03dd6230",
+    "version": "3.47.7"
+  },
+  "log": {
+    "name": "application-build.log",
+    "sha256": "c5cde4f089d85e106490d52114c904893600d69ce38ffda21e5d726d0995c132"
+  },
+  "media_kit": {
+    "commit": "098df7e858af2d29d37a17f7e6f07a2e260250fe",
+    "commit_is_local": true,
+    "equivalent_remote_commit": "24f97cb8ac6b051e0278fba33f62b5ebd6192cae",
+    "repository": "Goodwu/media-kit",
+    "tree": "e3cde352565ea226316d2d4d38209d78fd637b3a"
+  },
+  "native": {
+    "all_libraries_match_source_package": true,
+    "bundled_library_count": 60,
+    "identity_sha256": "ae4071af9f15e66f1d6d3ededfab128821cd687a8734e4c1d9dbb8607bcadfaa",
+    "manifest_sha256": "7b630c36c046a5d594219916c1a304e9e50739a95496e48741322dec4073e6fc",
+    "sources": {
+      "ffmpeg": {
+        "commit": "9aba43cfbee182ade060cdccbe15340a0fbe3e83",
+        "repository": "https://github.com/Goodwu/FFmpeg.git"
+      },
+      "libplacebo": {
+        "commit": "ea700489fbf27703d8c1f64874a1c6138f17ad28",
+        "repository": "https://github.com/Goodwu/libplacebo.git"
+      },
+      "mpv": {
+        "commit": "e0dc99d0467957ffc16c4afbb4e9f7c3f2a8667d",
+        "repository": "https://github.com/Goodwu/mpv.git"
+      }
+    }
+  },
+  "notes": [
+    "Source runtime package was built before this application run.",
+    "Build metadata reflects the isolated local clone history; this artifact is a validation result, not a published release.",
+    "No GUI or physical-device playback acceptance was attempted."
+  ],
+  "scope": "local-isolated-source-and-application-build",
+  "validation": {
+    "device": false,
+    "flutter_release_built": true,
+    "gui_playback": false,
+    "native_components_compiled": true,
+    "shared_object_ldd_resolved": true
+  }
+}

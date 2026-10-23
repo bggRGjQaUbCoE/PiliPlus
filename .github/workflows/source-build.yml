@@ -92,7 +92,7 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential autoconf automake libtool pkg-config nasm ninja-build cmake clang lld binutils gperf jq p7zip-full python3-venv wget unzip zip xz-utils
+          sudo apt-get install -y build-essential autoconf automake libtool pkg-config nasm ninja-build cmake clang lld binutils gperf jq ripgrep p7zip-full python3-venv wget unzip zip xz-utils
           python -m pip install meson==1.6.1 jinja2 jsonschema PyYAML
       - name: Set up Android native Java
         if: steps.cache.outputs.cache-hit != 'true' && matrix.platform == 'android' && matrix.mode == 'source'
@@ -160,7 +160,7 @@ jobs:
             ${{ runner.temp }}/native-build.log
             ${{ runner.temp }}/native-work/producer/buildscripts/routing-native-evidence/
             ${{ runner.temp }}/native-work/producer/libmpv/arm64-build/*.json
-            ${{ runner.temp }}/native-work/desktop/evidence/
+            ${{ runner.temp }}/native-work/desktop/root/evidence/
 
   application:
     name: App / ${{ matrix.platform }}

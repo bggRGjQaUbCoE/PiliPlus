@@ -10,11 +10,13 @@
 | Android | arm64-v8a、armeabi-v7a、x86_64 APK | Goodwu 定制 mpv / FFmpeg / libplacebo 四 ABI 源码包 | 相同锁定源码，保留完整开发 SDK |
 | Windows | x86_64 portable ZIP | Predidit 20260811 DXGI 开发包 | 锁定的 Predidit MinGW/Clang recipe 与完整依赖向量 |
 | Linux | x86_64 bundle tar.gz | Predidit 20260810 runtime + matching headers | 锁定的 Goodwu mpv / FFmpeg / libplacebo |
-| iOS | 未签名 IPA | 0.6.8 XCFramework + mpv 0.36.0 同源 headers | Goodwu Darwin recipe 的 default profile |
+| iOS | iPhone/iPad ARM64 未签名 IPA | 0.6.8 XCFramework + mpv 0.36.0 同源 headers | Goodwu Darwin recipe 的 default profile |
 | macOS | ARM64/x86_64 `.app` ZIP | 0.6.8 XCFramework + 同源 headers | 相同 Darwin recipe 的 macOS target |
 | OHOS | ARM64 未签名 HAP | 锁定的 OHOS source recipe，包含 WebP 编码能力 | 相同锁定源码 |
 
 Android 原生 SDK 同时保留 x86 ABI，Flutter 应用输出沿用项目支持的三个 ABI。该定制 native profile 的部署目标为 Android API 26，构建副本的 APK minSdk 取 Flutter 要求与 26 的较大值，App 插件使用同一锁定 NDK；这些生成修改写入应用构建 patch 证据。Android 未配置正式签名证书时使用项目已有的 debug signing fallback；这些构建产物不自动发布到 Release。iOS/HAP 需要在相应分发流程中签名；macOS 不在这里申请 notarization。
+
+平台和应用架构范围沿用当前项目的发布目标；media-kit 本身支持额外 native 架构并不代表 PiliPlus 已发布该架构。iOS native 开发包另含 ARM64/x86_64 模拟器切片，IPA 使用真机 ARM64。
 
 Apple 的 default profile 如实使用其现有 mpv 0.36.0 / FFmpeg 6.0 依赖。它不声称包含定制 `opengl-next` 或 shared-core 私有 ABI。要切换该候选，应新增独立 profile、完整 portable native bundle 和功能验收，不能只替换一个 dylib。
 
@@ -96,7 +98,7 @@ Android producer 同时输出可移动的四 ABI development SDK；它已通过�
 - media-kit 消费的 headers、import library、runtime 来自同一个 manifest。Windows 的 DXGI 扩展头和库成对；Apple 默认 OpenGL profile 不冒用 shared-core ABI。
 - 原生 producer 的 compile/ELF/Mach-O 检查、Flutter App 编译、运行加载和真机播放是独立证据。当前通用构建不会因为静态检查通过就将 runtime/device 设为 true。
 
-本次包含两个已确认阻断的修复：mpv DOVI feature 宏名称与 Meson 对齐；Android FFmpeg HLS patch 重新适配到锁定的真实源文件，并实际编译 `hls.o` 验证。Darwin 源码生产还在合并架构前移除构建机 RPATH。已锁定的 0.6.8 原始二进制字节保持不变，其历史 RPATH 静态检视记录在 `apple-sdk-audit-20261023.json`。
+本次已修复 mpv DOVI feature 宏名称与 Meson 不一致，以及 Android FFmpeg HLS patch 与锁定源码不匹配的问题；后者已实际编译 `hls.o` 验证。首轮 Actions 还发现 Android TLS patch 引用了较新 mpv 的 `stream/network.c`，已重基到锁定版本的 `stream/stream_lavf.c`，通过正向应用和反向检查；显式 `false` 初始化保持该版本原有零初始化行为，`--tls-verify=yes` 路径保持不变。Darwin 源码生产在合并架构前移除构建机 RPATH。已锁定的 0.6.8 原始二进制字节保持不变，其历史 RPATH 静态检视记录在 `apple-sdk-audit-20261023.json`。
 
 ## OHOS 保留当前应用集成
 
@@ -116,3 +118,11 @@ python3 ../media-kit/tool/native_package/package.py verify \
 ```
 
 宿主契约测试和真实上游包静态验证可以在 Linux 执行。Flutter、NDK、OHOS、Xcode 的完整产品编译由对应 CI job 给出结果；设备播放和 HDR/Dolby Vision 显示验收需另行记录，不由 artifact 存在推断。
+
+## 已完成的 Linux 源码构建验证
+
+2026-10-23 已实际从锁定的 FFmpeg `9aba43cfbee182ade060cdccbe15340a0fbe3e83`、libplacebo `ea700489fbf27703d8c1f64874a1c6138f17ad28` 和 mpv `e0dc99d0467957ffc16c4afbb4e9f7c3f2a8667d` 完成 configure、compile、install，收集 60 个运行库并逐个设置 `$ORIGIN`，使用产物中的同源 headers/libraries 严格链接 C consumer。共享 package create/verify 通过，打包后 `mpv_create`、API version 和销毁 probe 实际运行退出码为 0。
+
+该次产物 manifest SHA256 为 `7b630c36c046a5d594219916c1a304e9e50739a95496e48741322dec4073e6fc`，identity SHA256 为 `ae4071af9f15e66f1d6d3ededfab128821cd687a8734e4c1d9dbb8607bcadfaa`。这是 native 编译和基础加载证据；尚未进行 Flutter 产品启动、GPU 播放或设备验收，因此 manifest 仍记录 `compiled=true, runtime=false, device=false`。Windows source 已验证完整依赖冻结、真实 CMake 配置和 PE 依赖闭包，完整 LLVM/MinGW 产品构建仍待对应 source CI。
+
+随后已使用同一 native 包、Flutter 3.47.7 和隔离的 App/media-kit checkout，实际执行当前 `build_application.py --platform linux` 并完成 Release 应用编译。22 个 Flutter 补丁、8 个 material_ui 补丁、pub 解析、Dart/AOT、原生插件编译链接、逐 SO 的 `ldd` 检查均通过；App bundle 的 60 个原生 SO 全部与 source manifest 对应文件逐字节相同。记录见 `linux-source-audit-20261023.json`。本地浅克隆的版本计数仅用于编译验证，该测试包没有发布；正式 CI 使用完整应用 Git 历史。

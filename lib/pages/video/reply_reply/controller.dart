@@ -54,6 +54,8 @@ class VideoReplyReplyController extends ReplyController
   @override
   ReplySortType get prefSortType => Pref.reply2SortType;
 
+  late final removedReply = HashMap<Int64, ReplyInfo>();
+
   @override
   void onInit() {
     super.onInit();
@@ -157,6 +159,7 @@ class VideoReplyReplyController extends ReplyController
           rpid: id ?? 0,
           mode: mode,
           offset: paginationReply?.nextOffset,
+          removed: removedReply,
         );
 
   @override
@@ -305,7 +308,7 @@ class VideoReplyReplyController extends ReplyController
       data: data,
       seen: seen,
       rootId: firstFloor.rawValue?.id ?? data.first.root,
-      removed: const {},
+      removed: removedReply,
     );
   }
 

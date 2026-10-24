@@ -26,7 +26,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:path/path.dart' as path;
 
-Future<VideoPlayerServiceHandler> initAudioService() {
+Future<VideoPlayerServiceHandler> initAudioService() async {
   if (Platform.isLinux) {
     AudioServiceMpris.init(
       dBusName: 'com.example.piliplus.audio',
@@ -38,7 +38,7 @@ Future<VideoPlayerServiceHandler> initAudioService() {
       canControl: true,
     );
   }
-  return AudioService.init(
+  final handler = await AudioService.init(
     builder: VideoPlayerServiceHandler.new,
     config: const AudioServiceConfig(
       androidNotificationChannelId: 'com.example.piliplus.audio',
@@ -51,6 +51,27 @@ Future<VideoPlayerServiceHandler> initAudioService() {
       androidNotificationIcon: 'drawable/ic_notification_icon',
     ),
   );
+  if (Platform.isAndroid) {
+    // 修复 OriginOS/Funtouch 下音量条无法「二次按下自动收起」的问题。
+    // audio_service 默认把 MediaSession 注册成本地播放类型(PLAYBACK_TYPE_LOCAL)，
+    // MediaSessionRecord.canHandleVolumeKey() 会对它返回 true，音量键因此被
+    // dispatchVolumeKeyEventToSessionAsSystemService 直接派发给会话，走
+    // AudioService 的 session 音量分支(adjustStreamVolume, flags=1/4116)。
+    // OriginOS 的「再次按下音量键把音量条收起成细条」只在系统默认音量处理路径
+    // (adjustSuggestedStreamVolume, flags=4113) 上生效，session 分支每次都会
+    // 重新展开音量条，于是音量条始终无法沉浸。
+    // 声明为远端播放 + FIXED 音量控制后 canHandleVolumeKey() 返回 false，
+    // Framework 会打印 "Fallbacks to the default handling" 并回退到普通界面的
+    // 默认音量处理，音量条即可正常收起成条，音量也仍随音量键正常变化。
+    handler.androidPlaybackInfo.add(
+      RemoteAndroidPlaybackInfo(
+        volumeControlType: AndroidVolumeControlType.fixed,
+        maxVolume: 100,
+        volume: 50,
+      ),
+    );
+  }
+  return handler;
 }
 
 typedef _StatusConfig = (

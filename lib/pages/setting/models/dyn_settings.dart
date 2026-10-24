@@ -36,6 +36,7 @@ List<SettingsModel> get dynSettings => [
   getBanWordModel(
     title: '动态关键词过滤',
     key: SettingBoxKey.banWordForDyn,
+    regexKey: SettingBoxKey.banWordRegexForDyn,
     onChanged: (value) {
       DynamicsDataModel.banWordForDyn = value;
       DynamicsDataModel.enableFilter = value.pattern.isNotEmpty;

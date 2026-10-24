@@ -13,6 +13,7 @@ import 'package:PiliPlus/pages/setting/widgets/slider_dialog.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
+import 'package:PiliPlus/plugin/pl_player/models/seek_preview_position.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
 import 'package:PiliPlus/utils/desktop/window_controller.dart';
@@ -137,6 +138,21 @@ List<SettingsModel> get playSettings => [
     leading: Icon(Icons.preview_outlined),
     setKey: SettingBoxKey.showSeekPreview,
     defaultVal: true,
+  ),
+  const SwitchModel(
+    title: '鼠标在进度条上悬停预览视频缩略图',
+    leading: Icon(Icons.preview_outlined),
+    setKey: SettingBoxKey.showHoverPreview,
+    defaultVal: false,
+  ),
+  PopupModel(
+    title: '视频缩略图位置',
+    leading: const Icon(Icons.picture_in_picture_alt_outlined),
+    value: () => Pref.seekPreviewPosition,
+    items: SeekPreviewPosition.values,
+    onSelected: (value, setState) => GStorage.setting
+        .put(SettingBoxKey.seekPreviewPosition, value.index)
+        .whenComplete(setState),
   ),
   const SwitchModel(
     title: '显示高能进度条',

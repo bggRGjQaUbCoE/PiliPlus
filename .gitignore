@@ -150,3 +150,6 @@ pili_release.json
 dist
 
 test*
+
+# 本机 agent 配置（权限与偏好），不入库
+.commandcode/

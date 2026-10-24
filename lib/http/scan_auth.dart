@@ -203,7 +203,7 @@ abstract final class ScanAuth {
     var transient = 'false';
     for (final url in const [Api.qrWebCheck, Api.qrWebScene]) {
       final params = _webParams(account, accessKey, qrcodeKey);
-      ScanSign.sign(params);
+      _sign(params);
       final res = await Request().get(
         url,
         queryParameters: params,
@@ -231,7 +231,7 @@ abstract final class ScanAuth {
       ..['verify_code'] = ''
       ..['verify_key'] = ''
       ..['verify_type'] = 'verify_tel';
-    ScanSign.sign(params);
+    _sign(params);
     final res = await Request().post(
       Api.qrWebConfirm,
       data: params,
@@ -261,7 +261,7 @@ abstract final class ScanAuth {
       'disable_rcmd': '0',
       'statistics': Constants.statisticsScan,
     };
-    ScanSign.sign(params);
+    _sign(params);
     final res = await Request().post(
       Api.qrcodeConfirm,
       queryParameters: params,
@@ -269,6 +269,14 @@ abstract final class ScanAuth {
     );
     return _result(res, '已确认 TV 端登录');
   }
+
+  /// 扫码授权的签名必须跟随 access_key 的签发者
+  ///
+  /// access_key 与签发它的 appkey 绑定：宿主登录链路（lib/http/login.dart）
+  /// 由 [Constants.appKey] 那一对签发，若 confirm 改用 ScanSign 自带默认那对，
+  /// 服务端会判定 access_key 不属于当前 appkey，返回 -663「鉴权失败，请联系账号组」。
+  static void _sign(Map<String, dynamic> params) =>
+      ScanSign.sign(params, appkey: Constants.appKey, appsec: Constants.appSec);
 
   /// 绕过 AccountManager 的 header/cookie 注入，Cookie 由本类手工控制
   static const Map<String, dynamic> _extra = {'account': NoAccount()};

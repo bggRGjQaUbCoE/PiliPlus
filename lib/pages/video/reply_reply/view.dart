@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/skeleton/video_reply.dart';
 import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/mini_scaffold.dart';
@@ -14,6 +15,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/pages/video/reply_reply/controller.dart';
+import 'package:PiliPlus/pages/video/reply_reply/tree.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/extension/widget_ext.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
@@ -244,7 +246,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
       child: Padding(
         padding: const .fromLTRB(12, 2.5, 6, 2.5),
         child: Row(
-          mainAxisAlignment: .spaceBetween,
+          spacing: 8,
           children: [
             Obx(
               () {
@@ -256,6 +258,36 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
                       )
                     : const SizedBox.shrink();
               },
+            ),
+            Obx(
+              () => _controller.replyTree.value == null
+                  ? IconButton(
+                      visualDensity: .compact,
+                      onPressed: () {
+                        if (_controller.isEnd) {
+                          _controller.buildTree();
+                        } else if (_controller.inFetchReply) {
+                          SmartDialog.showToast('正在拉取评论，请稍后');
+                        } else {
+                          showConfirmDialog(
+                            context: context,
+                            title: const Text('是否加载全部评论以显示线程化评论？'),
+                            content: const Text('这将消耗一定流量\n且可能导致IP或账号风控'),
+                            onConfirm: _controller.nextReplyRound,
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.view_comfortable_outlined),
+                      color: colorScheme.outline,
+                      tooltip: '线程化展示',
+                    )
+                  : const SizedBox.shrink(),
+            ),
+            Expanded(
+              child: Obx(
+                () =>
+                    LinearProgressIndicator(value: _controller.progress.value),
+              ),
             ),
             TextButton.icon(
               style: Style.buttonStyle,
@@ -279,46 +311,82 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
     LoadingState<List<ReplyInfo>?> loadingState,
   ) {
     final jumpIndex = _controller.index.value;
-    return switch (loadingState) {
-      Loading() => const SliverPrototypeExtentList(
-        prototypeItem: VideoReplySkeleton(),
-        delegate: SliverSingleChildDelegate(
-          count: 8,
-          child: VideoReplySkeleton(),
-        ),
-      ),
-      Success(:final response!) => SuperSliverList.builder(
-        listController: _controller.listController,
-        itemBuilder: (context, index) {
-          if (index == response.length) {
-            _controller.onLoadMore();
-            return Container(
-              height: 125,
-              alignment: Alignment.center,
-              margin: .only(bottom: MediaQuery.viewPaddingOf(context).bottom),
-              child: Text(
-                _controller.isEnd ? '没有更多了' : '加载中...',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: colorScheme.outline,
-                ),
-              ),
-            );
-          }
-          final child = _replyItem(context, response[index], index);
-          if (jumpIndex == index) {
-            return _controller.colorAnimWrapper(colorScheme, child);
-          }
-          return child;
-        },
-        itemCount: response.length + 1,
-      ),
-      Error(:final errMsg) => HttpError(
-        errMsg: errMsg,
-        onReload: _controller.onReload,
-      ),
-    };
+    switch (loadingState) {
+      case Loading():
+        return const SliverPrototypeExtentList(
+          prototypeItem: VideoReplySkeleton(),
+          delegate: SliverSingleChildDelegate(
+            count: 8,
+            child: VideoReplySkeleton(),
+          ),
+        );
+      case Success(:final response!):
+        if (_controller.replyTree.value case final tree?) {
+          return SuperSliverList.builder(
+            listController: _controller.listController,
+            itemCount: tree.length,
+            itemBuilder: (context, index) {
+              final node = tree[index];
+              final child = ReplyItemGrpc(
+                replyItem: node.reply,
+                replyLevel: 2,
+                upMid: _controller.upMid,
+                onCheckReply: _controller.onCheckReply,
+                needDivider: false,
+                depth: node.depth,
+                reason: node.reason,
+                onReply: (_) => debugPrint('onReply'),
+                collapsed: node.collapsed,
+                toggleCollapse: node.isLeaf
+                    ? null
+                    : () => _controller.toggleCollapseTree(index),
+                onScrollLeft: node.depth > 0
+                    ? () => _controller.setIndexByTreeNode(index, node.parent)
+                    : null,
+              );
+              if (jumpIndex == index) {
+                return _controller.colorAnimWrapper(colorScheme, child);
+              }
+              return child;
+            },
+          );
+        } else {
+          return SuperSliverList.builder(
+            listController: _controller.listController,
+            itemBuilder: (context, index) {
+              if (index == response.length) {
+                _controller.onLoadMore();
+                return Container(
+                  height: 125,
+                  alignment: Alignment.center,
+                  margin: .only(
+                    bottom: MediaQuery.viewPaddingOf(context).bottom,
+                  ),
+                  child: Text(
+                    _controller.isEnd ? '没有更多了' : '加载中...',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: colorScheme.outline,
+                    ),
+                  ),
+                );
+              }
+              final child = _replyItem(context, response[index], index);
+              if (jumpIndex == index) {
+                return _controller.colorAnimWrapper(colorScheme, child);
+              }
+              return child;
+            },
+            itemCount: response.length + 1,
+          );
+        }
+      case Error(:final errMsg):
+        return HttpError(
+          errMsg: errMsg,
+          onReload: _controller.onReload,
+        );
+    }
   }
 
   Widget _replyItem(BuildContext context, ReplyInfo replyItem, int index) {
@@ -326,25 +394,31 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
       replyItem: replyItem,
       replyLevel: isDialogue ? 3 : 2,
       onReply: (replyItem) => _controller.onReply(replyItem, index: index),
-      onDelete: (item, subIndex) => _controller.onRemove(index, item, null),
+      onDelete: (item, subIndex) => _controller.onRemove(index, item, subIndex),
       upMid: _controller.upMid,
-      showDialogue: () => MiniScaffold.of(context).showBottomSheet(
-        constraints: const BoxConstraints(),
-        (context) => VideoReplyReplyPanel(
-          oid: replyItem.oid.toInt(),
-          rpid: replyItem.root.toInt(),
-          dialog: replyItem.dialog.toInt(),
-          replyType: widget.replyType,
-          isVideoDetail: true,
-          isNested: widget.isNested,
-        ),
-      ),
-      jumpToDialogue: () {
-        if (!_controller.setIndexById(replyItem.parent)) {
-          SmartDialog.showToast('评论可能已被删除');
-        }
-      },
+      dialogueCallback: isDialogue ? _onJumpToParent : _showDialogue,
+      getReplyChain: () => _controller.getParentChain(index, firstFloor),
       onCheckReply: _controller.onCheckReply,
+    );
+  }
+
+  void _onJumpToParent(ReplyInfo replyItem) {
+    if (!_controller.setIndexById(replyItem.parent)) {
+      SmartDialog.showToast('评论可能已被删除');
+    }
+  }
+
+  void _showDialogue(ReplyInfo replyItem) {
+    MiniScaffold.of(context).showBottomSheet(
+      constraints: const BoxConstraints(),
+      (context) => VideoReplyReplyPanel(
+        oid: replyItem.oid.toInt(),
+        rpid: replyItem.root.toInt(),
+        dialog: replyItem.dialog.toInt(),
+        replyType: widget.replyType,
+        isVideoDetail: true,
+        isNested: widget.isNested,
+      ),
     );
   }
 }

@@ -1,0 +1,15 @@
+{
+    "name": "piliplus.alphaliu01",
+    "description": "PiliPlus for Ubuntu Touch",
+    "architecture": "@CLICK_ARCH@",
+    "title": "PiliPlus",
+    "version": "2.1.6",
+    "framework": "@CLICK_FRAMEWORK@",
+    "maintainer": "alpha-liu-01 <alpha-liu-01@users.noreply.github.com>",
+    "hooks": {
+        "piliplus": {
+            "apparmor": "piliplus.apparmor",
+            "desktop": "piliplus.desktop"
+        }
+    }
+}

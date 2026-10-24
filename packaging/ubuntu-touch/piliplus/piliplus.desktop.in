@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=PiliPlus
+Exec=piliplus
+Icon=piliplus.png
+Terminal=false
+Type=Application
+X-Ubuntu-Touch=true
+X-Lomiri-Touch=true

@@ -33,6 +33,12 @@
   - 诊断轮根因与证据（JAR 字符串比对、SF 层普查、logcat 序列）见 context。
   - context：[marble-dv-p84-route-regression-20261023.md](archives/conversations/marble-dv-p84-route-regression-20261023.md)。
 
+## LG-DVP84-NATIVE-UNAVAILABLE-20261024
+
+- **已修复并装 LG 验证，按用户授权本地提交归档，不推送；提交事实以 Git log 为准**：标准入口从当前本地源码构建原生链，核对 native receipt→JAR→最终 arm64 split APK 三成员；允许且精确验证同 NDK strip 的正常变换，拒绝旧库/重复成员/foreign ABI/缺能力标记。dev 缺本地 JAR 直接失败。首轮门检实抓插件额外 ABI，修为默认 split 后整链重跑通过。APK `e17d3aee…028c9`（27,541,013 B）设备回读一致，libmpv `6a657dd0…ecc43a` 与本次 JAR 精确一致。
+- decoder review 因实际 `hwdecMismatch` 重规划耗尽时，保留该首因，不再误报其它候选的 `nativeDvUnavailable`；原始 native DV 准入失败语义保留。PiliPlus `AGENTS.local.md` 已记录标准源码构建命令与禁止使用旧 JAR 打包规则。session 53项、构建工具11项与定向analyze通过，独立V2审核无阻塞。
+- LG 两源 `BV1vY4y1N7TY`（3840×1920）/`BV1uZ4y1U7h8`（本轮实际3840×2160）均为 DV8/compat4、高通HEVC硬解、`surfacetexture + baseLayerConvert → PQ/ext:lg-pq verified=true`；视频层format43/7FA30C04、面板HDR开启，约73s/61s观察窗内真实buffer检查点推进，零FATAL/ANR/阻断。用户明确确认“能看到正常视频”。不宣称nativeDV直通、精确FPS/逐帧零丢帧或面板光学校准；系统截图视频区仍黑，与用户实看证据分开。本轮验收结束时 LG 正在播放第二源。context：[marble-dv-p84-route-regression-20261023.md](archives/conversations/marble-dv-p84-route-regression-20261023.md)；持久机器证据：姊妹仓 `docs/validation/lg-dvp84-source-build-20261024.json`。
+
 ## LYA-DV-TRANSLUCENT-RESIDUE-20261022
 
 - **已验收 / 用户授权本地提交归档（不推送）**：texture正式修复保留；用户确认去除alpha清除补丁后的LYA候选横竖屏、全屏进出及控件显隐“全部正常，无残留”。无alpha APK SHA `fd1882ecb327e491a79856b5a0f158a7ccab52c68056e7e56d6e997cae72fda9`，其 `libmpv` 为 `c9c6c89900da7eaa42be10e95852c37a5459960ef227aa74f298d13a4c742520`；独立设备核验确认 texture 根视图、OMX.hisi 硬解、10-bit BT2020_PQ、帧推进，无FATAL/ANR。用户授权本任务本地提交归档，不推送；提交事实与hash以Git log为准。

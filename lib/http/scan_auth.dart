@@ -25,10 +25,13 @@ abstract final class ScanAuth {
 
   /// 从二维码内容中解析出 key 与类型，无法识别时返回 null
   ///
-  /// ponytail: 仅解析标准的 qrcode_key=/auth_code= 形式，裸 key 不支持，
-  /// 需要时再放开成「用户手动选类型」。
-  static (ScanQrType, String)? parse(String raw) {
+  /// 类型为 null 表示内容里没有 qrcode_key=/auth_code=，是裸 key，
+  /// 由调用方决定按网页端还是 TV 端处理（对应 extractKey 的兜底分支）。
+  static (ScanQrType?, String)? parse(String raw) {
     final text = raw.trim();
+    if (text.isEmpty) {
+      return null;
+    }
     for (final MapEntry(key: name, value: type) in const {
       'qrcode_key': ScanQrType.web,
       'auth_code': ScanQrType.tv,
@@ -54,7 +57,11 @@ abstract final class ScanAuth {
         return (type, value);
       }
     }
-    return null;
+    // 裸 key 兜底；不含空白的链接说明不是登录二维码，不认
+    if (text.contains('://') || text.contains(RegExp(r'\s'))) {
+      return null;
+    }
+    return (null, text);
   }
 
   /// 账号不可用于扫码授权的原因，null 表示可用
@@ -66,7 +73,7 @@ abstract final class ScanAuth {
     if (accessKey == null || accessKey.isEmpty) {
       return 'Cookie 登录，缺少 access_key';
     }
-    final sessdata = cookieOf(account, 'SESSDATA');
+    final sessdata = sessdataOf(account);
     if (sessdata == null) {
       return 'Cookie 缺少 SESSDATA';
     }
@@ -88,7 +95,7 @@ abstract final class ScanAuth {
     if (accessKey.length > 32) {
       return accessKey;
     }
-    final sessdata = cookieOf(account, 'SESSDATA');
+    final sessdata = sessdataOf(account);
     if (sessdata == null) {
       return null;
     }
@@ -105,8 +112,26 @@ abstract final class ScanAuth {
         .value;
   }
 
+  /// 明文 SESSDATA
+  ///
+  /// 宿主把登录响应里的 cookie 原样存入（BiliCookieJar.fromList/fromJson 不解码），
+  /// 而 B 站返回的 SESSDATA 是 URL 编码态（逗号是 %2C），拼 access_key 与
+  /// Cookie 头都需要明文。对应 LoginManager.kt:225-226「SESSDATA %2C 还原为逗号」。
+  static String? sessdataOf(LoginAccount account) {
+    final raw = cookieOf(account, 'SESSDATA');
+    if (raw == null) {
+      return null;
+    }
+    try {
+      return Uri.decodeComponent(raw);
+    } catch (_) {
+      // 非法百分号编码，按原样使用
+      return raw;
+    }
+  }
+
   static Map<String, String> _headers(LoginAccount account) {
-    final sessdata = cookieOf(account, 'SESSDATA');
+    final sessdata = sessdataOf(account);
     final biliJct = cookieOf(account, 'bili_jct');
     if (sessdata == null || biliJct == null) {
       throw '该账号缺少 SESSDATA/bili_jct，无法用于扫码授权';
@@ -121,6 +146,15 @@ abstract final class ScanAuth {
     };
   }
 
+  /// bili_jct（csrf），缺失时抛错而不是把 null 塞进签名参数
+  static String _csrfOf(LoginAccount account) {
+    final biliJct = cookieOf(account, 'bili_jct');
+    if (biliJct == null || biliJct.isEmpty) {
+      throw '该账号缺少 bili_jct，无法用于扫码授权';
+    }
+    return biliJct;
+  }
+
   static Map<String, dynamic> _webParams(
     LoginAccount account,
     String accessKey,
@@ -129,7 +163,7 @@ abstract final class ScanAuth {
     return {
       'access_key': accessKey,
       'build': _build,
-      'csrf': cookieOf(account, 'bili_jct'),
+      'csrf': _csrfOf(account),
       'disable_rcmd': '0',
       'mobi_app': 'android',
       'platform': 'android',
@@ -176,13 +210,17 @@ abstract final class ScanAuth {
         options: Options(headers: headers, extra: _extra),
       );
       final data = res.data;
-      if (data is! Map) {
+      if (data is! Map || data['code'] != 0) {
         return Error(_messageOf(data));
       }
       if (url == Api.qrWebScene) {
         final scene = data['data'];
-        if (scene is Map && scene['transient'] == true) {
-          transient = 'true';
+        // 对应 Kotlin 的 optBoolean(transient)：布尔与 1/"true" 都算真
+        if (scene is Map) {
+          final value = scene['transient'];
+          if (value == true || value == 1 || value == 'true') {
+            transient = 'true';
+          }
         }
       }
     }
@@ -216,7 +254,7 @@ abstract final class ScanAuth {
     final params = {
       'access_key': accessKey,
       'auth_code': authCode,
-      'csrf': cookieOf(account, 'bili_jct'),
+      'csrf': _csrfOf(account),
       'mobi_app': 'android',
       'platform': 'android',
       'build': _build,
@@ -240,7 +278,12 @@ abstract final class ScanAuth {
     if (data is Map && data['code'] == 0) {
       return Success(successMsg);
     }
-    return Error(_messageOf(data));
+    // statusCode == -1：Request.post 已捕获 DioException 并 toast 过，
+    // 用 code 标记让调用方跳过重复提示（get 不走这条路径）
+    return Error(
+      _messageOf(data),
+      code: res.statusCode == -1 ? -1 : null,
+    );
   }
 
   static String _messageOf(Object? data) {

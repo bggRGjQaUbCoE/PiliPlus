@@ -156,7 +156,7 @@ class _MediaPageState extends CommonPageState<MinePage>
     final canScanAuth = Accounts.account.isNotEmpty;
     final scanAuthBtn = IconButton(
       iconSize: iconSize,
-      padding: widget.showBackBtn ? EdgeInsets.zero : padding,
+      padding: padding,
       style: style,
       tooltip: canScanAuth ? '扫码授权' : '请先登录',
       onPressed: canScanAuth

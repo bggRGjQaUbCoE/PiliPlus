@@ -32,6 +32,8 @@
 	<string>NSApplication</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>需要访问本地网络以发现和连接 DLNA 投屏设备</string>
+	<key>NSCameraUsageDescription</key>
+	<string>需要访问摄像头以扫描哔哩哔哩登录二维码</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_ssdp._udp</string>

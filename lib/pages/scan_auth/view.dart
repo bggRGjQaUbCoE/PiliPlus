@@ -1,6 +1,8 @@
+import 'dart:async' show unawaited;
 import 'dart:io' show Platform;
 
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:PiliPlus/common/widgets/view_insets_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/member.dart';
 import 'package:PiliPlus/http/scan_auth.dart';
@@ -21,7 +23,8 @@ class ScanAuthPage extends StatefulWidget {
   State<ScanAuthPage> createState() => _ScanAuthPageState();
 }
 
-class _ScanAuthPageState extends State<ScanAuthPage> {
+class _ScanAuthPageState extends State<ScanAuthPage>
+    with WidgetsBindingObserver {
   /// mobile_scanner 只支持 android/ios/macos，其余平台只能粘贴内容
   static final bool _supportCamera = PlatformUtils.isMobile || Platform.isMacOS;
 
@@ -33,15 +36,21 @@ class _ScanAuthPageState extends State<ScanAuthPage> {
       : null;
   final TextEditingController _textController = TextEditingController();
   final List<LoginAccount> _accounts = [];
-  final Map<int, String> _names = {};
+  // LoginAccount 的 ==/hashCode 读 mid（late final，缺 cookie 会抛），用身份比较
+  final Map<LoginAccount, String> _names = Map.identity();
   LoginAccount? _selected;
   ScanQrType? _type;
   String? _key;
   bool _submitting = false;
 
+  /// 相机是否处于扫描态。扫到二维码后置 false，由「重新扫描」重置
+  bool _scanning = true;
+
   @override
   void initState() {
     super.initState();
+    // 传入 controller 时 MobileScanner 不注册生命周期观察者，需自行处理
+    WidgetsBinding.instance.addObserver(this);
     _accounts.addAll(Accounts.account.values);
     _selected = _firstUsable();
     for (final account in _accounts) {
@@ -51,9 +60,45 @@ class _ScanAuthPageState extends State<ScanAuthPage> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _scanner?.dispose();
     _textController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == .resumed) {
+      // 扫到二维码后 _scanning 为 false，回前台不重启相机
+      if (_scanning) unawaited(_safeStart());
+    } else {
+      unawaited(_safeStop());
+    }
+  }
+
+  Future<void> _safeStart() async {
+    try {
+      await _scanner?.start();
+    } catch (_) {
+      // 相机被占用等错误由 MobileScanner 的 errorBuilder 呈现
+    }
+  }
+
+  Future<void> _safeStop() async {
+    try {
+      await _scanner?.stop();
+    } catch (_) {
+      // stop 失败无需处理，退到后台相机本就不可用
+    }
+  }
+
+  /// mid 是 late final，登录态异常（缺 DedeUserID cookie）时会抛，这里兜成 null
+  static int? _midOf(LoginAccount account) {
+    try {
+      return account.mid;
+    } catch (_) {
+      return null;
+    }
   }
 
   LoginAccount? _firstUsable() {
@@ -66,12 +111,16 @@ class _ScanAuthPageState extends State<ScanAuthPage> {
   }
 
   Future<void> _loadName(LoginAccount account) async {
-    final res = await MemberHttp.memberCardInfo(mid: account.mid);
+    final mid = _midOf(account);
+    if (mid == null) {
+      return;
+    }
+    final res = await MemberHttp.memberCardInfo(mid: mid);
     final name = res.dataOrNull?.card?.name;
     if (!mounted || name == null || name.isEmpty) {
       return;
     }
-    setState(() => _names[account.mid] = name);
+    setState(() => _names[account] = name);
   }
 
   void _apply(String raw) {
@@ -81,18 +130,36 @@ class _ScanAuthPageState extends State<ScanAuthPage> {
       return;
     }
     setState(() {
-      _type = parsed.$1;
+      // 裸 key 没有类型线索时保留用户已选（或让用户手动选）
+      if (parsed.$1 != null) {
+        _type = parsed.$1;
+      }
       _key = parsed.$2;
+      _scanning = false;
     });
+    // 已拿到内容，停掉相机省电并避免同一帧重复触发
+    unawaited(_safeStop());
     SmartDialog.showToast('已获取二维码');
+  }
+
+  void _rescan() {
+    // 置回扫描态会重新挂载 MobileScanner，其 autoStart 会自行恢复相机
+    setState(() {
+      _scanning = true;
+      _key = null;
+    });
   }
 
   Future<void> _confirm() async {
     final account = _selected;
     final key = _key;
     final type = _type;
-    if (key == null || type == null) {
+    if (key == null) {
       SmartDialog.showToast('请先扫描或粘贴登录二维码');
+      return;
+    }
+    if (type == null) {
+      SmartDialog.showToast('请选择二维码类型：网页端或 TV 端');
       return;
     }
     if (account == null) {
@@ -114,8 +181,11 @@ class _ScanAuthPageState extends State<ScanAuthPage> {
       case Success(:final response):
         SmartDialog.showToast('$response');
         Get.back();
-      case Error(:final errMsg):
-        SmartDialog.showToast(errMsg ?? '扫码授权失败');
+      // code == -1 时 Request.post 已经 toast 过网络错误，不再重复弹
+      case Error(:final errMsg, :final code):
+        if (code != -1) {
+          SmartDialog.showToast(errMsg ?? '扫码授权失败');
+        }
       default:
         break;
     }
@@ -133,77 +203,119 @@ class _ScanAuthPageState extends State<ScanAuthPage> {
         ),
         title: const Text('扫码授权'),
       ),
-      body: ListView(
-        padding: EdgeInsets.only(
-          left: 16,
-          right: 16,
-          top: 12,
-          bottom: MediaQuery.viewPaddingOf(context).bottom + 24,
-        ),
-        children: [
-          if (_supportCamera)
-            _buildScanner(theme)
-          else
-            _buildNoCameraHint(theme),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _textController,
-            minLines: 1,
-            maxLines: 3,
-            inputFormatters: [
-              FilteringTextInputFormatter.deny(RegExp(r'\s')),
-            ],
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.qr_code_2),
-              border: const UnderlineInputBorder(),
-              labelText: '二维码内容',
-              hintText: '也可以粘贴二维码链接后点识别',
-              suffixIcon: IconButton(
-                tooltip: '识别',
-                onPressed: () => _apply(_textController.text),
-                icon: const Icon(Icons.input),
-              ),
-            ),
-            onSubmitted: _apply,
+      // SimpleScaffold 不处理键盘 inset，套既有组件避免输入框被遮挡
+      body: ViewInsetsSafeArea(
+        child: ListView(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 12,
+            bottom: MediaQuery.viewPaddingOf(context).bottom + 24,
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Text('授权账号', style: theme.textTheme.titleSmall),
-              const Spacer(),
-              if (_key != null)
-                Text(
-                  _type == ScanQrType.web ? '网页端' : 'TV 端',
-                  style: theme.textTheme.bodySmall,
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          children: [
+            if (_supportCamera)
+              _buildScanner(theme)
+            else
+              _buildNoCameraHint(theme),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _textController,
+              minLines: 1,
+              maxLines: 3,
+              inputFormatters: [
+                FilteringTextInputFormatter.deny(RegExp(r'\s')),
+              ],
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.qr_code_2),
+                border: const UnderlineInputBorder(),
+                labelText: '二维码内容',
+                hintText: '也可以粘贴二维码链接后点识别',
+                suffixIcon: IconButton(
+                  tooltip: '识别',
+                  onPressed: () => _apply(_textController.text),
+                  icon: const Icon(Icons.input),
                 ),
+              ),
+              onSubmitted: _apply,
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Text('授权账号', style: theme.textTheme.titleSmall),
+                const Spacer(),
+                if (_key != null)
+                  Text(
+                    _type == null
+                        ? '请选择类型'
+                        : (_type == ScanQrType.web ? '网页端' : 'TV 端'),
+                    style: theme.textTheme.bodySmall,
+                  ),
+              ],
+            ),
+            if (_key != null) ...[
+              Wrap(
+                spacing: 8,
+                children: [
+                  for (final type in ScanQrType.values)
+                    ChoiceChip(
+                      label: Text(type == ScanQrType.web ? '网页端' : 'TV 端'),
+                      selected: _type == type,
+                      onSelected: (_) => setState(() => _type = type),
+                    ),
+                ],
+              ),
             ],
-          ),
-          const SizedBox(height: 4),
-          if (_accounts.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Text('没有已登录的账号', style: theme.textTheme.bodyMedium),
-            )
-          else
-            ..._accounts.map(_buildAccountTile),
-          const SizedBox(height: 20),
-          FilledButton(
-            onPressed: _submitting ? null : _confirm,
-            child: _submitting
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('确认授权'),
-          ),
-        ],
+            const SizedBox(height: 4),
+            if (_accounts.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Text('没有已登录的账号', style: theme.textTheme.bodyMedium),
+              )
+            else
+              ..._accounts.map(_buildAccountTile),
+            const SizedBox(height: 20),
+            FilledButton(
+              onPressed: _submitting ? null : _confirm,
+              child: _submitting
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('确认授权'),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildScanner(ThemeData theme) {
     final scanner = _scanner!;
+    // 扫到内容后相机已停，给一个明确的重新扫描入口（检测流不会自己恢复）
+    if (!_scanning) {
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            const Icon(Icons.qr_code_scanner, size: 32),
+            const SizedBox(height: 8),
+            Text('已读取二维码', style: theme.textTheme.bodyMedium),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: _rescan,
+              icon: const Icon(Icons.refresh),
+              label: const Text('重新扫描'),
+            ),
+          ],
+        ),
+      );
+    }
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: AspectRatio(
@@ -214,7 +326,7 @@ class _ScanAuthPageState extends State<ScanAuthPage> {
             MobileScanner(
               controller: scanner,
               onDetect: (capture) {
-                if (_key != null || capture.barcodes.isEmpty) {
+                if (!_scanning || capture.barcodes.isEmpty) {
                   return;
                 }
                 final raw = capture.barcodes.first.rawValue;
@@ -224,16 +336,30 @@ class _ScanAuthPageState extends State<ScanAuthPage> {
               },
             ),
             Align(
-              alignment: Alignment.bottomCenter,
+              alignment: Alignment.centerRight,
               child: Padding(
                 padding: const EdgeInsets.all(8),
-                child: IconButton(
-                  tooltip: '手电筒',
-                  style: IconButton.styleFrom(
-                    backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                  ),
-                  onPressed: () => _scanner?.toggleTorch(),
-                  icon: const Icon(Icons.flashlight_on_outlined),
+                child: ValueListenableBuilder<MobileScannerState>(
+                  valueListenable: scanner,
+                  builder: (context, state, child) {
+                    if (state.torchState == TorchState.unavailable) {
+                      return child!;
+                    }
+                    final on = state.torchState == TorchState.on;
+                    return IconButton(
+                      tooltip: on ? '关闭手电筒' : '手电筒',
+                      style: IconButton.styleFrom(
+                        backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                      ),
+                      onPressed: _toggleTorch,
+                      icon: Icon(
+                        on
+                            ? Icons.flashlight_on
+                            : Icons.flashlight_off_outlined,
+                      ),
+                    );
+                  },
+                  child: const SizedBox.shrink(),
                 ),
               ),
             ),
@@ -241,6 +367,14 @@ class _ScanAuthPageState extends State<ScanAuthPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _toggleTorch() async {
+    try {
+      await _scanner?.toggleTorch();
+    } catch (_) {
+      // 相机未初始化或已释放时 toggleTorch 会抛，忽略即可
+    }
   }
 
   Widget _buildNoCameraHint(ThemeData theme) {
@@ -268,7 +402,10 @@ class _ScanAuthPageState extends State<ScanAuthPage> {
   Widget _buildAccountTile(LoginAccount account) {
     final reason = ScanAuth.unavailableReason(account);
     final selected = _selected == account;
-    final name = _names[account.mid];
+    final name = _names[account];
+    // mid 是 late final，登录态异常时取不到，用占位文案避免整页崩溃
+    final mid = _midOf(account);
+    final midText = mid == null ? 'UID 未知' : 'UID $mid';
     return ListTile(
       contentPadding: EdgeInsets.zero,
       enabled: reason == null,
@@ -278,8 +415,8 @@ class _ScanAuthPageState extends State<ScanAuthPage> {
             ? (selected ? Icons.check_circle : Icons.account_circle_outlined)
             : Icons.block,
       ),
-      title: Text(name ?? 'UID ${account.mid}'),
-      subtitle: Text(reason ?? 'UID ${account.mid}'),
+      title: Text(name ?? midText),
+      subtitle: Text(reason ?? midText),
       trailing: selected && reason == null
           ? Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.primary)
           : null,

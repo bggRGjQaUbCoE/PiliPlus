@@ -1,5 +1,5 @@
 import 'dart:async' show unawaited;
-import 'dart:io' show Platform;
+import 'dart:io' show File, Platform;
 
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_insets_safe_area.dart';
@@ -8,6 +8,7 @@ import 'package:PiliPlus/http/member.dart';
 import 'package:PiliPlus/http/scan_auth.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
+import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -123,7 +124,54 @@ class _ScanAuthPageState extends State<ScanAuthPage>
     setState(() => _names[account] = name);
   }
 
-  void _apply(String raw) {
+  /// 识别相机或粘贴进来的内容
+  ///
+  /// data:image/...;base64, 开头的是一条图片，不是二维码文本，先解码成文件再识别。
+  Future<void> _apply(String raw) async {
+    final text = raw.trim();
+    if (text.startsWith('data:image/')) {
+      await _applyImage(text);
+      return;
+    }
+    _applyText(text);
+  }
+
+  Future<void> _applyImage(String dataUri) async {
+    final bytes = ScanAuth.imageBytesOf(dataUri);
+    if (bytes == null) {
+      SmartDialog.showToast('图片数据无法解析，请确认内容完整');
+      return;
+    }
+    final scanner = _scanner;
+    if (scanner == null) {
+      SmartDialog.showToast('当前平台不支持识别图片二维码，请粘贴二维码内容');
+      return;
+    }
+    // analyzeImage 只接受文件路径（Android / 真机 iOS / macOS）
+    final file = File(
+      '$tmpDirPath/qr_${DateTime.now().microsecondsSinceEpoch}.png',
+    );
+    try {
+      await file.writeAsBytes(bytes);
+      final capture = await scanner.analyzeImage(file.path);
+      final raw = capture == null || capture.barcodes.isEmpty
+          ? null
+          : capture.barcodes.first.rawValue;
+      if (raw == null || raw.isEmpty) {
+        SmartDialog.showToast('图片里没有识别到二维码');
+        return;
+      }
+      _applyText(raw);
+    } catch (_) {
+      // 相机库不支持图片分析，或图片已损坏
+      SmartDialog.showToast('图片识别失败，请改用相机扫描');
+    } finally {
+      // 临时文件用完即删，失败也不影响结果
+      unawaited(file.delete().then<void>((_) {}, onError: (Object _) {}));
+    }
+  }
+
+  void _applyText(String raw) {
     final parsed = ScanAuth.parse(raw);
     if (parsed == null) {
       SmartDialog.showToast('无法识别，请确认是哔哩哔哩的登录二维码');
@@ -233,11 +281,11 @@ class _ScanAuthPageState extends State<ScanAuthPage>
                 hintText: '也可以粘贴二维码链接后点识别',
                 suffixIcon: IconButton(
                   tooltip: '识别',
-                  onPressed: () => _apply(_textController.text),
+                  onPressed: () => unawaited(_apply(_textController.text)),
                   icon: const Icon(Icons.input),
                 ),
               ),
-              onSubmitted: _apply,
+              onSubmitted: (value) => unawaited(_apply(value)),
             ),
             const SizedBox(height: 16),
             Row(
@@ -331,7 +379,7 @@ class _ScanAuthPageState extends State<ScanAuthPage>
                 }
                 final raw = capture.barcodes.first.rawValue;
                 if (raw != null && raw.isNotEmpty) {
-                  _apply(raw);
+                  unawaited(_apply(raw));
                 }
               },
             ),

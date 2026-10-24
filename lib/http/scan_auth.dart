@@ -1,3 +1,6 @@
+import 'dart:convert' show base64Decode;
+import 'dart:typed_data' show Uint8List;
+
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/init.dart';
@@ -64,46 +67,52 @@ abstract final class ScanAuth {
     return (null, text);
   }
 
+  /// data:image/...;base64, 的载荷
+  ///
+  /// 有些分享出来的登录二维码是一整条 base64 图片而不是链接，载荷本身
+  /// 不一定是二维码文本，需要先解码成图片再交给相机库识别。
+  static String? textOf(String dataUri) {
+    final text = dataUri.trim();
+    final index = text.indexOf(',');
+    if (!text.startsWith('data:image/') || index < 0) {
+      return null;
+    }
+    // 允许 data:image/png;base64, 之外省略 ;base64 的少见写法
+    return text.substring(index + 1);
+  }
+
+  /// 解码 data:image/...;base64, 为图片字节，失败返回 null
+  static Uint8List? imageBytesOf(String dataUri) {
+    final payload = textOf(dataUri);
+    if (payload == null || payload.isEmpty) {
+      return null;
+    }
+    try {
+      return base64Decode(payload.replaceAll(RegExp(r'\s'), ''));
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// 账号不可用于扫码授权的原因，null 表示可用
   static String? unavailableReason(LoginAccount account) {
     if (accessKeyOf(account) != null) {
       return null;
     }
-    final accessKey = account.accessKey;
-    if (accessKey == null || accessKey.isEmpty) {
-      return 'Cookie 登录，缺少 access_key';
-    }
-    final sessdata = sessdataOf(account);
-    if (sessdata == null) {
-      return 'Cookie 缺少 SESSDATA';
-    }
-    final parts = sessdata.split(',');
-    if (parts.length != 3 || parts[2].length <= 8) {
-      return 'SESSDATA 格式异常，无法拼出 access_key';
-    }
-    return 'access_key 无效';
+    return 'Cookie 登录，缺少 access_key';
   }
 
   /// 用于请求的 access_key
   ///
-  /// access_key 不足 32 位时是「access_key + SESSDATA 第三段」的组合形式
+  /// 必须原样返回登录接口发的那串，不能按「access_key + SESSDATA 第三段」拼接：
+  /// 拼接是把 B 站 web 端的组合登录态当成 access_key 用，而这里要的是 App 端
+  /// access_key，它与签发它的 appkey 绑定（见 [_sign]），拼出来的值一定 -663。
   static String? accessKeyOf(LoginAccount account) {
     final accessKey = account.accessKey;
     if (accessKey == null || accessKey.isEmpty) {
       return null;
     }
-    if (accessKey.length > 32) {
-      return accessKey;
-    }
-    final sessdata = sessdataOf(account);
-    if (sessdata == null) {
-      return null;
-    }
-    final parts = sessdata.split(',');
-    if (parts.length != 3 || parts[2].length <= 8) {
-      return null;
-    }
-    return '$accessKey${parts[2].substring(8)}';
+    return accessKey;
   }
 
   /// 读取 cookie 值，缺失返回 null

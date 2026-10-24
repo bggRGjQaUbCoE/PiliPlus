@@ -35,6 +35,9 @@ abstract final class ScanAuth {
     if (text.isEmpty) {
       return null;
     }
+    // 类型直接从链接里的参数名判定，不需要再让用户手动选：
+    //   网页端 https://passport.bilibili.com/h5-app/passport/login/scan?qrcode_key=...
+    //   TV 端  https://passport.bilibili.com/x/passport-tv-login/h5/qrcode/auth?auth_code=...
     for (final MapEntry(key: name, value: type) in const {
       'qrcode_key': ScanQrType.web,
       'auth_code': ScanQrType.tv,

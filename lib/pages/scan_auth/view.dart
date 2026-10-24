@@ -1,5 +1,6 @@
 import 'dart:async' show unawaited;
 import 'dart:io' show File, Platform;
+import 'dart:typed_data' show Int32List, Uint8List;
 
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_insets_safe_area.dart';
@@ -10,11 +11,14 @@ import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:image/image.dart' as img;
 import 'package:material_ui/material_ui.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:zxing2/qrcode.dart';
 
 /// 扫码授权：扫描其它端的登录二维码，用本机已登录的账号确认登录
 class ScanAuthPage extends StatefulWidget {
@@ -41,6 +45,9 @@ class _ScanAuthPageState extends State<ScanAuthPage>
   final Map<LoginAccount, String> _names = Map.identity();
   LoginAccount? _selected;
   ScanQrType? _type;
+
+  /// 上次的类型是自动识别来的（用户手动点选后会置 false）
+  bool _typeAuto = false;
   String? _key;
   bool _submitting = false;
 
@@ -136,39 +143,106 @@ class _ScanAuthPageState extends State<ScanAuthPage>
     _applyText(text);
   }
 
+  /// 打开本地二维码图片，全平台走文件选择器
+  Future<void> _pickImage() async {
+    try {
+      final picked = await FilePicker.pickFile(
+        type: FileType.custom,
+        allowedExtensions: const ['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp'],
+      );
+      if (picked == null) {
+        return;
+      }
+      final raw = await _decodeBytes(await picked.xFile.readAsBytes());
+      if (raw == null || raw.isEmpty) {
+        SmartDialog.showToast('图片里没有识别到二维码');
+        return;
+      }
+      _applyText(raw);
+    } catch (e) {
+      SmartDialog.showToast('打开图片失败：$e');
+    }
+  }
+
+  /// 解码图片文件里的二维码
+  ///
+  /// 纯 Dart 的 zxing2，全平台（含桌面）都能用。
+  static String? _decodeWithZxing(Uint8List bytes) {
+    final decoded = img.decodeImage(bytes);
+    if (decoded == null) {
+      return null;
+    }
+    // 手机拍的原图动辄几千万像素，识别二维码用不上，先缩到 1600 以内再逐像素转换
+    final int maxSide = decoded.width > decoded.height
+        ? decoded.width
+        : decoded.height;
+    final image = maxSide > 1600
+        ? img.copyResize(
+            decoded,
+            width: decoded.width >= decoded.height ? 1600 : null,
+            height: decoded.height > decoded.width ? 1600 : null,
+          )
+        : decoded;
+    final rgba = image.convert(numChannels: 4).getBytes(
+      order: img.ChannelOrder.rgba,
+    );
+    // zxing 按 0xRRGGBB 取像素，这里显式拼，不依赖平台字节序
+    final int count = image.width * image.height;
+    final pixels = Int32List(count);
+    for (var i = 0, offset = 0; i < count; i++, offset += 4) {
+      pixels[i] =
+          (rgba[offset] << 16) | (rgba[offset + 1] << 8) | rgba[offset + 2];
+    }
+    final source = RGBLuminanceSource(image.width, image.height, pixels);
+    final bitmap = BinaryBitmap(GlobalHistogramBinarizer(source));
+    try {
+      return QRCodeReader().decode(bitmap).text;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 解图片字节里的二维码
+  ///
+  /// 先用纯 Dart 的 zxing2（全平台，包括桌面的图片文件），解不开再退回
+  /// 相机库（只支持 Android / 真机 iOS / macOS，但抗噪更好）。
+  Future<String?> _decodeBytes(Uint8List bytes) async {
+    final decoded = _decodeWithZxing(bytes);
+    if (decoded != null) {
+      return decoded;
+    }
+    final scanner = _scanner;
+    if (scanner == null) {
+      return null;
+    }
+    final temp = File(
+      '$tmpDirPath/qr_${DateTime.now().microsecondsSinceEpoch}.png',
+    );
+    try {
+      await temp.writeAsBytes(bytes);
+      final capture = await scanner.analyzeImage(temp.path);
+      return capture == null || capture.barcodes.isEmpty
+          ? null
+          : capture.barcodes.first.rawValue;
+    } catch (_) {
+      return null;
+    } finally {
+      unawaited(temp.delete().then<void>((_) {}, onError: (Object _) {}));
+    }
+  }
+
   Future<void> _applyImage(String dataUri) async {
     final bytes = ScanAuth.imageBytesOf(dataUri);
     if (bytes == null) {
       SmartDialog.showToast('图片数据无法解析，请确认内容完整');
       return;
     }
-    final scanner = _scanner;
-    if (scanner == null) {
-      SmartDialog.showToast('当前平台不支持识别图片二维码，请粘贴二维码内容');
+    final raw = await _decodeBytes(bytes);
+    if (raw == null || raw.isEmpty) {
+      SmartDialog.showToast('图片里没有识别到二维码');
       return;
     }
-    // analyzeImage 只接受文件路径（Android / 真机 iOS / macOS）
-    final file = File(
-      '$tmpDirPath/qr_${DateTime.now().microsecondsSinceEpoch}.png',
-    );
-    try {
-      await file.writeAsBytes(bytes);
-      final capture = await scanner.analyzeImage(file.path);
-      final raw = capture == null || capture.barcodes.isEmpty
-          ? null
-          : capture.barcodes.first.rawValue;
-      if (raw == null || raw.isEmpty) {
-        SmartDialog.showToast('图片里没有识别到二维码');
-        return;
-      }
-      _applyText(raw);
-    } catch (_) {
-      // 相机库不支持图片分析，或图片已损坏
-      SmartDialog.showToast('图片识别失败，请改用相机扫描');
-    } finally {
-      // 临时文件用完即删，失败也不影响结果
-      unawaited(file.delete().then<void>((_) {}, onError: (Object _) {}));
-    }
+    _applyText(raw);
   }
 
   void _applyText(String raw) {
@@ -181,6 +255,7 @@ class _ScanAuthPageState extends State<ScanAuthPage>
       // 裸 key 没有类型线索时保留用户已选（或让用户手动选）
       if (parsed.$1 != null) {
         _type = parsed.$1;
+        _typeAuto = true;
       }
       _key = parsed.$2;
       _scanning = false;
@@ -195,6 +270,7 @@ class _ScanAuthPageState extends State<ScanAuthPage>
     setState(() {
       _scanning = true;
       _key = null;
+      _typeAuto = false;
     });
   }
 
@@ -279,10 +355,20 @@ class _ScanAuthPageState extends State<ScanAuthPage>
                 border: const UnderlineInputBorder(),
                 labelText: '二维码内容',
                 hintText: '也可以粘贴二维码链接后点识别',
-                suffixIcon: IconButton(
-                  tooltip: '识别',
-                  onPressed: () => unawaited(_apply(_textController.text)),
-                  icon: const Icon(Icons.input),
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      tooltip: '识别',
+                      onPressed: () => unawaited(_apply(_textController.text)),
+                      icon: const Icon(Icons.input),
+                    ),
+                    IconButton(
+                      tooltip: '打开二维码图片',
+                      onPressed: _pickImage,
+                      icon: const Icon(Icons.image_outlined),
+                    ),
+                  ],
                 ),
               ),
               onSubmitted: (value) => unawaited(_apply(value)),
@@ -294,9 +380,11 @@ class _ScanAuthPageState extends State<ScanAuthPage>
                 const Spacer(),
                 if (_key != null)
                   Text(
-                    _type == null
-                        ? '请选择类型'
-                        : (_type == ScanQrType.web ? '网页端' : 'TV 端'),
+                    _typeAuto
+                        ? '已自动识别为${_type == ScanQrType.web ? '网页端' : 'TV 端'}'
+                        : (_type == null
+                              ? '请选择类型'
+                              : '手动选择：${_type == ScanQrType.web ? '网页端' : 'TV 端'}'),
                     style: theme.textTheme.bodySmall,
                   ),
               ],
@@ -309,7 +397,11 @@ class _ScanAuthPageState extends State<ScanAuthPage>
                     ChoiceChip(
                       label: Text(type == ScanQrType.web ? '网页端' : 'TV 端'),
                       selected: _type == type,
-                      onSelected: (_) => setState(() => _type = type),
+                      onSelected: (_) => setState(() {
+                        // 手动点选优先，覆盖自动识别结果
+                        _type = type;
+                        _typeAuto = false;
+                      }),
                     ),
                 ],
               ),

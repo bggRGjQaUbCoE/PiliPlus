@@ -105,6 +105,13 @@ enum SegmentType {
     Color(0xFFff9900),
     [ActionType.skip],
   ),
+  jumpscare(
+    '惊吓片段',
+    '惊吓',
+    '突发大音量、跳脸、恐怖音效及意外惊吓。',
+    Color(0xFFe53935),
+    [ActionType.mute],
+  ),
   ;
 
   /// from https://github.com/hanydd/BilibiliSponsorBlock/blob/master/public/_locales/zh_CN/messages.json

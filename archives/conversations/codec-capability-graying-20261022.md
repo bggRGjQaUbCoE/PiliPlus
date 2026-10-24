@@ -44,3 +44,13 @@
 - B 站画质码：125=HDR真彩(HDR10/PQ)、126=杜比视界、129=HDR Vivid（`video_quality.dart`）；129 的曲线归属 fork 无定论（`hdr_source_classifier.dart` 仅作动态元数据事实），映射 PQ||HLG 为保守选择。
 - 弹窗既有置灰模式：画质弹窗 `enabled: availableQa.contains(...)`（会员画质）；本次叠加能力条件。
 - 选流优先级事实（本轮问答确认）：同画质档内编码格式由 preferCodecs 决定（`selectCodec` 取偏好列表最小下标），DASH 顺序仅影响同族多条流（hev1/hvc1）取先出现者、偏好全不命中时 `codecs.first` 兜底、`preferQuality >= videoList.first.id` 时的最高档判定；手动切画质 `findVideoByQa` 额外优先保持当前格式。用户澄清"同分辨率之内"后定稿为初始化自动配置方案（见 Current State 末条）。
+
+## 2026-10-24 深夜 DV P5 片源 BV1Gt26BJEBT 双机报障诊断（只诊断，未改代码）
+
+- **片源事实**：4K2160 **50fps** 内容，4K 档仅三条流 `dvh1.05.09@3840x2160@50`、`avc1.640034@4K@50`、`av01.0.00m.10@4K@50`；无 4K25/30 流。与常见 DV 8.4（HEVC HLG 基层）不同，这是 **Profile 5.0**（IPT、无兼容基层）。
+- **LYA（Mate 20 Pro, API 29）置灰=按声明如实判定**：`dvh1.05.09@4K@50` decode-gray (systemDeclarations，解码器级 sizeAndRate)，容差 ÷1.125 只缩尺寸不缩帧率仍超档；该画质全部流（dvh1/avc1/av01@4K50）都灰 → 4K 与 DV(qn126) 置灰，自动回落 1080p h264 SDR 播放正常。Kirin 980 官方支持 HEVC 4K60 解码，厂商 MediaCodecInfo 声明未必含 50fps——是否加 fps 容差属策略问题待用户定夺。
+- **LG G6（API 24）"解码失败"=路由 fail-closed 按设计拒播**：LG 未灰（置灰轮把 dvh1 按 HEVC Main10 判，LG 4K50 HEVC 声明可达且 dvDecoders=2）→ 自动选中 DV P5 流 → plan 阶段 hint 仍按"dvh1=8.4 HLG 基层"误判规划 baseLayerConvert，实测 classify dv=5 → predict 唯一路线 nativeDolbyVision，但 P5 准入要求解码器声明 DvheStn(32)，LG 两个 DV 解码器仅声明 P8(256) → `HdrPlaybackBlocked(nativeDvUnavailable)`，**报错且未回落低画质**。
+- **结构性缺口（修复方向待定夺）**：① LG 场景置灰轮与路由轮判据不一致——dvh1 P5 实际需要原生 DV 解码器（P5 profile），置灰轮按 HEVC Main10 放行导致选中后被路由拒绝；更优 UX 是置灰或至少在 blocked 时回落低画质而非报错。② plan hint 的 "dvh1=8.4" 假设对 P5 片源已失真（plan 与 classify 相互矛盾）。③ LYA 的 50fps 超档置灰是声明如实但可能过保守（fps 容差缺失）。
+- 证据：两机冷启动深链 logcat（2026-10-24 23:45/23:46），HdrDiag capability/classify/predict/decision 全序列。
+
+- **2026-10-25 00:07 帧率判定放开（用户拍板"放开对帧率的判断"，实机验收通过）**：App 侧 `codec_capability.dart` `_specOf` 不再传 frameRate（规格 frameRate=null，Java 适配器按 `isSizeSupported` 只判尺寸），置灰与选流全程不判帧率；decode-gray 日志行去掉 fps 字段；类头与 `_decodableAtSize` 注释同步。fork 侧零改动（适配器本就支持 null frameRate）。构建：dev 变体走 `ORG_GRADLE_PROJECT_dev=true` + 复用已验收原生 JAR（`lya-dv-peak-fix-20261024-20261024-223616-29122/package/default-arm64-v8a.jar`，经 `ORG_GRADLE_PROJECT_mediaKitLocalArm64Jar` 注入，Gradle 强制 dev 必须带本地 JAR——不必重编原生）产出 app-release.apk 45.9MB SHA-256 `51a49744…1433`，装 LYA+LG 并按 lastUpdateTime+base.apk 尺寸核验。**实机验收（BV1Gt26BJEBT 冷启动）**：LYA decode-gray=0、零 FATAL/ANR，自动选中 DV P5 流，`metadataReshape/gpu-next/pq/ext:lya-pq verified=true` `peak=500` 成功起播（4K 与 DV 恢复可选）。**LG 维持 `HdrPlaybackBlocked(nativeDvUnavailable)`**——P5 需原生 DV 解码器声明 DvheStn(32) 而 LG 仅声明 P8(256)，属置灰判据/路由回落的结构缺口（见上条"结构性缺口①②"），修复方向仍待用户定夺。analyze/test（test/utils 全量 16 项）通过。

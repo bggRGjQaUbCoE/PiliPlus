@@ -23,10 +23,11 @@ import 'package:media_kit_video/media_kit_video.dart'
 /// [VideoRouteCapabilities.query]（App 侧零平台代码）：
 /// 1. 显示轮（全平台）：面板 PQ/DV/HLG 能力（Android/Windows/macOS 有
 ///    适配器；iOS/Linux 无 → 未知，不置灰）。
-/// 2. 解码轮（仅 Android 真实查询，PC 不做解码过滤）：按 RFC 6381
-///    codec 串 + 分辨率 + 帧率查硬件解码器，**只在全部硬件解码器都
-///    明确声明不支持该分辨率/帧率（或无该编码硬件解码器）时置灰**，
-///    profile/level 等声明性校验不参与置灰（厂商表保守会误杀可播流）；
+/// 2. 解码轮（仅 Android，PC 不做解码过滤）：按 RFC 6381
+///    codec 串 + 分辨率查硬件解码器，**只在全部硬件解码器都
+///    明确声明不支持该分辨率（或无该编码硬件解码器）时置灰**，
+///    帧率不参与判定，profile/level 等声明性校验不参与置灰
+///    （厂商表保守会误杀可播流）；
 ///    DV 串（dvh1，B 站为 profile 8.4 HLG 基层）按 HEVC Main10 基层
 ///    或原生 DV 解码器任一判定。
 ///
@@ -125,7 +126,6 @@ abstract final class CodecCapability {
               debugPrint(
                 'CodecCapability: decode-gray ${source.codec}'
                 '@${source.width}x${source.height}'
-                '@${source.frameRate?.toStringAsFixed(2)}fps'
                 ' (${support.reason})',
               );
             }
@@ -148,7 +148,8 @@ abstract final class CodecCapability {
     frameRate: s.frameRate,
   );
 
-  /// 解码轮判定：只按分辨率+帧率（sizeAndRate）置灰。
+  /// 解码轮判定：只按分辨率置灰（帧率不参与判定，规格不传 frameRate，
+  /// fork 侧按 isSizeSupported 只判尺寸）。
   ///
   /// fork 的 sources 查询还带 profile/level/format 严格校验——那是为
   /// HDR 路由 fail-closed 设计的；低端机厂商声明的档位表常低于实际
@@ -249,7 +250,10 @@ abstract final class CodecCapability {
         codec: codecs,
         width: item.width,
         height: item.height,
-        frameRate: VideoSourceSpec.parseFrameRate(item.frameRate),
+        // 帧率不参与置灰判定（Java 适配器 frameRate==null 时按
+        // isSizeSupported 只判尺寸）：50fps 片源在声明 4K30 档位的设备上
+        // 会被误灰（BV1Gt26BJEBT dvh1.05.09@4K@50，2026-10-24 用户拍板放开）。
+        frameRate: null,
       );
     } on ArgumentError {
       return null;

@@ -19,6 +19,12 @@ abstract class CommonListController<R, T> extends CommonController<R, T> {
 
   void checkIsEnd(int length) {}
 
+  /// load-more（非刷新）请求失败时的回调。默认空实现。
+  ///
+  /// 基类对 load-more 失败不做处理（既不置 Error 也不刷新 loadingState），
+  /// 否则会把已加载的列表整个替换成错误页。需要提示/重试的子类覆写本方法。
+  void onLoadMoreError(String? errMsg) {}
+
   @override
   Future<void> queryData([bool isRefresh = true]) async {
     if (isLoading || (!isRefresh && isEnd)) return;
@@ -51,6 +57,8 @@ abstract class CommonListController<R, T> extends CommonController<R, T> {
     } else {
       if (isRefresh && !handleError(res is Error ? res.errMsg : null)) {
         loadingState.value = res as Error;
+      } else if (!isRefresh) {
+        onLoadMoreError(res is Error ? res.errMsg : null);
       }
     }
     isLoading = false;

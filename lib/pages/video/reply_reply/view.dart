@@ -336,6 +336,10 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
                 depth: node.depth,
                 reason: node.reason,
                 onReply: (_) => debugPrint('onReply'),
+                collapsed: node.collapsed,
+                toggleCollapse: node.isLeaf
+                    ? null
+                    : () => _controller.toggleCollapseTree(index),
                 onScrollLeft: node.depth > 0
                     ? () => _controller.setIndexByTreeNode(index, node.parent)
                     : null,

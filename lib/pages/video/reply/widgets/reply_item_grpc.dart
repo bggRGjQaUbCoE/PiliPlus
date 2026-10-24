@@ -96,6 +96,7 @@ Widget _replyItemLayout({
   bool needDivider = true,
   VoidCallback? onTap,
   VoidCallback? onLongPress,
+  VoidCallback? onTapLine,
   VoidCallback? onScrollLeft,
 }) {
   final colorScheme = ColorScheme.of(context);
@@ -109,8 +110,8 @@ Widget _replyItemLayout({
       depth: depth,
       colors: colorScheme.isLight ? _colorsLight : _colorsDark,
       divColor: colorScheme.outline.withValues(alpha: 0.08),
-      onTapLine: () => debugPrint('onTapLine'),
-      onTapDot: (i) => debugPrint('onTapDot: $i'),
+      onTapLine: onTapLine,
+      // onTapDot: (i) => debugPrint('onTapDot: $i'),
       onScrollLeft: onScrollLeft,
       child: child,
     );
@@ -414,6 +415,8 @@ class ReplyItemGrpc extends StatelessWidget {
 
     this.depth = -1,
     this.reason,
+    this.collapsed = 0,
+    this.toggleCollapse,
     this.onScrollLeft,
   });
   final ReplyInfo replyItem;
@@ -432,6 +435,8 @@ class ReplyItemGrpc extends StatelessWidget {
 
   final int depth;
   final ReasonType? reason;
+  final int collapsed;
+  final VoidCallback? toggleCollapse;
   final VoidCallback? onScrollLeft;
 
   static final _voteRegExp = RegExp(r"^\{vote:\d+?\}$");
@@ -469,6 +474,7 @@ class ReplyItemGrpc extends StatelessWidget {
       depth: depth,
       needDivider: needDivider,
       onTap: () {}, // 使InkWell能点着玩
+      onTapLine: toggleCollapse,
       onScrollLeft: onScrollLeft,
       content: _replyContentLayout(
         noPad: replyLevel == 0,
@@ -482,6 +488,15 @@ class ReplyItemGrpc extends StatelessWidget {
             color: colorScheme.error,
           ),
         ),
+        actions: _replyActionBarLayout(
+          leftButtons: [
+            _replyTextButton(
+              label: collapsed == 0 ? '折叠' : '展开 $collapsed 条评论',
+              textStyle: _getActionStyle(colorScheme),
+              onPressed: toggleCollapse,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -494,6 +509,7 @@ class ReplyItemGrpc extends StatelessWidget {
       needDivider: needDivider,
       onTap: replyReply == null ? null : () => replyReply!(replyItem, null),
       onLongPress: replyLevel == 0 ? null : () => _showMore(context),
+      onTapLine: toggleCollapse,
       onScrollLeft: onScrollLeft,
       content: _replyContentLayout(
         noPad: replyLevel == 0,
@@ -753,17 +769,19 @@ class ReplyItemGrpc extends StatelessWidget {
     );
   }
 
+  TextStyle _getActionStyle(ColorScheme colorScheme) => TextStyle(
+    height: 1,
+    fontSize: 12,
+    fontWeight: .normal,
+    color: colorScheme.outline,
+  );
+
   Widget _buttonAction(
     BuildContext context,
     ColorScheme colorScheme,
     ReplyControl replyControl,
   ) {
-    final textStyle = TextStyle(
-      height: 1,
-      fontSize: 12,
-      fontWeight: .normal,
-      color: colorScheme.outline,
-    );
+    final textStyle = _getActionStyle(colorScheme);
 
     Widget? dialogBtn;
     if (replyLevel == 2 && needDivider && replyItem.id != replyItem.dialog) {
@@ -777,6 +795,12 @@ class ReplyItemGrpc extends StatelessWidget {
         label: '跳转回复',
         textStyle: textStyle,
         onPressed: () => dialogueCallback?.call(replyItem),
+      );
+    } else if (toggleCollapse != null) {
+      dialogBtn = _replyTextButton(
+        label: collapsed == 0 ? '折叠' : '展开 $collapsed 条评论',
+        textStyle: textStyle,
+        onPressed: toggleCollapse,
       );
     }
 

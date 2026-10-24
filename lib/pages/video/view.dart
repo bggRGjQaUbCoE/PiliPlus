@@ -599,6 +599,10 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                   buildTabBar(onTap: videoDetailController.animToTop),
                   Expanded(
                     child: tabBarView(
+                      // Avoid nested semantics reparenting in the Windows engine.
+                      key: Platform.isWindows
+                          ? const ValueKey('video-portrait-tabs')
+                          : null,
                       hitTestBehavior: .translucent,
                       controller: videoDetailController.tabCtr,
                       children: [
@@ -810,6 +814,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                   buildTabBar(),
                   Expanded(
                     child: tabBarView(
+                      key: Platform.isWindows
+                          ? const ValueKey('video-split-tabs')
+                          : null,
                       controller: videoDetailController.tabCtr,
                       children: [
                         videoIntro(
@@ -873,6 +880,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                         buildTabBar(showIntro: false),
                         Expanded(
                           child: tabBarView(
+                            key: Platform.isWindows
+                                ? const ValueKey('video-vertical-tabs')
+                                : null,
                             controller: videoDetailController.tabCtr,
                             children: [
                               if (videoDetailController.showReply)
@@ -961,6 +971,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                   ),
                   Expanded(
                     child: tabBarView(
+                      key: Platform.isWindows
+                          ? const ValueKey('video-landscape-tabs')
+                          : null,
                       controller: videoDetailController.tabCtr,
                       children: [
                         if (videoDetailController.isFileSource)

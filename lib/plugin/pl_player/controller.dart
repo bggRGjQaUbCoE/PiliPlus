@@ -1,5 +1,6 @@
 import 'dart:async' show StreamSubscription, Timer;
 import 'dart:convert' show ascii, utf8;
+import 'dart:ffi' show Abi;
 import 'dart:io' show Platform;
 import 'dart:math' show max, min;
 import 'dart:ui' as ui;
@@ -842,6 +843,10 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     assert(_videoPlayerController == null);
     final opt = {
       'video-sync': Pref.videoSync,
+      // Avoid the ARM D3D11 frame-thread race in the bundled FFmpeg.
+      // Fixed upstream in FFmpeg 538d10d1878fb546c3a2645efa56119848f9ccfc.
+      if (Platform.isWindows && Abi.current() == Abi.windowsArm64)
+        'hwdec-threads': '1',
       if (Platform.isAndroid) 'ao': Pref.audioOutput,
       'volume':
           (PlatformUtils.isMobile ? Pref.playerVolume : volume.value * 100)

@@ -26,6 +26,12 @@ abstract final class Constants {
   static const String statisticsApp =
       '{"appId":1,"platform":3,"version":"8.43.0","abtest":""}';
 
+  // 扫码授权（用手机端身份确认网页端/TV端登录二维码，[5.3.0] 起 B 站风控较严，UA 与 statistics 需与手机端一致）
+  static const String userAgentScan =
+      'Mozilla/5.0 BiliDroid/9.2.0 (bbcallen@gmail.com) 9.2.0 os/android model/PJZ110 mobi_app/android build/9020300 channel/oppo_tv.danmaku.bili_20200623 innerVer/9020310 osVer/16 network/2';
+  static const String statisticsScan =
+      '{"appId":1,"platform":3,"version":"9.2.0","abtest":""}';
+
   static const baseHeaders = {
     // 'referer': HttpString.baseUrl,
     'env': 'prod',

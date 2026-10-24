@@ -38,6 +38,7 @@ import 'package:PiliPlus/pages/member_guard/view.dart';
 import 'package:PiliPlus/pages/member_profile/view.dart';
 import 'package:PiliPlus/pages/member_search/view.dart';
 import 'package:PiliPlus/pages/member_upower_rank/view.dart';
+import 'package:PiliPlus/pages/scan_auth/view.dart';
 import 'package:PiliPlus/pages/member_video_web/archive/view.dart';
 import 'package:PiliPlus/pages/member_video_web/season_series/view.dart';
 import 'package:PiliPlus/pages/msg_feed_top/at_me/view.dart';
@@ -138,6 +139,8 @@ class Routes {
     GetPage(name: '/sysMsg', page: () => const SysMsgPage()),
     // 登录页面
     GetPage(name: '/loginPage', page: () => const LoginPage()),
+    // 扫码授权（用本机账号确认其它端的登录二维码）
+    GetPage(name: '/scanAuth', page: () => const ScanAuthPage()),
     // 用户动态
     GetPage(name: '/memberDynamics', page: () => const MemberDynamicsPage()),
     // 日志

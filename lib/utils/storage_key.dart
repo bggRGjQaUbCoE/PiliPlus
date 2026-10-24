@@ -260,6 +260,7 @@ abstract final class LocalCacheKey {
   static const String historyPause = 'historyPause',
       blackMids = 'blackMids',
       danmakuFilterRules = 'danmakuFilterRules',
+      danmakuAssistantConfig = 'danmakuAssistantConfig',
       mixinKey = 'mixinKey',
       timeStamp = 'timeStamp';
 }

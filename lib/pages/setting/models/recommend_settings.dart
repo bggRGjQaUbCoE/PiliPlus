@@ -69,6 +69,7 @@ List<SettingsModel> get recommendSettings => [
   getBanWordModel(
     title: '标题关键词过滤',
     key: SettingBoxKey.banWordForRecommend,
+    regexKey: SettingBoxKey.banWordRegexForRecommend,
     onChanged: (value) {
       RecommendFilter.rcmdRegExp = value;
       RecommendFilter.enableFilter = value.pattern.isNotEmpty;
@@ -78,6 +79,7 @@ List<SettingsModel> get recommendSettings => [
   getBanWordModel(
     title: '分区关键词过滤',
     key: SettingBoxKey.banWordForZone,
+    regexKey: SettingBoxKey.banWordRegexForRecommend,
     onChanged: (value) {
       VideoHttp.zoneRegExp = value;
       VideoHttp.enableFilter = value.pattern.isNotEmpty;

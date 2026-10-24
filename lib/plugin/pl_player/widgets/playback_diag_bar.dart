@@ -10,8 +10,8 @@ import 'package:media_kit_video/media_kit_video.dart'
 
 /// 播放诊断信息行：控制栏内的两行紧凑事实——行1 实际路由（媒体类型、
 /// 策略/呈现/输出转移、拓扑、vo、dataspace 路径、降级/错误/验证状态），
-/// 行2 实际解码器与流事实（解码器组件名、编码、分辨率/帧率、像素格式）。
-/// 默认关闭，由设置开关控制。
+/// 行2 实际解码器与流事实（解码器组件名、hwdec 传输模式、编码、
+/// 分辨率/帧率、像素格式）。默认关闭，由设置开关控制。
 class PlaybackDiagBar extends StatefulWidget {
   const PlaybackDiagBar({super.key, required this.controller});
 
@@ -140,6 +140,11 @@ class _PlaybackDiagBarState extends State<PlaybackDiagBar> {
       report.hwdecCurrent,
     ]);
     final hwdecName = _firstNonEmpty([observation?.hwdec, report.hwdecCurrent]);
+    // 传输模式（mediacodec/mediacodec-copy/no）：与解码器段相同（解码器
+    // 三级回退落到 hwdec 值本身）时不重复显示。
+    final transport = hwdecName != null && hwdecName != decoder
+        ? 'hwdec=$hwdecName'
+        : null;
     // mediacodec-hevc 这类 hwdec 值已含编码名时不重复显示轨编码。
     final codecInHwdec =
         hwdecName != null && hwdecName != 'no' && _hwdecCarriesCodec(hwdecName);
@@ -147,6 +152,7 @@ class _PlaybackDiagBarState extends State<PlaybackDiagBar> {
     final dimension = _dimension(player);
     return _join([
       decoder ?? '-',
+      transport,
       if (!codecInHwdec) _trackCodec(player),
       if (dimension != null)
         '$dimension${fps == null ? '' : '@$fps'}',

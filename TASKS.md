@@ -4,6 +4,10 @@
 姊妹仓：本地 media-kit checkout 在 `../media-kit`（compat 分支），本仓的一切播放器行为变化先看其 `TASKS.md` 的 MK-ROUTING 段。
 **镜像红线（2026-10-17 起；改名后仅适用于旧仓 PiliPlus.old）**：旧仓 `main/dev/dom` 与全部 tag 由 `ci/upstream-sync` 孤儿分支每日强镜像自上游（force+prune），自有提交只能放特性分支（当前工作分支 `feature/ohos`，不受镜像影响）。
 
+## MACOS-XCCONFIG-PODS-INCLUDE-20261024
+
+- **done（本地提交，不推送）**：恢复 `macos/Flutter/Flutter-Debug.xcconfig` 与 `Flutter-Release.xcconfig` 的上游默认第一行 `#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.{debug,release}.xcconfig"`。属标准 Flutter macOS 工程结构：`pod install` 后由该两行向 Runner 注入 Pod 构建设置；Pods 目录未生成时为无害空操作。无行为验证项（macOS 构建另行复验，见 CODEC-CAPABILITY-GRAYING-20261022）。
+
 ## CODEC-GRAY-PRE29-KIND-20261023
 
 - **已修复并实机验证 / media-kit 已本地提交（不推送），本仓仅文档，提交事实以 Git log 为准**：用户报障"P10 Plus 所有格式选项全灰"。根因在姊妹仓：`VideoRouteCapabilities.decoderKind` 在 API<29 永不返回 hardware（厂商 OMX 归 unknown），App `_decodableAtSize` 把"无 hardware 解码器"判不可播 → VKY（API28）/LG G6（API24）三族全灰。决策依据（AOSP 源码核实）：API29 `isHardwareAccelerated` 对 OMX 组件本就是"非 OMX.google 前缀+无 software-codec 声明"的命名推导，pre-29 镜像它同级可信；参考 Parseus/codecinfo 实机验证软解黑名单。修复仅改 media-kit（decoderKind pre-29 分支 + `isSoftwareDecoderName` 黑名单；API≥29 行为不变），**App 侧按用户指令零改动**。

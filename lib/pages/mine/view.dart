@@ -153,20 +153,23 @@ class _MediaPageState extends CommonPageState<MinePage>
     const padding = EdgeInsets.all(8);
     const style = ButtonStyle(tapTargetSize: .shrinkWrap);
     // 扫码授权入口：用本机已登录账号确认其它端的登录二维码
-    final canScanAuth = Accounts.account.isNotEmpty;
-    final scanAuthBtn = IconButton(
-      iconSize: iconSize,
-      padding: padding,
-      style: style,
-      tooltip: canScanAuth ? '扫码授权' : '请先登录',
-      onPressed: canScanAuth
-          ? () => Get.toNamed('/scanAuth')
-          : () => SmartDialog.showToast('请先登录'),
-      icon: Icon(
-        Icons.qr_code_scanner,
-        color: canScanAuth ? null : Theme.of(context).disabledColor,
-      ),
-    );
+    // 登录/切换账号不会重建本页面，用 Obx 订阅登录态，避免必须重启才可点
+    final scanAuthBtn = Obx(() {
+      final canScanAuth = controller.isLogin || Accounts.account.isNotEmpty;
+      return IconButton(
+        iconSize: iconSize,
+        padding: padding,
+        style: style,
+        tooltip: canScanAuth ? '扫码授权' : '请先登录',
+        onPressed: canScanAuth
+            ? () => Get.toNamed('/scanAuth')
+            : () => SmartDialog.showToast('请先登录'),
+        icon: Icon(
+          Icons.qr_code_scanner,
+          color: canScanAuth ? null : Theme.of(context).disabledColor,
+        ),
+      );
+    });
     return PlayerBar(
       left: widget.showBackBtn
           ? Padding(

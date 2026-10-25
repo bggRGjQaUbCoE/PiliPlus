@@ -1,0 +1,134 @@
+{
+  "capturedUtc": "2026-10-24T18:41:03.661098+00:00",
+  "serial": "dede0cd2",
+  "package": "com.example.piliplus.dev",
+  "pid": "29919",
+  "diagnosticVisible": {
+    "uiRoot": "SurfaceView",
+    "route": "dolbyVisionP84 nativeDolbyVision/dolbyVision",
+    "topology": "platformView",
+    "vo": "mediacodec_embed",
+    "hwdec": "mediacodec",
+    "dimension": "3840x2160",
+    "pixelFormat": "mediacodec",
+    "color": "bt.709/bt.1886/limited",
+    "matrix": "bt.709",
+    "fps": "29.97",
+    "voDrop": 0,
+    "decoderDrop": 0
+  },
+  "liveDisplayEvidence": {
+    "videoLayer": 33790,
+    "bufferSize": "3840x2176",
+    "crop": "3840x2160",
+    "pixelFormat": "Y_CBCR_420_P010_UBWC",
+    "bitDepth": 10,
+    "composition": "DEVICE",
+    "genericLayerDataspace": "V0_BT709",
+    "hwcDataspace": "0x10810000",
+    "vendorHdr": 1,
+    "frameworkHdrVisible": true,
+    "renderIntent": 273,
+    "videoFrameNumbers": [
+      1106,
+      1537
+    ]
+  },
+  "finding": "At the same active-playback time the diagnostic line shows BT709/BT1886, but native Dolby Vision hardware decode and both vendor/framework HDR mode are active. The color line reflects codec/frame metadata, not the display HDR mode. BT709 does not prove an SDR fallback on this vendor-native DV path.",
+  "interaction": "One tap at (1200,540) to reveal controls after seeing fullscreen video screenshot; no source selection, seek, pause, rotation or brightness changes.",
+  "limits": [
+    "No optical brightness/EOTF acceptance",
+    "Native DV vendor HDR path uses additional display state; generic SurfaceFlinger dataspace alone is insufficient"
+  ],
+  "evidence": [
+    "controls.png",
+    "screenshot.png",
+    "surfaceflinger-controls.txt",
+    "display-controls.txt",
+    "logcat.txt",
+    "capture.json"
+  ],
+  "evidenceReferences": [
+    {
+      "file": "/tmp/pili-diag-followup-20261025/marble/active-video/surfaceflinger-controls.txt",
+      "line": 285,
+      "text": "  Layer [33790] SurfaceView[com.example.piliplus.dev/com.example.piliplus.MainActivity](BLAST)#33790"
+    },
+    {
+      "file": "/tmp/pili-diag-followup-20261025/marble/active-video/surfaceflinger-controls.txt",
+      "line": 286,
+      "text": "    visible reason= buffer=128501126536857 frame=1537 color{< 0, 0, 0, 1 >}"
+    },
+    {
+      "file": "/tmp/pili-diag-followup-20261025/marble/active-video/surfaceflinger-controls.txt",
+      "line": 303,
+      "text": "      isOpaque=true hasProtectedContent=false isColorspaceAgnostic=false dataspace=V0_BT709 (281083904) hdr metadata types=0 dimming enabled=true colorTransform=[[1.000,0.000,0.000,0.000][0.000,1.000,0.000,0.000][0.000,0.000,1.000,0.000][0.000,0.000,0.000,1.000]] caching hint=Enabled "
+    },
+    {
+      "file": "/tmp/pili-diag-followup-20261025/marble/active-video/surfaceflinger-controls.txt",
+      "line": 920,
+      "text": "Disp ID: 0, mEffectStatus: 8192, Paper: 0, LUT: 20, GAME: 0, HDR: 1"
+    },
+    {
+      "file": "/tmp/pili-diag-followup-20261025/marble/active-video/surfaceflinger-controls.txt",
+      "line": 945,
+      "text": "Disp ID: 0, Mode: 0, HDR: 1"
+    },
+    {
+      "file": "/tmp/pili-diag-followup-20261025/marble/active-video/surfaceflinger-controls.txt",
+      "line": 1253,
+      "text": "layer: 11779 name:           SurfaceView[com.example.piliplus.dev/com.example.piliplus.MainActivity]#7(BLAST Consumer)7 z: 1 composition: Device/Device alpha: 255 format:   Y_CBCR_420_P010_UBWC dataspace:0x10810000 transform: 90/1/1 buffer_id: 0xb40000716eca7790 secure: 0"
+    },
+    {
+      "file": "/tmp/pili-diag-followup-20261025/marble/active-video/surfaceflinger-controls.txt",
+      "line": 802,
+      "text": "   colorMode=SRGB (7) renderIntent=0x111 (273) dataspace=V0_SRGB (142671872) "
+    },
+    {
+      "file": "/tmp/pili-diag-followup-20261025/marble/active-video/display-controls.txt",
+      "line": 1041,
+      "text": "  mHdrVisible=true"
+    },
+    {
+      "file": "/tmp/pili-diag-followup-20261025/marble/active-video/logcat.txt",
+      "line": 181,
+      "text": "10-25 02:40:25.398 29919 26539 D CCodecBuffers:   int32_t color-standard = 1"
+    },
+    {
+      "file": "/tmp/pili-diag-followup-20261025/marble/active-video/logcat.txt",
+      "line": 183,
+      "text": "10-25 02:40:25.398 29919 26539 D CCodecBuffers:   int32_t color-transfer = 3"
+    },
+    {
+      "file": "/tmp/pili-diag-followup-20261025/marble/active-video/logcat.txt",
+      "line": 856,
+      "text": "10-25 02:40:25.462  2529  2791 I DisplayPowerController2[0]: BrightnessEvent: disp=0, physDisp=local:4630946370515662722, displayState=ON, displayPolicy=BRIGHT, brt=0.07081853, initBrt=0.07081853, rcmdBrt=0.07081853, preBrt=0.037193827, lux=21.727045, preLux=9.5, hbmMax=0.499938, hbmMode=hdr, rbcStrength=50, thrmMax=1.0, powerFactor=1.0, wasShortTermModelActive=true, flags=, reason=automatic [ hdr ], autoBrightness=true, strategy=InvalidBrightnessStrategy, autoBrightnessMode=default"
+    },
+    {
+      "file": "/tmp/pili-diag-followup-20261025/marble/active-video/logcat.txt",
+      "line": 1037,
+      "text": "10-25 02:40:25.485 29919 29919 I flutter : HdrDiag HDR decision: phase=applied gen=1 origin=hint source=hevc,hlg,bt.2020,dolbyVision,8,4,false class=dvP84 selected=nativeDolbyVision maturity=verified presentation=nativeDolbyVision confidence=verified vo=mediacodec_embed hwdec=mediacodec output=dolbyVision topology=platformView surface=none stripRpu=false peak=none hwdecCurrent=mediacodec requested=none path=none readback=none verified=true degrade=none candidates=nativeDolbyVision:ok,metadataReshape:ok,baseLayerDirect:ok,baseLayerConvert:ok,toneMapSdr:displayLacksTransfer,toneMapSdr:displayLacksTransfer,toneMapSdr:displayLacksTransfer"
+    },
+    {
+      "file": "/tmp/pili-diag-followup-20261025/marble/active-video/logcat.txt",
+      "line": 8765,
+      "text": "10-25 02:40:54.662 29919 26538 I MediaCodec: [mId: 3] [video-debug-dec] Stats 5001ms:Client:com.example.piliplus.dev,Component:c2.dolby.decoder.hevc,Qin:151(Avg:33ms),DQin:151/225,Render:150(Avg:33ms),Drop:0,DQout:151/647"
+    },
+    {
+      "file": "/tmp/pili-diag-followup-20261025/marble/active-video/logcat.txt",
+      "line": 10056,
+      "text": "10-25 02:40:59.675 29919 26538 I MediaCodec: [mId: 3] [video-debug-dec] Stats 5013ms:Client:com.example.piliplus.dev,Component:c2.dolby.decoder.hevc,Qin:149(Avg:33ms),DQin:149/218,Render:150(Avg:33ms),Drop:0,DQout:150/638"
+    }
+  ],
+  "fileSavedUtc": {
+    "controls.png": "2026-10-24T18:41:18.626389+00:00",
+    "surfaceflinger-controls.txt": "2026-10-24T18:41:17.289455+00:00",
+    "display-controls.txt": "2026-10-24T18:41:17.256746+00:00",
+    "logcat.txt": "2026-10-24T18:41:03.167106+00:00"
+  },
+  "screenshots": [
+    "/tmp/pili-diag-followup-20261025/marble/active-video/controls.png",
+    "/tmp/pili-diag-followup-20261025/marble/active-video/screenshot.png"
+  ],
+  "acceptanceBoundary": "System native Dolby Vision / HDR activation is confirmed. Physical panel brightness, EOTF and subjective visual acceptance have not been tested."
+}

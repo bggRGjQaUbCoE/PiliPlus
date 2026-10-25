@@ -1,0 +1,187 @@
+{
+  "date": "2026-10-25",
+  "package": "com.example.piliplus.dev",
+  "versionName": "2.1.6",
+  "apk": "/Users/wuweiwei1/src/PiliPlus/build/app/outputs/flutter-apk/piliplus-source-test-release.apk",
+  "apkBytes": 27601833,
+  "apkSha256": "d08587bea4611f6d46443c567194c79ca54f63085677e7c8f0ddc5ef5ad118b2",
+  "nativeVerification": {
+    "status": "verified",
+    "jarSha256": "4daee7cc04d6a5f97f00d7e515be7043e76a1ee20ec4bb6ccfd55d40cb1afe73",
+    "members": {
+      "lib/arm64-v8a/libc++_shared.so": {
+        "bytes": 1292904,
+        "packagingMode": "ndk-strip-unneeded",
+        "sha256": "4397241b4bd20a8e579bfb41d21107857e12985f6a01ca0c2a5f83380d1270b4"
+      },
+      "lib/arm64-v8a/libmediakitandroidhelper.so": {
+        "bytes": 53984,
+        "packagingMode": "exact",
+        "sha256": "9d7a9c7ad0caa44afdc521eaa0cd5898190120739f2748e41c4b52208d9d507c"
+      },
+      "lib/arm64-v8a/libmpv.so": {
+        "bytes": 20671520,
+        "packagingMode": "exact",
+        "sha256": "6c91de07f3ef2f7704215309fd3f7d5eb434b110be87a6d8ee88087500f9e76c"
+      }
+    }
+  },
+  "checks": {
+    "targetedAnalyze": "passed",
+    "samplerTestsPassed": 6,
+    "independentReview": "V1 passed"
+  },
+  "devices": [
+    {
+      "serial": "3EP7N18C28016072",
+      "installExit": 0,
+      "installedBytes": 27601833,
+      "installedSha256": "d08587bea4611f6d46443c567194c79ca54f63085677e7c8f0ddc5ef5ad118b2",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 02:01:23"
+      ],
+      "status": "installed-hash-verified"
+    },
+    {
+      "serial": "LGH870DS42e27764",
+      "installExit": 0,
+      "installedBytes": 27601833,
+      "installedSha256": "d08587bea4611f6d46443c567194c79ca54f63085677e7c8f0ddc5ef5ad118b2",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 02:01:31"
+      ],
+      "status": "installed-hash-verified"
+    },
+    {
+      "serial": "WJX5T17314001484",
+      "installExit": 0,
+      "installedBytes": 27601833,
+      "installedSha256": "d08587bea4611f6d46443c567194c79ca54f63085677e7c8f0ddc5ef5ad118b2",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 02:01:43"
+      ],
+      "status": "installed-hash-verified"
+    },
+    {
+      "serial": "a6cbd6ac0506",
+      "installExit": 0,
+      "installedBytes": 27601833,
+      "installedSha256": "d08587bea4611f6d46443c567194c79ca54f63085677e7c8f0ddc5ef5ad118b2",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 02:01:51"
+      ],
+      "status": "installed-hash-verified"
+    },
+    {
+      "serial": "a869cea9",
+      "installExit": 0,
+      "installedBytes": 27601833,
+      "installedSha256": "d08587bea4611f6d46443c567194c79ca54f63085677e7c8f0ddc5ef5ad118b2",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 02:01:56"
+      ],
+      "status": "installed-hash-verified"
+    },
+    {
+      "serial": "dede0cd2",
+      "installExit": 0,
+      "installedBytes": 27601833,
+      "installedSha256": "d08587bea4611f6d46443c567194c79ca54f63085677e7c8f0ddc5ef5ad118b2",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 02:02:02"
+      ],
+      "status": "installed-hash-verified"
+    }
+  ],
+  "finalOnline": [
+    "3EP7N18C28016072",
+    "LGH870DS42e27764",
+    "WJX5T17314001484",
+    "a6cbd6ac0506",
+    "a869cea9",
+    "dede0cd2"
+  ],
+  "allFinalOnlineVerified": true,
+  "limits": [
+    "FPS label uses mpv estimated-vf-fps; not physical panel present measurement",
+    "VO and decoder counters may reset on seek; do not cover compositor drops",
+    "No playback, HDR panel or control-bar visual acceptance claimed"
+  ],
+  "evidenceDirectory": "/tmp/pili-diag-20261025",
+  "startupObservation": [
+    {
+      "serial": "3EP7N18C28016072",
+      "alreadyRunning": true,
+      "pid": "6989",
+      "logcatExit": 0,
+      "logcatBytes": 9465,
+      "fatalLines": [],
+      "status": "process-observed"
+    },
+    {
+      "serial": "LGH870DS42e27764",
+      "alreadyRunning": false,
+      "launchExit": 0,
+      "launchOutput": "Starting: Intent { cmp=com.example.piliplus.dev/com.example.piliplus.MainActivity }",
+      "pid": "3987",
+      "logcatExit": 0,
+      "logcatBytes": 327,
+      "fatalLines": [],
+      "status": "process-observed"
+    },
+    {
+      "serial": "WJX5T17314001484",
+      "alreadyRunning": false,
+      "launchExit": 0,
+      "launchOutput": "Starting: Intent { cmp=com.example.piliplus.dev/com.example.piliplus.MainActivity }",
+      "pid": "5801",
+      "status": "process-observed-after-start",
+      "logcatExit": 0,
+      "logcatBytes": 39475,
+      "fatalLines": []
+    },
+    {
+      "serial": "a6cbd6ac0506",
+      "alreadyRunning": false,
+      "launchExit": 0,
+      "launchOutput": "Starting: Intent { cmp=com.example.piliplus.dev/com.example.piliplus.MainActivity }",
+      "pid": "27196",
+      "status": "process-observed-after-start",
+      "logcatExit": 0,
+      "logcatBytes": 13281,
+      "fatalLines": []
+    },
+    {
+      "serial": "a869cea9",
+      "alreadyRunning": true,
+      "pid": "22713",
+      "logcatExit": 0,
+      "logcatBytes": 11456,
+      "fatalLines": [],
+      "status": "process-observed"
+    },
+    {
+      "serial": "dede0cd2",
+      "alreadyRunning": false,
+      "launchExit": 0,
+      "launchOutput": "Starting: Intent { cmp=com.example.piliplus.dev/com.example.piliplus.MainActivity }",
+      "pid": "29919",
+      "logcatExit": 0,
+      "logcatBytes": 10877,
+      "fatalLines": [],
+      "status": "process-observed"
+    }
+  ]
+}

@@ -1,0 +1,651 @@
+{
+  "status": "complete",
+  "updatedUtc": "2026-10-25T04:10:09.094969+00:00",
+  "request": "Separate source color metadata and output observations; omit missing fields; identify actual native decoder passthrough without inventing display color; build and install all online phones; sleep after tests.",
+  "implementation": {
+    "source": "mpv current-tracks/video/demux-color-* from saved lav_codecpar raw FFmpeg names, no EOTF conversion or inferred fallback",
+    "outputTarget": "GPU video-target-params only, labeled render target rather than measured display color",
+    "decoderPassthrough": "Observed current-vo=mediacodec_embed, hwdec-current=mediacodec and video-params/pixelformat=mediacodec",
+    "missing": "Omitted individually; no unavailable text or placeholders in color fields",
+    "lifecycle": "Serial sampling only during visible playing diagnostics; source epoch/path/track/output checks, stop/dispose invalidation and pending timeout guard",
+    "routingChanges": false
+  },
+  "hostVerification": {
+    "nativeSyntaxCheck": "worker-reported NDK -fsyntax-only exit 0",
+    "libraryTests": {
+      "passed": 9,
+      "evidenceKind": "implementation-worker tool result report"
+    },
+    "appTests": {
+      "passed": 14,
+      "suites": [
+        "playback_diag_color_line_test.dart",
+        "playback_diag_sampler_test.dart",
+        "playback_diag_scroll_test.dart"
+      ],
+      "evidenceKind": "implementation-worker tool result report"
+    },
+    "targetedAnalyze": "implementation workers reported no issues",
+    "independentV1": "passed; no blockers; raw source conversion and epoch cache concerns corrected",
+    "frozenBlobs": {
+      "mpv": {
+        "path": "/Users/wuweiwei1/src/mpv/player/command.c",
+        "expected": "260b904e9cb08abaf31b0b25deeb8a67d8d22eb1",
+        "actual": "260b904e9cb08abaf31b0b25deeb8a67d8d22eb1",
+        "matches": true
+      },
+      "library": {
+        "path": "/Users/wuweiwei1/src/media-kit/media_kit_video/lib/src/diagnostics/playback_color_diagnostics.dart",
+        "expected": "8a53aab1e26f32972f3baf602fc79c1586be34bb",
+        "actual": "8a53aab1e26f32972f3baf602fc79c1586be34bb",
+        "matches": true
+      },
+      "appbar": {
+        "path": "/Users/wuweiwei1/src/PiliPlus/lib/plugin/pl_player/widgets/playback_diag_bar.dart",
+        "expected": "0ea9ed2886ac9605a8aaaba80bbaa3327ee9a144",
+        "actual": "0ea9ed2886ac9605a8aaaba80bbaa3327ee9a144",
+        "matches": true
+      }
+    }
+  },
+  "build": {
+    "status": "verified",
+    "utc": "2026-10-25T03:59:15.668794+00:00",
+    "buildExit": 0,
+    "buildCommand": "PATH=$HOME/flutter-sdks/3.47.7/bin:$PATH ORG_GRADLE_PROJECT_dev=true tool/build-android-test.sh --tag piliplus-source-test --app-dir /Users/wuweiwei1/src/PiliPlus",
+    "workdir": "/Users/wuweiwei1/src/media-kit",
+    "standardBuildVerified": true,
+    "nativeVerificationStatus": "verified",
+    "apk": "/Users/wuweiwei1/src/PiliPlus/build/app/outputs/flutter-apk/piliplus-source-test-release.apk",
+    "apkBytes": 27610981,
+    "apkSha256": "96d5b558d04f94b54abaa3f5a669e56a17493fcc9c59f9d852f1ad0eb434571b",
+    "jarSha256": "70df0212d19e651caf80a570cb945982ff6bf6762a9b8995a5b24e4d94baaa2c",
+    "libmpvSha256": "5794e58ce362999128adc7acb84019894f6751fb320e93ab5ac86bee5ee0bfcc",
+    "package": "com.example.piliplus.dev",
+    "finalOnline": [
+      "3EP7N18C28016072",
+      "LGH870DS42e27764",
+      "WJX5T17314001484",
+      "a6cbd6ac0506",
+      "dede0cd2"
+    ],
+    "installVerified": true,
+    "allFinalOnlineVerified": true,
+    "screensOffVerified": true,
+    "powerStates": {
+      "3EP7N18C28016072": {
+        "attempt": 0,
+        "utc": "2026-10-25T03:58:57.110913+00:00",
+        "wakefulness": "Asleep",
+        "screenOff": true
+      },
+      "LGH870DS42e27764": {
+        "attempt": 0,
+        "utc": "2026-10-25T03:58:57.250521+00:00",
+        "wakefulness": "Asleep",
+        "screenOff": true
+      },
+      "WJX5T17314001484": {
+        "attempt": 0,
+        "utc": "2026-10-25T03:58:57.411910+00:00",
+        "wakefulness": "Asleep",
+        "screenOff": true
+      },
+      "a6cbd6ac0506": {
+        "attempt": 3,
+        "utc": "2026-10-25T03:59:04.693457+00:00",
+        "wakefulness": "Dozing",
+        "screenOff": true
+      },
+      "dede0cd2": {
+        "attempt": 0,
+        "utc": "2026-10-25T03:59:04.994649+00:00",
+        "wakefulness": "Asleep",
+        "screenOff": true
+      }
+    },
+    "postbuildFourReposUnchanged": true,
+    "boundary": "Build, package identity and screen-off verified. Playback/HDR/visible UI acceptance is a separate verifier stage; no app launch or wakeup was performed here. Redmi8 reports Dozing with actual display OFF, not Asleep."
+  },
+  "installation": {
+    "utc": "2026-10-25T03:59:04.994820+00:00",
+    "package": "com.example.piliplus.dev",
+    "apk": "/Users/wuweiwei1/src/PiliPlus/build/app/outputs/flutter-apk/piliplus-source-test-release.apk",
+    "apkBytes": 27610981,
+    "expectedSha256": "96d5b558d04f94b54abaa3f5a669e56a17493fcc9c59f9d852f1ad0eb434571b",
+    "finalOnline": [
+      "3EP7N18C28016072",
+      "LGH870DS42e27764",
+      "WJX5T17314001484",
+      "a6cbd6ac0506",
+      "dede0cd2"
+    ],
+    "results": [
+      {
+        "serial": "3EP7N18C28016072",
+        "installSuccess": true,
+        "hashMatches": true,
+        "installedBytes": 27610981,
+        "installedSha256": "96d5b558d04f94b54abaa3f5a669e56a17493fcc9c59f9d852f1ad0eb434571b",
+        "attempts": [
+          {
+            "attempt": 0,
+            "utc": "2026-10-25T03:58:57.110913+00:00",
+            "wakefulness": "Asleep",
+            "screenOff": true
+          }
+        ],
+        "finalPower": {
+          "attempt": 0,
+          "utc": "2026-10-25T03:58:57.110913+00:00",
+          "wakefulness": "Asleep",
+          "screenOff": true
+        }
+      },
+      {
+        "serial": "LGH870DS42e27764",
+        "installSuccess": true,
+        "hashMatches": true,
+        "installedBytes": 27610981,
+        "installedSha256": "96d5b558d04f94b54abaa3f5a669e56a17493fcc9c59f9d852f1ad0eb434571b",
+        "attempts": [
+          {
+            "attempt": 0,
+            "utc": "2026-10-25T03:58:57.250521+00:00",
+            "wakefulness": "Asleep",
+            "screenOff": true
+          }
+        ],
+        "finalPower": {
+          "attempt": 0,
+          "utc": "2026-10-25T03:58:57.250521+00:00",
+          "wakefulness": "Asleep",
+          "screenOff": true
+        }
+      },
+      {
+        "serial": "WJX5T17314001484",
+        "installSuccess": true,
+        "hashMatches": true,
+        "installedBytes": 27610981,
+        "installedSha256": "96d5b558d04f94b54abaa3f5a669e56a17493fcc9c59f9d852f1ad0eb434571b",
+        "attempts": [
+          {
+            "attempt": 0,
+            "utc": "2026-10-25T03:58:57.411910+00:00",
+            "wakefulness": "Asleep",
+            "screenOff": true
+          }
+        ],
+        "finalPower": {
+          "attempt": 0,
+          "utc": "2026-10-25T03:58:57.411910+00:00",
+          "wakefulness": "Asleep",
+          "screenOff": true
+        }
+      },
+      {
+        "serial": "a6cbd6ac0506",
+        "installSuccess": true,
+        "hashMatches": true,
+        "installedBytes": 27610981,
+        "installedSha256": "96d5b558d04f94b54abaa3f5a669e56a17493fcc9c59f9d852f1ad0eb434571b",
+        "attempts": [
+          {
+            "attempt": 0,
+            "utc": "2026-10-25T03:58:57.733062+00:00",
+            "wakefulness": "Dozing",
+            "screenOff": true
+          },
+          {
+            "attempt": 1,
+            "utc": "2026-10-25T03:58:59.062021+00:00",
+            "wakefulness": "Dozing",
+            "screenOff": true
+          },
+          {
+            "attempt": 2,
+            "utc": "2026-10-25T03:59:01.373332+00:00",
+            "wakefulness": "Dozing",
+            "screenOff": true
+          },
+          {
+            "attempt": 3,
+            "utc": "2026-10-25T03:59:04.693457+00:00",
+            "wakefulness": "Dozing",
+            "screenOff": true
+          }
+        ],
+        "finalPower": {
+          "attempt": 3,
+          "utc": "2026-10-25T03:59:04.693457+00:00",
+          "wakefulness": "Dozing",
+          "screenOff": true
+        }
+      },
+      {
+        "serial": "dede0cd2",
+        "installSuccess": true,
+        "hashMatches": true,
+        "installedBytes": 27610981,
+        "installedSha256": "96d5b558d04f94b54abaa3f5a669e56a17493fcc9c59f9d852f1ad0eb434571b",
+        "attempts": [
+          {
+            "attempt": 0,
+            "utc": "2026-10-25T03:59:04.994649+00:00",
+            "wakefulness": "Asleep",
+            "screenOff": true
+          }
+        ],
+        "finalPower": {
+          "attempt": 0,
+          "utc": "2026-10-25T03:59:04.994649+00:00",
+          "wakefulness": "Asleep",
+          "screenOff": true
+        }
+      }
+    ],
+    "allFinalOnlineInstalledHashVerified": true,
+    "allScreensOff": true,
+    "originalInstallGuardSummary": "installation-summary.json",
+    "boundary": "The initial installer required Asleep plus OFF; followup reports wakefulness literally and does not equate Dozing with Asleep. No sleep/AOD settings were changed.",
+    "installVerified": true,
+    "allFinalOnlineVerified": true,
+    "screensOffVerified": true
+  },
+  "runtime": {
+    "createdUtc": "2026-10-25T04:03:08.996737+00:00",
+    "status": "output-and-layout-observed-source-row-not-observed",
+    "candidate": {
+      "sha256": "96d5b558d04f94b54abaa3f5a669e56a17493fcc9c59f9d852f1ad0eb434571b",
+      "bytes": 27610981,
+      "package": "com.example.piliplus.dev",
+      "installationEvidence": "/tmp/pili-color-diag-20261025/build-deploy/installation-final-summary.json"
+    },
+    "source": {
+      "uri": "https://www.bilibili.com/video/BV1vY4y1N7TY",
+      "title": "蹲守一周，我终于拍到了夕阳下的梦幻场景｜北海道VLOG | Links 4K HDR",
+      "boundary": "authorized same-class functional test, not original-source optical comparison"
+    },
+    "lya": {
+      "serial": "3EP7N18C28016072",
+      "pid": "30050",
+      "installedCandidateHashMatched": true,
+      "dimensions": [
+        1440,
+        3120
+      ],
+      "routeObserved": "dolbyVisionP84 metadataReshape/pq vo=gpu-next hwdec=mediacodec",
+      "outputTextObserved": "输出目标=bt.2020/pq/full 矩阵=rgb",
+      "sourceTextObserved": false,
+      "sourceLimit": "No 片源 row was visible between decode/output and FPS after scrolling to the tail. Exact raw demux-property missingness versus sampling/UI failure has not been proven; do not substitute hint metadata.",
+      "controlsObserved": "progress, pause,1.0X,fullscreen within player before/after one diagnostic upward drag",
+      "scrollObserved": "top route fields move to lower diagnostic output target/FPS fields; no fullscreen/brightness/volume overlay",
+      "screenshots": [
+        "lya-open-stable/page.png",
+        "lya-controls/controls.png",
+        "lya-after-up/after-up.png"
+      ],
+      "finalOffEvidence": [
+        "lya-after-up/power-off.txt",
+        "lya-after-up/display-off.txt"
+      ],
+      "offVerified": true,
+      "systemState": {
+        "rotationUnchanged": "1/0",
+        "autoBrightnessModeUnchanged": "1",
+        "screenBrightnessReadbacks": "first stopped wake55→60 due automatic mode; later passes60→60; no brightness setter used",
+        "musicUnchanged": "speaker index0, Muted:false"
+      }
+    },
+    "marble": {
+      "serial": "dede0cd2",
+      "pid": "18655",
+      "installedCandidateHashMatched": true,
+      "dimensions": [
+        1080,
+        2400
+      ],
+      "routeObserved": "dolbyVisionP84 nativeDolbyVision/dolbyVision vo=mediacodec_embed hwdec=mediacodec opaque mediacodec",
+      "outputTextObserved": "输出=解码直通",
+      "sourceTextObserved": false,
+      "sourceLimit": "No 片源 row between decode and passthrough output; exact raw demux-property absence not independently queried",
+      "controlsObserved": "progress,pause,1.0X,fullscreen within player",
+      "screenshots": [
+        "marble-open/page.png",
+        "marble-controls/controls.png"
+      ],
+      "finalOffEvidence": [
+        "marble-controls/power-off.txt",
+        "marble-controls/display-off.txt"
+      ],
+      "offVerified": true,
+      "systemState": {
+        "rotationUnchanged": "1/0",
+        "autoBrightnessModeUnchanged": "1",
+        "screenBrightnessReadbacks": "48→48",
+        "musicUnchanged": "speaker index0, Muted:true"
+      }
+    },
+    "failedAttempt": {
+      "path": "lya-open/result.json",
+      "classification": "validation timing guard, not product failure",
+      "detail": "KEYCODE_MENU sampled before unprotected keyguard transitioned;secure=false, repeat with0.6s wake/menu waits succeeded",
+      "offVerified": true
+    },
+    "logs": "Each session has fresh package PID, settings/audio before and after,logcat,event log and sleep evidence; current-PID HdrDiag applied routes found; no current-PID FATAL EXCEPTION/ANR match in captured tail",
+    "notTested": [
+      "physical panel primaries/EOTF/brightness",
+      "fresh system SF HDR activation re-audit",
+      "source-color row successful device display",
+      "reverse drag/landscape/speed/seek repeated in this round"
+    ],
+    "worktree": {
+      "PiliPlus": {
+        "statusSameAsPreexecution": false,
+        "diffSameAsPreexecution": true,
+        "diffSha256": "45ad6c851f5908df24500ed5117ff9919d84508fc83c1b1b010a047e0ad39c53",
+        "statusAdded": [
+          "?? docs/validation/playback-color-diag-20261025.json"
+        ],
+        "statusRemoved": [],
+        "interpretation": "Tracked implementation diff identical; listed new project validation JSON produced by Lead/build agent, verifier only wrote tmp evidence."
+      },
+      "media-kit": {
+        "statusSameAsPreexecution": true,
+        "diffSameAsPreexecution": true,
+        "diffSha256": "53ec5260e6c07668318d72c99379b30baefc6bfc889845fa84644ad5782b22a1"
+      },
+      "mpv": {
+        "statusSameAsPreexecution": true,
+        "diffSameAsPreexecution": true,
+        "diffSha256": "32b4abebe89df325992f964a84d63c9221933b27331fb20cb51c9b7996219dfd"
+      }
+    },
+    "verifierWrites": "Only files under /tmp/pili-color-diag-20261025/device-verification; no implementation edits",
+    "deviceOwnership": "Lead requested independent final read-only power/display of every online device; all complete, relinquished, no further device operations",
+    "finalAllOnlineScreens": {
+      "utc": "2026-10-25T04:03:20.998063+00:00",
+      "devices": [
+        {
+          "serial": "3EP7N18C28016072",
+          "inventory": "3EP7N18C28016072       device usb:1-1.3.1.3 product:LYA-AL00 model:LYA_AL00 device:HWLYA transport_id:80",
+          "utc": "2026-10-25T04:03:19.883215+00:00",
+          "wakefulness": [
+            "mWakefulness=Asleep"
+          ],
+          "screenState": [
+            "mScreenState=OFF"
+          ],
+          "displayPower": [
+            "Display Power: state=OFF"
+          ],
+          "sleepSent": false,
+          "offVerified": true
+        },
+        {
+          "serial": "LGH870DS42e27764",
+          "inventory": "LGH870DS42e27764       device usb:1-1.3.1.4 product:lucye_global_com model:LG_H870DS device:lucye transport_id:65",
+          "utc": "2026-10-25T04:03:19.994667+00:00",
+          "wakefulness": [
+            "mWakefulness=Asleep"
+          ],
+          "screenState": [
+            "mScreenState=OFF"
+          ],
+          "displayPower": [
+            "Display Power: state=OFF"
+          ],
+          "sleepSent": false,
+          "offVerified": true
+        },
+        {
+          "serial": "WJX5T17314001484",
+          "inventory": "WJX5T17314001484       device usb:1-1.3.4 product:VKY-AL00 model:VKY_AL00 device:HWVKY transport_id:69",
+          "utc": "2026-10-25T04:03:20.153719+00:00",
+          "wakefulness": [
+            "mWakefulness=Asleep"
+          ],
+          "screenState": [
+            "mScreenState=OFF"
+          ],
+          "displayPower": [
+            "Display Power: state=OFF"
+          ],
+          "sleepSent": false,
+          "offVerified": true
+        },
+        {
+          "serial": "a6cbd6ac0506",
+          "inventory": "a6cbd6ac0506           device usb:1-1.1 product:lineage_Mi439_4_19 model:Redmi_8 device:olive transport_id:78",
+          "utc": "2026-10-25T04:03:20.297596+00:00",
+          "wakefulness": [
+            "mWakefulness=Dozing",
+            "mWakefulness=3"
+          ],
+          "screenState": [
+            "mScreenState=OFF"
+          ],
+          "displayPower": [],
+          "sleepSent": false,
+          "offVerified": true
+        },
+        {
+          "serial": "dede0cd2",
+          "inventory": "dede0cd2               device usb:1-1.3.1.1 product:marble model:23049RAD8C device:marble transport_id:68",
+          "utc": "2026-10-25T04:03:20.684074+00:00",
+          "wakefulness": [
+            "mWakefulness=Asleep"
+          ],
+          "screenState": [
+            "mScreenState=OFF"
+          ],
+          "displayPower": [],
+          "sleepSent": false,
+          "offVerified": true
+        }
+      ],
+      "allOnlineOff": true,
+      "count": 5,
+      "noWakeCommands": true
+    },
+    "finalAllOnlineScreensEvidence": "/tmp/pili-color-diag-20261025/device-verification/final-screens/summary.json"
+  },
+  "limits": [
+    "GPU target metadata is not final panel colorspace or optical EOTF measurement.",
+    "Native passthrough does not invent final display color or claim system HDR from route alone.",
+    "Actual Bili scene source-color row was absent; generic source getter positive/negative tests passed but this scene raw missingness was not separately proven.",
+    "This round did not repeat system HDR activation or optical EOTF/brightness acceptance."
+  ],
+  "committed": false,
+  "nativePropertyProbe": {
+    "utc": "2026-10-25T04:08:38.637277+00:00",
+    "status": "passed-source-property-and-current-track-alias",
+    "purpose": "Native source metadata getter only. Not video/HDR/optical acceptance.",
+    "apk": {
+      "path": "/Users/wuweiwei1/src/PiliPlus/build/app/outputs/flutter-apk/piliplus-source-test-release.apk",
+      "sha256": "96d5b558d04f94b54abaa3f5a669e56a17493fcc9c59f9d852f1ad0eb434571b",
+      "bytes": 27610981,
+      "nativeExtraction": "lib/arm64-v8a/libmpv.so and libc++_shared.so extracted byte-for-byte from verified candidate APK"
+    },
+    "hashes": {
+      "libmpv.so": "5794e58ce362999128adc7acb84019894f6751fb320e93ab5ac86bee5ee0bfcc",
+      "libc++_shared.so": "4397241b4bd20a8e579bfb41d21107857e12985f6a01ca0c2a5f83380d1270b4",
+      "probe.c": "25d1738243c357ca1ce2766f0c0b97470dede00d0896c3cd332fa34f7541c7fe",
+      "mpv-source-probe": "04ac7902352a2ac01e501f4d406501cdbe9337f072145b2e11566bf8bda18261",
+      "tagged-bt709.mp4": "c894f6b5ef138e4f883185c736b3c11a70d0dd9ee821d5b546679a8f3b96be35",
+      "untagged.mp4": "d438279ab83ea8c072b0844f7c5375bd1d4a564df9ed3483cdc1eea2877fdca7",
+      "generate_samples.py": "02540a93abbf3da3e8739f239124bc13a24ee3a8517146f5aa8a7e9b072f7d5f"
+    },
+    "device": {
+      "serial": "a6cbd6ac0506",
+      "remote": "/data/local/tmp/pili-color-source-probe",
+      "screenBefore": "OFF",
+      "screenAfter": "OFF",
+      "wakefulnessAfter": [
+        "mWakefulness=Dozing",
+        "mWakefulness=3"
+      ],
+      "noWakeCommands": true,
+      "noSettingsOrAppCommands": true
+    },
+    "client": {
+      "options": {
+        "config": "no",
+        "terminal": "no",
+        "vo": "null",
+        "vid": "auto",
+        "aid": "no",
+        "pause": "yes",
+        "idle": "yes",
+        "hwdec": "no",
+        "audio-display": "no"
+      },
+      "scope": "one64x64 one-frame SDR sample, offscreen null VO, no audio; processes terminate after FILE_LOADED and reading properties",
+      "firstVidNoAttempt": "vid=no/aid=no gave END_FILE/trackCount0; used explicitly authorized vid=auto fallback for metadata probe",
+      "header": "/Users/wuweiwei1/src/mpv/include/mpv/client.h",
+      "ndk": "27.2.12479018 android24 arm64 clang"
+    },
+    "tagged": {
+      "sample": "tagged-bt709.mp4",
+      "ffprobe": "tagged-ffprobe.json",
+      "nclx": {
+        "primaries": 1,
+        "transfer": 1,
+        "matrix": 1,
+        "range": "limited"
+      },
+      "construction": "ffmpeg9.0.2 synthetic black H264; explicit h264_metadata VUI and explicit MP4 nclx1/1/1/limited; ffprobe confirms all four tags. Initial CLI flags alone produced2/2/1 and were not used as passing sample. Reproducible generate_samples.py included.",
+      "trackListAndCurrentVideoAliasAgree": true,
+      "expectedAndActual": {
+        "demux-color-primaries": "bt709",
+        "demux-color-transfer": "bt709",
+        "demux-color-matrix": "bt709",
+        "demux-color-range": "tv"
+      },
+      "resultFile": "tagged-bt709-alias.stdout.json"
+    },
+    "untagged": {
+      "sample": "untagged.mp4",
+      "ffprobe": "untagged-ffprobe.json",
+      "noColrBox": true,
+      "trackListAndCurrentVideoAliasOmitAllFourSourceFields": true,
+      "resultFile": "untagged-alias.stdout.json"
+    },
+    "bilibiliBoundary": "No network/Bili source probe attempted. UI source-row omission does not prove container lacks source metadata; actual raw values for that source were not independently sampled.",
+    "neededLibraries": "libmpv-dynamic.txt; only libc++_shared.so is package dependency; other needed names are Android system libs",
+    "commands": "host-commands.json,alias-compile-command.json,device-events.json,generate_samples.py",
+    "implementationChanges": "None; all new writes are in temporary probe directory, no product rebuild or APK replacement",
+    "allAssertionsPassed": true,
+    "taggedAliasResult": {
+      "event": "file-loaded",
+      "trackCount": 1,
+      "tracks": [
+        {
+          "index": 0,
+          "type": "video",
+          "selected": "yes",
+          "demux-color-primaries": "bt709",
+          "demux-color-transfer": "bt709",
+          "demux-color-matrix": "bt709",
+          "demux-color-range": "tv"
+        }
+      ],
+      "currentVideo": {
+        "demux-color-primaries": "bt709",
+        "demux-color-transfer": "bt709",
+        "demux-color-matrix": "bt709",
+        "demux-color-range": "tv"
+      }
+    },
+    "untaggedAliasResult": {
+      "event": "file-loaded",
+      "trackCount": 1,
+      "tracks": [
+        {
+          "index": 0,
+          "type": "video",
+          "selected": "yes"
+        }
+      ],
+      "currentVideo": {}
+    }
+  },
+  "finalScreens": {
+    "utc": "2026-10-25T04:09:09.616645+00:00",
+    "devices": [
+      {
+        "serial": "3EP7N18C28016072",
+        "installedCandidateVerified": true,
+        "power": [
+          "mWakefulness=Asleep",
+          "Display Power: state=OFF"
+        ],
+        "screen": [
+          "mScreenState=OFF"
+        ],
+        "offVerified": true
+      },
+      {
+        "serial": "LGH870DS42e27764",
+        "installedCandidateVerified": true,
+        "power": [
+          "mWakefulness=Asleep",
+          "Display Power: state=OFF"
+        ],
+        "screen": [
+          "mScreenState=OFF"
+        ],
+        "offVerified": true
+      },
+      {
+        "serial": "WJX5T17314001484",
+        "installedCandidateVerified": true,
+        "power": [
+          "mWakefulness=Asleep",
+          "Display Power: state=OFF"
+        ],
+        "screen": [
+          "mScreenState=OFF"
+        ],
+        "offVerified": true
+      },
+      {
+        "serial": "a6cbd6ac0506",
+        "installedCandidateVerified": true,
+        "power": [
+          "mWakefulness=Dozing",
+          "mWakefulness=3"
+        ],
+        "screen": [
+          "mScreenState=OFF"
+        ],
+        "offVerified": true
+      },
+      {
+        "serial": "dede0cd2",
+        "installedCandidateVerified": true,
+        "power": [
+          "mWakefulness=Asleep"
+        ],
+        "screen": [
+          "mScreenState=OFF"
+        ],
+        "offVerified": true
+      }
+    ],
+    "allFinalOnlineInstalled": true,
+    "allFinalOnlineOff": true,
+    "noDeviceInputs": true
+  },
+  "independentVisualReview": {
+    "lya": "Controls/progress visible; after scrolling GPU target bt.2020/pq/full matrix rgb readable, no unintended fullscreen or volume/brightness overlay. Source values not readable/visible.",
+    "marble": "Native DV route and output=decoder passthrough readable; controls/progress visible, no old mpv color or unavailable text; source row absent. Partial FPS at scroll-viewport bottom is clipped; can scroll independently.",
+    "boundary": "Pixel reading only, not optical color/HDR activation evidence."
+  },
+  "sourceAcceptance": {
+    "nativeKnownAndMissingCases": "passed with actual verified libmpv on Redmi8 while screen OFF, including current-tracks/video alias used by library",
+    "actualBiliScene": "No source color row obtained in the two app sessions; no hint substitution. This session raw getters were not directly queried, so precise missingness cause is unproven.",
+    "actualBiliSourceColorDisplayVerified": false
+  }
+}

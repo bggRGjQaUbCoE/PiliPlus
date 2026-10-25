@@ -1,0 +1,116 @@
+{
+  "date": "2026-10-25",
+  "purpose": "final portrait layout and diagnostic touch isolation",
+  "package": "com.example.piliplus.dev",
+  "versionName": "2.1.6",
+  "apk": "/Users/wuweiwei1/src/PiliPlus/build/app/outputs/flutter-apk/piliplus-source-test-release.apk",
+  "apkBytes": 27602797,
+  "apkSha256": "6520f768684fece6af9e8dd515926ec25e63c7ec0f2fb7e3ff513862e9a0f411",
+  "nativeVerification": {
+    "status": "verified",
+    "jarSha256": "69bc59883cf72a527a5bb64c96d40d884ebbc31217fc2946faa95c7fb4f5a9ec",
+    "members": {
+      "lib/arm64-v8a/libc++_shared.so": {
+        "bytes": 1292904,
+        "packagingMode": "ndk-strip-unneeded",
+        "sha256": "4397241b4bd20a8e579bfb41d21107857e12985f6a01ca0c2a5f83380d1270b4"
+      },
+      "lib/arm64-v8a/libmediakitandroidhelper.so": {
+        "bytes": 53984,
+        "packagingMode": "exact",
+        "sha256": "9d7a9c7ad0caa44afdc521eaa0cd5898190120739f2748e41c4b52208d9d507c"
+      },
+      "lib/arm64-v8a/libmpv.so": {
+        "bytes": 20667360,
+        "packagingMode": "exact",
+        "sha256": "bb8dd8972ad460ae3bb595e7467004f44ba8033c49a80f68e4d85d87bef5235e"
+      }
+    }
+  },
+  "devices": [
+    {
+      "serial": "3EP7N18C28016072",
+      "installExit": 0,
+      "installedBytes": 27602797,
+      "installedSha256": "6520f768684fece6af9e8dd515926ec25e63c7ec0f2fb7e3ff513862e9a0f411",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 03:08:02"
+      ],
+      "status": "installed-hash-verified"
+    },
+    {
+      "serial": "LGH870DS42e27764",
+      "installExit": 0,
+      "installedBytes": 27602797,
+      "installedSha256": "6520f768684fece6af9e8dd515926ec25e63c7ec0f2fb7e3ff513862e9a0f411",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 03:08:11"
+      ],
+      "status": "installed-hash-verified"
+    },
+    {
+      "serial": "WJX5T17314001484",
+      "installExit": 0,
+      "installedBytes": 27602797,
+      "installedSha256": "6520f768684fece6af9e8dd515926ec25e63c7ec0f2fb7e3ff513862e9a0f411",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 03:08:25"
+      ],
+      "status": "installed-hash-verified"
+    },
+    {
+      "serial": "a6cbd6ac0506",
+      "installExit": 0,
+      "installedBytes": 27602797,
+      "installedSha256": "6520f768684fece6af9e8dd515926ec25e63c7ec0f2fb7e3ff513862e9a0f411",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 03:08:33"
+      ],
+      "status": "installed-hash-verified"
+    },
+    {
+      "serial": "a869cea9",
+      "installExit": 0,
+      "installedBytes": 27602797,
+      "installedSha256": "6520f768684fece6af9e8dd515926ec25e63c7ec0f2fb7e3ff513862e9a0f411",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 03:08:39"
+      ],
+      "status": "installed-hash-verified"
+    },
+    {
+      "serial": "dede0cd2",
+      "installExit": 0,
+      "installedBytes": 27602797,
+      "installedSha256": "6520f768684fece6af9e8dd515926ec25e63c7ec0f2fb7e3ff513862e9a0f411",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 03:08:44"
+      ],
+      "status": "installed-hash-verified"
+    }
+  ],
+  "finalOnline": [
+    "3EP7N18C28016072",
+    "LGH870DS42e27764",
+    "WJX5T17314001484",
+    "a6cbd6ac0506",
+    "a869cea9",
+    "dede0cd2"
+  ],
+  "allFinalOnlineVerified": true,
+  "review": "V1 passed; Android touch scope",
+  "deviceAcceptance": "pending short final verification",
+  "evidenceDirectory": "/tmp/pili-diag-followup-20261025/gesture-after"
+}

@@ -1,21 +1,83 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/plugin/pl_player/widgets/playback_diag_scroll_view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart'
-    show HdrDecoderObservation, HdrOutputReport;
+    show
+        HdrDecoderObservation,
+        HdrOutputReport,
+        PlaybackColorValues,
+        PlaybackColorSampler,
+        PlaybackColorSnapshot;
 
-/// 播放诊断信息行：控制栏内的两行紧凑事实——行1 实际路由（媒体类型、
-/// 策略/呈现/输出转移、拓扑、vo、dataspace 路径、降级/错误/验证状态），
-/// 行2 实际解码器与流事实（解码器组件名、hwdec 传输模式、编码、
-/// 分辨率/帧率、像素格式）。默认关闭，由设置开关控制。
+import 'package:PiliPlus/plugin/pl_player/widgets/playback_diag_sampler.dart';
+
+String? formatPlaybackColorLine(PlaybackColorSnapshot? snapshot) {
+  if (snapshot == null) return null;
+  String? values(
+    String label,
+    PlaybackColorValues color, {
+    bool source = false,
+  }) {
+    final primaries = color.primaries;
+    final transfer = color.transfer;
+    final range = color.range;
+    final hasCore = [primaries, transfer, range].any(
+      (value) => value?.isNotEmpty ?? false,
+    );
+    final parts = <String>[];
+    if (hasCore) {
+      if (primaries?.isNotEmpty == true &&
+          transfer?.isNotEmpty == true &&
+          range?.isNotEmpty == true) {
+        parts.add('$label=$primaries/$transfer/$range');
+      } else {
+        final fields = <String>[
+          if (primaries?.isNotEmpty ?? false) '色域=$primaries',
+          if (transfer?.isNotEmpty ?? false) '传递=$transfer',
+          if (range?.isNotEmpty ?? false) '范围=$range',
+        ];
+        parts.add('$label ${fields.join(' ')}');
+      }
+    }
+    if (color.matrix?.isNotEmpty ?? false) {
+      final matrixLabel = !hasCore
+          ? source
+                ? '片源矩阵'
+                : '输出目标矩阵'
+          : '矩阵';
+      parts.add('$matrixLabel=${color.matrix}');
+    }
+    return parts.isEmpty ? null : parts.join(' ');
+  }
+
+  final parts = <String?>[
+    values('片源', snapshot.source, source: true),
+    if (snapshot.decoderPassthrough)
+      '输出=解码直通'
+    else
+      values('输出目标', snapshot.outputTarget),
+  ].whereType<String>().where((part) => part.isNotEmpty);
+  final line = parts.join(' ');
+  return line.isEmpty ? null : line;
+}
+
+/// 播放诊断信息，默认关闭，由设置开关控制。
 class PlaybackDiagBar extends StatefulWidget {
-  const PlaybackDiagBar({super.key, required this.controller});
+  const PlaybackDiagBar({
+    super.key,
+    required this.controller,
+    this.viewportKey,
+  });
 
   final PlPlayerController controller;
+  final GlobalKey? viewportKey;
 
   @override
   State<PlaybackDiagBar> createState() => _PlaybackDiagBarState();
@@ -34,6 +96,22 @@ class _PlaybackDiagBarState extends State<PlaybackDiagBar> {
 
   StreamSubscription<Tracks>? _tracksSub;
   StreamSubscription<VideoParams>? _videoParamsSub;
+  StreamSubscription<bool>? _playingSub;
+  StreamSubscription<Playlist>? _playlistSub;
+  static const _renderingChannel = MethodChannel(
+    'com.example.piliplus/rendering',
+  );
+  final Future<String> _rootViewType = _readRootViewType();
+  Player? _subscribedPlayer;
+  int _decoderRequest = 0;
+  PlaybackMetricSampler? _metricSampler;
+  Player? _metricPlayer;
+  String? _metricSourceKey;
+  PlaybackMetricSnapshot? _metricSample;
+  PlaybackColorSampler? _colorSampler;
+  Player? _colorPlayer;
+  String? _colorSourceKey;
+  PlaybackColorSnapshot? _colorSample;
 
   /// 异步缓存的 `current-tracks/video/decoder`：legacy 分支没有
   /// decoderObservation，用它兜底显示 mpv 当前视频轨解码器名。
@@ -49,41 +127,86 @@ class _PlaybackDiagBarState extends State<PlaybackDiagBar> {
   void dispose() {
     _tracksSub?.cancel();
     _videoParamsSub?.cancel();
+    _playingSub?.cancel();
+    _playlistSub?.cancel();
+    _metricSampler?.dispose();
+    _colorSampler?.dispose();
     super.dispose();
   }
 
+  static Future<String> _readRootViewType() async {
+    if (!Platform.isAndroid) return 'n/a';
+    try {
+      return await _renderingChannel.invokeMethod<String>('rootViewType') ??
+          'unknown';
+    } on PlatformException catch (_) {
+      return 'unknown';
+    } on MissingPluginException catch (_) {
+      return 'unknown';
+    }
+  }
+
   void _subscribe() {
+    _tracksSub?.cancel();
+    _videoParamsSub?.cancel();
+    _playingSub?.cancel();
+    _playlistSub?.cancel();
     final player = widget.controller.videoPlayerController;
+    _subscribedPlayer = player;
     if (player == null) return;
+    _fetchDecoder(player);
     _tracksSub = player.stream.tracks.listen((_) {
-      _fetchDecoder();
+      _fetchDecoder(player);
       if (mounted) setState(() {});
     });
     _videoParamsSub = player.stream.videoParams.listen((_) {
       if (mounted) setState(() {});
     });
+    _playingSub = player.stream.playing.listen((_) {
+      if (mounted) setState(() {});
+    });
+    _playlistSub = player.stream.playlist.listen((_) {
+      if (mounted) setState(() {});
+    });
   }
 
-  Future<void> _fetchDecoder() async {
-    final player = widget.controller.videoPlayerController;
-    if (player == null) return;
+  @override
+  void didUpdateWidget(covariant PlaybackDiagBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(
+      widget.controller.videoPlayerController,
+      _subscribedPlayer,
+    )) {
+      _asyncDecoder = '';
+      _subscribe();
+    }
+  }
+
+  Future<void> _fetchDecoder(Player player) async {
+    final request = ++_decoderRequest;
     try {
       final value = await player.getPropertyAsync(
         'current-tracks/video/decoder',
       );
-      if (mounted && value != _asyncDecoder) {
+      if (mounted &&
+          request == _decoderRequest &&
+          identical(player, _subscribedPlayer) &&
+          value != _asyncDecoder) {
         setState(() => _asyncDecoder = value);
       }
     } catch (_) {
-      // 读取失败按解码器未知处理。
+      if (mounted &&
+          request == _decoderRequest &&
+          identical(player, _subscribedPlayer) &&
+          _asyncDecoder.isNotEmpty) {
+        setState(() => _asyncDecoder = '');
+      }
     }
   }
 
   /// 收集非空段拼接，避免判空逻辑散落。
-  String _join(Iterable<String?> parts) => parts
-      .whereType<String>()
-      .where((part) => part.isNotEmpty)
-      .join(' ');
+  String _join(Iterable<String?> parts) =>
+      parts.whereType<String>().where((part) => part.isNotEmpty).join(' ');
 
   String? _firstNonEmpty(Iterable<String?> values) {
     for (final value in values) {
@@ -101,9 +224,8 @@ class _PlaybackDiagBarState extends State<PlaybackDiagBar> {
       line = _join([
         // 媒体类型（如 hdr10/dolbyVisionP5/sdr），来源未知时省略。
         report.sourceFacts?.source.kind.name,
-        '${actual.strategy.name}/${actual.presentation.name}/'
-            '${actual.outputTransfer.name}',
-        actual.topology.name,
+        '${actual.strategy.name}/${actual.outputTransfer.name}',
+        '输出=${actual.topology.name}',
         if (actual.vo.isNotEmpty) 'vo=${actual.vo}',
         _dataSpaceSegment(report.dataSpacePath),
         // 实际执行的路由本身是降级产物时，标出降级原因。
@@ -117,12 +239,21 @@ class _PlaybackDiagBarState extends State<PlaybackDiagBar> {
     } else {
       line = 'route:pending';
     }
-    return report.verified ? '$line ✓' : line;
+    final readback = report.dataSpaceRequested == null
+        ? null
+        : 'dsRead=${report.dataSpaceReadback ?? "?"}';
+    final peak = actual?.targetPeak == null
+        ? null
+        : '映射峰值=${actual!.targetPeak}';
+    final error = actual != null && report.error != null
+        ? 'error:${_truncate(report.error)}'
+        : null;
+    return _join([line, readback, peak, error]);
   }
 
   String? _dataSpaceSegment(String? path) {
     if (path == null || path.isEmpty || path == 'none') return null;
-    return 'ds=$path';
+    return 'dsPath=$path';
   }
 
   String _truncate(Object? error) {
@@ -140,39 +271,15 @@ class _PlaybackDiagBarState extends State<PlaybackDiagBar> {
       report.hwdecCurrent,
     ]);
     final hwdecName = _firstNonEmpty([observation?.hwdec, report.hwdecCurrent]);
-    // 传输模式（mediacodec/mediacodec-copy/no）：与解码器段相同（解码器
-    // 三级回退落到 hwdec 值本身）时不重复显示。
-    final transport = hwdecName != null && hwdecName != decoder
-        ? 'hwdec=$hwdecName'
-        : null;
-    // mediacodec-hevc 这类 hwdec 值已含编码名时不重复显示轨编码。
-    final codecInHwdec =
-        hwdecName != null && hwdecName != 'no' && _hwdecCarriesCodec(hwdecName);
     final fps = _formatFps(player?.state.track.video.fps);
     final dimension = _dimension(player);
     return _join([
       decoder ?? '-',
-      transport,
-      if (!codecInHwdec) _trackCodec(player),
-      if (dimension != null)
-        '$dimension${fps == null ? '' : '@$fps'}',
+      if (hwdecName != null && hwdecName != decoder) 'hwdec=$hwdecName',
+      _trackCodec(player),
+      if (dimension != null) '$dimension${fps == null ? '' : ' srcFps=$fps'}',
       _pixelFormat(player, observation),
     ]);
-  }
-
-  /// mediacodec-hevc / mediacodec-copy-h264 值本身带编码名；
-  /// mediacodec、mediacodec-copy、surfacetexture 只是解码族名。
-  bool _hwdecCarriesCodec(String hwdec) {
-    const families = ['mediacodec-copy', 'mediacodec', 'surfacetexture'];
-    var rest = hwdec;
-    for (final family in families) {
-      if (rest == family) return false;
-      if (rest.startsWith('$family-')) {
-        rest = rest.substring(family.length + 1);
-        break;
-      }
-    }
-    return rest.isNotEmpty && rest != 'no';
   }
 
   String? _trackCodec(Player? player) {
@@ -238,10 +345,122 @@ class _PlaybackDiagBarState extends State<PlaybackDiagBar> {
     return _join([
       _asyncDecoder.isNotEmpty ? _asyncDecoder : '-',
       _trackCodec(player),
-      if (dimension != null)
-        '$dimension${fps == null ? '' : '@$fps'}',
+      if (dimension != null) '$dimension${fps == null ? '' : ' srcFps=$fps'}',
       _pixelFormat(player, null),
     ]);
+  }
+
+  String? _colorLine(PlaybackColorSnapshot? snapshot) {
+    return formatPlaybackColorLine(snapshot);
+  }
+
+  String _sourceKey(Player? player, int? generation) {
+    final state = player?.state;
+    final playlist = state?.playlist;
+    final index = playlist?.index ?? -1;
+    final uri = playlist == null || index < 0 || index >= playlist.medias.length
+        ? ''
+        : playlist.medias[index].uri;
+    return '$generation|$index|$uri';
+  }
+
+  void _syncMetricSampler({
+    required Player? player,
+    required String sourceKey,
+    required bool enabled,
+  }) {
+    if (!identical(player, _metricPlayer)) {
+      _metricSampler?.dispose();
+      _metricSampler = null;
+      _metricPlayer = player;
+      _metricSample = null;
+    }
+    if (sourceKey != _metricSourceKey) {
+      _metricSampler?.stop();
+      _metricSourceKey = sourceKey;
+      _metricSample = null;
+    }
+    if (player == null) return;
+    if (_metricSampler == null) {
+      late PlaybackMetricSampler sampler;
+      sampler = PlaybackMetricSampler(
+        readProperty: (property) => player.getPropertyAsync(
+          property,
+          waitForInitialization: false,
+        ),
+        onSample: (sample) {
+          if (mounted && identical(_metricSampler, sampler)) {
+            setState(() => _metricSample = sample);
+          }
+        },
+      );
+      _metricSampler = sampler;
+    }
+    final sampler = _metricSampler!;
+    if (!enabled) {
+      sampler.stop();
+      _metricSample = null;
+      return;
+    }
+    if (!player.state.playing) {
+      sampler.stop();
+      _metricSample =
+          (_metricSample ?? PlaybackMetricSnapshot.unknown(paused: true))
+              .copyWith(paused: true);
+      return;
+    }
+    sampler
+      ..setPaused(false)
+      ..start(paused: false);
+  }
+
+  void _syncColorSampler({
+    required Player? player,
+    required String sourceKey,
+    required bool enabled,
+  }) {
+    if (!identical(player, _colorPlayer)) {
+      _colorSampler?.dispose();
+      _colorSampler = null;
+      _colorPlayer = player;
+      _colorSample = null;
+    }
+    final identity = '${player?.platform?.fileLoadedEpoch ?? -1}|$sourceKey';
+    if (identity != _colorSourceKey) {
+      _colorSampler?.stop();
+      _colorSourceKey = identity;
+      _colorSample = null;
+    }
+    if (player == null) return;
+    if (_colorSampler == null) {
+      late PlaybackColorSampler sampler;
+      sampler = PlaybackColorSampler(
+        readProperty: (property) => player.getPropertyAsync(
+          property,
+          waitForInitialization: false,
+        ),
+        sourceIdentity: () =>
+            '${player.platform?.fileLoadedEpoch ?? -1}|$_colorSourceKey',
+        onSample: (sample) {
+          if (mounted && identical(_colorSampler, sampler)) {
+            setState(() => _colorSample = sample);
+          }
+        },
+      );
+      _colorSampler = sampler;
+    }
+    final sampler = _colorSampler!;
+    if (!enabled) {
+      sampler.stop();
+      return;
+    }
+    // Color is static for a loaded source, so retain the last good sample
+    // while paused but avoid polling the player until playback resumes.
+    if (!player.state.playing) {
+      sampler.stop();
+      return;
+    }
+    sampler.start();
   }
 
   // ---- 构建 ----
@@ -249,22 +468,33 @@ class _PlaybackDiagBarState extends State<PlaybackDiagBar> {
   Widget _buildLines({
     required String routeLine,
     required String decodeLine,
+    required String? colorLine,
+    required String? performanceLine,
   }) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          routeLine,
-          style: _line1Style,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+        FutureBuilder<String>(
+          future: _rootViewType,
+          builder: (_, snapshot) => Text(
+            '界面: ${snapshot.data ?? "…"}',
+            style: _line2Style,
+          ),
         ),
+        Text(routeLine, style: _line1Style, softWrap: true),
+        Text(decodeLine, style: _line2Style, softWrap: true),
+        if (colorLine != null)
+          Text(colorLine, style: _line2Style, softWrap: true),
         Text(
-          decodeLine,
+          performanceLine ??
+              PlaybackMetricSnapshot.unknown(
+                paused:
+                    !(widget.controller.videoPlayerController?.state.playing ??
+                        false),
+              ).displayText,
           style: _line2Style,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+          softWrap: true,
         ),
       ],
     );
@@ -274,26 +504,71 @@ class _PlaybackDiagBarState extends State<PlaybackDiagBar> {
   Widget build(BuildContext context) {
     return Obx(() {
       final controller = widget.controller;
-      // 读取控制栏显隐作为响应触发源：控制栏任何显隐都 rebuild，从而重读 Pref
-      controller.showControls.value;
+      final currentPlayer = controller.videoPlayerController;
+      if (!identical(currentPlayer, _subscribedPlayer)) {
+        _asyncDecoder = '';
+        _subscribe();
+      }
+      // 读取控制栏显隐作为响应触发源：控制栏任何显隐都 rebuild。
+      final controlsVisible = controller.showControls.value;
+      final player = currentPlayer;
+      final playback = controller.playback;
+      _syncMetricSampler(
+        player: player,
+        sourceKey: _sourceKey(player, playback?.report.value.generation),
+        enabled:
+            Pref.showPlaybackDiagBar &&
+            controlsVisible &&
+            controller.videoController != null,
+      );
+      final sourceKey = _sourceKey(player, playback?.report.value.generation);
+      final diagEnabled =
+          Pref.showPlaybackDiagBar &&
+          controlsVisible &&
+          controller.videoController != null;
+      _syncColorSampler(
+        player: player,
+        sourceKey: sourceKey,
+        enabled: diagEnabled,
+      );
       if (!Pref.showPlaybackDiagBar) {
         return const SizedBox.shrink();
       }
-      final player = controller.videoPlayerController;
-      final playback = controller.playback;
       final Widget content;
       if (playback != null) {
         content = ValueListenableBuilder<HdrOutputReport>(
           valueListenable: playback.report,
-          builder: (_, report, _) => _buildLines(
-            routeLine: _routeLine(report),
-            decodeLine: _decodeLine(report, player),
-          ),
+          builder: (_, report, _) {
+            _syncMetricSampler(
+              player: player,
+              sourceKey: _sourceKey(player, report.generation),
+              enabled:
+                  Pref.showPlaybackDiagBar &&
+                  controlsVisible &&
+                  controller.videoController != null,
+            );
+            _syncColorSampler(
+              player: player,
+              sourceKey: _sourceKey(player, report.generation),
+              enabled:
+                  Pref.showPlaybackDiagBar &&
+                  controlsVisible &&
+                  controller.videoController != null,
+            );
+            return _buildLines(
+              routeLine: _routeLine(report),
+              decodeLine: _decodeLine(report, player),
+              colorLine: _colorLine(_colorSample),
+              performanceLine: _metricSample?.displayText,
+            );
+          },
         );
       } else if (controller.videoController != null) {
         content = _buildLines(
           routeLine: _legacyRouteLine(player),
           decodeLine: _legacyDecodeLine(player),
+          colorLine: _colorLine(_colorSample),
+          performanceLine: _metricSample?.displayText,
         );
       } else {
         content = const Text(
@@ -311,7 +586,21 @@ class _PlaybackDiagBarState extends State<PlaybackDiagBar> {
             borderRadius: BorderRadius.all(Radius.circular(4)),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-          child: content,
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (notification) {
+              if (widget.controller.showControls.value &&
+                  (notification is ScrollUpdateNotification ||
+                      notification is OverscrollNotification ||
+                      notification is ScrollEndNotification)) {
+                widget.controller.hideTaskControls();
+              }
+              return false;
+            },
+            child: PlaybackDiagScrollView(
+              viewportKey: widget.viewportKey,
+              child: content,
+            ),
+          ),
         ),
       );
     });

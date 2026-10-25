@@ -16,6 +16,7 @@ class BottomControl extends StatelessWidget {
     required this.maxWidth,
     required this.isFullScreen,
     required this.controller,
+    required this.diagViewportKey,
     required this.buildBottomControl,
     required this.videoDetailController,
   });
@@ -23,6 +24,7 @@ class BottomControl extends StatelessWidget {
   final double maxWidth;
   final bool isFullScreen;
   final PlPlayerController controller;
+  final GlobalKey diagViewportKey;
   final ValueGetter<Widget> buildBottomControl;
   final VideoDetailController videoDetailController;
 
@@ -59,8 +61,14 @@ class BottomControl extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 播放诊断信息：随控制栏显示，开关判断在组件内部
-          PlaybackDiagBar(controller: controller),
+          // 诊断内容使用控制栏剩余高度，进度条和操作按钮优先保留。
+          Flexible(
+            fit: FlexFit.loose,
+            child: PlaybackDiagBar(
+              controller: controller,
+              viewportKey: diagViewportKey,
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(10, 0, 10, 7),
             child: Obx(

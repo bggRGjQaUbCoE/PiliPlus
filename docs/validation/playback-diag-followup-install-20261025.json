@@ -1,0 +1,300 @@
+{
+  "date": "2026-10-25",
+  "purpose": "portrait controls layout and color-field semantics follow-up",
+  "package": "com.example.piliplus.dev",
+  "versionName": "2.1.6",
+  "apk": "/Users/wuweiwei1/src/PiliPlus/build/app/outputs/flutter-apk/piliplus-source-test-release.apk",
+  "apkBytes": 27599893,
+  "apkSha256": "198eb803ca19c82db8bcafdb33b99b29ab2fa88fe6818a128bca126d07ecd53b",
+  "nativeVerification": {
+    "status": "verified",
+    "jarSha256": "69bc59883cf72a527a5bb64c96d40d884ebbc31217fc2946faa95c7fb4f5a9ec",
+    "members": {
+      "lib/arm64-v8a/libc++_shared.so": {
+        "bytes": 1292904,
+        "packagingMode": "ndk-strip-unneeded",
+        "sha256": "4397241b4bd20a8e579bfb41d21107857e12985f6a01ca0c2a5f83380d1270b4"
+      },
+      "lib/arm64-v8a/libmediakitandroidhelper.so": {
+        "bytes": 53984,
+        "packagingMode": "exact",
+        "sha256": "9d7a9c7ad0caa44afdc521eaa0cd5898190120739f2748e41c4b52208d9d507c"
+      },
+      "lib/arm64-v8a/libmpv.so": {
+        "bytes": 20667360,
+        "packagingMode": "exact",
+        "sha256": "bb8dd8972ad460ae3bb595e7467004f44ba8033c49a80f68e4d85d87bef5235e"
+      }
+    }
+  },
+  "devices": [
+    {
+      "serial": "3EP7N18C28016072",
+      "installExit": 0,
+      "installedBytes": 27599893,
+      "installedSha256": "198eb803ca19c82db8bcafdb33b99b29ab2fa88fe6818a128bca126d07ecd53b",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 02:47:53"
+      ],
+      "status": "installed-hash-verified"
+    },
+    {
+      "serial": "LGH870DS42e27764",
+      "installExit": 0,
+      "installedBytes": 27599893,
+      "installedSha256": "198eb803ca19c82db8bcafdb33b99b29ab2fa88fe6818a128bca126d07ecd53b",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 02:48:03"
+      ],
+      "status": "installed-hash-verified"
+    },
+    {
+      "serial": "WJX5T17314001484",
+      "installExit": 0,
+      "installedBytes": 27599893,
+      "installedSha256": "198eb803ca19c82db8bcafdb33b99b29ab2fa88fe6818a128bca126d07ecd53b",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 02:48:15"
+      ],
+      "status": "installed-hash-verified"
+    },
+    {
+      "serial": "a6cbd6ac0506",
+      "installExit": 0,
+      "installedBytes": 27599893,
+      "installedSha256": "198eb803ca19c82db8bcafdb33b99b29ab2fa88fe6818a128bca126d07ecd53b",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 02:48:22"
+      ],
+      "status": "installed-hash-verified"
+    },
+    {
+      "serial": "a869cea9",
+      "installExit": 0,
+      "installedBytes": 27599893,
+      "installedSha256": "198eb803ca19c82db8bcafdb33b99b29ab2fa88fe6818a128bca126d07ecd53b",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 02:48:28"
+      ],
+      "status": "installed-hash-verified"
+    },
+    {
+      "serial": "dede0cd2",
+      "installExit": 0,
+      "installedBytes": 27599893,
+      "installedSha256": "198eb803ca19c82db8bcafdb33b99b29ab2fa88fe6818a128bca126d07ecd53b",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 02:48:33"
+      ],
+      "status": "installed-hash-verified"
+    }
+  ],
+  "finalOnline": [
+    "3EP7N18C28016072",
+    "LGH870DS42e27764",
+    "WJX5T17314001484",
+    "a6cbd6ac0506",
+    "a869cea9",
+    "dede0cd2"
+  ],
+  "allFinalOnlineVerified": true,
+  "review": "V1 passed",
+  "deviceAcceptance": {
+    "createdUtc": "2026-10-24T18:58:19.619631+00:00",
+    "artifact": {
+      "apkSha256": "198eb803ca19c82db8bcafdb33b99b29ab2fa88fe6818a128bca126d07ecd53b",
+      "apkBytes": 27599893,
+      "installationEvidence": "/tmp/pili-diag-followup-20261025/build-deploy/installation-summary.json",
+      "package": "com.example.piliplus.dev"
+    },
+    "source": {
+      "uri": "https://www.bilibili.com/video/BV1vY4y1N7TY",
+      "title": "蹲守一周，我终于拍到了夕阳下的梦幻场景｜北海道VLOG | Links 4K HDR",
+      "purpose": "explicit approved HDR layout test source",
+      "sameSourceAsOriginalUserReport": false,
+      "preferencesChanged": false
+    },
+    "lya": {
+      "serial": "3EP7N18C28016072",
+      "portraitControlVisibility": "pass; progress, pause/play, speed and fullscreen visible inside video bounds",
+      "portraitEvidence": [
+        "/tmp/pili-diag-followup-20261025/after/lya/controls-visible.png",
+        "/tmp/pili-diag-followup-20261025/after/lya/portrait-paused.png"
+      ],
+      "pauseButtonClick": "pass; explicit button changed pause bars to play triangle at 08:01",
+      "resumeButtonClick": "not tested after final deliberate pause",
+      "speedMenuClick": "not tested; finite verification stopped after internal-scroll failure",
+      "progressSeekClick": "not tested; progress visibility confirmed only",
+      "diagnosticInternalScroll": {
+        "status": "failed",
+        "gesture": "portrait diagnostic area swipe (800,620) to (800,450), 400ms",
+        "precondition": "portrait1440x3120, deliberately paused08:01, diagnostic top lines visible",
+        "observed": "became fullscreen landscape3120x1440 and diagnostics hidden; screenshot dimension assertion aborted further actions",
+        "before": "/tmp/pili-diag-followup-20261025/after/lya/portrait-paused.png",
+        "after": "/tmp/pili-diag-followup-20261025/after/lya/portrait-diag-scrolled.png",
+        "sourceCorroboration": "view.dart center vertical onScale gesture triggers fullscreen for cumulativeDy<-2.5; app log ROTATION_90 transition02:55:00.818",
+        "brightnessVolumeSeekAcceptance": "not passed because scrolling was not isolated; no brightness/volume changes intentionally requested"
+      },
+      "landscapeControlVisibility": "observed all fields and controls visible; screenshot is a fullscreen comparison, not restored-source optical acceptance",
+      "landscapeEvidence": "/tmp/pili-diag-followup-20261025/after/lya/pause-validation-controls.png",
+      "rotationBefore": {
+        "serial": "3EP7N18C28016072",
+        "utc": "2026-10-24T18:49:00.373171+00:00",
+        "accelerometer_rotation": "1",
+        "user_rotation": "0"
+      },
+      "rotationAfter": {
+        "serial": "3EP7N18C28016072",
+        "utc": "2026-10-24T18:56:02.563707+00:00",
+        "accelerometer_rotation": "1",
+        "user_rotation": "0"
+      },
+      "sleep": {
+        "utc": "2026-10-24T18:57:06.917698+00:00",
+        "command": "KEYCODE_SLEEP",
+        "exit": 0,
+        "power-asleep.txt": [
+          "mWakefulness=Asleep",
+          "Display Power: state=ON"
+        ],
+        "display-asleep.txt": [
+          "mGlobalDisplayState=ON",
+          "mScreenState=ON"
+        ],
+        "settledUtc": "2026-10-24T18:57:25.007988+00:00",
+        "power-asleep-settled.txt": [
+          "mWakefulness=Asleep",
+          "Display Power: state=OFF"
+        ],
+        "display-asleep-settled.txt": [
+          "mGlobalDisplayState=OFF",
+          "DisplayDeviceInfo{\"内置屏幕\": uniqueId=\"****\", 1440 x 3120, modeId 1, defaultModeId 1, supportedModes [{id=1, width=1440, height=3120, fps=60.000004}], colorMode 0, supportedColorModes [0, 7], HdrCapabilities android.view.Display$HdrCapabilities@6cb03a39, density 640, 537.882 x 539.102 dpi, appVsyncOff 2000000, presDeadline 15666666, cutout DisplayCutout{insets=Rect(0, 136 - 0, 0) waterfall=Insets{left=0, top=0, right=0, bottom=0} boundingRect={Bounds=[Rect(0, 0 - 0, 0), Rect(373, 0 - 1067, 136), Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0)]}}, touch INTERNAL, rotation 0, type BUILT_IN, address ****, state OFF, FLAG_DEFAULT_DISPLAY, FLAG_ROTATES_WITH_CONTENT, FLAG_SECURE, FLAG_SUPPORTS_PROTECTED_BUFFERS}",
+          "mBaseDisplayInfo=DisplayInfo{\"内置屏幕, displayId 0\", uniqueId \"****\", app 1440 x 3120, real 1440 x 3120, largest app 1440 x 3120, smallest app 1440 x 3120, mode 1, defaultMode 1, modes [{id=1, width=1440, height=3120, fps=60.000004}], colorMode 0, supportedColorModes [0, 7], hdrCapabilities android.view.Display$HdrCapabilities@6cb03a39, rotation 0, density 640 (537.882 x 539.102) dpi, layerStack 0, appVsyncOff 2000000, presDeadline 15666666, type BUILT_IN, address ****, state OFF, FLAG_SECURE, FLAG_SUPPORTS_PROTECTED_BUFFERS, removeMode 0}",
+          "mOverrideDisplayInfo=DisplayInfo{\"内置屏幕, displayId 0\", uniqueId \"****\", app 1440 x 2984, real 1440 x 3120, largest app 2984 x 2984, smallest app 1440 x 1304, mode 1, defaultMode 1, modes [{id=1, width=1440, height=3120, fps=60.000004}], colorMode 0, supportedColorModes [0, 7], hdrCapabilities android.view.Display$HdrCapabilities@6cb03a39, rotation 0, density 640 (537.882 x 539.102) dpi, layerStack 0, appVsyncOff 2000000, presDeadline 15666666, type BUILT_IN, address ****, state OFF, FLAG_SECURE, FLAG_SUPPORTS_PROTECTED_BUFFERS, removeMode 0}",
+          "mScreenState=OFF"
+        ]
+      }
+    },
+    "marble": {
+      "serial": "dede0cd2",
+      "pid": "8727",
+      "newLabel": "mpv色彩=bt.709/bt.1886/limited 矩阵=bt.709",
+      "labelEvidence": "/tmp/pili-diag-followup-20261025/after/marble/resumed-playing.png",
+      "playback": "resumed via actual play button; pause bars/FPS29.97 and subsequent frames observed",
+      "videoLayer": 33855,
+      "format": "Y_CBCR_420_P010_UBWC 10bit",
+      "composition": "DEVICE",
+      "genericLayerDataspace": "V0_BT709",
+      "vendorHdr": 1,
+      "frameworkHdrVisible": true,
+      "frameSamples": [
+        4299,
+        4400
+      ],
+      "nativeRoute": "nativeDolbyVision / mediacodec_embed / mediacodec",
+      "hdrConclusion": "new package system native Dolby Vision/HDR is active despite BT709 metadata; not an optical panel brightness/EOTF acceptance",
+      "rotationBefore": {
+        "serial": "dede0cd2",
+        "utc": "2026-10-24T18:49:02.813558+00:00",
+        "accelerometer_rotation": "1",
+        "user_rotation": "0"
+      },
+      "rotationAfter": {
+        "serial": "dede0cd2",
+        "utc": "2026-10-24T18:56:03.152697+00:00",
+        "accelerometer_rotation": "1",
+        "user_rotation": "0"
+      },
+      "sleep": {
+        "utc": "2026-10-24T18:57:07.191365+00:00",
+        "command": "KEYCODE_SLEEP",
+        "exit": 0,
+        "power-asleep.txt": [
+          "mWakefulness=Dozing"
+        ],
+        "display-asleep.txt": [
+          "mScreenState=ON"
+        ],
+        "settledUtc": "2026-10-24T18:57:25.186329+00:00",
+        "power-asleep-settled.txt": [
+          "mWakefulness=Asleep"
+        ],
+        "display-asleep-settled.txt": [
+          "DisplayDeviceInfo{\"内置屏幕\": uniqueId=\"local:4630946370515662722\", 1080 x 2400, modeId 2, renderFrameRate 120.00001, defaultModeId 2, userPreferredModeId -1, supportedModes [{id=1, width=1080, height=2400, fps=60.000004, vsync=60.000004, synthetic=false, alternativeRefreshRates=[90.0, 120.00001], supportedHdrTypes=[1, 2, 3, 4]}, {id=2, width=1080, height=2400, fps=120.00001, vsync=120.00001, synthetic=false, alternativeRefreshRates=[60.000004, 90.0], supportedHdrTypes=[1, 2, 3, 4]}, {id=3, width=1080, height=2400, fps=90.0, vsync=90.0, synthetic=false, alternativeRefreshRates=[60.000004, 120.00001], supportedHdrTypes=[1, 2, 3, 4]}], colorMode 0, supportedColorModes [0, 7, 9], hdrCapabilities HdrCapabilities{mSupportedHdrTypes=[1, 2, 3, 4], mMaxLuminance=420.0, mMaxAverageLuminance=210.1615, mMinLuminance=0.323}, allmSupported false, gameContentTypeSupported false, density 440, 394.705 x 394.563 dpi, appVsyncOff 1000000, presDeadline 13333332, cutout DisplayCutout{insets=Rect(0, 111 - 0, 0) waterfall=Insets{left=0, top=0, right=0, bottom=0} boundingRect={Bounds=[Rect(0, 0 - 0, 0), Rect(512, 0 - 568, 111), Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0)]} cutoutPathParserInfo={CutoutPathParserInfo{displayWidth=1080 displayHeight=2400 physicalDisplayWidth=1080 physicalDisplayHeight=2400 density={2.75} cutoutSpec={M 0,0 H -28 V 111 H 28 V 0 H 0 Z} rotation={0} scale={1.0} physicalPixelDisplaySizeRatio={1.0}}} sideOverrides={}}, touch INTERNAL, rotation 0, type INTERNAL, address {port=130, model=0x40446d302c7877}, deviceProductInfo DeviceProductInfo{name=, manufacturerPnpId=QCM, productId=1, modelYear=null, manufactureDate=ManufactureDate{week=27, year=2006}, connectionToSinkType=0}, state OFF, committedState OFF, frameRateOverride , brightnessMinimum 0.0, brightnessMaximum 1.0, brightnessDefault 0.07496032, hdrSdrRatio NaN, roundedCorners RoundedCorners{[RoundedCorner{position=TopLeft, radius=70, center=Point(70, 70)}, RoundedCorner{position=TopRight, radius=70, center=Point(1010, 70)}, RoundedCorner{position=BottomRight, radius=70, center=Point(1010, 2330)}, RoundedCorner{position=BottomLeft, radius=70, center=Point(70, 2330)}]}, FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY, FLAG_ROTATES_WITH_CONTENT, FLAG_SECURE, FLAG_SUPPORTS_PROTECTED_BUFFERS, FLAG_TRUSTED, installOrientation 0, displayShape DisplayShape{ spec=1406003047 displayWidth=1080 displayHeight=2400 physicalPixelDisplaySizeRatio=1.0 rotation=0 offsetX=0 offsetY=0 scale=1.0}}",
+          "mBaseDisplayInfo=DisplayInfo{\"内置屏幕\", displayId 0, displayGroupId 0, FLAG_SECURE, FLAG_SUPPORTS_PROTECTED_BUFFERS, FLAG_TRUSTED, real 1080 x 2400, largest app 1080 x 2400, smallest app 1080 x 2400, appVsyncOff 1000000, presDeadline 13333332, mode 2, renderFrameRate 120.00001, defaultMode 2, userPreferredModeId -1, supportedModes [{id=1, width=1080, height=2400, fps=60.000004, vsync=60.000004, synthetic=false, alternativeRefreshRates=[90.0, 120.00001], supportedHdrTypes=[1, 2, 3, 4]}, {id=2, width=1080, height=2400, fps=120.00001, vsync=120.00001, synthetic=false, alternativeRefreshRates=[60.000004, 90.0], supportedHdrTypes=[1, 2, 3, 4]}, {id=3, width=1080, height=2400, fps=90.0, vsync=90.0, synthetic=false, alternativeRefreshRates=[60.000004, 120.00001], supportedHdrTypes=[1, 2, 3, 4]}], appsSupportedModes [{id=1, width=1080, height=2400, fps=60.000004, vsync=60.000004, synthetic=false, alternativeRefreshRates=[90.0, 120.00001], supportedHdrTypes=[1, 2, 3, 4]}, {id=2, width=1080, height=2400, fps=120.00001, vsync=120.00001, synthetic=false, alternativeRefreshRates=[60.000004, 90.0], supportedHdrTypes=[1, 2, 3, 4]}, {id=3, width=1080, height=2400, fps=90.0, vsync=90.0, synthetic=false, alternativeRefreshRates=[60.000004, 120.00001], supportedHdrTypes=[1, 2, 3, 4]}], hdrCapabilities HdrCapabilities{mSupportedHdrTypes=[1, 2, 3, 4], mMaxLuminance=420.0, mMaxAverageLuminance=210.1615, mMinLuminance=0.323}, userDisabledHdrTypes [], minimalPostProcessingSupported false, rotation 0, state OFF, committedState OFF, type INTERNAL, uniqueId \"local:4630946370515662722\", app 1080 x 2400, density 440 (394.705 x 394.563) dpi, layerStack 0, colorMode 0, supportedColorModes [0, 7, 9], address {port=130, model=0x40446d302c7877}, deviceProductInfo DeviceProductInfo{name=, manufacturerPnpId=QCM, productId=1, modelYear=null, manufactureDate=ManufactureDate{week=27, year=2006}, connectionToSinkType=0}, removeMode 0, refreshRateOverride 0.0, brightnessMinimum 0.0, brightnessMaximum 1.0, brightnessDefault 0.07496032, installOrientation ROTATION_0, layoutLimitedRefreshRate null, hdrSdrRatio not_available, thermalRefreshRateThrottling {}, thermalBrightnessThrottlingDataId default}",
+          "mOverrideDisplayInfo=DisplayInfo{\"内置屏幕\", displayId 0, displayGroupId 0, FLAG_SECURE, FLAG_SUPPORTS_PROTECTED_BUFFERS, FLAG_TRUSTED, real 1080 x 2400, largest app 2400 x 2400, smallest app 1080 x 1080, appVsyncOff 1000000, presDeadline 13333332, mode 2, renderFrameRate 120.00001, defaultMode 2, userPreferredModeId -1, supportedModes [{id=1, width=1080, height=2400, fps=60.000004, vsync=60.000004, synthetic=false, alternativeRefreshRates=[90.0, 120.00001], supportedHdrTypes=[1, 2, 3, 4]}, {id=2, width=1080, height=2400, fps=120.00001, vsync=120.00001, synthetic=false, alternativeRefreshRates=[60.000004, 90.0], supportedHdrTypes=[1, 2, 3, 4]}, {id=3, width=1080, height=2400, fps=90.0, vsync=90.0, synthetic=false, alternativeRefreshRates=[60.000004, 120.00001], supportedHdrTypes=[1, 2, 3, 4]}], appsSupportedModes [{id=1, width=1080, height=2400, fps=60.000004, vsync=60.000004, synthetic=false, alternativeRefreshRates=[90.0, 120.00001], supportedHdrTypes=[1, 2, 3, 4]}, {id=2, width=1080, height=2400, fps=120.00001, vsync=120.00001, synthetic=false, alternativeRefreshRates=[60.000004, 90.0], supportedHdrTypes=[1, 2, 3, 4]}, {id=3, width=1080, height=2400, fps=90.0, vsync=90.0, synthetic=false, alternativeRefreshRates=[60.000004, 120.00001], supportedHdrTypes=[1, 2, 3, 4]}], hdrCapabilities HdrCapabilities{mSupportedHdrTypes=[1, 2, 3, 4], mMaxLuminance=420.0, mMaxAverageLuminance=210.1615, mMinLuminance=0.323}, userDisabledHdrTypes [], minimalPostProcessingSupported false, rotation 0, state OFF, committedState OFF, type INTERNAL, uniqueId \"local:4630946370515662722\", app 1080 x 2400, density 440 (394.705 x 394.563) dpi, layerStack 0, colorMode 0, supportedColorModes [0, 7, 9], address {port=130, model=0x40446d302c7877}, deviceProductInfo DeviceProductInfo{name=, manufacturerPnpId=QCM, productId=1, modelYear=null, manufactureDate=ManufactureDate{week=27, year=2006}, connectionToSinkType=0}, removeMode 0, refreshRateOverride 0.0, brightnessMinimum 0.0, brightnessMaximum 1.0, brightnessDefault 0.07496032, installOrientation ROTATION_0, layoutLimitedRefreshRate null, hdrSdrRatio not_available, thermalRefreshRateThrottling {}, thermalBrightnessThrottlingDataId default}",
+          "mScreenState=OFF"
+        ]
+      }
+    },
+    "interactionExceptions": [
+      "Earlier LYA cross-turn pause attempt only reshown controls, not counted as pause success",
+      "LYA orientation changed to landscape before a template-guarded action; guard failed and no button click happened in that attempt",
+      "A marble tap round paused playback; subsequent explicitly validated actual play-button click restored playback",
+      "Single LYA diagnostic scroll caused unexpected fullscreen; no further probing after reporting",
+      "Prior worker BACK had exited original LYA video before this validation; recorded by Lead separately; this run did not use BACK"
+    ],
+    "evidenceReferences": [
+      {
+        "file": "/tmp/pili-diag-followup-20261025/after/marble/sf-playing-1.txt",
+        "line": 281,
+        "text": "  Layer [33855] SurfaceView[com.example.piliplus.dev/com.example.piliplus.MainActivity](BLAST)#33855"
+      },
+      {
+        "file": "/tmp/pili-diag-followup-20261025/after/marble/sf-playing-1.txt",
+        "line": 282,
+        "text": "    visible reason= buffer=37482179592287 frame=4299 color{< 0, 0, 0, 1 >}"
+      },
+      {
+        "file": "/tmp/pili-diag-followup-20261025/after/marble/sf-playing-1.txt",
+        "line": 914,
+        "text": "Disp ID: 0, mEffectStatus: 8192, Paper: 0, LUT: 20, GAME: 0, HDR: 1"
+      },
+      {
+        "file": "/tmp/pili-diag-followup-20261025/after/marble/sf-playing-1.txt",
+        "line": 1255,
+        "text": "layer: 11804 name:           SurfaceView[com.example.piliplus.dev/com.example.piliplus.MainActivity]#2(BLAST Consumer)2 z: 1 composition: Device/Device alpha: 255 format:   Y_CBCR_420_P010_UBWC dataspace:0x10810000 transform: 90/1/1 buffer_id: 0xb40000716eca6fb0 secure: 0"
+      },
+      {
+        "file": "/tmp/pili-diag-followup-20261025/after/marble/display-playing.txt",
+        "line": 1040,
+        "text": "  mHdrVisible=true"
+      },
+      {
+        "file": "/tmp/pili-diag-followup-20261025/after/marble/logcat-full-final.txt",
+        "line": 105318,
+        "text": "10-25 02:49:18.315  8727  8727 I flutter : HdrDiag HDR classify: origin=mixed codec=hevc transfer=hlg primaries=bt.2020 meta=dolbyVision dv=8 compat=4 el=false"
+      },
+      {
+        "file": "/tmp/pili-diag-followup-20261025/after/marble/logcat-full-final.txt",
+        "line": 104300,
+        "text": "10-25 02:49:17.794  1688  5409 D SurfaceFlinger: DV_DISPLAY: setFrameRateVideoToDisplay case 1 value 1"
+      },
+      {
+        "file": "/tmp/pili-diag-followup-20261025/after/marble/logcat-playing.txt",
+        "line": 7888,
+        "text": "10-25 02:53:19.306  8727 29393 I MediaCodec: [mId: 0] [video-debug-dec] Stats 5002ms:Client:com.example.piliplus.dev,Component:c2.dolby.decoder.hevc,Qin:152(Avg:32ms),DQin:152/203,Render:150(Avg:33ms),Drop:0,DQout:150/634"
+      },
+      {
+        "file": "/tmp/pili-diag-followup-20261025/after/lya/logcat-final.txt",
+        "line": 5483,
+        "text": "10-25 02:55:00.818  1573  1935 I ActivityTaskManager: Config changes=20000480 {1.0 ?mcc?mnc [zh_CN_#Hans] ldltr sw360dp w746dp h326dp 640dpi nrml long land finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 3120, 1440) mAppBounds=Rect(136, 0 - 3120, 1440) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} suim:1 fontWeightScale:100 s.4965}"
+      }
+    ],
+    "finalState": "Original rotation settings accelerometer_rotation=1/user_rotation=0 restored/read back on both devices; KEYCODE_SLEEP sent and settled Asleep/OFF confirmed on both; no further wake planned without followup."
+  },
+  "evidenceDirectory": "/tmp/pili-diag-followup-20261025",
+  "status": "superseded pending gesture-isolation fix; portrait layout and native HDR passed, diagnostic scroll failed"
+}

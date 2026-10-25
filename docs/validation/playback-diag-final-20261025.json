@@ -1,0 +1,188 @@
+{
+  "date": "2026-10-25",
+  "status": "complete",
+  "package": "com.example.piliplus.dev",
+  "versionName": "2.1.6",
+  "apk": "/Users/wuweiwei1/src/PiliPlus/build/app/outputs/flutter-apk/piliplus-source-test-release.apk",
+  "apkBytes": 27606857,
+  "apkSha256": "c999a25a8a99d06a8dffce5812e64745d3ba1fd37b2cc4555d2cb829222eb602",
+  "nativeVerification": {
+    "status": "verified",
+    "jarSha256": "69bc59883cf72a527a5bb64c96d40d884ebbc31217fc2946faa95c7fb4f5a9ec",
+    "members": {
+      "lib/arm64-v8a/libc++_shared.so": {
+        "bytes": 1292904,
+        "packagingMode": "ndk-strip-unneeded",
+        "sha256": "4397241b4bd20a8e579bfb41d21107857e12985f6a01ca0c2a5f83380d1270b4"
+      },
+      "lib/arm64-v8a/libmediakitandroidhelper.so": {
+        "bytes": 53984,
+        "packagingMode": "exact",
+        "sha256": "9d7a9c7ad0caa44afdc521eaa0cd5898190120739f2748e41c4b52208d9d507c"
+      },
+      "lib/arm64-v8a/libmpv.so": {
+        "bytes": 20667360,
+        "packagingMode": "exact",
+        "sha256": "bb8dd8972ad460ae3bb595e7467004f44ba8033c49a80f68e4d85d87bef5235e"
+      }
+    }
+  },
+  "devices": [
+    {
+      "serial": "3EP7N18C28016072",
+      "installExit": 0,
+      "installedBytes": 27606857,
+      "installedSha256": "c999a25a8a99d06a8dffce5812e64745d3ba1fd37b2cc4555d2cb829222eb602",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 03:29:25"
+      ],
+      "status": "installed-hash-verified"
+    },
+    {
+      "serial": "LGH870DS42e27764",
+      "installExit": 0,
+      "installedBytes": 27606857,
+      "installedSha256": "c999a25a8a99d06a8dffce5812e64745d3ba1fd37b2cc4555d2cb829222eb602",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 03:29:34"
+      ],
+      "status": "installed-hash-verified"
+    },
+    {
+      "serial": "WJX5T17314001484",
+      "installExit": 0,
+      "installedBytes": 27606857,
+      "installedSha256": "c999a25a8a99d06a8dffce5812e64745d3ba1fd37b2cc4555d2cb829222eb602",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 03:29:46"
+      ],
+      "status": "installed-hash-verified"
+    },
+    {
+      "serial": "a6cbd6ac0506",
+      "installExit": 0,
+      "installedBytes": 27606857,
+      "installedSha256": "c999a25a8a99d06a8dffce5812e64745d3ba1fd37b2cc4555d2cb829222eb602",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 03:29:53"
+      ],
+      "status": "installed-hash-verified"
+    },
+    {
+      "serial": "a869cea9",
+      "installExit": 0,
+      "installedBytes": 27606857,
+      "installedSha256": "c999a25a8a99d06a8dffce5812e64745d3ba1fd37b2cc4555d2cb829222eb602",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 03:29:58"
+      ],
+      "status": "installed-hash-verified"
+    },
+    {
+      "serial": "dede0cd2",
+      "installExit": 0,
+      "installedBytes": 27606857,
+      "installedSha256": "c999a25a8a99d06a8dffce5812e64745d3ba1fd37b2cc4555d2cb829222eb602",
+      "packageFacts": [
+        "versionCode=1 minSdk=24 targetSdk=37",
+        "versionName=2.1.6",
+        "lastUpdateTime=2026-10-25 03:30:04"
+      ],
+      "status": "installed-hash-verified"
+    }
+  ],
+  "finalOnline": [
+    "3EP7N18C28016072",
+    "LGH870DS42e27764",
+    "WJX5T17314001484",
+    "a6cbd6ac0506",
+    "a869cea9",
+    "dede0cd2"
+  ],
+  "allFinalOnlineVerified": true,
+  "hostChecks": {
+    "productionWidgetTestsPassed": 3,
+    "targetedAnalyze": "no issues for new scroll helper/bar/tests; player view has one pre-existing info",
+    "review": "V1 passed"
+  },
+  "lyaFinalDeviceAcceptance": {
+    "source": "BV1vY4y1N7TY; explicit layout test source, not original-user-video pixel comparison",
+    "apkSha256": "c999a25a8a99d06a8dffce5812e64745d3ba1fd37b2cc4555d2cb829222eb602",
+    "portraitSize": [
+      1440,
+      3120
+    ],
+    "controlsAndProgressVisible": true,
+    "diagnosticUpwardScroll": "passed: decoder/mpv color/FPS/drop fields became visible",
+    "diagnosticReverseScroll": "passed: UI root and route top became visible again",
+    "unexpectedFullscreen": false,
+    "unexpectedBrightnessOrVolumeOSD": false,
+    "playbackTimeVisible": [
+      "08:41",
+      "08:43"
+    ],
+    "evidence": [
+      "/tmp/pili-diag-followup-20261025/sdk-scroll-after/literal-timed/after-up.png",
+      "/tmp/pili-diag-followup-20261025/sdk-scroll-after/literal-timed/after-reverse.png"
+    ],
+    "independentVisualReview": "passed; based on readable field changes, not just image difference"
+  },
+  "marbleHdrFinding": {
+    "reportedIssue": "codec/mpv labels BT709/BT1886 do not represent native vendor DV display output",
+    "evidenceApkSha256": "198eb803ca19c82db8bcafdb33b99b29ab2fa88fe6818a128bca126d07ecd53b",
+    "nativeJarSameAsFinalBuild": true,
+    "finalBuildFreshHdrRetest": false,
+    "pid": "8727",
+    "newLabel": "mpv色彩=bt.709/bt.1886/limited 矩阵=bt.709",
+    "videoLayer": 33855,
+    "format": "Y_CBCR_420_P010_UBWC 10bit",
+    "composition": "DEVICE",
+    "genericLayerDataspace": "V0_BT709",
+    "vendorHdr": 1,
+    "frameworkHdrVisible": true,
+    "frameSamples": [
+      4299,
+      4400
+    ],
+    "nativeRoute": "nativeDolbyVision / mediacodec_embed / mediacodec",
+    "hdrConclusion": "new package system native Dolby Vision/HDR is active despite BT709 metadata; not an optical panel brightness/EOTF acceptance",
+    "evidenceDirectory": "/tmp/pili-diag-followup-20261025/after/marble"
+  },
+  "oledFinalState": {
+    "verifiedUtc": "2026-10-24T19:48:18.590057+00:00",
+    "LYA": {
+      "wakefulness": "Asleep",
+      "display": "OFF"
+    },
+    "marble": {
+      "wakefulness": "Asleep",
+      "display": "OFF"
+    },
+    "method": "fresh adb exec-out dumpsys power/display after final UI collection"
+  },
+  "audioFinalState": {
+    "device": "LYA",
+    "stream": "STREAM_MUSIC",
+    "speakerIndex": 0,
+    "muted": false,
+    "restoredToOriginal": true,
+    "evidence": "/tmp/pili-diag-followup-20261025/sdk-scroll-after/literal-timed/audio-after.txt",
+    "restorationEvidenceDirectory": "/tmp/pili-diag-followup-20261025/audio-restore"
+  },
+  "limits": [
+    "HDR system/native display activation verified; no optical brightness or EOTF acceptance",
+    "FPS remains mpv estimated-vf-fps per requested concise label",
+    "Desktop pointer signal/panzoom and wheel/accessibility actions not separately device-tested"
+  ],
+  "evidenceDirectory": "/tmp/pili-diag-followup-20261025"
+}

@@ -138,6 +138,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   final _playerKey = GlobalKey();
   final _videoKey = GlobalKey();
+  final diagViewportKey = GlobalKey(debugLabel: 'playback-diagnostic-viewport');
 
   final RxDouble _brightnessValue = 0.0.obs;
   final RxBool _brightnessIndicator = false.obs;
@@ -1236,6 +1237,21 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   (bool, bool)? _pendingFullScreenToggle;
 
   void _onPointerDown(PointerDownEvent event) {
+    // Diagnostic text has its own vertical scroll gesture. Do not let the
+    // player's lower-slop scale recognizer claim drags that start in it.
+    final diagContext = diagViewportKey.currentContext;
+    if (plPlayerController.showControls.value && diagContext != null) {
+      final renderObject = diagContext.findRenderObject();
+      if (renderObject is RenderBox &&
+          renderObject.attached &&
+          renderObject.hasSize &&
+          renderObject.size.contains(
+            renderObject.globalToLocal(event.position),
+          )) {
+        return;
+      }
+    }
+
     if (PlatformUtils.isDesktop) {
       final buttons = event.buttons;
       final isSecondaryBtn = buttons == kSecondaryMouseButton;
@@ -1644,23 +1660,27 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                           )
                         : widget.headerControl,
                   ),
-                  AppBarAni(
-                    isTop: false,
-                    controller: _animationController,
-                    isFullScreen: isFullScreen,
-                    removeSafeArea: plPlayerController.removeSafeArea,
-                    child:
-                        widget.bottomControl ??
-                        BottomControl(
-                          maxWidth: maxWidth,
-                          isFullScreen: isFullScreen,
-                          controller: plPlayerController,
-                          videoDetailController: videoDetailController,
-                          buildBottomControl: () => buildBottomControl(
-                            videoDetailController,
-                            maxWidth > maxHeight,
+                  Flexible(
+                    fit: FlexFit.loose,
+                    child: AppBarAni(
+                      isTop: false,
+                      controller: _animationController,
+                      isFullScreen: isFullScreen,
+                      removeSafeArea: plPlayerController.removeSafeArea,
+                      child:
+                          widget.bottomControl ??
+                          BottomControl(
+                            maxWidth: maxWidth,
+                            isFullScreen: isFullScreen,
+                            controller: plPlayerController,
+                            diagViewportKey: diagViewportKey,
+                            videoDetailController: videoDetailController,
+                            buildBottomControl: () => buildBottomControl(
+                              videoDetailController,
+                              maxWidth > maxHeight,
+                            ),
                           ),
-                        ),
+                    ),
                   ),
                 ],
               ),

@@ -5,10 +5,13 @@ import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager.LayoutParams
 import io.flutter.embedding.android.RenderMode
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
 import com.alexmercerind.media_kit_video.platformview.PlatformVideoView
 import com.ryanheise.audioservice.AudioServiceActivity
 
 class MainActivity : AudioServiceActivity() {
+    private var renderingChannel: MethodChannel? = null
     private var selectedRenderMode: RenderMode? = null
 
     override fun getRenderMode(): RenderMode {
@@ -25,6 +28,36 @@ class MainActivity : AudioServiceActivity() {
         }
         selectedRenderMode = renderMode
         return renderMode
+    }
+
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+        renderingChannel = MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            "com.example.piliplus/rendering",
+        ).also { channel ->
+            channel.setMethodCallHandler { call, result ->
+                if (call.method != "rootViewType") {
+                    result.notImplemented()
+                } else {
+                    // Report the render mode selected for FlutterActivity's root
+                    // surface. This is separate from media-kit video topology.
+                    result.success(
+                        when (selectedRenderMode) {
+                            RenderMode.surface -> "SurfaceView"
+                            RenderMode.texture -> "TextureView"
+                            else -> "unknown"
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+        renderingChannel?.setMethodCallHandler(null)
+        renderingChannel = null
+        super.cleanUpFlutterEngine(flutterEngine)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {

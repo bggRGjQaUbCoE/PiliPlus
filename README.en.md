@@ -30,6 +30,33 @@
 
 Download a build from [Releases](https://github.com/bggRGjQaUbCoE/PiliPlus/releases), or clone the repository and build it locally.
 
+## Dolby Vision playback on Android
+
+Dolby Vision Profile 5 defaults to software decoding and the
+`gpu-next` renderer to avoid green/purple colors. Detection uses the selected
+video track, so it also applies to downloaded videos. Profile 8 (including 8.4)
+and other formats retain the normal renderer and preferred hardware-decoding
+mode. The preferred decoder is restored when another video is loaded.
+
+In audio/video settings (`音视频设置`), **Dolby Vision Profile 5 decoding**
+(`杜比视界 Profile 5 解码`) offers software compatibility mode and two experimental
+hardware modes: `mediacodec` and `mediacodec-copy`. All three use `gpu-next`.
+Enable hardware decoding (`开启硬解`) before trying either hardware mode;
+turning it off forces software decoding. Close and reopen the video after
+changing modes, then compare the same Profile 5 clip.
+
+Playback information shows the requested `hwdec` separately from the active
+`hwdec`, along with `vo` and the Dolby Vision profile. An active `hwdec` of `no`
+means software decoding, even if a hardware mode was requested. Hardware
+capabilities do not guarantee correct Dolby colors; if a trial produces
+green/purple colors, a black screen, or playback errors, switch back to software
+compatibility mode. No native-library fork is required to try these options.
+
+This rendering path uses libplacebo; it is not
+native Dolby Vision display passthrough. High-resolution Profile 5 videos may
+use more CPU or stutter with software decoding. If needed, select a non-Dolby
+quality.
+
 ## Disclaimer
 
 PiliPlus is a personal project developed for educational purposes, intended only for learning and testing. Please delete it within 24 hours of downloading.

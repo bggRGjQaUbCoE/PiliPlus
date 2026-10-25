@@ -29,6 +29,7 @@ import 'package:PiliPlus/pages/setting/pages/fullscreen_sc.dart'
     show kFullScreenSCWidth;
 import 'package:PiliPlus/plugin/pl_player/models/audio_output_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
+import 'package:PiliPlus/plugin/pl_player/models/dolby_vision_profile5_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/hwdec_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
@@ -266,6 +267,14 @@ abstract final class Pref {
     SettingBoxKey.hardwareDecoding,
     defaultValue: HwDecType.kHwdec,
   );
+
+  static DolbyVisionProfile5Mode get dolbyVisionProfile5Mode =>
+      DolbyVisionProfile5Mode.values.byName(
+        _setting.get(
+          SettingBoxKey.dolbyVisionProfile5Mode,
+          defaultValue: DolbyVisionProfile5Mode.software.name,
+        ),
+      );
 
   static String get videoSync =>
       _setting.get(SettingBoxKey.videoSync, defaultValue: 'display-resample');

@@ -3292,6 +3292,35 @@ final $typed_data.Uint8List replyInAppPushPayloadDescriptor = $convert.base64Dec
     'VyaWFsLkFyY2hpdmVIAFIDYXJjGkcKB0FyY2hpdmUSEAoDYWlkGAEgASgDUgNhaWQSFAoFdGl0'
     'bGUYAiABKAlSBXRpdGxlEhQKBWNvdmVyGAMgASgJUgVjb3ZlckIGCgRpdGVt');
 
+@$core.Deprecated('Use parentReplyMemberDescriptor instead')
+const ParentReplyMember$json = {
+  '1': 'ParentReplyMember',
+  '2': [
+    {'1': 'mid', '3': 1, '4': 1, '5': 3, '10': 'mid'},
+    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+  ],
+};
+
+/// Descriptor for `ParentReplyMember`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List parentReplyMemberDescriptor = $convert.base64Decode(
+    'ChFQYXJlbnRSZXBseU1lbWJlchIQCgNtaWQYASABKANSA21pZBISCgRuYW1lGAIgASgJUgRuYW'
+    '1l');
+
+@$core.Deprecated('Use hotReplyInfoDescriptor instead')
+const HotReplyInfo$json = {
+  '1': 'HotReplyInfo',
+  '2': [
+    {'1': 'arc_title', '3': 1, '4': 1, '5': 9, '10': 'arcTitle'},
+    {'1': 'opinion_idx', '3': 2, '4': 1, '5': 5, '10': 'opinionIdx'},
+    {'1': 'from_text', '3': 3, '4': 1, '5': 9, '10': 'fromText'},
+  ],
+};
+
+/// Descriptor for `HotReplyInfo`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List hotReplyInfoDescriptor = $convert.base64Decode(
+    'CgxIb3RSZXBseUluZm8SGwoJYXJjX3RpdGxlGAEgASgJUghhcmNUaXRsZRIfCgtvcGluaW9uX2'
+    'lkeBgCIAEoBVIKb3BpbmlvbklkeBIbCglmcm9tX3RleHQYAyABKAlSCGZyb21UZXh0');
+
 @$core.Deprecated('Use replyInfoDescriptor instead')
 const ReplyInfo$json = {
   '1': 'ReplyInfo',
@@ -3355,6 +3384,22 @@ const ReplyInfo$json = {
       '6': '.bilibili.main.community.reply.v1.Content',
       '10': 'translatedContent'
     },
+    {
+      '1': 'parent_reply_member',
+      '3': 18,
+      '4': 1,
+      '5': 11,
+      '6': '.bilibili.main.community.reply.v1.ParentReplyMember',
+      '10': 'parentReplyMember'
+    },
+    {
+      '1': 'hot_info',
+      '3': 19,
+      '4': 1,
+      '5': 11,
+      '6': '.bilibili.main.community.reply.v1.HotReplyInfo',
+      '10': 'hotInfo'
+    },
   ],
 };
 
@@ -3372,7 +3417,10 @@ final $typed_data.Uint8List replyInfoDescriptor = $convert.base64Decode(
     'NvbnRyb2wSRwoJbWVtYmVyX3YyGA8gASgLMiouYmlsaWJpbGkubWFpbi5jb21tdW5pdHkucmVw'
     'bHkudjEuTWVtYmVyVjJSCG1lbWJlclYyEh0KCnRyYWNrX2luZm8YECABKAlSCXRyYWNrSW5mbx'
     'JYChJ0cmFuc2xhdGVkX2NvbnRlbnQYESABKAsyKS5iaWxpYmlsaS5tYWluLmNvbW11bml0eS5y'
-    'ZXBseS52MS5Db250ZW50UhF0cmFuc2xhdGVkQ29udGVudA==');
+    'ZXBseS52MS5Db250ZW50UhF0cmFuc2xhdGVkQ29udGVudBJjChNwYXJlbnRfcmVwbHlfbWVtYm'
+    'VyGBIgASgLMjMuYmlsaWJpbGkubWFpbi5jb21tdW5pdHkucmVwbHkudjEuUGFyZW50UmVwbHlN'
+    'ZW1iZXJSEXBhcmVudFJlcGx5TWVtYmVyEkkKCGhvdF9pbmZvGBMgASgLMi4uYmlsaWJpbGkubW'
+    'Fpbi5jb21tdW5pdHkucmVwbHkudjEuSG90UmVwbHlJbmZvUgdob3RJbmZv');
 
 @$core.Deprecated('Use replyInfoReplyDescriptor instead')
 const ReplyInfoReply$json = {

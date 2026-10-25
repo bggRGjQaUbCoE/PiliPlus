@@ -332,7 +332,9 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
                 needDivider: false,
                 depth: node.depth,
                 reason: node.reason,
-                onReply: (_) => debugPrint('onReply'),
+                onReply: (reply) => controller.onReplyByTreeNode(index, reply),
+                onDelete: (reply, _) =>
+                    controller.onRemoveByTreeNode(index, reply),
                 collapsed: node.collapsed,
                 toggleCollapse: node.isLeaf
                     ? null

@@ -178,61 +178,62 @@ class VideoReplyReplyController extends ReplyController
     return super.onReload();
   }
 
-  @override
-  void onReply(
-    ReplyInfo? replyItem, {
-    int? oid,
-    int? replyType,
-    int? index,
-    MentionItem? mentionItem,
-  }) {
-    assert(replyItem != null && index != null);
-
+  Future<ReplyInfo?> _sendReply(ReplyInfo replyItem) async {
     final (bool inputDisable, String? hint) = replyHint;
-    if (inputDisable) {
-      return;
-    }
+    if (inputDisable) return null;
 
-    final oid = replyItem!.oid.toInt();
+    final oid = replyItem.oid.toInt();
     final root = replyItem.id.toInt();
     final key = oid + root;
 
-    Get.key.currentState!
-        .push(
-          PublishRoute(
-            pageBuilder: (buildContext, animation, secondaryAnimation) {
-              return ReplyPage(
-                hint: hint,
-                oid: oid,
-                root: root,
-                parent: root,
-                replyType: this.replyType,
-                replyItem: replyItem,
-                items: savedReplies[key],
-                onSave: (reply) {
-                  if (reply.isEmpty) {
-                    savedReplies.remove(key);
-                  } else {
-                    savedReplies[key] = reply.toList();
-                  }
-                },
-              );
+    final replyInfo = await Get.key.currentState!.push(
+      PublishRoute<ReplyInfo>(
+        pageBuilder: (context, _, _) {
+          return ReplyPage(
+            hint: hint,
+            oid: oid,
+            root: root,
+            parent: root,
+            replyType: replyType,
+            replyItem: replyItem,
+            items: savedReplies[key],
+            onSave: (reply) {
+              if (reply.isEmpty) {
+                savedReplies.remove(key);
+              } else {
+                savedReplies[key] = reply.toList();
+              }
             },
-          ),
-        )
-        .then((replyInfo) {
-          if (replyInfo is ReplyInfo) {
-            savedReplies.remove(key);
+          );
+        },
+      ),
+    );
 
-            count.value += 1;
-            loadingState
-              ..value.dataOrNull?.insert(index! + 1, replyInfo)
-              ..refresh();
-            if (enableCommAntifraud) {
-              onCheckReply(replyInfo, isManual: false);
-            }
-          }
-        });
+    if (replyInfo != null) {
+      savedReplies.remove(key);
+      count.value += 1;
+      if (enableCommAntifraud) {
+        onCheckReply(replyInfo, isManual: false);
+      }
+    }
+    return replyInfo;
+  }
+
+  @override
+  Future<void> onReply(
+    covariant ReplyInfo replyItem, {
+    int? oid,
+    int? replyType,
+    covariant int index = -1,
+    MentionItem? mentionItem,
+  }) async {
+    assert(index != -1 || replyItem.root == replyItem.id);
+
+    if (await _sendReply(replyItem) case final replyInfo?) {
+      loadingState
+        ..value.dataOrNull?.insert(index + 1, replyInfo)
+        ..refresh();
+    }
   }
 
   Timer? _replyTimer;
@@ -336,5 +337,31 @@ class VideoReplyReplyController extends ReplyController
       }
     }
     return false;
+  }
+
+  Future<void> onReplyByTreeNode(int index, ReplyInfo replyItem) async {
+    if (await _sendReply(replyItem) case final replyInfo?) {
+      replyTree
+        ..rawValue!.appendLeaf(replyInfo, index)
+        ..refresh();
+
+      final data = loadingState.rawValue.dataOrNull;
+      if (data != null) {
+        final index = data.reverseIdentityIndexOf(replyItem);
+        data.insert(index + 1, replyInfo);
+      }
+    }
+  }
+
+  void onRemoveByTreeNode(int index, ReplyInfo replyItem) {
+    replyTree
+      ..rawValue!.remove(index)
+      ..refresh();
+
+    final data = loadingState.rawValue.dataOrNull;
+    if (data != null) {
+      final index = data.reverseIdentityIndexOf(replyItem);
+      onRemove(index, replyItem, null);
+    }
   }
 }

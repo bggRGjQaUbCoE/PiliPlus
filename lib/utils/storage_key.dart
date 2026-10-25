@@ -19,6 +19,7 @@ abstract final class SettingBoxKey {
       liveBufferSize = 'liveBufferSize',
       liveBufferSec = 'liveBufferSec',
       hardwareDecoding = 'hardwareDecoding',
+      dolbyVisionProfile5Mode = 'dolbyVisionProfile5Mode',
       videoSync = 'videoSync',
       autosync = 'autosync',
       p1080 = 'p1080',

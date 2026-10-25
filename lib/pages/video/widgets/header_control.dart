@@ -808,6 +808,11 @@ class HeaderControlState extends State<HeaderControl>
     required NativePlayer player,
   }) {
     final hwdec = player.getProperty('hwdec-current');
+    final requestedHwdec = player.getProperty('hwdec');
+    final renderer = player.getProperty('current-vo');
+    final dolbyVisionProfile = player.getProperty(
+      'current-tracks/video/dolby-vision-profile',
+    );
     final volume = player.getProperty('volume');
     showDialog(
       context: context,
@@ -880,10 +885,33 @@ class HeaderControlState extends State<HeaderControl>
                     ),
                     ListTile(
                       dense: true,
+                      title: const Text('hwdec (requested)'),
+                      subtitle: Text(requestedHwdec),
+                      onTap: () => Utils.copyText(
+                        'hwdec (requested)\n$requestedHwdec',
+                      ),
+                    ),
+                    ListTile(
+                      dense: true,
                       title: const Text('hwdec'),
                       subtitle: Text(hwdec),
                       onTap: () => Utils.copyText('hwdec\n$hwdec'),
                     ),
+                    ListTile(
+                      dense: true,
+                      title: const Text('vo'),
+                      subtitle: Text(renderer),
+                      onTap: () => Utils.copyText('vo\n$renderer'),
+                    ),
+                    if (dolbyVisionProfile.isNotEmpty)
+                      ListTile(
+                        dense: true,
+                        title: const Text('Dolby Vision Profile'),
+                        subtitle: Text(dolbyVisionProfile),
+                        onTap: () => Utils.copyText(
+                          'Dolby Vision Profile\n$dolbyVisionProfile',
+                        ),
+                      ),
                   ],
                 ),
               ),

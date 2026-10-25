@@ -18,8 +18,10 @@ import 'package:PiliPlus/models/video/play/url.dart';
 import 'package:PiliPlus/models_new/video/video_shot/data.dart';
 import 'package:PiliPlus/pages/danmaku/danmaku_model.dart';
 import 'package:PiliPlus/pages/sponsor_block/block_mixin.dart';
+import 'package:PiliPlus/plugin/pl_player/android_video_output.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_status.dart';
+import 'package:PiliPlus/plugin/pl_player/models/dolby_vision_profile5_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/double_tap_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/duration.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
@@ -866,9 +868,10 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
     assert(_videoController == null);
 
-    _videoController = await VideoController.create(
+    final surfaceController = await VideoController.create(
       player,
       configuration: VideoControllerConfiguration(
+        vo: Platform.isAndroid ? 'null' : null,
         enableHardwareAcceleration: hwdec != null,
         androidAttachSurfaceAfterVideoParameters: false,
         hwdec: hwdec,
@@ -876,8 +879,23 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     );
 
     if (Platform.isAndroid) {
+      _videoController = AndroidVideoOutput(
+        player,
+        surfaceController,
+        hardwareDecoding: hwdec ?? 'no',
+        profile5Mode: () => Pref.enableHA
+            ? Pref.dolbyVisionProfile5Mode
+            : DolbyVisionProfile5Mode.software,
+        onError: (error, stackTrace) {
+          dataStatus.value = DataStatus.error;
+          Utils.reportError(error, stackTrace);
+          SmartDialog.showToast('视频渲染失败，请尝试软解或切换非杜比画质');
+        },
+      );
       // Avoid sizing the surface using mpv's idle window between media loads.
       player.setProperty('force-window', 'no');
+    } else {
+      _videoController = surfaceController;
     }
 
     player.setMediaHeader(userAgent: BrowserUa.pc, referer: HttpString.baseUrl);

@@ -7,6 +7,7 @@ import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/widgets/ordered_multi_select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/plugin/pl_player/models/audio_output_type.dart';
+import 'package:PiliPlus/plugin/pl_player/models/dolby_vision_profile5_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/hwdec_type.dart';
 import 'package:PiliPlus/utils/filtering_text.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -189,6 +190,14 @@ List<SettingsModel> get videoSettings => [
     getSubtitle: () => '当前：${Pref.hardwareDecoding}（此项即mpv的--hwdec）',
     onTap: _showHwDecDialog,
   ),
+  if (Platform.isAndroid)
+    NormalModel(
+      title: '杜比视界 Profile 5 解码',
+      leading: const Icon(Icons.video_settings_outlined),
+      getSubtitle: () =>
+          '当前：${Pref.dolbyVisionProfile5Mode.label}。均使用 gpu-next；硬解选项需开启硬解，若偏绿、偏紫或无法播放请切回软解。重新打开视频后生效，不影响 Profile 8.4。',
+      onTap: _showDolbyVisionProfile5Dialog,
+    ),
 ];
 
 Future<void> _showCDNDialog(BuildContext context, VoidCallback setState) async {
@@ -451,6 +460,27 @@ Future<void> _showVideoSyncDialog(
   if (res != null) {
     await GStorage.setting.put(SettingBoxKey.videoSync, res);
     setState();
+  }
+}
+
+Future<void> _showDolbyVisionProfile5Dialog(
+  BuildContext context,
+  VoidCallback setState,
+) async {
+  final res = await showDialog<DolbyVisionProfile5Mode>(
+    context: context,
+    builder: (context) => SelectDialog<DolbyVisionProfile5Mode>(
+      title: '杜比视界 Profile 5 解码',
+      value: Pref.dolbyVisionProfile5Mode,
+      values: [
+        for (final mode in DolbyVisionProfile5Mode.values) (mode, mode.label),
+      ],
+    ),
+  );
+  if (res != null) {
+    await GStorage.setting.put(SettingBoxKey.dolbyVisionProfile5Mode, res.name);
+    setState();
+    SmartDialog.showToast('重新打开视频后生效');
   }
 }
 

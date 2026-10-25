@@ -24,4 +24,11 @@
     </style>
 
     <style name="Ucrop.CropTheme" parent="Theme.AppCompat.Light.NoActionBar"/>
+
+    <style name="Media3PlayerTheme" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:colorAccent">@android:color/white</item>
+    </style>
 </resources>

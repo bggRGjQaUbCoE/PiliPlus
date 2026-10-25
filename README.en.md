@@ -52,10 +52,39 @@ capabilities do not guarantee correct Dolby colors; if a trial produces
 green/purple colors, a black screen, or playback errors, switch back to software
 compatibility mode. No native-library fork is required to try these options.
 
-This rendering path uses libplacebo; it is not
+These three mpv modes use libplacebo; this is not
 native Dolby Vision display passthrough. High-resolution Profile 5 videos may
 use more CPU or stutter with software decoding. If needed, select a non-Dolby
 quality.
+
+### Experimental native Media3 mode
+
+Select **Media3 原生播放器（实验性）** in the same Profile 5 setting, then reopen
+the video. This is a separate Android full-screen Media3/ExoPlayer activity using
+a **SurfaceView**, not an mpv decoder or a Flutter texture. It requires Android
+7.0+ and a display and decoder advertising Dolby Vision support. It is independent
+of the mpv hardware-decoding switch. Software decoding remains the default.
+
+An explicit `dvhe.05`/`dvh1.05` codec goes directly to Media3. When codec metadata
+is missing (including downloads), mpv probes the selected track and is stopped
+before handing Profile 5 to Media3. Profile 8.4, SDR, live streams, and audio-only
+playback stay on mpv. Separate DASH video/audio URLs and HTTP headers, or local
+video/audio files, are passed to Media3 without mpv's EDL wrapper.
+
+The native controls provide pause, seeking and playback speed. Back returns the
+position and speed to PiliPlus without resuming mpv; the play button reopens
+Media3 at that position. Completion uses PiliPlus's existing repeat/next-episode
+policy. Leaving the native activity stops playback; returning from the background
+requires pressing play. Danmaku, external subtitles, mpv filters, SponsorBlock
+skipping, background playback and PiP are not supported in this mode. Native
+playback errors are reported rather than silently falling back to HEVC or mpv.
+
+For device trials, compare the same Profile 5 clip with software mode. Tap the
+native controls to see the active decoder name and `SurfaceView` diagnostic.
+Check colors, the device's Dolby Vision indication, split audio synchronization,
+seek/resume, rotation, Back, background/foreground, and then a Profile 8.4 clip.
+Capability checks do **not** prove correct Dolby Vision output on every device.
+If playback fails or looks wrong, select software mode and reopen the video.
 
 ## Disclaimer
 

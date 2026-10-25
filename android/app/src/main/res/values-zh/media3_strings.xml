@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="media3_player_title">Media3 · 杜比视界 Profile 5</string>
+    <string name="media3_player_back">返回</string>
+    <string name="media3_player_diagnostics">Media3 · DV Profile 5 · SurfaceView\n%1$s</string>
+    <string name="media3_player_android_required">原生杜比视界播放需要 Android 7.0 或更高版本。</string>
+    <string name="media3_player_display_required">屏幕未报告杜比视界支持，请在音视频设置中选择软解。</string>
+    <string name="media3_player_codec_required">没有可用的杜比视界解码器，请在音视频设置中选择软解。</string>
+    <string name="media3_player_wrong_profile">所选视频轨道不是杜比视界 Profile 5。</string>
+</resources>

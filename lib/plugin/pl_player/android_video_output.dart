@@ -17,6 +17,7 @@ class AndroidVideoOutput extends VideoController {
     this._surfaceController, {
     required String hardwareDecoding,
     required DolbyVisionProfile5Mode Function() profile5Mode,
+    this.onNativePlaybackRequested,
     required void Function(Object, StackTrace) onError,
   }) : _hardwareDecoding = hardwareDecoding,
        _profile5Mode = profile5Mode,
@@ -37,6 +38,7 @@ class AndroidVideoOutput extends VideoController {
   final VideoController _surfaceController;
   final String _hardwareDecoding;
   final DolbyVisionProfile5Mode Function() _profile5Mode;
+  final VoidCallback? onNativePlaybackRequested;
   final void Function(Object, StackTrace) _onError;
   final _lock = Lock();
   bool _active = false;
@@ -86,6 +88,7 @@ class AndroidVideoOutput extends VideoController {
   }
 
   Future<void> _resize(Rect size, int generation) async {
+    bool requestNativePlayback = false;
     try {
       await _lock.synchronized(() async {
         if (!_active || _disposed || generation != _generation) return;
@@ -97,7 +100,17 @@ class AndroidVideoOutput extends VideoController {
         if (profile == '5' && !_profile5) {
           rect.value = Rect.zero;
           // Sample the preference on each media load, not on player creation.
-          final hwdec = _profile5Mode().hwdec;
+          final mode = _profile5Mode();
+          if (mode == DolbyVisionProfile5Mode.media3) {
+            if (onNativePlaybackRequested == null) {
+              throw StateError('Media3 playback is not connected');
+            }
+            _profile5 = true;
+            _active = false;
+            requestNativePlayback = true;
+            return;
+          }
+          final hwdec = mode.hwdec;
           player.setProperty('hwdec', hwdec);
           if (player.getProperty('hwdec') != hwdec) {
             throw StateError('Unable to select Dolby Vision decoder: $hwdec');
@@ -122,6 +135,10 @@ class AndroidVideoOutput extends VideoController {
         _setRenderer(_profile5 ? 'gpu-next' : 'gpu');
         rect.value = size;
       });
+      // Stopping mpv runs the unload hook, which also acquires this lock.
+      if (requestNativePlayback && !_disposed && generation == _generation) {
+        onNativePlaybackRequested!();
+      }
     } catch (error, stackTrace) {
       if (!_disposed && generation == _generation) {
         rect.value = Rect.zero;

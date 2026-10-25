@@ -81,6 +81,8 @@ void main() {
   late List<MethodCall> calls;
   late List<Object> errors;
   late DolbyVisionProfile5Mode profile5Mode;
+  late int nativeRequests;
+  Future<void>? nativeUnload;
 
   setUp(() {
     player = _Player();
@@ -98,6 +100,8 @@ void main() {
     calls = [];
     errors = [];
     profile5Mode = DolbyVisionProfile5Mode.software;
+    nativeRequests = 0;
+    nativeUnload = null;
     messenger.setMockMethodCallHandler(channel, (call) async {
       calls.add(call);
       return null;
@@ -107,6 +111,11 @@ void main() {
       surface,
       hardwareDecoding: hardwareDecoding,
       profile5Mode: () => profile5Mode,
+      onNativePlaybackRequested: () {
+        nativeRequests++;
+        // Regression: native handoff must not run under the resize lock.
+        nativeUnload = player.unload();
+      },
       onError: (error, _) => errors.add(error),
     );
   });
@@ -164,6 +173,42 @@ void main() {
       );
     }
   }
+
+  test('Profile 5 hands off once without configuring an mpv decoder', () async {
+    profile5Mode = DolbyVisionProfile5Mode.media3;
+    await player.load('5');
+    player.writes.clear();
+    await emitSize();
+    await emitSize(portrait);
+    await nativeUnload!.timeout(const Duration(seconds: 1));
+
+    expect(nativeRequests, 1);
+    expect(calls, isEmpty);
+    expect(player.writes, isNot(contains(('hwdec', 'no'))));
+    expect(player.writes, isNot(contains(('vo', 'gpu-next'))));
+    expect(output.rect.value, Rect.zero);
+    expect(errors, isEmpty);
+
+    await player.load('8');
+    await emitSize();
+    expect(nativeRequests, 1);
+    expect(player.getProperty('vo'), 'gpu');
+    expect(player.getProperty('hwdec'), hardwareDecoding);
+    expect(output.rect.value, landscape);
+  });
+
+  test(
+    'a subsequent Profile 5 load may request native playback again',
+    () async {
+      profile5Mode = DolbyVisionProfile5Mode.media3;
+      await player.load('5');
+      await emitSize();
+      await player.load('5');
+      await emitSize();
+      expect(nativeRequests, 2);
+      expect(errors, isEmpty);
+    },
+  );
 
   for (final (mode, expectedHwdec) in [
     (DolbyVisionProfile5Mode.mediacodec, 'mediacodec'),

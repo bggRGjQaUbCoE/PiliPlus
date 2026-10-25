@@ -9,15 +9,18 @@ class LiveSliverPinnedHeader extends SliverPinnedHeader {
     required super.child,
     super.backgroundColor,
     required this.areaHeight,
+    required this.callback,
   });
 
   final double areaHeight;
+  final ValueChanged<double> callback;
 
   @override
   RenderObject createRenderObject(BuildContext context) =>
       RenderLiveSliverPinnedHeader(
         backgroundColor: backgroundColor,
         areaHeight: areaHeight,
+        callback: callback,
       );
 
   @override
@@ -26,7 +29,9 @@ class LiveSliverPinnedHeader extends SliverPinnedHeader {
     RenderLiveSliverPinnedHeader renderObject,
   ) {
     super.updateRenderObject(context, renderObject);
-    renderObject.areaHeight = areaHeight;
+    renderObject
+      ..areaHeight = areaHeight
+      ..callback = callback;
   }
 }
 
@@ -34,25 +39,26 @@ class RenderLiveSliverPinnedHeader extends RenderSliverPinnedHeader {
   RenderLiveSliverPinnedHeader({
     required super.backgroundColor,
     required this._areaHeight,
+    required this.callback,
   });
 
   double _areaHeight;
-
   set areaHeight(double value) {
     if (_areaHeight == value) return;
     _areaHeight = value;
     markNeedsLayout();
   }
 
+  ValueChanged<double> callback;
+
   @override
   void performLayout() {
     super.performLayout();
     final double childExtent = child!.size.height;
+    final offset = childExtent - _areaHeight;
     geometry = geometry!.copyWith(
-      paintOrigin: -math.min(
-        constraints.scrollOffset,
-        childExtent - _areaHeight,
-      ),
+      paintOrigin: -math.min(constraints.scrollOffset, offset),
     );
+    callback(offset);
   }
 }

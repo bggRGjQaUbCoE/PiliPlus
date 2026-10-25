@@ -31,6 +31,11 @@ class LiveController extends CommonListController with AccountMixin {
   final RxInt tagIndex = 0.obs;
   List<LiveSecondTag>? newTags;
 
+  double _topHeight = 0.0;
+  void onTopHeightChanged(double value) {
+    _topHeight = value;
+  }
+
   final Rx<Pair<LiveCardList?, LiveCardList?>> topState =
       Pair<LiveCardList?, LiveCardList?>(first: null, second: null).obs;
 
@@ -129,10 +134,7 @@ class LiveController extends CommonListController with AccountMixin {
     areaId = cardLiveItem?.areaV2Id;
     parentAreaId = cardLiveItem?.areaV2ParentId;
 
-    count = null;
-    page = 1;
-    isEnd = false;
-    queryData();
+    _onSelectAreaTag();
   }
 
   void onSelectTag(int index, String? sortType) {
@@ -142,10 +144,21 @@ class LiveController extends CommonListController with AccountMixin {
     tagIndex.value = index;
     this.sortType = sortType;
 
+    _onSelectAreaTag();
+  }
+
+  void _onSelectAreaTag() {
     count = null;
     page = 1;
     isEnd = false;
-    queryData();
+    queryData().whenComplete(_jumpToListTop);
+  }
+
+  void _jumpToListTop() {
+    if (scrollController.hasClients &&
+        scrollController.position.pixels > _topHeight) {
+      scrollController.jumpTo(_topHeight);
+    }
   }
 
   @override

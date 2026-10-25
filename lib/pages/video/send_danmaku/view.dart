@@ -353,28 +353,25 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Obx(
-              () => TextField(
-                controller: editController,
-                autofocus: false,
-                readOnly: readOnly.value,
-                inputFormatters: [
-                  LengthLimitingTextInputFormatter(100),
-                ],
-                onChanged: onChanged,
-                textInputAction: TextInputAction.send,
-                onSubmitted: onSubmitted,
-                focusNode: focusNode,
-                decoration: InputDecoration(
-                  hintText: "输入弹幕内容",
-                  border: InputBorder.none,
-                  hintStyle: TextStyle(
-                    fontSize: 15,
-                    color: theme.colorScheme.outline,
-                  ),
+            child: TextField(
+              controller: editController,
+              autofocus: false,
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(100),
+              ],
+              onChanged: onChanged,
+              textInputAction: TextInputAction.send,
+              onSubmitted: onSubmitted,
+              focusNode: focusNode,
+              decoration: InputDecoration(
+                hintText: "输入弹幕内容",
+                border: InputBorder.none,
+                hintStyle: TextStyle(
+                  fontSize: 15,
+                  color: theme.colorScheme.outline,
                 ),
-                style: theme.textTheme.bodyLarge,
               ),
+              style: theme.textTheme.bodyLarge,
             ),
           ),
           Obx(

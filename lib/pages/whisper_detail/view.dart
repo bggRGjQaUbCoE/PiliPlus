@@ -280,30 +280,27 @@ class _WhisperDetailPageState
             tooltip: '表情',
           ),
           Expanded(
-            child: Obx(
-              () => RichTextField(
-                key: key,
-                readOnly: readOnly.value,
-                focusNode: focusNode,
-                controller: editController,
-                minLines: 1,
-                maxLines: 4,
-                onChanged: onChanged,
-                onSubmitted: onSubmitted,
-                textInputAction: TextInputAction.newline,
-                decoration: InputDecoration(
-                  filled: true,
-                  hintText: '发个消息聊聊呗~',
-                  fillColor: theme.colorScheme.surface,
-                  border: const OutlineInputBorder(
-                    borderSide: BorderSide.none,
-                    borderRadius: BorderRadius.all(Radius.circular(6)),
-                    gapPadding: 0,
-                  ),
-                  contentPadding: const EdgeInsets.all(10),
+            child: RichTextField(
+              key: key,
+              focusNode: focusNode,
+              controller: editController,
+              minLines: 1,
+              maxLines: 4,
+              onChanged: onChanged,
+              onSubmitted: onSubmitted,
+              textInputAction: TextInputAction.newline,
+              decoration: InputDecoration(
+                filled: true,
+                hintText: '发个消息聊聊呗~',
+                fillColor: theme.colorScheme.surface,
+                border: const OutlineInputBorder(
+                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.all(Radius.circular(6)),
+                  gapPadding: 0,
                 ),
-                // inputFormatters: [LengthLimitingTextInputFormatter(500)],
+                contentPadding: const EdgeInsets.all(10),
               ),
+              // inputFormatters: [LengthLimitingTextInputFormatter(500)],
             ),
           ),
           Obx(

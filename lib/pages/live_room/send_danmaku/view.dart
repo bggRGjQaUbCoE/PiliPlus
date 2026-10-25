@@ -2,7 +2,6 @@ import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/text_field.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/http/live.dart';
-import 'package:PiliPlus/models/common/publish_panel_type.dart';
 import 'package:PiliPlus/pages/common/publish/common_rich_text_pub_page.dart';
 import 'package:PiliPlus/pages/live_emote/controller.dart';
 import 'package:PiliPlus/pages/live_emote/view.dart';
@@ -12,15 +11,14 @@ import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart' hide TextField;
 
 class LiveSendDmPanel extends CommonRichTextPubPage {
-  final bool fromEmote;
   final LiveRoomController liveRoomController;
 
   const LiveSendDmPanel({
     super.key,
     super.items,
     super.onSave,
-    super.autofocus = true,
-    this.fromEmote = false,
+    super.autofocus,
+    super.panelType,
     required this.liveRoomController,
   });
 
@@ -30,14 +28,6 @@ class LiveSendDmPanel extends CommonRichTextPubPage {
 
 class _ReplyPageState extends CommonRichTextPubPageState<LiveSendDmPanel> {
   LiveRoomController get liveRoomController => widget.liveRoomController;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.fromEmote) {
-      updatePanelType(PanelType.emoji);
-    }
-  }
 
   @override
   void dispose() {
@@ -113,24 +103,21 @@ class _ReplyPageState extends CommonRichTextPubPageState<LiveSendDmPanel> {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Obx(
-              () => RichTextField(
-                key: key,
-                textInputAction: .send,
-                controller: editController,
-                autofocus: false,
-                readOnly: readOnly.value,
-                onChanged: onChanged,
-                onSubmitted: onSubmitted,
-                focusNode: focusNode,
-                decoration: const InputDecoration(
-                  hintText: "输入弹幕内容",
-                  border: InputBorder.none,
-                  hintStyle: TextStyle(fontSize: 14),
-                ),
-                style: theme.textTheme.bodyLarge,
-                // inputFormatters: [LengthLimitingTextInputFormatter(20)],
+            child: RichTextField(
+              key: key,
+              textInputAction: .send,
+              controller: editController,
+              autofocus: false,
+              onChanged: onChanged,
+              onSubmitted: onSubmitted,
+              focusNode: focusNode,
+              decoration: const InputDecoration(
+                hintText: "输入弹幕内容",
+                border: InputBorder.none,
+                hintStyle: TextStyle(fontSize: 14),
               ),
+              style: theme.textTheme.bodyLarge,
+              // inputFormatters: [LengthLimitingTextInputFormatter(20)],
             ),
           ),
           Obx(

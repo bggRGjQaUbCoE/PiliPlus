@@ -268,7 +268,7 @@ packages:
     description:
       path: "packages/chat_bottom_container"
       ref: dev
-      resolved-ref: d2f7b8df63126d9f347c1320de10db15deab06db
+      resolved-ref: a39a5b2a0d108c33608fabd054ea97334d21ad6f
       url: "https://github.com/bggRGjQaUbCoE/flutter_chat_packages.git"
     source: git
     version: "0.5.2"

@@ -475,23 +475,25 @@ class _ScanAuthPageState extends State<ScanAuthPage>
                 }
               },
             ),
+            // 手电筒常驻右上角，无闪光灯的设备置灰（不隐藏，避免按钮忽隐忽现）
             Align(
-              alignment: Alignment.centerRight,
+              alignment: Alignment.topRight,
               child: Padding(
                 padding: const EdgeInsets.all(8),
                 child: ValueListenableBuilder<MobileScannerState>(
                   valueListenable: scanner,
                   builder: (context, state, child) {
-                    if (state.torchState == TorchState.unavailable) {
-                      return child!;
-                    }
+                    final unavailable =
+                        state.torchState == TorchState.unavailable;
                     final on = state.torchState == TorchState.on;
                     return IconButton(
-                      tooltip: on ? '关闭手电筒' : '手电筒',
+                      tooltip: unavailable
+                          ? '设备没有闪光灯'
+                          : (on ? '关闭手电筒' : '手电筒'),
                       style: IconButton.styleFrom(
                         backgroundColor: theme.colorScheme.surfaceContainerHighest,
                       ),
-                      onPressed: _toggleTorch,
+                      onPressed: unavailable ? null : _toggleTorch,
                       icon: Icon(
                         on
                             ? Icons.flashlight_on
@@ -499,7 +501,6 @@ class _ScanAuthPageState extends State<ScanAuthPage>
                       ),
                     );
                   },
-                  child: const SizedBox.shrink(),
                 ),
               ),
             ),

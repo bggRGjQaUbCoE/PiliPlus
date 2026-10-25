@@ -1263,11 +1263,7 @@ class HeaderControlState extends State<HeaderControl>
                             '_',
                           );
                   // Reserved characters may not be used in file names. See: https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions
-                  StorageUtils.saveBytes2File(
-                    name: name,
-                    bytes: bytes,
-                    allowedExtensions: [format.name],
-                  );
+                  StorageUtils.saveBytes2File(name: name, bytes: bytes);
                 } catch (e, s) {
                   Utils.reportError(e, s);
                   SmartDialog.showToast(e.toString());

@@ -40,7 +40,6 @@ void exportToLocalFile({
         'piliplus_${localFileName()}_'
         '${DateFormatUtils.only0_9.format(DateTime.now())}.json',
     bytes: res,
-    allowedExtensions: const ['json'],
   );
 }
 
@@ -216,8 +215,6 @@ Future<void> _exportAllDataToArchive() async {
       '${DateFormatUtils.only0_9.format(DateTime.now())}.zip';
   if (PlatformUtils.isDesktop) {
     final path = await FilePicker.saveFile(
-      allowedExtensions: const ['zip'],
-      type: FileType.custom,
       fileName: name,
       bytes: Uint8List(0),
     );
@@ -244,8 +241,6 @@ Future<void> _exportAllDataToArchive() async {
       return;
     }
     final path = await FilePicker.saveFile(
-      allowedExtensions: const ['zip'],
-      type: FileType.custom,
       fileName: name,
       bytes: out.getBytes(),
     );

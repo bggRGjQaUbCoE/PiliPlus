@@ -193,6 +193,38 @@ void main() {
     expect(find.text('second'), findsNothing);
   });
 
+  testWidgets('回复区跟着手指下滑：没拖够弹回，拖够松手关闭，震动照常', (tester) async {
+    await _pumpTwoPages(tester);
+    final sheet = AnimationController(
+      vsync: const TestVSync(),
+      duration: const Duration(milliseconds: 200),
+      value: 1.0,
+    );
+    addTearDown(sheet.dispose);
+    final route = ModalRoute.of(tester.element(find.text('second')))!
+      // closing the sheet animates it out
+      ..addLocalHistoryEntry(LocalHistoryEntry(onRemove: sheet.reverse));
+    CupertinoEndEdgeBackGesture.sheetAnimation = (r) =>
+        r == route ? sheet : null;
+    addTearDown(() => CupertinoEndEdgeBackGesture.sheetAnimation = null);
+    await tester.pump();
+
+    var gesture = await _dragFromRightEdge(tester, 40);
+    expect(sheet.value, closeTo(0.9, 0.02), reason: 'follows the finger');
+    expect(_secondPageLeft(tester), 0, reason: 'the page does not move');
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(sheet.value, 1.0, reason: 'springs back');
+
+    gesture = await _dragFromRightEdge(tester, 100);
+    expect(armedEvents, [true], reason: 'same haptics as the page swipe');
+    expect(sheet.value, closeTo(0.75, 0.02));
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(sheet.value, 0.0, reason: 'closes from where it was left');
+    expect(find.text('second'), findsOneWidget, reason: 'stays on the page');
+  });
+
   testWidgets('首页不能右滑返回', (tester) async {
     tester.view
       ..physicalSize = _size

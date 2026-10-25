@@ -30,6 +30,37 @@ class MiniScaffoldState extends State<MiniScaffold>
     with TickerProviderStateMixin {
   PersistentBottomSheetController? _currentBottomSheet;
 
+  // the open sheet's animation and the route it belongs to, so the right
+  // edge back gesture can move the sheet with the finger
+  AnimationController? _sheetAnimation;
+  ModalRoute<Object?>? _sheetRoute;
+
+  static final Set<MiniScaffoldState> _states = {};
+
+  /// Animation of the bottom sheet open on [route], if any.
+  static AnimationController? openSheetAnimation(ModalRoute<Object?> route) {
+    for (final state in _states) {
+      if (state.mounted &&
+          state._currentBottomSheet != null &&
+          state._sheetRoute == route) {
+        return state._sheetAnimation;
+      }
+    }
+    return null;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _states.add(this);
+  }
+
+  @override
+  void dispose() {
+    _states.remove(this);
+    super.dispose();
+  }
+
   void _closeCurrentBottomSheet() {
     if (_currentBottomSheet != null) {
       if (!_currentBottomSheet!.isLocalHistoryEntry) {
@@ -104,6 +135,8 @@ class MiniScaffoldState extends State<MiniScaffold>
       onDismissed: () {
         if (bottomSheet == _currentBottomSheet?.widget) {
           _currentBottomSheet = null;
+          _sheetAnimation = null;
+          _sheetRoute = null;
           if (mounted) {
             setState(() {});
           }
@@ -121,7 +154,9 @@ class MiniScaffoldState extends State<MiniScaffold>
       constraints: constraints,
     );
 
-    (Get.routing.route! as ModalRoute).addLocalHistoryEntry(entry);
+    _sheetRoute = (Get.routing.route! as ModalRoute)
+      ..addLocalHistoryEntry(entry);
+    _sheetAnimation = animationController;
 
     return PersistentBottomSheetController(
       bottomSheet,

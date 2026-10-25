@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 
+import 'package:PiliPlus/common/widgets/scaffold/mini_scaffold.dart';
 import 'package:PiliPlus/utils/feed_back.dart' show enableFeedback;
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:cupertino_ui/cupertino_ui.dart'
@@ -16,6 +17,9 @@ import 'package:flutter/services.dart' show HapticFeedback;
 abstract final class EndEdgeBackGesture {
   static void init() {
     CupertinoEndEdgeBackGesture.onArmedChanged = _onArmedChanged;
+    // e.g. the reply panel of the video page follows the finger
+    CupertinoEndEdgeBackGesture.sheetAnimation =
+        MiniScaffoldState.openSheetAnimation;
     setEnabled(Pref.endEdgeBackGesture);
   }
 

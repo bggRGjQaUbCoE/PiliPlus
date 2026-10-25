@@ -1,5 +1,5 @@
 diff --git a/lib/src/route.dart b/lib/src/route.dart
-index 2b3b510..54d2675 100644
+index 2b3b510..c63f428 100644
 --- a/lib/src/route.dart
 +++ b/lib/src/route.dart
 @@ -594,7 +594,11 @@ class _CupertinoPageTransitionState extends State<CupertinoPageTransition> {
@@ -15,7 +15,7 @@ index 2b3b510..54d2675 100644
        ),
      );
    }
-@@ -1639,3 +1643,496 @@ class CupertinoPageTransitionsBuilder extends PageTransitionsBuilder {
+@@ -1639,3 +1643,520 @@ class CupertinoPageTransitionsBuilder extends PageTransitionsBuilder {
      );
    }
  }
@@ -28,7 +28,8 @@ index 2b3b510..54d2675 100644
 +// finger. Once dragged past [CupertinoEndEdgeBackGesture.armDistance] the
 +// gesture is armed, and releasing it pops the route; dragging back before
 +// releasing cancels. While a bottom sheet (local history entry) is open, the
-+// page stays put and releasing closes the sheet instead.
++// page stays put, the sheet follows the finger (when the app provides its
++// animation) and releasing closes the sheet instead.
 +
 +/// Configuration of the end edge back gesture added by PiliPlus.
 +abstract final class CupertinoEndEdgeBackGesture {
@@ -41,6 +42,12 @@ index 2b3b510..54d2675 100644
 +
 +  /// Distance the finger has to travel before the gesture is armed.
 +  static double armDistance(double width) => clampDouble(width * 0.2, 64.0, 120.0);
++
++  /// Lets an open bottom sheet follow the gesture: returns the animation
++  /// controller of the sheet open on [route] (1.0 = fully shown), or null.
++  /// The sheet is lowered while dragging and closes from there on release.
++  static AnimationController? Function(ModalRoute<Object?> route)?
++  sheetAnimation;
 +
 +  /// Key of the edge indicator, for tests.
 +  static const Key indicatorKey = ValueKey<String>('CupertinoEndEdgeBackIndicator');
@@ -71,6 +78,9 @@ index 2b3b510..54d2675 100644
 +  /// A bottom sheet (local history entry) is open: the swipe closes it
 +  /// instead of leaving the page, so the page does not move.
 +  bool _closeSheet = false;
++
++  /// Animation of the open sheet, moved with the finger.
++  AnimationController? _sheetAnimation;
 +
 +  @override
 +  void initState() {
@@ -110,7 +120,9 @@ index 2b3b510..54d2675 100644
 +    _width = context.size!.width;
 +    _distance = 0.0;
 +    _dragging = true;
-+    if (!_closeSheet) {
++    if (_closeSheet) {
++      _sheetAnimation = CupertinoEndEdgeBackGesture.sheetAnimation?.call(route);
++    } else {
 +      _backGestureController ??= _CupertinoEndEdgeBackGestureController(route);
 +    }
 +    final OverlayState? overlay = Overlay.maybeOf(context);
@@ -133,6 +145,9 @@ index 2b3b510..54d2675 100644
 +    final double delta = _isLtr ? -details.primaryDelta! : details.primaryDelta!;
 +    _distance = max(0.0, _distance + delta);
 +    _backGestureController?.setProgress(_distance / _width);
++    if (_sheetAnimation case final sheet?) {
++      sheet.value = 1.0 - clampDouble(_distance / _width, 0.0, 1.0);
++    }
 +    final _EndEdgeBackIndicatorModel? indicator = _indicator;
 +    if (indicator != null) {
 +      final RenderBox overlayBox =
@@ -173,9 +188,18 @@ index 2b3b510..54d2675 100644
 +          route.isCurrent &&
 +          route.willHandlePopInternally &&
 +          route.navigator != null;
++      final AnimationController? sheet = _sheetAnimation;
++      _sheetAnimation = null;
 +      if (committed) {
 +        // removes the newest local history entry, which closes the sheet
++        // (from where the finger left it)
 +        route.navigator!.maybePop();
++      } else if (sheet != null && !sheet.isAnimating) {
++        sheet.animateTo(
++          1.0,
++          duration: _kDroppedSwipePageAnimationDuration,
++          curve: Curves.fastEaseInToSlowEaseOut,
++        );
 +      }
 +    } else {
 +      final _CupertinoEndEdgeBackGestureController? controller = _backGestureController;

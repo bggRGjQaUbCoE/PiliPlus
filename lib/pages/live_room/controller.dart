@@ -132,7 +132,9 @@ class LiveRoomController extends GetxController {
   final RxBool isPortrait = false.obs;
   late List<LiveQuality> acceptQnList = [];
   final Rxn<LiveQuality> currentQn = Rxn<LiveQuality>(
-    PlatformUtils.isMobile ? null : .fromCode(Pref.liveQuality),
+    PlatformUtils.isMobile || Platform.isLinux
+        ? null
+        : .fromCode(Pref.liveQuality),
   );
 
   late final bool isLogin;

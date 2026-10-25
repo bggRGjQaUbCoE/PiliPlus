@@ -140,6 +140,7 @@ dependencies:
     git:
       url: https://github.com/bggRGjQaUbCoE/flutter_native_device_orientation.git
       ref: master
+  nm: ^0.5.0
   package_info_plus: ^10.1.0
   path: ^1.9.1
   path_provider: ^2.1.5

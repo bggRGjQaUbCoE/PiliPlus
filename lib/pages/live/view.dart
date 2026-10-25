@@ -192,11 +192,14 @@ class _LivePageState extends State<LivePage>
 
   Widget _buildBody(LoadingState<List?> loadingState) {
     return switch (loadingState) {
-      Loading() => SliverGrid(
-        gridDelegate: gridDelegate,
-        delegate: const SliverSingleChildDelegate(
-          child: VideoCardVSkeleton(),
-          count: 10,
+      Loading() => SliverPadding(
+        padding: const .only(top: Style.cardSpace),
+        sliver: SliverGrid(
+          gridDelegate: gridDelegate,
+          delegate: const SliverSingleChildDelegate(
+            child: VideoCardVSkeleton(),
+            count: 10,
+          ),
         ),
       ),
       Success(:final response) => SliverMainAxisGroup(

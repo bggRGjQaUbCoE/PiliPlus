@@ -2,8 +2,6 @@ import 'dart:math' show max;
 
 import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:cupertino_ui/cupertino_ui.dart'
-    show CupertinoEndEdgeBackGesture;
 import 'package:flutter/gestures.dart' show HorizontalDragGestureRecognizer;
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -24,6 +22,10 @@ mixin CommonSlideMixin<T extends CommonSlidePage> on State<T>, TickerProvider {
   late final AnimationController _animController;
   SlideDragGestureRecognizer? _slideDragGestureRecognizer;
   static bool slideDismissReplyPage = Pref.slideDismissReplyPage;
+
+  /// The right edge belongs to the right edge back gesture (iOS setting),
+  /// which lowers and closes the panel the same way.
+  static bool rightEdgeTaken = false;
 
   bool isDxAllowed(double dx) {
     return enableSlide
@@ -57,11 +59,7 @@ mixin CommonSlideMixin<T extends CommonSlidePage> on State<T>, TickerProvider {
           SlideDragGestureRecognizer(
               isDxAllowed: (double dx) {
                 final isLTR = dx <= offset;
-                // the right edge belongs to the right edge back gesture when
-                // it is on: it lowers and closes the panel the same way
-                final isRTL =
-                    !CupertinoEndEdgeBackGesture.enabled &&
-                    dx >= _maxWidth - offset;
+                final isRTL = !rightEdgeTaken && dx >= _maxWidth - offset;
                 if (isLTR || isRTL) {
                   _isRTL = isRTL;
                   return true;

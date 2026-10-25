@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 
 import 'package:PiliPlus/common/widgets/scaffold/mini_scaffold.dart';
+import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/utils/feed_back.dart' show enableFeedback;
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:cupertino_ui/cupertino_ui.dart'
@@ -24,7 +25,9 @@ abstract final class EndEdgeBackGesture {
   }
 
   static void setEnabled(bool value) {
-    CupertinoEndEdgeBackGesture.enabled = Platform.isIOS && value;
+    final enabled = Platform.isIOS && value;
+    CupertinoEndEdgeBackGesture.enabled = enabled;
+    CommonSlideMixin.rightEdgeTaken = enabled;
   }
 
   static void _onArmedChanged(bool armed) {

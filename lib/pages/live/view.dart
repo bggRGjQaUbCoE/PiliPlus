@@ -60,18 +60,10 @@ class _LivePageState extends State<LivePage>
           controller: controller.scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.only(
-                top: Style.cardSpace,
-                bottom: 100,
-              ),
-              sliver: SliverMainAxisGroup(
-                slivers: [
-                  Obx(() => _buildTop(theme, controller.topState.value)),
-                  Obx(() => _buildBody(theme, controller.loadingState.value)),
-                ],
-              ),
-            ),
+            const SliverPadding(padding: .only(top: Style.cardSpace)),
+            Obx(() => _buildTop(theme, controller.topState.value)),
+            Obx(() => _buildBody(theme, controller.loadingState.value)),
+            const SliverPadding(padding: .only(bottom: 100)),
           ],
         ),
       ),
@@ -82,96 +74,95 @@ class _LivePageState extends State<LivePage>
     return SliverMainAxisGroup(
       slivers: [
         if (data.first != null) ..._buildFollowList(theme, data.first!),
-        if (data.second?.cardData?.areaEntranceV3?.list case final list?)
-          if (list.isNotEmpty)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const .only(bottom: 8.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        // 10+14*textScaler
-                        height: 10.0 + textScaler.scale(14),
-                        child: Obx(() {
-                          final areaIndex = controller.areaIndex.value;
-                          return ListView.separated(
-                            scrollDirection: .horizontal,
-                            padding: const .only(right: 8),
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            separatorBuilder: (_, _) =>
-                                const SizedBox(width: 12),
-                            itemBuilder: (context, index) {
-                              final isFirst = index == 0;
-                              late final item = list[index - 1];
-                              final isCurr = index == areaIndex;
-                              return SearchText(
-                                fontSize: 14,
-                                height: 1,
-                                padding: const .symmetric(
-                                  horizontal: 8,
-                                  vertical: 5,
-                                ),
-                                text: isFirst ? '推荐' : item.title!,
-                                bgColor: isCurr
-                                    ? theme.colorScheme.secondaryContainer
-                                    : Colors.transparent,
-                                textColor: isCurr
-                                    ? theme.colorScheme.onSecondaryContainer
-                                    : null,
-                                onTap: (_) => controller.onSelectArea(
-                                  index,
-                                  isFirst ? null : item,
-                                ),
-                              );
-                            },
-                            itemCount: list.length + 1,
-                          );
-                        }),
-                      ),
+        if (data.second?.cardData?.areaEntranceV3?.list case final list?
+            when list.isNotEmpty)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const .only(bottom: 8.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      // 10+14*textScaler
+                      height: 10.0 + textScaler.scale(14),
+                      child: Obx(() {
+                        final areaIndex = controller.areaIndex.value;
+                        return ListView.separated(
+                          scrollDirection: .horizontal,
+                          padding: const .only(right: 8),
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          separatorBuilder: (_, _) => const SizedBox(width: 12),
+                          itemBuilder: (context, index) {
+                            final isFirst = index == 0;
+                            late final item = list[index - 1];
+                            final isCurr = index == areaIndex;
+                            return SearchText(
+                              fontSize: 14,
+                              height: 1,
+                              padding: const .symmetric(
+                                horizontal: 8,
+                                vertical: 5,
+                              ),
+                              text: isFirst ? '推荐' : item.title!,
+                              bgColor: isCurr
+                                  ? theme.colorScheme.secondaryContainer
+                                  : Colors.transparent,
+                              textColor: isCurr
+                                  ? theme.colorScheme.onSecondaryContainer
+                                  : null,
+                              onTap: (_) => controller.onSelectArea(
+                                index,
+                                isFirst ? null : item,
+                              ),
+                            );
+                          },
+                          itemCount: list.length + 1,
+                        );
+                      }),
                     ),
-                    iconButton(
-                      size: 26,
-                      iconSize: 18,
-                      context: context,
-                      tooltip: '切换${controller.showFirstFrame ? '封面' : '首帧'}',
-                      icon: controller.showFirstFrame
-                          ? const Icon(MdiIcons.alphaFBox)
-                          : const Icon(MdiIcons.image),
-                      onPressed: () {
-                        controller.showFirstFrame = !controller.showFirstFrame;
-                        setState(() {});
+                  ),
+                  iconButton(
+                    size: 26,
+                    iconSize: 18,
+                    context: context,
+                    tooltip: '切换${controller.showFirstFrame ? '封面' : '首帧'}',
+                    icon: controller.showFirstFrame
+                        ? const Icon(MdiIcons.alphaFBox)
+                        : const Icon(MdiIcons.image),
+                    onPressed: () {
+                      controller.showFirstFrame = !controller.showFirstFrame;
+                      setState(() {});
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  iconButton(
+                    size: 26,
+                    iconSize: 16,
+                    context: context,
+                    tooltip: '游戏赛事',
+                    icon: const Icon(Icons.gamepad),
+                    onPressed: () => Get.toNamed(
+                      '/webview',
+                      parameters: {
+                        'uaType': 'mob',
+                        'url':
+                            'https://www.bilibili.com/h5/match/data/home?navhide=1&${ThemeUtils.themeUrl(theme.isDark)}',
                       },
                     ),
-                    const SizedBox(width: 8),
-                    iconButton(
-                      size: 26,
-                      iconSize: 16,
-                      context: context,
-                      tooltip: '游戏赛事',
-                      icon: const Icon(Icons.gamepad),
-                      onPressed: () => Get.toNamed(
-                        '/webview',
-                        parameters: {
-                          'uaType': 'mob',
-                          'url':
-                              'https://www.bilibili.com/h5/match/data/home?navhide=1&${ThemeUtils.themeUrl(theme.isDark)}',
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    iconButton(
-                      size: 26,
-                      iconSize: 16,
-                      context: context,
-                      tooltip: '全部标签',
-                      icon: const Icon(Icons.widgets),
-                      onPressed: () => Get.to(const LiveAreaPage()),
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 8),
+                  iconButton(
+                    size: 26,
+                    iconSize: 16,
+                    context: context,
+                    tooltip: '全部标签',
+                    icon: const Icon(Icons.widgets),
+                    onPressed: () => Get.to(const LiveAreaPage()),
+                  ),
+                ],
               ),
             ),
+          ),
       ],
     );
   }
@@ -195,42 +186,41 @@ class _LivePageState extends State<LivePage>
       ),
       Success(:final response) => SliverMainAxisGroup(
         slivers: [
-          if (controller.newTags case final newTags?)
-            if (newTags.isNotEmpty)
-              SliverToBoxAdapter(
-                child: SizedBox(
-                  // 8+10+13*textScaler
-                  height: 18.0 + textScaler.scale(13),
-                  child: Obx(() {
-                    final tagIndex = controller.tagIndex.value;
-                    return ListView.separated(
-                      scrollDirection: .horizontal,
-                      padding: const .only(bottom: 8),
-                      separatorBuilder: (_, _) => const SizedBox(width: 12),
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      itemBuilder: (context, index) {
-                        final item = newTags[index];
-                        final isCurr = index == tagIndex;
-                        return SearchText(
-                          height: 1,
-                          fontSize: 13,
-                          padding: const .symmetric(horizontal: 8, vertical: 5),
-                          text: item.name!,
-                          bgColor: isCurr
-                              ? theme.colorScheme.secondaryContainer
-                              : Colors.transparent,
-                          textColor: isCurr
-                              ? theme.colorScheme.onSecondaryContainer
-                              : null,
-                          onTap: (value) =>
-                              controller.onSelectTag(index, item.sortType),
-                        );
-                      },
-                      itemCount: newTags.length,
-                    );
-                  }),
-                ),
+          if (controller.newTags case final newTags? when newTags.isNotEmpty)
+            SliverToBoxAdapter(
+              child: SizedBox(
+                // 8+10+13*textScaler
+                height: 18.0 + textScaler.scale(13),
+                child: Obx(() {
+                  final tagIndex = controller.tagIndex.value;
+                  return ListView.separated(
+                    scrollDirection: .horizontal,
+                    padding: const .only(bottom: 8),
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      final item = newTags[index];
+                      final isCurr = index == tagIndex;
+                      return SearchText(
+                        height: 1,
+                        fontSize: 13,
+                        padding: const .symmetric(horizontal: 8, vertical: 5),
+                        text: item.name!,
+                        bgColor: isCurr
+                            ? theme.colorScheme.secondaryContainer
+                            : Colors.transparent,
+                        textColor: isCurr
+                            ? theme.colorScheme.onSecondaryContainer
+                            : null,
+                        onTap: (value) =>
+                            controller.onSelectTag(index, item.sortType),
+                      );
+                    },
+                    itemCount: newTags.length,
+                  );
+                }),
               ),
+            ),
           response != null && response.isNotEmpty
               ? SliverGrid.builder(
                   gridDelegate: gridDelegate,
@@ -300,8 +290,8 @@ class _LivePageState extends State<LivePage>
           ),
         ),
       ),
-      if (item.cardData?.myIdolV1?.list case final list?)
-        if (list.isNotEmpty) _buildFollowBody(theme, list, totalCount),
+      if (item.cardData?.myIdolV1?.list case final list? when list.isNotEmpty)
+        _buildFollowBody(theme, list, totalCount),
     ];
   }
 

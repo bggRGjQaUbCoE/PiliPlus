@@ -1294,7 +1294,7 @@ packages:
     source: hosted
     version: "0.5.2"
   nm:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: nm
       sha256: "2c9aae4127bdc8993206464fcc063611e0e36e72018696cd9631023a31b24254"

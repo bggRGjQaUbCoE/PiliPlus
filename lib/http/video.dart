@@ -29,6 +29,7 @@ import 'package:PiliPlus/models_new/video/video_relation/data.dart';
 import 'package:PiliPlus/models_new/video/video_shot/data.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/app_sign.dart';
+import 'package:PiliPlus/utils/device_fp.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
@@ -148,9 +149,9 @@ abstract final class VideoHttp {
       options: Options(
         headers: {
           'buvid': Accounts.get(.recommend).buvid,
-          'fp_local': '1111111111111111111111111111111111111111111111111111111111111111',
-          'fp_remote': '1111111111111111111111111111111111111111111111111111111111111111',
-          'session_id': '11111111',
+          'fp_local': DeviceFp.deviceId,
+          'fp_remote': DeviceFp.deviceId,
+          'session_id': DeviceFp.loginSessionId,
           'env': 'prod',
           'app-key': 'android_hd',
           'User-Agent': Constants.userAgent,

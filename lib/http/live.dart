@@ -27,6 +27,7 @@ import 'package:PiliPlus/models_new/live/live_superchat/data.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/app_sign.dart';
+import 'package:PiliPlus/utils/device_fp.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
 
@@ -223,9 +224,9 @@ abstract final class LiveHttp {
       options: Options(
         headers: {
           'buvid': recommend.buvid,
-          'fp_local': '1111111111111111111111111111111111111111111111111111111111111111',
-          'fp_remote': '1111111111111111111111111111111111111111111111111111111111111111',
-          'session_id': '11111111',
+          'fp_local': DeviceFp.deviceId,
+          'fp_remote': DeviceFp.deviceId,
+          'session_id': DeviceFp.loginSessionId,
           'env': 'prod',
           'app-key': 'android',
           'User-Agent': Constants.userAgentApp,
@@ -301,9 +302,9 @@ abstract final class LiveHttp {
       options: Options(
         headers: {
           'buvid': recommend.buvid,
-          'fp_local': '1111111111111111111111111111111111111111111111111111111111111111',
-          'fp_remote': '1111111111111111111111111111111111111111111111111111111111111111',
-          'session_id': '11111111',
+          'fp_local': DeviceFp.deviceId,
+          'fp_remote': DeviceFp.deviceId,
+          'session_id': DeviceFp.loginSessionId,
           'env': 'prod',
           'app-key': 'android',
           'User-Agent': Constants.userAgentApp,

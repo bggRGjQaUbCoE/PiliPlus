@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/init.dart';
@@ -8,15 +6,13 @@ import 'package:PiliPlus/models_new/login_devices/data.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/app_sign.dart';
-import 'package:PiliPlus/utils/device_utils.dart';
-import 'package:PiliPlus/utils/login_utils.dart';
+import 'package:PiliPlus/utils/device_fp.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:encrypt/encrypt.dart';
 
 abstract final class LoginHttp {
-  static final String deviceId = LoginUtils.genDeviceId();
+  static String get deviceId => DeviceFp.deviceId;
   static String get _buvid => AnonymousAccount().buvid;
   static final Map<String, String> headers = {
     'buvid': _buvid,
@@ -114,10 +110,7 @@ abstract final class LoginHttp {
       'gee_seccode': ?geeSeccode,
       'gee_validate': ?geeValidate,
       'local_id': _buvid,
-      // https://chinggg.github.io/post/appre/
-      'login_session_id': md5
-          .convert(ascii.encode(_buvid + timestamp.toString()))
-          .toString(),
+      'login_session_id': DeviceFp.loginSessionId,
       'mobi_app': 'android_hd',
       'platform': 'android',
       'recaptcha_token': ?recaptchaToken,
@@ -203,7 +196,7 @@ abstract final class LoginHttp {
     String passwordEncrypted = Encrypter(
       RSA(publicKey: publicKey),
     ).encrypt(salt + password).base64;
-    final (deviceName, devicePlatform) = await DeviceUtils.deviceFingerprint;
+    final (deviceName, devicePlatform) = await DeviceFp.deviceNamePair;
 
     Map<String, String> data = {
       'bili_local_id': deviceId,
@@ -273,7 +266,7 @@ abstract final class LoginHttp {
     required String key,
   }) async {
     dynamic publicKey = RSAKeyParser().parse(key);
-    final (deviceName, devicePlatform) = await DeviceUtils.deviceFingerprint;
+    final (deviceName, devicePlatform) = await DeviceFp.deviceNamePair;
     Map<String, Object> data = {
       'bili_local_id': deviceId,
       'build': '2001100',

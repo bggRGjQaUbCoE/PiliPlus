@@ -163,7 +163,11 @@ abstract final class SettingBoxKey {
       buvid = 'buvid',
       blockAtOnlyReply = 'blockAtOnlyReply',
       blockReplyAtCount = 'blockReplyAtCount',
-      filterIntro = 'filterIntro';
+      filterIntro = 'filterIntro',
+      deviceId = 'deviceId',
+      loginSessionId = 'loginSessionId',
+      deviceName = 'deviceName',
+      devicePlatform = 'devicePlatform';
 
   static const String superChatType = 'superChatType',
       enableFullScreenSC = 'enableFullScreenSC',

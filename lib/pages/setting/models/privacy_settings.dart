@@ -23,6 +23,12 @@ List<SettingsModel> get privacySettings => [
     onTap: _showBuvidDialog,
   ),
   NormalModel(
+    onTap: (context, setState) => Get.toNamed('/deviceFp'),
+    title: '设备指纹',
+    subtitle: 'device_id、login_session_id、机型，影响登录与风控',
+    leading: const Icon(Icons.fingerprint),
+  ),
+  NormalModel(
     onTap: (context, setState) {
       showDialog(
         context: context,

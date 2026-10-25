@@ -24,6 +24,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/src/extension_instance.dart';
+import 'package:jni/jni.dart' show JStringExtension;
 import 'package:path/path.dart' as path;
 
 Future<VideoPlayerServiceHandler> initAudioService() {
@@ -63,24 +64,17 @@ typedef _StatusConfig = (
 class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   VideoPlayerServiceHandler() {
     if (Platform.isAndroid) {
-      // 修复 OriginOS/Funtouch 下音量条无法「二次按下自动收起」的问题。
-      // audio_service 默认把 MediaSession 注册成本地播放类型(PLAYBACK_TYPE_LOCAL)，
-      // MediaSessionRecord.canHandleVolumeKey() 会对它返回 true，音量键因此被
-      // dispatchVolumeKeyEventToSessionAsSystemService 直接派发给会话，走
-      // AudioService 的 session 音量分支(adjustStreamVolume, flags=1/4116)。
-      // OriginOS 的「再次按下音量键把音量条收起成细条」只在系统默认音量处理路径
-      // (adjustSuggestedStreamVolume, flags=4113) 上生效，session 分支每次都会
-      // 重新展开音量条，于是音量条始终无法沉浸。
-      // 声明为远端播放 + FIXED 音量控制后 canHandleVolumeKey() 返回 false，
-      // Framework 会打印 "Fallbacks to the default handling" 并回退到普通界面的
-      // 默认音量处理，音量条即可正常收起成条，音量也仍随音量键正常变化。
-      androidPlaybackInfo.add(
-        RemoteAndroidPlaybackInfo(
-          volumeControlType: AndroidVolumeControlType.fixed,
-          maxVolume: 100,
-          volume: 50,
-        ),
-      );
+      final jStr = AndroidHelper.manufacturer();
+      if (jStr != null &&
+          jStr.toDartString(releaseOriginal: true).toLowerCase() == 'vivo') {
+        androidPlaybackInfo.add(
+          RemoteAndroidPlaybackInfo(
+            volumeControlType: .fixed,
+            maxVolume: 100,
+            volume: 50,
+          ),
+        );
+      }
     }
   }
 
@@ -113,9 +107,9 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
       final tag = playOwner.tag;
       try {
         return switch (playOwner.type) {
-          UgcIntroController => Get.find<UgcIntroController>(tag: tag),
-          PgcIntroController => Get.find<PgcIntroController>(tag: tag),
-          LocalIntroController => Get.find<LocalIntroController>(tag: tag),
+          UgcIntroController _ => Get.find<UgcIntroController>(tag: tag),
+          PgcIntroController _ => Get.find<PgcIntroController>(tag: tag),
+          LocalIntroController _ => Get.find<LocalIntroController>(tag: tag),
           _ => throw UnimplementedError(playOwner.type.toString()),
         };
       } catch (_) {

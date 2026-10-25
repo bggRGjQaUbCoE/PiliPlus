@@ -8,6 +8,7 @@ import 'package:PiliPlus/models_new/login_devices/data.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/app_sign.dart';
+import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:crypto/crypto.dart';
@@ -202,6 +203,7 @@ abstract final class LoginHttp {
     String passwordEncrypted = Encrypter(
       RSA(publicKey: publicKey),
     ).encrypt(salt + password).base64;
+    final (deviceName, devicePlatform) = await DeviceUtils.deviceFingerprint;
 
     Map<String, String> data = {
       'bili_local_id': deviceId,
@@ -212,8 +214,8 @@ abstract final class LoginHttp {
       'device': 'phone',
       'device_id': deviceId,
       //'device_meta': '',
-      'device_name': 'vivo',
-      'device_platform': 'Android14vivo',
+      'device_name': deviceName,
+      'device_platform': devicePlatform,
       'disable_rcmd': '0',
       'dt': Uri.encodeComponent(
         Encrypter(
@@ -271,6 +273,7 @@ abstract final class LoginHttp {
     required String key,
   }) async {
     dynamic publicKey = RSAKeyParser().parse(key);
+    final (deviceName, devicePlatform) = await DeviceUtils.deviceFingerprint;
     Map<String, Object> data = {
       'bili_local_id': deviceId,
       'build': '2001100',
@@ -283,8 +286,8 @@ abstract final class LoginHttp {
       'device': 'phone',
       'device_id': deviceId,
       //'device_meta': '',
-      'device_name': 'vivo',
-      'device_platform': 'Android14vivo',
+      'device_name': deviceName,
+      'device_platform': devicePlatform,
       // 'device_tourist_id': '',
       'disable_rcmd': '0',
       'dt': Uri.encodeComponent(

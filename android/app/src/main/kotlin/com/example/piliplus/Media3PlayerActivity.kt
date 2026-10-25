@@ -62,8 +62,8 @@ class Media3PlayerActivity : Activity() {
             return
         }
         @Suppress("DEPRECATION")
-        val hdrTypes = windowManager.defaultDisplay.hdrCapabilities.supportedHdrTypes
-        if (!hdrTypes.contains(Display.HdrCapabilities.HDR_TYPE_DOLBY_VISION)) {
+        val hdrTypes = windowManager.defaultDisplay.hdrCapabilities?.supportedHdrTypes
+        if (hdrTypes?.contains(Display.HdrCapabilities.HDR_TYPE_DOLBY_VISION) != true) {
             fail(getString(R.string.media3_player_display_required))
             return
         }

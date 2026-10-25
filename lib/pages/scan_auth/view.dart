@@ -18,7 +18,9 @@ import 'package:get/get.dart';
 import 'package:image/image.dart' as img;
 import 'package:material_ui/material_ui.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:zxing2/qrcode.dart';
+// zxing2 也导出 BarcodeFormat，与 mobile_scanner 重名，只取用得到的符号
+import 'package:zxing2/qrcode.dart'
+    show QRCodeReader, BinaryBitmap, GlobalHistogramBinarizer, RGBLuminanceSource;
 
 /// 扫码授权：扫描其它端的登录二维码，用本机已登录的账号确认登录
 class ScanAuthPage extends StatefulWidget {

@@ -703,7 +703,7 @@ class VideoDetailController extends GetxController
     final currentVideoQa = this.currentVideoQa.value;
     if (currentVideoQa == null) return;
     _autoPlay.value = true;
-    playedTime = plPlayerController.videoPlayerController?.state.position;
+    playedTime = plPlayerController.currentPosition;
     plPlayerController
       ..isBuffering.value = false
       ..buffered.value = 0;
@@ -777,6 +777,7 @@ class VideoDetailController extends GetxController
       volume: volume,
       autoFullScreenFlag: autoFullScreenFlag,
       rotate: _rotate,
+      videoCodecs: firstVideo.codecs,
     );
 
     if (isClosed) return;

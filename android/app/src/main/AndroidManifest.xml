@@ -207,6 +207,12 @@
                     android:path="/launch" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".Media3PlayerActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|uiMode"
+            android:hardwareAccelerated="true"
+            android:theme="@style/Media3PlayerTheme" />
         <provider
             android:name=".BiliDocumentsProvider"
             android:permission="android.permission.MANAGE_DOCUMENTS"

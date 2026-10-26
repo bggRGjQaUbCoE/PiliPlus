@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="media3_player_title">Media3 · Dolby Vision Profile 5</string>
+    <string name="media3_player_back">Back</string>
+    <string name="media3_player_diagnostics">Media3 · DV Profile 5 · SurfaceView\n%1$s</string>
+    <string name="media3_player_android_required">Native Dolby Vision playback requires Android 7.0 or later.</string>
+    <string name="media3_player_display_required">This display does not report Dolby Vision support. Select software decoding in audio/video settings.</string>
+    <string name="media3_player_codec_required">No Dolby Vision decoder is available. Select software decoding in audio/video settings.</string>
+    <string name="media3_player_wrong_profile">The selected track is not Dolby Vision Profile 5.</string>
+</resources>

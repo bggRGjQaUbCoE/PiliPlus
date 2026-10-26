@@ -26,6 +26,7 @@ import 'package:PiliPlus/models_new/video/video_tag/data.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/danmaku/view.dart';
 import 'package:PiliPlus/pages/episode_panel/view.dart';
+import 'package:PiliPlus/pages/setting/common_setting.dart';
 import 'package:PiliPlus/pages/video/ai_conclusion/view.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/local/controller.dart';
@@ -1218,42 +1219,100 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         (videoDetailController.horizontalScreen || isPortrait),
     onPopInvokedWithResult:
         videoDetailController.plPlayerController.onPopInvokedWithResult,
-    child: Obx(
-      () =>
-          !videoDetailController.videoState.value ||
-              !videoDetailController.autoPlay ||
-              plPlayerController?.videoController == null
-          ? const SizedBox.shrink()
-          : PLVideoPlayer(
-              maxWidth: width,
-              maxHeight: height,
-              plPlayerController: plPlayerController!,
-              videoDetailController: videoDetailController,
-              introController: introController,
-              headerControl: HeaderControl(
-                key: videoDetailController.headerCtrKey,
-                isPortrait: isPortrait,
-                controller: videoDetailController.plPlayerController,
-                videoDetailCtr: videoDetailController,
-                heroTag: heroTag,
-              ),
-              danmuWidget: isPipMode && pipNoDanmaku
-                  ? null
-                  : Obx(
-                      () => PlDanmaku(
-                        key: ValueKey(videoDetailController.cid.value),
-                        isPipMode: isPipMode,
-                        cid: videoDetailController.cid.value,
-                        playerController: plPlayerController!,
-                        isFullScreen: plPlayerController!.isFullScreen.value,
-                        isFileSource: videoDetailController.isFileSource,
-                        size: Size(width, height),
+    child: Obx(() {
+      final controller = videoDetailController.plPlayerController;
+      if (!videoDetailController.videoState.value ||
+          !videoDetailController.autoPlay) {
+        return const SizedBox.shrink();
+      }
+      if (controller.useMedia3.value) {
+        return SizedBox(
+          width: width,
+          height: height,
+          child: Stack(
+            children: [
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Media3 · Dolby Vision Profile 5',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    const SizedBox(height: 8),
+                    FilledButton.icon(
+                      onPressed: controller.media3Active.value
+                          ? null
+                          : () => controller.play(),
+                      icon: const Icon(Icons.play_arrow_rounded),
+                      label: Text(
+                        controller.media3Active.value
+                            ? '正在原生播放器中播放'
+                            : '打开原生播放器',
                       ),
                     ),
-              showEpisodes: showEpisodes,
-              showViewPoints: showViewPoints,
-            ),
-    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24),
+                      child: Text(
+                        '播放失败时，请在音视频设置中切回软解并重新打开视频',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Get.to(
+                        () => const CommonSetting(settingType: .videoSetting),
+                      ),
+                      child: const Text('音视频设置'),
+                    ),
+                  ],
+                ),
+              ),
+              Align(
+                alignment: Alignment.topLeft,
+                child: IconButton(
+                  tooltip: '返回',
+                  onPressed: Get.back,
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+      if (plPlayerController?.videoController == null) {
+        return const SizedBox.shrink();
+      }
+      return PLVideoPlayer(
+        maxWidth: width,
+        maxHeight: height,
+        plPlayerController: plPlayerController!,
+        videoDetailController: videoDetailController,
+        introController: introController,
+        headerControl: HeaderControl(
+          key: videoDetailController.headerCtrKey,
+          isPortrait: isPortrait,
+          controller: videoDetailController.plPlayerController,
+          videoDetailCtr: videoDetailController,
+          heroTag: heroTag,
+        ),
+        danmuWidget: isPipMode && pipNoDanmaku
+            ? null
+            : Obx(
+                () => PlDanmaku(
+                  key: ValueKey(videoDetailController.cid.value),
+                  isPipMode: isPipMode,
+                  cid: videoDetailController.cid.value,
+                  playerController: plPlayerController!,
+                  isFullScreen: plPlayerController!.isFullScreen.value,
+                  isFileSource: videoDetailController.isFileSource,
+                  size: Size(width, height),
+                ),
+              ),
+        showEpisodes: showEpisodes,
+        showViewPoints: showViewPoints,
+      );
+    }),
   );
 
   late ThemeData theme;

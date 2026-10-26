@@ -39,23 +39,16 @@ and other formats retain the normal renderer and preferred hardware-decoding
 mode. The preferred decoder is restored when another video is loaded.
 
 In audio/video settings (`音视频设置`), **Dolby Vision Profile 5 decoding**
-(`杜比视界 Profile 5 解码`) offers software compatibility mode and two experimental
-hardware modes: `mediacodec` and `mediacodec-copy`. All three use `gpu-next`.
-Enable hardware decoding (`开启硬解`) before trying either hardware mode;
-turning it off forces software decoding. Close and reopen the video after
-changing modes, then compare the same Profile 5 clip.
+(`杜比视界 Profile 5 解码`) offers **software compatibility** (mpv `gpu-next`)
+and **native Media3** playback. The experimental Profile 5 `mediacodec` and
+`mediacodec-copy` options have been removed; saved selections of those modes
+resolve to software compatibility. General mpv hardware-decoder settings for
+other formats are unchanged. Close and reopen the video after changing modes.
 
-Playback information shows the requested `hwdec` separately from the active
-`hwdec`, along with `vo` and the Dolby Vision profile. An active `hwdec` of `no`
-means software decoding, even if a hardware mode was requested. Hardware
-capabilities do not guarantee correct Dolby colors; if a trial produces
-green/purple colors, a black screen, or playback errors, switch back to software
-compatibility mode. No native-library fork is required to try these options.
-
-These three mpv modes use libplacebo; this is not
-native Dolby Vision display passthrough. High-resolution Profile 5 videos may
-use more CPU or stutter with software decoding. If needed, select a non-Dolby
-quality.
+Software mode uses libplacebo; this is not native Dolby Vision display
+passthrough. Playback information shows `hwdec=no`, `vo`, and the Dolby Vision
+profile. High-resolution Profile 5 videos may use more CPU or stutter with
+software decoding. If needed, select a non-Dolby quality.
 
 ### Experimental native Media3 mode
 
@@ -71,16 +64,29 @@ before handing Profile 5 to Media3. Profile 8.4, SDR, live streams, and audio-on
 playback stay on mpv. Separate DASH video/audio URLs and HTTP headers, or local
 video/audio files, are passed to Media3 without mpv's EDL wrapper.
 
-The native controls provide pause, seeking and playback speed. Back returns the
-position and speed to PiliPlus without resuming mpv; the play button reopens
+The native UI follows the mpv player's layout: a title/back header with gradient
+scrims, a theme-colored buffered timeline above the bottom play/time/fit/speed
+controls, and a side lock button. Playback information is available on demand
+instead of covering the title. Speed choices, the seek step, double-tap behavior,
+long-press speed boost and control timeout follow your existing player settings.
+Tap to show/hide controls; double-tap the center to play/pause and the outer
+quarters to seek (when quick double-tap is enabled). Holding the video temporarily
+boosts speed; releasing or leaving the player restores it. Lock disables these
+gestures and locks orientation; tap the video to reveal Unlock. Native video-fit
+choices apply only to the current native session.
+
+Back returns the position and speed to PiliPlus without resuming mpv; the play button reopens
 Media3 at that position. Completion uses PiliPlus's existing repeat/next-episode
 policy. Leaving the native activity stops playback; returning from the background
 requires pressing play. Danmaku, external subtitles, mpv filters, SponsorBlock
-skipping, background playback and PiP are not supported in this mode. Native
-playback errors are reported rather than silently falling back to HEVC or mpv.
+skipping, background playback and PiP are not supported in this mode. The UI is
+native rather than the Flutter/mpv widget: swipe brightness/volume/seeking,
+thumbnail previews, custom bottom-control ordering and in-player quality/episode
+selection are not yet shared. Native playback errors are reported rather than
+silently falling back to HEVC or mpv.
 
-For device trials, compare the same Profile 5 clip with software mode. Tap the
-native controls to see the active decoder name and `SurfaceView` diagnostic.
+For device trials, compare the same Profile 5 clip with software mode. Tap
+**Playback info** to see the active decoder name and `SurfaceView` diagnostic.
 Check colors, the device's Dolby Vision indication, split audio synchronization,
 seek/resume, rotation, Back, background/foreground, and then a Profile 8.4 clip.
 Capability checks do **not** prove correct Dolby Vision output on every device.

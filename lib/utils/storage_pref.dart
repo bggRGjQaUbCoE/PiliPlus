@@ -269,7 +269,7 @@ abstract final class Pref {
   );
 
   static DolbyVisionProfile5Mode get dolbyVisionProfile5Mode =>
-      DolbyVisionProfile5Mode.values.byName(
+      DolbyVisionProfile5Mode.fromPreference(
         _setting.get(
           SettingBoxKey.dolbyVisionProfile5Mode,
           defaultValue: DolbyVisionProfile5Mode.software.name,

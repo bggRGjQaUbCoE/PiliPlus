@@ -45,6 +45,13 @@ class Media3Player {
     required Duration position,
     required double speed,
     required Map<String, String> headers,
+    String title = '',
+    List<double> speeds = const [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3],
+    Duration seekStep = const Duration(seconds: 10),
+    Duration controlsTimeout = const Duration(seconds: 3),
+    bool quickDoubleTap = true,
+    double longPressSpeed = 3,
+    int accentColor = 0xFFFFFFFF,
   }) async {
     final result = await channel.invokeMapMethod<Object?, Object?>('open', {
       'video': video,
@@ -52,6 +59,13 @@ class Media3Player {
       'positionMs': position.inMilliseconds,
       'speed': speed,
       'headers': headers,
+      'title': title,
+      'speeds': speeds,
+      'seekStepMs': seekStep.inMilliseconds,
+      'controlsTimeoutMs': controlsTimeout.inMilliseconds,
+      'quickDoubleTap': quickDoubleTap,
+      'longPressSpeed': longPressSpeed,
+      'accentColor': accentColor,
     });
     if (result == null) {
       throw const FormatException('Missing Media3 playback result');

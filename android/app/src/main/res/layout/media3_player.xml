@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     android:background="@android:color/black">
 
     <androidx.media3.ui.PlayerView
@@ -11,24 +12,31 @@
         android:layout_height="match_parent"
         app:surface_type="surface_view"
         app:show_buffering="when_playing"
+        app:controller_layout_id="@layout/media3_controls"
+        app:animation_enabled="false"
+        app:auto_show="false"
+        app:play_icon="@drawable/ic_player_play"
+        app:pause_icon="@drawable/ic_player_pause"
         app:show_next_button="false"
         app:show_previous_button="false" />
 
     <TextView
-        android:id="@+id/media3_info"
+        android:id="@+id/media3_feedback"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="top|center_horizontal"
-        android:padding="8dp"
+        android:layout_gravity="center"
+        android:padding="16dp"
         android:textColor="@android:color/white"
         android:background="#99000000"
-        android:textSize="12sp"
-        android:text="@string/media3_player_title" />
+        android:accessibilityLiveRegion="polite"
+        android:textSize="16sp"
+        android:visibility="gone" />
 
-    <Button
-        android:id="@+id/media3_back"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|start"
-        android:text="@string/media3_player_back" />
+    <ImageButton
+        android:id="@+id/media3_lock"
+        style="@style/Media3ControlButton"
+        android:layout_gravity="center_vertical|start"
+        android:layout_marginStart="16dp"
+        android:contentDescription="@string/media3_player_lock"
+        android:src="@drawable/ic_player_unlock" />
 </FrameLayout>

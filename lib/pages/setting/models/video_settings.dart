@@ -195,7 +195,7 @@ List<SettingsModel> get videoSettings => [
       title: '杜比视界 Profile 5 解码',
       leading: const Icon(Icons.video_settings_outlined),
       getSubtitle: () =>
-          '当前：${Pref.dolbyVisionProfile5Mode.label}。mpv 模式使用 gpu-next，硬解选项需开启硬解。Media3 使用独立原生全屏播放器，需设备支持杜比视界，不受 mpv 硬解开关影响；不支持弹幕、外挂字幕、后台播放或画中画。失败请切回软解。重新打开视频后生效，不影响 Profile 8.4。',
+          '当前：${Pref.dolbyVisionProfile5Mode.label}。软解使用 mpv gpu-next。Media3 使用独立原生全屏播放器，控制栏布局与 mpv 保持一致，需设备支持杜比视界，不受 mpv 硬解开关影响；不支持弹幕、外挂字幕、后台播放或画中画。失败请切回软解。重新打开视频后生效，不影响 Profile 8.4。',
       onTap: _showDolbyVisionProfile5Dialog,
     ),
 ];

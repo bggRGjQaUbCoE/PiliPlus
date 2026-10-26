@@ -52,6 +52,7 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:archive/archive.dart' show getCrc32;
 import 'package:canvas_danmaku/canvas_danmaku.dart';
@@ -1087,7 +1088,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       WakelockPlus.disable();
       _updatePlaybackState();
       dataStatus.value = .loaded;
-      final colors = Get.theme.colorScheme;
+      final colors = ThemeUtils.theme.colorScheme;
       final result = await Media3Player.open(
         video: dataSource.videoSource,
         audio: dataSource.audioSource,

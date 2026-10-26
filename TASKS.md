@@ -1,6 +1,7 @@
 # TASKS.md
 
 任务事实源：只保留当前状态、验收门槛和下一步；按各项 `context` 查看持续更新的依据。
+
 ## LG-HLG-PQ-BRIGHTNESS-MAPPING-20261025
 - **completed、用户采用，已授权提交推送**：1000参考峰值/gamma0，取消自动+3，不加曲线；105 tests/analyze0与5份生产源哈希保持。
 - **同帧观感**：熊35.035秒、夕阳720.052666667秒、近黑600.032766667秒用户均反馈基本一致；夕阳明确无明显过曝/细节丢失。近黑HDR10直通/离屏参考一致。
@@ -8,6 +9,9 @@
 - **证据边界**：原片35秒0.1–1000nit分段中位偏差最大3.87%，稀少高光+6.79%，无<.1nit样本；fixture暗边缘/高光残差未消除，不宣称逐像素或全片一致。面板nits未量测。
 - **context**：[lg-hlg-pq-brightness-mapping-20261025.md](archives/conversations/lg-hlg-pq-brightness-mapping-20261025.md)；永久交付摘要在PiliPlus `archives/evidence/lg-hlg-pq-minimal-20261027.json`。用户2026-10-27授权提交、推送；仅纳入本任务范围，保留其他修改。
 
+## FFMPEG-REBUILD-INSTALL-20261025
+
+- **done（仅构建装机，未提交）**：用户指示 FFmpeg 更新后重建。标准入口 `tool/build-android-test.sh` 源码构建 `=== VERIFIED`：APK `piliplus-source-test-release.apk` 27,601,633 B，SHA-256 `4fb1c645…5f87`；libmpv `982fb96a…fff0e5`，JAR `9517538f…ab2f7a3`；FFmpeg head `d4bb79394b`（tree d28a8f87 含 configure/hls.c 工作树改动，随源码链进入构建）。2026-10-25 01:30 装机 5 台在线设备（LYA/LG G6/Redmi 8/Redmi Note 5A/marble），`install -r` 全 Success，versionName 2.1.6，lastUpdateTime 01:30:31–50，on-device base.apk 哈希逐台与候选一致（4 台 sha256 一致；LG 无 sha256sum 按 md5 `763ef86a…1435` 对照一致）。VKY（P10 Plus）本轮离线未装，上线后需补装同包。设备播放/硬解/HDR 行为验收按各任务另行进行，本轮不含。
 
 姊妹仓：本地 media-kit checkout 在 `../media-kit`（compat 分支），本仓的一切播放器行为变化先看其 `TASKS.md` 的 MK-ROUTING 段。
 **镜像红线（2026-10-17 起；改名后仅适用于旧仓 PiliPlus.old）**：旧仓 `main/dev/dom` 与全部 tag 由 `ci/upstream-sync` 孤儿分支每日强镜像自上游（force+prune），自有提交只能放特性分支（当前工作分支 `feature/ohos`，不受镜像影响）。

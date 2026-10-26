@@ -123,7 +123,6 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
   late ThemeData theme;
   @override
   ColorScheme get colorScheme => theme.colorScheme;
-  late EdgeInsets padding;
   late bool isPortrait;
   late double maxWidth;
   late double maxHeight;
@@ -136,7 +135,6 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
     maxWidth = size.width;
     maxHeight = size.height;
     isPortrait = size.isPortrait;
-    padding = MediaQuery.viewPaddingOf(context);
   }
 
   @override

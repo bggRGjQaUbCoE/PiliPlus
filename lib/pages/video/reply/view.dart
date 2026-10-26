@@ -64,10 +64,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
     super.didChangeDependencies();
     controller.didChangeDependencies(context);
     colorScheme = ColorScheme.of(context);
-    bottom = MediaQuery.viewPaddingOf(context).bottom;
   }
-
-  late double bottom;
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +121,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
             child: Padding(
               padding: .only(
                 right: kFloatingActionButtonMargin,
-                bottom: kFloatingActionButtonMargin + bottom,
+                bottom: kFloatingActionButtonMargin + padding.bottom,
               ),
               child: FloatingActionButton(
                 heroTag: null,

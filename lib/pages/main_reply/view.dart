@@ -54,14 +54,12 @@ class _MainReplyPageState extends State<MainReplyPage>
     tag: Utils.generateRandomString(8),
   );
 
-  late EdgeInsets padding;
   @override
   late ColorScheme colorScheme;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    padding = MediaQuery.viewPaddingOf(context);
     colorScheme = ColorScheme.of(context);
   }
 

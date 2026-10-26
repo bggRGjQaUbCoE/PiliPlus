@@ -5,8 +5,15 @@ import 'package:PiliPlus/pages/common/reply/fold/reply_fold_mixin.dart';
 import 'package:material_ui/material_ui.dart';
 
 mixin ReplyFooterMixin<T extends StatefulWidget, R> on State<T> {
+  late EdgeInsets padding;
   ColorScheme get colorScheme;
   BaseReplyFoldMixin<R> get controller;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    padding = MediaQuery.viewPaddingOf(context);
+  }
 
   Widget buildFooter() {
     final fold = controller.foldCard;
@@ -20,7 +27,7 @@ mixin ReplyFooterMixin<T extends StatefulWidget, R> on State<T> {
     return Container(
       height: 125,
       alignment: .topCenter,
-      margin: .only(bottom: MediaQuery.viewPaddingOf(context).bottom),
+      margin: .only(bottom: padding.bottom),
       child: Material(
         type: .transparency,
         child: InkWell(
@@ -45,7 +52,7 @@ mixin ReplyFooterMixin<T extends StatefulWidget, R> on State<T> {
     return Container(
       height: 125,
       alignment: .center,
-      margin: .only(bottom: MediaQuery.viewPaddingOf(context).bottom),
+      margin: .only(bottom: padding.bottom),
       child: Text(
         controller.isEnd ? '没有更多了' : '加载中...',
         textAlign: TextAlign.center,

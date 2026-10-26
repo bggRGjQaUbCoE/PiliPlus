@@ -8,6 +8,8 @@ import android.view.GestureDetector
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.media3.common.Player
@@ -130,6 +132,24 @@ internal class Media3Controls(
             true
         }
         applyLock()
+        val controller = activity.findViewById<FrameLayout>(R.id.media3_controls)
+        Media3CutoutAvoidance(
+            activity.findViewById<ViewGroup>(android.R.id.content),
+            listOf(
+                R.id.media3_back,
+                R.id.media3_info,
+                androidx.media3.ui.R.id.exo_play_pause,
+                R.id.media3_fit,
+                R.id.media3_speed,
+            ).map { activity.findViewById<View>(it) to controller } +
+                (lock to activity.findViewById<FrameLayout>(R.id.media3_lock_container)),
+            listOf(
+                R.id.media3_title,
+                androidx.media3.ui.R.id.exo_progress,
+                androidx.media3.ui.R.id.exo_position,
+                androidx.media3.ui.R.id.exo_duration,
+            ).map { activity.findViewById<View>(it) },
+        )
     }
 
     fun updateSpeed() {

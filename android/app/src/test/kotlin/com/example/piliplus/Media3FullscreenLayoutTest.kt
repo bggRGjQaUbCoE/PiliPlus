@@ -95,15 +95,15 @@ class Media3FullscreenLayoutTest {
     }
 
     @Test
-    fun controlsDoNotReintroduceSystemOrCutoutPadding() {
+    fun cutoutAvoidanceDoesNotInsetWholeControlRows() {
         val controls = File("src/main/kotlin/com/example/piliplus/Media3Controls.kt").readText()
-        assertFalse(
-            "Controls must remain edge-to-edge when system bars or display cutouts change",
-            controls.contains("setOnApplyWindowInsetsListener"),
-        )
+        val avoidance = File("src/main/kotlin/com/example/piliplus/Media3CutoutAvoidance.kt").readText()
+        assertTrue(controls.contains("Media3CutoutAvoidance("))
+        assertTrue(avoidance.contains("insets.displayCutout?.boundingRects"))
         assertFalse(
             "Control spacing belongs in the layout, not runtime safe-area padding",
-            controls.contains("setPadding("),
+            (controls + avoidance).contains("setPadding("),
         )
+        assertFalse(avoidance.contains("systemBars()"))
     }
 }

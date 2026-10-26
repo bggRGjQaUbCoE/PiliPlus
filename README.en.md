@@ -57,8 +57,10 @@ the video. This is a separate Android full-screen Media3/ExoPlayer activity usin
 a **SurfaceView**, not an mpv decoder or a Flutter texture. It requires Android
 7.0+ and a display and decoder advertising Dolby Vision support. It is independent
 of the mpv hardware-decoding switch. Software decoding remains the default.
-Playback and controls extend into the display cutout area without extra safe-area
-padding, including the header, timeline, bottom controls, and lock button.
+Playback and controls remain edge-to-edge without whole-edge safe-area padding.
+On Android 9+, only buttons overlapping a reported camera cutout move to a nearby
+clear position, in portrait or landscape. The timeline and unaffected controls
+stay in place; button positions reset when the cutout no longer overlaps them.
 The selected video-fit mode still determines any aspect-ratio letterboxing.
 
 An explicit `dvhe.05`/`dvh1.05` codec goes directly to Media3. When codec metadata

@@ -29,6 +29,7 @@
         <item name="android:windowBackground">@android:color/black</item>
         <item name="android:windowActionModeOverlay">true</item>
         <item name="android:windowFullscreen">true</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
         <item name="android:colorAccent">@android:color/white</item>
     </style>
 </resources>

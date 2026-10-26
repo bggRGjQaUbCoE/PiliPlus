@@ -57,6 +57,8 @@ the video. This is a separate Android full-screen Media3/ExoPlayer activity usin
 a **SurfaceView**, not an mpv decoder or a Flutter texture. It requires Android
 7.0+ and a display and decoder advertising Dolby Vision support. It is independent
 of the mpv hardware-decoding switch. Software decoding remains the default.
+Playback extends into the display cutout area; only controls retain safe insets.
+The selected video-fit mode still determines any aspect-ratio letterboxing.
 
 An explicit `dvhe.05`/`dvh1.05` codec goes directly to Media3. When codec metadata
 is missing (including downloads), mpv probes the selected track and is stopped

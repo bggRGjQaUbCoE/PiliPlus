@@ -407,14 +407,17 @@ class MixedCard_Type extends $pb.ProtobufEnum {
       MixedCard_Type._(0, _omitEnumNames ? '' : 'UNKNOWN');
   static const MixedCard_Type QUESTION =
       MixedCard_Type._(1, _omitEnumNames ? '' : 'QUESTION');
+  static const MixedCard_Type FOLD =
+      MixedCard_Type._(2, _omitEnumNames ? '' : 'FOLD');
 
   static const $core.List<MixedCard_Type> values = <MixedCard_Type>[
     UNKNOWN,
     QUESTION,
+    FOLD,
   ];
 
   static final $core.List<MixedCard_Type?> _byValue =
-      $pb.ProtobufEnum.$_initByValueList(values, 1);
+      $pb.ProtobufEnum.$_initByValueList(values, 2);
   static MixedCard_Type? valueOf($core.int value) =>
       value < 0 || value >= _byValue.length ? null : _byValue[value];
 

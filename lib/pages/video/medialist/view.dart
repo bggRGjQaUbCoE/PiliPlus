@@ -62,7 +62,7 @@ class _MediaListPanelState extends State<MediaListPanel>
   }
 
   @override
-  Widget buildPage(ThemeData theme) {
+  Widget buildPage() {
     return Material(
       color: theme.colorScheme.surface,
       child: Column(
@@ -106,23 +106,23 @@ class _MediaListPanelState extends State<MediaListPanel>
               ],
             ),
           ),
-          Expanded(child: enableSlide ? slideList(theme) : buildList(theme)),
+          Expanded(child: enableSlide ? slideList() : buildList()),
         ],
       ),
     );
   }
 
   @override
-  Widget buildList(ThemeData theme) {
+  Widget buildList() {
     return widget.loadPrevious != null
         ? refreshIndicator(
             onRefresh: widget.loadPrevious!,
-            child: _buildList(theme),
+            child: _buildList(),
           )
-        : _buildList(theme);
+        : _buildList();
   }
 
-  Widget _buildList(ThemeData theme) {
+  Widget _buildList() {
     final showDelBtn = widget.onDelete != null && widget.mediaList.length > 1;
     return CustomScrollView(
       controller: _controller,
@@ -145,7 +145,7 @@ class _MediaListPanelState extends State<MediaListPanel>
                 }
                 final item = widget.mediaList[index];
                 final isCurr = item.bvid == widget.bvid;
-                return _buildItem(theme, index, item, isCurr, showDelBtn);
+                return _buildItem(index, item, isCurr, showDelBtn);
               },
             ),
           ),
@@ -155,7 +155,6 @@ class _MediaListPanelState extends State<MediaListPanel>
   }
 
   Widget _buildItem(
-    ThemeData theme,
     int index,
     MediaListItemModel item,
     bool isCurr,

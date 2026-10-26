@@ -676,6 +676,14 @@ const DetailListReply$json = {
       '6': '.bilibili.main.community.reply.v1.DetailListReply.SubjectTitle',
       '10': 'subjectTitle'
     },
+    {
+      '1': 'mixed_cards',
+      '3': 11,
+      '4': 3,
+      '5': 11,
+      '6': '.bilibili.main.community.reply.v1.MixedCard',
+      '10': 'mixedCards'
+    },
   ],
   '3': [DetailListReply_SubjectTitle$json],
 };
@@ -713,11 +721,12 @@ final $typed_data.Uint8List detailListReplyDescriptor = $convert.base64Decode(
     '5iaWxpYmlsaS5wYWdpbmF0aW9uLkZlZWRQYWdpbmF0aW9uUmVwbHlSD3BhZ2luYXRpb25SZXBs'
     'eRIdCgpzZXNzaW9uX2lkGAkgASgJUglzZXNzaW9uSWQSYwoNc3ViamVjdF90aXRsZRgKIAEoCz'
     'I+LmJpbGliaWxpLm1haW4uY29tbXVuaXR5LnJlcGx5LnYxLkRldGFpbExpc3RSZXBseS5TdWJq'
-    'ZWN0VGl0bGVSDHN1YmplY3RUaXRsZRrOAQoMU3ViamVjdFRpdGxlEhsKCWxlZnRfaWNvbhgBIA'
-    'EoCVIIbGVmdEljb24SFAoFdGl0bGUYAiABKAlSBXRpdGxlEhIKBGxpbmsYAyABKAlSBGxpbmsS'
-    'GwoJcnBpZF9tdXRlGAQgASgDUghycGlkTXV0ZRJaCgtwdXNoX3N3aXRjaBgFIAEoDjI5LmJpbG'
-    'liaWxpLm1haW4uY29tbXVuaXR5LnJlcGx5LnYxLlJlcGx5Tm90aWZpY2F0aW9uU3dpdGNoUgpw'
-    'dXNoU3dpdGNo');
+    'ZWN0VGl0bGVSDHN1YmplY3RUaXRsZRJMCgttaXhlZF9jYXJkcxgLIAMoCzIrLmJpbGliaWxpLm'
+    '1haW4uY29tbXVuaXR5LnJlcGx5LnYxLk1peGVkQ2FyZFIKbWl4ZWRDYXJkcxrOAQoMU3ViamVj'
+    'dFRpdGxlEhsKCWxlZnRfaWNvbhgBIAEoCVIIbGVmdEljb24SFAoFdGl0bGUYAiABKAlSBXRpdG'
+    'xlEhIKBGxpbmsYAyABKAlSBGxpbmsSGwoJcnBpZF9tdXRlGAQgASgDUghycGlkTXV0ZRJaCgtw'
+    'dXNoX3N3aXRjaBgFIAEoDjI5LmJpbGliaWxpLm1haW4uY29tbXVuaXR5LnJlcGx5LnYxLlJlcG'
+    'x5Tm90aWZpY2F0aW9uU3dpdGNoUgpwdXNoU3dpdGNo');
 
 @$core.Deprecated('Use detailListReqDescriptor instead')
 const DetailListReq$json = {
@@ -2122,6 +2131,15 @@ const MixedCard$json = {
       '10': 'question'
     },
     {
+      '1': 'fold',
+      '3': 5,
+      '4': 1,
+      '5': 11,
+      '6': '.bilibili.main.community.reply.v1.FoldCard',
+      '9': 0,
+      '10': 'fold'
+    },
+    {
       '1': 'type',
       '3': 1,
       '4': 1,
@@ -2144,16 +2162,18 @@ const MixedCard_Type$json = {
   '2': [
     {'1': 'UNKNOWN', '2': 0},
     {'1': 'QUESTION', '2': 1},
+    {'1': 'FOLD', '2': 2},
   ],
 };
 
 /// Descriptor for `MixedCard`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List mixedCardDescriptor = $convert.base64Decode(
     'CglNaXhlZENhcmQSTAoIcXVlc3Rpb24YBCABKAsyLi5iaWxpYmlsaS5tYWluLmNvbW11bml0eS'
-    '5yZXBseS52MS5RdWVzdGlvbkNhcmRIAFIIcXVlc3Rpb24SRAoEdHlwZRgBIAEoDjIwLmJpbGli'
-    'aWxpLm1haW4uY29tbXVuaXR5LnJlcGx5LnYxLk1peGVkQ2FyZC5UeXBlUgR0eXBlEhAKA29pZB'
-    'gCIAEoCVIDb2lkEiEKDGRpc3BsYXlfcmFuaxgDIAEoA1ILZGlzcGxheVJhbmsiIQoEVHlwZRIL'
-    'CgdVTktOT1dOEAASDAoIUVVFU1RJT04QAUIGCgRpdGVt');
+    '5yZXBseS52MS5RdWVzdGlvbkNhcmRIAFIIcXVlc3Rpb24SQAoEZm9sZBgFIAEoCzIqLmJpbGli'
+    'aWxpLm1haW4uY29tbXVuaXR5LnJlcGx5LnYxLkZvbGRDYXJkSABSBGZvbGQSRAoEdHlwZRgBIA'
+    'EoDjIwLmJpbGliaWxpLm1haW4uY29tbXVuaXR5LnJlcGx5LnYxLk1peGVkQ2FyZC5UeXBlUgR0'
+    'eXBlEhAKA29pZBgCIAEoCVIDb2lkEiEKDGRpc3BsYXlfcmFuaxgDIAEoA1ILZGlzcGxheVJhbm'
+    'siKwoEVHlwZRILCgdVTktOT1dOEAASDAoIUVVFU1RJT04QARIICgRGT0xEEAJCBgoEaXRlbQ==');
 
 @$core.Deprecated('Use noticeDescriptor instead')
 const Notice$json = {
@@ -4663,3 +4683,90 @@ final $typed_data.Uint8List translateReplyRespDescriptor = $convert.base64Decode
     'ZWRSZXBsaWVzRW50cnlSEXRyYW5zbGF0ZWRSZXBsaWVzGnEKFlRyYW5zbGF0ZWRSZXBsaWVzRW'
     '50cnkSEAoDa2V5GAEgASgDUgNrZXkSQQoFdmFsdWUYAiABKAsyKy5iaWxpYmlsaS5tYWluLmNv'
     'bW11bml0eS5yZXBseS52MS5SZXBseUluZm9SBXZhbHVlOgI4AQ==');
+
+@$core.Deprecated('Use foldCardDescriptor instead')
+const FoldCard$json = {
+  '1': 'FoldCard',
+  '2': [
+    {'1': 'bottom_text', '3': 1, '4': 1, '5': 9, '10': 'bottomText'},
+    {
+      '1': 'fold_pagination',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.bilibili.pagination.FeedPagination',
+      '10': 'foldPagination'
+    },
+  ],
+};
+
+/// Descriptor for `FoldCard`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List foldCardDescriptor = $convert.base64Decode(
+    'CghGb2xkQ2FyZBIfCgtib3R0b21fdGV4dBgBIAEoCVIKYm90dG9tVGV4dBJMCg9mb2xkX3BhZ2'
+    'luYXRpb24YAiABKAsyIy5iaWxpYmlsaS5wYWdpbmF0aW9uLkZlZWRQYWdpbmF0aW9uUg5mb2xk'
+    'UGFnaW5hdGlvbg==');
+
+@$core.Deprecated('Use foldListReqDescriptor instead')
+const FoldListReq$json = {
+  '1': 'FoldListReq',
+  '2': [
+    {'1': 'oid', '3': 1, '4': 1, '5': 3, '10': 'oid'},
+    {'1': 'type', '3': 2, '4': 1, '5': 3, '10': 'type'},
+    {'1': 'extra', '3': 3, '4': 1, '5': 9, '10': 'extra'},
+    {
+      '1': 'pagination',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.bilibili.pagination.FeedPagination',
+      '10': 'pagination'
+    },
+  ],
+};
+
+/// Descriptor for `FoldListReq`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List foldListReqDescriptor = $convert.base64Decode(
+    'CgtGb2xkTGlzdFJlcRIQCgNvaWQYASABKANSA29pZBISCgR0eXBlGAIgASgDUgR0eXBlEhQKBW'
+    'V4dHJhGAMgASgJUgVleHRyYRJDCgpwYWdpbmF0aW9uGAQgASgLMiMuYmlsaWJpbGkucGFnaW5h'
+    'dGlvbi5GZWVkUGFnaW5hdGlvblIKcGFnaW5hdGlvbg==');
+
+@$core.Deprecated('Use foldListRespDescriptor instead')
+const FoldListResp$json = {
+  '1': 'FoldListResp',
+  '2': [
+    {
+      '1': 'replies',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.bilibili.main.community.reply.v1.ReplyInfo',
+      '10': 'replies'
+    },
+    {
+      '1': 'pagination_reply',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.bilibili.pagination.FeedPaginationReply',
+      '10': 'paginationReply'
+    },
+    {'1': 'title', '3': 3, '4': 1, '5': 9, '10': 'title'},
+    {
+      '1': 'subject_control',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.bilibili.main.community.reply.v1.SubjectControl',
+      '10': 'subjectControl'
+    },
+  ],
+};
+
+/// Descriptor for `FoldListResp`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List foldListRespDescriptor = $convert.base64Decode(
+    'CgxGb2xkTGlzdFJlc3ASRQoHcmVwbGllcxgBIAMoCzIrLmJpbGliaWxpLm1haW4uY29tbXVuaX'
+    'R5LnJlcGx5LnYxLlJlcGx5SW5mb1IHcmVwbGllcxJTChBwYWdpbmF0aW9uX3JlcGx5GAIgASgL'
+    'MiguYmlsaWJpbGkucGFnaW5hdGlvbi5GZWVkUGFnaW5hdGlvblJlcGx5Ug9wYWdpbmF0aW9uUm'
+    'VwbHkSFAoFdGl0bGUYAyABKAlSBXRpdGxlElkKD3N1YmplY3RfY29udHJvbBgEIAEoCzIwLmJp'
+    'bGliaWxpLm1haW4uY29tbXVuaXR5LnJlcGx5LnYxLlN1YmplY3RDb250cm9sUg5zdWJqZWN0Q2'
+    '9udHJvbA==');

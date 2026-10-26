@@ -22,6 +22,7 @@ abstract final class GrpcUrl {
   static const reply = '/bilibili.main.community.reply.v1.Reply';
   static const mainList = '$reply/MainList';
   static const detailList = '$reply/DetailList';
+  static const foldList = '$reply/FoldList';
   static const dialogList = '$reply/DialogList';
   // static const replyInfo = '$reply/ReplyInfo';
   static const searchItem = '$reply/SearchItem';

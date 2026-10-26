@@ -119,7 +119,7 @@ class FavDetailController
   }
 
   @override
-  bool? get hasFooter => true;
+  bool get hasFooter => true;
 
   @override
   List<FavDetailItemModel>? getDataList(FavDetailData response) {

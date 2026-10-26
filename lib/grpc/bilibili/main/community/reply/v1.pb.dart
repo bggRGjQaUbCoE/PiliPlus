@@ -1307,6 +1307,7 @@ class DetailListReply extends $pb.GeneratedMessage {
     $2.FeedPaginationReply? paginationReply,
     $core.String? sessionId,
     DetailListReply_SubjectTitle? subjectTitle,
+    $core.Iterable<MixedCard>? mixedCards,
   }) {
     final result = DetailListReply._();
     if (cursor != null) result.cursor = cursor;
@@ -1319,6 +1320,7 @@ class DetailListReply extends $pb.GeneratedMessage {
     if (paginationReply != null) result.paginationReply = paginationReply;
     if (sessionId != null) result.sessionId = sessionId;
     if (subjectTitle != null) result.subjectTitle = subjectTitle;
+    if (mixedCards != null) result.mixedCards.addAll(mixedCards);
     return result;
   }
 
@@ -1354,6 +1356,8 @@ class DetailListReply extends $pb.GeneratedMessage {
     ..aOM<DetailListReply_SubjectTitle>(
         10, _omitFieldNames ? '' : 'subjectTitle',
         subBuilder: DetailListReply_SubjectTitle.$_createMessage)
+    ..pPM<MixedCard>(11, _omitFieldNames ? '' : 'mixedCards',
+        subBuilder: MixedCard.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1481,6 +1485,9 @@ class DetailListReply extends $pb.GeneratedMessage {
   void clearSubjectTitle() => $_clearField(10);
   @$pb.TagNumber(10)
   DetailListReply_SubjectTitle ensureSubjectTitle() => $_ensure(9);
+
+  @$pb.TagNumber(11)
+  $pb.PbList<MixedCard> get mixedCards => $_getList(10);
 }
 
 class DetailListReq extends $pb.GeneratedMessage {
@@ -5721,7 +5728,7 @@ class MemberV2 extends $pb.GeneratedMessage {
   $3.UserSailing ensureUserSailing() => $_ensure(8);
 }
 
-enum MixedCard_Item { question, notSet }
+enum MixedCard_Item { question, fold, notSet }
 
 class MixedCard extends $pb.GeneratedMessage {
   factory MixedCard({
@@ -5729,12 +5736,14 @@ class MixedCard extends $pb.GeneratedMessage {
     $core.String? oid,
     $fixnum.Int64? displayRank,
     QuestionCard? question,
+    FoldCard? fold,
   }) {
     final result = MixedCard._();
     if (type != null) result.type = type;
     if (oid != null) result.oid = oid;
     if (displayRank != null) result.displayRank = displayRank;
     if (question != null) result.question = question;
+    if (fold != null) result.fold = fold;
     return result;
   }
 
@@ -5749,6 +5758,7 @@ class MixedCard extends $pb.GeneratedMessage {
 
   static const $core.Map<$core.int, MixedCard_Item> _MixedCard_ItemByTag = {
     4: MixedCard_Item.question,
+    5: MixedCard_Item.fold,
     0: MixedCard_Item.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
@@ -5756,13 +5766,15 @@ class MixedCard extends $pb.GeneratedMessage {
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.main.community.reply.v1'),
       createEmptyInstance: MixedCard.$_createMessage)
-    ..oo(0, [4])
+    ..oo(0, [4, 5])
     ..aE<MixedCard_Type>(1, _omitFieldNames ? '' : 'type',
         enumValues: MixedCard_Type.values)
     ..aOS(2, _omitFieldNames ? '' : 'oid')
     ..aInt64(3, _omitFieldNames ? '' : 'displayRank')
     ..aOM<QuestionCard>(4, _omitFieldNames ? '' : 'question',
         subBuilder: QuestionCard.$_createMessage)
+    ..aOM<FoldCard>(5, _omitFieldNames ? '' : 'fold',
+        subBuilder: FoldCard.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -5786,8 +5798,10 @@ class MixedCard extends $pb.GeneratedMessage {
   static MixedCard? _defaultInstance;
 
   @$pb.TagNumber(4)
+  @$pb.TagNumber(5)
   MixedCard_Item whichItem() => _MixedCard_ItemByTag[$_whichOneof(0)]!;
   @$pb.TagNumber(4)
+  @$pb.TagNumber(5)
   void clearItem() => $_clearField($_whichOneof(0));
 
   @$pb.TagNumber(1)
@@ -5827,6 +5841,17 @@ class MixedCard extends $pb.GeneratedMessage {
   void clearQuestion() => $_clearField(4);
   @$pb.TagNumber(4)
   QuestionCard ensureQuestion() => $_ensure(3);
+
+  @$pb.TagNumber(5)
+  FoldCard get fold => $_getN(4);
+  @$pb.TagNumber(5)
+  set fold(FoldCard value) => $_setField(5, value);
+  @$pb.TagNumber(5)
+  $core.bool hasFold() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearFold() => $_clearField(5);
+  @$pb.TagNumber(5)
+  FoldCard ensureFold() => $_ensure(4);
 }
 
 class Notice extends $pb.GeneratedMessage {
@@ -14620,6 +14645,269 @@ class TranslateReplyResp extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(1)
   $pb.PbMap<$fixnum.Int64, ReplyInfo> get translatedReplies => $_getMap(0);
+}
+
+class FoldCard extends $pb.GeneratedMessage {
+  factory FoldCard({
+    $core.String? bottomText,
+    $2.FeedPagination? foldPagination,
+  }) {
+    final result = FoldCard._();
+    if (bottomText != null) result.bottomText = bottomText;
+    if (foldPagination != null) result.foldPagination = foldPagination;
+    return result;
+  }
+
+  FoldCard._();
+
+  factory FoldCard.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      FoldCard()..mergeFromBuffer(data, registry);
+  factory FoldCard.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      FoldCard()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'FoldCard',
+      package: const $pb.PackageName(
+          _omitMessageNames ? '' : 'bilibili.main.community.reply.v1'),
+      createEmptyInstance: FoldCard.$_createMessage)
+    ..aOS(1, _omitFieldNames ? '' : 'bottomText')
+    ..aOM<$2.FeedPagination>(2, _omitFieldNames ? '' : 'foldPagination',
+        subBuilder: $2.FeedPagination.$_createMessage)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FoldCard clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FoldCard copyWith(void Function(FoldCard) updates) =>
+      super.copyWith((message) => updates(message as FoldCard)) as FoldCard;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use FoldCard() / FoldCard.new instead')
+  static FoldCard create() => FoldCard._();
+  static $pb.GeneratedMessage $_createMessage() => FoldCard._();
+  @$core.override
+  FoldCard createEmptyInstance() => FoldCard._();
+  @$core.pragma('dart2js:noInline')
+  static FoldCard getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<FoldCard>(FoldCard.$_createMessage);
+  static FoldCard? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get bottomText => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set bottomText($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasBottomText() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearBottomText() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $2.FeedPagination get foldPagination => $_getN(1);
+  @$pb.TagNumber(2)
+  set foldPagination($2.FeedPagination value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasFoldPagination() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFoldPagination() => $_clearField(2);
+  @$pb.TagNumber(2)
+  $2.FeedPagination ensureFoldPagination() => $_ensure(1);
+}
+
+class FoldListReq extends $pb.GeneratedMessage {
+  factory FoldListReq({
+    $fixnum.Int64? oid,
+    $fixnum.Int64? type,
+    $core.String? extra,
+    $2.FeedPagination? pagination,
+  }) {
+    final result = FoldListReq._();
+    if (oid != null) result.oid = oid;
+    if (type != null) result.type = type;
+    if (extra != null) result.extra = extra;
+    if (pagination != null) result.pagination = pagination;
+    return result;
+  }
+
+  FoldListReq._();
+
+  factory FoldListReq.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      FoldListReq()..mergeFromBuffer(data, registry);
+  factory FoldListReq.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      FoldListReq()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'FoldListReq',
+      package: const $pb.PackageName(
+          _omitMessageNames ? '' : 'bilibili.main.community.reply.v1'),
+      createEmptyInstance: FoldListReq.$_createMessage)
+    ..aInt64(1, _omitFieldNames ? '' : 'oid')
+    ..aInt64(2, _omitFieldNames ? '' : 'type')
+    ..aOS(3, _omitFieldNames ? '' : 'extra')
+    ..aOM<$2.FeedPagination>(4, _omitFieldNames ? '' : 'pagination',
+        subBuilder: $2.FeedPagination.$_createMessage)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FoldListReq clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FoldListReq copyWith(void Function(FoldListReq) updates) =>
+      super.copyWith((message) => updates(message as FoldListReq))
+          as FoldListReq;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use FoldListReq() / FoldListReq.new instead')
+  static FoldListReq create() => FoldListReq._();
+  static $pb.GeneratedMessage $_createMessage() => FoldListReq._();
+  @$core.override
+  FoldListReq createEmptyInstance() => FoldListReq._();
+  @$core.pragma('dart2js:noInline')
+  static FoldListReq getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<FoldListReq>(
+          FoldListReq.$_createMessage);
+  static FoldListReq? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get oid => $_getI64(0);
+  @$pb.TagNumber(1)
+  set oid($fixnum.Int64 value) => $_setInt64(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasOid() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearOid() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get type => $_getI64(1);
+  @$pb.TagNumber(2)
+  set type($fixnum.Int64 value) => $_setInt64(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasType() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearType() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get extra => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set extra($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasExtra() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearExtra() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $2.FeedPagination get pagination => $_getN(3);
+  @$pb.TagNumber(4)
+  set pagination($2.FeedPagination value) => $_setField(4, value);
+  @$pb.TagNumber(4)
+  $core.bool hasPagination() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPagination() => $_clearField(4);
+  @$pb.TagNumber(4)
+  $2.FeedPagination ensurePagination() => $_ensure(3);
+}
+
+class FoldListResp extends $pb.GeneratedMessage {
+  factory FoldListResp({
+    $core.Iterable<ReplyInfo>? replies,
+    $2.FeedPaginationReply? paginationReply,
+    $core.String? title,
+    SubjectControl? subjectControl,
+  }) {
+    final result = FoldListResp._();
+    if (replies != null) result.replies.addAll(replies);
+    if (paginationReply != null) result.paginationReply = paginationReply;
+    if (title != null) result.title = title;
+    if (subjectControl != null) result.subjectControl = subjectControl;
+    return result;
+  }
+
+  FoldListResp._();
+
+  factory FoldListResp.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      FoldListResp()..mergeFromBuffer(data, registry);
+  factory FoldListResp.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      FoldListResp()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'FoldListResp',
+      package: const $pb.PackageName(
+          _omitMessageNames ? '' : 'bilibili.main.community.reply.v1'),
+      createEmptyInstance: FoldListResp.$_createMessage)
+    ..pPM<ReplyInfo>(1, _omitFieldNames ? '' : 'replies',
+        subBuilder: ReplyInfo.$_createMessage)
+    ..aOM<$2.FeedPaginationReply>(2, _omitFieldNames ? '' : 'paginationReply',
+        subBuilder: $2.FeedPaginationReply.$_createMessage)
+    ..aOS(3, _omitFieldNames ? '' : 'title')
+    ..aOM<SubjectControl>(4, _omitFieldNames ? '' : 'subjectControl',
+        subBuilder: SubjectControl.$_createMessage)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FoldListResp clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  FoldListResp copyWith(void Function(FoldListResp) updates) =>
+      super.copyWith((message) => updates(message as FoldListResp))
+          as FoldListResp;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use FoldListResp() / FoldListResp.new instead')
+  static FoldListResp create() => FoldListResp._();
+  static $pb.GeneratedMessage $_createMessage() => FoldListResp._();
+  @$core.override
+  FoldListResp createEmptyInstance() => FoldListResp._();
+  @$core.pragma('dart2js:noInline')
+  static FoldListResp getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<FoldListResp>(
+          FoldListResp.$_createMessage);
+  static FoldListResp? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<ReplyInfo> get replies => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $2.FeedPaginationReply get paginationReply => $_getN(1);
+  @$pb.TagNumber(2)
+  set paginationReply($2.FeedPaginationReply value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasPaginationReply() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPaginationReply() => $_clearField(2);
+  @$pb.TagNumber(2)
+  $2.FeedPaginationReply ensurePaginationReply() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  $core.String get title => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set title($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasTitle() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTitle() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  SubjectControl get subjectControl => $_getN(3);
+  @$pb.TagNumber(4)
+  set subjectControl(SubjectControl value) => $_setField(4, value);
+  @$pb.TagNumber(4)
+  $core.bool hasSubjectControl() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearSubjectControl() => $_clearField(4);
+  @$pb.TagNumber(4)
+  SubjectControl ensureSubjectControl() => $_ensure(3);
 }
 
 const $core.bool _omitFieldNames =

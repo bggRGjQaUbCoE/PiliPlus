@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-27T00:12:33.693643+08:00",
+  "device": "LGH870DS42e27764",
+  "package": "com.example.piliplus.dev",
+  "pid": 22114,
+  "sourceBvid": "BV1vY4y1N7TY",
+  "apkSha256": "6da37fb90c60e736db1700b0e0852ff965fa756cf50aff95958c1868e42d955f",
+  "sourceValidationHashesStillMatch": true,
+  "runtimeApplied": "10-27 00:11:30.146 22114 22114 I flutter : HdrDiag HDR decision: phase=applied gen=1 origin=hint source=hevc,hlg,bt.2020,dolbyVision,8,4,false class=dvP84 selected=baseLayerConvert maturity=verified presentation=nativeHdr confidence=verified vo=gpu-next hwdec=surfacetexture output=pq topology=platformView surface=pq stripRpu=true peak=1000 hwdecCurrent=surfacetexture requested=pq path=ext:lg-pq readback=none verified=true degrade=none candidates=nativeDolbyVision:nativeDvUnavailable,metadataReshape:pqRgbPresentationUnavailable,baseLayerDirect:displayLacksTransfer,baseLayerConvert:ok,toneMapSdr:displayLacksTransfer,toneMapSdr:displayLacksTransfer",
+  "panel": {
+    "HDR": 1,
+    "backlight": 255,
+    "thermal": 0
+  },
+  "sourceHumanVisual": {
+    "bear": "基本一致",
+    "sunset": "基本一致，没有明显过曝或细节丢失",
+    "nearblack": "基本一致"
+  },
+  "mainAppHumanVisual": "正常，采用这版",
+  "errorsObserved": [],
+  "gammaEvidence": "neutral0 candidate source + tests + lab runtime; no direct main-app gamma property sampled",
+  "limits": [
+    "FBO numerical residuals remain; no all-pixel equality claim",
+    "No physical panel luminance measured"
+  ],
+  "committed": false,
+  "acceptanceStatus": "accepted"
+}

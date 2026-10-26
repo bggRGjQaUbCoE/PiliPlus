@@ -1,6 +1,14 @@
 # TASKS.md
 
 任务事实源：只保留当前状态、验收门槛和下一步；按各项 `context` 查看持续更新的依据。
+## LG-HLG-PQ-BRIGHTNESS-MAPPING-20261025
+- **completed、用户采用，已授权提交推送**：1000参考峰值/gamma0，取消自动+3，不加曲线；105 tests/analyze0与5份生产源哈希保持。
+- **同帧观感**：熊35.035秒、夕阳720.052666667秒、近黑600.032766667秒用户均反馈基本一致；夕阳明确无明显过曝/细节丢失。近黑HDR10直通/离屏参考一致。
+- **交付与运行**：标准源码PiliPlus APK SHA6da37fb9…已安装LG且base.apk一致；北海道原片硬解SurfaceTexture→PQ/ext:lg-pq、peak1000、applied verified=true、HDR1。用户确认主应用连续播放“正常，采用这版”，验收通过。
+- **证据边界**：原片35秒0.1–1000nit分段中位偏差最大3.87%，稀少高光+6.79%，无<.1nit样本；fixture暗边缘/高光残差未消除，不宣称逐像素或全片一致。面板nits未量测。
+- **context**：[lg-hlg-pq-brightness-mapping-20261025.md](archives/conversations/lg-hlg-pq-brightness-mapping-20261025.md)；永久交付摘要在PiliPlus `archives/evidence/lg-hlg-pq-minimal-20261027.json`。用户2026-10-27授权提交、推送；仅纳入本任务范围，保留其他修改。
+
+
 姊妹仓：本地 media-kit checkout 在 `../media-kit`（compat 分支），本仓的一切播放器行为变化先看其 `TASKS.md` 的 MK-ROUTING 段。
 **镜像红线（2026-10-17 起；改名后仅适用于旧仓 PiliPlus.old）**：旧仓 `main/dev/dom` 与全部 tag 由 `ci/upstream-sync` 孤儿分支每日强镜像自上游（force+prune），自有提交只能放特性分支（当前工作分支 `feature/ohos`，不受镜像影响）。
 

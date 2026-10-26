@@ -3,6 +3,7 @@ package com.example.piliplus
 import java.io.File
 import javax.xml.parsers.DocumentBuilderFactory
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -26,6 +27,15 @@ class Media3FullscreenLayoutTest {
         assertEquals("match_parent", view.getAttributeNS(android, "layout_width"))
         assertEquals("match_parent", view.getAttributeNS(android, "layout_height"))
         assertNotEquals("true", view.getAttributeNS(android, "fitsSystemWindows"))
+        for (attribute in listOf(
+            "padding", "paddingLeft", "paddingTop", "paddingRight", "paddingBottom",
+            "paddingStart", "paddingEnd", "paddingHorizontal", "paddingVertical",
+            "layout_margin", "layout_marginLeft", "layout_marginTop", "layout_marginRight",
+            "layout_marginBottom", "layout_marginStart", "layout_marginEnd",
+            "layout_marginHorizontal", "layout_marginVertical",
+        )) {
+            assertFalse("Full-window containers must not reserve $attribute", view.hasAttributeNS(android, attribute))
+        }
     }
 
     @Test
@@ -66,7 +76,7 @@ class Media3FullscreenLayoutTest {
     }
 
     @Test
-    fun controlsHaveSeparateInsetContainersWithoutShrinkingTheVideo() {
+    fun controlsAndLockUseTheSameFullWindowBoundsAsTheVideo() {
         val controls = resource("layout/media3_controls.xml")
         assertEquals("@+id/media3_controls", controls.getAttributeNS(android, "id"))
         assertFullWindow(controls)
@@ -82,5 +92,18 @@ class Media3FullscreenLayoutTest {
             lockContainer.elements("ImageButton").single().getAttributeNS(android, "id"),
         )
         assertEquals(0, lockContainer.elements("androidx.media3.ui.PlayerView").size)
+    }
+
+    @Test
+    fun controlsDoNotReintroduceSystemOrCutoutPadding() {
+        val controls = File("src/main/kotlin/com/example/piliplus/Media3Controls.kt").readText()
+        assertFalse(
+            "Controls must remain edge-to-edge when system bars or display cutouts change",
+            controls.contains("setOnApplyWindowInsetsListener"),
+        )
+        assertFalse(
+            "Control spacing belongs in the layout, not runtime safe-area padding",
+            controls.contains("setPadding("),
+        )
     }
 }

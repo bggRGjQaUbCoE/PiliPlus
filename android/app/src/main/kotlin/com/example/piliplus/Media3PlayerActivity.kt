@@ -70,8 +70,9 @@ class Media3PlayerActivity : Activity() {
             return
         }
         if (Build.VERSION.SDK_INT >= 26) window.colorMode = ActivityInfo.COLOR_MODE_HDR
-        enterFullscreen()
         setContentView(R.layout.media3_player)
+        // PhoneWindow.getInsetsController() needs the decor installed by setContentView.
+        enterFullscreen()
         playerView = findViewById(R.id.media3_player)
         controls = Media3Controls(this, playerView, savedInstanceState)
     }

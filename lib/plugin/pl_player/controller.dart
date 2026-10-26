@@ -165,6 +165,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   late final tryLook = !Accounts.get(AccountType.video).isLogin && Pref.p1080;
 
   late DataSource dataSource;
+  String _mediaTitle = '';
 
   Timer? _timer;
   StreamSubscription? _subForSeek;
@@ -738,6 +739,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     bool autoFullScreenFlag = false,
     int? rotate,
     String? videoCodecs,
+    String title = '',
   }) async {
     try {
       _processing = true;
@@ -758,6 +760,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       this.width = width;
       this.height = height;
       this.dataSource = dataSource;
+      _mediaTitle = title;
       _autoPlay = autoplay;
       // 初始化数据加载状态
       dataStatus.value = DataStatus.loading;
@@ -920,9 +923,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
             _profile5Mode == DolbyVisionProfile5Mode.media3 &&
                 (isLive || onlyPlayAudio.value)
             ? DolbyVisionProfile5Mode.software
-            : _profile5Mode == DolbyVisionProfile5Mode.media3 || Pref.enableHA
-            ? _profile5Mode
-            : DolbyVisionProfile5Mode.software,
+            : _profile5Mode,
         onNativePlaybackRequested: _handoffToMedia3,
         onError: (error, stackTrace) {
           dataStatus.value = DataStatus.error;
@@ -1086,12 +1087,24 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       WakelockPlus.disable();
       _updatePlaybackState();
       dataStatus.value = .loaded;
+      final colors = Get.theme.colorScheme;
       final result = await Media3Player.open(
         video: dataSource.videoSource,
         audio: dataSource.audioSource,
         position: _media3Position,
         speed: playbackSpeed,
         headers: {'User-Agent': BrowserUa.pc, 'Referer': HttpString.baseUrl},
+        title: _mediaTitle,
+        speeds: speedList,
+        seekStep: fastForBackwardDuration,
+        controlsTimeout: showControlDuration,
+        quickDoubleTap: enableQuickDouble,
+        longPressSpeed: enableAutoLongPressSpeed ? 0 : longPressSpeed,
+        accentColor:
+            (colors.brightness == Brightness.light
+                    ? colors.inversePrimary
+                    : colors.primary)
+                .toARGB32(),
       );
       if (generation != _sourceGeneration || _playerCount == 0) return;
       _media3Position = result.position;

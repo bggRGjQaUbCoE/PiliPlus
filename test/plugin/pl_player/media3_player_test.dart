@@ -12,6 +12,26 @@ void main() {
     messenger.setMockMethodCallHandler(Media3Player.channel, null);
   });
 
+  test('Profile 5 offers only software and native playback', () {
+    expect(DolbyVisionProfile5Mode.values, [
+      DolbyVisionProfile5Mode.software,
+      DolbyVisionProfile5Mode.media3,
+    ]);
+    for (final mode in DolbyVisionProfile5Mode.values) {
+      expect(DolbyVisionProfile5Mode.fromPreference(mode.name), mode);
+    }
+    for (final retired in ['mediacodec', 'mediacodecCopy']) {
+      expect(
+        DolbyVisionProfile5Mode.fromPreference(retired),
+        DolbyVisionProfile5Mode.software,
+      );
+    }
+    expect(
+      () => DolbyVisionProfile5Mode.fromPreference('unknown'),
+      throwsArgumentError,
+    );
+  });
+
   test('only explicit DV Profile 5 codecs select the native backend', () {
     for (final codec in ['dvhe.05.06', 'dvh1.05.09', 'DVHE.5.06']) {
       expect(DolbyVisionProfile5Mode.isProfile5Codec(codec), isTrue);
@@ -54,6 +74,13 @@ void main() {
       },
       position: const Duration(milliseconds: 12345),
       speed: 1.5,
+      title: '测试标题 / Episode 2',
+      speeds: [0.75, 1, 2.5],
+      seekStep: const Duration(seconds: 15),
+      controlsTimeout: const Duration(seconds: 30),
+      quickDoubleTap: false,
+      longPressSpeed: 0,
+      accentColor: 0xFFABCDEF,
     );
     expect(request.method, 'open');
     expect(request.arguments, {
@@ -65,6 +92,13 @@ void main() {
       },
       'positionMs': 12345,
       'speed': 1.5,
+      'title': '测试标题 / Episode 2',
+      'speeds': [0.75, 1.0, 2.5],
+      'seekStepMs': 15000,
+      'controlsTimeoutMs': 30000,
+      'quickDoubleTap': false,
+      'longPressSpeed': 0.0,
+      'accentColor': 0xFFABCDEF,
     });
     expect(result.position.inMilliseconds, 23456);
     expect(result.duration.inMilliseconds, 60000);
@@ -76,6 +110,12 @@ void main() {
     messenger.setMockMethodCallHandler(Media3Player.channel, (call) async {
       expect(call.arguments['video'], '/downloads/测试/video.mp4');
       expect(call.arguments.containsKey('audio'), isFalse);
+      expect(call.arguments['title'], '');
+      expect(call.arguments['speeds'], [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3]);
+      expect(call.arguments['seekStepMs'], 10000);
+      expect(call.arguments['controlsTimeoutMs'], 3000);
+      expect(call.arguments['quickDoubleTap'], isTrue);
+      expect(call.arguments['longPressSpeed'], 3);
       return {
         'positionMs': 60000,
         'durationMs': 60000,

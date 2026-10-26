@@ -10,13 +10,12 @@ import android.util.Log
 import android.view.Display
 import android.view.View
 import android.view.WindowManager
-import android.widget.Button
-import android.widget.TextView
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
+import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
@@ -37,6 +36,7 @@ import java.lang.ref.WeakReference
 class Media3PlayerActivity : Activity() {
     private var player: ExoPlayer? = null
     private lateinit var playerView: PlayerView
+    private var controls: Media3Controls? = null
     private var positionMs = 0L
     private var durationMs = 0L
     private var speed = 1f
@@ -70,11 +70,7 @@ class Media3PlayerActivity : Activity() {
         if (Build.VERSION.SDK_INT >= 26) window.colorMode = ActivityInfo.COLOR_MODE_HDR
         setContentView(R.layout.media3_player)
         playerView = findViewById(R.id.media3_player)
-        findViewById<Button>(R.id.media3_back).setOnClickListener { finish() }
-        playerView.setControllerVisibilityListener(PlayerView.ControllerVisibilityListener { visibility ->
-            findViewById<View>(R.id.media3_back).visibility = visibility
-            findViewById<View>(R.id.media3_info).visibility = visibility
-        })
+        controls = Media3Controls(this, playerView, savedInstanceState)
         @Suppress("DEPRECATION")
         window.decorView.systemUiVisibility = (
             View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
@@ -124,6 +120,14 @@ class Media3PlayerActivity : Activity() {
                     }
                 }
 
+                override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) {
+                    controls?.updateSpeed()
+                }
+
+                override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+                    if (!playWhenReady) controls?.endSpeedBoost()
+                }
+
                 override fun onPlaybackStateChanged(playbackState: Int) {
                     if (playbackState == Player.STATE_ENDED) {
                         completed = true
@@ -153,8 +157,7 @@ class Media3PlayerActivity : Activity() {
                     initializedTimestampMs: Long,
                     initializationDurationMs: Long,
                 ) {
-                    findViewById<TextView>(R.id.media3_info).text =
-                        getString(R.string.media3_player_diagnostics, decoderName)
+                    controls?.setDecoderName(decoderName)
                 }
             })
             val headers = requireNotNull(intent.getBundleExtra("headers")) { "Missing HTTP headers" }
@@ -180,8 +183,10 @@ class Media3PlayerActivity : Activity() {
             exoPlayer.setMediaSource(source)
             exoPlayer.seekTo(positionMs)
             exoPlayer.setPlaybackSpeed(speed)
+            controls?.updateSpeed()
             exoPlayer.playWhenReady = playWhenReady && !pauseRequested
             exoPlayer.prepare()
+            if (playerView.useController) playerView.showController()
         } catch (error: MediaCodecUtil.DecoderQueryException) {
             fail(getString(R.string.media3_player_codec_required), error)
         } catch (error: IllegalArgumentException) {
@@ -192,6 +197,7 @@ class Media3PlayerActivity : Activity() {
     }
 
     private fun capturePosition() {
+        controls?.endSpeedBoost()
         player?.let {
             positionMs = it.currentPosition.coerceAtLeast(0)
             if (it.duration != C.TIME_UNSET) durationMs = it.duration.coerceAtLeast(0)
@@ -205,10 +211,12 @@ class Media3PlayerActivity : Activity() {
         outState.putLong("durationMs", durationMs)
         outState.putFloat("speed", speed)
         outState.putBoolean("playWhenReady", player?.playWhenReady ?: playWhenReady)
+        controls?.saveState(outState)
         super.onSaveInstanceState(outState)
     }
 
     override fun onStop() {
+        controls?.onStop()
         capturePosition()
         // No background playback: resume paused after leaving the native activity.
         playWhenReady = false
@@ -224,6 +232,7 @@ class Media3PlayerActivity : Activity() {
     }
 
     override fun onDestroy() {
+        controls?.onStop()
         releasePlayer()
         if (current?.get() === this) current = null
         super.onDestroy()
@@ -232,6 +241,7 @@ class Media3PlayerActivity : Activity() {
     override fun finish() {
         if (returning) return
         returning = true
+        controls?.onStop()
         capturePosition()
         setResult(
             RESULT_OK,

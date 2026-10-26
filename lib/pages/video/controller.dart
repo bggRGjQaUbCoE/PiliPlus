@@ -736,6 +736,17 @@ class VideoDetailController extends GetxController
     return null;
   }
 
+  String get playerTitle {
+    if (isFileSource) return entry.showTitle;
+    final detail = (isUgc ? ugcIntroCtr : pgcIntroCtr).videoDetail.value;
+    if (detail.videos == 1) return detail.title ?? '';
+    return detail.pages
+            ?.firstWhereOrNull((page) => page.cid == cid.value)
+            ?.part ??
+        detail.title ??
+        '';
+  }
+
   Future<void> playerInit({
     bool? autoplay,
     bool autoFullScreenFlag = false,
@@ -756,6 +767,7 @@ class VideoDetailController extends GetxController
               audioSource: audioUrl,
             ),
       seekTo: seek,
+      title: playerTitle,
       duration: data.timeLength == null
           ? null
           : Duration(milliseconds: data.timeLength!),

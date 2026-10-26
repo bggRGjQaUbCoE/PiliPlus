@@ -2,6 +2,21 @@
 <resources>
     <string name="media3_player_title">Media3 · 杜比视界 Profile 5</string>
     <string name="media3_player_back">返回</string>
+    <string name="media3_player_info">播放信息</string>
+    <string name="media3_player_seek">播放进度</string>
+    <string name="media3_player_speed">倍速</string>
+    <string name="media3_player_speed_boost">%1$s 倍速中</string>
+    <string name="media3_player_fit">画面比例</string>
+    <string name="media3_player_fit_auto">自动</string>
+    <string name="media3_player_fit_stretch">拉伸</string>
+    <string name="media3_player_fit_crop">裁剪</string>
+    <string name="media3_player_fit_width">等宽</string>
+    <string name="media3_player_fit_height">等高</string>
+    <string name="media3_player_lock">锁定控制栏</string>
+    <string name="media3_player_unlock">解锁控制栏</string>
+    <string name="media3_player_rewind">快退%1$d秒</string>
+    <string name="media3_player_forward">快进%1$d秒</string>
+    <string name="media3_player_time_separator">/</string>
     <string name="media3_player_diagnostics">Media3 · DV Profile 5 · SurfaceView\n%1$s</string>
     <string name="media3_player_android_required">原生杜比视界播放需要 Android 7.0 或更高版本。</string>
     <string name="media3_player_display_required">屏幕未报告杜比视界支持，请在音视频设置中选择软解。</string>

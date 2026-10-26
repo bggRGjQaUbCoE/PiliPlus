@@ -41,6 +41,13 @@ internal class Media3Bridge(private val activity: Activity, messenger: BinaryMes
                     .putExtra("positionMs", request.positionMs)
                     .putExtra("speed", request.speed)
                     .putExtra("headers", headers)
+                    .putExtra("title", request.title)
+                    .putExtra("speeds", request.speeds)
+                    .putExtra("seekStepMs", request.seekStepMs)
+                    .putExtra("controlsTimeoutMs", request.controlsTimeoutMs)
+                    .putExtra("quickDoubleTap", request.quickDoubleTap)
+                    .putExtra("longPressSpeed", request.longPressSpeed)
+                    .putExtra("accentColor", request.accentColor)
                 Media3PlayerActivity.resetRequests()
                 pending = result
                 try {

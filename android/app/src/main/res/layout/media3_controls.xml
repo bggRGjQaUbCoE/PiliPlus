@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/media3_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:background="@drawable/media3_controls_top"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="8dp">
+
+        <ImageButton
+            android:id="@+id/media3_back"
+            style="@style/Media3ControlButton"
+            android:contentDescription="@string/media3_player_back"
+            android:src="@drawable/ic_player_back" />
+
+        <TextView
+            android:id="@+id/media3_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:textColor="@android:color/white"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/media3_info"
+            style="@style/Media3ControlText"
+            android:contentDescription="@string/media3_player_info"
+            android:text="@string/media3_player_info" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/media3_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@drawable/media3_controls_bottom"
+        android:orientation="vertical"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingBottom="12dp">
+
+        <androidx.media3.ui.DefaultTimeBar
+            android:id="@id/exo_progress"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:contentDescription="@string/media3_player_seek"
+            app:bar_height="3.5dp"
+            app:scrubber_enabled_size="14dp"
+            app:scrubber_dragged_size="18dp"
+            app:unplayed_color="#33FFFFFF" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@id/exo_play_pause"
+                style="@style/Media3ControlButton" />
+
+            <TextView
+                android:id="@id/exo_position"
+                style="@style/Media3TimeText"
+                android:paddingStart="8dp" />
+
+            <TextView
+                style="@style/Media3TimeText"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:text="@string/media3_player_time_separator" />
+
+            <TextView
+                android:id="@id/exo_duration"
+                style="@style/Media3TimeText" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/media3_fit"
+                style="@style/Media3ControlText"
+                android:contentDescription="@string/media3_player_fit"
+                android:text="@string/media3_player_fit_auto" />
+
+            <TextView
+                android:id="@+id/media3_speed"
+                style="@style/Media3ControlText"
+                android:contentDescription="@string/media3_player_speed" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

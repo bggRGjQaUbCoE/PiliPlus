@@ -2,6 +2,21 @@
 <resources>
     <string name="media3_player_title">Media3 · Dolby Vision Profile 5</string>
     <string name="media3_player_back">Back</string>
+    <string name="media3_player_info">Playback info</string>
+    <string name="media3_player_seek">Seek</string>
+    <string name="media3_player_speed">Playback speed</string>
+    <string name="media3_player_speed_boost">%1$s speed</string>
+    <string name="media3_player_fit">Video fit</string>
+    <string name="media3_player_fit_auto">Auto</string>
+    <string name="media3_player_fit_stretch">Stretch</string>
+    <string name="media3_player_fit_crop">Crop</string>
+    <string name="media3_player_fit_width">Fit width</string>
+    <string name="media3_player_fit_height">Fit height</string>
+    <string name="media3_player_lock">Lock controls</string>
+    <string name="media3_player_unlock">Unlock controls</string>
+    <string name="media3_player_rewind">Rewind %1$d seconds</string>
+    <string name="media3_player_forward">Forward %1$d seconds</string>
+    <string name="media3_player_time_separator">/</string>
     <string name="media3_player_diagnostics">Media3 · DV Profile 5 · SurfaceView\n%1$s</string>
     <string name="media3_player_android_required">Native Dolby Vision playback requires Android 7.0 or later.</string>
     <string name="media3_player_display_required">This display does not report Dolby Vision support. Select software decoding in audio/video settings.</string>

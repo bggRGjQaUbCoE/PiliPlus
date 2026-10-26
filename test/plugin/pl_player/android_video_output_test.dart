@@ -210,70 +210,25 @@ void main() {
     },
   );
 
-  for (final (mode, expectedHwdec) in [
-    (DolbyVisionProfile5Mode.mediacodec, 'mediacodec'),
-    (DolbyVisionProfile5Mode.mediacodecCopy, 'mediacodec-copy'),
-  ]) {
-    test('Profile 5 selects $expectedHwdec with gpu-next', () async {
-      profile5Mode = mode;
-      await player.load('5');
-      await emitSize();
-      await emitSize(portrait);
-
-      expect(player.getProperty('hwdec'), expectedHwdec);
-      expect(player.getProperty('vo'), 'gpu-next');
-      expect(player.getProperty('android-surface-size'), '1080x1920');
-      expect(output.rect.value, portrait);
-      expect(
-        player.writes.where((write) => write == ('hwdec', expectedHwdec)),
-        hasLength(1),
-      );
-      expect(player.writes, isNot(contains(('hwdec', 'no'))));
-      expect(errors, isEmpty);
-    });
-
-    test(
-      '$expectedHwdec is restored to the preferred mode for Profile 8.4',
-      () async {
-        profile5Mode = mode;
-        await player.load('5');
-        await emitSize();
-        await player.unload();
-        await player.load('8');
-        await emitSize();
-
-        expect(player.getProperty('hwdec'), hardwareDecoding);
-        expect(player.getProperty('vo'), 'gpu');
-        expect(errors, isEmpty);
-      },
-    );
-
-    test('rejected $expectedHwdec is reported', () async {
-      profile5Mode = mode;
-      player.rejectedHwdec = expectedHwdec;
-      await player.load('5');
-      await emitSize();
-
-      expect(errors.single, isA<StateError>());
-      expect(output.rect.value, Rect.zero);
-    });
-  }
-
   test(
     'changing Profile 5 mode applies on reload without recreating the player',
     () async {
       for (final mode in [
         DolbyVisionProfile5Mode.software,
-        DolbyVisionProfile5Mode.mediacodec,
-        DolbyVisionProfile5Mode.mediacodecCopy,
+        DolbyVisionProfile5Mode.media3,
         DolbyVisionProfile5Mode.software,
       ]) {
         profile5Mode = mode;
         await player.load('5');
         await emitSize();
 
-        expect(player.getProperty('hwdec'), mode.hwdec);
-        expect(player.getProperty('vo'), 'gpu-next');
+        if (mode == DolbyVisionProfile5Mode.media3) {
+          await nativeUnload!;
+          expect(nativeRequests, 1);
+        } else {
+          expect(player.getProperty('hwdec'), 'no');
+          expect(player.getProperty('vo'), 'gpu-next');
+        }
         expect(errors, isEmpty);
         await player.unload();
       }

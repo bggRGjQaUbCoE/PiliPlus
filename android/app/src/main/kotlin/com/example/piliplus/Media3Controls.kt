@@ -3,6 +3,7 @@ package com.example.piliplus
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.pm.ActivityInfo
+import android.os.Build
 import android.os.Bundle
 import android.view.GestureDetector
 import android.view.HapticFeedbackConstants
@@ -48,6 +49,8 @@ internal class Media3Controls(
     )
 
     init {
+        applyControlInsets(activity.findViewById(R.id.media3_controls))
+        applyControlInsets(activity.findViewById(R.id.media3_lock_container))
         activity.findViewById<View>(R.id.media3_back).setOnClickListener { activity.finish() }
         activity.findViewById<TextView>(R.id.media3_title).text =
             activity.intent.getStringExtra("title")?.takeIf { it.isNotBlank() }
@@ -130,6 +133,26 @@ internal class Media3Controls(
             true
         }
         applyLock()
+    }
+
+    private fun applyControlInsets(view: View) {
+        val left = view.paddingLeft
+        val top = view.paddingTop
+        val right = view.paddingRight
+        val bottom = view.paddingBottom
+        view.setOnApplyWindowInsetsListener { _, insets ->
+            val cutout = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) insets.displayCutout else null
+            // Only controls avoid system UI and cutouts; the video remains edge-to-edge.
+            @Suppress("DEPRECATION")
+            view.setPadding(
+                left + maxOf(insets.systemWindowInsetLeft, cutout?.safeInsetLeft ?: 0),
+                top + maxOf(insets.systemWindowInsetTop, cutout?.safeInsetTop ?: 0),
+                right + maxOf(insets.systemWindowInsetRight, cutout?.safeInsetRight ?: 0),
+                bottom + maxOf(insets.systemWindowInsetBottom, cutout?.safeInsetBottom ?: 0),
+            )
+            insets
+        }
+        view.requestApplyInsets()
     }
 
     fun updateSpeed() {

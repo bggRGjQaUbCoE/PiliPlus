@@ -30,4 +30,5 @@
 - 禁止直接运行 `flutter build apk` 并手工注入历史 JAR 来声称通过当前源码验证。尤其不可把 `mks-arm64-v8a-opaquealpha.jar`、发布 JAR 或其它预编译库当作本次源码构建产物。发布构建或发布链回归可按其明确范围使用发布库，但结果必须标记为发布构建/发布链验证，不计作当前源码构建验证。
 - 入口默认使用项目要求的 JDK 17，临时配置由脚本管理，不修改全局 Flutter/JDK 设置。
 - 不要绕过入口或覆盖它选择的原生 JAR、ABI split 参数；`MKS_SKIP_APK=1` 只生成原生库，不能作为 APK 交付或安装依据。默认 release + `dev=true` 输出 `/Users/wuweiwei1/src/PiliPlus/build/app/outputs/flutter-apk/piliplus-source-test-release.apk`，应用包名为 `com.example.piliplus.dev`；加入 `--debug` 会构建 debug variant，输出 arm64 APK `/Users/wuweiwei1/src/PiliPlus/build/app/outputs/flutter-apk/piliplus-source-test-debug.apk`，包名为 `com.example.piliplus.debug`。
+- 测试 App（`com.example.piliplus.dev` / `.debug`）仅供本机测试使用：不需要备份、不需要恢复现场，测试完也不必卸载，保持测试后的原样即可。
 - 只有入口输出 `=== VERIFIED` 且对应的 `piliplus-source-test-release.native-verification.json`（或 debug 同名结果单）状态为 `verified` 后，才安装该 APK。核对设备包名及设备 `base.apk` SHA-256 与候选 APK 一致。构建和库哈希核验不等同于设备播放、硬解、HDR 输出或画面验收；按具体任务另行验证并记录这些结果。

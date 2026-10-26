@@ -4,6 +4,7 @@ import java.io.File
 import javax.xml.parsers.DocumentBuilderFactory
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.w3c.dom.Element
 
@@ -25,6 +26,22 @@ class Media3FullscreenLayoutTest {
         assertEquals("match_parent", view.getAttributeNS(android, "layout_width"))
         assertEquals("match_parent", view.getAttributeNS(android, "layout_height"))
         assertNotEquals("true", view.getAttributeNS(android, "fitsSystemWindows"))
+    }
+
+    @Test
+    fun fullscreenControllerIsAccessedOnlyAfterInstallingWindowContent() {
+        val activity = File(
+            "src/main/kotlin/com/example/piliplus/Media3PlayerActivity.kt",
+        ).readText()
+        val onCreate = activity.substringAfter("override fun onCreate(")
+            .substringBefore("override fun onWindowFocusChanged(")
+        val installContent = onCreate.indexOf("setContentView(R.layout.media3_player)")
+        val enterFullscreen = onCreate.indexOf("enterFullscreen()")
+        assertTrue("The player content must be installed during onCreate", installContent >= 0)
+        assertTrue(
+            "PhoneWindow.getInsetsController() requires an installed decor view",
+            enterFullscreen > installContent,
+        )
     }
 
     @Test

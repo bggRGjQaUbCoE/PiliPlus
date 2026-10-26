@@ -2,6 +2,8 @@
 
 ## Current State（2026-10-24 深夜已验收，用户授权提交归档）
 
+- **2026-10-25 证据边界更正**：后续 LG 灰阶/固件排查确认，500 是该机固件能力描述常量，不是即时光学测量；不能仅由常量推其错误。本文历史“真实面板峰值”“HLG 语义固定 1000/整幅约十倍”应按当时推断理解：HLG 峰值与系统 gamma 会适配目标，十倍只直接描述白顶，非所有灰阶。过曝消失的用户验收仍保留，但不等同高光绝对亮度校准。新证据与未闭合项见 [lg-hlg-pq-brightness-mapping-20261025.md](lg-hlg-pq-brightness-mapping-20261025.md)。
+
 - **用户面板观感验收通过**：LYA 与 LG 两台过曝消失、暗部灰阶恢复，任务闭环。media-kit 改动与 PiliPlus 记录已本地提交（不推送，事实以 Git log 为准）。
 
 - **统一修复（media-kit 工作区未提交，V1 可交付无 P0/P1/P2）**：Android 适配器 `VideoRouteCapabilities.java` describeDisplay 采集 `hdrMaxLuminance`（公共 API `getDesiredMaxLuminance()`，原任务卡写的 `getHdrMaxLuminance()` 是 hidden API 编译不过；有效性 finite && ≥80 && ≤10000=PQ 满刻度——用户反馈原 4000 上限过保守，已放宽；无效不上报）；Dart `VideoDisplayCapabilities`/`HdrCapabilities` 透传；`HdrRoute` 新增 `targetPeak`（==/hashCode/toString 纳入，candidateId 不加）；realizer 给 `_metadataReshape`/`_baseLayerConvert` 注入（能力峰值 round().toString()，缺省兜底契约常数 '1000'）；backend 三分支（YUV 契约块读 `route.targetPeak ?? 常数`、texture、platformView+gpu-next）统一条件写入，_setOwned 捕获/恢复语义不变；decision 诊断行加 `peak=`。工作区其它任务未提交改动未触碰。

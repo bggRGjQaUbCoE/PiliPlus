@@ -90,7 +90,7 @@ extension type ReplyTree._(List<ReplyTreeNode> _vis)
     required HashSet<Int64> seen,
     required Int64 rootId,
     required Map<Int64, ReplyInfo> removed,
-    int foldDepth = -1,
+    int foldDepth = 0,
     ReplyTreeNode? root,
   }) {
     assert(
@@ -98,6 +98,8 @@ extension type ReplyTree._(List<ReplyTreeNode> _vis)
       'rootId: $rootId 与 reply: ${root.reply.id} 不等',
     );
     assert(data.length == seen.length, 'data未去重');
+
+    if (foldDepth == 0) foldDepth = -1;
 
     final children = HashMap<Int64, List<ReplyInfo>>();
     final suppressed = HashMap<Int64, ReasonType>();

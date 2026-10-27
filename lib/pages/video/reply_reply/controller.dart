@@ -318,6 +318,7 @@ class VideoReplyReplyController extends ReplyController
       seen: seen,
       rootId: firstFloor.rawValue?.id ?? data.first.root,
       removed: removedReply,
+      foldDepth: Pref.foldDepth,
     );
   }
 

@@ -46,6 +46,7 @@ import 'package:PiliPlus/pages/video/related/view.dart';
 import 'package:PiliPlus/pages/video/reply/controller.dart';
 import 'package:PiliPlus/pages/video/reply/view.dart';
 import 'package:PiliPlus/pages/video/view_point/view.dart';
+import 'package:PiliPlus/pages/video/widgets/external_playback_header.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
 import 'package:PiliPlus/pages/video/widgets/intro_layout.dart';
 import 'package:PiliPlus/pages/video/widgets/player_focus.dart';
@@ -226,7 +227,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     final isPlaying = status.isPlaying;
     try {
       if (videoDetailController.scrollCtr.hasClients) {
-        if (isPlaying) {
+        if (isPlaying && !videoDetailController.externalDisplayConnected.value) {
           if (!videoDetailController.isExpanding &&
               videoDetailController.scrollCtr.offset != 0 &&
               !videoDetailController.animationController.isAnimating) {
@@ -501,6 +502,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     return Obx(
       () {
         final isFullScreen = this.isFullScreen;
+        final casting = videoDetailController.externalDisplayConnected.value;
         return SimpleScaffold(
           appBar: removeAppBar(isFullScreen)
               ? null
@@ -510,14 +512,16 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                     final brightness = colorScheme.brightness;
                     final Brightness statusBarBrightness;
                     final Brightness statusBarIconBrightness;
-                    final backgroundColor = isPortrait && scrollRatio > 0
+                    final backgroundColor = casting
+                        ? colorScheme.surface
+                        : isPortrait && scrollRatio > 0
                         ? Color.lerp(
                             Colors.black,
                             colorScheme.surface,
                             scrollRatio,
                           )!
                         : Colors.black;
-                    if (isPortrait && scrollRatio >= 0.5) {
+                    if (casting || (isPortrait && scrollRatio >= 0.5)) {
                       statusBarBrightness = brightness;
                       statusBarIconBrightness = brightness.reverse;
                     } else {
@@ -540,6 +544,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
             controller: videoDetailController.scrollCtr,
             scrollBehavior: const NoOverscrollIndicator(),
             pinnedHeaderSliverHeightBuilder: () {
+              if (casting) return ExternalPlaybackHeader.compactHeight;
               double pinnedHeight = this.isFullScreen || !isPortrait
                   ? maxHeight - (isWindowMode && !isPortrait ? 0 : padding.top)
                   : videoDetailController.isExpanding ||
@@ -574,20 +579,34 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                   : videoDetailController.videoHeight;
               return [
                 VideoHeader(
-                  minExtent: kToolbarHeight,
-                  maxExtent: height,
+                  minExtent: casting
+                      ? ExternalPlaybackHeader.compactHeight
+                      : kToolbarHeight,
+                  maxExtent: casting
+                      ? ExternalPlaybackHeader.compactHeight
+                      : height,
                   minVideoHeight: videoDetailController.minVideoHeight,
                   onScrollRatioChanged: videoDetailController.scrollRatio.call,
-                  child: Stack(
-                    clipBehavior: .none,
-                    children: [
-                      SizedBox(
-                        width: maxWidth,
-                        height: height,
-                        child: videoPlayer(width: maxWidth, height: height),
-                      ),
-                      _buildHeaderOverlay(),
-                    ],
+                  child: ExternalPlaybackHeader(
+                    connected: casting,
+                    playing: plPlayerController?.playerStatus.isPlaying ?? false,
+                    videoSize: Size(maxWidth, height),
+                    player: videoPlayer(
+                      width: maxWidth,
+                      height: height,
+                      inlineCastControls: false,
+                    ),
+                    overlay: _buildHeaderOverlay(),
+                    onBack: Get.back,
+                    onTogglePlayback: () {
+                      final controller = videoDetailController.plPlayerController;
+                      if (controller.playerStatus.isPlaying) {
+                        controller.pause();
+                      } else {
+                        controller.play();
+                      }
+                    },
+                    onShowControls: videoDetailController.onCast,
                   ),
                 ),
               ];
@@ -1455,7 +1474,47 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     );
   }
 
-  Widget videoPlayer({required double width, required double height}) {
+  Widget videoPlayer({
+    required double width,
+    required double height,
+    bool inlineCastControls = true,
+  }) {
+    final source = _videoPlayerContent(width: width, height: height);
+    if (!inlineCastControls) return source;
+    return Obx(() {
+      final detail = videoDetailController;
+      final player = detail.plPlayerController;
+      return ExternalPlaybackPanel(
+        connected: detail.externalDisplayConnected.value,
+        playing: player.playerStatus.isPlaying,
+        player: source,
+        position: Duration(seconds: player.position.value),
+        duration: Duration(seconds: player.duration.value),
+        danmaku: player.enableShowDanmaku.value,
+        danmakuScale: detail.externalDanmakuScale.value,
+        subtitles: [
+          '关闭',
+          for (final item in detail.subtitles) item.lanDoc ?? item.lan,
+        ],
+        subtitleIndex: detail.vttSubtitlesIndex.value.clamp(
+          0,
+          detail.subtitles.length,
+        ),
+        onBack: Get.back,
+        onShowControls: detail.onCast,
+        onTogglePlayback: () =>
+            player.playerStatus.isPlaying ? player.pause() : player.play(),
+        onSeek: (value) => player.seekTo(value, isSeek: false),
+        onToggleDanmaku: player.enableShowDanmaku.toggle,
+        onSubtitle: detail.setSubtitle,
+        onDanmakuScale: detail.setExternalDanmakuScale,
+        onSaveDanmakuScale: (value) =>
+            detail.setExternalDanmakuScale(value, save: true),
+      );
+    });
+  }
+
+  Widget _videoPlayerContent({required double width, required double height}) {
     final isFullScreen = this.isFullScreen;
     return Stack(
       clipBehavior: Clip.none,

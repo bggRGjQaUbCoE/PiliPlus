@@ -1,6 +1,6 @@
 import 'dart:async' show scheduleMicrotask;
 import 'dart:collection' show Queue;
-import 'dart:ui' show PointerDataPacket;
+import 'dart:ui' show FlutterView, PointerDataPacket;
 
 import 'package:flutter/gestures.dart' show PointerEventConverter;
 import 'package:flutter/rendering.dart' show RenderView, ViewConfiguration;
@@ -15,6 +15,23 @@ class ScaledWidgetsFlutterBinding extends WidgetsFlutterBinding {
 
   /// Calculate scale factor from device size.
   double _scaleFactor;
+
+  double? _externalDisplayHeight;
+
+  /// Keep the player's familiar logical font sizes on a high-resolution TV.
+  /// The render target retains the display's full physical resolution.
+  set externalDisplayHeight(double? height) {
+    if (_externalDisplayHeight == height) return;
+    _externalDisplayHeight = height;
+    handleMetricsChanged();
+  }
+
+  double scaleForView(FlutterView view) {
+    final height = _externalDisplayHeight;
+    return height == null || view.physicalSize.height <= 0
+        ? _scaleFactor
+        : view.physicalSize.height / view.devicePixelRatio / height;
+  }
 
   /// Update scaleFactor callback, then rebuild layout
   set scaleFactor(double scaleFactor) {
@@ -44,7 +61,7 @@ class ScaledWidgetsFlutterBinding extends WidgetsFlutterBinding {
   ViewConfiguration createViewConfigurationFor(RenderView renderView) {
     final view = renderView.flutterView;
     final devicePixelRatio = view.devicePixelRatio;
-    devicePixelRatioScaled = devicePixelRatio * _scaleFactor;
+    devicePixelRatioScaled = devicePixelRatio * scaleForView(view);
     final BoxConstraints physicalConstraints =
         BoxConstraints.fromViewConstraints(view.physicalConstraints);
     return ViewConfiguration(

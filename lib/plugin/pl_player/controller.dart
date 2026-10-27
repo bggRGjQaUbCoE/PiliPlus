@@ -42,6 +42,7 @@ import 'package:PiliPlus/utils/extension/native_geometry_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:PiliPlus/utils/ios/external_display_helper.dart';
 import 'package:PiliPlus/utils/ios/pip_helper.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
@@ -1054,6 +1055,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
         for (final element in _statusListeners) {
           element(playing ? .playing : .paused);
         }
+        IOSExternalDisplayHelper.refresh();
 
         final seconds = videoPlayerController!.state.position.inSeconds;
         if (seconds != 0) {
@@ -1070,6 +1072,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
           for (final element in _statusListeners) {
             element(.completed);
           }
+          IOSExternalDisplayHelper.refresh();
 
           makeHeartBeat(-1, type: .completed);
         }
@@ -1193,6 +1196,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       await _videoPlayerController?.stream.buffer.first;
     }
     danmakuController?.clear();
+    IOSExternalDisplayHelper.clearDanmaku();
     try {
       await _videoPlayerController?.seek(position);
       _updateIOSPip(position);
@@ -1697,6 +1701,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     if (Platform.isAndroid) {
       AndroidHelper$ToDart.onUserLeaveHint = null;
     } else if (Platform.isIOS) {
+      IOSExternalDisplayHelper.close();
       IOSPipHelper.dispose();
     }
     _timer?.cancel();

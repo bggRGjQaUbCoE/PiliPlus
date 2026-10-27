@@ -20,7 +20,7 @@ final class PipPlugin: NSObject, FlutterPlugin {
     )
     let instance = PipPlugin(channel: channel)
     registrar.addMethodCallDelegate(instance, channel: channel)
-    TextureTracker.install(on: registrar.textures())
+    VideoTextureRegistry.install(on: registrar.textures())
   }
 
   private let channel: FlutterMethodChannel
@@ -35,7 +35,7 @@ final class PipPlugin: NSObject, FlutterPlugin {
   private init(channel: FlutterMethodChannel) {
     self.channel = channel
     super.init()
-    TextureTracker.onFrameAvailable = { [weak self] textureId in
+    VideoTextureRegistry.onFrameAvailable = { [weak self] textureId in
       guard #available(iOS 15.0, *), let session = self?.session,
         session.textureId == textureId
       else { return }
@@ -317,7 +317,7 @@ private final class PipSession: NSObject {
 
   /// Must be called on the main thread.
   func frameAvailable(force: Bool = false) {
-    guard !frameInFlight, let texture = TextureTracker.texture(for: textureId) else {
+    guard !frameInFlight, let texture = VideoTextureRegistry.texture(for: textureId) else {
       return
     }
     let now = CACurrentMediaTime()
@@ -599,7 +599,7 @@ private final class SampleBufferView: UIView {
 
 /// Hooks the engine's `FlutterTextureRegistry` to keep track of registered
 /// textures and to observe their frame updates. Main thread only.
-private enum TextureTracker {
+enum VideoTextureRegistry {
   private final class WeakTexture {
     weak var value: FlutterTexture?
     init(_ value: FlutterTexture) { self.value = value }
@@ -607,8 +607,19 @@ private enum TextureTracker {
 
   private static var textures = [Int64: WeakTexture]()
   private static var installed = false
+  private static var excludedRegistries = Set<ObjectIdentifier>()
 
   static var onFrameAvailable: ((Int64) -> Void)?
+  static var onExternalFrameAvailable: ((Int64) -> Void)?
+  static var onTextureUnregistered: ((Int64) -> Void)?
+
+  /// Texture ids are local to each engine. Only the phone engine owns media;
+  /// the external engine registers a proxy and must not overwrite that map.
+  static func exclude(_ registry: FlutterTextureRegistry, _ excluded: Bool) {
+    let id = ObjectIdentifier(registry)
+    if excluded { excludedRegistries.insert(id) }
+    else { excludedRegistries.remove(id) }
+  }
 
   static func texture(for textureId: Int64) -> FlutterTexture? {
     textures[textureId]?.value
@@ -624,7 +635,8 @@ private enum TextureTracker {
       let function = unsafeBitCast(original, to: Function.self)
       let block: @convention(block) (AnyObject, AnyObject) -> Int64 = { this, texture in
         let textureId = function(this, registerSelector, texture)
-        if let texture = texture as? FlutterTexture {
+        if !Self.excludedRegistries.contains(ObjectIdentifier(this)),
+           let texture = texture as? FlutterTexture {
           Self.textures = Self.textures.filter { $0.value.value != nil }
           Self.textures[textureId] = WeakTexture(texture)
         }
@@ -639,7 +651,24 @@ private enum TextureTracker {
       let function = unsafeBitCast(original, to: Function.self)
       let block: @convention(block) (AnyObject, Int64) -> Void = { this, textureId in
         function(this, frameAvailableSelector, textureId)
-        Self.onFrameAvailable?(textureId)
+        if !Self.excludedRegistries.contains(ObjectIdentifier(this)) {
+          Self.onFrameAvailable?(textureId)
+          Self.onExternalFrameAvailable?(textureId)
+        }
+      }
+      return unsafeBitCast(block, to: AnyObject.self)
+    }
+
+    let unregisterSelector = NSSelectorFromString("unregisterTexture:")
+    hook(cls, unregisterSelector) { original in
+      typealias Function = @convention(c) (AnyObject, Selector, Int64) -> Void
+      let function = unsafeBitCast(original, to: Function.self)
+      let block: @convention(block) (AnyObject, Int64) -> Void = { this, textureId in
+        if !Self.excludedRegistries.contains(ObjectIdentifier(this)) {
+          Self.textures.removeValue(forKey: textureId)
+          Self.onTextureUnregistered?(textureId)
+        }
+        function(this, unregisterSelector, textureId)
       }
       return unsafeBitCast(block, to: AnyObject.self)
     }

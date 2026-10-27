@@ -30,18 +30,18 @@
         "sources": {
           "mpv": {
             "repository": "https://github.com/Goodwu/mpv.git",
-            "branch": "codex/piliplus-dovi-capabilities-20261023",
-            "commit": "e0dc99d0467957ffc16c4afbb4e9f7c3f2a8667d"
+            "branch": "media-kit/android",
+            "commit": "4c6e1796cdceb71a0b5f36527435fd4af9805c56"
           },
           "ffmpeg": {
             "repository": "https://github.com/Goodwu/FFmpeg.git",
-            "branch": "routing/MK-ROUTING-20261011",
-            "commit": "9aba43cfbee182ade060cdccbe15340a0fbe3e83"
+            "branch": "lg-p84-d1-vui-fix-20261010",
+            "commit": "d4bb79394b98d6247887e169998778474f43887e"
           },
           "libplacebo": {
             "repository": "https://github.com/Goodwu/libplacebo.git",
-            "branch": "optimize/dovi-linear-decode",
-            "commit": "ea700489fbf27703d8c1f64874a1c6138f17ad28"
+            "branch": "optimize/dovi-external-yuv-20261027",
+            "commit": "c9fd87984d2495778133f6b733635f871505a432"
           },
           "media-kit-android-helper": {
             "repository": "https://github.com/Predidit/media-kit-android-helper.git",
@@ -57,7 +57,7 @@
         },
         "required_capabilities": [
           "mpv.pl-external-yuv",
-          "mpv.pl-dovi-linear-disable",
+          "mpv.pl-dovi-linear-optimize",
           "mpv.lavf-initial-dovi-hvcc"
         ]
       }

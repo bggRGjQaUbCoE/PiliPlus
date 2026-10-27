@@ -1,5 +1,9 @@
 # TASKS.md
 
+## CI-NATIVE-LOCK-ALIGN-20261027
+
+- Android 源码链钉定对齐本地已验证组合：mpv `media-kit/android@4c6e1796`、FFmpeg `lg-p84-d1-vui-fix-20261010@d4bb79394b`、libplacebo 新分支 `optimize/dovi-external-yuv-20261027@c9fd8798`；required_capabilities 按源码实际能力更正 `pl-dovi-linear-disable`→`pl-dovi-linear-optimize`；media-kit 保持 `d7662218`（机制分支 `ci/verified-native-packages-20261023`，compat 线无 `tool/native_package`，不可 bump）。本分支受 ohos approved-integration 源保护检查约束，**禁止新增未过审文件**（归档文件已因此移除）；完整对比结论与 run 证据存放于主工作区 `goodwu-dev-rebased` 的 `archives/conversations/github-build-ci-diff-20261027.md`。
+
 ## ALL-PLATFORM-NATIVE-CI-20261023
 
 - **已实施**：独立 `ci/native-packages-20261023` 分支接入 Android、Windows、Linux、iOS、macOS、OHOS 六平台 `auto/source/upstream/package` 构建，六个关联 draft PR 已发布。固定 App/media-kit/producer/source 输入，完整 native 包及最终应用分别打包并关联 provenance，显式输入校验失败即停止。目标开发分支 `goodwu-dev-rebased` 和 CI 调试分支的非文档 push 自动构建，保留原有发布入口。

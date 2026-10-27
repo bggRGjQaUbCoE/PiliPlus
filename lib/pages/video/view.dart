@@ -227,7 +227,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     final isPlaying = status.isPlaying;
     try {
       if (videoDetailController.scrollCtr.hasClients) {
-        if (isPlaying && !videoDetailController.externalDisplayConnected.value) {
+        if (isPlaying &&
+            !videoDetailController.externalDisplayConnected.value) {
           if (!videoDetailController.isExpanding &&
               videoDetailController.scrollCtr.offset != 0 &&
               !videoDetailController.animationController.isAnimating) {
@@ -589,7 +590,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                   onScrollRatioChanged: videoDetailController.scrollRatio.call,
                   child: ExternalPlaybackHeader(
                     connected: casting,
-                    playing: plPlayerController?.playerStatus.isPlaying ?? false,
+                    playing:
+                        plPlayerController?.playerStatus.isPlaying ?? false,
                     videoSize: Size(maxWidth, height),
                     player: videoPlayer(
                       width: maxWidth,
@@ -599,7 +601,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                     overlay: _buildHeaderOverlay(),
                     onBack: Get.back,
                     onTogglePlayback: () {
-                      final controller = videoDetailController.plPlayerController;
+                      final controller =
+                          videoDetailController.plPlayerController;
                       if (controller.playerStatus.isPlaying) {
                         controller.pause();
                       } else {

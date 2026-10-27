@@ -125,7 +125,7 @@ class AirPlayHlsSession {
         }
       }
     }
-    throw const SocketException('请让 iPhone 与电视连接同一 Wi-Fi 后重试');
+    throw const SocketException('未获取到可用的 Wi-Fi 局域网地址，请连接 Wi-Fi 后重试');
   }
 
   Future<SidxResult> _prepareTrack(String name, AirPlayTrack track) async {

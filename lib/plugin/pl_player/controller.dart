@@ -445,8 +445,9 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   late final enableSlideFS = Pref.enableSlideFS;
   late final enableScrollVolume = Pref.enableScrollVolume;
   late final enableDragSubtitle = Pref.enableDragSubtitle;
+  late final fastForBackwardInSeconds = Pref.fastForBackwardDuration;
   late final fastForBackwardDuration = Duration(
-    seconds: Pref.fastForBackwardDuration,
+    seconds: fastForBackwardInSeconds,
   );
 
   late final horizontalSeasonPanel = Pref.horizontalSeasonPanel;
@@ -1426,6 +1427,20 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   void onBackward(Duration duration) {
     onForwardBackward(videoPlayerController!.state.position - duration);
+  }
+
+  void multiBackwardStart([_]) {
+    isSeeking.value = true;
+    seekPosition.value = max(0, seekPosition.value - fastForBackwardInSeconds);
+  }
+
+  void multiBackwardEnd() {
+    if (isSeeking.value) {
+      isSeeking.value = false;
+      onForwardBackward(Duration(seconds: seekPosition.value));
+    } else {
+      onBackward(fastForBackwardDuration);
+    }
   }
 
   void onForwardBackward(Duration duration) {

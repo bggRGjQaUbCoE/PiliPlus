@@ -34,6 +34,17 @@ abstract final class VideoUtils {
       return urls.first;
     }
 
+    if (defaultCDNService == CDNService.akamai &&
+        !(isAudio && disableAudioCDN)) {
+      // Akamai URLs have their own signature (e.g. hdnts). Replacing another
+      // CDN's host preserves the wrong signature and results in HTTP 403.
+      // Keep the API-provided URL intact, including its encoded query string.
+      return urls.firstWhere(
+        (url) => Uri.tryParse(url)?.host == CDNService.akamai.host,
+        orElse: () => urls.first,
+      );
+    }
+
     String? mcdnTf;
     String? mcdnUpgcxcode;
 

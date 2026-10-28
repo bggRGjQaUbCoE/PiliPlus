@@ -83,7 +83,7 @@ class SourcePlanContracts(unittest.TestCase):
     def test_malformed_development_ref_rejected(self):
         bad = plan.branch_map()
         bad["Goodwu/libplacebo"] = "refs/heads/main"
-        with self.assertRaisesRegex(ValueError, "mapping changed without review|Development mapping"):
+        with self.assertRaisesRegex(ValueError, "Invalid development branch mapping"):
             # Branch policy itself is read and verified, never taken from a user
             # workflow input. The actual policy is fixed by branch_map().
             invalid = copy.deepcopy(bad)

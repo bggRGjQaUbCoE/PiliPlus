@@ -775,7 +775,14 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
           padding: isFullScreen
               ? EdgeInsets.zero
               : padding.copyWith(top: 0, bottom: 0),
-          child: childWhenDisabledLandscapeInner(isFullScreen),
+          // The padding above takes the side insets, so the player controls must
+          // not add them again.
+          child: MediaQuery.removePadding(
+            context: context,
+            removeLeft: !isFullScreen,
+            removeRight: !isFullScreen,
+            child: childWhenDisabledLandscapeInner(isFullScreen),
+          ),
         ),
       );
     },
@@ -1009,7 +1016,14 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         padding: isFullScreen
             ? EdgeInsets.zero
             : padding.copyWith(top: 0, bottom: 0),
-        child: childWhenDisabledAlmostSquareInner(isFullScreen),
+        // The padding above takes the side insets, so the player controls must
+        // not add them again.
+        child: MediaQuery.removePadding(
+          context: context,
+          removeLeft: !isFullScreen,
+          removeRight: !isFullScreen,
+          child: childWhenDisabledAlmostSquareInner(isFullScreen),
+        ),
       ),
     );
   });

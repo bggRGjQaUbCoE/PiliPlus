@@ -748,28 +748,35 @@ class _LiveRoomPageState extends State<LiveRoomPage>
       padding: isFullScreen
           ? EdgeInsets.zero
           : EdgeInsets.only(left: padding.left, right: padding.right),
-      child: Row(
-        children: [
-          Container(
-            width: width,
-            height: height,
-            margin: EdgeInsets.only(bottom: padding.bottom),
-            child: videoPlayerPanel(
-              isFullScreen,
-              fill: Colors.transparent,
+      // The padding above takes the side insets, so the player controls must
+      // not add them again.
+      child: MediaQuery.removePadding(
+        context: context,
+        removeLeft: !isFullScreen,
+        removeRight: !isFullScreen,
+        child: Row(
+          children: [
+            Container(
               width: width,
               height: height,
+              margin: EdgeInsets.only(bottom: padding.bottom),
+              child: videoPlayerPanel(
+                isFullScreen,
+                fill: Colors.transparent,
+                width: width,
+                height: height,
+              ),
             ),
-          ),
-          Offstage(
-            offstage: isFullScreen,
-            child: SizedBox(
-              width: rightWidth,
-              height: videoHeight,
-              child: _buildBottomWidget,
+            Offstage(
+              offstage: isFullScreen,
+              child: SizedBox(
+                width: rightWidth,
+                height: videoHeight,
+                child: _buildBottomWidget,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

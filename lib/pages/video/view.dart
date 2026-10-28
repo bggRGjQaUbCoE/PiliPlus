@@ -975,7 +975,12 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         clampDouble(maxHeight / availableWidth * 1.08, 0.5, 0.7) *
         availableWidth;
     if (availableWidth >= 560) {
-      width = availableWidth - clampDouble(availableWidth - width, 280, 425);
+      // 右侧栏的横向视频卡片封面固定 160 宽，栏宽不足约 380 时
+      // 播放数、弹幕数会和更多按钮重叠；宽屏下尽量留足
+      final minRightWidth = clampDouble(availableWidth * 0.4, 280, 380);
+      width =
+          availableWidth -
+          clampDouble(availableWidth - width, minRightWidth, 425);
     }
     final videoWidth = isFullScreen ? maxWidth : width;
     final double height = width / Style.aspectRatio16x9;

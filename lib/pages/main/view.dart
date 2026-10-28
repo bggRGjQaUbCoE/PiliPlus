@@ -17,6 +17,7 @@ import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/ios/foldable_helper.dart';
+import 'package:PiliPlus/utils/ios/native_tab_bar.dart';
 import 'package:PiliPlus/utils/mobile_observer.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -58,6 +59,38 @@ class _MainAppState extends PopScopeState<MainApp>
     if (!Platform.isMacOS) {
       PiliScheme.init();
     }
+    if (Platform.isIOS) {
+      _attachNativeTabBar();
+    }
+  }
+
+  final List<Worker> _nativeTabBarWorkers = [];
+
+  Future<void> _attachNativeTabBar() async {
+    final tabs = _mainController.navigationBars;
+    final attached = await IOSNativeTabBar.attach(
+      tabs: tabs,
+      selected: _mainController.selectedIndex.value,
+      onSelect: _mainController.setIndex,
+    );
+    if (!attached || !mounted) return;
+    _nativeTabBarWorkers.addAll([
+      ever(_mainController.selectedIndex, IOSNativeTabBar.setSelected),
+      ever(_mainController.dynCount, (int count) {
+        final index = tabs.indexOf(.dynamics);
+        if (index == -1) return;
+        IOSNativeTabBar.setBadge(
+          index,
+          count > 0 && _mainController.dynamicBadgeMode != .hidden
+              ? (_mainController.dynamicBadgeMode == .number ? '$count' : '')
+              : null,
+        );
+      }),
+    ]);
+    setState(() {
+      _mainController.useNativeTabBar = true;
+      _updateNavMode();
+    });
   }
 
   @override
@@ -76,14 +109,20 @@ class _MainAppState extends PopScopeState<MainApp>
         );
       }
     }
+    _updateNavMode();
+  }
+
+  void _updateNavMode() {
     // iPhone Duo 的系统状态栏位于右侧竖条（安全区约 84pt），导航放入其中；
     // 普通 iPhone 横屏时灵动岛一侧的安全区约 60pt，不会触发
     _mainController.useStatusBarNav =
+        !_mainController.useNativeTabBar &&
         !_mainController.useSideBar &&
         IOSFoldableHelper.isIPhone &&
         _mainController.navigationBars.length > 1 &&
         _padding.right >= 72;
-    if (_mainController.useStatusBarNav) {
+    // 系统标签栏接管导航时，页面按手机布局显示顶部搜索栏
+    if (_mainController.useNativeTabBar || _mainController.useStatusBarNav) {
       _mainController.useBottomNav = true;
     } else if (!_mainController.useSideBar) {
       _mainController.useBottomNav = MediaQuery.sizeOf(context).isPortrait;
@@ -92,6 +131,7 @@ class _MainAppState extends PopScopeState<MainApp>
 
   @override
   void didPopNext() {
+    IOSNativeTabBar.setHidden(false);
     addObserverMobile(this);
     _mainController
       ..checkUnreadDynamic()
@@ -102,6 +142,8 @@ class _MainAppState extends PopScopeState<MainApp>
 
   @override
   void didPushNext() {
+    // 进入二级页面时隐藏系统标签栏
+    IOSNativeTabBar.setHidden(true);
     removeObserverMobile(this);
     super.didPushNext();
   }
@@ -126,6 +168,9 @@ class _MainAppState extends PopScopeState<MainApp>
       TrayController.instance.dispose();
     }
     removeObserverMobile(this);
+    for (final worker in _nativeTabBarWorkers) {
+      worker.dispose();
+    }
     PiliScheme.listener?.cancel();
     GStorage.close();
     super.dispose();
@@ -401,7 +446,7 @@ class _MainAppState extends PopScopeState<MainApp>
         child: child,
       );
     } else if (_mainController.useBottomNav) {
-      bottomNav = _bottomNav;
+      bottomNav = _mainController.useNativeTabBar ? null : _bottomNav;
       if (bottomNav != null) {
         bottomNav = MediaQuery.removePadding(
           context: context,

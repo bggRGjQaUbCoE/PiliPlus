@@ -39,6 +39,8 @@ class MainController extends GetxController
   bool useBottomNav = false;
   // iPhone Duo：导航放在右侧系统状态栏中
   bool useStatusBarNav = false;
+  // iOS 26+ iPhone：主导航由系统液态玻璃标签栏绘制
+  bool useNativeTabBar = false;
   late dynamic controller;
   final RxInt selectedIndex = 0.obs;
 

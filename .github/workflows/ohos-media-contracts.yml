@@ -3,7 +3,7 @@ name: OHOS application framework media contracts
 on:
   workflow_dispatch:
   push:
-    branches: [goodwu-dev-rebased]
+    branches: [feature/ohos]
     paths:
       - '.github/workflows/ohos-media-contracts.yml'
       - 'tool/ohos/media_backend*'

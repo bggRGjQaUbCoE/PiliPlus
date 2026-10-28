@@ -9,11 +9,11 @@ on:
         type: string
       application_ref:
         description: Application branch or commit to export and build
-        default: goodwu-dev-rebased
+        default: feature/ohos
         type: string
   workflow_dispatch:
   push:
-    branches: [goodwu-dev-rebased]
+    branches: [feature/ohos]
     paths:
       - '.github/workflows/ohos-build.yml'
       - 'ohos/**'

@@ -57,7 +57,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Goodwu/media-kit
-          ref: ${{ inputs.media_kit_ref || 'compat/piliplus-zero-change-20261018' }}
+          ref: ${{ inputs.media_kit_ref || 'dev' }}
           persist-credentials: false
           path: media-sdk
       - name: Resolve current maintained OHOS native build recipe

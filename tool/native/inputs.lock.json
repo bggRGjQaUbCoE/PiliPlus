@@ -2,7 +2,7 @@
   "schema": 1,
   "media_kit": {
     "repository": "Goodwu/media-kit",
-    "commit": "d76622180dc9d082c9e690dd7d355f418627fb4a"
+    "branch": "dev"
   },
   "flutter": {
     "version": "3.47.7"

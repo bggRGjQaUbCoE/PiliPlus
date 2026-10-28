@@ -51,6 +51,11 @@ jobs:
           ref: ${{ inputs.media_kit_ref }}
           path: media-kit
           persist-credentials: false
+      - name: Verify frozen media-kit dev source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C media-kit rev-parse HEAD)" = '${{ inputs.media_kit_ref }}'
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -168,6 +173,11 @@ jobs:
           ref: ${{ inputs.media_kit_ref }}
           path: media-kit
           persist-credentials: false
+      - name: Verify frozen media-kit dev source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C media-kit rev-parse HEAD)" = '${{ inputs.media_kit_ref }}'
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -234,6 +244,7 @@ jobs:
         run: |
           python app/tool/native/ci.py provenance --platform '${{ inputs.platform }}' --media-kit media-kit \
             --receipt "$RUNNER_TEMP/consumed-native.json" --artifacts "$RUNNER_TEMP/application-artifacts" \
+            --media-kit-commit '${{ inputs.media_kit_ref }}' \
             --output "$RUNNER_TEMP/application-artifacts/build-provenance.json"
       - name: Upload application artifacts
         uses: actions/upload-artifact@v4

@@ -58,7 +58,7 @@ jobs:
         run: |
           options=()
           if [ "$SOURCE_MODE" = dev ]; then options+=(--dev-sources); fi
-          python tool/native/ci.py plan --lock "$RUNNER_TEMP/effective-inputs.json" \
+          python tool/native/ci.py --lock "$RUNNER_TEMP/effective-inputs.json" plan \
             --media-kit-commit "$MEDIA_KIT_SHA" --platforms "$SELECTED_PLATFORMS" \
             --mode "$NATIVE_MODE" "${options[@]}"
       - name: Check native transport contracts

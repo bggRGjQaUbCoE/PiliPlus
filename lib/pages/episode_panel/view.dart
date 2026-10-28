@@ -30,7 +30,6 @@ import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -355,7 +354,7 @@ class _EpisodePanelState extends State<EpisodePanel>
     );
   }
 
-  late final int? vipStatus = Pref.userInfoCache?.vipStatus;
+  late final _isVip = Accounts.isVideoVip;
   Widget _buildEpisodeItem({
     required ugc.BaseEpisodeItem episode,
     required int index,
@@ -428,9 +427,7 @@ class _EpisodePanelState extends State<EpisodePanel>
           child: InkWell(
             onTap: () {
               if (isCurrentIndex) return;
-              if (episode.badge == "会员" &&
-                  Accounts.mainEqVideo &&
-                  vipStatus != 1) {
+              if (episode.badge == "会员" && !_isVip) {
                 SmartDialog.showToast('需要大会员');
                 // return;
               }

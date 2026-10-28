@@ -11,7 +11,7 @@ import 'package:PiliPlus/pages/common/publish/common_text_pub_page.dart';
 import 'package:PiliPlus/pages/danmaku/danmaku_model.dart';
 import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/accounts.dart';
 import 'package:canvas_danmaku/models/danmaku_content_item.dart';
 import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -74,7 +74,7 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
     _mode = (widget.dmConfig?.mode ?? 1).obs;
     _fontSize = (widget.dmConfig?.fontSize ?? 25).obs;
     _color = (widget.dmConfig?.color ?? Colors.white).obs;
-    if (Pref.userInfoCache?.vipStatus == 1) {
+    if (Accounts.isMainVip) {
       _colorList.add(Colors.transparent);
     }
   }

@@ -125,9 +125,7 @@ class _SavePanelState extends State<SavePanel> {
           final ctr = Get.find<PgcIntroController>(tag: heroTag);
           final pgcItem = ctr.pgcItem;
           final cid = ctr.cid.value;
-          final episode = pgcItem.episodes!.firstWhere(
-            (e) => e.cid == cid,
-          );
+          final episode = ctr.findEpisode(cid);
           cover = episode.cover;
           title =
               episode.shareCopy ??

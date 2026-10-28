@@ -17,6 +17,7 @@ import 'package:PiliPlus/http/sponsor_block.dart';
 import 'package:PiliPlus/models_new/video/video_ai_conclusion/model_result.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/desc_v2.dart';
+import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
 import 'package:PiliPlus/models_new/video/video_detail/staff.dart';
 import 'package:PiliPlus/models_new/video/video_detail/stat.dart';
 import 'package:PiliPlus/models_new/video/video_tag/data.dart';
@@ -60,7 +61,7 @@ class UgcIntroPanel extends StatefulWidget {
   });
   final String heroTag;
   final Function showAiBottomSheet;
-  final Function showEpisodes;
+  final ShowEpisodes showEpisodes;
   final ValueChanged<int?> onShowMemberPage;
   final bool isPortrait;
   final bool isHorizontal;

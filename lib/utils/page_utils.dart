@@ -637,24 +637,22 @@ abstract final class PageUtils {
 
         EpisodeItem? episode;
 
-        void viewSection(EpisodeItem episode) {
-          toVideoPage(
-            videoType: VideoType.ugc,
-            bvid: episode.bvid!,
-            cid: episode.cid!,
-            seasonId: response.seasonId,
-            epId: episode.epId,
-            cover: episode.cover,
-            title: episode.title,
-            progress: progress,
-            extraArguments: {
-              'pgcApi': true,
-              'pgcItem': response,
-              if (viewLater) 'viewLater': true,
-            },
-            off: off,
-          );
-        }
+        void onPush(EpisodeItem episode, {int? sectionIndex}) => toVideoPage(
+          videoType: .pgc,
+          bvid: episode.bvid!,
+          cid: episode.cid!,
+          seasonId: response.seasonId,
+          epId: episode.epId,
+          cover: episode.cover,
+          title: episode.title,
+          progress: progress,
+          extraArguments: {
+            'pgcItem': response,
+            if (viewLater) 'viewLater': true,
+            'sectionIndex': ?sectionIndex,
+          },
+          off: off,
+        );
 
         if (epId != null) {
           epId = epId.toString();
@@ -666,15 +664,14 @@ abstract final class PageUtils {
 
           // find section
           if (episode == null) {
-            final sections = response.section;
+            final sections = response.sections;
             if (sections != null && sections.isNotEmpty) {
-              for (final section in sections) {
+              for (final (index, section) in sections.indexed) {
                 final episodes = section.episodes;
                 if (episodes != null && episodes.isNotEmpty) {
                   for (final episode in episodes) {
                     if (episode.epId.toString() == epId) {
-                      // view as ugc
-                      viewSection(episode);
+                      onPush(episode, sectionIndex: index);
                       return;
                     }
                   }
@@ -689,26 +686,12 @@ abstract final class PageUtils {
             episodes,
             epId: response.userStatus?.progress?.lastEpId,
           );
-          toVideoPage(
-            videoType: VideoType.pgc,
-            bvid: episode.bvid!,
-            cid: episode.cid!,
-            seasonId: response.seasonId,
-            epId: episode.epId,
-            pgcType: response.type,
-            cover: episode.cover,
-            progress: progress,
-            extraArguments: {
-              'pgcItem': response,
-              if (viewLater) 'viewLater': true,
-            },
-            off: off,
-          );
+          onPush(episode);
           return;
         } else {
-          episode ??= response.section?.firstOrNull?.episodes?.firstOrNull;
+          episode ??= response.sections?.firstOrNull?.episodes?.firstOrNull;
           if (episode != null) {
-            viewSection(episode);
+            onPush(episode, sectionIndex: 0);
             return;
           }
         }

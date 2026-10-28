@@ -25,7 +25,6 @@ import 'package:PiliPlus/models/common/super_resolution_type.dart';
 import 'package:PiliPlus/models/common/video/base_quality.dart';
 import 'package:PiliPlus/models/video/play/url.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
-import 'package:PiliPlus/models_new/video/video_detail/ugc_season.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/danmaku/danmaku_model.dart';
 import 'package:PiliPlus/pages/live_room/widgets/bottom_control.dart'
@@ -111,15 +110,7 @@ class PLVideoPlayer extends StatefulWidget {
   final Widget headerControl;
   final Widget? bottomControl;
   final Widget? danmuWidget;
-  final void Function([
-    int?,
-    UgcSeason?,
-    List<ugc.BaseEpisodeItem>?,
-    String?,
-    int?,
-    int?,
-  ])?
-  showEpisodes;
+  final ugc.ShowEpisodes? showEpisodes;
   final VoidCallback? showViewPoints;
   final Color fill;
   final Alignment alignment;
@@ -590,16 +581,17 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           if (isPart) {
             episodes = videoDetail.pages!;
           } else if (isPgc) {
-            episodes =
-                (introController as PgcIntroController).pgcItem.episodes!;
+            episodes = (introController as PgcIntroController).episodes;
           }
           widget.showEpisodes?.call(
-            isSeason ? videoDetailController.seasonIndex.value : null,
-            isSeason ? videoDetail.ugcSeason! : null,
-            isSeason ? null : episodes,
-            bvid,
-            IdUtils.bv2av(bvid),
-            isSeason
+            seasonIndex: isSeason
+                ? videoDetailController.seasonIndex.value
+                : null,
+            season: isSeason ? videoDetail.ugcSeason! : null,
+            episodes: isSeason ? null : episodes,
+            bvid: bvid,
+            aid: IdUtils.bv2av(bvid),
+            cid: isSeason
                 ? videoDetailController.seasonCid
                 : plPlayerController.cid!,
           );

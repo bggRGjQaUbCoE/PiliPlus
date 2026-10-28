@@ -1,0 +1,1 @@
+enum PgcEpisodeType { episode, section }

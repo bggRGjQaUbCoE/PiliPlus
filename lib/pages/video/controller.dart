@@ -383,8 +383,6 @@ class VideoDetailController extends GetxController
       if (!isLoginVideo) {
         _actualVideoType = VideoType.ugc;
       }
-    } else if (args['pgcApi'] == true) {
-      _actualVideoType = VideoType.pgc;
     }
 
     bvid = args['bvid'];
@@ -501,9 +499,7 @@ class VideoDetailController extends GetxController
                 (sourceType == SourceType.fav && args['isOwner'] == true)
             ? (item, index) async {
                 if (sourceType == SourceType.watchLater) {
-                  final res = await UserHttp.toViewDel(
-                    aids: item.aid.toString(),
-                  );
+                  final res = await UserHttp.toViewDel(aids: item.aid!);
                   if (res.isSuccess) {
                     mediaList.removeAt(index);
                   }

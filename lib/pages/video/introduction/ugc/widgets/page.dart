@@ -1,15 +1,22 @@
-import 'dart:async';
-import 'dart:math';
+import 'dart:async' show StreamSubscription;
+import 'dart:math' as math;
 
 import 'package:PiliPlus/common/assets.dart';
+import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
-import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
+
+const double _itemExtent = 150;
+
+double scrollOffset(int index, double itemExtent) {
+  if (index < 0) return 0;
+  return math.max(0, index * itemExtent - itemExtent / 2);
+}
 
 // TODO refa
 class PagesPanel extends StatefulWidget {
@@ -30,7 +37,7 @@ class PagesPanel extends StatefulWidget {
 
   final String bvid;
   final String heroTag;
-  final Function? showEpisodes;
+  final ShowEpisodes? showEpisodes;
   final UgcIntroController ugcIntroController;
 
   final Set<int>? cidSet;
@@ -41,8 +48,8 @@ class PagesPanel extends StatefulWidget {
 }
 
 class _PagesPanelState extends State<PagesPanel> {
-  late int cid;
   int pageIndex = -1;
+  double get _scrollOffset => scrollOffset(pageIndex, _itemExtent);
   late final VideoDetailController _videoDetailController;
   late final ScrollController _scrollController;
   StreamSubscription? _listener;
@@ -51,7 +58,8 @@ class _PagesPanelState extends State<PagesPanel> {
       widget.list ?? widget.ugcIntroController.videoDetail.value.pages!;
 
   void _updatePageIndex() {
-    pageIndex = max(0, pages.indexWhere((e) => e.cid == cid));
+    final cid = _videoDetailController.cid.rawValue;
+    pageIndex = math.max(0, pages.indexWhere((e) => e.cid == cid));
   }
 
   @override
@@ -62,11 +70,9 @@ class _PagesPanelState extends State<PagesPanel> {
     );
     double offset = 0;
     if (widget.list == null) {
-      cid = widget.ugcIntroController.cid.value;
       _updatePageIndex();
-      offset = targetOffset;
+      offset = _scrollOffset;
       _listener = _videoDetailController.cid.listen((cid) {
-        this.cid = cid;
         _updatePageIndex();
         if (!mounted) return;
         setState(() {});
@@ -76,17 +82,12 @@ class _PagesPanelState extends State<PagesPanel> {
     _scrollController = ScrollController(initialScrollOffset: offset);
   }
 
-  double get targetOffset {
-    const double itemWidth = 150;
-    return max(0, pageIndex * itemWidth - itemWidth / 2);
-  }
-
   void jumpToCurr() {
     if (!_scrollController.hasClients || pages.isEmpty) {
       return;
     }
     _scrollController.animateTo(
-      targetOffset,
+      _scrollOffset,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     );
@@ -99,9 +100,16 @@ class _PagesPanelState extends State<PagesPanel> {
     super.dispose();
   }
 
+  late ColorScheme colorScheme;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    colorScheme = ColorScheme.of(context);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = ColorScheme.of(context);
     return Column(
       children: [
         if (widget.showEpisodes != null)
@@ -126,12 +134,10 @@ class _PagesPanelState extends State<PagesPanel> {
                       padding: WidgetStatePropertyAll(.zero),
                     ),
                     onPressed: () => widget.showEpisodes!(
-                      null,
-                      null,
-                      pages,
-                      widget.bvid,
-                      IdUtils.bv2av(widget.bvid),
-                      cid,
+                      episodes: pages,
+                      bvid: _videoDetailController.bvid,
+                      aid: _videoDetailController.aid,
+                      cid: _videoDetailController.cid.rawValue,
                     ),
                     child: Text(
                       '共${pages.length}集',
@@ -146,17 +152,17 @@ class _PagesPanelState extends State<PagesPanel> {
           height: 45,
           child: ListView.builder(
             padding: .zero,
-            itemExtent: 150,
+            itemExtent: _itemExtent,
             itemCount: pages.length,
             scrollDirection: .horizontal,
             controller: _scrollController,
             key: PageStorageKey(widget.bvid),
             physics: const AlwaysScrollableScrollPhysics(),
             itemBuilder: (context, index) {
-              bool isCurrentIndex = pageIndex == index;
+              final isCurrentIndex = pageIndex == index;
               final item = pages[index];
               return Container(
-                width: 150,
+                width: _itemExtent,
                 margin: index != pages.length - 1
                     ? const .only(right: 10)
                     : null,
@@ -231,10 +237,7 @@ class _PagesPanelState extends State<PagesPanel> {
                                     ? colorScheme.primary
                                     : colorScheme.onSurface,
                               ),
-                              strutStyle: const .new(
-                                height: 1.1,
-                                fontSize: 13,
-                              ),
+                              strutStyle: const .new(height: 1.1, fontSize: 13),
                               TextSpan(
                                 children: [
                                   if (isCurrentIndex)
@@ -246,16 +249,12 @@ class _PagesPanelState extends State<PagesPanel> {
                                           Assets.livingStatic,
                                           color: colorScheme.primary,
                                           height: 12,
-                                          cacheHeight: 12.cacheSize(
-                                            context,
-                                          ),
+                                          cacheHeight: 12.cacheSize(context),
                                           semanticLabel: "正在播放：",
                                         ),
                                       ),
                                     )
-                                  else if (widget.cidSet?.contains(
-                                        item.cid,
-                                      ) ??
+                                  else if (widget.cidSet?.contains(item.cid) ??
                                       false)
                                     WidgetSpan(
                                       alignment: .middle,

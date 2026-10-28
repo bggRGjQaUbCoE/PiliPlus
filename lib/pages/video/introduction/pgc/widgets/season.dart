@@ -2,7 +2,11 @@ import 'dart:math';
 
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/season.dart';
 import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
+import 'package:PiliPlus/pages/video/introduction/ugc/widgets/page.dart'
+    show scrollOffset;
 import 'package:material_ui/material_ui.dart';
+
+const double _itemExtent = 150;
 
 class SeasonPanel extends StatelessWidget {
   const SeasonPanel({
@@ -22,13 +26,15 @@ class SeasonPanel extends StatelessWidget {
       0,
       seasons.indexWhere((e) => e.seasonId == pgcController.seasonId),
     );
-    final controller = pgcController.seasonController(currIndex);
+    final controller = pgcController.seasonController ??= ScrollController(
+      initialScrollOffset: scrollOffset(currIndex, _itemExtent),
+    );
     final colorScheme = ColorScheme.of(context);
     return SizedBox(
       height: 35,
       child: ListView.builder(
         padding: .zero,
-        itemExtent: 150,
+        itemExtent: _itemExtent,
         controller: controller,
         itemCount: seasons.length,
         scrollDirection: .horizontal,
@@ -38,7 +44,7 @@ class SeasonPanel extends StatelessWidget {
           final item = seasons[index];
           final isCurr = index == currIndex;
           return Container(
-            width: 150,
+            width: _itemExtent,
             margin: index != seasons.length - 1 ? const .only(right: 10) : null,
             child: Material(
               color: colorScheme.onInverseSurface,
@@ -50,6 +56,11 @@ class SeasonPanel extends StatelessWidget {
                   pgcController.changeSeason(item.seasonId!).then((res) {
                     if (context.mounted && res) {
                       onSeasonChanged();
+                      controller.animateTo(
+                        scrollOffset(index, _itemExtent),
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeInOut,
+                      );
                     }
                   });
                 },

@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'dart:async' show StreamSubscription;
 
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
@@ -20,7 +20,7 @@ class SeasonPanel extends StatefulWidget {
     required this.ugcIntroController,
   });
   final String heroTag;
-  final Function showEpisodes;
+  final ShowEpisodes showEpisodes;
   final bool canTap;
   final UgcIntroController ugcIntroController;
 
@@ -89,35 +89,37 @@ class _SeasonPanelState extends State<SeasonPanel> {
     super.dispose();
   }
 
+  late ThemeData theme;
+  ColorScheme get colorScheme => theme.colorScheme;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (episodes.isEmpty) {
       return const SizedBox.shrink();
     }
-    final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.only(
-        top: 8,
-        left: 2,
-        right: 2,
-      ),
+      padding: const .only(top: 8, left: 2, right: 2),
       child: Material(
-        color: theme.colorScheme.onInverseSurface,
-        borderRadius: const BorderRadius.all(Radius.circular(6)),
+        color: colorScheme.onInverseSurface,
+        borderRadius: const .all(.circular(6)),
         child: InkWell(
-          borderRadius: const BorderRadius.all(Radius.circular(6)),
+          borderRadius: const .all(.circular(6)),
           onTap: widget.canTap
               ? () => widget.showEpisodes(
-                  _videoDetailController.seasonIndex.value,
-                  videoDetail.ugcSeason,
-                  null,
-                  _videoDetailController.bvid,
-                  null,
-                  _videoDetailController.seasonCid,
+                  seasonIndex: _videoDetailController.seasonIndex.value,
+                  season: videoDetail.ugcSeason,
+                  bvid: _videoDetailController.bvid,
+                  cid: _videoDetailController.seasonCid,
                 )
               : null,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
+            padding: const .fromLTRB(8, 12, 8, 12),
             child: Row(
               children: <Widget>[
                 Expanded(
@@ -131,7 +133,7 @@ class _SeasonPanelState extends State<SeasonPanel> {
                 const SizedBox(width: 15),
                 Image.asset(
                   Assets.livingStatic,
-                  color: theme.colorScheme.primary,
+                  color: colorScheme.primary,
                   height: 12,
                   cacheHeight: 12.cacheSize(context),
                   semanticLabel: "正在播放：",

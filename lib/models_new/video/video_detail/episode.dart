@@ -1,5 +1,15 @@
 import 'package:PiliPlus/models_new/video/video_detail/arc.dart';
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
+import 'package:PiliPlus/models_new/video/video_detail/ugc_season.dart';
+
+typedef ShowEpisodes = void Function({
+  int? seasonIndex,
+  UgcSeason? season,
+  List<BaseEpisodeItem>? episodes,
+  String? bvid,
+  int? aid,
+  int? cid,
+});
 
 class BaseEpisodeItem {
   int? id;

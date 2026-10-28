@@ -192,7 +192,7 @@ abstract final class UserHttp {
   }
 
   // 移除已观看
-  static Future<LoadingState<void>> toViewDel({required String aids}) async {
+  static Future<LoadingState<void>> toViewDel({required Object aids}) async {
     final Map<String, dynamic> params = {
       'csrf': Accounts.main.csrf,
       'resources': aids,

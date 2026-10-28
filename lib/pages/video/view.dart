@@ -152,6 +152,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     super.initState();
 
     videoDetailController = Get.put(VideoDetailController(), tag: heroTag);
+    IOSNativeTabBar.verticalBarHidden.addListener(_onVerticalBarHidden);
 
     introController = _initIntroCtr();
 
@@ -341,6 +342,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   @override
   void dispose() {
+    IOSNativeTabBar.verticalBarHidden.removeListener(_onVerticalBarHidden);
     plPlayerController
       ?..removeStatusLister(playerListener)
       ..removePositionListener(positionListener);
@@ -377,12 +379,28 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     super.dispose();
   }
 
-  // iPhone Duo：竖屏布局（合上）时隐藏竖状态栏，内容铺满竖状态栏的位置。
-  // 横屏布局按左右安全区计算宽度，保留状态栏
+  // iPhone Duo：视频页隐藏竖状态栏，内容铺满竖状态栏的位置
   bool _isOnTop = false;
 
   void _updateVerticalBar() {
-    IOSNativeTabBar.setHidesVerticalBar(_isOnTop && isPortrait);
+    IOSNativeTabBar.setHidesVerticalBar(_isOnTop);
+  }
+
+  void _onVerticalBarHidden() {
+    if (mounted) setState(_updatePadding);
+  }
+
+  void _updatePadding() {
+    if (videoDetailController.removeSafeArea) {
+      padding = .zero;
+      return;
+    }
+    padding = MediaQuery.viewPaddingOf(context);
+    // 竖状态栏隐藏后横屏布局铺满它的位置。竖屏（合上）时摄像头在竖状态栏中，
+    // 只让播放器下方的内容铺满，见 childWhenDisabled
+    if (!isPortrait && IOSNativeTabBar.verticalBarHidden.value) {
+      padding = padding.copyWith(left: 0, right: 0);
+    }
   }
 
   @override
@@ -489,12 +507,6 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (videoDetailController.removeSafeArea) {
-      padding = .zero;
-    } else {
-      padding = MediaQuery.viewPaddingOf(context);
-    }
-
     final size = MediaQuery.sizeOf(context);
     maxWidth = size.width;
     maxHeight = size.height;
@@ -514,6 +526,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       ..videoHeight = videoDetailController.isVertical.value
           ? maxVideoHeight
           : minVideoHeight;
+    _updatePadding();
 
     theme = videoDetailController.plPlayerController.darkVideoPage
         ? ThemeUtils.darkTheme

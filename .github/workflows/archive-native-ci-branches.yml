@@ -1,0 +1,95 @@
+name: Archive merged native CI branches (one shot)
+# Scoped to the two CI branches already merged into goodwu-dev-rebased.
+on:
+  push:
+    branches: [goodwu-dev-rebased]
+    paths:
+      - '.github/workflows/archive-native-ci-branches.yml'
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: piliplus-native-ci-retirement
+  cancel-in-progress: false
+
+jobs:
+  tag-before-delete:
+    if: github.repository == 'Goodwu/PiliPlus' && github.ref == 'refs/heads/goodwu-dev-rebased' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Verify CI histories, tag exact heads, and delete only matching refs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner, repo = context.repo.repo;
+            if (owner !== 'Goodwu' || repo !== 'PiliPlus' ||
+                context.eventName !== 'push' || context.ref !== 'refs/heads/goodwu-dev-rebased')
+              throw new Error('CI retirement only runs for a real goodwu-dev-rebased push');
+            const targets = [
+              {branch: 'ci/native-packages-20261023', sha: '7cffbb8ef8f5f3d9b4633463c0eae73781755e90', tag: 'archive/ci-native-packages-20261023'},
+              {branch: 'ci/native-packages-update-20261027', sha: '746236424ebf1e26b78dad9d50e70d9c5247117a', tag: 'archive/ci-native-packages-update-20261027'},
+            ];
+            const readRef = async ref => {
+              try {
+                return (await github.rest.git.getRef({owner, repo, ref})).data.object.sha;
+              } catch (error) {
+                if (error.status === 404) return null;
+                throw error;
+              }
+            };
+            const checkDev = async () => {
+              if (await readRef('heads/goodwu-dev-rebased') !== context.sha)
+                throw new Error('Development branch moved after this workflow was scheduled');
+            };
+            const checkOpenPR = async () => {
+              const prs = await github.paginate(github.rest.pulls.list, {owner, repo, state: 'open', per_page: 100});
+              for (const pr of prs)
+                for (const item of targets)
+                  if (pr.base.ref === item.branch ||
+                      (pr.head.repo && pr.head.repo.full_name === owner + '/' + repo && pr.head.ref === item.branch))
+                    throw new Error('Open PR #' + pr.number + ' still depends on ' + item.branch);
+            };
+            const settings = await github.rest.repos.get({owner, repo});
+            if (settings.data.default_branch !== 'main') throw new Error('main is no longer default');
+            await checkDev();
+            await checkOpenPR();
+            const pr = await github.rest.pulls.get({owner, repo, pull_number: 1});
+            if (!pr.data.merged || pr.data.merge_commit_sha !== '71b1a7d0513aedbd841da42e48eab0a6d4be0fbb')
+              throw new Error('Original draft PR is not merged by the known integration commit');
+            for (const item of targets) {
+              const branchSHA = await readRef('heads/' + item.branch);
+              const tagSHA = await readRef('tags/' + item.tag);
+              if (branchSHA !== item.sha) throw new Error('Historical branch unexpectedly moved: ' + item.branch);
+              if (tagSHA !== null && tagSHA !== item.sha) throw new Error('Archive tag collision: ' + item.tag);
+              const compare = await github.rest.repos.compareCommitsWithBasehead({
+                owner, repo, basehead: item.sha + '...' + context.sha
+              });
+              if (compare.data.behind_by !== 0) throw new Error('Branch is not contained in dev: ' + item.branch);
+              item.existingTag = tagSHA;
+            }
+            for (const item of targets)
+              if (item.existingTag === null)
+                await github.rest.git.createRef({owner, repo, ref: 'refs/tags/' + item.tag, sha: item.sha});
+            for (const item of targets)
+              if (await readRef('tags/' + item.tag) !== item.sha)
+                throw new Error('Archival tag failed identity check: ' + item.tag);
+            await checkDev();
+            await checkOpenPR();
+            for (const item of targets) {
+              if (await readRef('heads/' + item.branch) !== item.sha)
+                throw new Error('Branch moved before deletion: ' + item.branch);
+              await github.rest.git.deleteRef({owner, repo, ref: 'heads/' + item.branch});
+              if (await readRef('heads/' + item.branch) !== null)
+                throw new Error('Old branch still exists after deletion: ' + item.branch);
+            }
+            for (const item of targets) {
+              if (await readRef('tags/' + item.tag) !== item.sha)
+                throw new Error('Tag identity changed after branch removal: ' + item.tag);
+              core.info('Archived and retired ' + item.branch + ' @ ' + item.sha + ' as ' + item.tag);
+            }
+            await core.summary.addHeading('PiliPlus native CI branch retirement').addTable(
+              [['Deleted branch','Immutable archive','Original SHA'], ...targets.map(t => [t.branch, t.tag, t.sha])]
+            ).write();

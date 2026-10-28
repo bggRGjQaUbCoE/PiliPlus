@@ -1,0 +1,267 @@
+name: Build one locked platform
+
+on:
+  workflow_call:
+    inputs:
+      platform:
+        required: true
+        type: string
+      mode:
+        required: true
+        type: string
+      native_runner:
+        required: true
+        type: string
+      app_runner:
+        required: true
+        type: string
+      cache_key:
+        required: true
+        type: string
+      media_kit_ref:
+        required: true
+        type: string
+      flutter_version:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    name: Native / ${{ inputs.platform }} / ${{ inputs.mode }}
+    # Keep an in-flight native build reusable when only its App consumer changes.
+    concurrency:
+      group: piliplus-native-${{ github.ref }}-${{ inputs.cache_key }}
+      cancel-in-progress: false
+    runs-on: ${{ inputs.native_runner }}
+    timeout-minutes: 300
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: app
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: Goodwu/media-kit
+          ref: ${{ inputs.media_kit_ref }}
+          path: media-kit
+          persist-credentials: false
+      - name: Verify frozen media-kit dev source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C media-kit rev-parse HEAD)" = '${{ inputs.media_kit_ref }}'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Restore this exact native input set
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/native-transport
+          key: ${{ inputs.cache_key }}
+      - name: Verify a restored package before use
+        if: steps.cache.outputs.cache-hit == 'true'
+        shell: bash
+        run: |
+          python app/tool/native/ci.py consume --platform '${{ inputs.platform }}' --mode '${{ inputs.mode }}' \
+            --media-kit media-kit --transport "$RUNNER_TEMP/native-transport" --output "$RUNNER_TEMP/cache-verification"
+      - name: Discard any inexact prefix cache match
+        if: steps.cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: rm -rf -- "$RUNNER_TEMP/native-transport"
+      - name: Install Linux native build tools
+        if: steps.cache.outputs.cache-hit != 'true' && runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential autoconf automake libtool pkg-config nasm ninja-build cmake clang lld binutils gperf jq ripgrep p7zip-full python3-venv wget unzip zip xz-utils
+          python -m pip install meson==1.6.1 jinja2 jsonschema PyYAML
+      - name: Set up Android native Java
+        if: steps.cache.outputs.cache-hit != 'true' && inputs.platform == 'android' && inputs.mode == 'source'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install the selected desktop source toolchain
+        if: steps.cache.outputs.cache-hit != 'true' && inputs.mode == 'source' && (inputs.platform == 'linux' || inputs.platform == 'windows')
+        shell: bash
+        run: bash app/tool/native/desktop/setup.sh '${{ inputs.platform }}'
+      - name: Install the locked Android NDK
+        if: steps.cache.outputs.cache-hit != 'true' && inputs.platform == 'android' && inputs.mode == 'source'
+        shell: bash
+        run: |
+          sudo apt-get install -y gcc-multilib
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" \
+            'ndk;27.2.12479018' 'platforms;android-35' 'build-tools;34.0.0' 'cmake;3.22.1' </dev/null
+      - name: Set up the locked OHOS native SDK
+        if: steps.cache.outputs.cache-hit != 'true' && inputs.platform == 'ohos' && inputs.mode == 'source'
+        uses: ErBWs/setup-ohos@5c8e74d05fc9888a387b6154ba06d0cd9ede3da1
+        with:
+          version: 26.0.0.621
+          cache: true
+      - name: Set up Nix for Apple source builds
+        if: steps.cache.outputs.cache-hit != 'true' && runner.os == 'macOS'
+        uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25
+        with:
+          extra-conf: |
+            sandbox = true
+            sandbox-fallback = false
+      - name: Restore immutable Nix derivations
+        if: steps.cache.outputs.cache-hit != 'true' && runner.os == 'macOS'
+        uses: DeterminateSystems/magic-nix-cache-action@565684385bcd71bad329742eefe8d12f2e765b39
+        with:
+          use-flakehub: false
+      - name: Produce the selected native package
+        if: steps.cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python app/tool/native/ci.py build-native --platform '${{ inputs.platform }}' --mode '${{ inputs.mode }}' \
+            --media-kit media-kit --work "$RUNNER_TEMP/native-work" --transport "$RUNNER_TEMP/native-transport" \
+            2>&1 | tee "$RUNNER_TEMP/native-build.log"
+      - name: Cache only a successfully verified complete package
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/native-transport
+          key: ${{ inputs.cache_key }}
+      - name: Upload native package and receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-${{ inputs.platform }}
+          path: ${{ runner.temp }}/native-transport/
+          if-no-files-found: error
+          compression-level: 0
+      - name: Preserve native failure diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-diagnostics-${{ inputs.platform }}
+          if-no-files-found: ignore
+          path: |
+            ${{ runner.temp }}/native-build.log
+            ${{ runner.temp }}/native-work/producer/buildscripts/routing-native-evidence/
+            ${{ runner.temp }}/native-work/producer/libmpv/arm64-build/*.json
+            ${{ runner.temp }}/native-work/desktop/root/evidence/
+
+  application:
+    name: App / ${{ inputs.platform }}
+    needs: native
+    concurrency:
+      group: piliplus-app-${{ github.ref }}-${{ inputs.platform }}-${{ inputs.mode }}
+      cancel-in-progress: true
+    runs-on: ${{ inputs.app_runner }}
+    timeout-minutes: 120
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: app
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: Goodwu/media-kit
+          ref: ${{ inputs.media_kit_ref }}
+          path: media-kit
+          persist-credentials: false
+      - name: Verify frozen media-kit dev source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C media-kit rev-parse HEAD)" = '${{ inputs.media_kit_ref }}'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download this platform's completed native package
+        uses: actions/download-artifact@v4
+        with:
+          name: native-${{ inputs.platform }}
+          path: ${{ runner.temp }}/native-transport
+      - name: Authenticate and activate the explicit native package
+        shell: bash
+        run: |
+          python app/tool/native/ci.py consume --platform '${{ inputs.platform }}' --mode '${{ inputs.mode }}' \
+            --media-kit media-kit --transport "$RUNNER_TEMP/native-transport" --output "$RUNNER_TEMP/native-package"
+      - name: Check the native consumer contracts
+        shell: bash
+        run: python -m unittest discover -s media-kit/tool/native_package/tests -v
+      - name: Install Linux application dependencies
+        if: inputs.platform == 'linux' || inputs.platform == 'ohos'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build cmake pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev libasound2-dev libepoxy-dev libglu1-mesa libva2 libva-drm2 libva-x11-2 libva-wayland2 libvdpau1 libunwind8 liblcms2-2 libarchive13t64 libpulse0 unzip zip jq ripgrep
+          python -m pip install PyYAML
+      - name: Set up Android application Java
+        if: inputs.platform == 'android'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Set up the pinned Flutter application SDK
+        if: inputs.platform != 'ohos'
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ inputs.flutter_version }}
+          channel: stable
+          # patch.ps1 edits the SDK; each job needs an unmodified SDK checkout.
+          cache: false
+      - name: Select the verified CocoaPods native consumer
+        if: inputs.platform == 'ios' || inputs.platform == 'macos'
+        shell: bash
+        run: flutter config --no-enable-swift-package-manager
+      - name: Build the application with its existing Flutter patches
+        if: inputs.platform != 'ohos'
+        shell: bash
+        run: python app/tool/native/build_application.py --platform '${{ inputs.platform }}' --output "$RUNNER_TEMP/application-artifacts"
+      - name: Set up OHOS application tools
+        if: inputs.platform == 'ohos'
+        uses: ErBWs/setup-ohos@5c8e74d05fc9888a387b6154ba06d0cd9ede3da1
+        with:
+          version: 26.0.0.621
+          cache: true
+      - name: Set up OHOS application Java
+        if: inputs.platform == 'ohos'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Export, test and compile the approved current OHOS integration
+        if: inputs.platform == 'ohos'
+        shell: bash
+        run: python app/tool/native/build_application.py --platform ohos --output "$RUNNER_TEMP/application-artifacts"
+      - name: Record application, SDK and native package identities
+        shell: bash
+        run: |
+          python app/tool/native/ci.py provenance --platform '${{ inputs.platform }}' --media-kit media-kit \
+            --receipt "$RUNNER_TEMP/consumed-native.json" --artifacts "$RUNNER_TEMP/application-artifacts" \
+            --media-kit-commit '${{ inputs.media_kit_ref }}' \
+            --output "$RUNNER_TEMP/application-artifacts/build-provenance.json"
+      - name: Upload application artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: PiliPlus-${{ inputs.platform }}-${{ github.sha }}
+          path: ${{ runner.temp }}/application-artifacts/
+          if-no-files-found: error
+          compression-level: 0
+      - name: Preserve application diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: application-diagnostics-${{ inputs.platform }}
+          if-no-files-found: ignore
+          path: |
+            ${{ runner.temp }}/application-build.log
+            ${{ runner.temp }}/application-artifacts/native-api-check.json
+            ${{ runner.temp }}/consumed-native.json
+            ${{ runner.temp }}/PiliPlus-ohos-build/ohos/*.json
+            ${{ runner.temp }}/PiliPlus-ohos-build/ohos/build-logs/

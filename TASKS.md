@@ -2,6 +2,13 @@
 
 任务事实源：只保留当前状态、验收门槛和下一步；按各项 `context` 查看持续更新的依据。
 
+## ALL-PLATFORM-NATIVE-CI-20261028
+- **开发线整合**：将原 `ci/native-packages-20261023` 与 `ci/native-packages-update-20261027` 双分支的完整历史、六平台已验证 native package/SDK 机制、公共接入、Android 2026-10-27 原生输入锁、OHOS 新受审集成迁移到唯一活跃 `goodwu-dev-rebased`；保留此分支的所有播放器/HDR/诊断改动，不修改 `main` 和同步分支。
+- **media-kit 来源**：CI 在 `source-build.yml` 的 plan job 仅读取一次 `Goodwu/media-kit@dev` 的 40 位 HEAD，所有 native/App job 后续检出同一 SHA，生成 package identity、native/应用溯源；本地仍由 `../media-kit` 路径覆盖且应使用其 `dev` 分支。
+- **OHOS 源码边界**：旧受审基线 `30525d9` 早于当前 6 项 App 变更，会失败；本次依照当前开发分支完整 Git tree 更新独立的 `approved_integration.json` 基线及相关改动 Dart 文件 SHA256，严格保留校验、不启用 fallback。native 构建、UI/设备验证需按具体产物另行执行。
+- **验证范围**：旧 CI 分支先前两轮 Android/Windows/Linux/iOS/macOS App jobs 成功，OHOS 因基线陈旧失败；新融合版本须以其自己的 GitHub Actions 结果为准。相关工作说明见 `docs/ci/native-packages.md`，不要把旧构建宣称成融合版通过。
+
+
 ## LG-HLG-PQ-BRIGHTNESS-MAPPING-20261025
 - **completed、用户采用，已授权提交推送**：1000参考峰值/gamma0，取消自动+3，不加曲线；105 tests/analyze0与5份生产源哈希保持。
 - **同帧观感**：熊35.035秒、夕阳720.052666667秒、近黑600.032766667秒用户均反馈基本一致；夕阳明确无明显过曝/细节丢失。近黑HDR10直通/离屏参考一致。
@@ -13,7 +20,7 @@
 
 - **done（仅构建装机，未提交）**：用户指示 FFmpeg 更新后重建。标准入口 `tool/build-android-test.sh` 源码构建 `=== VERIFIED`：APK `piliplus-source-test-release.apk` 27,601,633 B，SHA-256 `4fb1c645…5f87`；libmpv `982fb96a…fff0e5`，JAR `9517538f…ab2f7a3`；FFmpeg head `d4bb79394b`（tree d28a8f87 含 configure/hls.c 工作树改动，随源码链进入构建）。2026-10-25 01:30 装机 5 台在线设备（LYA/LG G6/Redmi 8/Redmi Note 5A/marble），`install -r` 全 Success，versionName 2.1.6，lastUpdateTime 01:30:31–50，on-device base.apk 哈希逐台与候选一致（4 台 sha256 一致；LG 无 sha256sum 按 md5 `763ef86a…1435` 对照一致）。VKY（P10 Plus）本轮离线未装，上线后需补装同包。设备播放/硬解/HDR 行为验收按各任务另行进行，本轮不含。
 
-姊妹仓：本地 media-kit checkout 在 `../media-kit`（compat 分支），本仓的一切播放器行为变化先看其 `TASKS.md` 的 MK-ROUTING 段。
+姊妹仓：本地 media-kit checkout 在 `../media-kit`（dev 分支），本仓的一切播放器行为变化先看其 `TASKS.md` 的 MK-ROUTING 段。
 **镜像红线（2026-10-17 起；改名后仅适用于旧仓 PiliPlus.old）**：旧仓 `main/dev/dom` 与全部 tag 由 `ci/upstream-sync` 孤儿分支每日强镜像自上游（force+prune），自有提交只能放特性分支（当前工作分支 `feature/ohos`，不受镜像影响）。
 
 ## MACOS-XCCONFIG-PODS-INCLUDE-20261024

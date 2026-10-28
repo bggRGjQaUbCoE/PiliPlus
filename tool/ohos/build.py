@@ -74,7 +74,9 @@ def build(workspace: Path, flutter_root: Path, pub_cache: Path) -> dict:
     receipt = {
         "schema": 1, "source_commit": source["source_commit"],
         "base_commit": source["base_commit"], "application_entrypoint": "lib/main.dart",
-        "media_backend": "media-kit-direction-b", "started_at_unix": int(time.time()),
+        "media_backend": source.get("media_backend", "media-kit-direction-b"),
+        "source_policy": source.get("source_policy", {"mode": "addition-only"}),
+        "started_at_unix": int(time.time()),
         "dependency_resolution_verified": False, "analysis_passed": False,
         "parser_compatibility_verified": False,
         "ui_compatibility_verified": False,
@@ -137,7 +139,7 @@ def build(workspace: Path, flutter_root: Path, pub_cache: Path) -> dict:
         receipt["media"] = media_backend.verify(workspace)
         receipt["hap_built"] = True
         receipt["status"] = "built-unsigned-media-integrated-device-unverified"
-        build_profile.update_manifest(workspace, analysis_passed=True, hap_built=True,
+        build_profile.update_manifest(workspace, after_verified_hap=True, analysis_passed=True, hap_built=True,
                                       artifact=receipt["artifact"], device_functionality_verified=False)
     except Exception as exc:
         receipt["status"] = "failed"

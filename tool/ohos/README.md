@@ -1,27 +1,45 @@
 # OHOS 构建适配工具
 
-本目录只服务于 `feature/ohos`。应用功能和界面基线仍是 PiliPlus `main`，
-Flutter 只使用用户指定的官方 `CPF-Flutter/flutter_flutter:oh-3.44.9-dev`。
-媒体后端按本轮要求暂缓接入；播放器 Dart 接口和媒体源提交保留。
+本目录将已提交的 PiliPlus 源码导出为独立 OHOS 构建副本。
+Flutter 使用固定的官方 `CPF-Flutter/flutter_flutter:oh-3.44.9-dev`。
+当前应用已包含 `ManagedVideoPlayback` / `RoutedVideoPlayback` 接入；新模式保留
+这套源码，并从明确指定的 media-kit 提交和原生包准备构建。
+
+`approved_integration.json` 是当前批准的源码身份。`baseline.json` 保留旧
+`feature/ohos` 阶段的历史记录，不代表当前集成已完成 HAP 或设备验收。
 
 ## 构建目录与上游同步
 
-Git 开发目录保留上游的 `lib/`、`pubspec.yaml`、`pubspec.lock`、`.fvmrc`
-及原平台工程。所有 OHOS 适配实现放在新增目录内，构建时按检查过的补丁生成
-独立副本。**构建副本确实修改了部分原应用文件和依赖**，这些变化记录在副本
-的 `ohos/source-manifest.json`，仍需随上游 API 变化维护。
+源码检查有两个明确模式：
+
+- `addition-only`：保留原有默认行为，比较与 `origin/main` 的共同祖先，拒绝改变
+  原上游文件，适用于尚未修改应用代码的旧 OHOS 分支。
+- `approved-integration`：验证独立锁定的批准文件及其 SHA256，接受当前已集成的
+  应用基线 `30525d964b71b742637fc4ade4764bf94aafda45`。它锁定该 Git tree 和
+  14 个集成边界文件；基线之后只允许批准文件列出的 CI、工具和文档路径变更。
+  应用源码、资源、平台工程和 pubspec 的新增、删除、修改仍会被拒绝。
+
+两种模式都检查工作文件和暂存区。新模式的 `prepare` / `prepare-build` 要求
+所选提交已 checkout，且所有已跟踪文件均无本地漂移；未跟踪的签名和缓存不会导出。
+旧模式的只读源码导出继续忽略未提交内容，保持兼容。
+
+OHOS 构建适配只修改独立副本。**构建副本确实修改部分原应用文件和依赖**，
+这些变化及 source-policy 身份记录在 `ohos/source-manifest.json`；原 checkout
+的 `lib/`、依赖锁和各平台工程不会被改写。
 
 要求 Python 3.12+、Git，以及构建主机可访问的公开依赖仓库。SDK、Pub 缓存和
 构建副本均应使用独立目录；不要将这些工具指向其他项目共享的 SDK 或缓存。
 
 ```sh
-python3 tool/ohos/ohos.py check-source
+python3 tool/ohos/ohos.py check-source \
+  --source-policy approved-integration \
+  --source-policy-sha256 33e45fb135c57cb1d9feebbf6cdec27a2f1ae6c9d09705ab2ee42603f925b884
 python3 -m unittest discover -s tool/ohos -p 'test_*.py' -v
 ```
 
-检查涵盖提交、工作文件和暂存区。默认比较开发分支与 `origin/main` 的共同
-祖先，因此已 fetch 但尚未合并的新 main 不会被误报。补丁锚点、源摘要或 SDK
-提交漂移会停止准备，要求针对变动维护适配，不会自动模糊匹配或关闭门禁。
+CI 中的期望 SHA256 应来自已审阅的应用依赖锁。不能通过给下载内容现场计算
+摘要来代替独立的期望值。checkout 需要包含批准基线及祖先关系；建议使用
+`fetch-depth: 0`。补丁锚点、源摘要、批准文件或 SDK 提交漂移都会停止准备。
 
 ## 1. 准备指定的 Flutter SDK
 
@@ -47,15 +65,32 @@ Flutter >=3.44.0 <3.45.0 / Dart >=3.12.0 <4.0.0，随后通过实际解析和编
 
 ## 2. 准备构建副本
 
-先提交要构建的 OHOS 文件，再执行：
+先提交要构建的源码，checkout 应用与 media-kit 的锁定提交，再提供原生输入。
+以下文件应已通过上层统一 native package 的摘要和清单验证：
+
+```sh
+export PILIPLUS_MEDIA_KIT_ROOT=/work/media-kit
+export PILIPLUS_OHOS_LIBMPV_LIBRARY=/work/native-ohos/lib/libmpv.so
+export MEDIA_KIT_OHOS_LIBMPV_ARCHIVE=/work/native-ohos/lib/libmpv_aarch64.zip
+export MEDIA_KIT_OHOS_LIBMPV_SHA256=EXPECTED_ARCHIVE_SHA256_FROM_LOCK
+```
+
+`libmpv.so` 同目录必须保留原生 producer 的 `manifest.json`。门禁继续验证
+AArch64 ELF、archive/library 精确摘要，以及真实编译记录中的
+`CONFIG_LIBWEBP_ENCODER`、`CONFIG_LIBWEBP_ANIM_ENCODER`、`CONFIG_WEBP_MUXER`。
+包根目录的通用 `manifest.json` 不替代这个平台构建证明文件。
+
+然后执行：
 
 ```sh
 python3 tool/ohos/ohos.py prepare-build \
-  --output /tmp/PiliPlus-ohos-build
+  --output /tmp/PiliPlus-ohos-build \
+  --source-policy approved-integration \
+  --source-policy-sha256 33e45fb135c57cb1d9feebbf6cdec27a2f1ae6c9d09705ab2ee42603f925b884
 ```
 
 `--revision <commit>` 可指定源提交；输出目录必须不存在且位于 Git checkout
-之外。工具先用 `git archive` 导出并逐文件核对原上游 Git blob，再调整 OHOS
+之外。工具先用 `git archive` 导出并逐文件核对所选源码 Git blob，再调整 OHOS
 副本的环境约束、应用平台接入和依赖。原包名 `PiliPlus` 及其导入路径保留。
 未跟踪的本机签名、缓存和未提交修改均不会混入构建输入。
 
@@ -65,9 +100,21 @@ python3 tool/ohos/ohos.py prepare-build \
 - 原有主页返回行为对接 `UIAbilityContext.moveAbilityToBackground()`。
 - 动态色插件缺失时沿用上游 seed 配色；不替换主题算法。
 - 使用真实 OHOS 相册保存确认，不伪造权限或保存成功。
-- 暂缓媒体初始化，并在尝试播放时明确提示后端尚未接入。
+- 验证并保留已提交的播放器接入，不重放旧 Direction B 七文件补丁。
+- 将 media-kit 包闭包绑定到其干净、已提交源码的导出快照，并检查最终解析来源。
 - 按 [dependencies.json](dependencies.json) 的固定 Git SHA 或发布包 SHA-256
   准备 OHOS 平台实现以及保持现有 Dart 接口的兼容副本。
+
+当前应用的 `pubspec.lock` 和已有 `pubspec_overrides.yaml` 使用批准文件中的精确
+摘要验证。只在这个明确模式下允许将副本中的 overrides 替换为 OHOS 图；原文件
+逐字节备份到 `ohos/source-pubspec-overrides.yaml`，转换记录进入依赖报告。
+旧模式仍拒绝覆盖已有 overrides。
+
+当前 OHOS recipe 暂时保留既有兼容包与补丁：`material_ui 1.6.0`、
+`cupertino_ui 1.1.2`、`hive_ce 2.21.0` 以及 cached-image 提交 `733d4aae…`，
+对应应用锁中的较新版本及转换原因均逐项记录在批准文件。这里没有自动将新
+pubspec 锁认定为与旧 recipe 等价；新的 Pub 解析、分析、UI 测试和 HAP 构建
+必须通过后才能报告兼容。
 
 `prepare` 命令仍保留为**只导出、不适配**的源码检查入口，供轻量 CI 使用。
 `prepare-build` 会获取依赖源码，但依赖准备本身不等于 Pub 解析或 HAP 构建成功。
@@ -117,6 +164,12 @@ Material/Cupertino/Flex UI 测试、分析 `lib/`、构建原入口，并检查 
 版本和 arm64 ELF。完整日志及实际通过的阶段分别记录在
 副本的 `ohos/build-logs/` 和 `ohos/build-result.json`，失败保留诊断并返回非零。
 
+锁定的 Flutter OHOS SDK 会将 `entry/src/main/resources/base/profile/buildinfo.json5`
+移至 `entry/src/main/resources/rawfile/buildinfo.json5`。只有 HAP 和包内原生库身份
+检查通过后，最终源码清单才接受并记录这一个迁移：原位置必须缺失，目标必须是
+无符号链接的普通文件，内容必须与导出基线逐字节一致。记录包含原 Git blob、
+目标路径及 blob，以及 SDK 提交和迁移实现文件的 SHA256；其他文件缺失仍然失败。
+
 原生配置使用 unsigned 构建，不包含签名密钥。安装和系统功能验收另行记录。
 请以 [当前验证记录](../../docs/ohos/README.md) 为准，区分源码保护、依赖解析、
 Dart 编译、ArkTS/HAP 构建和真机验收；本工具不把其中任一步代称为全部完成。
@@ -125,30 +178,34 @@ Dart 编译、ArkTS/HAP 构建和真机验收；本工具不把其中任一步�
 
 ```sh
 git fetch origin
-git switch feature/ohos
+git switch goodwu-dev-rebased
 git merge origin/main
-python3 tool/ohos/ohos.py check-source
+python3 tool/ohos/ohos.py check-source \
+  --source-policy approved-integration \
+  --source-policy-sha256 APPROVED_POLICY_SHA256_FROM_LOCK
 ```
 
-再使用新输出目录重做 SDK 补丁检查、构建准备、解析和受影响功能验证。
-新增目录降低 Git 合并冲突，但不会消除 Flutter API、插件接口和补丁上下文的
-维护工作。不要提交生成的 Pub 锁回原主线 `pubspec.lock`。
+合并改变应用源码后，旧批准基线会按预期拒绝构建。先审阅新播放器、依赖和
+OHOS 补丁适配，再更新批准 commit/tree、文件摘要及两个引用它的期望摘要
+（应用依赖锁和 `media_backend.json`）；不能只更新哈希掩盖未处理的源码变化。
+随后在新输出目录重做 SDK 检查、依赖解析、分析、构建和受影响功能验证。
+不要提交 OHOS 副本生成的 Pub 锁回原主线 `pubspec.lock`。
 
-## 开发分支的 media-kit 源码选择
+## 当前开发线 media-kit
 
-当前 App 开发分支 `goodwu-dev-rebased` 使用 `Goodwu/media-kit` 的 `dev`，
-本地 `pubspec_overrides.yaml` 继续引用兄弟目录 `../media-kit`，不将本地源码
-替换成 pub.dev 二进制。开始本地构建前：
+六平台 CI 解析 `Goodwu/media-kit@dev` 的 SHA 并在所有 jobs 冻结。
+本地保持 `../media-kit` 路径覆盖；使用本地构建前在 App 兄弟仓执行：
 
 ```bash
 git -C ../media-kit fetch origin dev
 git -C ../media-kit switch dev
 git -C ../media-kit merge --ff-only origin/dev
-git -C ../media-kit rev-parse --abbrev-ref HEAD  # dev
 ```
 
-若本地 `media-kit` 有未提交改动，请先保留工作树，不要强制切换或重置。
-`pubspec.yaml` 中 media-kit Dart/video 依赖的 Git fallback 也指向 `Goodwu/media-kit@dev`；
-`media_kit_native_event_loop` 仍来自其独立上游仓库，因为当前 Goodwu/media-kit
-并不包含该独立包。云端 OHOS 构建从 `dev` checkout，构建记录以具体 SHA
-冻结，不把移动的分支名当作构建产物身份。
+仓库主线/上游同步分支不会被改变。如果本地 `media-kit` 含未提交修改，
+先保留工作树，不要执行强制切换或重置。`media_kit_native_event_loop`
+在 Goodwu/media-kit 中不存在，保留其原始独立 Git 来源。
+
+## 2026-10-28 唯一开发线集成
+
+原生包 CI 与播放器诊断功能已经汇入 `goodwu-dev-rebased`，本分支是现行受审 OHOS 源码基线。审批文件记录当前 App 完整 tree `30fa1f46ab086e2c5a22d88e6bb9eacbe87b854f`，增加已存在的播放器诊断/控件源码 SHA，且会在后续任何 App 代码改动时失败关闭；不允许通过删除 guard 或放宽 mutable_paths 来掩盖变更。

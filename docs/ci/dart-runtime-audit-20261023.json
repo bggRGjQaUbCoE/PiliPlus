@@ -1,0 +1,278 @@
+{
+  "schema": 1,
+  "kind": "piliplus-public-player-runtime-audit",
+  "scope": "Linux x86_64 pure-Dart public Player, software H264/AAC, null video/audio outputs; not Flutter render surfaces, GPU, devices, or all codecs",
+  "media_kit": {
+    "local_commit": "fcc3f05a1bae3d745f478bfa2c343dabc3355a9b",
+    "tree": "2b37d5bdf37d5b9248cc4c5d3103536b86b0daae",
+    "published_tree_equivalent_commit": "d76622180dc9d082c9e690dd7d355f418627fb4a"
+  },
+  "dart_version": "Dart SDK version: 3.13.5 (stable) (Tue Sep 29 01:00:52 2026 -0700) on \"linux_x64\"",
+  "fixture": {
+    "path": "fixture-common.mp4",
+    "sha256": "b6d16706a386bf571e830424d5eafffee3dd58094537c3edad7b48b076ec2b06",
+    "video": "generated testsrc2 160x90 12fps H.264",
+    "audio": "generated sine440Hz 48kHz AAC",
+    "duration_seconds": 4
+  },
+  "script_sha256": "741e8a44d31eb519aeeb5e818245470d1e4ac86b6a448ac0b39bc349891735c9",
+  "packages": {
+    "upstream": {
+      "manifest_sha256": "53f5b518ea18ee1263e4c8d51f393797c8db15226f03d4a249502d55bd567859",
+      "identity_sha256": "69bf7869e364eecb12c084d2dd6653f886f3c94dc27dca310aa5aeaaa703be1e",
+      "report_sha256": "088d347166c0046071f3e0bc97c6ec6c1aa59f778f314fb8ab77c1a2445ea94f",
+      "report": {
+        "kind": "piliplus-public-player-headless-smoke",
+        "library": "/tmp/piliplus-linux-native-verify/package/lib/libmpv.so.2",
+        "media": "/tmp/piliplus-dart-native-playback-smoke-20261023/fixture-common.mp4",
+        "status": "passed",
+        "public_entrypoint": "package:media_kit/media_kit_dart.dart",
+        "video_output": "null",
+        "audio_output": "null",
+        "hardware_decode": false,
+        "gpu": false,
+        "device": false,
+        "stage": "complete",
+        "opened": true,
+        "position_progressed": true,
+        "decoded_video_params": {
+          "w": 160,
+          "h": 90,
+          "pixelformat": "yuv420p",
+          "hw_pixelformat": null
+        },
+        "video_tracks": [
+          {
+            "id": "1",
+            "codec": "h264",
+            "decoder": null,
+            "w": 160,
+            "h": 90
+          }
+        ],
+        "paused": true,
+        "seek_command_completed": true,
+        "batch_properties": {
+          "path": "/tmp/piliplus-dart-native-playback-smoke-20261023/fixture-common.mp4",
+          "duration": "4.000000",
+          "pause": "yes",
+          "time-pos": "2.000000",
+          "video-codec": "",
+          "audio-codec-name": "aac",
+          "mpv-version": "mpv v0.41.0-11-gf011d73d5-dirty"
+        },
+        "completed_event": true,
+        "final_position_ms": 3916,
+        "final_duration_ms": 4000,
+        "positions_ms": [
+          0,
+          83,
+          166,
+          250,
+          333,
+          416,
+          500,
+          2000,
+          2083,
+          2166,
+          2250,
+          2333,
+          2416,
+          2500,
+          2583,
+          2666,
+          2750,
+          2833,
+          2916,
+          3000,
+          3083,
+          3166,
+          3250,
+          3333,
+          3416,
+          3500,
+          3583,
+          3666,
+          3750,
+          3833,
+          3916
+        ],
+        "durations_ms": [
+          0,
+          4000
+        ],
+        "playing_events": [
+          false,
+          true,
+          false,
+          true,
+          false
+        ],
+        "stream_errors": [],
+        "native_logs": [
+          "lavf: error: Failed to create file cache."
+        ],
+        "video_params_events": [
+          {
+            "w": null,
+            "h": null,
+            "pixelformat": null,
+            "hw_pixelformat": null
+          },
+          {
+            "w": 160,
+            "h": 90,
+            "pixelformat": "yuv420p",
+            "hw_pixelformat": null
+          }
+        ],
+        "disposed": true,
+        "native_destruction_complete": true
+      }
+    },
+    "source": {
+      "manifest_sha256": "7b630c36c046a5d594219916c1a304e9e50739a95496e48741322dec4073e6fc",
+      "identity_sha256": "ae4071af9f15e66f1d6d3ededfab128821cd687a8734e4c1d9dbb8607bcadfaa",
+      "report_sha256": "f60526b4df3ccb624d9b7987868a502b90c6d6345da7934121934b51cfcb7770",
+      "report": {
+        "kind": "piliplus-public-player-headless-smoke",
+        "library": "/tmp/piliplus-linux-source-verification-20261023/root/lib/libmpv.so.2",
+        "media": "/tmp/piliplus-dart-native-playback-smoke-20261023/fixture-common.mp4",
+        "status": "passed",
+        "public_entrypoint": "package:media_kit/media_kit_dart.dart",
+        "video_output": "null",
+        "audio_output": "null",
+        "hardware_decode": false,
+        "gpu": false,
+        "device": false,
+        "stage": "complete",
+        "opened": true,
+        "position_progressed": true,
+        "decoded_video_params": {
+          "w": 160,
+          "h": 90,
+          "pixelformat": null,
+          "hw_pixelformat": null
+        },
+        "video_tracks": [
+          {
+            "id": "1",
+            "codec": "h264",
+            "decoder": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+            "w": 160,
+            "h": 90
+          }
+        ],
+        "paused": true,
+        "seek_command_completed": true,
+        "batch_properties": {
+          "path": "/tmp/piliplus-dart-native-playback-smoke-20261023/fixture-common.mp4",
+          "duration": "4.000000",
+          "pause": "yes",
+          "time-pos": "2.000000",
+          "video-codec": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+          "audio-codec-name": "aac",
+          "mpv-version": "mpv v0.41.0-dev-ge0dc99d04"
+        },
+        "completed_event": true,
+        "final_position_ms": 3916,
+        "final_duration_ms": 4000,
+        "positions_ms": [
+          0,
+          83,
+          166,
+          250,
+          333,
+          416,
+          500,
+          2000,
+          2083,
+          2166,
+          2250,
+          2333,
+          2416,
+          2500,
+          2583,
+          2666,
+          2750,
+          2833,
+          2916,
+          3000,
+          3083,
+          3166,
+          3250,
+          3333,
+          3416,
+          3500,
+          3583,
+          3666,
+          3750,
+          3833,
+          3916
+        ],
+        "durations_ms": [
+          0,
+          4000
+        ],
+        "playing_events": [
+          false,
+          true,
+          false,
+          true,
+          false
+        ],
+        "stream_errors": [],
+        "native_logs": [
+          "lavf: error: Failed to create file cache."
+        ],
+        "video_params_events": [
+          {
+            "w": null,
+            "h": null,
+            "pixelformat": null,
+            "hw_pixelformat": null
+          },
+          {
+            "w": 160,
+            "h": 90,
+            "pixelformat": null,
+            "hw_pixelformat": null
+          },
+          {
+            "w": 160,
+            "h": 90,
+            "pixelformat": "yuv420p",
+            "hw_pixelformat": null
+          }
+        ],
+        "disposed": true,
+        "native_destruction_complete": true
+      }
+    }
+  },
+  "observations": [
+    "Optional metadata can be empty in the first asynchronous videoParams event; final harness does not gate pixelformat or legacy video-codec.",
+    "Upstream FFV1 negative sample emitted a real video decoder initialization error; H264/AAC passed.",
+    "Both completed runs logged a nonfatal file-cache creation error; stream.errors remained empty.",
+    "Initial sandbox attempts timed out with PulseAudio pa_write EPERM; authorized execution with the same null-output options ran successfully."
+  ],
+  "gpu": false,
+  "device": false,
+  "date": "2026-10-23",
+  "harness_path": "docs/ci/dart-runtime-smoke-20261023.dart",
+  "process_results": [
+    {
+      "package": "upstream",
+      "returncode": 0,
+      "seconds": 11.4,
+      "report": "/tmp/piliplus-dart-native-playback-smoke-20261023/final-upstream.json"
+    },
+    {
+      "package": "source",
+      "returncode": 0,
+      "seconds": 11.65,
+      "report": "/tmp/piliplus-dart-native-playback-smoke-20261023/final-source.json"
+    }
+  ],
+  "automatic_ci_playback_gate": false
+}

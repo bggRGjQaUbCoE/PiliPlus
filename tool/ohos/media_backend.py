@@ -134,8 +134,27 @@ def apply_direction_b(workspace: Path, sdk: Path, config: dict) -> dict:
     for name, identity in expected.items():
         if blob(build_profile.safe_path(workspace, name).read_bytes()) != identity['after']:
             raise RuntimeError(f'Direction B postimage mismatch: {name}')
-    return {'patch_sha256': sha256(patch), 'files': expected,
+    return {'mode': 'direction-b-patch', 'patch_applied': True,
+            'patch_sha256': sha256(patch), 'files': expected,
             'order': 'direction-B before existing OHOS platform/language patches'}
+
+
+def application_integration(workspace: Path, sdk: Path, config: dict) -> dict:
+    policy_tools = build_profile.load_helper('source_policy')
+    source = json.loads(build_profile.safe_path(workspace, 'ohos/source-manifest.json').read_text())
+    policy = policy_tools.from_export(workspace, source)
+    if policy is None:
+        return apply_direction_b(workspace, sdk, config)
+    approval = config.get('existing_integration', {})
+    if (approval.get('source_policy') != source['source_policy']['manifest']
+            or approval.get('source_policy_sha256') != source['source_policy']['manifest_sha256']):
+        raise RuntimeError('Media recipe does not approve this committed application integration')
+    files = policy_tools.verify_integration(workspace, policy)
+    return {'mode': 'existing-integration', 'name': policy['integration']['name'],
+            'baseline_commit': policy['baseline_commit'], 'baseline_tree': policy['baseline_tree'],
+            'source_policy_sha256': source['source_policy']['manifest_sha256'],
+            'patch_applied': False, 'files': files,
+            'order': 'preserve committed integration before OHOS platform/language compatibility'}
 
 
 def prepare_application(workspace: Path) -> dict:
@@ -178,13 +197,16 @@ def prepare_application(workspace: Path) -> dict:
             raise RuntimeError(f'SDK export changed: {relative}')
         entries[relative] = identity
         modes[relative] = mode
-    direction_b = apply_direction_b(workspace, destination, config)
-    report = {'schema': 1, 'backend': 'media-kit-direction-b', 'repository': config['repository'],
+    integration = application_integration(workspace, destination, config)
+    backend = 'media-kit-existing-integration' if integration['mode'] == 'existing-integration' else 'media-kit-direction-b'
+    report = {'schema': 1, 'backend': backend, 'repository': config['repository'],
               'branch': config['branch'], 'commit': commit, 'tree': tree,
               'archive_sha256': sha256(archive), 'source_blobs': entries, 'source_modes': modes,
               'recipe_sha256': sha256((workspace / 'tool/ohos/media_backend.json').read_bytes()),
-              'direction_b': direction_b, 'native': native, 'packages': {},
+              'application_integration': integration, 'native': native, 'packages': {},
               'device_verified': False, 'hdr_verified': False}
+    if integration['mode'] == 'direction-b-patch':
+        report['direction_b'] = integration  # Preserve the legacy receipt field.
     (workspace / RECEIPT).write_text(json.dumps(report, indent=2) + '\n')
     return report
 
@@ -230,7 +252,20 @@ def verify(workspace: Path, *, resolved: bool = True) -> dict:
             raise RuntimeError(f'Prepared application source changed: {name}')
     if native_inputs() != report['native']:
         raise RuntimeError('Native inputs changed after preparation')
-    for name in ('lib/main.dart', 'lib/pages/audio/controller.dart', *report['direction_b']['files']):
+    integration = report.get('application_integration', report.get('direction_b'))
+    if not isinstance(integration, dict):
+        raise RuntimeError('Media receipt does not identify the application integration')
+    policy = build_profile.load_helper('source_policy').from_export(workspace)
+    if policy is not None:
+        source = json.loads(build_profile.safe_path(workspace, 'ohos/source-manifest.json').read_text())
+        if (integration.get('mode') != 'existing-integration' or integration.get('patch_applied') is not False
+                or integration.get('files') != policy['integration']['files']
+                or integration.get('baseline_commit') != policy['baseline_commit']
+                or integration.get('source_policy_sha256') != source['source_policy']['manifest_sha256']):
+            raise RuntimeError('Media receipt changed its approved existing application integration')
+    elif integration.get('mode') == 'existing-integration':
+        raise RuntimeError('Existing integration requires an approved source-policy receipt')
+    for name in ('lib/main.dart', 'lib/pages/audio/controller.dart', *integration['files']):
         text = build_profile.safe_path(workspace, name).read_text()
         if 'backend is deferred' in text or '当前 OHOS 开发构建暂未接入播放后端' in text or 'OHOS backend deferred' in text:
             raise RuntimeError(f'Media-deferred guard remains in {name}')
@@ -252,9 +287,13 @@ def verify(workspace: Path, *, resolved: bool = True) -> dict:
             if uri.scheme != 'file' or Path(unquote(uri.path)).resolve() != (workspace / report['packages'][name]).resolve():
                 raise RuntimeError(f'Media package resolves to a stale or external source: {name}')
             checked.append(name)
-    return {key: report[key] for key in ('repository', 'branch', 'commit', 'tree', 'recipe_sha256', 'direction_b', 'native')} | {
+    result = {key: report[key] for key in ('repository', 'branch', 'commit', 'tree', 'recipe_sha256', 'native')} | {
+        'backend': report.get('backend', 'media-kit-direction-b'), 'application_integration': integration,
         'resolved_packages_checked': checked, 'source_files_verified': len(report['source_blobs']),
         'device_verified': False, 'hdr_verified': False}
+    if 'direction_b' in report:
+        result['direction_b'] = report['direction_b']
+    return result
 
 
 def verify_hap(workspace: Path, hap: Path) -> dict:

@@ -1,0 +1,695 @@
+{
+  "schema": 1,
+  "kind": "android-ndk-cxx-supplement",
+  "run": 39984863955,
+  "attempt": 1,
+  "job": 120539728812,
+  "artifact": 12517489694,
+  "app_commit": "01257f9e933bda7add3ed4639c8336dddd7b32ba",
+  "media_kit_commit": "d76622180dc9d082c9e690dd7d355f418627fb4a",
+  "artifact_sha256": "5cc073d26c998f3c6730336eea56b01dc7f5812f2e76323d0e33ecff0cd28586",
+  "scope": "Read-only analysis of the existing three APKs, build log and pinned package sources. No code changes, rebuilds, device tests or runtime execution.",
+  "log_facts": {
+    "url": "https://github.com/Goodwu/PiliPlus/actions/runs/39984863955/job/120539728812",
+    "sha256": "a425f8f68edb57272960840aad0f13c01db0ec729516bad8d68035def3d2db80",
+    "app_gradle_ndk": "27.2.12479018",
+    "warning_plugin_effective_gradle_ndk": "28.2.13676358",
+    "warning_plugin_names": [
+      "android_file_picker",
+      "app_links",
+      "audio_service",
+      "audio_session",
+      "battery_plus",
+      "chat_bottom_container",
+      "connectivity_plus",
+      "device_info_plus",
+      "dynamic_color",
+      "flutter_displaymode",
+      "flutter_inappwebview_android",
+      "flutter_plugin_android_lifecycle",
+      "flutter_volume_controller",
+      "image_cropper",
+      "image_picker_android",
+      "jni",
+      "jni_flutter",
+      "live_photo_maker",
+      "media_kit_android_dataspace_vendor",
+      "media_kit_libs_android_video",
+      "media_kit_video",
+      "native_device_orientation",
+      "package_info_plus",
+      "permission_handler_android",
+      "saver_gallery",
+      "screen_brightness_android",
+      "share_plus",
+      "shared_preferences_android",
+      "url_launcher_android",
+      "wakelock_plus"
+    ],
+    "ndk_install_records": [
+      "27.2.12479018",
+      "28.2.13676358"
+    ],
+    "cmake_install_record": "3.22.1",
+    "individual_cmake_or_clang_command_paths": null,
+    "command_path_status": "unknown: successful aggregate Flutter build log does not print per-plugin native compiler commands",
+    "warning_semantics": "Flutter collects each plugin Android DSL ndkVersion, without checking whether that plugin compiles C or C++. Installation and the mismatch warning alone do not prove a plugin compiler invocation."
+  },
+  "declaration_facts": {
+    "inspected_warning_plugin_count": 30,
+    "cached_package_lock_entries_matching_app": 30,
+    "explicit_literal_28_2": [
+      "media_kit_video"
+    ],
+    "explicit_flutter_ndk_version": [
+      "jni"
+    ],
+    "flutter_ndk_version": "28.2.13676358",
+    "external_native_build_plugins": [
+      "media_kit_video",
+      "media_kit_android_dataspace_vendor",
+      "jni"
+    ],
+    "media_kit_video": "Explicit NDK 28.2.13676358; CMake builds the C++17 HDR bridge.",
+    "media_kit_android_dataspace_vendor": "No explicit ndkVersion in its Gradle file; CMake builds C++17 vendor sources; all three resulting ELFs carry r28c/13676358 and clang 19.0.1 stamps.",
+    "jni": "Uses flutter.ndkVersion; CMake project LANGUAGES C and dartjni.c/global_jni_env.c/dart_api_dl.c; all three resulting libdartjni.so carry r28c/13676358 and clang 19.0.1 stamps. This is not evidence of C++ source compilation.",
+    "remaining_27_warning_plugins": "No externalNativeBuild block found in their root Android build.gradle/build.gradle.kts. The warning does not identify which transitive prebuilt binaries they package.",
+    "media_kit_libs_android_video": "No explicit ndkVersion or externalNativeBuild; consumes verified JARs from the separate NDK 27.2 producer.",
+    "cnativeapi": "Locked cnativeapi 0.5.2 is a separate Dart native-assets C++17 source build hook, outside the 30 Gradle warning entries. Actual APK ELF stamps are r27d/13750724 and clang 18.0.4; its exact compiler command path is unknown."
+  },
+  "closure_method": {
+    "libraries_per_apk": 10,
+    "abi_count": 3,
+    "cpp_symbol_predicate": [
+      "_Z* (Itanium C++ including std::__ndk1 and operator new/delete)",
+      "__cxa_*",
+      "__gxx_*",
+      "_Unwind_*",
+      "__emutls_*"
+    ],
+    "providers": "Actual APK exports reachable through DT_NEEDED, plus the locked NDK 27.2 API26 system link stubs. Symbol versions and GLOBAL/WEAK binding are retained.",
+    "system_provider_scope": "Read-only NDK 27.2.12479018 API 26 system link stubs; not device libraries.",
+    "missing_dt_needed_files_by_abi": {
+      "arm64-v8a": [],
+      "armeabi-v7a": [],
+      "x86_64": []
+    },
+    "strong_cpp_missing_count": 0,
+    "weak_cpp_unresolved_count": 0,
+    "std_ndk1_and_cxa_dynamic_import_closure_passed": true
+  },
+  "actual_elf_facts": {
+    "libflutter.so": {
+      "android_ident_by_abi": {
+        "arm64-v8a": {
+          "api": 24,
+          "ndk_release": "r28c",
+          "ndk_build": "13676358"
+        },
+        "armeabi-v7a": {
+          "api": 21,
+          "ndk_release": "r28c",
+          "ndk_build": "13676358"
+        },
+        "x86_64": {
+          "api": 24,
+          "ndk_release": "r28c",
+          "ndk_build": "13676358"
+        }
+      },
+      "compiler_comments": [
+        "Linker: Fuchsia LLD 23.0.0 (https://llvm.googlesource.com/a/llvm-project 80743bd43fd5b38fedc503308e7a652e23d3ec93)",
+        "Android (13624864, +pgo, +bolt, +lto, +mlgo, based on r530567e) clang version 19.0.1 (https://android.googlesource.com/toolchain/llvm-project 97a699bf4812a18fb657c2779f5296a4ab2694d2)"
+      ],
+      "dt_needed": [
+        "libc.so",
+        "libdl.so",
+        "libm.so",
+        "libandroid.so",
+        "libEGL.so",
+        "libGLESv2.so",
+        "liblog.so",
+        "libjnigraphics.so"
+      ],
+      "cpp_dynamic_undefined_by_abi": {
+        "arm64-v8a": 3,
+        "armeabi-v7a": 3,
+        "x86_64": 3
+      },
+      "cpp_imports_resolved_by_packaged_libcxx_by_abi": {
+        "arm64-v8a": 0,
+        "armeabi-v7a": 0,
+        "x86_64": 0
+      },
+      "cpp_imports_resolved_by_api26_bionic_by_abi": {
+        "arm64-v8a": 3,
+        "armeabi-v7a": 3,
+        "x86_64": 3
+      },
+      "missing_strong_cpp_by_abi": {
+        "arm64-v8a": [],
+        "armeabi-v7a": [],
+        "x86_64": []
+      },
+      "unresolved_weak_cpp_by_abi": {
+        "arm64-v8a": [],
+        "armeabi-v7a": [],
+        "x86_64": []
+      }
+    },
+    "libapp.so": {
+      "android_ident_by_abi": {
+        "arm64-v8a": null,
+        "armeabi-v7a": null,
+        "x86_64": null
+      },
+      "compiler_comments": [],
+      "dt_needed": [],
+      "cpp_dynamic_undefined_by_abi": {
+        "arm64-v8a": 0,
+        "armeabi-v7a": 0,
+        "x86_64": 0
+      },
+      "cpp_imports_resolved_by_packaged_libcxx_by_abi": {
+        "arm64-v8a": 0,
+        "armeabi-v7a": 0,
+        "x86_64": 0
+      },
+      "cpp_imports_resolved_by_api26_bionic_by_abi": {
+        "arm64-v8a": 0,
+        "armeabi-v7a": 0,
+        "x86_64": 0
+      },
+      "missing_strong_cpp_by_abi": {
+        "arm64-v8a": [],
+        "armeabi-v7a": [],
+        "x86_64": []
+      },
+      "unresolved_weak_cpp_by_abi": {
+        "arm64-v8a": [],
+        "armeabi-v7a": [],
+        "x86_64": []
+      }
+    },
+    "libdatastore_shared_counter.so": {
+      "android_ident_by_abi": {
+        "arm64-v8a": {
+          "api": 21,
+          "ndk_release": "r20",
+          "ndk_build": "5594570"
+        },
+        "armeabi-v7a": {
+          "api": 21,
+          "ndk_release": "r20",
+          "ndk_build": "5594570"
+        },
+        "x86_64": null
+      },
+      "compiler_comments": [
+        "Android (5220042 based on r346389c) clang version 8.0.7 (https://android.googlesource.com/toolchain/clang b55f2d4ebfd35bf643d27dbca1bb228957008617) (https://android.googlesource.com/toolchain/llvm 3c393fe7a7e13b0fba4ac75a01aa683d7a5b11cd) (based on LLVM 8.0.7svn)",
+        "clang version 19.1.4 (https://github.com/Kotlin/llvm-project fb492d2475910b83cda3a68b4eee9e87d7e221c1)",
+        "Linker: LLD 18.0.1"
+      ],
+      "dt_needed": [
+        "libm.so",
+        "libandroid.so",
+        "liblog.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "cpp_dynamic_undefined_by_abi": {
+        "arm64-v8a": 2,
+        "armeabi-v7a": 2,
+        "x86_64": 2
+      },
+      "cpp_imports_resolved_by_packaged_libcxx_by_abi": {
+        "arm64-v8a": 0,
+        "armeabi-v7a": 0,
+        "x86_64": 0
+      },
+      "cpp_imports_resolved_by_api26_bionic_by_abi": {
+        "arm64-v8a": 2,
+        "armeabi-v7a": 2,
+        "x86_64": 2
+      },
+      "missing_strong_cpp_by_abi": {
+        "arm64-v8a": [],
+        "armeabi-v7a": [],
+        "x86_64": []
+      },
+      "unresolved_weak_cpp_by_abi": {
+        "arm64-v8a": [],
+        "armeabi-v7a": [],
+        "x86_64": []
+      }
+    },
+    "libc++_shared.so": {
+      "android_ident_by_abi": {
+        "arm64-v8a": {
+          "api": 21,
+          "ndk_release": "r27-beta1",
+          "ndk_build": "11883388"
+        },
+        "armeabi-v7a": {
+          "api": 21,
+          "ndk_release": "r27-beta1",
+          "ndk_build": "11883388"
+        },
+        "x86_64": {
+          "api": 21,
+          "ndk_release": "r27-beta1",
+          "ndk_build": "11883388"
+        }
+      },
+      "compiler_comments": [
+        "Android (11695104, +pgo, +bolt, +lto, +mlgo, based on r522817) clang version 18.0.1 (https://android.googlesource.com/toolchain/llvm-project d8003a456d14a3deb8054cdaa529ffbf02d9b262)",
+        "Linker: LLD 18.0.3",
+        "Android (12470979, +pgo, +bolt, +lto, +mlgo, based on r522817c) clang version 18.0.3 (https://android.googlesource.com/toolchain/llvm-project d8003a456d14a3deb8054cdaa529ffbf02d9b262)"
+      ],
+      "dt_needed": [
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "cpp_dynamic_undefined_by_abi": {
+        "arm64-v8a": 3,
+        "armeabi-v7a": 3,
+        "x86_64": 3
+      },
+      "cpp_imports_resolved_by_packaged_libcxx_by_abi": {
+        "arm64-v8a": 0,
+        "armeabi-v7a": 0,
+        "x86_64": 0
+      },
+      "cpp_imports_resolved_by_api26_bionic_by_abi": {
+        "arm64-v8a": 3,
+        "armeabi-v7a": 3,
+        "x86_64": 3
+      },
+      "missing_strong_cpp_by_abi": {
+        "arm64-v8a": [],
+        "armeabi-v7a": [],
+        "x86_64": []
+      },
+      "unresolved_weak_cpp_by_abi": {
+        "arm64-v8a": [],
+        "armeabi-v7a": [],
+        "x86_64": []
+      }
+    },
+    "libmediakitandroidhelper.so": {
+      "android_ident_by_abi": {
+        "arm64-v8a": {
+          "api": 21,
+          "ndk_release": "r27c",
+          "ndk_build": "12479018"
+        },
+        "armeabi-v7a": {
+          "api": 21,
+          "ndk_release": "r27c",
+          "ndk_build": "12479018"
+        },
+        "x86_64": {
+          "api": 21,
+          "ndk_release": "r27c",
+          "ndk_build": "12479018"
+        }
+      },
+      "compiler_comments": [
+        "Linker: LLD 18.0.3",
+        "Android (12470979, +pgo, +bolt, +lto, +mlgo, based on r522817c) clang version 18.0.3 (https://android.googlesource.com/toolchain/llvm-project d8003a456d14a3deb8054cdaa529ffbf02d9b262)"
+      ],
+      "dt_needed": [
+        "liblog.so",
+        "libandroid.so",
+        "libm.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "cpp_dynamic_undefined_by_abi": {
+        "arm64-v8a": 2,
+        "armeabi-v7a": 2,
+        "x86_64": 2
+      },
+      "cpp_imports_resolved_by_packaged_libcxx_by_abi": {
+        "arm64-v8a": 0,
+        "armeabi-v7a": 0,
+        "x86_64": 0
+      },
+      "cpp_imports_resolved_by_api26_bionic_by_abi": {
+        "arm64-v8a": 2,
+        "armeabi-v7a": 2,
+        "x86_64": 2
+      },
+      "missing_strong_cpp_by_abi": {
+        "arm64-v8a": [],
+        "armeabi-v7a": [],
+        "x86_64": []
+      },
+      "unresolved_weak_cpp_by_abi": {
+        "arm64-v8a": [],
+        "armeabi-v7a": [],
+        "x86_64": []
+      }
+    },
+    "libmedia_kit_dataspace_vendor.so": {
+      "android_ident_by_abi": {
+        "arm64-v8a": {
+          "api": 21,
+          "ndk_release": "r28c",
+          "ndk_build": "13676358"
+        },
+        "armeabi-v7a": {
+          "api": 21,
+          "ndk_release": "r28c",
+          "ndk_build": "13676358"
+        },
+        "x86_64": {
+          "api": 21,
+          "ndk_release": "r28c",
+          "ndk_build": "13676358"
+        }
+      },
+      "compiler_comments": [
+        "Android (13624864, +pgo, +bolt, +lto, +mlgo, based on r530567e) clang version 19.0.1 (https://android.googlesource.com/toolchain/llvm-project 97a699bf4812a18fb657c2779f5296a4ab2694d2)",
+        "Linker: LLD 19.0.1"
+      ],
+      "dt_needed": [
+        "libandroid.so",
+        "libdl.so",
+        "liblog.so",
+        "libEGL.so",
+        "libm.so",
+        "libc.so"
+      ],
+      "cpp_dynamic_undefined_by_abi": {
+        "arm64-v8a": 2,
+        "armeabi-v7a": 2,
+        "x86_64": 2
+      },
+      "cpp_imports_resolved_by_packaged_libcxx_by_abi": {
+        "arm64-v8a": 0,
+        "armeabi-v7a": 0,
+        "x86_64": 0
+      },
+      "cpp_imports_resolved_by_api26_bionic_by_abi": {
+        "arm64-v8a": 2,
+        "armeabi-v7a": 2,
+        "x86_64": 2
+      },
+      "missing_strong_cpp_by_abi": {
+        "arm64-v8a": [],
+        "armeabi-v7a": [],
+        "x86_64": []
+      },
+      "unresolved_weak_cpp_by_abi": {
+        "arm64-v8a": [],
+        "armeabi-v7a": [],
+        "x86_64": []
+      }
+    },
+    "libcnativeapi.so": {
+      "android_ident_by_abi": {
+        "arm64-v8a": {
+          "api": 26,
+          "ndk_release": "r27d",
+          "ndk_build": "13750724"
+        },
+        "armeabi-v7a": {
+          "api": 26,
+          "ndk_release": "r27d",
+          "ndk_build": "13750724"
+        },
+        "x86_64": {
+          "api": 26,
+          "ndk_release": "r27d",
+          "ndk_build": "13750724"
+        }
+      },
+      "compiler_comments": [
+        "Android (13691557, +pgo, +bolt, +lto, +mlgo, based on r522817d) clang version 18.0.4 (https://android.googlesource.com/toolchain/llvm-project d8003a456d14a3deb8054cdaa529ffbf02d9b262)",
+        "Linker: LLD 18.0.4"
+      ],
+      "dt_needed": [
+        "libc++_shared.so",
+        "liblog.so",
+        "libandroid.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "cpp_dynamic_undefined_by_abi": {
+        "arm64-v8a": 96,
+        "armeabi-v7a": 97,
+        "x86_64": 96
+      },
+      "cpp_imports_resolved_by_packaged_libcxx_by_abi": {
+        "arm64-v8a": 94,
+        "armeabi-v7a": 95,
+        "x86_64": 94
+      },
+      "cpp_imports_resolved_by_api26_bionic_by_abi": {
+        "arm64-v8a": 2,
+        "armeabi-v7a": 2,
+        "x86_64": 2
+      },
+      "missing_strong_cpp_by_abi": {
+        "arm64-v8a": [],
+        "armeabi-v7a": [],
+        "x86_64": []
+      },
+      "unresolved_weak_cpp_by_abi": {
+        "arm64-v8a": [],
+        "armeabi-v7a": [],
+        "x86_64": []
+      }
+    },
+    "libmedia_kit_video_hdr_bridge.so": {
+      "android_ident_by_abi": {
+        "arm64-v8a": {
+          "api": 21,
+          "ndk_release": "r28c",
+          "ndk_build": "13676358"
+        },
+        "armeabi-v7a": {
+          "api": 21,
+          "ndk_release": "r28c",
+          "ndk_build": "13676358"
+        },
+        "x86_64": {
+          "api": 21,
+          "ndk_release": "r28c",
+          "ndk_build": "13676358"
+        }
+      },
+      "compiler_comments": [
+        "Android (13624864, +pgo, +bolt, +lto, +mlgo, based on r530567e) clang version 19.0.1 (https://android.googlesource.com/toolchain/llvm-project 97a699bf4812a18fb657c2779f5296a4ab2694d2)",
+        "Linker: LLD 19.0.1"
+      ],
+      "dt_needed": [
+        "libandroid.so",
+        "liblog.so",
+        "libdl.so",
+        "libEGL.so",
+        "libGLESv2.so",
+        "libm.so",
+        "libc.so"
+      ],
+      "cpp_dynamic_undefined_by_abi": {
+        "arm64-v8a": 2,
+        "armeabi-v7a": 2,
+        "x86_64": 2
+      },
+      "cpp_imports_resolved_by_packaged_libcxx_by_abi": {
+        "arm64-v8a": 0,
+        "armeabi-v7a": 0,
+        "x86_64": 0
+      },
+      "cpp_imports_resolved_by_api26_bionic_by_abi": {
+        "arm64-v8a": 2,
+        "armeabi-v7a": 2,
+        "x86_64": 2
+      },
+      "missing_strong_cpp_by_abi": {
+        "arm64-v8a": [],
+        "armeabi-v7a": [],
+        "x86_64": []
+      },
+      "unresolved_weak_cpp_by_abi": {
+        "arm64-v8a": [],
+        "armeabi-v7a": [],
+        "x86_64": []
+      }
+    },
+    "libmpv.so": {
+      "android_ident_by_abi": {
+        "arm64-v8a": {
+          "api": 26,
+          "ndk_release": "r27c",
+          "ndk_build": "12479018"
+        },
+        "armeabi-v7a": {
+          "api": 26,
+          "ndk_release": "r27c",
+          "ndk_build": "12479018"
+        },
+        "x86_64": {
+          "api": 26,
+          "ndk_release": "r27c",
+          "ndk_build": "12479018"
+        }
+      },
+      "compiler_comments": [],
+      "dt_needed": [
+        "libm.so",
+        "libandroid.so",
+        "libmediandk.so",
+        "libdl.so",
+        "libvulkan.so",
+        "libOpenSLES.so",
+        "libEGL.so",
+        "libc.so"
+      ],
+      "cpp_dynamic_undefined_by_abi": {
+        "arm64-v8a": 2,
+        "armeabi-v7a": 2,
+        "x86_64": 2
+      },
+      "cpp_imports_resolved_by_packaged_libcxx_by_abi": {
+        "arm64-v8a": 0,
+        "armeabi-v7a": 0,
+        "x86_64": 0
+      },
+      "cpp_imports_resolved_by_api26_bionic_by_abi": {
+        "arm64-v8a": 2,
+        "armeabi-v7a": 2,
+        "x86_64": 2
+      },
+      "missing_strong_cpp_by_abi": {
+        "arm64-v8a": [],
+        "armeabi-v7a": [],
+        "x86_64": []
+      },
+      "unresolved_weak_cpp_by_abi": {
+        "arm64-v8a": [],
+        "armeabi-v7a": [],
+        "x86_64": []
+      }
+    },
+    "libdartjni.so": {
+      "android_ident_by_abi": {
+        "arm64-v8a": {
+          "api": 21,
+          "ndk_release": "r28c",
+          "ndk_build": "13676358"
+        },
+        "armeabi-v7a": {
+          "api": 21,
+          "ndk_release": "r28c",
+          "ndk_build": "13676358"
+        },
+        "x86_64": {
+          "api": 21,
+          "ndk_release": "r28c",
+          "ndk_build": "13676358"
+        }
+      },
+      "compiler_comments": [
+        "Android (13624864, +pgo, +bolt, +lto, +mlgo, based on r530567e) clang version 19.0.1 (https://android.googlesource.com/toolchain/llvm-project 97a699bf4812a18fb657c2779f5296a4ab2694d2)",
+        "Linker: LLD 19.0.1"
+      ],
+      "dt_needed": [
+        "liblog.so",
+        "libm.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "cpp_dynamic_undefined_by_abi": {
+        "arm64-v8a": 2,
+        "armeabi-v7a": 2,
+        "x86_64": 2
+      },
+      "cpp_imports_resolved_by_packaged_libcxx_by_abi": {
+        "arm64-v8a": 0,
+        "armeabi-v7a": 0,
+        "x86_64": 0
+      },
+      "cpp_imports_resolved_by_api26_bionic_by_abi": {
+        "arm64-v8a": 2,
+        "armeabi-v7a": 2,
+        "x86_64": 2
+      },
+      "missing_strong_cpp_by_abi": {
+        "arm64-v8a": [],
+        "armeabi-v7a": [],
+        "x86_64": []
+      },
+      "unresolved_weak_cpp_by_abi": {
+        "arm64-v8a": [],
+        "armeabi-v7a": [],
+        "x86_64": []
+      }
+    }
+  },
+  "interpretation": [
+    "The APKs contain a real mixture of native toolchain stamps; do not describe all App plugins as compiled with NDK 27.2 or all as compiled with NDK 28.2.",
+    "HDR and vendor bridges have no DT_NEEDED libc++_shared.so. Their only C++-ABI-prefixed dynamic imports are __cxa_finalize@LIBC and __cxa_atexit@LIBC, both resolved by API26 Bionic, for all three ABIs.",
+    "libcnativeapi.so is the sole additional packaged library with DT_NEEDED libc++_shared.so. Its 96/97/96 C++ dynamic imports resolve: 94/95/94 via the exact packaged libc++ and 2 per ABI via API26 Bionic.",
+    "The packaged libc++ contains an r27-beta1/11883388 note and multiple compiler comments. Its package origin is established by exact byte equality after replaying AGP strip on the verified NDK27.2 producer JAR input; the embedded historical CRT note does not override that provenance.",
+    "No missing dynamic C++ symbol was found in these actual APKs. This static closure does not prove semantic ABI behavior, cross-library ownership safety, graphics behavior or device playback; those require runtime/device testing."
+  ],
+  "sources": [
+    {
+      "url": "https://github.com/Goodwu/media-kit/blob/d76622180dc9d082c9e690dd7d355f418627fb4a/media_kit_video/android/build.gradle",
+      "sha256": "2b90d3ac584769b45f60f2bb731939d9b987d2b8a37e0d5f49fed9bce2dc18e3"
+    },
+    {
+      "url": "https://github.com/Goodwu/media-kit/blob/d76622180dc9d082c9e690dd7d355f418627fb4a/libs/android/media_kit_android_dataspace_vendor/android/build.gradle",
+      "sha256": "6ba8c5705b09fa71148696dc84cf8d4f0f8391cadcb9dca2f037578f890e2c0c"
+    },
+    {
+      "url": "https://github.com/Goodwu/media-kit/blob/d76622180dc9d082c9e690dd7d355f418627fb4a/libs/android/media_kit_libs_android_video/android/build.gradle",
+      "sha256": "d35319dd6b2201eb32cc2b1e88e208191d987da93fab39753c4041a63c18e482"
+    },
+    {
+      "url": "https://github.com/flutter/flutter/blob/abaf9c523780a608bd46686fd5e53740a07077f8/packages/flutter_tools/gradle/src/main/kotlin/FlutterExtension.kt",
+      "sha256": "a8ca02d55798c200d766e245dae9df20565cb9d638d4887b51bf617abac938a1"
+    },
+    {
+      "url": "https://github.com/flutter/flutter/blob/abaf9c523780a608bd46686fd5e53740a07077f8/packages/flutter_tools/gradle/src/main/kotlin/FlutterPluginUtils.kt",
+      "sha256": "92f05b75bae280223c3cea04fceb8c7860c65a6b464399a5a51d71dfe90f0c05"
+    },
+    {
+      "url": "https://github.com/flutter/flutter/blob/abaf9c523780a608bd46686fd5e53740a07077f8/packages/flutter_tools/gradle/src/main/kotlin/tasks/ValidateCompileSdkVersionTask.kt",
+      "sha256": "5be216402d5cb379840a107b1227dde566203f00c96881c12e996025a0bcb61f"
+    },
+    {
+      "package": "jni-1.1.0",
+      "path": "android/build.gradle",
+      "file_sha256": "7a70fa8cb48b09cb272b7163e3268eaf82f0dd3dad4b6ca484fe6a9a9b135dc5",
+      "pubspec_lock_archive_sha256": "6b9ca0602fef0230e83149afbe3f9f8227e94f2bbe84a1da4f14d699742f402d"
+    },
+    {
+      "package": "jni-1.1.0",
+      "path": "src/CMakeLists.txt",
+      "file_sha256": "14eb8b434dbd454ce0f9eec04875a49c28cdc501e1c74340bd9ea68fe7762063",
+      "pubspec_lock_archive_sha256": "6b9ca0602fef0230e83149afbe3f9f8227e94f2bbe84a1da4f14d699742f402d"
+    },
+    {
+      "package": "cnativeapi-0.5.2",
+      "path": "hook/build.dart",
+      "file_sha256": "ae111c905fc33e6319621d829df5d775efef2f227b13dab636d9e84c67c1983f",
+      "pubspec_lock_archive_sha256": "251fb93cd7ec205445fa512ee5ddeb0b82b3273d071cfc0784ddffbbdebbf5d3"
+    }
+  ],
+  "detailed_symbol_evidence": {
+    "local_file": "/tmp/android-run6-ndk-cxx-symbol-detail.json",
+    "sha256": "7834c352164ebd30ddb8c8ffc182018340107965032bba2ade7ecc04bdeb912b",
+    "bytes": 196602
+  },
+  "audit_script": {
+    "local_file": "/tmp/audit-android-cxx-closure.py",
+    "sha256": "e94def75b0348f53922cc8a5b69533b65c7b5bf8709673531483fa8a9f862c0d"
+  },
+  "runtime_tested": false,
+  "device_tested": false
+}

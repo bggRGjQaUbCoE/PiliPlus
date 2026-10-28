@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import contextlib
+import hashlib
 import io
 import json
 from pathlib import Path
@@ -194,6 +195,236 @@ class SourceTests(unittest.TestCase):
         with self.assertRaises(profile.ProfileError):
             profile.apply_replacements(out, {"lib/main.dart": [("upstream application", "changed")]})
         self.assertEqual((external / "main.dart").read_bytes(), before)
+
+
+class SdkBuildInfoMigrationTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.workspace = Path(self.temp.name).resolve()
+        self.profile = ohos.helper("build_profile")
+        self.migration = self.profile.SDK_BUILDINFO_MIGRATION
+        self.body = b'{"string":[{"name":"enable_impeller","value":"true"}]}\n'
+        self.blob = hashlib.sha1(b"blob " + str(len(self.body)).encode() + b"\0" + self.body).hexdigest()
+        self.source = self.write(self.migration["source"], self.body)
+        self.destination = self.workspace / self.migration["destination"]
+        self.destination.parent.mkdir(parents=True)
+        self.write("lib/main.dart", b"void main() {}\n")
+        self.write("ohos/upstream-files.json", json.dumps({
+            self.migration["source"]: {"blob": self.blob},
+            "lib/main.dart": {"blob": hashlib.sha1(b"blob 15\0void main() {}\n").hexdigest()},
+        }).encode())
+        self.write("tool/ohos/sdk_compat/manifest.json", json.dumps({
+            key: self.migration["sdk"][key] for key in ("repository", "commit")
+        }).encode())
+
+    def write(self, relative, body):
+        path = self.workspace / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(body)
+        return path
+
+    def move(self):
+        self.source.rename(self.destination)
+
+    def test_exact_sdk_move_is_recorded_only_after_verified_hap(self):
+        self.move()
+        with self.assertRaisesRegex(self.profile.ProfileError, "Expected a regular"):
+            self.profile.generated_changes(self.workspace)
+        changes = self.profile.generated_changes(self.workspace, after_verified_hap=True)
+        self.assertEqual(len(changes), 1)
+        self.assertEqual(changes[0]["path"], self.migration["source"])
+        self.assertEqual(changes[0]["operation"], "move")
+        self.assertIsNone(changes[0]["generated_blob"])
+        self.assertEqual(changes[0]["destination"], self.migration["destination"])
+        self.assertEqual(changes[0]["destination_blob"], self.blob)
+        self.assertEqual(changes[0]["sdk"], self.migration["sdk"])
+
+    def test_move_requires_unchanged_contents(self):
+        self.move()
+        self.destination.write_bytes(self.body.replace(b"true", b"false"))
+        with self.assertRaisesRegex(self.profile.ProfileError, "changed the original"):
+            self.profile.generated_changes(self.workspace, after_verified_hap=True)
+
+    def test_other_missing_originals_still_fail_after_verified_hap(self):
+        self.move()
+        (self.workspace / "lib/main.dart").unlink()
+        with self.assertRaisesRegex(self.profile.ProfileError, "Expected a regular.*lib/main.dart"):
+            self.profile.generated_changes(self.workspace, after_verified_hap=True)
+
+    def test_missing_destination_is_not_a_completed_move(self):
+        self.source.unlink()
+        with self.assertRaisesRegex(self.profile.ProfileError, "Expected a regular.*rawfile"):
+            self.profile.generated_changes(self.workspace, after_verified_hap=True)
+
+    def test_destination_symlink_is_rejected(self):
+        self.source.unlink()
+        target = self.write("same-bytes.json", self.body)
+        self.destination.symlink_to(target)
+        with self.assertRaisesRegex(self.profile.ProfileError, "does not follow symlinks"):
+            self.profile.generated_changes(self.workspace, after_verified_hap=True)
+
+    def test_source_symlink_is_not_treated_as_sdk_deletion(self):
+        self.move()
+        self.source.symlink_to(self.workspace / "missing.json")
+        with self.assertRaisesRegex(self.profile.ProfileError, "does not follow symlinks"):
+            self.profile.generated_changes(self.workspace, after_verified_hap=True)
+
+    def test_sdk_change_requires_migration_review(self):
+        self.move()
+        manifest = self.workspace / "tool/ohos/sdk_compat/manifest.json"
+        metadata = json.loads(manifest.read_text())
+        metadata["commit"] = "0" * 40
+        manifest.write_text(json.dumps(metadata))
+        with self.assertRaisesRegex(self.profile.ProfileError, "changed OHOS SDK"):
+            self.profile.generated_changes(self.workspace, after_verified_hap=True)
+
+
+class ApprovedIntegrationTests(unittest.TestCase):
+    def setUp(self):
+        self.fixture = SourceTests()
+        self.fixture.setUp()
+        self.addCleanup(self.fixture.tearDown)
+        self.root, self.parent = self.fixture.root, self.fixture.parent
+        self.git, self.write, self.commit = self.fixture.git, self.fixture.write, self.fixture.commit
+        self.write("lib/main.dart", "void main() { MediaKit.ensureInitialized(); /* integrated */ }\n")
+        self.write("pubspec_overrides.yaml", "dependency_overrides:\n  media_kit:\n    path: ../media-kit/media_kit\n")
+        self.commit("approved application integration")
+        self.approved_base = self.git("rev-parse", "HEAD").strip()
+        self.rules = ohos.helper("source_policy")
+        self.policy = {
+            "schema": 1, "mode": self.rules.MODE,
+            "baseline_commit": self.approved_base,
+            "baseline_tree": self.git("rev-parse", "HEAD^{tree}").strip(),
+            "mutable_paths": ["tool/ohos/", "tool/native/", ".github/workflows/", "docs/"],
+            "integration": {"name": "committed-player", "files": {
+                "lib/main.dart": self.rules.sha256((self.root / "lib/main.dart").read_bytes())}},
+            "dependencies": {
+                "lock_sha256": self.rules.sha256((self.root / "pubspec.lock").read_bytes()),
+                "overrides_sha256": self.rules.sha256((self.root / "pubspec_overrides.yaml").read_bytes()),
+                "recipe_sha256": self.rules.sha256(Path(__file__).with_name("dependencies.json").read_bytes()),
+                "compatibility_decisions": [{"package": "fixture", "reason": "explicit OHOS dependency conversion"}],
+            },
+        }
+        self.save_policy()
+
+    def save_policy(self):
+        self.write(self.rules.DEFAULT_MANIFEST, json.dumps(self.policy, indent=2) + "\n")
+        self.policy_sha = self.rules.sha256((self.root / self.rules.DEFAULT_MANIFEST).read_bytes())
+        self.commit("pin integration source policy")
+
+    def check(self, **kwargs):
+        return ohos.check_source(self.root, None, source_policy=self.rules.MODE,
+                                 policy_sha256=self.policy_sha, **kwargs)
+
+    def export(self, name="approved export"):
+        out = self.parent / name
+        return out, ohos.prepare(self.root, out, None, "HEAD", source_policy=self.rules.MODE,
+                                 policy_sha256=self.policy_sha)
+
+    def test_existing_integration_needs_explicit_mode_and_policy_hash(self):
+        self.assertEqual(ohos.check_source(self.root, None)["status"], "fail")
+        self.assertEqual(self.check()["status"], "pass")
+        with self.assertRaisesRegex(RuntimeError, "explicit source-policy SHA256"):
+            ohos.check_source(self.root, None, source_policy=self.rules.MODE)
+        with self.assertRaisesRegex(RuntimeError, "SHA256 mismatch"):
+            ohos.check_source(self.root, None, source_policy=self.rules.MODE, policy_sha256="0" * 64)
+
+    def test_only_committed_build_metadata_changes_are_permitted(self):
+        self.write("tool/native/lock.json", "{}\n")
+        self.write("docs/ci.md", "documented native pipeline\n")
+        self.commit("build orchestration")
+        report = self.check()
+        self.assertEqual(report["status"], "pass")
+        self.assertIn("tool/native/lock.json", report["approved_build_metadata_changes"])
+        self.write("lib/unreviewed.dart", "// additional runtime source\n")
+        self.commit("unreviewed application addition")
+        report = self.check()
+        self.assertEqual(report["status"], "fail")
+        self.assertEqual(report["unapproved_additions"], ["lib/unreviewed.dart"])
+        with self.assertRaisesRegex(ohos.CheckError, "Approved application source"):
+            self.export()
+
+    def test_changed_application_commit_is_not_accepted_by_the_old_approval(self):
+        self.write("lib/main.dart", "void main() { /* changed after approval */ }\n")
+        self.commit("application change needs review")
+        report = self.check()
+        self.assertEqual(report["original_file_changes"], ["lib/main.dart"])
+        self.assertEqual(report["status"], "fail")
+
+    def test_worktree_and_hidden_staged_changes_still_fail(self):
+        original = (self.root / "lib/main.dart").read_bytes()
+        self.write("lib/main.dart", "// staged source drift\n")
+        self.git("add", "lib/main.dart")
+        self.write("lib/main.dart", original)
+        report = self.check()
+        self.assertEqual(report["worktree_changes"], ["lib/main.dart"])
+        with self.assertRaises(ohos.CheckError):
+            self.export()
+        self.assertFalse((self.parent / "approved export").exists())
+
+    def test_uncommitted_policy_replacement_cannot_select_another_approval(self):
+        self.write(self.rules.DEFAULT_MANIFEST, "{}\n")
+        report = self.check()
+        self.assertEqual(report["status"], "fail")
+        self.assertEqual(report["worktree_changes"], [self.rules.DEFAULT_MANIFEST])
+
+    def test_policy_cannot_allow_runtime_paths_or_claim_a_different_baseline_hash(self):
+        self.policy["mutable_paths"].append("lib/")
+        self.save_policy()
+        with self.assertRaisesRegex(RuntimeError, "build-tool/documentation"):
+            self.check()
+        self.policy["mutable_paths"].remove("lib/")
+        self.policy["integration"]["files"]["lib/main.dart"] = "0" * 64
+        self.save_policy()
+        with self.assertRaisesRegex(ohos.CheckError, "file hash differs"):
+            self.check()
+
+    def test_export_preserves_current_source_and_binds_its_inventory(self):
+        self.write("local-signing.p12", "untracked secret, never exported")
+        out, report = self.export()
+        self.assertEqual((out / "lib/main.dart").read_bytes(), (self.root / "lib/main.dart").read_bytes())
+        self.assertFalse((out / "local-signing.p12").exists())
+        self.assertEqual(report["snapshot_baseline_commit"], self.git("rev-parse", "HEAD").strip())
+        self.assertEqual(report["source_policy"]["manifest_sha256"], self.policy_sha)
+        profile = ohos.helper("build_profile")
+        self.assertEqual(profile.generated_changes(out), [])
+        self.assertEqual(profile.validate_workspace(out)["status"], "pass")
+        ledger = out / "ohos/upstream-files.json"
+        ledger.write_text("{}\n")
+        with self.assertRaisesRegex(profile.ProfileError, "inventory changed"):
+            profile.validate_workspace(out)
+
+    def test_approved_dependency_lock_and_overrides_are_bound_and_preserved(self):
+        out, _ = self.export()
+        dependencies = ohos.helper("dependencies")
+        manifest = json.loads(dependencies.MANIFEST.read_text())
+        inputs = dependencies.dependency_inputs(out, manifest)
+        self.assertEqual(inputs["mode"], self.rules.MODE)
+        original = (out / "pubspec_overrides.yaml").read_bytes()
+        dependencies.write_overrides(out, {"media_kit": {"path": ".ohos-media-sdk/media_kit"}}, inputs)
+        self.assertEqual((out / "ohos/source-pubspec-overrides.yaml").read_bytes(), original)
+        self.assertEqual((self.root / "pubspec_overrides.yaml").read_bytes(), original)
+        self.assertIn(".ohos-media-sdk/media_kit", (out / "pubspec_overrides.yaml").read_text())
+
+    def test_dependency_lock_or_override_drift_is_rejected(self):
+        dependencies = ohos.helper("dependencies")
+        manifest = json.loads(dependencies.MANIFEST.read_text())
+        for filename in ("pubspec.lock", "pubspec_overrides.yaml"):
+            with self.subTest(filename=filename):
+                out, _ = self.export(filename + " export")
+                (out / filename).write_text("changed after source preparation\n")
+                with self.assertRaises(RuntimeError):
+                    dependencies.dependency_inputs(out, manifest)
+
+    def test_legacy_dependency_policy_does_not_implicitly_replace_overrides(self):
+        out, _ = self.export()
+        source = json.loads((out / "ohos/source-manifest.json").read_text())
+        source["source_policy"] = {"mode": "addition-only"}
+        (out / "ohos/source-manifest.json").write_text(json.dumps(source))
+        dependencies = ohos.helper("dependencies")
+        with self.assertRaisesRegex(RuntimeError, "without an approved source policy"):
+            dependencies.dependency_inputs(out, {"baseline_lock_sha256": self.policy["dependencies"]["lock_sha256"]})
 
 
 class ToolchainTests(unittest.TestCase):

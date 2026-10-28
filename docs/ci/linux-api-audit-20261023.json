@@ -1,0 +1,190 @@
+{
+  "checker": {
+    "path": "tool/native/check_api.py",
+    "sha256": "81fbbc126edfc86acaf32b2185315a29eb42de09276ff4f4c9ae12505fbcfce5"
+  },
+  "date": "2026-10-23",
+  "limitations": [
+    "The runtime/header compatibility check covers the reviewed current Dart public-client subset, not every historical generated declaration.",
+    "No properties/options, GPU rendering, playback or physical-device acceptance is claimed.",
+    "This does not establish that the upstream headers and library were built from the same source commit."
+  ],
+  "media_kit": {
+    "equivalent_remote_commit": "2d922f0ed79073b2d2d0574746dbda36060a23cb",
+    "local_commit": "13fbf41927060173da73cb482d611e6e30567592",
+    "repository": "Goodwu/media-kit",
+    "tree": "e042b01b3deaa036005bc99f2709443202a2a813"
+  },
+  "packages": {
+    "source": {
+      "header": {
+        "api": {
+          "major": 2,
+          "minor": 6,
+          "value": 131078
+        },
+        "sha256": "f3b50c3d844128ffd078e2c15c56fafac1d49f54f18a1c50552f93f5aa731916"
+      },
+      "native_process_exit_code": 0,
+      "non_generated_dart_files_scanned": 172,
+      "package": {
+        "architectures": [
+          "x86_64"
+        ],
+        "capabilities": [
+          "libmpv",
+          "opengl",
+          "egl",
+          "vaapi",
+          "alsa",
+          "pulseaudio",
+          "mpv.pl-dovi-linear-disable",
+          "mpv.lavf-initial-dovi-hvcc"
+        ],
+        "identity_sha256": "ae4071af9f15e66f1d6d3ededfab128821cd687a8734e4c1d9dbb8607bcadfaa",
+        "manifest_sha256": "7b630c36c046a5d594219916c1a304e9e50739a95496e48741322dec4073e6fc",
+        "platform": "linux",
+        "profile": "piliplus-linux-source-v1",
+        "validation": {
+          "compiled": true,
+          "device": false,
+          "runtime": false
+        }
+      },
+      "probe": {
+        "api_compatible": true,
+        "created": true,
+        "destroyed": true,
+        "device": false,
+        "load": true,
+        "missing_symbols": [],
+        "optional_symbols": {
+          "mpv_mediakit_get_property_strings": true
+        },
+        "playback": false,
+        "required_symbols_present": true,
+        "runtime_api": {
+          "major": 2,
+          "minor": 6,
+          "value": 131078
+        },
+        "stage": "complete"
+      },
+      "report_sha256": "e8deac9fa8dd6de95add5b2b9a728ecde54c6228ad15c53fa43537dc8994b7b6",
+      "required_symbols": [
+        "mpv_client_api_version",
+        "mpv_command",
+        "mpv_command_async",
+        "mpv_command_ret",
+        "mpv_command_string",
+        "mpv_create",
+        "mpv_error_string",
+        "mpv_free",
+        "mpv_free_node_contents",
+        "mpv_get_property",
+        "mpv_get_property_string",
+        "mpv_hook_add",
+        "mpv_hook_continue",
+        "mpv_initialize",
+        "mpv_observe_property",
+        "mpv_request_event",
+        "mpv_request_log_messages",
+        "mpv_set_option_string",
+        "mpv_set_property",
+        "mpv_set_property_async",
+        "mpv_set_property_string",
+        "mpv_set_wakeup_callback",
+        "mpv_terminate_destroy",
+        "mpv_unobserve_property",
+        "mpv_wait_event",
+        "mpv_wakeup"
+      ]
+    },
+    "upstream": {
+      "header": {
+        "api": {
+          "major": 2,
+          "minor": 3,
+          "value": 131075
+        },
+        "sha256": "c34c436b54201ba84655dcbb6226f937b53d04fa0abcceaa08886565a569bd88"
+      },
+      "native_process_exit_code": 0,
+      "non_generated_dart_files_scanned": 172,
+      "package": {
+        "architectures": [
+          "x86_64"
+        ],
+        "capabilities": [
+          "libmpv",
+          "opengl"
+        ],
+        "identity_sha256": "69bf7869e364eecb12c084d2dd6653f886f3c94dc27dca310aa5aeaaa703be1e",
+        "manifest_sha256": "53f5b518ea18ee1263e4c8d51f393797c8db15226f03d4a249502d55bd567859",
+        "platform": "linux",
+        "profile": "predidit-20260810",
+        "validation": {
+          "compiled": false,
+          "device": false,
+          "runtime": false
+        }
+      },
+      "probe": {
+        "api_compatible": true,
+        "created": true,
+        "destroyed": true,
+        "device": false,
+        "load": true,
+        "missing_symbols": [],
+        "optional_symbols": {
+          "mpv_mediakit_get_property_strings": false
+        },
+        "playback": false,
+        "required_symbols_present": true,
+        "runtime_api": {
+          "major": 2,
+          "minor": 5,
+          "value": 131077
+        },
+        "stage": "complete"
+      },
+      "report_sha256": "84c6bfd8eba699e8af13286bf7bb3f23863f93d003c917c9ff3415e7410b90aa",
+      "required_symbols": [
+        "mpv_client_api_version",
+        "mpv_command",
+        "mpv_command_async",
+        "mpv_command_ret",
+        "mpv_command_string",
+        "mpv_create",
+        "mpv_error_string",
+        "mpv_free",
+        "mpv_free_node_contents",
+        "mpv_get_property",
+        "mpv_get_property_string",
+        "mpv_hook_add",
+        "mpv_hook_continue",
+        "mpv_initialize",
+        "mpv_observe_property",
+        "mpv_request_event",
+        "mpv_request_log_messages",
+        "mpv_set_option_string",
+        "mpv_set_property",
+        "mpv_set_property_async",
+        "mpv_set_property_string",
+        "mpv_set_wakeup_callback",
+        "mpv_terminate_destroy",
+        "mpv_unobserve_property",
+        "mpv_wait_event",
+        "mpv_wakeup"
+      ]
+    }
+  },
+  "reviewed_profile": {
+    "bindings_declared_api": 65645,
+    "bindings_lf_sha256": "9c0103980f38576423a76566c3613b05a9b8aac37ade9fdc3e3bc9e3ec3ef612",
+    "name": "media-kit-compat-libmpv-2",
+    "runtime_major": 2
+  },
+  "schema": 1,
+  "scope": "local-native-linux-x86_64-client-subset-check"
+}

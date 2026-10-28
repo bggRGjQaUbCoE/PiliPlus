@@ -1,0 +1,303 @@
+{
+  "schema": 1,
+  "date": "2026-10-23",
+  "kind": "downloaded-android-source-native-package-audit",
+  "scope": "Actual four-ABI source build, development SDK export, sealed transport and independent complete consumer verification; no Android device/runtime acceptance",
+  "application_commit": "01257f9e933bda7add3ed4639c8336dddd7b32ba",
+  "media_kit_commit": "d76622180dc9d082c9e690dd7d355f418627fb4a",
+  "producer_commit": "3605f300ecfe16bc084addd0b403d2cd55ef6a81",
+  "run_url": "https://github.com/Goodwu/PiliPlus/actions/runs/39984863955",
+  "artifact_url": "https://github.com/Goodwu/PiliPlus/actions/runs/39984863955/artifacts/12517172496",
+  "audit": {
+    "run": 39984863955,
+    "job": 120521361916,
+    "artifact": {
+      "id": 12517172496,
+      "bytes": 283797854,
+      "sha256": "309bb106aa23dceb428828c5ef36ff66014b2a04e571cea5920c58b182d52147"
+    },
+    "verified_at": "2026-10-23T16:55:05.054420+00:00",
+    "receipt": {
+      "archive_sha256": "8156f346f813fa28e17dd7daa8ca661df43a052baaa5b68cb87a21b2e5473f08",
+      "identity_sha256": "eeabbbcc86548067ef3d127805cdc2d012cd8ce915e0062de97be1040a83b9f1",
+      "inputs_sha256": "403003b458659438312843ecaccb60dc8cef78e09e5a6219faa570ce7783a15b",
+      "manifest_sha256": "32c1f5ee89aecfa911bd4ead36fd3f3ba582e1d33ab5ea3c264cbc369fca1f99",
+      "mode": "source",
+      "platform": "android",
+      "schema": 1
+    },
+    "verification": {
+      "command": "tool/native/ci.py consume --platform android --mode source",
+      "exit_code": 0,
+      "outer_zip_digest_matches_github": true,
+      "transport_archive_digest_matches_receipt": true,
+      "full_inventory_and_layout_passed": true,
+      "source_lock_policy_passed": true,
+      "result": {
+        "architectures": [
+          "arm64-v8a",
+          "armeabi-v7a",
+          "x86",
+          "x86_64"
+        ],
+        "capabilities": [
+          "mpv.lavf-initial-dovi-hvcc",
+          "mpv.pl-dovi-linear-disable",
+          "mpv.pl-external-yuv"
+        ],
+        "platform": "android",
+        "profile": "goodwu-android-dv",
+        "validation": {
+          "compiled": true,
+          "device": false,
+          "runtime": false
+        },
+        "root": "/tmp/android-run6-verified/root",
+        "manifest": "/tmp/android-run6-verified/root/manifest.json",
+        "manifest_sha256": "32c1f5ee89aecfa911bd4ead36fd3f3ba582e1d33ab5ea3c264cbc369fca1f99",
+        "identity_sha256": "eeabbbcc86548067ef3d127805cdc2d012cd8ce915e0062de97be1040a83b9f1",
+        "layout": {
+          "jars": {
+            "arm64-v8a": {
+              "path": "/tmp/android-run6-verified/root/runtime/default-arm64-v8a.jar",
+              "sha256": "6e6168cf515722409effdca94ee541050e8f5481a6f2e653b6a76d49a18646cf"
+            },
+            "armeabi-v7a": {
+              "path": "/tmp/android-run6-verified/root/runtime/default-armeabi-v7a.jar",
+              "sha256": "bc4c8fe2e700ea550794f7851c90649189e09207a3354ac9fec6362f77a056b7"
+            },
+            "x86": {
+              "path": "/tmp/android-run6-verified/root/runtime/default-x86.jar",
+              "sha256": "f558cd196e47af9c38f2e9da7dc90080a05bc996c277d8e44ec74e22ff3b4fb3"
+            },
+            "x86_64": {
+              "path": "/tmp/android-run6-verified/root/runtime/default-x86_64.jar",
+              "sha256": "d4e0846d13354c98c550bb917e35a3c0e04b33108c08f67bc09d168157d9e946"
+            }
+          },
+          "sdk_prefixes": {
+            "arm64-v8a": "/tmp/android-run6-verified/root/sdk/arm64-v8a",
+            "armeabi-v7a": "/tmp/android-run6-verified/root/sdk/armeabi-v7a",
+            "x86": "/tmp/android-run6-verified/root/sdk/x86",
+            "x86_64": "/tmp/android-run6-verified/root/sdk/x86_64"
+          }
+        }
+      }
+    },
+    "identity": {
+      "options": {
+        "android_api": 26,
+        "artifact_types": [
+          "runtime",
+          "development-sdk"
+        ],
+        "ci_inputs_sha256": "403003b458659438312843ecaccb60dc8cef78e09e5a6219faa570ce7783a15b",
+        "flavor": "default",
+        "mpv_config_sha256": {
+          "arm64-v8a": "aca9b6b3b78f8241b046cb05a6bebcbd345d6741a98b34c3c7a02a2518686811",
+          "armeabi-v7a": "aca9b6b3b78f8241b046cb05a6bebcbd345d6741a98b34c3c7a02a2518686811",
+          "x86": "aca9b6b3b78f8241b046cb05a6bebcbd345d6741a98b34c3c7a02a2518686811",
+          "x86_64": "aca9b6b3b78f8241b046cb05a6bebcbd345d6741a98b34c3c7a02a2518686811"
+        },
+        "sdk_libmpv": "packaged-runtime",
+        "stl": "c++_shared"
+      },
+      "origin": "source",
+      "patches": {
+        "patches/ffmpeg/ffmpeg-hls-kazumi-combined.patch": "e776d1512c1316f457caec799555d25b7cf0916fb733277133e45fcbacda568a",
+        "patches/libplacebo/fix_gles_shader_compile_error.patch": "bea829fa3878a14495e19e2f3f2b1767e532d45a75deed73f96293b14bdc9270",
+        "patches/libplacebo/fix_shaderc_vulkan_dismatch.patch": "ad5e5690f3b31c66d77bcf0e23f0349a20767ae7386c18a5326367975aaaa1f7",
+        "patches/mpv/mpv_lavc_set_java_vm.patch": "f31987340793c47bc496c4908f44c3c2ba57128343a2145255fca5b952b90ff6",
+        "patches/mpv/mpv_restore_tls_verify_default.patch": "5830e49b54fddf8d5406b9758415e227520e5fb30a72d93cfa48610df374d37b"
+      },
+      "recipe": {
+        "commit": "3605f300ecfe16bc084addd0b403d2cd55ef6a81",
+        "repository": "https://github.com/Goodwu/libmpv-android-video-build-dv-experiment.git",
+        "tree": "e98f63c20b83da7745aa6826067407c4e33b8e8c"
+      },
+      "sources": {
+        "dav1d": {
+          "commit": "676a864a11af2c0522e1f992e770589543894686",
+          "repository": "https://code.videolan.org/videolan/dav1d.git",
+          "submodules": "",
+          "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tree": "65da0bf96ec68ae50665345ed934ecab308179b5"
+        },
+        "ffmpeg": {
+          "commit": "9aba43cfbee182ade060cdccbe15340a0fbe3e83",
+          "repository": "https://github.com/Goodwu/FFmpeg.git",
+          "submodules": "",
+          "tracked_diff_sha256": "3242f7a00a0bf7aacf24acf855735461fa77fc174b2075edb4f073ec14a0868b",
+          "tree": "48f0b23552271d95b9ceaa6843d9acbc72024988"
+        },
+        "freetype": {
+          "commit": "de8b92dd7ec634e9e2b25ef534c54a3537555c11",
+          "repository": "https://gitlab.freedesktop.org/freetype/freetype.git",
+          "submodules": "d142e646e263c89f93663e027c2f0d03739ab42d subprojects/dlg (v0.2.2-38-gd142e64)",
+          "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tree": "4b3e621364527dc640081afefdfe861b287a9845"
+        },
+        "fribidi": {
+          "commit": "6428d8469e536bcbb6e12c7b79ba6659371c435a",
+          "repository": "https://github.com/fribidi/fribidi.git",
+          "submodules": "",
+          "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tree": "66ddf35c13034f07b5f94f04b6465b3fe7f8701a"
+        },
+        "harfbuzz": {
+          "commit": "a321c4fee56b15247c10f9aa3db7e7ccb3b8173b",
+          "repository": "https://github.com/harfbuzz/harfbuzz.git",
+          "submodules": "",
+          "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tree": "97761d2f654989758434192dfba0e88ba6ce4458"
+        },
+        "lcms2": {
+          "commit": "5176347635785e53ee5cee92328f76fda766ecc6",
+          "repository": "https://github.com/mm2/Little-CMS.git",
+          "submodules": "",
+          "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tree": "01d9f13d80bbad5690fbba272510b755a76f2f3b"
+        },
+        "libass": {
+          "commit": "e8ad72accd3a84268275a9385beb701c9284e5b3",
+          "repository": "https://github.com/libass/libass.git",
+          "submodules": "",
+          "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tree": "eab3bd56da74caec6249a2de4cdfe53d85e2be50"
+        },
+        "libplacebo": {
+          "commit": "ea700489fbf27703d8c1f64874a1c6138f17ad28",
+          "repository": "https://github.com/Goodwu/libplacebo.git",
+          "submodules": "74d8a6cb930c68ef617b202c3ff3c59d919e086b 3rdparty/Vulkan-Headers (v1.4.345)\n 97b54ca9e75f5303507699d27c6b4f4efe4641a1 3rdparty/fast_float (v6.1.0-275-g97b54ca)\n 73db193f853e2ee079bf3ca8a64aa2eaf6459043 3rdparty/glad (v0.1.11a-302-g73db193)\n 15206881c006c79667fe5154fe80c01c65410679 3rdparty/jinja (3.1.6)\n 297fc8e356e6836a62087949245d09a28e9f1b13 3rdparty/markupsafe (3.0.3)\n 242f35efa067a46c595645eeda7b1771ea1f83b1 demos/3rdparty/nuklear (4.12.8)",
+          "tracked_diff_sha256": "ed2e959046cf5ca656108758f578d03806455f867bd682800a874cca2fdb4d20",
+          "tree": "178c15385ae9f3e955a4fde49a6e6d499bf46f0a"
+        },
+        "libxml2": {
+          "commit": "f507d167f1755b7eaea09fb1a44d29aab828b6d1",
+          "repository": "https://github.com/GNOME/libxml2.git",
+          "submodules": "",
+          "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tree": "d0553a8037968f8f28001b1920dd3980af0fd648"
+        },
+        "mbedtls": {
+          "commit": "1873d3bfc2da771672bd8e7e8f41f57e0af77f33",
+          "repository": "https://github.com/Mbed-TLS/mbedtls.git",
+          "submodules": "",
+          "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "tree": "7401f86a914b9f8b14c558be199091e9eddea1aa"
+        },
+        "media-kit-android-helper": {
+          "commit": "b768ce102cfa9b5ddec618bb939d689d1b0899fa",
+          "repository": "https://github.com/Predidit/media-kit-android-helper.git",
+          "submodules": "",
+          "tracked_diff_sha256": "e1c46c74235cd001160cb5ed05d878775e4422a4e97f1d5d45d0eb3a5220fe63",
+          "tree": "f5dcd75b172d65e301c5b8adf8ef3e28278f4720"
+        },
+        "mpv": {
+          "commit": "e0dc99d0467957ffc16c4afbb4e9f7c3f2a8667d",
+          "repository": "https://github.com/Goodwu/mpv.git",
+          "submodules": "",
+          "tracked_diff_sha256": "20a92b73f048a96ef7830c2fd65bf56b9a87ac43fa74e3b05e35a99af7f5b752",
+          "tree": "3f5f0bca12996e4c6c9dea152b334d49d86f80fd"
+        }
+      },
+      "toolchain": {
+        "compiler": "Android (12470979, +pgo, +bolt, +lto, +mlgo, based on r522817c) clang version 18.0.3 (https://android.googlesource.com/toolchain/llvm-project d8003a456d14a3deb8054cdaa529ffbf02d9b262)\nTarget: x86_64-unknown-linux-gnu\nThread model: posix\nInstalledDir: /home/runner/work/_temp/native-work/producer/buildscripts/sdk/android-sdk-linux/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/bin",
+        "compiler_files": {
+          "clang": "a871130d810536f7bb924c8aeaff57c66de27bed9b13d0ccafba25fdcc8bd02d",
+          "llvm-dis": "7396e7536a7f0c07287cee2d5ae5749b5405cce2e4799bb1a6e43dfc25daa62f",
+          "source.properties": "70f1c5165e6d997b18782a49cff71da7a3caacd0c4cd811da24c43359fb83cf6"
+        },
+        "ndk": "27.2.12479018",
+        "ndk_source_properties_sha256": "70f1c5165e6d997b18782a49cff71da7a3caacd0c4cd811da24c43359fb83cf6",
+        "shaderc_source": "selected-ndk/sources/third_party/shaderc"
+      }
+    },
+    "manifest_files": 2833,
+    "manifest_symlinks": 32,
+    "sdk_checks": {
+      "arm64-v8a": {
+        "archiveObjects": 1480,
+        "bitcodeObjects": 50,
+        "bitcodeTargetTriple": "aarch64-unknown-linux-android26",
+        "driverTargetTriple": "aarch64-unknown-linux-android26",
+        "elfFiles": 73,
+        "excludedLibtoolArchives": 2,
+        "relocatedPkgconfigFiles": 3,
+        "staticArchives": 19
+      },
+      "armeabi-v7a": {
+        "archiveObjects": 1517,
+        "bitcodeObjects": 50,
+        "bitcodeTargetTriple": "armv7-unknown-linux-android26",
+        "driverTargetTriple": "armv7a-unknown-linux-android26",
+        "elfFiles": 73,
+        "excludedLibtoolArchives": 2,
+        "relocatedPkgconfigFiles": 3,
+        "staticArchives": 19
+      },
+      "x86": {
+        "archiveObjects": 1428,
+        "bitcodeObjects": 50,
+        "bitcodeTargetTriple": "i686-unknown-linux-android26",
+        "driverTargetTriple": "i686-unknown-linux-android26",
+        "elfFiles": 73,
+        "excludedLibtoolArchives": 2,
+        "relocatedPkgconfigFiles": 3,
+        "staticArchives": 19
+      },
+      "x86_64": {
+        "archiveObjects": 1573,
+        "bitcodeObjects": 50,
+        "bitcodeTargetTriple": "x86_64-unknown-linux-android26",
+        "driverTargetTriple": "x86_64-unknown-linux-android26",
+        "elfFiles": 73,
+        "excludedLibtoolArchives": 2,
+        "relocatedPkgconfigFiles": 3,
+        "staticArchives": 19
+      }
+    },
+    "compiled_features": {
+      "arm64-v8a": {
+        "HAVE_LAVF_INITIAL_DOVI_HVCC": true,
+        "HAVE_PL_DOVI_LINEAR_DISABLE": true,
+        "HAVE_PL_DOVI_LINEAR_OPTIMIZE": false,
+        "HAVE_PL_EXTERNAL_YUV": true
+      },
+      "armeabi-v7a": {
+        "HAVE_LAVF_INITIAL_DOVI_HVCC": true,
+        "HAVE_PL_DOVI_LINEAR_DISABLE": true,
+        "HAVE_PL_DOVI_LINEAR_OPTIMIZE": false,
+        "HAVE_PL_EXTERNAL_YUV": true
+      },
+      "x86": {
+        "HAVE_LAVF_INITIAL_DOVI_HVCC": true,
+        "HAVE_PL_DOVI_LINEAR_DISABLE": true,
+        "HAVE_PL_DOVI_LINEAR_OPTIMIZE": false,
+        "HAVE_PL_EXTERNAL_YUV": true
+      },
+      "x86_64": {
+        "HAVE_LAVF_INITIAL_DOVI_HVCC": true,
+        "HAVE_PL_DOVI_LINEAR_DISABLE": true,
+        "HAVE_PL_DOVI_LINEAR_OPTIMIZE": false,
+        "HAVE_PL_EXTERNAL_YUV": true
+      }
+    },
+    "capabilities": [
+      "mpv.lavf-initial-dovi-hvcc",
+      "mpv.pl-dovi-linear-disable",
+      "mpv.pl-external-yuv"
+    ],
+    "validation": {
+      "compiled": true,
+      "device": false,
+      "runtime": false
+    }
+  },
+  "limitations": [
+    "The native SDK includes four ABIs; the application release targets are arm64-v8a, armeabi-v7a and x86_64.",
+    "Native source and development SDK validation does not establish Android application compilation, on-device playback, GPU, HDR or Dolby Vision output.",
+    "The API 26 deployment target belongs to this locked Android profile.",
+    "HAVE_PL_DOVI_LINEAR_OPTIMIZE is false in all four actual feature reports; it is not a required or claimed capability."
+  ]
+}

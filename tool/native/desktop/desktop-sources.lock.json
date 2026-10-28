@@ -1,0 +1,503 @@
+{
+  "linux": {
+    "ffmpeg_options": [
+      "--enable-shared",
+      "--disable-static",
+      "--enable-pic",
+      "--disable-doc",
+      "--disable-programs",
+      "--disable-debug",
+      "--disable-autodetect",
+      "--disable-gpl",
+      "--disable-nonfree",
+      "--enable-gnutls",
+      "--enable-libass",
+      "--enable-libdav1d",
+      "--enable-libdrm",
+      "--enable-vaapi",
+      "--enable-xlib",
+      "--enable-zlib",
+      "--enable-bzlib",
+      "--enable-lzma",
+      "--disable-vulkan"
+    ],
+    "libplacebo_options": [
+      "--buildtype=release",
+      "--default-library=shared",
+      "-Dopengl=enabled",
+      "-Dvulkan=disabled",
+      "-Dd3d11=disabled",
+      "-Dgl-proc-addr=enabled",
+      "-Dshaderc=disabled",
+      "-Dglslang=disabled",
+      "-Ddovi=enabled",
+      "-Dlibdovi=disabled",
+      "-Dlcms=enabled",
+      "-Dxxhash=enabled",
+      "-Dunwind=disabled",
+      "-Ddemos=false",
+      "-Dtests=false",
+      "-Dbench=false"
+    ],
+    "mpv_options": [
+      "--buildtype=release",
+      "--default-library=shared",
+      "-Dlibmpv=true",
+      "-Dcplayer=false",
+      "-Dbuild-date=false",
+      "-Dlua=disabled",
+      "-Djavascript=disabled",
+      "-Dgpl=true",
+      "-Dgl=enabled",
+      "-Dplain-gl=enabled",
+      "-Degl=enabled",
+      "-Dx11=enabled",
+      "-Degl-x11=enabled",
+      "-Dvaapi=enabled",
+      "-Dvaapi-x11=enabled",
+      "-Dvaapi-drm=enabled",
+      "-Ddrm=enabled",
+      "-Degl-drm=enabled",
+      "-Dgbm=enabled",
+      "-Dalsa=enabled",
+      "-Dpulse=enabled",
+      "-Dwayland=disabled",
+      "-Ddmabuf-wayland=disabled",
+      "-Degl-wayland=disabled",
+      "-Dvaapi-wayland=disabled",
+      "-Dpipewire=disabled",
+      "-Dvulkan=disabled",
+      "-Dshaderc=disabled",
+      "-Dspirv-cross=disabled",
+      "-Dlibarchive=enabled",
+      "-Duchardet=enabled",
+      "-Dlcms2=enabled",
+      "-Dlibbluray=disabled",
+      "-Ddvdnav=disabled",
+      "-Dcdda=disabled",
+      "-Dvapoursynth=disabled",
+      "-Dsixel=disabled",
+      "-Dcaca=disabled",
+      "-Dmanpage-build=disabled",
+      "-Dhtml-build=disabled",
+      "-Dpdf-build=disabled"
+    ],
+    "recipe": {
+      "commit": "e0dc99d0467957ffc16c4afbb4e9f7c3f2a8667d",
+      "repository": "https://github.com/Goodwu/mpv.git"
+    },
+    "sources": {
+      "ffmpeg": {
+        "commit": "9aba43cfbee182ade060cdccbe15340a0fbe3e83",
+        "repository": "https://github.com/Goodwu/FFmpeg.git"
+      },
+      "libplacebo": {
+        "commit": "ea700489fbf27703d8c1f64874a1c6138f17ad28",
+        "repository": "https://github.com/Goodwu/libplacebo.git"
+      },
+      "mpv": {
+        "commit": "e0dc99d0467957ffc16c4afbb4e9f7c3f2a8667d",
+        "repository": "https://github.com/Goodwu/mpv.git"
+      }
+    }
+  },
+  "schema": 1,
+  "windows": {
+    "archives": {
+      "libiconv": {
+        "recipe_hash": "SHA256=3B08F5F4F9B4EB82F151A7040BFD6FE6C6FB922EFE4B1659C66EA933276965E8",
+        "sha256": "3b08f5f4f9b4eb82f151a7040bfd6fe6c6fb922efe4b1659c66ea933276965e8",
+        "url": "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.18.tar.gz"
+      },
+      "lzo": {
+        "recipe_hash": "SHA1=4924676a9bae5db58ef129dc1cebce3baa3c4b5d",
+        "sha256": "c0f892943208266f9b6543b3ae308fab6284c5c90e627931446fb49b4221a072",
+        "url": "https://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz"
+      },
+      "opus-dnn": {
+        "recipe_hash": "SHA256=8a07d57c4fce6fb30f23b3e0d264004e04f1d7b421f5392ef61543d021a439af",
+        "sha256": "8a07d57c4fce6fb30f23b3e0d264004e04f1d7b421f5392ef61543d021a439af",
+        "url": "https://media.xiph.org/opus/models/opus_data-8a07d57c4fce6fb30f23b3e0d264004e04f1d7b421f5392ef61543d021a439af.tar.gz"
+      }
+    },
+    "closure": [
+      "amf-headers",
+      "angle-headers",
+      "avisynth-headers",
+      "brotli",
+      "bzip2",
+      "cppwinrt",
+      "dav1d",
+      "expat",
+      "fast_float",
+      "ffmpeg",
+      "fontconfig",
+      "freetype2",
+      "fribidi",
+      "gendef",
+      "glad",
+      "glslang",
+      "graphengine",
+      "harfbuzz",
+      "highway",
+      "lcms2",
+      "libarchive",
+      "libass",
+      "libbs2b",
+      "libiconv",
+      "libjpeg",
+      "libjxl",
+      "libmodplug",
+      "libmysofa",
+      "libplacebo",
+      "libpng",
+      "libsdl2",
+      "libsoxr",
+      "libsrt",
+      "libssh",
+      "libunibreak",
+      "libvpl",
+      "libwebp",
+      "libxml2",
+      "libzimg",
+      "llvm",
+      "llvm-clang",
+      "llvm-compiler-rt-builtin",
+      "llvm-libcxx",
+      "llvm-wrapper",
+      "lzo",
+      "mingw-w64",
+      "mingw-w64-crt",
+      "mingw-w64-headers",
+      "mpv",
+      "nvcodec-headers",
+      "ogg",
+      "openal-soft",
+      "openssl",
+      "opus",
+      "opus-dnn",
+      "shaderc",
+      "speex",
+      "spirv-cross",
+      "spirv-headers",
+      "spirv-tools",
+      "uchardet",
+      "vorbis",
+      "vulkan",
+      "vulkan-header",
+      "winpthreads",
+      "xxhash",
+      "xz",
+      "zlib",
+      "zstd"
+    ],
+    "cmake_version": "3.31.6",
+    "git": {
+      "amf-headers": {
+        "commit": "57ee0cfb0e1a08d9041f77435653794c1b012be0",
+        "repository": "https://github.com/GPUOpen-LibrariesAndSDKs/AMF.git",
+        "resolved_ref": "master"
+      },
+      "angle-headers": {
+        "commit": "f79a131ecf6a755aab99f7a750b76e6ba5874169",
+        "repository": "https://github.com/google/angle.git",
+        "resolved_ref": "main"
+      },
+      "avisynth-headers": {
+        "commit": "6973f7e176fcd1a801f0ff8c5ef764831cc61b62",
+        "repository": "https://github.com/AviSynth/AviSynthPlus.git",
+        "resolved_ref": "master"
+      },
+      "brotli": {
+        "commit": "2e2bcf17ae7115d84ef6588d9a3651cc987d73e7",
+        "repository": "https://github.com/google/brotli.git",
+        "resolved_ref": "master"
+      },
+      "bzip2": {
+        "commit": "66c46b8c9436613fd81bc5d03f63a61933a4dcc3",
+        "repository": "https://gitlab.com/bzip2/bzip2.git",
+        "resolved_ref": "master"
+      },
+      "cppwinrt": {
+        "commit": "30ac599beedc03d0f38f5fc84c390ee2f8551204",
+        "repository": "https://github.com/microsoft/cppwinrt.git",
+        "resolved_ref": "master"
+      },
+      "dav1d": {
+        "commit": "9433da2daa61bf7029a52b84bafa5daf59cdcc9d",
+        "repository": "https://code.videolan.org/videolan/dav1d.git",
+        "resolved_ref": "master"
+      },
+      "expat": {
+        "commit": "d8f31e647a4d1eda088e89354f4769b0dad303d3",
+        "repository": "https://github.com/libexpat/libexpat.git",
+        "resolved_ref": "master"
+      },
+      "fast_float": {
+        "commit": "0de7a21da582b6c84b0546772a96549882905d2b",
+        "repository": "https://github.com/fastfloat/fast_float.git",
+        "resolved_ref": "main"
+      },
+      "ffmpeg": {
+        "commit": "5b9a3ad71a4b54979e7afc3a1a4269763c4f41fc",
+        "repository": "https://github.com/FFmpeg/FFmpeg.git",
+        "resolved_ref": "5b9a3ad71a4b54979e7afc3a1a4269763c4f41fc"
+      },
+      "fontconfig": {
+        "commit": "b25ffeabd15b76f86c0c6736f6df2f1b89858010",
+        "repository": "https://gitlab.freedesktop.org/fontconfig/fontconfig.git",
+        "resolved_ref": "main"
+      },
+      "freetype2": {
+        "commit": "2b01fa2d6723bf12490822268c9627697ed89643",
+        "repository": "https://github.com/freetype/freetype.git",
+        "resolved_ref": "master"
+      },
+      "fribidi": {
+        "commit": "d2f3e1f4946e7cef9789e1c3ebdb4a60d4314c7f",
+        "repository": "https://github.com/fribidi/fribidi.git",
+        "resolved_ref": "master"
+      },
+      "glad": {
+        "commit": "0a7cf1af9e25e02821587bd4095807fc90b6426a",
+        "repository": "https://github.com/Dav1dde/glad.git",
+        "resolved_ref": "glad2"
+      },
+      "glslang": {
+        "commit": "2465225163bb0127e3f76f3036acd324312899cd",
+        "repository": "https://github.com/KhronosGroup/glslang.git",
+        "resolved_ref": "main"
+      },
+      "graphengine": {
+        "commit": "91c6af4c795c5396d8b974f24b4d2e2ecca04e2d",
+        "repository": "https://github.com/sekrit-twc/graphengine.git",
+        "resolved_ref": "master"
+      },
+      "harfbuzz": {
+        "commit": "75d8ac5d2313842550174eaab0cbaf653c8f2f77",
+        "repository": "https://github.com/harfbuzz/harfbuzz.git",
+        "resolved_ref": "main"
+      },
+      "highway": {
+        "commit": "59a0d2707f82c45fac7920d3d8a27fcd159a0581",
+        "repository": "https://github.com/google/highway.git",
+        "resolved_ref": "master"
+      },
+      "lcms2": {
+        "commit": "044b7bbc59383517854a797ef4d8291809d2ccd8",
+        "repository": "https://github.com/mm2/Little-CMS.git",
+        "resolved_ref": "master"
+      },
+      "libarchive": {
+        "commit": "b0c54adc05e67505aba443f08ae961f526ceb134",
+        "repository": "https://github.com/libarchive/libarchive.git",
+        "resolved_ref": "master"
+      },
+      "libass": {
+        "commit": "f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "repository": "https://github.com/libass/libass.git",
+        "resolved_ref": "master"
+      },
+      "libbs2b": {
+        "commit": "5ca2d59888df047f1e4b028e3a2fd5be8b5a7277",
+        "repository": "https://github.com/alexmarsev/libbs2b.git",
+        "resolved_ref": "master"
+      },
+      "libjpeg": {
+        "commit": "36956793b60deb2d1169d1432be6d19871f5ecb1",
+        "repository": "https://github.com/libjpeg-turbo/libjpeg-turbo.git",
+        "resolved_ref": "main"
+      },
+      "libjxl": {
+        "commit": "777e88f46a6b35948d1967afd9ac5c7fb5595d95",
+        "repository": "https://github.com/libjxl/libjxl.git",
+        "resolved_ref": "main"
+      },
+      "libmodplug": {
+        "commit": "04855941cfacdf2369ab1f401b0357af7c45ee69",
+        "repository": "https://github.com/Konstanty/libmodplug.git",
+        "resolved_ref": "master"
+      },
+      "libmysofa": {
+        "commit": "648eed03472e6720a1ea45d1a1f86c4efb569ff9",
+        "repository": "https://github.com/hoene/libmysofa.git",
+        "resolved_ref": "main"
+      },
+      "libplacebo": {
+        "commit": "3330a515d62139259c26239014f286e233bd3a5c",
+        "repository": "https://github.com/haasn/libplacebo.git",
+        "resolved_ref": "3330a515d62139259c26239014f286e233bd3a5c"
+      },
+      "libpng": {
+        "commit": "8c2a5fba4f81f027d4cab0256756c8db7ff75be5",
+        "repository": "https://github.com/glennrp/libpng.git",
+        "resolved_ref": "master"
+      },
+      "libsdl2": {
+        "commit": "8acf7cfc0f88717e5c036f60f0314bfcafe39189",
+        "repository": "https://github.com/libsdl-org/SDL.git",
+        "resolved_ref": "SDL2"
+      },
+      "libsoxr": {
+        "commit": "945b592b70470e29f917f4de89b4281fbbd540c0",
+        "repository": "https://gitlab.com/shinchiro/soxr.git",
+        "resolved_ref": "master"
+      },
+      "libsrt": {
+        "commit": "9f2390232a8256ed4c72a5418c2b2777c49ad737",
+        "repository": "https://github.com/Haivision/srt.git",
+        "resolved_ref": "master"
+      },
+      "libssh": {
+        "commit": "9de02f3d01ba16d06f46c0c4d27aa08d8deeecee",
+        "repository": "https://gitlab.com/libssh/libssh-mirror.git",
+        "resolved_ref": "master"
+      },
+      "libunibreak": {
+        "commit": "f8172fe771ef620112247cadfb876aecaa4f769e",
+        "repository": "https://github.com/adah1972/libunibreak.git",
+        "resolved_ref": "master"
+      },
+      "libvpl": {
+        "commit": "674d015bcb294bc39fa276e99a652ea045423e82",
+        "repository": "https://github.com/intel/libvpl.git",
+        "resolved_ref": "main"
+      },
+      "libwebp": {
+        "commit": "1844042d1ca751e62e61df7617dba19c98588339",
+        "repository": "https://chromium.googlesource.com/webm/libwebp.git",
+        "resolved_ref": "main"
+      },
+      "libxml2": {
+        "commit": "c79c9612fcc77b06b0d16f35fd363d938bdbbf5e",
+        "repository": "https://github.com/GNOME/libxml2.git",
+        "resolved_ref": "master"
+      },
+      "libzimg": {
+        "commit": "67e0603271c080e22c8429856dd4a8a56587e61e",
+        "repository": "https://github.com/sekrit-twc/zimg.git",
+        "resolved_ref": "master"
+      },
+      "llvm": {
+        "commit": "ca7933e47d3a3451d81e72ac174dcb5aa28b59d1",
+        "repository": "https://github.com/llvm/llvm-project.git",
+        "resolved_ref": "release/22.x"
+      },
+      "mingw-w64": {
+        "commit": "6865b1421ff9e1abd63fa994d7cc698eb47d1d7c",
+        "repository": "https://github.com/mingw-w64/mingw-w64.git",
+        "resolved_ref": "master"
+      },
+      "mpv": {
+        "commit": "0b7ed670f7c353dd3dd4f8ae0fc788a181a15aa6",
+        "repository": "https://github.com/mpv-player/mpv.git",
+        "resolved_ref": "0b7ed670f7c353dd3dd4f8ae0fc788a181a15aa6"
+      },
+      "nvcodec-headers": {
+        "commit": "71acc268a541f7d7f33cf0387229e3015cfb4977",
+        "repository": "https://github.com/FFmpeg/nv-codec-headers.git",
+        "resolved_ref": "master"
+      },
+      "ogg": {
+        "commit": "be05b13e98b048f0b5a0f5fa8ce514d56db5f822",
+        "repository": "https://github.com/xiph/ogg.git",
+        "resolved_ref": "master"
+      },
+      "openal-soft": {
+        "commit": "4a52288b772d1722713675f71bb30f321e78fd80",
+        "repository": "https://github.com/kcat/openal-soft.git",
+        "resolved_ref": "master"
+      },
+      "openssl": {
+        "commit": "c69b5af10a754051274ef2e5ed17f47753bd6ea9",
+        "repository": "https://github.com/openssl/openssl.git",
+        "resolved_ref": "master"
+      },
+      "opus": {
+        "commit": "084bb7327ce90171c4dcf2a58fe6ac58ae821dbf",
+        "repository": "https://github.com/xiph/opus.git",
+        "resolved_ref": "main"
+      },
+      "shaderc": {
+        "commit": "5bcaaaec711df4dfa31f38923d3d42b9b98d5250",
+        "repository": "https://github.com/google/shaderc.git",
+        "resolved_ref": "main"
+      },
+      "speex": {
+        "commit": "05895229896dc942d453446eba6f9f5ddcf95422",
+        "repository": "https://github.com/xiph/speex.git",
+        "resolved_ref": "master"
+      },
+      "spirv-cross": {
+        "commit": "300681bbcb8365a8d1eacdacdbdd0249bbf1d6b1",
+        "repository": "https://github.com/KhronosGroup/SPIRV-Cross.git",
+        "resolved_ref": "main"
+      },
+      "spirv-headers": {
+        "commit": "fbf86836a9b1966586faf7be7bb8a6440e156d62",
+        "repository": "https://github.com/KhronosGroup/SPIRV-Headers.git",
+        "resolved_ref": "main"
+      },
+      "spirv-tools": {
+        "commit": "7651d9234622041b3f1b09e5c684c7c6eb352d08",
+        "repository": "https://github.com/KhronosGroup/SPIRV-Tools.git",
+        "resolved_ref": "main"
+      },
+      "uchardet": {
+        "commit": "06029ec3340cdf6bf9a6a537dafb3f39eda0560e",
+        "repository": "https://gitlab.freedesktop.org/uchardet/uchardet.git",
+        "resolved_ref": "master"
+      },
+      "vorbis": {
+        "commit": "c2aa86b05e981c96bf381fc6aa11cdd03eccc2fb",
+        "repository": "https://github.com/xiph/vorbis.git",
+        "resolved_ref": "master"
+      },
+      "vulkan": {
+        "commit": "f577eb3095fdada059b356a618f52d404c1dbe00",
+        "repository": "https://github.com/KhronosGroup/Vulkan-Loader.git",
+        "resolved_ref": "main"
+      },
+      "vulkan-header": {
+        "commit": "73814d006638aa00bd553215b054f0f02e457e22",
+        "repository": "https://github.com/KhronosGroup/Vulkan-Headers.git",
+        "resolved_ref": "main"
+      },
+      "xxhash": {
+        "commit": "d9dfb8203cd67c576f1d46965ef5c0e48582196d",
+        "repository": "https://github.com/Cyan4973/xxHash.git",
+        "resolved_ref": "dev"
+      },
+      "xz": {
+        "commit": "299eb5c3f597f107fd6019bf156885ac8bfaa5ea",
+        "repository": "https://github.com/tukaani-project/xz.git",
+        "resolved_ref": "master"
+      },
+      "zlib": {
+        "commit": "49686f9405e356228e95a0c7d5195a5d742d5d71",
+        "repository": "https://github.com/zlib-ng/zlib-ng.git",
+        "resolved_ref": "develop"
+      },
+      "zstd": {
+        "commit": "49cf51799ea051457f57243527aa2058f999f005",
+        "repository": "https://github.com/facebook/zstd.git",
+        "resolved_ref": "dev"
+      }
+    },
+    "recipe": {
+      "commit": "fdf75129fc694b5ca555ce73cffc43bb6943ae13",
+      "repository": "https://github.com/Predidit/libmpv-win32-video-cmake.git"
+    },
+    "targets": [
+      "llvm",
+      "llvm-clang",
+      "mpv"
+    ],
+    "windows_winmd": {
+      "commit": "ebc5a99d08be3f23cef4d428661357fad3d1c0db",
+      "repository": "https://github.com/microsoft/windows-rs.git",
+      "sha256": "ef83b100fbd2e5648cbf91679a9653701c595816b6dc0da1f8a65c40580161fc",
+      "url": "https://raw.githubusercontent.com/microsoft/windows-rs/ebc5a99d08be3f23cef4d428661357fad3d1c0db/crates/libs/default/Windows.winmd"
+    }
+  }
+}

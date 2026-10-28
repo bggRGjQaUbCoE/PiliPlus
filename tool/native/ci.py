@@ -155,7 +155,10 @@ def plan(args):
     result = []
     package_lock = packages(args.packages)
     for name in selected:
-        mode, base_mode, identity = select(lock, name, args.mode, package_lock)
+        item = lock["platforms"][name]
+        requested = ("source" if getattr(args, "dev_sources", False) and args.mode == "auto"
+                     and item["default_mode"] == "source" else args.mode)
+        mode, base_mode, identity = select(lock, name, requested, package_lock)
         item = lock["platforms"][name]
         cache_identity = identity + ("-" + package_lock[name]["archive_sha256"] if mode == "package" else "")
         result.append({"platform": name, "mode": mode, "base_mode": base_mode,
@@ -564,6 +567,7 @@ def main():
                    help="Full dev HEAD captured once by the source-vector job")
     p.add_argument("--platforms", default=json.dumps(list(PLATFORMS)))
     p.add_argument("--mode", choices=("auto", "source", "upstream", "package"), default="auto")
+    p.add_argument("--dev-sources", action="store_true")
     p.set_defaults(func=plan)
     p = commands.add_parser("verify-checkouts")
     p.add_argument("--media-kit", required=True)

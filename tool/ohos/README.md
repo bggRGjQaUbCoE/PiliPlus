@@ -15,9 +15,11 @@ Flutter 使用固定的官方 `CPF-Flutter/flutter_flutter:oh-3.44.9-dev`。
 - `addition-only`：保留原有默认行为，比较与 `origin/main` 的共同祖先，拒绝改变
   原上游文件，适用于尚未修改应用代码的旧 OHOS 分支。
 - `approved-integration`：验证独立锁定的批准文件及其 SHA256，接受当前已集成的
-  应用基线 `30525d964b71b742637fc4ade4764bf94aafda45`。它锁定该 Git tree 和
-  14 个集成边界文件；基线之后只允许批准文件列出的 CI、工具和文档路径变更。
-  应用源码、资源和平台工程的新增、删除、修改仍被拒绝；`pubspec.yaml`\n  只接受批准文件中 SHA-256 明确锁定的已审查版本，其他修改仍会失败。\n  `archives/conversations/` 仅允许 Markdown 文档，`CLAUDE.md` 只允许根目录该文件。
+  应用基线 `2a09397994bdfd9c4f0801c40fd165a763c65505`。它锁定该 Git tree 和
+  18 个集成边界文件；基线之后只允许批准文件列出的 CI、工具和文档路径变更。
+  应用源码、资源和平台工程的新增、删除、修改仍被拒绝；`pubspec.yaml`
+  只接受批准文件中 SHA-256 明确锁定的已审查版本，其他修改仍会失败。
+  `archives/conversations/` 仅允许 Markdown 文档，`CLAUDE.md` 只允许根目录该文件。
 
 两种模式都检查工作文件和暂存区。新模式的 `prepare` / `prepare-build` 要求
 所选提交已 checkout，且所有已跟踪文件均无本地漂移；未跟踪的签名和缓存不会导出。

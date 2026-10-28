@@ -62,7 +62,8 @@ jobs:
             for (const item of targets) {
               const branchSHA = await readRef('heads/' + item.branch);
               const tagSHA = await readRef('tags/' + item.tag);
-              if (branchSHA !== item.sha) throw new Error('Historical branch unexpectedly moved: ' + item.branch);
+              if (branchSHA !== null && branchSHA !== item.sha) throw new Error('Historical branch unexpectedly moved: ' + item.branch);
+  if (branchSHA === null && tagSHA === null) throw new Error('Missing both historical branch and archive tag: ' + item.branch);
               if (tagSHA !== null && tagSHA !== item.sha) throw new Error('Archive tag collision: ' + item.tag);
               const compare = await github.rest.repos.compareCommitsWithBasehead({
                 owner, repo, basehead: item.sha + '...' + context.sha
@@ -79,11 +80,24 @@ jobs:
             await checkDev();
             await checkOpenPR();
             for (const item of targets) {
-              if (await readRef('heads/' + item.branch) !== item.sha)
+              const latest = await readRef('heads/' + item.branch);
+              if (latest === null) {
+                core.info('Already retired with verified tag: ' + item.branch);
+                continue;
+              }
+              if (latest !== item.sha)
                 throw new Error('Branch moved before deletion: ' + item.branch);
               await github.rest.git.deleteRef({owner, repo, ref: 'heads/' + item.branch});
-              if (await readRef('heads/' + item.branch) !== null)
-                throw new Error('Old branch still exists after deletion: ' + item.branch);
+              // GitHub's GET /git/ref may briefly return the old value after a successful delete.
+              let removed = false;
+              for (let retry = 0; retry < 10; retry++) {
+                if (await readRef('heads/' + item.branch) === null) {
+                  removed = true;
+                  break;
+                }
+                await new Promise(resolve => setTimeout(resolve, (retry + 1) * 400));
+              }
+              if (!removed) throw new Error('Branch did not disappear after retry: ' + item.branch);
             }
             for (const item of targets) {
               if (await readRef('tags/' + item.tag) !== item.sha)

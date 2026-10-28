@@ -115,6 +115,9 @@ final class NativeTabBarController: UITabBarController, UITabBarControllerDelega
     case "setHidden":
       setTabBarHidden(call.arguments as? Bool ?? false, animated: true)
       result(nil)
+    case "setHidesVerticalBar":
+      hidesVerticalBar = call.arguments as? Bool ?? false
+      result(nil)
     default:
       result(FlutterMethodNotImplemented)
     }
@@ -153,6 +156,51 @@ final class NativeTabBarController: UITabBarController, UITabBarControllerDelega
 
   override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
     flutterViewController.supportedInterfaceOrientations
+  }
+
+  // iPhone Duo: pages such as the video page hide the status bar while it is
+  // in the vertical bar, so their content can fill the bar's space. Elsewhere
+  // the status bar is on top and Flutter keeps controlling it. The bar's safe
+  // area stays when the status bar is hidden, so Dart is told to lay out over
+  // it.
+  private var hidesVerticalBar = false {
+    didSet { verticalBarDidChange() }
+  }
+  private var hasVerticalBar = false {
+    didSet { verticalBarDidChange() }
+  }
+  private var isVerticalBarHidden: Bool { hidesVerticalBar && hasVerticalBar }
+  private var sentVerticalBarHidden = false
+
+  private func verticalBarDidChange() {
+    UIView.animate(withDuration: 0.25) { self.setNeedsStatusBarAppearanceUpdate() }
+    if isVerticalBarHidden != sentVerticalBarHidden {
+      sentVerticalBarHidden = isVerticalBarHidden
+      channel?.invokeMethod("verticalBarHidden", arguments: isVerticalBarHidden)
+    }
+  }
+
+  override var childForStatusBarHidden: UIViewController? {
+    isVerticalBarHidden ? nil : super.childForStatusBarHidden
+  }
+
+  override var prefersStatusBarHidden: Bool {
+    isVerticalBarHidden ? true : super.prefersStatusBarHidden
+  }
+
+  override func viewDidLayoutSubviews() {
+    super.viewDidLayoutSubviews()
+    // The vertical bar edge stays set while the status bar is hidden, and
+    // changes when the device folds or unfolds.
+    var hasVerticalBar = false
+    #if compiler(>=6.4)
+      if #available(iOS 27.1, *) {
+        hasVerticalBar = traitCollection.verticalBarEdge != .unspecified
+      }
+    #endif
+    if hasVerticalBar != self.hasVerticalBar {
+      self.hasVerticalBar = hasVerticalBar
+    }
   }
 
   // The tabs do not forward appearance callbacks, so deliver this controller's

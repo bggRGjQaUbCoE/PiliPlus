@@ -59,6 +59,7 @@ import 'package:PiliPlus/plugin/pl_player/view/view.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart'
     show shutdownTimerService;
+import 'package:PiliPlus/utils/ios/native_tab_bar.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
@@ -376,10 +377,34 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     super.dispose();
   }
 
+  // iPhone Duo：竖屏布局（合上）时隐藏竖状态栏，内容铺满竖状态栏的位置。
+  // 横屏布局按左右安全区计算宽度，保留状态栏
+  bool _isOnTop = false;
+
+  void _updateVerticalBar() {
+    IOSNativeTabBar.setHidesVerticalBar(_isOnTop && isPortrait);
+  }
+
+  @override
+  void didPush() {
+    super.didPush();
+    // 订阅路由时调用，随后的 didChangeDependencies 会更新状态栏
+    _isOnTop = true;
+  }
+
+  @override
+  void didPop() {
+    _isOnTop = false;
+    _updateVerticalBar();
+    super.didPop();
+  }
+
   @override
   // 离开当前页面时
   void didPushNext() {
     super.didPushNext();
+    _isOnTop = false;
+    _updateVerticalBar();
     isShowing = false;
 
     removeObserverMobile(this);
@@ -408,6 +433,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   // 返回当前页面时
   void didPopNext() {
     super.didPopNext();
+    _isOnTop = true;
+    _updateVerticalBar();
 
     if (videoDetailController.plPlayerController.isCloseAll) {
       return;
@@ -491,6 +518,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     theme = videoDetailController.plPlayerController.darkVideoPage
         ? ThemeUtils.darkTheme
         : Theme.of(context);
+
+    _updateVerticalBar();
   }
 
   bool removeAppBar(bool isFullScreen) =>
@@ -593,10 +622,27 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                 ),
               ];
             },
-            // 播放器延伸到左右安全区下面，下方内容避开
-            body: SafeArea(
-              top: false,
-              bottom: false,
+            // 播放器延伸到左右安全区下面，下方内容避开；
+            // 竖状态栏隐藏后（iPhone Duo）下方内容也铺满
+            body: ValueListenableBuilder(
+              valueListenable: IOSNativeTabBar.verticalBarHidden,
+              builder: (context, verticalBarHidden, child) {
+                final padding = MediaQuery.paddingOf(context);
+                return Padding(
+                  padding: verticalBarHidden
+                      ? EdgeInsets.zero
+                      : EdgeInsets.only(
+                          left: padding.left,
+                          right: padding.right,
+                        ),
+                  child: MediaQuery.removePadding(
+                    context: context,
+                    removeLeft: true,
+                    removeRight: true,
+                    child: child!,
+                  ),
+                );
+              },
               child: MiniScaffold(
                 key: videoDetailController.childKey,
                 body: Column(

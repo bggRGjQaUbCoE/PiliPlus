@@ -29,6 +29,8 @@ abstract final class IOSNativeTabBar {
           _onSelect?.call(call.arguments as int);
         case 'safeArea':
           _setSafeArea(call.arguments);
+        case 'verticalBarHidden':
+          verticalBarHidden.value = call.arguments as bool;
       }
     });
     try {
@@ -84,6 +86,22 @@ abstract final class IOSNativeTabBar {
 
   static void setHidden(bool hidden) {
     if (_enabled) _channel.invokeMethod('setHidden', hidden);
+  }
+
+  /// 竖状态栏是否已按 [setHidesVerticalBar] 隐藏。隐藏后竖状态栏的安全区仍然
+  /// 存在（摄像头在其中），页面内容可以忽略它铺满
+  static final verticalBarHidden = ValueNotifier(false);
+
+  /// 状态栏在竖状态栏中时（iPhone Duo）隐藏状态栏，让页面铺满竖状态栏的位置。
+  /// 状态栏在顶部时不生效
+  static bool _hidesVerticalBar = false;
+
+  static void setHidesVerticalBar(bool hides) {
+    if (hides == _hidesVerticalBar) return;
+    _hidesVerticalBar = hides;
+    if (Platform.isIOS) {
+      _channel.invokeMethod('setHidesVerticalBar', hides).ignore();
+    }
   }
 }
 

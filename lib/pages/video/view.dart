@@ -897,10 +897,13 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   }
 
   Widget _childWhenDisabledLandscapeInner(bool isFullScreen) {
+    // 扣除左右安全区（如 iPhone Duo 右侧状态栏），保证右侧栏的最小宽度
+    final availableWidth = maxWidth - padding.horizontal;
     double width =
-        clampDouble(maxHeight / maxWidth * 1.08, 0.5, 0.7) * maxWidth;
-    if (maxWidth >= 560) {
-      width = maxWidth - clampDouble(maxWidth - width, 280, 425);
+        clampDouble(maxHeight / availableWidth * 1.08, 0.5, 0.7) *
+        availableWidth;
+    if (availableWidth >= 560) {
+      width = availableWidth - clampDouble(availableWidth - width, 280, 425);
     }
     final videoWidth = isFullScreen ? maxWidth : width;
     final double height = width / Style.aspectRatio16x9;
@@ -946,7 +949,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         Offstage(
           offstage: isFullScreen,
           child: SizedBox(
-            width: maxWidth - width - padding.horizontal,
+            width: availableWidth - width,
             height: maxHeight - padding.top,
             child: MiniScaffold(
               key: videoDetailController.childKey,

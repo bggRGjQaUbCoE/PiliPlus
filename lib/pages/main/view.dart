@@ -16,6 +16,7 @@ import 'package:PiliPlus/utils/desktop/window_controller.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
+import 'package:PiliPlus/utils/ios/foldable_helper.dart';
 import 'package:PiliPlus/utils/mobile_observer.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -36,6 +37,8 @@ class _MainAppState extends PopScopeState<MainApp>
   final _mainController = Get.put(MainController());
   late EdgeInsets _padding;
   late ColorScheme _colorScheme;
+  // 切换状态栏导航与其他布局时保留页面状态
+  final _bodyKey = GlobalKey();
   Brightness? _brightness;
 
   @override
@@ -73,7 +76,16 @@ class _MainAppState extends PopScopeState<MainApp>
         );
       }
     }
-    if (!_mainController.useSideBar) {
+    // iPhone Duo 的系统状态栏位于右侧竖条（安全区约 84pt），导航放入其中；
+    // 普通 iPhone 横屏时灵动岛一侧的安全区约 60pt，不会触发
+    _mainController.useStatusBarNav =
+        !_mainController.useSideBar &&
+        IOSFoldableHelper.isIPhone &&
+        _mainController.navigationBars.length > 1 &&
+        _padding.right >= 72;
+    if (_mainController.useStatusBarNav) {
+      _mainController.useBottomNav = true;
+    } else if (!_mainController.useSideBar) {
       _mainController.useBottomNav = MediaQuery.sizeOf(context).isPortrait;
     }
   }
@@ -236,6 +248,34 @@ class _MainAppState extends PopScopeState<MainApp>
     return bottomNav;
   }
 
+  Widget _statusBarNav() {
+    return MediaQuery.removePadding(
+      context: context,
+      removeLeft: true,
+      removeTop: true,
+      removeRight: true,
+      child: Obx(
+        () => NavigationRail(
+          minWidth: _padding.right,
+          groupAlignment: 0.0,
+          labelType: _mainController.hideSideBarLabel ? .none : .all,
+          backgroundColor: Colors.transparent,
+          onDestinationSelected: _mainController.setIndex,
+          selectedIndex: _mainController.selectedIndex.value,
+          destinations: _mainController.navigationBars
+              .map(
+                (e) => NavigationRailDestination(
+                  label: Text(e.label),
+                  icon: _buildIcon(type: e),
+                  selectedIcon: _buildIcon(type: e, selected: true),
+                ),
+              )
+              .toList(),
+        ),
+      ),
+    );
+  }
+
   Widget _sideBar() {
     if (_mainController.navigationBars.length > 1) {
       if (context.isTablet && _mainController.optTabletNav) {
@@ -333,11 +373,34 @@ class _MainAppState extends PopScopeState<MainApp>
         children: _mainController.navigationBars.map((i) => i.page).toList(),
       );
     }
+    child = KeyedSubtree(key: _bodyKey, child: child);
 
     Widget? sideBar;
     Widget? bottomNav;
     final EdgeInsets padding;
-    if (_mainController.useBottomNav) {
+    if (_mainController.useStatusBarNav) {
+      child = Material(
+        child: Row(
+          children: [
+            Expanded(
+              child: MediaQuery.removePadding(
+                context: context,
+                removeRight: true,
+                child: Padding(
+                  padding: .only(top: _padding.top, left: _padding.left),
+                  child: child,
+                ),
+              ),
+            ),
+            _statusBarNav(),
+          ],
+        ),
+      );
+      return AnnotatedRegion<SystemUiOverlayStyle>(
+        value: _systemUiOverlayStyle,
+        child: child,
+      );
+    } else if (_mainController.useBottomNav) {
       bottomNav = _bottomNav;
       if (bottomNav != null) {
         bottomNav = MediaQuery.removePadding(
@@ -371,20 +434,22 @@ class _MainAppState extends PopScopeState<MainApp>
 
     if (PlatformUtils.isMobile) {
       return AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarBrightness: _colorScheme.brightness,
-          statusBarIconBrightness: _colorScheme.brightness.reverse,
-          systemStatusBarContrastEnforced: false,
-          systemNavigationBarColor: Colors.transparent,
-          systemNavigationBarIconBrightness: _colorScheme.brightness.reverse,
-        ),
+        value: _systemUiOverlayStyle,
         child: child,
       );
     }
 
     return child;
   }
+
+  SystemUiOverlayStyle get _systemUiOverlayStyle => SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarBrightness: _colorScheme.brightness,
+    statusBarIconBrightness: _colorScheme.brightness.reverse,
+    systemStatusBarContrastEnforced: false,
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarIconBrightness: _colorScheme.brightness.reverse,
+  );
 
   Widget _buildIcon({required NavigationBarType type, bool selected = false}) {
     final icon = selected ? type.selectIcon : type.icon;

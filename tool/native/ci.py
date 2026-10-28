@@ -23,6 +23,8 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[2]
 LOCK = ROOT / "tool/native/inputs.lock.json"
 PACKAGES = ROOT / "tool/native/packages.lock.json"
+SOURCE_PLAN = ROOT / "tool/native/source_plan.py"
+DEV_BRANCHES = ROOT / "tool/native/dev-branches.json"
 PLATFORMS = ("android", "windows", "linux", "ios", "macos", "ohos")
 SHA = re.compile(r"^[0-9a-f]{40}$")
 DIGEST = re.compile(r"^[0-9a-f]{64}$")
@@ -56,11 +58,24 @@ def run(*args, cwd=None, capture=False, env=None):
 
 
 def load_lock(path=LOCK):
-    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    raw = (os.environ.get("PILIPLUS_EFFECTIVE_LOCK_JSON")
+           if Path(path).resolve() == LOCK.resolve() else None)
+    if raw:
+        manifest = json.loads(os.environ["PILIPLUS_SOURCE_MANIFEST"])
+        digest_hex = hashlib.sha256(raw.encode()).hexdigest()
+        if digest_hex != manifest.get("effective_lock_sha256"):
+            raise ValueError("Effective native lock disagrees with source manifest")
+        if (os.environ.get("GITHUB_SHA")
+                and os.environ["GITHUB_SHA"] != manifest["application"]["commit"]):
+            raise ValueError("Source manifest application commit differs from workflow commit")
+        data = json.loads(raw)
+    else:
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
     if data.get("schema") != 1 or set(data["platforms"]) != set(PLATFORMS):
         raise ValueError("The source lock must cover all six supported platforms")
-    if data["media_kit"] != {"repository": "Goodwu/media-kit", "branch": "dev"}:
-        raise ValueError("media-kit SDK source must be Goodwu/media-kit dev")
+    if (data["media_kit"].get("repository") != "Goodwu/media-kit"
+            or data["media_kit"].get("branch") != "feature/dv"):
+        raise ValueError("media-kit SDK source must be Goodwu/media-kit feature/dv")
     for platform, item in data["platforms"].items():
         if item["default_mode"] not in ("source", "upstream"):
             raise ValueError("Invalid default mode: " + platform)
@@ -101,7 +116,7 @@ def select(lock, platform, mode, packages=None):
 def input_digest(lock, platform, mode):
     # Application/Dart commits intentionally do not invalidate native builds.
     # Producer commits, native inputs and the packaging adapter do.
-    adapter_files = [Path(__file__)]
+    adapter_files = [Path(__file__), SOURCE_PLAN, DEV_BRANCHES]
     if platform in ("windows", "linux") and mode == "source":
         adapter_files += sorted(p for p in (ROOT / "tool/native/desktop").glob("*")
                                 if p.suffix in (".py", ".json", ".sh"))
@@ -148,6 +163,22 @@ def plan(args):
             "app_runner": item["runner"], "cache_key": "native-v1-" + name + "-" + mode + "-" + cache_identity})
     emit({"matrix": json.dumps({"include": result}, separators=(",", ":")),
           "media_kit_ref": args.media_kit_commit, "flutter_version": lock["flutter"]["version"]})
+
+
+def runtime_lock(args):
+    if os.environ.get("CI", "").lower() == "true" and not os.environ.get("PILIPLUS_EFFECTIVE_LOCK_JSON"):
+        raise ValueError("CI native jobs require a resolved source manifest and effective lock")
+    return load_lock(args.lock)
+
+
+def verify_checkouts(args):
+    runtime_lock(args)
+    manifest = json.loads(os.environ["PILIPLUS_SOURCE_MANIFEST"])
+    app_head = run("git", "rev-parse", "HEAD", cwd=ROOT, capture=True).strip()
+    sdk_head = run("git", "rev-parse", "HEAD", cwd=args.media_kit, capture=True).strip()
+    if (app_head != manifest["application"]["commit"]
+            or sdk_head != manifest["media_kit"]["commit"]):
+        raise ValueError("PiliPlus or media-kit checkout disagrees with the frozen source manifest")
 
 
 def safe_name(value):
@@ -343,7 +374,19 @@ def source(lock, platform, work):
     config = lock["platforms"][platform]["source"]
     if platform in ("windows", "linux"):
         request = work / "desktop-inputs.json"
-        write_json(request, config)
+        actual_request = dict(config)
+        # Linux has a second reviewed source table. Keep the checked-in anchors
+        # untouched and align an ephemeral copy to the snapshot for this run.
+        raw = os.environ.get("PILIPLUS_SOURCE_MANIFEST")
+        if platform == "linux" and raw and json.loads(raw)["source_mode"] == "dev":
+            desktop = json.loads((ROOT / config["sources_lock"]).read_text())
+            desktop["linux"]["recipe"]["commit"] = config["producer"]["commit"]
+            for name, entry in config.get("sources", {}).items():
+                desktop["linux"]["sources"][name]["commit"] = entry["commit"]
+            updated_desktop_lock = work / "desktop-sources.json"
+            write_json(updated_desktop_lock, desktop)
+            actual_request["sources_lock"] = str(updated_desktop_lock)
+        write_json(request, actual_request)
         run(sys.executable, ROOT / "tool/native/desktop/build.py", "--platform", platform,
             "--lock", request, "--output", work / "desktop")
         return work / "desktop/root", json.loads((work / "desktop/spec.json").read_text())
@@ -411,7 +454,7 @@ def verify_payload(sdk, root, receipt, platform):
 
 
 def build_native(args):
-    lock = load_lock(args.lock)
+    lock = runtime_lock(args)
     mode, base_mode, key = select(lock, args.platform, args.mode, packages(args.packages))
     work, transport = Path(args.work).resolve(), Path(args.transport).resolve()
     if work.exists() or transport.exists():
@@ -451,7 +494,7 @@ def build_native(args):
 
 
 def consume(args):
-    lock = load_lock(args.lock)
+    lock = runtime_lock(args)
     package_lock = packages(args.packages)
     mode, base_mode, key = select(lock, args.platform, args.mode, package_lock)
     transport = Path(args.transport).resolve()
@@ -479,7 +522,7 @@ def consume(args):
 
 
 def provenance(args):
-    lock = load_lock(args.lock)
+    lock = runtime_lock(args)
     sdk = Path(args.media_kit).resolve()
     actual_sdk = run("git", "rev-parse", "HEAD", cwd=sdk, capture=True).strip()
     if not SHA.fullmatch(args.media_kit_commit) or actual_sdk != args.media_kit_commit:
@@ -492,7 +535,15 @@ def provenance(args):
     files = {p.relative_to(artifacts).as_posix(): digest(p) for p in sorted(artifacts.rglob("*")) if p.is_file()}
     if not files:
         raise ValueError("No application artifacts were produced")
+    snapshot_raw = os.environ.get("PILIPLUS_SOURCE_MANIFEST")
+    source_snapshot = json.loads(snapshot_raw) if snapshot_raw else None
+    if source_snapshot:
+        application_head = run("git", "rev-parse", "HEAD", cwd=ROOT, capture=True).strip()
+        if application_head != source_snapshot["application"]["commit"]:
+            raise ValueError("Application HEAD differs from frozen source manifest")
+        write_json(artifacts / "source-manifest.json", source_snapshot)
     result = {"schema": 1, "platform": args.platform,
+        "source_manifest": source_snapshot,
         "application": {"repository": os.environ.get("GITHUB_REPOSITORY", "Goodwu/PiliPlus"),
             "commit": run("git", "rev-parse", "HEAD", cwd=ROOT, capture=True).strip()},
         "media_kit": {"repository": lock["media_kit"]["repository"],
@@ -514,6 +565,9 @@ def main():
     p.add_argument("--platforms", default=json.dumps(list(PLATFORMS)))
     p.add_argument("--mode", choices=("auto", "source", "upstream", "package"), default="auto")
     p.set_defaults(func=plan)
+    p = commands.add_parser("verify-checkouts")
+    p.add_argument("--media-kit", required=True)
+    p.set_defaults(func=verify_checkouts)
     for name, func in (("build-native", build_native), ("consume", consume)):
         p = commands.add_parser(name)
         p.add_argument("--platform", choices=PLATFORMS, required=True)

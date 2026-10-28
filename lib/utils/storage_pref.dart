@@ -9,6 +9,7 @@ import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
 import 'package:PiliPlus/models/common/follow_order_type.dart';
+import 'package:PiliPlus/models/common/horizontal_screen_mode.dart';
 import 'package:PiliPlus/models/common/member/tab_type.dart';
 import 'package:PiliPlus/models/common/mine_tab_type.dart';
 import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
@@ -633,6 +634,11 @@ abstract final class Pref {
   static bool get horizontalScreen {
     // 折叠屏 iPhone：展开时使用横屏适配，合上时恢复手机布局
     if (IOSFoldableHelper.isAuto) return IOSFoldableHelper.isUnfolded;
+    return manualHorizontalScreen;
+  }
+
+  /// 【横屏适配】开关本身的值，不考虑折叠屏自动模式
+  static bool get manualHorizontalScreen {
     bool? horizontalScreen = _setting.get(SettingBoxKey.horizontalScreen);
     if (horizontalScreen == null) {
       final isTablet = DeviceUtils.isTablet;
@@ -641,6 +647,13 @@ abstract final class Pref {
     }
     return horizontalScreen;
   }
+
+  static HorizontalScreenMode get horizontalScreenMode =>
+      IOSFoldableHelper.isAuto
+      ? .auto
+      : manualHorizontalScreen
+      ? .on
+      : .off;
 
   static String get banWordForDyn =>
       _setting.get(SettingBoxKey.banWordForDyn, defaultValue: '');

@@ -16,6 +16,7 @@ import 'package:PiliPlus/models/common/bar_hide_type.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
 import 'package:PiliPlus/models/common/home_tab_type.dart';
+import 'package:PiliPlus/models/common/horizontal_screen_mode.dart';
 import 'package:PiliPlus/models/common/member/tab_type.dart';
 import 'package:PiliPlus/models/common/mine_tab_type.dart';
 import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
@@ -69,21 +70,32 @@ List<SettingsModel> get styleSettings => [
     ),
   ],
   if (Platform.isLinux) _useSSDModel(),
-  SwitchModel(
-    title: '横屏适配',
-    subtitle: '启用横屏布局与逻辑，平板、折叠屏等可开启；建议全屏方向设为【不改变当前方向】',
-    leading: const Icon(Icons.phonelink_outlined),
-    setKey: SettingBoxKey.horizontalScreen,
-    defaultVal: Pref.horizontalScreen,
-    onChanged: _onHorizontalScreenChanged,
-  ),
+  // iPhone 上与折叠屏自动模式合并为一项，避免两个开关互相覆盖
   if (IOSFoldableHelper.isIPhone)
-    const SwitchModel(
-      title: '折叠屏自动横屏适配',
-      subtitle: 'iPhone Duo 等折叠屏：展开时自动启用横屏适配，合上时恢复竖屏手机布局；开启后【横屏适配】在 iPhone 上不生效',
-      leading: Icon(Icons.phonelink_outlined),
-      setKey: SettingBoxKey.foldableAutoHorizontal,
-      defaultVal: true,
+    PopupModel(
+      title: '横屏适配',
+      leading: const Icon(Icons.phonelink_outlined),
+      value: () => Pref.horizontalScreenMode,
+      items: HorizontalScreenMode.values,
+      onSelected: (value, setState) {
+        GStorage.setting
+            .putAll({
+              SettingBoxKey.foldableAutoHorizontal: value == .auto,
+              if (value != .auto) SettingBoxKey.horizontalScreen: value == .on,
+            })
+            .whenComplete(() {
+              _onHorizontalScreenChanged();
+              setState();
+            });
+      },
+    )
+  else
+    SwitchModel(
+      title: '横屏适配',
+      subtitle: '启用横屏布局与逻辑，平板、折叠屏等可开启；建议全屏方向设为【不改变当前方向】',
+      leading: const Icon(Icons.phonelink_outlined),
+      setKey: SettingBoxKey.horizontalScreen,
+      defaultVal: Pref.horizontalScreen,
       onChanged: _onHorizontalScreenChanged,
     ),
   const SwitchModel(
@@ -914,7 +926,7 @@ Widget _themeTrailing(ThemeData theme) {
 }
 
 // 设置已在回调前写入，按生效后的值（含折叠屏自动模式）刷新方向
-void _onHorizontalScreenChanged(bool _) {
+void _onHorizontalScreenChanged([bool? _]) {
   if (Pref.horizontalScreen) {
     fullMode();
   } else {

@@ -60,10 +60,27 @@ abstract final class IOSFoldableHelper {
     final unfolded = size.shortestSide >= 600;
     if (unfolded == _lastUnfolded) return;
     _lastUnfolded = unfolded;
+    if (kDebugMode) {
+      debugPrint('IOSFoldableHelper: size $size, unfolded $unfolded');
+    }
     if (!isAuto) return;
     // 全屏播放中交给播放器处理，退出全屏时会按新的状态恢复方向
-    if (PlPlayerController.instance?.isFullScreen.value ?? false) return;
+    if (PlPlayerController.instance?.isFullScreen.value ?? false) {
+      _pendingOrientation = true;
+      return;
+    }
+    _pendingOrientation = false;
     applyOrientation();
+  }
+
+  static bool _pendingOrientation = false;
+
+  /// 全屏期间是否展开/合上过（读取后清除）。
+  /// 此时即使全屏方向为【不改变当前方向】，退出全屏也需要按新状态恢复方向
+  static bool consumePendingOrientation() {
+    final pending = _pendingOrientation;
+    _pendingOrientation = false;
+    return pending;
   }
 
   /// 按当前折叠状态设置允许的屏幕方向

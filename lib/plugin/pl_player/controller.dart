@@ -42,6 +42,7 @@ import 'package:PiliPlus/utils/extension/native_geometry_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:PiliPlus/utils/ios/foldable_helper.dart';
 import 'package:PiliPlus/utils/ios/pip_helper.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
@@ -1552,7 +1553,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
           if (!removeSafeArea) {
             showSystemBar();
           }
-          if (orientation == null && mode == .none) {
+          final foldChanged = IOSFoldableHelper.consumePendingOrientation();
+          if (orientation == null && mode == .none && !foldChanged) {
             return;
           }
           await resetScreenRotation();

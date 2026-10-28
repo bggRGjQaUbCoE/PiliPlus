@@ -46,11 +46,7 @@ mixin BaseLaterController
   }
 
   // single
-  void toViewDel(
-    BuildContext context,
-    int index,
-    int? aid,
-  ) {
+  void toViewDel(BuildContext context, int index, int? aid) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -85,8 +81,14 @@ mixin BaseLaterController
 
 class LaterController extends MultiSelectController<LaterData, LaterItemModel>
     with BaseLaterController {
-  LaterController(this.laterViewType);
+  LaterController(this.laterViewType) {
+    _refreshedVersion = baseCtr.changeVersion;
+  }
   final LaterViewType laterViewType;
+
+  late int _refreshedVersion;
+  Future<void>? _queryFuture;
+  Future<void>? _changeRefreshFuture;
 
   late final mid = Accounts.main.mid;
 
@@ -101,16 +103,114 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
   RxInt get rxCount => baseCtr.checkedCount;
 
   @override
-  Future<LoadingState<LaterData>> customGetData() => UserHttp.seeYouLater(
-    page: page,
-    viewed: laterViewType.type,
-    asc: asc.value,
-  );
+  Future<LoadingState<LaterData>> customGetData() => fetchLaterPage(page);
+
+  Future<LoadingState<LaterData>> fetchLaterPage(int page) =>
+      UserHttp.seeYouLater(
+        page: page,
+        viewed: laterViewType.type,
+        asc: asc.value,
+      );
 
   @override
   void onInit() {
     super.onInit();
+    baseCtr.registerRefresh(laterViewType, refreshAfterChange);
     queryData();
+  }
+
+  @override
+  void onClose() {
+    baseCtr.unregisterRefresh(laterViewType, refreshAfterChange);
+    super.onClose();
+  }
+
+  @override
+  Future<void> queryData([bool isRefresh = true]) {
+    if (isClosed || _changeRefreshFuture != null) return Future.value();
+    return _queryFuture ??= _queryData(isRefresh).whenComplete(() {
+      _queryFuture = null;
+    });
+  }
+
+  Future<void> _queryData(bool isRefresh) async {
+    final version = baseCtr.changeVersion;
+    try {
+      await super.queryData(isRefresh);
+      if (!isClosed && isRefresh && loadingState.value.isSuccess) {
+        _refreshedVersion = version;
+      }
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  @override
+  Future<void> onRefresh() {
+    // Do not reset the page of an in-flight pagination request.
+    if (_changeRefreshFuture case final future?) return future;
+    if (_queryFuture case final future?) return future;
+    return super.onRefresh();
+  }
+
+  Future<void> refreshAfterChange() {
+    if (isClosed || _refreshedVersion == baseCtr.changeVersion) {
+      return Future.value();
+    }
+    return _changeRefreshFuture ??= _refreshChangedData().whenComplete(() {
+      _changeRefreshFuture = null;
+    });
+  }
+
+  Future<void> _refreshChangedData() async {
+    try {
+      await _queryFuture;
+      refresh:
+      while (!isClosed && _refreshedVersion != baseCtr.changeVersion) {
+        final version = baseCtr.changeVersion;
+        final ascending = asc.value;
+        final pagesToRefresh = page > 1 ? page - 1 : 1;
+        final items = <LaterItemModel>[];
+        int count = 0;
+        int nextPage = 1;
+        bool end = false;
+        isLoading = true;
+
+        // Keep the old list on screen until all previously loaded pages are
+        // rebuilt. This also avoids skipping an item after a deletion shifts
+        // the boundaries between server pages.
+        for (int pn = 1; pn <= pagesToRefresh; pn++) {
+          final res = await fetchLaterPage(pn);
+          if (isClosed) return;
+          if (res case Success(:final response)) {
+            count = response.count ?? 0;
+            items.addAll(response.list ?? const []);
+            nextPage = pn + 1;
+            end = response.list?.isNotEmpty != true || items.length >= count;
+            if (end) break;
+          } else {
+            if (version != baseCtr.changeVersion) continue refresh;
+            // Leave this version dirty so a later return can retry.
+            return;
+          }
+        }
+
+        // Another mutation may have completed while these pages were fetched.
+        // Only publish a snapshot that was fetched for the current version.
+        if (version != baseCtr.changeVersion || ascending != asc.value) {
+          continue;
+        }
+        baseCtr.counts[laterViewType.index] = count;
+        page = nextPage;
+        isEnd = end;
+        loadingState.value = Success(items);
+        _refreshedVersion = version;
+      }
+    } catch (e) {
+      debugPrint('later refresh after change: $e');
+    } finally {
+      isLoading = false;
+    }
   }
 
   @override
@@ -190,8 +290,10 @@ class LaterController extends MultiSelectController<LaterData, LaterItemModel>
       (count) => baseCtr.counts[laterViewType.index] -= count;
 
   @override
-  Future<void> onReload() {
+  Future<void> onReload() async {
+    await (_changeRefreshFuture ?? _queryFuture);
+    if (isClosed) return;
     scrollController.jumpToTop();
-    return super.onReload();
+    await super.onReload();
   }
 }

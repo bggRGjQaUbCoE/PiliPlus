@@ -9,6 +9,7 @@ import 'package:PiliPlus/models_new/fav/fav_folder/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/stat_detail.dart';
 import 'package:PiliPlus/models_new/video/video_tag/data.dart';
+import 'package:PiliPlus/pages/later/base_controller.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/triple_mixin.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -155,7 +156,10 @@ abstract class CommonIntroController extends GetxController
     final res = await (hasLater.value
         ? UserHttp.toViewDel(aids: IdUtils.bv2av(bvid).toString())
         : UserHttp.toViewLater(bvid: bvid));
-    if (res.isSuccess) hasLater.toggle();
+    if (res.isSuccess) {
+      hasLater.toggle();
+      LaterBaseController.notifyChanged();
+    }
   }
 }
 

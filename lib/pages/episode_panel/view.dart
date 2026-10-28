@@ -691,6 +691,14 @@ class _EpisodePanelState extends State<EpisodePanel>
             },
           ),
         const Spacer(),
+        iconButton(
+          iconSize: 22,
+          tooltip: '缓存',
+          icon: const Icon(Icons.download_outlined),
+          onPressed: () => Get.find<VideoDetailController>(
+            tag: widget.heroTag,
+          ).onDownload(context),
+        ),
         Obx(
           () {
             final currentTabIndex = _currentTabIndex.value;

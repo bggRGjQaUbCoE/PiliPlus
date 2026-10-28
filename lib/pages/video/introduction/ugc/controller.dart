@@ -62,7 +62,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
 
   late final showArgueMsg = Pref.showArgueMsg;
   late final enableAi = Pref.enableAi;
-  late final horizontalMemberPage = Pref.horizontalMemberPage;
+  bool get horizontalMemberPage => Pref.horizontalMemberPage;
 
   AiConclusionResult? aiConclusionResult;
 

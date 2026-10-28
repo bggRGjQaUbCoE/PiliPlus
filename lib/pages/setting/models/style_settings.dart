@@ -37,6 +37,7 @@ import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
+import 'package:PiliPlus/utils/ios/foldable_helper.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -76,6 +77,15 @@ List<SettingsModel> get styleSettings => [
     defaultVal: Pref.horizontalScreen,
     onChanged: _onHorizontalScreenChanged,
   ),
+  if (IOSFoldableHelper.isIPhone)
+    const SwitchModel(
+      title: '折叠屏自动横屏适配',
+      subtitle: 'iPhone Duo 等折叠屏：展开时自动启用横屏适配，合上时恢复竖屏手机布局；开启后【横屏适配】在 iPhone 上不生效',
+      leading: Icon(Icons.phonelink_outlined),
+      setKey: SettingBoxKey.foldableAutoHorizontal,
+      defaultVal: true,
+      onChanged: _onHorizontalScreenChanged,
+    ),
   const SwitchModel(
     title: '改用侧边栏',
     subtitle: '开启后底栏与顶栏被替换，且相关设置失效',
@@ -903,8 +913,9 @@ Widget _themeTrailing(ThemeData theme) {
   );
 }
 
-void _onHorizontalScreenChanged(bool value) {
-  if (value) {
+// 设置已在回调前写入，按生效后的值（含折叠屏自动模式）刷新方向
+void _onHorizontalScreenChanged(bool _) {
+  if (Pref.horizontalScreen) {
     fullMode();
   } else {
     portraitUpMode();

@@ -22,6 +22,7 @@ import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/extension/core_palettes_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/font_utils.dart';
+import 'package:PiliPlus/utils/ios/foldable_helper.dart';
 import 'package:PiliPlus/utils/ios/pip_helper.dart';
 import 'package:PiliPlus/utils/json_file_handler.dart';
 import 'package:PiliPlus/utils/max_screen_size.dart';
@@ -116,6 +117,7 @@ void main() async {
 
   if (PlatformUtils.isMobile) {
     if (Platform.isAndroid) MaxScreenSize.init();
+    if (Platform.isIOS) await IOSFoldableHelper.init();
     await Future.wait([
       if (Pref.horizontalScreen) ?fullMode() else ?portraitUpMode(),
       setupServiceLocator(),

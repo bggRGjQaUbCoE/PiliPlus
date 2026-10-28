@@ -35,6 +35,7 @@ import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
+import 'package:PiliPlus/utils/ios/foldable_helper.dart';
 import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -199,7 +200,11 @@ abstract final class Pref {
   static FullScreenMode get fullScreenMode {
     int? index = _setting.get(SettingBoxKey.fullScreenMode);
     if (index == null) {
-      final FullScreenMode mode = horizontalScreen && DeviceUtils.isTablet
+      // 折叠屏 iPhone 首次启动可能在内屏，但合上后仍需横屏全屏
+      final FullScreenMode mode =
+          horizontalScreen &&
+              DeviceUtils.isTablet &&
+              !IOSFoldableHelper.isIPhone
           ? .none
           : .auto;
       _setting.put(SettingBoxKey.fullScreenMode, mode.index);
@@ -626,6 +631,8 @@ abstract final class Pref {
       _setting.get(SettingBoxKey.optTabletNav, defaultValue: true);
 
   static bool get horizontalScreen {
+    // 折叠屏 iPhone：展开时使用横屏适配，合上时恢复手机布局
+    if (IOSFoldableHelper.isAuto) return IOSFoldableHelper.isUnfolded;
     bool? horizontalScreen = _setting.get(SettingBoxKey.horizontalScreen);
     if (horizontalScreen == null) {
       final isTablet = DeviceUtils.isTablet;

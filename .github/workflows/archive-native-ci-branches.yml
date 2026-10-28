@@ -63,7 +63,7 @@ jobs:
               const branchSHA = await readRef('heads/' + item.branch);
               const tagSHA = await readRef('tags/' + item.tag);
               if (branchSHA !== null && branchSHA !== item.sha) throw new Error('Historical branch unexpectedly moved: ' + item.branch);
-  if (branchSHA === null && tagSHA === null) throw new Error('Missing both historical branch and archive tag: ' + item.branch);
+              if (branchSHA === null && tagSHA === null) throw new Error('Missing both historical branch and archive tag: ' + item.branch);
               if (tagSHA !== null && tagSHA !== item.sha) throw new Error('Archive tag collision: ' + item.tag);
               const compare = await github.rest.repos.compareCommitsWithBasehead({
                 owner, repo, basehead: item.sha + '...' + context.sha

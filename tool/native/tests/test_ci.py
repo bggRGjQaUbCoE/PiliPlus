@@ -177,6 +177,32 @@ class InputContracts(unittest.TestCase):
         with self.assertRaises(ValueError):
             ci.verify_policy(self.lock, "android", "source", manifest, key)
 
+    def test_android_accepts_both_linear_decode_fork_interfaces(self):
+        # Existing tagged versions have the opt-in flag. The current
+        # optimize/dovi-linear-decode branch exposes an opt-out flag instead.
+        android = self.lock["platforms"]["android"]["source"]
+        key = ci.input_digest(self.lock, "android", "source")
+        manifest = {
+            "architectures": self.lock["platforms"]["android"]["architectures"],
+            "identity": {
+                "origin": "source",
+                "options": {"ci_inputs_sha256": key},
+                "recipe": {"commit": android["producer"]["commit"]},
+                "sources": {name: {"commit": source["commit"]}
+                            for name, source in android["sources"].items()},
+            },
+            "validation": {"compiled": True},
+            "capabilities": ["mpv.pl-external-yuv", "mpv.lavf-initial-dovi-hvcc"],
+        }
+        for feature in ("mpv.pl-dovi-linear-optimize", "mpv.pl-dovi-linear-disable"):
+            manifest["capabilities"] = [
+                "mpv.pl-external-yuv", "mpv.lavf-initial-dovi-hvcc", feature,
+            ]
+            ci.verify_policy(self.lock, "android", "source", manifest, key)
+        manifest["capabilities"] = ["mpv.pl-external-yuv", "mpv.lavf-initial-dovi-hvcc"]
+        with self.assertRaisesRegex(ValueError, "DV linear-decode fork API"):
+            ci.verify_policy(self.lock, "android", "source", manifest, key)
+
     def test_missing_compiled_capability_fails(self):
         key = ci.input_digest(self.lock, "android", "source")
         manifest = {"identity": {"options": {"ci_inputs_sha256": key}},

@@ -427,8 +427,19 @@ def verify_policy(lock, platform, mode, manifest, expected_inputs):
         raise ValueError("Native package was built for different locked inputs")
     if set(manifest["architectures"]) != set(item["architectures"]):
         raise ValueError("Native package architecture coverage differs from the lock")
-    required = item[mode].get("required_capabilities", item[mode].get("capabilities", []))
-    if not set(required).issubset(manifest["capabilities"]):
+    required = set(item[mode].get("required_capabilities", item[mode].get("capabilities", [])))
+    capabilities = set(manifest["capabilities"])
+    if platform == "android" and mode == "source" and "mpv.pl-dovi-linear-optimize" in required:
+        # The older fork exposed an opt-in optimize_dovi_linear_decode switch.
+        # The current libplacebo fork has optimization on by default and
+        # exposes the inverse disable_dovi_linear_decode switch instead.
+        # Both prove a compiled DV linear-decode fast path; neither is a bypass.
+        required.remove("mpv.pl-dovi-linear-optimize")
+        if not capabilities.intersection({
+            "mpv.pl-dovi-linear-optimize", "mpv.pl-dovi-linear-disable"
+        }):
+            raise ValueError("Native package is missing the DV linear-decode fork API")
+    if not required.issubset(capabilities):
         raise ValueError("Native package omits required compiled capabilities")
     if mode == "source":
         if identity["origin"] != "source" or not manifest["validation"]["compiled"]:

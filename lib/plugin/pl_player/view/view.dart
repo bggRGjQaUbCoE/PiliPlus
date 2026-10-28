@@ -308,14 +308,16 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
     if (plPlayerController.enableTapDm) {
       _tapGestureRecognizer = ImmediateTapGestureRecognizer(
-        onTapDown: plPlayerController.enableShowDanmaku.value
+        onTapDown: plPlayerController.enableShowDanmakuAdaptive.value
             ? _onTapDown
             : null,
         onTapUp: _onTapUp,
         onTapCancel: _removeDmAction,
       );
 
-      _danmakuListener = plPlayerController.enableShowDanmaku.listen((value) {
+      _danmakuListener = plPlayerController.enableShowDanmakuAdaptive.listen((
+        value,
+      ) {
         if (!value) _removeDmAction();
         _tapGestureRecognizer.onTapDown = value ? _onTapDown : null;
       });
@@ -1378,7 +1380,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         if (plPlayerController.enableTapDm)
           Obx(
             () {
-              if (!plPlayerController.enableShowDanmaku.value) {
+              if (!plPlayerController.enableShowDanmakuAdaptive.value) {
                 return const SizedBox.shrink();
               }
               final dmOffset = _dmOffset.value;

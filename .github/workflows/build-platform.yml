@@ -21,6 +21,12 @@ on:
       media_kit_ref:
         required: true
         type: string
+      source_manifest:
+        required: true
+        type: string
+      effective_lock_json:
+        required: true
+        type: string
       flutter_version:
         required: true
         type: string
@@ -40,6 +46,8 @@ jobs:
     env:
       PYTHONDONTWRITEBYTECODE: '1'
       CI: 'true'
+      PILIPLUS_EFFECTIVE_LOCK_JSON: ${{ inputs.effective_lock_json }}
+      PILIPLUS_SOURCE_MANIFEST: ${{ inputs.source_manifest }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -51,11 +59,9 @@ jobs:
           ref: ${{ inputs.media_kit_ref }}
           path: media-kit
           persist-credentials: false
-      - name: Verify frozen media-kit dev source identity
+      - name: Verify checked-out app and media-kit match frozen source manifest
         shell: bash
-        run: |
-          set -euo pipefail
-          test "$(git -C media-kit rev-parse HEAD)" = '${{ inputs.media_kit_ref }}'
+        run: python app/tool/native/ci.py verify-checkouts --media-kit media-kit
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -161,6 +167,8 @@ jobs:
     env:
       PYTHONDONTWRITEBYTECODE: '1'
       CI: 'true'
+      PILIPLUS_EFFECTIVE_LOCK_JSON: ${{ inputs.effective_lock_json }}
+      PILIPLUS_SOURCE_MANIFEST: ${{ inputs.source_manifest }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -173,11 +181,9 @@ jobs:
           ref: ${{ inputs.media_kit_ref }}
           path: media-kit
           persist-credentials: false
-      - name: Verify frozen media-kit dev source identity
+      - name: Verify checked-out app and media-kit match frozen source manifest
         shell: bash
-        run: |
-          set -euo pipefail
-          test "$(git -C media-kit rev-parse HEAD)" = '${{ inputs.media_kit_ref }}'
+        run: python app/tool/native/ci.py verify-checkouts --media-kit media-kit
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'

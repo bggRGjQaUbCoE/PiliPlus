@@ -296,6 +296,7 @@ class VideoReplyReplyController extends ReplyController
 
   @override
   Future<void> onRefresh() async {
+    if (replyTree.rawValue != null) return Future.syncValue(null);
     if (_inflightReply != null) await _inflightReply;
     _cancelReplyTimer();
     return super.onRefresh();

@@ -3,7 +3,7 @@ name: OHOS application framework media contracts
 on:
   workflow_dispatch:
   push:
-    branches: [feature/ohos]
+    branches: [goodwu-dev-rebased]
     paths:
       - '.github/workflows/ohos-media-contracts.yml'
       - 'tool/ohos/media_backend*'
@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: Goodwu/media-kit
-          ref: compat/piliplus-zero-change-20261018
+          ref: dev
           path: media-sdk
           persist-credentials: false
       - name: Install host test dependencies

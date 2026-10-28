@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "repository": "https://github.com/Goodwu/media-kit.git",
-  "branch": "compat/piliplus-zero-change-20261018",
+  "branch": "dev",
   "direction": "B",
   "patch": "tool/piliplus_compat/direction_b/player-integration.patch",
   "manifest": "tool/piliplus_compat/direction_b/manifest.json",

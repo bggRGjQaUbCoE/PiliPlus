@@ -9,11 +9,11 @@ on:
         type: string
       application_ref:
         description: Application branch or commit to export and build
-        default: feature/ohos
+        default: goodwu-dev-rebased
         type: string
   workflow_dispatch:
   push:
-    branches: [feature/ohos]
+    branches: [goodwu-dev-rebased]
     paths:
       - '.github/workflows/ohos-build.yml'
       - 'ohos/**'
@@ -57,7 +57,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Goodwu/media-kit
-          ref: ${{ inputs.media_kit_ref || 'compat/piliplus-zero-change-20261018' }}
+          ref: ${{ inputs.media_kit_ref || 'dev' }}
           persist-credentials: false
           path: media-sdk
       - name: Resolve current maintained OHOS native build recipe

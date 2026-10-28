@@ -100,7 +100,7 @@ class InputContracts(unittest.TestCase):
     def test_six_platforms_and_immutable_sdk(self):
         self.assertEqual(set(self.lock["platforms"]), set(ci.PLATFORMS))
         self.assertEqual(self.lock["media_kit"],
-                         {"repository": "Goodwu/media-kit", "branch": "dev"})
+                         {"repository": "Goodwu/media-kit", "branch": "feature/dv"})
 
     def test_plan_freezes_the_resolved_dev_sha(self):
         from types import SimpleNamespace
@@ -114,13 +114,13 @@ class InputContracts(unittest.TestCase):
             ci.plan(args)
         self.assertEqual(published.call_args.args[0]["media_kit_ref"], "a" * 40)
 
-    def test_sdk_lock_must_name_goodwu_dev(self):
+    def test_sdk_lock_must_name_goodwu_feature_branch(self):
         with tempfile.TemporaryDirectory() as folder:
             source = Path(folder) / "lock.json"
             invalid = copy.deepcopy(self.lock)
             invalid["media_kit"]["branch"] = "main"
             source.write_text(json.dumps(invalid))
-            with self.assertRaisesRegex(ValueError, "Goodwu/media-kit dev"):
+            with self.assertRaisesRegex(ValueError, "Goodwu/media-kit feature/dv"):
                 ci.load_lock(source)
 
     def test_adapter_identity_is_stable_across_windows_line_endings(self):

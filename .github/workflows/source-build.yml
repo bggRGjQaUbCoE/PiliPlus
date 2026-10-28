@@ -1,4 +1,4 @@
-name: Locked source and native package builds
+name: Development HEAD and pinned tag native builds
 
 on:
   workflow_dispatch:
@@ -13,7 +13,8 @@ on:
         options: [auto, source, upstream, package]
         default: auto
   push:
-    branches: ['goodwu-dev-rebased']
+    branches: ['feature/dv']
+    tags: ['v*']
     paths-ignore: ['docs/**', '**/*.md']
 
 permissions:
@@ -24,7 +25,9 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.plan.outputs.matrix }}
-      media_kit_ref: ${{ steps.plan.outputs.media_kit_ref }}
+      media_kit_ref: ${{ steps.source.outputs.media_kit_ref }}
+      source_manifest: ${{ steps.source.outputs.source_manifest }}
+      effective_lock_json: ${{ steps.source.outputs.effective_lock_json }}
       flutter_version: ${{ steps.plan.outputs.flutter_version }}
     steps:
       - uses: actions/checkout@v4
@@ -33,24 +36,39 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Freeze current Goodwu/media-kit dev SHA once for this build
-        id: media_sdk
-        shell: bash
+      - name: Freeze development HEADs or tagged source anchors once
+        id: source
+        env:
+          SELECTED_PLATFORMS: ${{ inputs.platforms || '["android","windows","linux","ios","macos","ohos"]' }}
+          NATIVE_MODE: ${{ inputs.native_mode || 'auto' }}
+          SOURCE_MODE: ${{ github.ref_type == 'tag' && 'tag' || 'dev' }}
+          APP_COMMIT: ${{ github.sha }}
         run: |
-          set -euo pipefail
-          sdk_sha=$(git ls-remote --exit-code https://github.com/Goodwu/media-kit.git refs/heads/dev | cut -f1)
-          [[ "$sdk_sha" =~ ^[0-9a-f]{40}$ ]] || { echo "Invalid media-kit dev ref" >&2; exit 1; }
-          printf 'sha=%s\n' "$sdk_sha" >> "$GITHUB_OUTPUT"
-          echo "Using media-kit dev at $sdk_sha for all requested platforms"
-      - name: Resolve only immutable native inputs
+          python tool/native/source_plan.py --source-mode "$SOURCE_MODE" --app-commit "$APP_COMMIT" \
+            --platforms "$SELECTED_PLATFORMS" --native-mode "$NATIVE_MODE" \
+            --effective-output "$RUNNER_TEMP/effective-inputs.json" \
+            --manifest-output "$RUNNER_TEMP/source-manifest.json"
+      - name: Plan immutable native inputs from this frozen snapshot
         id: plan
         env:
           SELECTED_PLATFORMS: ${{ inputs.platforms || '["android","windows","linux","ios","macos","ohos"]' }}
           NATIVE_MODE: ${{ inputs.native_mode || 'auto' }}
-          RESOLVED_MEDIA_KIT_SHA: ${{ steps.media_sdk.outputs.sha }}
-        run: python tool/native/ci.py plan --media-kit-commit "$RESOLVED_MEDIA_KIT_SHA" --platforms "$SELECTED_PLATFORMS" --mode "$NATIVE_MODE"
+          SOURCE_MODE: ${{ github.ref_type == 'tag' && 'tag' || 'dev' }}
+          MEDIA_KIT_SHA: ${{ steps.source.outputs.media_kit_ref }}
+        run: |
+          options=()
+          if [ "$SOURCE_MODE" = dev ]; then options+=(--dev-sources); fi
+          python tool/native/ci.py plan --lock "$RUNNER_TEMP/effective-inputs.json" \
+            --media-kit-commit "$MEDIA_KIT_SHA" --platforms "$SELECTED_PLATFORMS" \
+            --mode "$NATIVE_MODE" "${options[@]}"
       - name: Check native transport contracts
         run: python -m unittest discover -s tool/native/tests -v
+      - name: Archive selected source identities
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-manifest
+          path: ${{ runner.temp }}/source-manifest.json
+          if-no-files-found: error
 
   build:
     name: Build / ${{ matrix.platform }}
@@ -66,4 +84,6 @@ jobs:
       app_runner: ${{ matrix.app_runner }}
       cache_key: ${{ matrix.cache_key }}
       media_kit_ref: ${{ needs.plan.outputs.media_kit_ref }}
+      source_manifest: ${{ needs.plan.outputs.source_manifest }}
+      effective_lock_json: ${{ needs.plan.outputs.effective_lock_json }}
       flutter_version: ${{ needs.plan.outputs.flutter_version }}

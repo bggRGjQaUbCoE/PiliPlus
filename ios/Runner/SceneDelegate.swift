@@ -154,6 +154,44 @@ final class NativeTabBarController: UITabBarController, UITabBarControllerDelega
   override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
     flutterViewController.supportedInterfaceOrientations
   }
+
+  // The tabs do not forward appearance callbacks, so deliver this controller's
+  // appearance to Flutter directly. FlutterViewController creates its rendering
+  // surface in viewWillAppear only once the viewport size is known, and
+  // otherwise only on first layout or scene activation while active; on device
+  // both can be missed at launch, leaving the launch screen up. The first
+  // appearance is therefore delivered after this view is in the window and laid
+  // out.
+  private var hasFlutterAppeared = false
+
+  override func viewWillAppear(_ animated: Bool) {
+    super.viewWillAppear(animated)
+    if hasFlutterAppeared {
+      flutterViewController.beginAppearanceTransition(true, animated: animated)
+    }
+  }
+
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+    if hasFlutterAppeared {
+      flutterViewController.endAppearanceTransition()
+    } else {
+      hasFlutterAppeared = true
+      flutterViewController.view.layoutIfNeeded()
+      flutterViewController.beginAppearanceTransition(true, animated: false)
+      flutterViewController.endAppearanceTransition()
+    }
+  }
+
+  override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    flutterViewController.beginAppearanceTransition(false, animated: animated)
+  }
+
+  override func viewDidDisappear(_ animated: Bool) {
+    super.viewDidDisappear(animated)
+    flutterViewController.endAppearanceTransition()
+  }
 }
 
 /// A tab's content controller; it only holds the shared Flutter view controller

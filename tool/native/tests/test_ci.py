@@ -99,7 +99,29 @@ class InputContracts(unittest.TestCase):
 
     def test_six_platforms_and_immutable_sdk(self):
         self.assertEqual(set(self.lock["platforms"]), set(ci.PLATFORMS))
-        self.assertRegex(self.lock["media_kit"]["commit"], r"^[0-9a-f]{40}$")
+        self.assertEqual(self.lock["media_kit"],
+                         {"repository": "Goodwu/media-kit", "branch": "dev"})
+
+    def test_plan_freezes_the_resolved_dev_sha(self):
+        from types import SimpleNamespace
+        args = SimpleNamespace(
+            lock=ci.LOCK, packages=ci.PACKAGES, platforms='["android"]',
+            mode="source", media_kit_commit="dev")
+        with self.assertRaisesRegex(ValueError, "resolved 40-character"):
+            ci.plan(args)
+        args.media_kit_commit = "a" * 40
+        with patch.object(ci, "emit") as published:
+            ci.plan(args)
+        self.assertEqual(published.call_args.args[0]["media_kit_ref"], "a" * 40)
+
+    def test_sdk_lock_must_name_goodwu_dev(self):
+        with tempfile.TemporaryDirectory() as folder:
+            source = Path(folder) / "lock.json"
+            invalid = copy.deepcopy(self.lock)
+            invalid["media_kit"]["branch"] = "main"
+            source.write_text(json.dumps(invalid))
+            with self.assertRaisesRegex(ValueError, "Goodwu/media-kit dev"):
+                ci.load_lock(source)
 
     def test_adapter_identity_is_stable_across_windows_line_endings(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -115,7 +137,7 @@ class InputContracts(unittest.TestCase):
         first = ci.input_digest(self.lock, "android", "source")
         other = copy.deepcopy(self.lock)
         other["application_commit"] = "b" * 40
-        other["media_kit"]["commit"] = "c" * 40
+        other["media_kit"]["branch"] = "another-dev-ref"
         self.assertEqual(first, ci.input_digest(other, "android", "source"))
 
     def test_native_revision_invalidates_package(self):

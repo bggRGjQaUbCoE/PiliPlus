@@ -59,8 +59,8 @@ def load_lock(path=LOCK):
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     if data.get("schema") != 1 or set(data["platforms"]) != set(PLATFORMS):
         raise ValueError("The source lock must cover all six supported platforms")
-    if not SHA.fullmatch(data["media_kit"]["commit"]):
-        raise ValueError("media-kit must be pinned to a full commit")
+    if data["media_kit"] != {"repository": "Goodwu/media-kit", "branch": "dev"}:
+        raise ValueError("media-kit SDK source must be Goodwu/media-kit dev")
     for platform, item in data["platforms"].items():
         if item["default_mode"] not in ("source", "upstream"):
             raise ValueError("Invalid default mode: " + platform)
@@ -132,6 +132,8 @@ def emit(values, target="GITHUB_OUTPUT"):
 
 def plan(args):
     lock = load_lock(args.lock)
+    if not SHA.fullmatch(args.media_kit_commit):
+        raise ValueError("plan requires the resolved 40-character media-kit dev SHA")
     selected = json.loads(args.platforms)
     if not isinstance(selected, list) or not selected or len(set(selected)) != len(selected) or any(p not in PLATFORMS for p in selected):
         raise ValueError("platforms must be a nonempty unique JSON array of supported names")
@@ -145,7 +147,7 @@ def plan(args):
             "inputs_sha256": identity, "native_runner": "macos-15" if name in ("ios", "macos") and mode == "source" else "ubuntu-24.04",
             "app_runner": item["runner"], "cache_key": "native-v1-" + name + "-" + mode + "-" + cache_identity})
     emit({"matrix": json.dumps({"include": result}, separators=(",", ":")),
-          "media_kit_ref": lock["media_kit"]["commit"], "flutter_version": lock["flutter"]["version"]})
+          "media_kit_ref": args.media_kit_commit, "flutter_version": lock["flutter"]["version"]})
 
 
 def safe_name(value):
@@ -480,8 +482,8 @@ def provenance(args):
     lock = load_lock(args.lock)
     sdk = Path(args.media_kit).resolve()
     actual_sdk = run("git", "rev-parse", "HEAD", cwd=sdk, capture=True).strip()
-    if actual_sdk != lock["media_kit"]["commit"]:
-        raise ValueError("Application used an unlocked media-kit revision")
+    if not SHA.fullmatch(args.media_kit_commit) or actual_sdk != args.media_kit_commit:
+        raise ValueError("Application media-kit HEAD differs from the captured dev SHA")
     native = json.loads(Path(args.receipt).read_text())
     artifacts = Path(args.artifacts).resolve()
     modifications = run("git", "diff", "--binary", "HEAD", cwd=ROOT, capture=True)
@@ -493,7 +495,8 @@ def provenance(args):
     result = {"schema": 1, "platform": args.platform,
         "application": {"repository": os.environ.get("GITHUB_REPOSITORY", "Goodwu/PiliPlus"),
             "commit": run("git", "rev-parse", "HEAD", cwd=ROOT, capture=True).strip()},
-        "media_kit": {"repository": lock["media_kit"]["repository"], "commit": actual_sdk},
+        "media_kit": {"repository": lock["media_kit"]["repository"],
+                      "branch": lock["media_kit"]["branch"], "commit": actual_sdk},
         "native": native, "application_files": files,
         "run": {"id": os.environ.get("GITHUB_RUN_ID"), "attempt": os.environ.get("GITHUB_RUN_ATTEMPT")},
         "validation": {"application_compiled": True, "runtime": False, "device": False}}
@@ -506,6 +509,8 @@ def main():
     parser.add_argument("--packages", default=str(PACKAGES))
     commands = parser.add_subparsers(dest="command", required=True)
     p = commands.add_parser("plan")
+    p.add_argument("--media-kit-commit", required=True,
+                   help="Full dev HEAD captured once by the source-vector job")
     p.add_argument("--platforms", default=json.dumps(list(PLATFORMS)))
     p.add_argument("--mode", choices=("auto", "source", "upstream", "package"), default="auto")
     p.set_defaults(func=plan)
@@ -518,6 +523,8 @@ def main():
         p.add_argument("--work" if name == "build-native" else "--output", required=True)
         p.set_defaults(func=func)
     p = commands.add_parser("provenance")
+    p.add_argument("--media-kit-commit", required=True,
+                   help="Same resolved dev SHA passed to every native/App checkout")
     for name in ("platform", "media-kit", "receipt", "artifacts", "output"):
         p.add_argument("--" + name, required=True)
     p.set_defaults(func=provenance)

@@ -1,7 +1,7 @@
 # 全平台源码与原生开发包构建
 
 入口是 `.github/workflows/source-build.yml`，名称 **Locked source and native package builds**。
-它检出当前应用提交和 `tool/native/inputs.lock.json` 固定的 media-kit 提交，先生产或验证原生包，再构建应用。两个 checkout 必须并列为 `app/` 和 `media-kit/`，与已经提交的 `pubspec_overrides.yaml` 对应。
+它先解析 `Goodwu/media-kit@dev` 的完整 SHA，并把同一个 SHA 传递给每个平台的应用和 SDK checkout，先生产或验证原生包，再构建应用。两个 checkout 必须并列为 `app/` 和 `media-kit/`，与已经提交的 `pubspec_overrides.yaml` 对应。
 
 主工作流生成固定输入矩阵，再为每个平台调用 `.github/workflows/build-platform.yml`。每个平台的应用任务只等待自己的原生包；一个平台源码编译失败时只跳过该平台应用，其余平台继续。这样已缓存的上游包可以立即进入应用构建。
 
@@ -51,7 +51,7 @@ workflow 的 `platforms` 参数是 JSON 数组，例如：
 
 ## 输入和产物如何关联
 
-`inputs.lock.json` 固定 media-kit、各 native producer 及主要源码提交。Android 四组件向量传给 builder 的 `--source-lock`；OHOS 使用 producer 自带的全量 `source-lock.json`；Darwin 由 producer commit、`packages.lock.nix` 和 `flake.lock` 固定；Windows 额外冻结完整 CMake 依赖闭包，避免只锁 recipe 却继续拉取 `master`。
+`inputs.lock.json` 将 SDK 来源限定为 `Goodwu/media-kit` 的 `dev`，每次 CI 的 plan 阶段冻结该分支对应的 40 位提交；各 native producer 及主要原生源码仍由锁文件精确固定。Android 四组件向量传给 builder 的 `--source-lock`；OHOS 使用 producer 自带的全量 `source-lock.json`；Darwin 由 producer commit、`packages.lock.nix` 和 `flake.lock` 固定；Windows 额外冻结完整 CMake 依赖闭包，避免只锁 recipe 却继续拉取 `master`。
 
 统一 native artifact 包含：
 
@@ -156,3 +156,13 @@ python3 ../media-kit/tool/native_package/package.py verify \
 默认模式的六平台成功不代表每个平台的 source profile 都已完整实编。Windows 的 LLVM/MinGW 完整工具链及 Darwin Nix source-profile 产品构建仍未执行；这两组默认使用已实际验证的上游开发包。Android/OHOS source 以及 Linux source → App 的独立实编已完成。应用运行、GPU、HDR/DV、设备播放和正式分发签名仍须各自验收。
 
 产品构建证据固定于上述提交。后续收尾只补充本轮记录、完善开发分支的 push 过滤（actionlint 通过）及纠正 Linux INSTALL.txt 中依赖证据的一句话，不改变 native locks、jobs 或构建命令。
+
+### 动态开发分支与可重现源码身份
+
+`source-build.yml` 在 plan job 的唯一入口读取 `refs/heads/dev`；该运行所有
+native/App job 一律检出相同完整提交 SHA，并在 `ci.py provenance` 逐一比对。
+`dev` 后续移动只影响**下一次**运行，不会在进行中的构建更换 SDK。
+`plan` 与 `provenance` 现在都必须传 `--media-kit-commit <40-hex>`；
+不会从旧 CI 的 `d7662218` 静默回退。已有原生包缓存按 native producer
+身份继续复用；App 端 SDK 源码和原生包能力仍须兼容，新 SDK 并不意味着
+原生 mpv 自动更新。CI 是源码/编译验证，不替代真实设备 HDR/DV 验收。

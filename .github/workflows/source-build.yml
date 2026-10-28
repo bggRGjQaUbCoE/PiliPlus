@@ -33,12 +33,22 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Freeze current Goodwu/media-kit dev SHA once for this build
+        id: media_sdk
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdk_sha=$(git ls-remote --exit-code https://github.com/Goodwu/media-kit.git refs/heads/dev | cut -f1)
+          [[ "$sdk_sha" =~ ^[0-9a-f]{40}$ ]] || { echo "Invalid media-kit dev ref" >&2; exit 1; }
+          printf 'sha=%s\n' "$sdk_sha" >> "$GITHUB_OUTPUT"
+          echo "Using media-kit dev at $sdk_sha for all requested platforms"
       - name: Resolve only immutable native inputs
         id: plan
         env:
           SELECTED_PLATFORMS: ${{ inputs.platforms || '["android","windows","linux","ios","macos","ohos"]' }}
           NATIVE_MODE: ${{ inputs.native_mode || 'auto' }}
-        run: python tool/native/ci.py plan --platforms "$SELECTED_PLATFORMS" --mode "$NATIVE_MODE"
+          RESOLVED_MEDIA_KIT_SHA: ${{ steps.media_sdk.outputs.sha }}
+        run: python tool/native/ci.py plan --media-kit-commit "$RESOLVED_MEDIA_KIT_SHA" --platforms "$SELECTED_PLATFORMS" --mode "$NATIVE_MODE"
       - name: Check native transport contracts
         run: python -m unittest discover -s tool/native/tests -v
 

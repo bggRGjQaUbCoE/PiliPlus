@@ -190,3 +190,18 @@ OHOS 补丁适配，再更新批准 commit/tree、文件摘要及两个引用它
 （应用依赖锁和 `media_backend.json`）；不能只更新哈希掩盖未处理的源码变化。
 随后在新输出目录重做 SDK 检查、依赖解析、分析、构建和受影响功能验证。
 不要提交 OHOS 副本生成的 Pub 锁回原主线 `pubspec.lock`。
+
+## 当前开发线 media-kit
+
+六平台 CI 解析 `Goodwu/media-kit@dev` 的 SHA 并在所有 jobs 冻结。
+本地保持 `../media-kit` 路径覆盖；使用本地构建前在 App 兄弟仓执行：
+
+```bash
+git -C ../media-kit fetch origin dev
+git -C ../media-kit switch dev
+git -C ../media-kit merge --ff-only origin/dev
+```
+
+仓库主线/上游同步分支不会被改变。如果本地 `media-kit` 含未提交修改，
+先保留工作树，不要执行强制切换或重置。`media_kit_native_event_loop`
+在 Goodwu/media-kit 中不存在，保留其原始独立 Git 来源。

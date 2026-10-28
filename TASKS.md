@@ -2,25 +2,35 @@
 
 任务事实源：只保留当前状态、验收门槛和下一步；按各项 `context` 查看持续更新的依据。
 
+## LOCAL-DEPENDENCY-BRANCHES-20261028
+- **完成（2026-10-29 用户已授权提交推送相关记录）**：PiliPlus、media-kit、mpv、FFmpeg、原生构建配方仓库及构建目录内 ffmpeg/mpv 均切到 `feature/dv`；两份 libplacebo 均在 `optimize/dovi-linear-decode`。保留本地修改及构建缓存，TASKS 顶部插入冲突保留双方完整块。仅提交任务/conversation/Claude 入口记录；原生构建补丁和 App 意外格式变化保留未提交。
+- **验证**：切换仓 HEAD 与获取的目标 SHA 一致，无 unmerged/index 内容；原本地文件已备份并核对回放。仅 Git/文件状态验证，未进行构建或设备验收。
+- **context**：[local-dependency-branches-20261028.md](archives/conversations/local-dependency-branches-20261028.md)。
+
 ## ALL-PLATFORM-NATIVE-CI-20261028
 - **开发线整合**：将原 `ci/native-packages-20261023` 与 `ci/native-packages-update-20261027` 双分支的完整历史、六平台已验证 native package/SDK 机制、公共接入、Android 2026-10-27 原生输入锁、OHOS 新受审集成迁移到唯一活跃 `goodwu-dev-rebased`；保留此分支的所有播放器/HDR/诊断改动，不修改 `main` 和同步分支。
 - **media-kit 来源**：CI 在 `source-build.yml` 的 plan job 仅读取一次 `Goodwu/media-kit@dev` 的 40 位 HEAD，所有 native/App job 后续检出同一 SHA，生成 package identity、native/应用溯源；本地仍由 `../media-kit` 路径覆盖且应使用其 `dev` 分支。
 - **OHOS 源码边界**：旧受审基线 `30525d9` 早于当前 6 项 App 变更，会失败；本次依照当前开发分支完整 Git tree 更新独立的 `approved_integration.json` 基线及相关改动 Dart 文件 SHA256，严格保留校验、不启用 fallback。native 构建、UI/设备验证需按具体产物另行执行。
 - **验证范围**：旧 CI 分支先前两轮 Android/Windows/Linux/iOS/macOS App jobs 成功，OHOS 因基线陈旧失败；新融合版本须以其自己的 GitHub Actions 结果为准。相关工作说明见 `docs/ci/native-packages.md`，不要把旧构建宣称成融合版通过。
 
+## GITHUB-BUILD-CI-DIFF-20261027
+- **完成（2026-10-28，云端构建+装机测试闭环）**：①依赖项＝Android 源码链三基点对齐（mpv `media-kit/android@4c6e1796`、FFmpeg `lg-p84-d1-vui-fix-20261010@d4bb79394b`、libplacebo 新分支 `optimize/dovi-external-yuv-20261027@c9fd8798`），run `40532253215` android native 四 ABI 全链构建验证并缓存（inputs `bd4fc154…`）；②**手工触发**＝`workflow_dispatch` run [`40542347182`](https://github.com/Goodwu/PiliPlus/actions/runs/40542347182)（仅 android；首次 attempt 因 runner 下载 NDK 28.2 zip 损坏 transient 失败，rerun 后 attempt 2 全绿）；③下载＝artifact `PiliPlus-android-6af28958b…`，arm64 APK 28,022,162B SHA-256 `a79448c8…31249`（provenance：app `6af28958b`+native `bd4fc154`）；④装机测试＝Redmi Note 5A（`a869cea9`，arm64/API37）install Success、versionName `2.1.6-6af28958b`/minSdk26、**on-device base.apk SHA-256 与候选逐字一致**、冷启动 2478ms、深链 BV1vY4y1N7TY 视频页加载且播放 1%→4% 实时推进、零 FATAL/ANR（截图 `/tmp/pili-ci-note5a-playing.png`）。遗留：run #4 windows App 因同 transient NDK 下载失败未单独 rerun（android 无关）；media-kit Dart 侧对齐见后续任务。
+- **教训与结构约束**：真正在跑的云端链是 `ci/native-packages-*` 分支的 source-build/build-platform + `tool/native/*`（旧五工作流从未运行）；锁的 media-kit ref 钉机制分支 `ci/verified-native-packages-20261023`（compat 线无 `tool/native_package`，不可 bump）；该分支受 ohos approved-integration 源保护约束**禁止新增未过审文件**（归档文件曾致 ohos App 两轮失败）；libplacebo 重写致能力名 `pl-dovi-linear-disable`→`optimize`（producer 按宏映射）。deps 工作树"修改"均为配方自动补丁。唯一 context：[github-build-ci-diff-20261027.md](archives/conversations/github-build-ci-diff-20261027.md)。
+- **误判更正**：首轮"五工作流 CI 全断"结论错误（未先查 `gh run list`/`gh workflow list`），五处克隆步骤已回退；CI 签名 secrets 配置记录见 context 追加段。唯一 context：[github-build-ci-diff-20261027.md](archives/conversations/github-build-ci-diff-20261027.md)。
 
 ## LG-HLG-PQ-BRIGHTNESS-MAPPING-20261025
 - **completed、用户采用，已授权提交推送**：1000参考峰值/gamma0，取消自动+3，不加曲线；105 tests/analyze0与5份生产源哈希保持。
 - **同帧观感**：熊35.035秒、夕阳720.052666667秒、近黑600.032766667秒用户均反馈基本一致；夕阳明确无明显过曝/细节丢失。近黑HDR10直通/离屏参考一致。
 - **交付与运行**：标准源码PiliPlus APK SHA6da37fb9…已安装LG且base.apk一致；北海道原片硬解SurfaceTexture→PQ/ext:lg-pq、peak1000、applied verified=true、HDR1。用户确认主应用连续播放“正常，采用这版”，验收通过。
 - **证据边界**：原片35秒0.1–1000nit分段中位偏差最大3.87%，稀少高光+6.79%，无<.1nit样本；fixture暗边缘/高光残差未消除，不宣称逐像素或全片一致。面板nits未量测。
+- **A/B代码保全（2026-10-27）**：按用户要求将实验工具保存在新分支 `codex/hdr-ab-diagnostics`：media-kit `4bc0c9d9`、mpv `d81d3a67f0`。实验暂不启用；本次仅保存代码，不代表构建、A/B、灰阶或面板验收通过。详见 context。
 - **context**：[lg-hlg-pq-brightness-mapping-20261025.md](archives/conversations/lg-hlg-pq-brightness-mapping-20261025.md)；永久交付摘要在PiliPlus `archives/evidence/lg-hlg-pq-minimal-20261027.json`。用户2026-10-27授权提交、推送；仅纳入本任务范围，保留其他修改。
 
 ## FFMPEG-REBUILD-INSTALL-20261025
 
 - **done（仅构建装机，未提交）**：用户指示 FFmpeg 更新后重建。标准入口 `tool/build-android-test.sh` 源码构建 `=== VERIFIED`：APK `piliplus-source-test-release.apk` 27,601,633 B，SHA-256 `4fb1c645…5f87`；libmpv `982fb96a…fff0e5`，JAR `9517538f…ab2f7a3`；FFmpeg head `d4bb79394b`（tree d28a8f87 含 configure/hls.c 工作树改动，随源码链进入构建）。2026-10-25 01:30 装机 5 台在线设备（LYA/LG G6/Redmi 8/Redmi Note 5A/marble），`install -r` 全 Success，versionName 2.1.6，lastUpdateTime 01:30:31–50，on-device base.apk 哈希逐台与候选一致（4 台 sha256 一致；LG 无 sha256sum 按 md5 `763ef86a…1435` 对照一致）。VKY（P10 Plus）本轮离线未装，上线后需补装同包。设备播放/硬解/HDR 行为验收按各任务另行进行，本轮不含。
 
-姊妹仓：本地 media-kit checkout 在 `../media-kit`（dev 分支），本仓的一切播放器行为变化先看其 `TASKS.md` 的 MK-ROUTING 段。
+姊妹仓：本地 media-kit checkout 在 `../media-kit`（`feature/dv` 分支），本仓的一切播放器行为变化先看其 `TASKS.md` 的 MK-ROUTING 段。
 **镜像红线（2026-10-17 起；改名后仅适用于旧仓 PiliPlus.old）**：旧仓 `main/dev/dom` 与全部 tag 由 `ci/upstream-sync` 孤儿分支每日强镜像自上游（force+prune），自有提交只能放特性分支（当前工作分支 `feature/ohos`，不受镜像影响）。
 
 ## MACOS-XCCONFIG-PODS-INCLUDE-20261024
@@ -197,6 +207,8 @@ adb -s <serial> install -r build/app/outputs/flutter-apk/app-arm64-v8a-release.a
 
 ## VIDEO-STARTUP-LATENCY-20261022
 
+- **已关闭（用户 2026-10-27 判定完成）**：用户不再要求继续追踪点击到首帧低于 2 秒目标。历史实测未达到稳定 <2s 门槛；此状态表示用户关闭任务，不代表性能目标已通过。mpv/media-kit 的启动专用诊断日志已移除，功能性启动优化保留。唯一 context：[video-startup-latency-20261022.md](archives/conversations/video-startup-latency-20261022.md)。
+- **清理后源码构建与装机（2026-10-27）**：标准 `tool/build-android-test.sh` 返回 `=== VERIFIED`，APK 27,608,145 B，SHA-256 `edd79f3145a180a4b7ae9a75d12eee75aa282ac1ee5205114239987435bbeb7f`。LG H870DS 冒烟测试启动 `BV1vY4y1N7TY`，显示播放时间 12:53/19:30、暂停图标及 P8.4/SurfaceTexture 硬解状态；截图未捕获 SurfaceView 实际画面，不作为面板/画质验收。该 APK 已安装到本轮全部 4 台在线手机（Redmi Note 8、Mi Note 3、LG H870DS、Redmi Note 5A），逐台读取 `base.apk` 并与候选 SHA-256 一致。未提交本记录。详见 context。
 - **Round 7 收尾(2026-10-22 晚):按用户授权 revert 临时诊断(codec-stats vd_lavc +168、App STARTUPTRACE 四文件)并分批本地提交(不推送)。** 提交分组:media-kit ①公共功能件(probe owner/open coordinator/DV policy/batch ABI/legacy options)②今日延迟改动(hint plumbing+dispose 宽限期剥离);mpv 单批(pending-proof 基线+关键帧起播三件套+eager seek+refresh 门控);PiliPlus 单批(API hint 推导+携带+注册表+本归档)。revert 后验证:App analyze/4测试过、mpv 重编+native check 582/0×6轮。r22(含诊断)为当前装机,r23 源码态=提交态。效果汇总:切换点击→启动 4.3s→0.2s(dispose宽限期);续播 10s→4.5-6s(关键帧起播);首开 probe+promotion 跳过(API hint);后续:统一启动定位编排(规范在案)。
 
 - **Round 6 旧播放器退役延迟已解决(r22 最终版在装,V2 PASS+P2/P3 已处置):DV 切换点击→open_submit 从 4.3-4.6s 降至 0.16-0.27s,点击→首帧 2.37-2.71s(5 次实机切换)。** 定位链(r17t-r19t 三轮插桩):切换时 `_managedPlayback.ensure()` 退役旧 owner,其中 transport/session dispose 仅 0-150ms,**元凶=media_kit `Player.dispose()` 内硬编码 `await Future.delayed(5s)`(mpv_terminate_destroy 前的"grace period"),player_dispose_done 实测 +5110~5174ms 恒定**。修复:宽限期+native 销毁剥离为分离任务,dispose() 在 super.dispose() 后即完成;新增 `nativeDestructionComplete` getter 供需观察完整销毁者等待。managed/routed 44/44 通过;player_test/wakeup 测试加载失败为既有 NativePlayer 命名冲突(与本改动无关)。V2 PASS:P2(native销毁错误零观察者)已修(print sink 挂分离future)、P3(getter足枪)已文档化;P3-c(进程退出窗口泄漏面)记录在案待消费方决策。MKRETIRE 打点已清理;App 侧 STARTUPTRACE 临时打点保留至延迟专项收尾。剩余切换延迟=库相位(2.4-2.7s,归下一轮统一启动定位编排)。context 同上;证据 /tmp/pili-startup-r3/usertrace{,2,3,4}.log。

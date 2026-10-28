@@ -7,6 +7,7 @@
 - **数值边界**：原片35秒以实际HDR10 FBO分段，0.1–1000nit中位偏差最大3.8733%；≥1000nit仅103像素为+6.7930%；没有<0.1nit样本，P90像素误差仍大于分段中位误差。10场景1080CRF12 fixture的少量暗边缘/高光残差保留，不宣称逐像素、全片或面板实测nits一致。已测附加曲线会伤及其他场景，不再盲加gamma或曲线。
 - **主应用交付**：标准当前源码构建VERIFIED，APK `lg-hlg-reference-1000-g0-20261026-release.apk` SHA256 `6da37fb90c60e736db1700b0e0852ff965fa756cf50aff95958c1868e42d955f`；已装LG，设备base.apk一致。北海道原片BV1vY4y1N7TY：facts HLG/DV8 compat4、硬解SurfaceTexture、baseLayerConvert/gpu-next/PQ/ext:lg-pq、peak1000、applied verified=true；HDR1/背光255/thermal0。主App未直接采样gamma属性，不冒称实读gamma0。永久摘要：`archives/evidence/lg-hlg-pq-minimal-20261027.json`。
 - **最终验收通过**：用户对主应用连续播放明确反馈“正常，采用这版”。采用1000参考峰值/gamma0、取消自动+3、无附加曲线，完成本轮实用映射与设备观感交付。保留数值残差边界，不宣称逐像素或全片零误差。当前安装保留，未暂存、未提交、未推送。
+- **A/B诊断代码保全（2026-10-27）**：用户要求把现有诊断实现保存在新分支，暂不继续使用。已分别提交到 media-kit `codex/hdr-ab-diagnostics@4bc0c9d9` 与 mpv `codex/hdr-ab-diagnostics@d81d3a67f0`。提交包括 PQ 离屏/帧步进与 HLG 峰值-gamma 探针、灰阶预测脚本、Android YUV range/luma/FBO 实验路径。该保全提交没有重新构建、运行或验证 A/B，不改变上方已验收的生产映射结论。
 - **状态保护**：临时亮度覆盖已恢复，随后外部设置manual0/253予以保留；主App播放实际背光255另作运行采样，不写系统亮度。未暂存、未提交、未推送，未知工作区修改保留。并行助手额度不足，Lead处理交互与记录。
 
 - **提交授权**：2026-10-27用户明确要求“提交、推送”。本次仅提交media-kit五份生产/测试文件及对应记录；HDR Lab、mpv临时诊断和其他未知修改不纳入。推送两个当前分支，包含此前已存在的未推送提交。

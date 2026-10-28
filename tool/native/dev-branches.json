@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "branches": {
+    "Goodwu/media-kit": "feature/dv",
+    "Goodwu/libmpv-android-video-build-dv-experiment": "feature/dv",
+    "Goodwu/mpv": "feature/dv",
+    "Goodwu/FFmpeg": "feature/dv",
+    "Goodwu/libplacebo": "optimize/dovi-linear-decode",
+    "Goodwu/libmpv-ohos-build": "feature/dv",
+    "Goodwu/libmpv-darwin-build": "ci/source-native-packages"
+  }
+}

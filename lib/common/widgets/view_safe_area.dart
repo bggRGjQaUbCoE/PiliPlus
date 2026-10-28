@@ -27,3 +27,22 @@ class ViewSafeArea extends StatelessWidget {
     );
   }
 }
+
+/// Keeps a whole page clear of the left and right insets, such as iPhone Duo's
+/// vertical status bar, and removes them from [MediaQuery] so widgets inside
+/// do not add them again.
+class SideSafeArea extends StatelessWidget {
+  const SideSafeArea({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final padding = MediaQuery.paddingOf(context);
+    if (padding.left == 0 && padding.right == 0) return child;
+    return ColoredBox(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: SafeArea(top: false, bottom: false, child: child),
+    );
+  }
+}

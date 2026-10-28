@@ -211,33 +211,38 @@ class DuoFlutterViewController: FlutterViewController {
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    if #available(iOS 27.1, *) {
-      let interaction = UIHingeInteraction { [weak self] _, update in
-        self?.hingeDidUpdate(update.hinge)
+    // UIHinge ships in the iOS 27.1 SDK (Xcode 27, Swift 6.4); older Xcode
+    // versions build without hinge handling.
+    #if compiler(>=6.4)
+      if #available(iOS 27.1, *) {
+        let interaction = UIHingeInteraction { [weak self] _, update in
+          self?.hingeDidUpdate(update.hinge)
+        }
+        view.addInteraction(interaction)
       }
-      view.addInteraction(interaction)
-    }
+    #endif
   }
 
-  @available(iOS 27.1, *)
-  private func hingeDidUpdate(_ hinge: UIHinge?) {
-    let isOpen = hinge.map { $0.status != .closed && $0.status != .unknown } ?? false
-    guard isOpen != isHingeOpen else { return }
-    isHingeOpen = isOpen
-    setNeedsUpdateOfSupportedInterfaceOrientations()
-    // Flutter also stores the lock as the scene's geometry preference, which
-    // UIKit uses when the scene moves to the inner display. Clear it while the
-    // scene is still on the outer display, where programmatic changes are
-    // allowed.
-    if isOpen, let windowScene = view.window?.windowScene {
-      windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .all))
+  #if compiler(>=6.4)
+    @available(iOS 27.1, *)
+    private func hingeDidUpdate(_ hinge: UIHinge?) {
+      let isOpen = hinge.map { $0.status != .closed && $0.status != .unknown } ?? false
+      guard isOpen != isHingeOpen else { return }
+      isHingeOpen = isOpen
+      setNeedsUpdateOfSupportedInterfaceOrientations()
+      // Flutter also stores the lock as the scene's geometry preference, which
+      // UIKit uses when the scene moves to the inner display. Clear it while the
+      // scene is still on the outer display, where programmatic changes are
+      // allowed.
+      if isOpen, let windowScene = view.window?.windowScene {
+        windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .all))
+      }
     }
-  }
+  #endif
 
   override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
     isHingeOpen ? .all : super.supportedInterfaceOrientations
   }
-
 
   // When hosted in NativeTabBarController, UIKit reads orientations from the
   // root controller, so forward Flutter's update requests to it.

@@ -17,7 +17,7 @@ Flutter 使用固定的官方 `CPF-Flutter/flutter_flutter:oh-3.44.9-dev`。
 - `approved-integration`：验证独立锁定的批准文件及其 SHA256，接受当前已集成的
   应用基线 `30525d964b71b742637fc4ade4764bf94aafda45`。它锁定该 Git tree 和
   14 个集成边界文件；基线之后只允许批准文件列出的 CI、工具和文档路径变更。
-  应用源码、资源、平台工程和 pubspec 的新增、删除、修改仍会被拒绝。
+  应用源码、资源和平台工程的新增、删除、修改仍被拒绝；`pubspec.yaml`\n  只接受批准文件中 SHA-256 明确锁定的已审查版本，其他修改仍会失败。\n  `archives/conversations/` 仅允许 Markdown 文档，`CLAUDE.md` 只允许根目录该文件。
 
 两种模式都检查工作文件和暂存区。新模式的 `prepare` / `prepare-build` 要求
 所选提交已 checkout，且所有已跟踪文件均无本地漂移；未跟踪的签名和缓存不会导出。
@@ -33,7 +33,7 @@ OHOS 构建适配只修改独立副本。**构建副本确实修改部分原应�
 ```sh
 python3 tool/ohos/ohos.py check-source \
   --source-policy approved-integration \
-  --source-policy-sha256 33e45fb135c57cb1d9feebbf6cdec27a2f1ae6c9d09705ab2ee42603f925b884
+  --source-policy-sha256 5e594b3170242b81e8ac44d953d327fae37ef102365615209dafd3f16e178972
 python3 -m unittest discover -s tool/ohos -p 'test_*.py' -v
 ```
 
@@ -86,7 +86,7 @@ AArch64 ELF、archive/library 精确摘要，以及真实编译记录中的
 python3 tool/ohos/ohos.py prepare-build \
   --output /tmp/PiliPlus-ohos-build \
   --source-policy approved-integration \
-  --source-policy-sha256 33e45fb135c57cb1d9feebbf6cdec27a2f1ae6c9d09705ab2ee42603f925b884
+  --source-policy-sha256 5e594b3170242b81e8ac44d953d327fae37ef102365615209dafd3f16e178972
 ```
 
 `--revision <commit>` 可指定源提交；输出目录必须不存在且位于 Git checkout
@@ -193,13 +193,13 @@ OHOS 补丁适配，再更新批准 commit/tree、文件摘要及两个引用它
 
 ## 当前开发线 media-kit
 
-六平台 CI 解析 `Goodwu/media-kit@dev` 的 SHA 并在所有 jobs 冻结。
+六平台 CI 解析 `Goodwu/media-kit@feature/dv` 的 SHA 并在所有 jobs 冻结。
 本地保持 `../media-kit` 路径覆盖；使用本地构建前在 App 兄弟仓执行：
 
 ```bash
-git -C ../media-kit fetch origin dev
-git -C ../media-kit switch dev
-git -C ../media-kit merge --ff-only origin/dev
+git -C ../media-kit fetch origin feature/dv
+git -C ../media-kit switch feature/dv
+git -C ../media-kit merge --ff-only origin/feature/dv
 ```
 
 仓库主线/上游同步分支不会被改变。如果本地 `media-kit` 含未提交修改，

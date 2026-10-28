@@ -345,6 +345,47 @@ class ApprovedIntegrationTests(unittest.TestCase):
         with self.assertRaisesRegex(ohos.CheckError, "Approved application source"):
             self.export()
 
+    def test_reviewed_documentation_and_exact_dependency_config(self):
+        # The active branch has approved archived Markdown and a specific
+        # media-kit branch rename. Other dependencies and app source stay pinned.
+        self.policy["mutable_paths"].extend(["CLAUDE.md", "archives/conversations/"])
+        self.write("CLAUDE.md", "# docs\\n")
+        self.write("archives/conversations/ci-notes.md", "# notes\\n")
+        self.write("pubspec.yaml", "name: PiliPlus\\nversion: 2.1.6+17\\n# reviewed SDK ref\\n")
+        self.policy["reviewed_config_hashes"] = {
+            "pubspec.yaml": self.rules.sha256((self.root / "pubspec.yaml").read_bytes()),
+        }
+        self.save_policy()
+        report = self.check()
+        self.assertEqual(report["status"], "pass")
+        self.assertEqual(report["reviewed_config_changes"], ["pubspec.yaml"])
+        self.assertIn("CLAUDE.md", report["approved_build_metadata_changes"])
+        self.assertIn("archives/conversations/ci-notes.md",
+                      report["approved_build_metadata_changes"])
+        self.write("pubspec.yaml", "name: PiliPlus\\n# unreviewed edit\\n")
+        self.commit("unreviewed pubspec")
+        self.assertEqual(self.check()["original_file_changes"], ["pubspec.yaml"])
+        self.assertEqual(self.check()["status"], "fail")
+
+    def test_archived_executable_not_permitted_by_markdown_whitelist(self):
+        self.policy["mutable_paths"].append("archives/conversations/")
+        self.save_policy()
+        self.write("archives/conversations/unreviewed.py", "print('not documentation')\\n")
+        self.commit("add archived executable")
+        report = self.check()
+        self.assertEqual(report["status"], "fail")
+        self.assertIn("archives/conversations/unreviewed.py", report["unapproved_additions"])
+
+    def test_rejects_source_or_unpinned_config_approval(self):
+        self.policy["reviewed_config_hashes"] = {"lib/main.dart": "a" * 64}
+        self.save_policy()
+        with self.assertRaisesRegex(RuntimeError, "Reviewed configuration"):
+            self.check()
+        self.policy["reviewed_config_hashes"] = {"pubspec.yaml": "not-a-sha256"}
+        self.save_policy()
+        with self.assertRaisesRegex(RuntimeError, "Reviewed configuration"):
+            self.check()
+
     def test_changed_application_commit_is_not_accepted_by_the_old_approval(self):
         self.write("lib/main.dart", "void main() { /* changed after approval */ }\n")
         self.commit("application change needs review")

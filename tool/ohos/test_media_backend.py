@@ -123,6 +123,8 @@ class MediaGates(unittest.TestCase):
         approval = config['existing_integration']
         policy = rules.document((root / approval['source_policy']).read_bytes(), approval['source_policy_sha256'])
         rules.verify_integration(root, policy)
+        self.assertEqual(policy['reviewed_config_hashes']['pubspec.yaml'],
+                         media.sha256((root / 'pubspec.yaml').read_bytes()))
         self.assertEqual(policy['dependencies']['lock_sha256'], media.sha256((root / 'pubspec.lock').read_bytes()))
         self.assertEqual(policy['dependencies']['overrides_sha256'], media.sha256((root / 'pubspec_overrides.yaml').read_bytes()))
         self.assertEqual(policy['dependencies']['recipe_sha256'], media.sha256((root / 'tool/ohos/dependencies.json').read_bytes()))

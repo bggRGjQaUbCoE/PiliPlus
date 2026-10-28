@@ -12,8 +12,13 @@
     "docs/",
     "README.md",
     "README.en.md",
-    "TASKS.md"
+    "TASKS.md",
+    "CLAUDE.md",
+    "archives/conversations/"
   ],
+  "reviewed_config_hashes": {
+    "pubspec.yaml": "66adfff4e1406778b371acb60304d3481354af9d47d36ce8c8575ba61c135d32"
+  },
   "integration": {
     "name": "ManagedVideoPlayback/RoutedVideoPlayback",
     "files": {

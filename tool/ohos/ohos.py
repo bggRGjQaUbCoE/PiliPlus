@@ -116,9 +116,25 @@ def approved_source(root: Path, revision: str, base_ref: str | None, *, worktree
             raise CheckError(f"Approved integration file hash differs from baseline: {path}")
     result = compare_trees(root, base, revision)
     changed = set(result["original_file_changes"]) | set(result["added_files"])
-    result["approved_build_metadata_changes"] = sorted(path for path in changed if rules.permits_build_metadata(policy, path))
-    result["original_file_changes"] = [path for path in result["original_file_changes"]
-                                       if not rules.permits_build_metadata(policy, path)]
+    result["approved_build_metadata_changes"] = sorted(
+        path for path in changed if rules.permits_build_metadata(policy, path))
+    # Validate hash-approved configuration from its committed Git blob, not a
+    # mutable workspace file. Keep other App source changes disallowed.
+    reviewed = []
+    for path in result["original_file_changes"]:
+        if path not in policy.get("reviewed_config_hashes", {}):
+            continue
+        previous, current = before.get(path), after.get(path)
+        if (previous is not None and current is not None
+                and previous[:2] == ("100644", "blob")
+                and current[:2] == ("100644", "blob")
+                and rules.permits_reviewed_config(
+                    policy, path, git(root, "cat-file", "blob", current[2]))):
+            reviewed.append(path)
+    result["reviewed_config_changes"] = sorted(reviewed)
+    result["original_file_changes"] = [
+        path for path in result["original_file_changes"]
+        if path not in reviewed and not rules.permits_build_metadata(policy, path)]
     result["unapproved_additions"] = [path for path in result["added_files"]
                                       if not rules.permits_build_metadata(policy, path)]
     result["worktree_changes"] = []

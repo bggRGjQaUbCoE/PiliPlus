@@ -32,10 +32,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Preflight OHOS approved source before native compilation
+        if: ${{ contains(fromJSON(inputs.platforms || '["android","windows","linux","ios","macos","ohos"]'), 'ohos') }}
+        shell: bash
+        run: |
+          policy_sha=$(python -c 'import json; print(json.load(open("tool/native/inputs.lock.json"))["platforms"]["ohos"]["application_source_policy_sha256"])')
+          python tool/ohos/ohos.py check-source --source-policy approved-integration --source-policy-sha256 "$policy_sha"
       - name: Freeze development HEADs or tagged source anchors once
         id: source
         env:

@@ -20,7 +20,8 @@ GIT_SHA = re.compile(r"[0-9a-f]{40}\Z")
 # accepted prefix is separately recorded in the committed approval document.
 BUILD_METADATA_PATHS = {
     "tool/ohos/", "tool/native/", ".github/workflows/", "docs/",
-    "README.md", "README.en.md", "TASKS.md",
+    "README.md", "README.en.md", "TASKS.md", "CLAUDE.md",
+    "archives/conversations/",
 }
 
 
@@ -76,6 +77,13 @@ def document(raw: bytes, expected_sha256: str | None) -> dict:
             or len(set(mutable)) != len(mutable)
             or not set(mutable) <= BUILD_METADATA_PATHS):
         raise RuntimeError("Approved policy can allow only explicit build-tool/documentation paths")
+    # Reviewed dependency configuration is hash-pinned, not freely mutable.
+    reviewed = policy.get("reviewed_config_hashes", {})
+    if (not isinstance(reviewed, dict)
+            or any(key != "pubspec.yaml" or not isinstance(value, str)
+                   or not SHA256.fullmatch(value)
+                   for key, value in reviewed.items())):
+        raise RuntimeError("Reviewed configuration must pin only pubspec.yaml by SHA256")
     integration = policy.get("integration", {})
     if not isinstance(integration, dict) or not isinstance(integration.get("name"), str) or not integration["name"]:
         raise RuntimeError("Approved application integration must be named")
@@ -95,8 +103,16 @@ def document(raw: bytes, expected_sha256: str | None) -> dict:
 
 
 def permits_build_metadata(policy: dict, name: str) -> bool:
+    # Archived documentation may be updated, but not executable code or config.
+    if name.startswith("archives/conversations/") and not name.endswith(".md"):
+        return False
     return any(name.startswith(path) if path.endswith("/") else name == path
                for path in policy["mutable_paths"])
+
+
+def permits_reviewed_config(policy: dict, name: str, body: bytes) -> bool:
+    expected = policy.get("reviewed_config_hashes", {}).get(name)
+    return expected is not None and sha256(body) == expected
 
 
 def from_export(workspace: Path, manifest: dict | None = None) -> dict | None:

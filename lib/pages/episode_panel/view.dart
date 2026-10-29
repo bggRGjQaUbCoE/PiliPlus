@@ -92,7 +92,7 @@ class _EpisodePanelState extends State<EpisodePanel>
   late int _lastItemIndex;
   late final int Function() _tabIndex;
   late final int Function() _itemIndex;
-  late final List<ugc.BaseEpisodeItem> _episodes;
+  late List<ugc.BaseEpisodeItem> _episodes;
 
   ScrollController? _scrollController;
   late final Map<int, int> _posMap = {};
@@ -116,14 +116,21 @@ class _EpisodePanelState extends State<EpisodePanel>
     WidgetsBinding.instance.addPostFrameCallback(_jumpToCurrIfNeeded);
   }
 
-  void _jumpToCurrIfNeeded([_]) {
-    final tabIndex = _tabIndex();
-    final itemIndex = _itemIndex();
-    if (_lastTabIndex != tabIndex || _lastItemIndex != itemIndex) {
-      _jumpToCurrent();
+  bool _syncTab(int tabIndex) {
+    final tabIndexChanged = _lastTabIndex != tabIndex;
+    if (tabIndexChanged) {
+      _episodes = _sections[tabIndex].episodes!;
+      _lastTabIndex = tabIndex;
     }
-    _lastTabIndex = tabIndex;
-    _lastItemIndex = itemIndex;
+    return tabIndexChanged;
+  }
+
+  void _jumpToCurrIfNeeded([_]) {
+    final itemIndex = _itemIndex();
+    if (_syncTab(_tabIndex()) || _lastItemIndex != itemIndex) {
+      _jumpToCurrent();
+      _lastItemIndex = itemIndex;
+    }
   }
 
   StreamSubscription? _pgcListener;
@@ -286,13 +293,16 @@ class _EpisodePanelState extends State<EpisodePanel>
       ?..removeListener(_tabListener)
       ..dispose();
     _tabController = null;
-    switch (_type) {
-      case .part || .season:
-        _removeUgcListener();
-      case .pgc:
-        _removePgcListener();
-    }
+    _removeListener();
     super.dispose();
+  }
+
+  void _removeListener() {
+    if (_isUgc) {
+      _removeUgcListener();
+    } else {
+      _removePgcListener();
+    }
   }
 
   @override
@@ -408,11 +418,12 @@ class _EpisodePanelState extends State<EpisodePanel>
     ugc.BaseEpisodeItem episode,
     String title,
   ) {
-    _lastTabIndex = tabIndex;
-    _lastItemIndex = index;
-
     if (!_isSidePanel) {
+      _removeListener();
       Get.back();
+    } else {
+      _syncTab(tabIndex);
+      _lastItemIndex = index;
     }
 
     if (episode.badge == "会员" && !_isVip) {

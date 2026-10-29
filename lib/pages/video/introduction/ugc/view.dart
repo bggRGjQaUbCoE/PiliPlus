@@ -190,25 +190,17 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                               .horizontalSeasonPanel)) ...[
                     if (videoDetail.hasSeason)
                       NoTranslucentArea(
-                        child: Obx(
-                          () => SeasonPanel(
-                            key: ValueKey(introController.videoDetail.value),
-                            heroTag: widget.heroTag,
-                            showEpisodes: widget.showEpisodes,
-                            ugcIntroController: introController,
-                          ),
+                        child: SeasonPanel(
+                          showEpisodes: widget.showEpisodes,
+                          ugcIntroController: introController,
                         ),
                       ),
                     if (videoDetail.hasParts)
                       NoTranslucentArea(
-                        child: Obx(
-                          () => PagesPanel(
-                            key: ValueKey(introController.videoDetail.value),
-                            heroTag: widget.heroTag,
-                            ugcIntroController: introController,
-                            bvid: introController.bvid,
-                            showEpisodes: widget.showEpisodes,
-                          ),
+                        child: PagePanel(
+                          ugcIntroController: introController,
+                          bvid: introController.bvid,
+                          showEpisodes: widget.showEpisodes,
                         ),
                       ),
                   ],

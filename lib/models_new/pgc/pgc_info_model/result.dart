@@ -10,6 +10,7 @@ import 'package:PiliPlus/models_new/pgc/pgc_info_model/section.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/stat.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/up_info.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/user_status.dart';
+import 'package:collection/collection.dart';
 
 class PgcInfoModel {
   String? actors;
@@ -41,6 +42,37 @@ class PgcInfoModel {
   bool get hasEpisodesOrSeasons => hasEpisodes || hasSeasons;
 
   bool get hasSections => sections?.isNotEmpty ?? false;
+
+  (EpisodeItem? episode, int? sectionIndex) findEpisode([int? epId]) {
+    epId ??= userStatus?.progress?.lastEpId;
+
+    if (epId == null) {
+      var episode = episodes?.firstOrNull;
+      if (episode != null) return (episode, null);
+      episode = sections?.firstOrNull?.episodes?.firstOrNull;
+      return (episode, 0);
+    }
+
+    if (episodes != null && episodes!.isNotEmpty) {
+      final episode = episodes!.firstWhereOrNull((e) => e.epId == epId);
+      if (episode != null) return (episode, null);
+    }
+
+    if (sections != null && sections!.isNotEmpty) {
+      for (final (index, section) in sections!.indexed) {
+        for (final episode in section.episodes!) {
+          if (episode.epId == epId) {
+            return (episode, index);
+          }
+        }
+      }
+    }
+
+    return (
+      episodes?.firstOrNull ?? sections?.firstOrNull?.episodes?.firstOrNull,
+      null,
+    );
+  }
 
   PgcInfoModel({
     this.actors,

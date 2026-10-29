@@ -1,15 +1,9 @@
+import 'package:PiliPlus/models/common/badge_type.dart';
+import 'package:PiliPlus/models/common/episode_panel_type.dart';
 import 'package:PiliPlus/models_new/video/video_detail/arc.dart';
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
-import 'package:PiliPlus/models_new/video/video_detail/ugc_season.dart';
 
-typedef ShowEpisodes = void Function({
-  int? seasonIndex,
-  UgcSeason? season,
-  List<BaseEpisodeItem>? episodes,
-  String? bvid,
-  int? aid,
-  int? cid,
-});
+typedef ShowEpisodes = void Function({required EpisodeType? type});
 
 class BaseEpisodeItem {
   int? id;
@@ -20,6 +14,12 @@ class BaseEpisodeItem {
   String? badge;
   String? title;
   String? cover;
+
+  PBadgeType get badgeType => switch (badge) {
+    '预告' => .gray,
+    '限免' => .free,
+    _ => .primary,
+  };
 
   BaseEpisodeItem({
     this.id,

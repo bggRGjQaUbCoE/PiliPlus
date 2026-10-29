@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
@@ -15,13 +16,12 @@ import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models_new/member_card_info/data.dart';
 import 'package:PiliPlus/models_new/relation/data.dart';
 import 'package:PiliPlus/models_new/video/video_ai_conclusion/model_result.dart';
+import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
-import 'package:PiliPlus/models_new/video/video_detail/section.dart';
 import 'package:PiliPlus/models_new/video/video_detail/staff.dart';
 import 'package:PiliPlus/models_new/video/video_detail/stat_detail.dart';
-import 'package:PiliPlus/models_new/video/video_detail/ugc_season.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/dynamics_repost/view.dart';
 import 'package:PiliPlus/pages/video/related/controller.dart';
@@ -67,6 +67,16 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   AiConclusionResult? aiConclusionResult;
 
   late final Map<int?, bool> seasonFavState = {};
+
+  int? _seasonCid;
+  int? get seasonCid => _seasonCid;
+  late int _sectionIndex = 0;
+  int get sectionIndex => _sectionIndex;
+  late int _seasonIndex = 0;
+  int get seasonIndex => _seasonIndex;
+  late int _partIndex = 0;
+  int get partIndex => _partIndex;
+  final indexNotifier = ValueNotifier(null);
 
   @override
   void onInit() {
@@ -114,6 +124,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
           ..isPageReversed = currentDetail.isPageReversed;
       }
       videoDetail.value = response;
+      updateIndex(data: response);
       try {
         if (videoDetailCtr.cover.value.isEmpty ||
             (videoDetailCtr.videoUrl.isNullOrEmpty &&
@@ -128,10 +139,6 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
           } catch (_) {}
         }
       } catch (_) {}
-      final pages = response.pages;
-      if (pages != null && pages.isNotEmpty && cid.value == 0) {
-        cid.value = pages.first.cid!;
-      }
       queryUserStat(response.staff);
     } else {
       res.toast();
@@ -142,6 +149,44 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       queryAllStatus();
       queryFollowStatus();
     }
+  }
+
+  void updateIndex({
+    VideoDetailData? data,
+    bool force = false,
+  }) {
+    data ??= videoDetail.rawValue;
+
+    final pages = data.pages;
+    if (pages != null && pages.length > 1) {
+      final cid = this.cid.rawValue;
+      _partIndex = math.max(0, pages.indexWhere((e) => e.cid == cid));
+    } else {
+      _partIndex = 0;
+    }
+
+    final seasonCid = data.isPageReversed ? data.pages!.last.cid : data.cid;
+    if (force || _seasonCid != seasonCid) {
+      _seasonCid = seasonCid;
+      final season = data.ugcSeason;
+      if (season == null) {
+        _seasonIndex = 0;
+      } else {
+        for (final (sectionIndex, section) in season.sections!.indexed) {
+          final episodes = section.episodes!;
+          for (final (seasonIndex, episode) in episodes.indexed) {
+            if (episode.cid == seasonCid) {
+              _sectionIndex = sectionIndex;
+              _seasonIndex = seasonIndex;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
+    indexNotifier.notifyListeners();
   }
 
   // 获取up主粉丝数
@@ -463,6 +508,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   }
 
   // 修改分P或番剧分集
+  @override
   Future<bool> onChangeEpisode(
     BaseEpisodeItem episode, {
     bool isStein = false,
@@ -535,8 +581,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
         // 重新请求评论
         if (videoDetailCtr.showReply) {
           try {
-            final replyCtr = Get.find<VideoReplyController>(tag: heroTag)
-              ..aid = aid;
+            final replyCtr = Get.find<VideoReplyController>(tag: heroTag);
             if (replyCtr.loadingState.value is! Loading) {
               replyCtr.onReload();
             }
@@ -546,6 +591,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
         hasLater.value = videoDetailCtr.sourceType == SourceType.watchLater;
         queryVideoIntro();
       } else {
+        updateIndex();
         if (episode is Part) {
           final videoDetail = this.videoDetail.value;
           videoPlayerServiceHandler?.onVideoDetailChange(
@@ -568,43 +614,31 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
 
   /// 播放上一个
   @override
-  bool prevPlay([bool skipPart = false]) {
+  bool prevPlay({bool skipPart = false}) {
     final List<BaseEpisodeItem> episodes = <BaseEpisodeItem>[];
     bool isPart = false;
-
     final videoDetail = this.videoDetail.value;
     if (!skipPart && videoDetail.hasParts) {
       isPart = true;
       episodes.addAll(videoDetail.pages!);
     } else if (videoDetailCtr.isPlayAll) {
       episodes.addAll(videoDetailCtr.mediaList);
-    } else if (videoDetail.ugcSeason != null) {
-      final UgcSeason ugcSeason = videoDetail.ugcSeason!;
-      final List<SectionItem> sections = ugcSeason.sections!;
-      for (int i = 0; i < sections.length; i++) {
-        final List<EpisodeItem> episodesList = sections[i].episodes!;
-        episodes.addAll(episodesList);
+    } else if (videoDetail.hasSeason) {
+      for (final section in videoDetail.ugcSeason!.sections!) {
+        episodes.addAll(section.episodes!);
       }
     }
 
-    final int currentIndex = episodes.indexWhere(
-      (e) =>
-          e.cid ==
-          (skipPart
-              ? videoDetail.isPageReversed
-                    ? videoDetail.pages!.last.cid
-                    : videoDetail.pages!.first.cid
-              : this.cid.value),
-    );
+    final targetCid = skipPart ? seasonCid : this.cid.rawValue;
+    final currIndex = episodes.indexWhere((e) => e.cid == targetCid);
 
-    int prevIndex = currentIndex - 1;
-    final PlayRepeat playRepeat = videoDetailCtr.plPlayerController.playRepeat;
+    int prevIndex = currIndex - 1;
+    final playRepeat = videoDetailCtr.plPlayerController.playRepeat;
 
     // 列表循环
     if (prevIndex < 0) {
-      if (isPart &&
-          (videoDetailCtr.isPlayAll || videoDetail.ugcSeason != null)) {
-        return prevPlay(true);
+      if (isPart && (videoDetailCtr.isPlayAll || videoDetail.hasSeason)) {
+        return prevPlay(skipPart: true);
       }
       if (playRepeat == PlayRepeat.listCycle) {
         prevIndex = episodes.length - 1;
@@ -632,7 +666,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
 
   /// 列表循环或者顺序播放时，自动播放下一个
   @override
-  bool nextPlay([bool skipPart = false]) {
+  bool nextPlay({bool skipPart = false}) {
     try {
       final List<BaseEpisodeItem> episodes = <BaseEpisodeItem>[];
       bool isPart = false;
@@ -646,11 +680,8 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       } else if (videoDetailCtr.isPlayAll) {
         episodes.addAll(videoDetailCtr.mediaList);
       } else if (videoDetail.ugcSeason != null) {
-        final UgcSeason ugcSeason = videoDetail.ugcSeason!;
-        final List<SectionItem> sections = ugcSeason.sections!;
-        for (int i = 0; i < sections.length; i++) {
-          final List<EpisodeItem> episodesList = sections[i].episodes!;
-          episodes.addAll(episodesList);
+        for (final section in videoDetail.ugcSeason!.sections!) {
+          episodes.addAll(section.episodes!);
         }
       }
 
@@ -669,21 +700,14 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
         return false;
       }
 
-      final int currentIndex = episodes.indexWhere(
-        (e) =>
-            e.cid ==
-            (skipPart
-                ? videoDetail.isPageReversed
-                      ? videoDetail.pages!.last.cid
-                      : videoDetail.pages!.first.cid
-                : this.cid.value),
-      );
+      final targetCid = skipPart ? seasonCid : this.cid.rawValue;
+      final currIndex = episodes.indexWhere((e) => e.cid == targetCid);
 
-      int nextIndex = currentIndex + 1;
+      int nextIndex = currIndex + 1;
 
       if (!isPart &&
           videoDetailCtr.isPlayAll &&
-          currentIndex == episodes.length - 2) {
+          currIndex == episodes.length - 2) {
         videoDetailCtr.getMediaList();
       }
 
@@ -691,7 +715,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       if (nextIndex >= episodes.length) {
         if (isPart &&
             (videoDetailCtr.isPlayAll || videoDetail.ugcSeason != null)) {
-          return nextPlay(true);
+          return nextPlay(skipPart: true);
         }
 
         if (playRepeat == PlayRepeat.listCycle) {
@@ -787,5 +811,11 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       cid.value,
       videoDetail.value.owner?.mid,
     );
+  }
+
+  @override
+  void onClose() {
+    indexNotifier.dispose();
+    super.onClose();
   }
 }

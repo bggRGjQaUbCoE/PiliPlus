@@ -31,6 +31,7 @@ import 'package:PiliPlus/pages/live_room/widgets/bottom_control.dart'
     as live_bottom;
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
+import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/pages/video/post_panel/popup_menu_text.dart';
 import 'package:PiliPlus/pages/video/post_panel/view.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
@@ -56,7 +57,6 @@ import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
-import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/ios/pip_helper.dart';
 import 'package:PiliPlus/utils/mobile_observer.dart';
@@ -124,8 +124,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   late AnimationController _animationController;
   late VideoController videoController;
   late final CommonIntroController introController = widget.introController!;
-  late final VideoDetailController videoDetailController =
-      widget.videoDetailController!;
+  PgcIntroController get pgcController => introController as PgcIntroController;
+  UgcIntroController get ugcController => introController as UgcIntroController;
+  late final videoDetailController = widget.videoDetailController!;
 
   final _playerKey = GlobalKey();
   final _videoKey = GlobalKey();
@@ -573,27 +574,15 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           }
           // part -> playAll -> season(pgc)
           if (isPlayAll && !isPart) {
-            widget.showEpisodes?.call();
+            widget.showEpisodes?.call(type: null);
             return;
           }
-          final bvid = plPlayerController.bvid;
-          List<ugc.BaseEpisodeItem>? episodes;
-          if (isPart) {
-            episodes = videoDetail.pages!;
-          } else if (isPgc) {
-            episodes = (introController as PgcIntroController).episodes;
-          }
           widget.showEpisodes?.call(
-            seasonIndex: isSeason
-                ? videoDetailController.seasonIndex.value
-                : null,
-            season: isSeason ? videoDetail.ugcSeason! : null,
-            episodes: isSeason ? null : episodes,
-            bvid: bvid,
-            aid: IdUtils.bv2av(bvid),
-            cid: isSeason
-                ? videoDetailController.seasonCid
-                : plPlayerController.cid!,
+            type: isPart
+                ? .part
+                : isPgc
+                ? .pgc
+                : .season,
           );
         },
       ),

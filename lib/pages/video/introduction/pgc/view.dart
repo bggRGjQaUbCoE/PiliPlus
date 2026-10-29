@@ -59,7 +59,7 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
       PgcIntroController.new,
       tag: widget.heroTag,
     );
-    videoDetailCtr = Get.find<VideoDetailController>(tag: widget.heroTag);
+    videoDetailCtr = introController.videoDetailCtr;
   }
 
   @override
@@ -94,7 +94,6 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
               Padding(
                 padding: const .only(top: 5),
                 child: SeasonPanel(
-                  seasons: item.seasons!,
                   pgcController: introController,
                   onSeasonChanged: () {
                     if (mounted) setState(() {});
@@ -104,8 +103,6 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
             // 番剧分集
             if (item.hasEpisodes)
               EpisodePanel(
-                item: item,
-                heroTag: widget.heroTag,
                 pgcController: introController,
                 showEpisodes: widget.showEpisodes,
                 onChangeEpisode: introController.onChangeEpisode,
@@ -113,8 +110,6 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
           ],
           if (item.hasSections)
             SectionPanel(
-              item: item,
-              heroTag: widget.heroTag,
               pgcController: introController,
               showEpisodes: widget.showEpisodes,
               onChangeEpisode: introController.onChangeEpisode,

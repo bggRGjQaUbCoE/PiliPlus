@@ -1,5 +1,4 @@
-import 'dart:async';
-import 'dart:math';
+import 'dart:async' show StreamSubscription;
 
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
@@ -15,22 +14,26 @@ import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/episode_panel_type.dart';
-import 'package:PiliPlus/models/common/stat_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart' as pgc;
+import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
+import 'package:PiliPlus/models_new/video/video_detail/data.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
+import 'package:PiliPlus/models_new/video/video_detail/section.dart';
+import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
-import 'package:PiliPlus/pages/video/controller.dart';
+import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/widgets/page.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
-import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:collection/collection.dart';
+import 'package:easy_debounce/easy_debounce.dart';
+import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -41,44 +44,16 @@ class EpisodePanel extends CommonSlidePage {
   const EpisodePanel({
     super.key,
     super.enableSlide,
-    required this.ugcIntroController,
-    required this.heroTag,
-    required this.type,
-    // required this.count,
-    // required this.name,
-    required this.aid,
-    required this.bvid,
-    required this.cid,
-    required this.cover,
-    this.showTitle = true,
-    required this.list,
-    this.seasonId,
-    this.initialTabIndex = 0,
-    this.isSupportReverse,
-    this.isReversed,
     this.onReverse,
-    required this.onChangeEpisode,
-    this.onClose,
-  }) : assert(type == EpisodeType.pgc || ugcIntroController != null);
+    required this.type,
+    required this.isSidePanel,
+    required this.introController,
+  });
 
-  final UgcIntroController? ugcIntroController;
-  final String heroTag;
   final EpisodeType type;
-  // final int count;
-  // final String name;
-  final int? aid;
-  final String bvid;
-  final int cid;
-  final String? cover;
-  final bool showTitle;
-  final List list;
-  final int? seasonId;
-  final int initialTabIndex;
-  final bool? isSupportReverse;
-  final bool? isReversed;
-  final Future<bool> Function(ugc.BaseEpisodeItem) onChangeEpisode;
+  final bool isSidePanel;
   final VoidCallback? onReverse;
-  final VoidCallback? onClose;
+  final CommonIntroController introController;
 
   @override
   State<EpisodePanel> createState() => _EpisodePanelState();
@@ -86,180 +61,206 @@ class EpisodePanel extends CommonSlidePage {
 
 class _EpisodePanelState extends State<EpisodePanel>
     with TickerProviderStateMixin, CommonSlideMixin {
-  // tab
-  late final TabController _tabController;
-  late final RxInt _currentTabIndex = _tabController.index.obs;
+  ColorScheme get colorScheme => theme.colorScheme;
+  late final _type = widget.type;
+  late final _isSidePanel = widget.isSidePanel;
+  late final _introController = widget.introController;
 
-  late final showTitle = widget.showTitle;
+  // ugc
+  late final bool _isUgc;
+  TabController? _tabController;
+  late final List<SectionItem> _sections;
+  late final VideoDetailData _videoDetail;
+  late final _ugcController = _introController as UgcIntroController;
 
-  List<ugc.BaseEpisodeItem> get _getCurrEpisodes =>
-      widget.type == EpisodeType.season
-      ? widget.list[_currentTabIndex.value].episodes
-      : widget.list[_currentTabIndex.value];
-
-  // item
-  late int _currentItemIndex;
-  int get _findCurrentItemIndex => max(
-    0,
-    _getCurrEpisodes.indexWhere((item) => item.cid == widget.cid),
-  );
-
-  late final List<bool> _isReversed;
-  late final List<ScrollController> _itemScrollController;
+  // pgc
+  late final PgcInfoModel _pgcItem;
+  late final _pgcController = _introController as PgcIntroController;
 
   // fav
-  Rx<LoadingState<bool>>? _favState;
+  late final int _seasonId;
+  RxnBool? _favState;
 
-  void listener() {
-    _currentTabIndex.value = _tabController.index;
+  // reverse
+  late final _rxTabIndex = Rx(_tabIndex());
+  late final List<bool> _isReversed;
+  void _tabListener() {
+    _rxTabIndex.value = _tabController!.index;
+  }
+
+  late int _lastTabIndex;
+  late int _lastItemIndex;
+  late final int Function() _tabIndex;
+  late final int Function() _itemIndex;
+  late final List<ugc.BaseEpisodeItem> _episodes;
+
+  ScrollController? _scrollController;
+  late final Map<int, int> _posMap = {};
+  void setPosIndex(int tabIndex) {
+    _posMap[tabIndex] ??= _scrollController!.positions.length;
+  }
+
+  void _addUgcListener() {
+    if (_isSidePanel) return;
+    _ugcController.indexNotifier.addListener(_refresh);
+  }
+
+  void _removeUgcListener() {
+    if (_isSidePanel) return;
+    _ugcController.indexNotifier.removeListener(_refresh);
+  }
+
+  void _refresh([_]) {
+    if (!mounted) return;
+    setState(() {});
+    WidgetsBinding.instance.addPostFrameCallback(_jumpToCurrIfNeeded);
+  }
+
+  void _jumpToCurrIfNeeded([_]) {
+    final tabIndex = _tabIndex();
+    final itemIndex = _itemIndex();
+    if (_lastTabIndex != tabIndex || _lastItemIndex != itemIndex) {
+      _jumpToCurrent();
+    }
+    _lastTabIndex = tabIndex;
+    _lastItemIndex = itemIndex;
+  }
+
+  StreamSubscription? _pgcListener;
+
+  void _addPgcListener() {
+    _pgcListener = _pgcController.cid.listen(_onCidChanged);
+  }
+
+  void _removePgcListener() {
+    _pgcListener?.cancel();
+    _pgcListener = null;
+  }
+
+  void _onCidChanged([_]) {
+    WidgetsBinding.instance.addPostFrameCallback(_refresh);
   }
 
   @override
   void didUpdateWidget(EpisodePanel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (showTitle) {
-      return;
+    if (_isUgc) {
+      WidgetsBinding.instance.addPostFrameCallback(_jumpToCurrIfNeeded);
     }
+  }
 
-    @pragma('vm:notify-debugger-on-exception')
-    void jumpToCurrent() {
-      final newItemIndex = _findCurrentItemIndex;
-      if (_currentItemIndex != newItemIndex) {
-        _currentItemIndex = newItemIndex;
-        try {
-          _itemScrollController[_currentTabIndex.value].jumpTo(
-            _calcItemOffset(newItemIndex),
-          );
-        } catch (e, s) {
-          Utils.reportError(e, s);
-        }
-      }
-    }
-
-    // jump to current
-    if (_currentTabIndex.value != widget.initialTabIndex) {
-      _tabController.animateTo(
-        widget.initialTabIndex,
-        duration: const Duration(milliseconds: 200),
-      );
-      Timer(const Duration(milliseconds: 300), jumpToCurrent);
-    } else {
-      jumpToCurrent();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final scrollController = PrimaryScrollController.of(context);
+    if (_scrollController != scrollController) {
+      _scrollController = scrollController;
+      _posMap.clear();
     }
   }
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(
-      initialIndex: widget.initialTabIndex,
-      length: widget.list.length,
-      vsync: this,
-    )..addListener(listener);
+    switch (_type) {
+      case .part:
+        _isUgc = true;
+        _isReversed = [false];
+        _tabIndex = () => 0;
+        _itemIndex = () => _ugcController.partIndex;
+        _videoDetail = _ugcController.videoDetail.rawValue;
+        _episodes = _videoDetail.pages!;
+        _addUgcListener();
 
-    _currentItemIndex = _findCurrentItemIndex;
-    _itemScrollController = List.generate(
-      widget.list.length,
-      (i) => ScrollController(
-        initialScrollOffset: i == widget.initialTabIndex
-            ? _currentItemIndex == 0
-                  ? 0
-                  : _calcItemOffset(_currentItemIndex)
-            : 0,
-      ),
-      growable: false,
-    );
-    _isReversed = List.filled(widget.list.length, false);
+      case .season:
+        _isUgc = true;
+        _tabIndex = () => _ugcController.sectionIndex;
+        _itemIndex = () => _ugcController.seasonIndex;
+        _videoDetail = _ugcController.videoDetail.rawValue;
+        _sections = _videoDetail.ugcSeason!.sections!;
+        if (_sections.length > 1) {
+          _tabController = TabController(
+            vsync: this,
+            length: _sections.length,
+            initialIndex: _ugcController.sectionIndex,
+          )..addListener(_tabListener);
+          _episodes = _sections[_tabIndex()].episodes!;
+          _isReversed = List.filled(_sections.length, false);
+        } else {
+          _isReversed = [false];
+          _episodes = _sections.first.episodes!;
+        }
+        _addUgcListener();
 
-    if (widget.type == EpisodeType.season && Accounts.main.isLogin) {
-      final favState =
-          widget.ugcIntroController?.seasonFavState[widget.seasonId];
-      if (favState != null) {
-        _favState = Success(favState).obs;
-      } else {
-        _favState = LoadingState<bool>.loading().obs;
-        VideoHttp.videoRelation(bvid: widget.bvid).then(
-          (result) {
-            if (!mounted) return;
-            if (result case Success(:final response)) {
-              final seasonFav = response.seasonFav ?? false;
-              _favState!.value = Success(seasonFav);
-              widget.ugcIntroController?.seasonFavState[widget.seasonId] =
-                  seasonFav;
-            }
-          },
-        );
-      }
+        if (Accounts.main.isLogin) {
+          _seasonId = _videoDetail.seasonId!;
+          final favState = _ugcController.seasonFavState[_seasonId];
+          if (favState != null) {
+            _favState = RxnBool(favState);
+          } else {
+            _favState = RxnBool(null);
+            VideoHttp.videoRelation(bvid: _ugcController.bvid).then(
+              (result) {
+                if (!mounted) return;
+                if (result case Success(:final response)) {
+                  final seasonFav = response.seasonFav ?? false;
+                  _favState!.value = seasonFav;
+                  _ugcController.seasonFavState[_seasonId] = seasonFav;
+                }
+              },
+            );
+          }
+        }
+
+      case .pgc:
+        _isReversed = [false];
+        _tabIndex = () => 0;
+        _itemIndex = () => _pgcController.episodeIndex;
+        _pgcItem = _pgcController.pgcItem;
+        _episodes = _pgcItem.episodes!;
+        _addPgcListener();
     }
-  }
 
-  @override
-  void dispose() {
-    _tabController
-      ..removeListener(listener)
-      ..dispose();
-    _favState?.close();
-    for (final e in _itemScrollController) {
-      e.dispose();
-    }
-    super.dispose();
-  }
-
-  late final _isMulti =
-      widget.type == EpisodeType.season && widget.list.length > 1;
-
-  @override
-  Widget buildPage() {
-    return Material(
-      color: showTitle ? theme.colorScheme.surface : null,
-      type: showTitle ? MaterialType.canvas : MaterialType.transparency,
-      child: Column(
-        children: [
-          _buildToolbar(),
-          if (_isMulti)
-            TabBar(
-              controller: _tabController,
-              padding: const EdgeInsets.only(right: 60),
-              isScrollable: true,
-              tabs: widget.list.map((item) => Tab(text: item.title)).toList(),
-              dividerHeight: 1,
-              dividerColor: theme.dividerColor.withValues(alpha: 0.1),
-            ),
-          Expanded(child: enableSlide ? slideList() : buildList()),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget buildList() {
-    if (_isMulti) {
-      return TabBarView(
-        controller: _tabController,
-        physics: tabBarScrollPhysics,
-        horizontalDragGestureRecognizer: horizontalDragGestureRecognizer,
-        children: List.generate(
-          widget.list.length,
-          (index) => _buildBody(
-            index,
-            widget.list[index].episodes,
-          ),
-        ),
+    _lastTabIndex = _tabIndex();
+    _lastItemIndex = _itemIndex();
+    if (_lastItemIndex > 0) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _jumpToPos(offset: _calcItemOffset(_lastItemIndex)),
       );
     }
-    return _buildBody(0, _getCurrEpisodes);
   }
 
-  double _calcItemOffset(int index) {
-    if (showTitle) {
-      final episodes = _getCurrEpisodes;
-      double offset = 0;
-      for (var i = 0; i < index; i++) {
-        offset += _calcItemHeight(episodes[i]);
+  void _jumpToTop() => _jumpToPos(top: true);
+
+  void _jumpToBottom() => _jumpToPos(top: false);
+
+  Future<void> _jumpToCurrent() async {
+    final tabIndex = _tabIndex();
+    if (_tabController != null) {
+      if (_tabController!.index != tabIndex) {
+        _tabController!.animateTo(tabIndex);
+        await Future.pause(const Duration(milliseconds: 225));
+        if (!mounted) return;
       }
-      return offset + 7;
+    }
+    _jumpToPos(offset: _calcItemOffset(_itemIndex()));
+  }
+
+  void _jumpToPos({double? offset, bool? top}) {
+    final scrollController = _scrollController;
+    if (!scrollController!.hasClients) {
+      if (kDebugMode) assert(false);
+      return;
+    }
+    final tabIndex = _tabController?.index ?? 0;
+    final posIndex = _posMap[tabIndex]!;
+    offset ??= (top == true) ^ _isReversed[tabIndex] ? 0 : null;
+    if (scrollController is ExtendedNestedScrollController) {
+      final position = scrollController.nestedPositions.elementAt(posIndex);
+      position.localJumpTo(offset ?? position.maxScrollExtent);
     } else {
-      return index * 112 + 7;
+      final position = scrollController.positions.elementAt(posIndex);
+      position.jumpTo(offset ?? position.maxScrollExtent);
     }
   }
 
@@ -270,96 +271,163 @@ class _EpisodePanelState extends State<EpisodePanel>
     return 112;
   }
 
-  Widget _buildBody(
-    int tabIndex,
-    List<ugc.BaseEpisodeItem> episodes,
-  ) {
-    final isCurrTab = tabIndex == widget.initialTabIndex;
-    return KeepAliveWrapper(
-      child: CustomScrollView(
-        reverse: _isReversed[tabIndex],
-        physics: const AlwaysScrollableScrollPhysics(),
-        controller: _itemScrollController[tabIndex],
-        slivers: [
-          SliverPadding(
-            padding: EdgeInsets.only(
-              top: 7,
-              bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
-            ),
-            sliver: showTitle
-                ? SliverVariedExtentList.builder(
-                    itemCount: episodes.length,
-                    itemBuilder: (context, index) {
-                      final episode = episodes[index];
-                      final isCurrItem = isCurrTab
-                          ? index == _currentItemIndex
-                          : false;
-                      Widget episodeItem = _buildEpisodeItem(
-                        episode: episode,
-                        index: index,
-                        length: episodes.length,
-                        isCurrentIndex: isCurrItem,
-                      );
-                      if (episode is ugc.EpisodeItem &&
-                          episode.pages!.length > 1) {
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            episodeItem, // 110
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 5,
-                              ), // 10
-                              child: PagesPanel(
-                                // 45
-                                list: isCurrTab && isCurrItem
-                                    ? null
-                                    : episode.pages,
-                                cover: episode.arc?.pic,
-                                heroTag: widget.heroTag,
-                                ugcIntroController: widget.ugcIntroController!,
-                                bvid:
-                                    episode.bvid ?? IdUtils.av2bv(episode.aid!),
-                              ),
-                            ),
-                          ],
-                        );
-                      }
-                      return episodeItem;
-                    },
-                    itemExtentBuilder: (index, _) =>
-                        _calcItemHeight(episodes[index]),
-                  )
-                : SliverFixedExtentList.builder(
-                    itemCount: episodes.length,
-                    itemBuilder: (context, index) {
-                      final episode = episodes[index];
-                      final isCurrItem = isCurrTab
-                          ? index == _currentItemIndex
-                          : false;
-                      return _buildEpisodeItem(
-                        episode: episode,
-                        index: index,
-                        length: episodes.length,
-                        isCurrentIndex: isCurrItem,
-                      );
-                    },
-                    itemExtent: 112,
-                  ),
+  double _calcItemOffset(int index) {
+    double offset = 0;
+    for (var i = 0; i < index; i++) {
+      offset += _calcItemHeight(_episodes[i]);
+    }
+    return offset + 7;
+  }
+
+  @override
+  void dispose() {
+    _tabController
+      ?..removeListener(_tabListener)
+      ..dispose();
+    _tabController = null;
+    switch (_type) {
+      case .part || .season:
+        _removeUgcListener();
+      case .pgc:
+        _removePgcListener();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget buildPage() {
+    final child = Column(
+      children: [
+        _buildToolbar(),
+        if (_tabController != null)
+          TabBar(
+            dividerHeight: 1,
+            isScrollable: true,
+            controller: _tabController,
+            padding: const .only(right: 60),
+            tabs: _sections.map((e) => Tab(text: e.title)).toList(),
+            dividerColor: colorScheme.outline.withValues(alpha: 0.1),
           ),
-        ],
-      ),
+        Expanded(child: enableSlide ? slideList() : buildList()),
+      ],
     );
+    if (!_isSidePanel) {
+      return ColoredBox(color: colorScheme.surface, child: child);
+    }
+    return child;
+  }
+
+  @override
+  Widget buildList() {
+    if (_tabController != null) {
+      return TabBarView(
+        controller: _tabController,
+        physics: tabBarScrollPhysics,
+        horizontalDragGestureRecognizer: horizontalDragGestureRecognizer,
+        children: _sections
+            .mapIndexed((i, e) => _buildBody(e.episodes!, tabIndex: i))
+            .toList(),
+      );
+    }
+    return _buildBody(_episodes);
+  }
+
+  Widget _buildBody(List<ugc.BaseEpisodeItem> episodes, {int tabIndex = 0}) {
+    final isCurrTab = tabIndex == _tabIndex();
+
+    Widget child;
+    child = SliverVariedExtentList.builder(
+      itemCount: episodes.length,
+      itemBuilder: (context, index) {
+        final episode = episodes[index];
+        final isCurrItem = isCurrTab && index == _itemIndex();
+        Widget episodeItem = _buildEpisodeItem(
+          episode: episode,
+          tabIndex: tabIndex,
+          index: index,
+          length: episodes.length,
+          isCurrItem: isCurrItem,
+        );
+        if (episode is ugc.EpisodeItem && episode.pages!.length > 1) {
+          return Column(
+            mainAxisSize: .min,
+            crossAxisAlignment: .start,
+            children: [
+              episodeItem, // 110
+              Padding(
+                padding: const .symmetric(horizontal: 12, vertical: 5), // 10
+                child: PagePanel(
+                  // 45
+                  onBack: _isSidePanel ? null : Get.back,
+                  parts: isCurrItem ? null : episode.pages,
+                  cover: episode.arc?.pic,
+                  bvid: episode.bvid ?? IdUtils.av2bv(episode.aid!),
+                  ugcIntroController: _ugcController,
+                ),
+              ),
+            ],
+          );
+        }
+        return episodeItem;
+      },
+      itemExtentBuilder: (index, _) => _calcItemHeight(episodes[index]),
+    );
+
+    child = CustomScrollView(
+      primary: true,
+      reverse: _isReversed[tabIndex],
+      key: ValueKey(_scrollController.hashCode),
+      physics: const AlwaysScrollableScrollPhysics(),
+      slivers: [
+        SliverPadding(
+          padding: EdgeInsets.only(
+            top: 7,
+            bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
+          ),
+          sliver: child,
+        ),
+      ],
+    );
+
+    if (_tabController != null) {
+      return KeepAliveWrapper(
+        onBuild: () => setPosIndex(tabIndex),
+        child: child,
+      );
+    } else {
+      setPosIndex(tabIndex);
+      return child;
+    }
   }
 
   late final _isVip = Accounts.isVideoVip;
+  void _onChangeEpisode(
+    int tabIndex,
+    int index,
+    ugc.BaseEpisodeItem episode,
+    String title,
+  ) {
+    _lastTabIndex = tabIndex;
+    _lastItemIndex = index;
+
+    if (!_isSidePanel) {
+      Get.back();
+    }
+
+    if (episode.badge == "会员" && !_isVip) {
+      SmartDialog.showToast('需要大会员');
+      // return;
+    }
+
+    _introController.onChangeEpisode(episode);
+  }
+
   Widget _buildEpisodeItem({
     required ugc.BaseEpisodeItem episode,
+    required int tabIndex,
     required int index,
     required int length,
-    required bool isCurrentIndex,
+    required bool isCurrItem,
   }) {
     late String title;
     String? cover;
@@ -373,7 +441,7 @@ class _EpisodePanelState extends State<EpisodePanel>
 
     switch (episode) {
       case Part part:
-        cover = part.firstFrame ?? widget.cover;
+        cover = part.firstFrame ?? _videoDetail.pic;
         title = part.part!;
         duration = part.duration;
         pubdate = part.ctime;
@@ -410,7 +478,7 @@ class _EpisodePanelState extends State<EpisodePanel>
         cacheWidth = item.dimension?.cacheWidth;
         break;
     }
-    late final Color primary = theme.colorScheme.primary;
+    late final Color primary = colorScheme.primary;
 
     void onLongPress() {
       if (cover?.isNotEmpty == true) {
@@ -419,37 +487,19 @@ class _EpisodePanelState extends State<EpisodePanel>
     }
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 2),
+      padding: const .only(bottom: 2),
       child: SizedBox(
         height: 110,
         child: Material(
           type: .transparency,
           child: InkWell(
             onTap: () {
-              if (isCurrentIndex) return;
-              if (episode.badge == "会员" && !_isVip) {
-                SmartDialog.showToast('需要大会员');
-                // return;
-              }
-              SmartDialog.showToast('切换到：$title');
-              widget.onClose?.call();
-
-              widget.onChangeEpisode(episode).then((res) {
-                if (res) {
-                  if (!showTitle) {
-                    _currentItemIndex = index;
-                  }
-                  if (widget.type == EpisodeType.season) {
-                    try {
-                      Get.find<VideoDetailController>(
-                        tag: widget.ugcIntroController!.heroTag,
-                      ).seasonCid = episode.cid;
-                    } catch (_) {
-                      if (kDebugMode) rethrow;
-                    }
-                  }
-                }
-              });
+              if (isCurrItem) return;
+              EasyDebounce.debounce(
+                'onChangeEpisode',
+                const Duration(milliseconds: 200),
+                () => _onChangeEpisode(tabIndex, index, episode, title),
+              );
             },
             onLongPress: onLongPress,
             onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
@@ -463,7 +513,7 @@ class _EpisodePanelState extends State<EpisodePanel>
                 children: [
                   if (cover?.isNotEmpty == true)
                     Stack(
-                      clipBehavior: Clip.none,
+                      clipBehavior: .none,
                       children: [
                         NetworkImgLayer(
                           src: cover,
@@ -478,14 +528,14 @@ class _EpisodePanelState extends State<EpisodePanel>
                             bottom: 6.0,
                             type: .gray,
                           ),
-                        if (widget.type == .part)
+                        if (_type == .part)
                           Positioned(
                             top: 0,
                             right: 0,
                             child: Container(
                               padding: const .symmetric(horizontal: 4),
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.secondaryContainer,
+                                color: colorScheme.secondaryContainer,
                                 borderRadius: const .only(
                                   bottomLeft: .circular(4),
                                   topRight: Style.imgRadius,
@@ -495,7 +545,7 @@ class _EpisodePanelState extends State<EpisodePanel>
                                 (index + 1).toString(),
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: theme.colorScheme.onSecondaryContainer,
+                                  color: colorScheme.onSecondaryContainer,
                                 ),
                               ),
                             ),
@@ -512,42 +562,34 @@ class _EpisodePanelState extends State<EpisodePanel>
                             text: episode.badge,
                             top: 6,
                             right: 6,
-                            type: switch (episode.badge) {
-                              '预告' => .gray,
-                              '限免' => .free,
-                              _ => .primary,
-                            },
+                            type: episode.badgeType,
                           ),
                       ],
                     )
-                  else if (isCurrentIndex)
+                  else if (isCurrItem)
                     Image.asset(
                       Assets.livingStatic,
                       color: primary,
                       height: 12,
                       cacheHeight: 12.cacheSize(context),
-                      semanticLabel: "正在播放：",
                     ),
                   Expanded(
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: .min,
+                      crossAxisAlignment: .start,
                       children: [
                         Expanded(
                           child: Text(
                             title,
-                            textAlign: TextAlign.start,
+                            textAlign: .start,
                             style: TextStyle(
-                              fontSize: theme.textTheme.bodyMedium!.fontSize,
                               height: 1.42,
                               letterSpacing: 0.3,
-                              fontWeight: isCurrentIndex
-                                  ? FontWeight.bold
-                                  : null,
-                              color: isCurrentIndex ? primary : null,
+                              fontWeight: isCurrItem ? .bold : null,
+                              color: isCurrItem ? primary : null,
                             ),
                             maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                            overflow: .ellipsis,
                           ),
                         ),
                         if (pubdate != null)
@@ -557,8 +599,8 @@ class _EpisodePanelState extends State<EpisodePanel>
                             style: TextStyle(
                               fontSize: 12,
                               height: 1,
-                              color: theme.colorScheme.outline,
-                              overflow: TextOverflow.clip,
+                              color: colorScheme.outline,
+                              overflow: .clip,
                             ),
                           ),
                         if (view != null) ...[
@@ -568,12 +610,12 @@ class _EpisodePanelState extends State<EpisodePanel>
                             children: [
                               StatWidget(
                                 value: view,
-                                type: StatType.play,
+                                type: .play,
                               ),
                               if (danmaku != null)
                                 StatWidget(
                                   value: danmaku,
-                                  type: StatType.danmaku,
+                                  type: .danmaku,
                                 ),
                             ],
                           ),
@@ -590,128 +632,108 @@ class _EpisodePanelState extends State<EpisodePanel>
     );
   }
 
-  Widget _buildFavBtn(LoadingState<bool> loadingState) {
-    return switch (loadingState) {
-      Success(:final response) => iconButton(
-        iconSize: 22,
-        tooltip: response ? '取消订阅' : '订阅',
-        icon: response
-            ? const Icon(Icons.notifications_off_outlined)
-            : const Icon(Icons.notifications_active_outlined),
-        onPressed: () async {
-          final res = await FavHttp.seasonFav(
-            isFav: response,
-            seasonId: widget.seasonId,
-          );
-          if (res.isSuccess) {
-            SmartDialog.showToast('${response ? '取消' : ''}订阅成功');
-            _favState!.value = Success(!response);
-            widget.ugcIntroController?.seasonFavState[widget.seasonId] =
-                !response;
-          } else {
-            res.toast();
-          }
-        },
-      ),
-      _ => const SizedBox.shrink(),
-    };
+  Future<void> _onFavSeason(bool isFav) async {
+    final res = await FavHttp.seasonFav(
+      isFav: isFav,
+      seasonId: _seasonId,
+    );
+    if (res.isSuccess) {
+      _favState!.toggle();
+      _ugcController.seasonFavState[_seasonId] = !isFav;
+      SmartDialog.showToast('${isFav ? '取消' : ''}订阅成功');
+    } else {
+      res.toast();
+    }
   }
 
-  Widget get _buildReverseBtn => iconButton(
-    iconSize: 22,
-    tooltip: widget.isReversed == true ? '正序播放' : '倒序播放',
-    icon: widget.isReversed == true
-        ? const Icon(MdiIcons.sortDescending)
-        : const Icon(MdiIcons.sortAscending),
-    onPressed: () => widget.onReverse?.call(),
-  );
-
-  void _animToTopOrBottom({bool top = true}) {
-    final tabIndex = _currentTabIndex.value;
-    _itemScrollController[tabIndex].animTo(
-      top ^ _isReversed[tabIndex]
-          ? 0
-          : _calcItemOffset(_getCurrEpisodes.length),
-      duration: const Duration(milliseconds: 200),
+  Widget _buildFavBtn(bool? isFav) {
+    if (isFav == null) return const SizedBox.shrink();
+    return iconButton(
+      iconSize: 22,
+      tooltip: isFav ? '取消订阅' : '订阅',
+      icon: isFav
+          ? const Icon(Icons.notifications_off_outlined)
+          : const Icon(Icons.notifications_active_outlined),
+      onPressed: () => _onFavSeason(isFav),
     );
   }
 
+  Widget get _buildDataReverseBtn => Obx(() {
+    final tabIndex = _rxTabIndex.value;
+    if (tabIndex != _tabIndex()) return const SizedBox.shrink();
+    final isReversed = switch (_type) {
+      .part => _videoDetail.isPageReversed,
+      .season => _sections[tabIndex].isReversed,
+      .pgc => throw UnimplementedError(),
+    };
+    return iconButton(
+      iconSize: 22,
+      tooltip: isReversed ? '正序播放' : '倒序播放',
+      icon: isReversed
+          ? const Icon(MdiIcons.sortDescending)
+          : const Icon(MdiIcons.sortAscending),
+      onPressed: () => widget.onReverse?.call(),
+    );
+  });
+
+  Widget get _buildUiReverseBtn => Obx(
+    () {
+      final tabIndex = _rxTabIndex.value;
+      final reversed = _isReversed[tabIndex];
+      return iconButton(
+        iconSize: 22,
+        tooltip: reversed ? '顺序' : '倒序',
+        icon: reversed
+            ? const Icon(MdiIcons.sortNumericDescending)
+            : const Icon(MdiIcons.sortNumericAscending),
+        onPressed: () => setState(() => _isReversed[tabIndex] = !reversed),
+      );
+    },
+  );
+
   Widget _buildToolbar() => Container(
     height: 45,
-    padding: EdgeInsets.symmetric(horizontal: showTitle ? 14 : 6),
+    padding: .symmetric(horizontal: !_isSidePanel ? 14 : 6),
     decoration: BoxDecoration(
       border: Border(
-        bottom: BorderSide(
-          color: theme.dividerColor.withValues(alpha: 0.1),
-        ),
+        bottom: BorderSide(color: colorScheme.outline.withValues(alpha: 0.1)),
       ),
     ),
     child: Row(
       children: [
-        if (showTitle)
+        if (!_isSidePanel)
           Text(
-            widget.type.title,
-            style: theme.textTheme.titleMedium,
+            _type.title,
+            style: const TextStyle(fontSize: 16),
           ),
         if (_favState != null) Obx(() => _buildFavBtn(_favState!.value)),
         iconButton(
           iconSize: 22,
           tooltip: '跳至顶部',
           icon: const Icon(Icons.vertical_align_top),
-          onPressed: _animToTopOrBottom,
+          onPressed: _jumpToTop,
         ),
         iconButton(
           iconSize: 22,
           tooltip: '跳至底部',
           icon: const Icon(Icons.vertical_align_bottom),
-          onPressed: () => _animToTopOrBottom(top: false),
+          onPressed: _jumpToBottom,
         ),
         iconButton(
           iconSize: 22,
           tooltip: '跳至当前',
           icon: const Icon(Icons.my_location),
-          onPressed: () async {
-            final currentTabIndex = _currentTabIndex.value;
-            if (currentTabIndex != widget.initialTabIndex) {
-              _tabController.animateTo(widget.initialTabIndex);
-              await Future.pause(const Duration(milliseconds: 225));
-            }
-            _itemScrollController[widget.initialTabIndex].animTo(
-              _calcItemOffset(_currentItemIndex),
-              duration: const Duration(milliseconds: 200),
-            );
-          },
+          onPressed: _jumpToCurrent,
         ),
-        if (widget.isSupportReverse == true)
-          Obx(
-            () {
-              return _currentTabIndex.value == widget.initialTabIndex
-                  ? _buildReverseBtn
-                  : const SizedBox.shrink();
-            },
-          ),
+        if (_isUgc) _buildDataReverseBtn,
         const Spacer(),
-        Obx(
-          () {
-            final currentTabIndex = _currentTabIndex.value;
-            return iconButton(
-              iconSize: 22,
-              tooltip: _isReversed[currentTabIndex] ? '顺序' : '倒序',
-              icon: !_isReversed[currentTabIndex]
-                  ? const Icon(MdiIcons.sortNumericAscending)
-                  : const Icon(MdiIcons.sortNumericDescending),
-              onPressed: () => setState(() {
-                _isReversed[currentTabIndex] = !_isReversed[currentTabIndex];
-              }),
-            );
-          },
-        ),
-        if (widget.onClose != null)
+        _buildUiReverseBtn,
+        if (!_isSidePanel)
           iconButton(
             iconSize: 22,
             tooltip: '关闭',
             icon: const Icon(Icons.close),
-            onPressed: widget.onClose,
+            onPressed: Get.back,
           ),
       ],
     ),

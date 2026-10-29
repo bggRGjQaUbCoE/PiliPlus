@@ -178,9 +178,6 @@ class VideoDetailController extends GetxController
   ScrollController get effectiveIntroScrollCtr =>
       introScrollCtr ??= ScrollController();
 
-  int? seasonCid;
-  late final RxInt seasonIndex = 0.obs;
-
   PlayerStatus? playerStatus;
 
   late final scrollKey = GlobalKey<ExtendedNestedScrollViewState>();
@@ -1467,9 +1464,8 @@ class VideoDetailController extends GetxController
           .followedBy(downloadService.waitDownloadQueue)
           .map((e) => e.cid)
           .toSet();
-      final index = episodes.indexWhere(
-        (e) => e.cid == (seasonCid ?? cid.value),
-      );
+      final targetCid = isUgc ? ugcIntroCtr.seasonCid ?? cid.value : cid.value;
+      final index = episodes.indexWhere((e) => e.cid == targetCid);
 
       showModalBottomSheet(
         context: context,

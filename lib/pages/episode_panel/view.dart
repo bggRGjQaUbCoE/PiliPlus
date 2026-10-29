@@ -213,6 +213,7 @@ class _EpisodePanelState extends State<EpisodePanel>
         }
 
       case .pgc:
+        _isUgc = false;
         _isReversed = [false];
         _tabIndex = () => 0;
         _itemIndex = () => _pgcController.episodeIndex;

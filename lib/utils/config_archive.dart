@@ -42,7 +42,7 @@ abstract final class ConfigArchive {
   static const String _type = 'data_archive';
 
   /// 归档格式版本
-  static const int _majorVersion = 0x0001;
+  static const int _majorVersion = 0x0002;
   static const int _minorVersion = 0x0000;
 
   /// 搜索历史的存储 key
@@ -201,7 +201,10 @@ abstract final class ConfigArchive {
 
   static String _exportAccount() => jsonEncode(Accounts.account.toMap());
 
-  static String _exportBlacklist() => jsonEncode(Pref.blackMids.toList());
+  static String _exportBlacklist() => jsonEncode({
+    'local': Pref.localBlackMids,
+    'online': Pref.blackMids.toList(),
+  });
 
   static String? _exportReply() {
     final box = GStorage.reply;
@@ -248,12 +251,34 @@ abstract final class ConfigArchive {
     await GStorage.importAllJsonSettings(data);
   }
 
-  static void _importBlacklist(List<dynamic> list) {
-    // 就地覆盖，保持已有引用
-    final set = GlobalData().blackMids
+  static void _importBlacklist(Object? data) {
+    final globalData = GlobalData();
+    late final List<int> localMids;
+
+    if (data is Map) {
+      localMids = List<int>.from(data['local'] as List? ?? const []);
+      final onlineMids = List<int>.from(data['online'] as List? ?? const []);
+      globalData.onlineBlackMids
+        ..clear()
+        ..addAll(onlineMids);
+      Pref.blackMids = globalData.onlineBlackMids;
+    } else if (data is List) {
+      // Legacy archives stored an untyped union; import it locally to avoid
+      // changing the account's online blacklist.
+      localMids = data.cast<int>();
+    } else {
+      throw const FormatException('黑名单数据格式不正确');
+    }
+
+    globalData.localBlackMids
       ..clear()
-      ..addAll(Set<int>.from(list));
-    Pref.blackMids = set;
+      ..addAll(localMids.toSet());
+    Pref.localBlackMids = globalData.localBlackMids;
+
+    globalData.blackMids
+      ..clear()
+      ..addAll(globalData.onlineBlackMids)
+      ..addAll(globalData.localBlackMids);
   }
 
   static void _importReply(List<dynamic> list) {

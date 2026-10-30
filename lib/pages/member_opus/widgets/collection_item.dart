@@ -20,9 +20,11 @@ const _kGridDelegate = OpusGridDelegate(
 class CollectionSection extends StatelessWidget {
   const CollectionSection({
     super.key,
+    required this.onCollapse,
     required this.collection,
   });
 
+  final VoidCallback onCollapse;
   final SectionOpusCollection collection;
 
   @override
@@ -53,6 +55,7 @@ class CollectionSection extends StatelessWidget {
                 child: GestureDetector(
                   behavior: .translucent,
                   onTap: () {
+                    if (collection.expand) onCollapse();
                     collection.expand = !collection.expand;
                     (context as Element).markNeedsBuild();
                   },

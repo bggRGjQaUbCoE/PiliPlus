@@ -6,6 +6,7 @@ import 'package:PiliPlus/models_new/space/space/tab2.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/pages/member/controller.dart';
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:get/get.dart';
 
 class MemberOpusController
@@ -74,4 +75,16 @@ class MemberOpusController
         next: next,
         filterType: type.value.meta,
       );
+
+  void onCollapseCollection() {
+    try {
+      final outerController = Get.find<MemberController>(tag: heroTag)
+          .scrollKey
+          .currentState!
+          .outerController;
+      outerController.jumpTo(outerController.offset);
+    } catch (_) {
+      if (kDebugMode) rethrow;
+    }
+  }
 }

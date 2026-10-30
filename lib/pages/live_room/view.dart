@@ -1,3 +1,4 @@
+import 'dart:async' show unawaited;
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
@@ -91,6 +92,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
     plPlayerController = _liveRoomController.plPlayerController
       ..addStatusLister(playerListener);
     _setPlayCallBack();
+    unawaited(_liveRoomController.queryLiveUrl(autoFullScreenFlag: true));
     if (plPlayerController.removeSafeArea) {
       hideSystemBar();
     }
@@ -148,9 +150,12 @@ class _LiveRoomPageState extends State<LiveRoomPage>
     plPlayerController.danmakuController =
         _liveRoomController.danmakuController;
     _setPlayCallBack();
-    _liveRoomController.startLiveTimer();
+    _liveRoomController
+      ..attachPlayerSourceRefresh()
+      ..startLiveTimer();
     if (plPlayerController.playerStatus.isPlaying &&
-        plPlayerController.cid == null) {
+        plPlayerController.cid == null &&
+        plPlayerController.isSourceOwnedBy(heroTag)) {
       _liveRoomController
         ..danmakuController?.resume()
         ..startLiveMsg();
@@ -176,6 +181,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
       ..cancelLiveTimer()
       ..closeLiveMsg()
       ..isPlaying = plPlayerController.playerStatus.isPlaying;
+    _liveRoomController.detachPlayerSourceRefresh();
     super.didPushNext();
   }
 
@@ -195,12 +201,17 @@ class _LiveRoomPageState extends State<LiveRoomPage>
 
   @override
   void dispose() {
+    _liveRoomController.detachPlayerSourceRefresh();
     removeObserverMobile(this);
     videoPlayerServiceHandler?.onVideoDetailDispose(heroTag);
     if (Platform.isAndroid && !plPlayerController.setSystemBrightness) {
       ScreenBrightnessPlatform.instance.resetApplicationScreenBrightness();
     }
-    PlPlayerController.setPlayCallBack(null);
+    // 仅当本页仍持有播放器时才清空回调，避免误清其他页面正在使用的
+    // 播放意图和源刷新回调。
+    if (PlPlayerController.playOwner == _playOwner) {
+      PlPlayerController.setPlayCallBack(null);
+    }
     plPlayerController
       ..removeStatusLister(playerListener)
       ..dispose();
@@ -215,6 +226,10 @@ class _LiveRoomPageState extends State<LiveRoomPage>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (plPlayerController.visible = state == .resumed) {
+      if (plPlayerController.pendingForegroundPlayback &&
+          plPlayerController.isSourceOwnedBy(heroTag)) {
+        unawaited(plPlayerController.resumeAfterBackground());
+      }
       if (!plPlayerController.showDanmaku) {
         _liveRoomController
           ..refreshMsgIfNeeded()

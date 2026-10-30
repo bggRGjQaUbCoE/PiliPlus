@@ -69,12 +69,12 @@ class _EpisodePanelState extends State<EpisodePanel>
   // ugc
   late final bool _isUgc;
   TabController? _tabController;
-  late final List<SectionItem> _sections;
-  late final VideoDetailData _videoDetail;
+  late List<SectionItem> _sections;
+  late VideoDetailData _videoDetail;
   late final _ugcController = _introController as UgcIntroController;
 
   // pgc
-  late final PgcInfoModel _pgcItem;
+  late PgcInfoModel _pgcItem;
   late final _pgcController = _introController as PgcIntroController;
 
   // fav
@@ -101,33 +101,44 @@ class _EpisodePanelState extends State<EpisodePanel>
   }
 
   void _addUgcListener() {
-    if (_isSidePanel) return;
     _ugcController.indexNotifier.addListener(_refresh);
   }
 
   void _removeUgcListener() {
-    if (_isSidePanel) return;
     _ugcController.indexNotifier.removeListener(_refresh);
   }
 
   void _refresh([_]) {
     if (!mounted) return;
+    final tabIndexChanged = _syncTab(_tabIndex(), syncEpisodes: true);
     setState(() {});
-    WidgetsBinding.instance.addPostFrameCallback(_jumpToCurrIfNeeded);
+    _jumpToCurrIfNeeded(tabIndexChanged);
   }
 
-  bool _syncTab(int tabIndex) {
-    final tabIndexChanged = _lastTabIndex != tabIndex;
-    if (tabIndexChanged) {
-      _episodes = _sections[tabIndex].episodes!;
-      _lastTabIndex = tabIndex;
+  bool _syncTab(int tabIndex, {required bool syncEpisodes}) {
+    var tabIndexChanged = _lastTabIndex != tabIndex;
+    if (syncEpisodes) {
+      switch (_type) {
+        case .part:
+          _videoDetail = _ugcController.videoDetail.rawValue;
+          _episodes = _videoDetail.pages!;
+        case .season:
+          _videoDetail = _ugcController.videoDetail.rawValue;
+          _sections = _videoDetail.ugcSeason!.sections!;
+          _episodes = _sections[tabIndex].episodes!;
+        case .pgc:
+          tabIndexChanged = _lastTabIndex != _pgcController.seasonIndex;
+          _pgcItem = _pgcController.pgcItem;
+          _episodes = _pgcItem.episodes!;
+      }
     }
+    _lastTabIndex = tabIndex;
     return tabIndexChanged;
   }
 
-  void _jumpToCurrIfNeeded([_]) {
+  void _jumpToCurrIfNeeded(bool tabIndexChanged) {
     final itemIndex = _itemIndex();
-    if (_syncTab(_tabIndex()) || _lastItemIndex != itemIndex) {
+    if (tabIndexChanged || _lastItemIndex != itemIndex) {
       _jumpToCurrent();
       _lastItemIndex = itemIndex;
     }
@@ -146,14 +157,6 @@ class _EpisodePanelState extends State<EpisodePanel>
 
   void _onCidChanged([_]) {
     WidgetsBinding.instance.addPostFrameCallback(_refresh);
-  }
-
-  @override
-  void didUpdateWidget(EpisodePanel oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (_isUgc) {
-      WidgetsBinding.instance.addPostFrameCallback(_jumpToCurrIfNeeded);
-    }
   }
 
   @override
@@ -243,8 +246,8 @@ class _EpisodePanelState extends State<EpisodePanel>
   void _jumpToBottom() => _jumpToPos(top: false);
 
   Future<void> _jumpToCurrent() async {
-    final tabIndex = _tabIndex();
     if (_tabController != null) {
+      final tabIndex = _tabIndex();
       if (_tabController!.index != tabIndex) {
         _tabController!.animateTo(tabIndex);
         await Future.pause(const Duration(milliseconds: 225));
@@ -303,6 +306,17 @@ class _EpisodePanelState extends State<EpisodePanel>
     } else {
       _removePgcListener();
     }
+  }
+
+  bool _popIfNeeded() {
+    if (_isSidePanel) return false;
+    _pop();
+    return true;
+  }
+
+  void _pop() {
+    _removeListener();
+    Get.back();
   }
 
   @override
@@ -369,7 +383,7 @@ class _EpisodePanelState extends State<EpisodePanel>
                 padding: const .symmetric(horizontal: 12, vertical: 5), // 10
                 child: PagePanel(
                   // 45
-                  onBack: _isSidePanel ? null : Get.back,
+                  onBack: _isSidePanel ? null : _pop,
                   parts: isCurrItem ? null : episode.pages,
                   cover: episode.arc?.pic,
                   bvid: episode.bvid ?? IdUtils.av2bv(episode.aid!),
@@ -418,11 +432,8 @@ class _EpisodePanelState extends State<EpisodePanel>
     ugc.BaseEpisodeItem episode,
     String title,
   ) {
-    if (!_isSidePanel) {
-      _removeListener();
-      Get.back();
-    } else {
-      _syncTab(tabIndex);
+    if (!_popIfNeeded()) {
+      _syncTab(tabIndex, syncEpisodes: false);
       _lastItemIndex = index;
     }
 
@@ -688,7 +699,7 @@ class _EpisodePanelState extends State<EpisodePanel>
       icon: isReversed
           ? const Icon(MdiIcons.sortDescending)
           : const Icon(MdiIcons.sortAscending),
-      onPressed: () => widget.onReverse?.call(),
+      onPressed: () => {_popIfNeeded(), widget.onReverse!()},
     );
   });
 

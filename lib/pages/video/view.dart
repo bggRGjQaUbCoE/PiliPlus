@@ -1868,7 +1868,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       type: type,
       isSidePanel: false,
       enableSlide: !isModal,
-      onReverse: () => {Get.back(), onReversePlay(isSeason: type == .season)},
+      onReverse: () => onReversePlay(isSeason: type == .season),
       introController: introController,
     );
     if (isModal) {
@@ -1888,6 +1888,11 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     }
 
     final videoDetail = ugcIntroController.videoDetail.value;
+
+    void updateIndex() {
+      ugcIntroController.updateIndex(data: videoDetail, force: true);
+    }
+
     if (isSeason) {
       if (!videoDetail.hasSeason) return;
       // reverse season
@@ -1899,14 +1904,14 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
       if (!videoDetailController.plPlayerController.reverseFromFirst) {
         // keep current episode
-        ugcIntroController.updateIndex(force: true);
+        updateIndex();
       } else {
         // switch to first episode
         final episode = section.episodes!.first;
         if (episode.cid != videoDetailController.cid.value) {
           ugcIntroController.onChangeEpisode(episode);
         } else {
-          ugcIntroController.updateIndex(force: true);
+          updateIndex();
         }
       }
     } else {
@@ -1917,14 +1922,14 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         ..pages = videoDetail.pages!.reversed.toList();
       if (!videoDetailController.plPlayerController.reverseFromFirst) {
         // keep current episode
-        ugcIntroController.updateIndex(force: true);
+        updateIndex();
       } else {
         // switch to first episode
         final episode = videoDetail.pages!.first;
         if (episode.cid != videoDetailController.cid.value) {
           ugcIntroController.onChangeEpisode(episode);
         } else {
-          ugcIntroController.updateIndex(force: true);
+          updateIndex();
         }
       }
     }

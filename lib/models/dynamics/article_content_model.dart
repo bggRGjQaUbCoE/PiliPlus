@@ -1,6 +1,10 @@
 import 'package:PiliPlus/common/style.dart' as common_style;
+import 'package:PiliPlus/models/dynamics/eva3_comment.dart';
 import 'package:PiliPlus/models/dynamics/eva3_opus.dart';
+import 'package:PiliPlus/models/dynamics/eva3_toy.dart';
+import 'package:PiliPlus/models/dynamics/eva3_user.dart';
 import 'package:PiliPlus/models/dynamics/eva3_video.dart';
+import 'package:PiliPlus/models/dynamics/eva3_vote.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/models/dynamics/vote_model.dart';
 import 'package:PiliPlus/utils/color_utils.dart';
@@ -233,7 +237,11 @@ class Card {
   Goods? goods;
   Eva3Video? eva3Video;
   Eva3Opus? eva3Opus;
-  // archive, match, reserve, upower_lottery, eva3_comment, eva3_user, eva3_vote
+  Eva3User? eva3User;
+  Eva3Toy? eva3Toy;
+  Eva3Vote? eva3Vote;
+  Eva3Comment? eva3Comment;
+  // archive, match, reserve, upower_lottery
 
   Card.fromJson(Map<String, dynamic> json) {
     oid = json['oid'];
@@ -254,6 +262,18 @@ class Card {
     eva3Opus = json['eva3_opus'] == null
         ? null
         : Eva3Opus.fromJson(json['eva3_opus']);
+    eva3User = json['eva3_user'] == null
+        ? null
+        : Eva3User.fromJson(json['eva3_user']);
+    eva3Toy = json['eva3_toy'] == null
+        ? null
+        : Eva3Toy.fromJson(json['eva3_toy']);
+    eva3Vote = json['eva3_vote'] == null
+        ? null
+        : Eva3Vote.fromJson(json['eva3_vote']);
+    eva3Comment = json['eva3_comment'] == null
+        ? null
+        : Eva3Comment.fromJson(json['eva3_comment']);
   }
 }
 

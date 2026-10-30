@@ -33,12 +33,18 @@ class AudioSessionHandler {
             // player.setVolume(player.volume.value * 0.5);
             break;
           case AudioInterruptionType.pause:
-            PlPlayerController.pauseIfExists(isInterrupt: true);
+            PlPlayerController.pauseIfExists(
+              userInitiated: false,
+              isInterrupt: true,
+            );
             // player.pause(isInterrupt: true);
             _playInterrupted = true;
             break;
           case AudioInterruptionType.unknown:
-            PlPlayerController.pauseIfExists(isInterrupt: true);
+            PlPlayerController.pauseIfExists(
+              userInitiated: false,
+              isInterrupt: true,
+            );
             // player.pause(isInterrupt: true);
             _playInterrupted = true;
             break;
@@ -65,7 +71,8 @@ class AudioSessionHandler {
 
     // 耳机拔出暂停
     session.becomingNoisyEventStream.listen((_) {
-      PlPlayerController.pauseIfExists();
+      // 耳机拔出按用户暂停处理，避免设备变化后自动恢复播放
+      PlPlayerController.pauseIfExists(userInitiated: true);
       // final player = PlPlayerController.getInstance();
       // if (player.playerStatus.playing) {
       //   player.pause();

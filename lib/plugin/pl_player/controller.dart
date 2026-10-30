@@ -1,4 +1,4 @@
-import 'dart:async' show StreamSubscription, Timer;
+import 'dart:async' show StreamSubscription, Timer, unawaited;
 import 'dart:convert' show ascii, utf8;
 import 'dart:io' show Platform;
 import 'dart:math' show max, min;
@@ -29,6 +29,9 @@ import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/danmaku_options.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
+import 'package:PiliPlus/plugin/pl_player/utils/playback_recovery_state.dart';
+import 'package:PiliPlus/plugin/pl_player/utils/source_operation_gate.dart';
+import 'package:PiliPlus/plugin/pl_player/utils/source_recovery_policy.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
@@ -45,6 +48,7 @@ import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/ios/pip_helper.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
+import 'package:PiliPlus/utils/play_url_expiry.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -72,6 +76,7 @@ import 'package:window_manager/window_manager.dart';
 
 typedef PlayCallback = Future<void>? Function();
 typedef PlayOwner = ({String tag, Type? type});
+typedef SourceRefreshCallback = Future<bool> Function({required bool force});
 
 class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   Player? _videoPlayerController;
@@ -154,6 +159,23 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   late DataSource dataSource;
 
+  SourceRefreshCallback? _onSourceRefresh;
+  final _sourceGate = SourceOperationGate();
+  final _recoveryPolicy = SourceRecoveryPolicy();
+  final _playbackIntent = PlaybackRecoveryState();
+  Timer? _sourceExpiryTimer;
+  Timer? _recoveryRetryTimer;
+  Future<bool>? _recoveryFuture;
+  Future<void>? _resumeFuture;
+  int _recoveryEpoch = 0;
+  String? _sourceOwnerTag;
+  DateTime? _sourceExpiresAt;
+  DateTime? _sourceOpenedAt;
+  DateTime? _lastSeekAt;
+  DateTime? _lastRecoveryToastAt;
+  bool _refreshingSource = false;
+  int get _sourceGeneration => _sourceGate.generation;
+
   Timer? _timer;
   StreamSubscription? _subForSeek;
 
@@ -162,6 +184,298 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   // final Durations durations;
 
   String get bvid => _bvid!;
+
+  bool get isUserPaused => _playbackIntent.userPaused;
+
+  bool get wantsPlayback => _playbackIntent.wantsPlayback;
+
+  bool get pendingForegroundPlayback => _playbackIntent.pendingForeground;
+
+  void deferPlaybackUntilForeground() => _playbackIntent.deferUntilForeground();
+
+  /// Whether playback may start now. On mobile it stays false while the app is
+  /// backgrounded or another route covers the player, unless background
+  /// playback or PiP keeps it visible.
+  bool get canPlayInLifecycle {
+    if (!PlatformUtils.isMobile ||
+        continuePlayInBackground.value ||
+        isPipMode) {
+      return true;
+    }
+    final state = WidgetsBinding.instance.lifecycleState;
+    return state == null || state == AppLifecycleState.resumed;
+  }
+
+  /// Applies the pending playback intent after a source refresh: start playing
+  /// if the user still wants it, defer it until foreground, or keep the player
+  /// paused without turning that pause into a user intent.
+  Future<void> applyPlaybackIntent({bool pauseIfIdle = true}) async {
+    if (wantsPlayback && canPlayInLifecycle) {
+      await play(userInitiated: false);
+    } else {
+      if (wantsPlayback) deferPlaybackUntilForeground();
+      if (pauseIfIdle) await pause(userInitiated: false);
+    }
+  }
+
+  bool rememberBackgroundPlayback({required bool playerPlaying}) =>
+      _playbackIntent.rememberBackground(
+        playerPlaying: playerPlaying,
+        replacingSource: _refreshingSource || _processing,
+      );
+
+  bool shouldResumeAfterBackground({
+    required bool wasPlaying,
+    required bool pausedByBackground,
+  }) => _playbackIntent.resumeAfterBackground(
+    wasPlaying: wasPlaying,
+    pausedByBackground: pausedByBackground,
+    completed: playerStatus.isCompleted,
+  );
+
+  void requestAutoplay() => _playbackIntent.requestAutoplay();
+
+  int get seekRevision => _playbackIntent.seekRevision;
+
+  Duration positionAfterSeek(int revision, Duration fallback) =>
+      _playbackIntent.positionAfter(revision, fallback);
+
+  bool isSourceOwnedBy(String tag) => _sourceOwnerTag == tag;
+
+  int get sourceGeneration => _sourceGeneration;
+
+  void resetPauseIntent() {
+    _playbackIntent.resetForNewOwner();
+    _invalidateSourceRecovery();
+  }
+
+  void cancelSourceRecovery() {
+    _playbackIntent.invalidatePending();
+    _invalidateSourceRecovery();
+  }
+
+  void setSourceRefreshCallback(SourceRefreshCallback? callback) {
+    if (_onSourceRefresh != callback) {
+      _invalidateSourceRecovery();
+    }
+    _onSourceRefresh = callback;
+    if (callback == null) {
+      _stopSourceExpiryTimer();
+      _cancelRecoveryRetry();
+    } else {
+      _startSourceExpiryTimer();
+    }
+  }
+
+  void clearSourceRefreshCallback(SourceRefreshCallback? callback) {
+    if (callback == null || _onSourceRefresh == callback) {
+      _playbackIntent.invalidatePending();
+      setSourceRefreshCallback(null);
+    }
+  }
+
+  bool get _isSourceExpiredOrNear {
+    final expiresAt = _sourceExpiresAt;
+    if (expiresAt == null) return false;
+    return !DateTime.now().isBefore(
+      expiresAt.subtract(PlayUrlExpiry.expiryMargin),
+    );
+  }
+
+  void _stopSourceExpiryTimer() {
+    _sourceExpiryTimer?.cancel();
+    _sourceExpiryTimer = null;
+  }
+
+  void _cancelRecoveryRetry() {
+    _recoveryRetryTimer?.cancel();
+    _recoveryRetryTimer = null;
+    _recoveryPolicy.resetRetries();
+  }
+
+  void _invalidateSourceRecovery() {
+    _recoveryEpoch++;
+    _refreshingSource = false;
+    _recoveryFuture = null;
+    _resumeFuture = null;
+    _stopSourceExpiryTimer();
+    _cancelRecoveryRetry();
+    _recoveryPolicy.resetForNewSource();
+  }
+
+  void _scheduleRecoveryRetry() {
+    if (_playerCount == 0 || _refreshingSource || _onSourceRefresh == null) {
+      return;
+    }
+    final delay = _recoveryPolicy.nextRetryDelay();
+    if (delay == null) return;
+    final epoch = _recoveryEpoch;
+    _recoveryRetryTimer?.cancel();
+    _recoveryRetryTimer = Timer(delay, () {
+      _recoveryRetryTimer = null;
+      if (epoch != _recoveryEpoch ||
+          _playerCount == 0 ||
+          _refreshingSource ||
+          !wantsPlayback ||
+          playerStatus.isCompleted) {
+        return;
+      }
+      unawaited(
+        _recoverSource(
+          reason: 'retry',
+          force: true,
+          userInitiated: true,
+        ).then<void>((_) {}),
+      );
+    });
+  }
+
+  void _startSourceExpiryTimer() {
+    _stopSourceExpiryTimer();
+    final expiresAt = _sourceExpiresAt;
+    if (expiresAt == null || _onSourceRefresh == null) return;
+    _sourceExpiryTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (_playerCount == 0 ||
+          _refreshingSource ||
+          !playerStatus.isPlaying ||
+          _videoPlayerController == null) {
+        return;
+      }
+      if (!DateTime.now().isBefore(
+        expiresAt.subtract(PlayUrlExpiry.refreshAhead),
+      )) {
+        unawaited(
+          _recoverSource(reason: 'urlExpiry', force: true).then<void>((_) {}),
+        );
+      }
+    });
+  }
+
+  Future<bool> _recoverSource({
+    required String reason,
+    bool force = false,
+    bool userInitiated = false,
+  }) {
+    final running = _recoveryFuture;
+    if (running != null) return running;
+
+    late final Future<bool> future;
+    future =
+        _performSourceRecovery(
+          reason: reason,
+          force: force,
+          userInitiated: userInitiated,
+        ).whenComplete(() {
+          if (identical(_recoveryFuture, future)) _recoveryFuture = null;
+        });
+    _recoveryFuture = future;
+    return future;
+  }
+
+  Future<bool> _performSourceRecovery({
+    required String reason,
+    required bool force,
+    required bool userInitiated,
+  }) async {
+    if (_playerCount == 0 ||
+        _refreshingSource ||
+        _processing ||
+        dataStatus.value == .loading) {
+      return false;
+    }
+    if (_videoPlayerController == null || dataSource is FileSource) {
+      return false;
+    }
+    final callback = _onSourceRefresh;
+    if (callback == null) return false;
+
+    final now = DateTime.now();
+    if (!_recoveryPolicy.canStart(now, immediate: userInitiated)) {
+      return false;
+    }
+    _recoveryPolicy.started(now);
+    _refreshingSource = true;
+    final epoch = _recoveryEpoch;
+    var shouldRetry = false;
+    try {
+      if (kDebugMode) debugPrint('source recovery: $reason');
+      final recovered = await callback(force: force || _isSourceExpiredOrNear);
+      if (epoch != _recoveryEpoch || callback != _onSourceRefresh) return false;
+      if (!recovered || dataStatus.value != DataStatus.loaded) {
+        _startSourceExpiryTimer();
+        shouldRetry = true;
+        _showRecoveryFailure();
+        return false;
+      }
+      _cancelRecoveryRetry();
+      _startSourceExpiryTimer();
+      return true;
+    } catch (e, s) {
+      if (kDebugMode) debugPrint('source recovery failed: $e\n$s');
+      if (epoch == _recoveryEpoch && callback == _onSourceRefresh) {
+        _startSourceExpiryTimer();
+        shouldRetry = true;
+        _showRecoveryFailure();
+      }
+      return false;
+    } finally {
+      if (epoch == _recoveryEpoch) {
+        _refreshingSource = false;
+        if (shouldRetry) _scheduleRecoveryRetry();
+      }
+    }
+  }
+
+  void _showRecoveryFailure() {
+    final now = DateTime.now();
+    if (_lastRecoveryToastAt != null &&
+        now.difference(_lastRecoveryToastAt!) < const Duration(minutes: 1)) {
+      return;
+    }
+    _lastRecoveryToastAt = now;
+    SmartDialog.showToast('视频播放异常，自动恢复失败');
+  }
+
+  /// Native decoder log fragments emitted for corrupted stream data. Kept as
+  /// data so new fragments can be added without touching the recovery logic.
+  /// These strings come from FFmpeg/media_kit and may change with upgrades.
+  static const _corruptionEventFragments = <String>[
+    'Invalid NAL unit size',
+    'Error splitting the input into NAL',
+    'missing picture in access unit',
+    'Stream ends prematurely',
+    'Invalid OBU length',
+    'extension_header_reserved_3bits',
+  ];
+
+  static bool _isCorruptionEvent(String event) =>
+      _corruptionEventFragments.any(event.contains);
+
+  void _handleCorruptionEvent() {
+    if (isLive ||
+        onlyPlayAudio.value ||
+        isFileSource ||
+        _refreshingSource ||
+        _processing ||
+        dataStatus.value != .loaded ||
+        _videoPlayerController == null ||
+        isSeeking.value) {
+      return;
+    }
+
+    final now = DateTime.now();
+    if (_recoveryPolicy.corruption(
+      now,
+      playing: playerStatus.isPlaying,
+      seeking: isSeeking.value,
+      sourceOpenedAt: _sourceOpenedAt,
+      lastSeekAt: _lastSeekAt,
+    )) {
+      unawaited(
+        _recoverSource(reason: 'corruption', force: true).then<void>((_) {}),
+      );
+    }
+  }
 
   /// 视频播放速度
   double get playbackSpeed => _playbackSpeed.value;
@@ -204,6 +518,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   late final bool autoPiP = Pref.autoPiP;
   bool get isPipMode =>
       (Platform.isAndroid && AndroidHelper.isPipMode) ||
+      (Platform.isIOS && IOSPipHelper.isActive) ||
       (PlatformUtils.isDesktop && isDesktopPip);
   late bool isDesktopPip = false;
   late nativeapi.Rectangle _lastWindowBounds;
@@ -552,6 +867,14 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     PlayCallback? playCallBack, {
     PlayOwner? playOwner,
   }) {
+    if (_playOwner != playOwner) {
+      if (_instance case final controller?) {
+        controller
+          .._invalidateSourceRecovery()
+          .._playbackIntent.resetForNewOwner()
+          .._onSourceRefresh = null;
+      }
+    }
     _playCallBack = playCallBack;
     _playOwner = playOwner;
   }
@@ -570,11 +893,14 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   static Future<void>? pauseIfExists({
-    bool notify = true,
+    bool userInitiated = true,
     bool isInterrupt = false,
   }) {
     if (_instance?.playerStatus.isPlaying ?? false) {
-      return _instance?.pause(notify: notify, isInterrupt: isInterrupt);
+      return _instance?.pause(
+        userInitiated: userInitiated,
+        isInterrupt: isInterrupt,
+      );
     }
     return null;
   }
@@ -726,68 +1052,106 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     Volume? volume,
     bool autoFullScreenFlag = false,
     int? rotate,
+    SourceRefreshCallback? onSourceRefresh,
+    String? sourceOwnerTag,
+    bool Function()? isCurrent,
+    bool Function()? canAutoplay,
   }) async {
+    if (isCurrent != null && !isCurrent()) return;
+    if (autoplay) _playbackIntent.requestAutoplay();
+    final generation = _sourceGate.begin();
+    bool valid() => _sourceGate.isCurrent(
+      generation,
+      () => _playerCount > 0 && (isCurrent?.call() ?? true),
+    );
+    _processing = true;
     try {
-      _processing = true;
-      this.isLive = isLive;
-      _videoType = videoType ?? VideoType.ugc;
-      this.width = width;
-      this.height = height;
-      this.dataSource = dataSource;
-      _autoPlay = autoplay;
-      // 初始化数据加载状态
-      dataStatus.value = DataStatus.loading;
-      // 初始化全屏方向
-      _isVertical = isVertical ?? false;
-      _aid = aid;
-      _bvid = bvid;
-      this.cid = cid;
-      _epid = epid;
-      _seasonId = seasonId;
-      _pgcType = pgcType;
+      await _sourceGate.run(
+        generation,
+        ownerIsCurrent: () => _playerCount > 0 && (isCurrent?.call() ?? true),
+        operation: (valid) async {
+          this.isLive = isLive;
+          _videoType = videoType ?? VideoType.ugc;
+          this.width = width;
+          this.height = height;
+          this.dataSource = dataSource;
+          _sourceOwnerTag = sourceOwnerTag;
+          _autoPlay = autoplay;
+          if (autoplay) _playbackIntent.requestAutoplay();
+          dataStatus.value = DataStatus.loading;
+          _isVertical = isVertical ?? false;
+          _aid = aid;
+          _bvid = bvid;
+          this.cid = cid;
+          _epid = epid;
+          _seasonId = seasonId;
+          _pgcType = pgcType;
 
-      if (showSeekPreview) {
-        _clearPreview();
-      }
-      cancelLongPressTimer();
-      if (_videoPlayerController != null &&
-          _videoPlayerController!.state.playing) {
-        await pause(notify: false);
-      }
+          if (showSeekPreview) _clearPreview();
+          cancelLongPressTimer();
+          if (_videoPlayerController?.state.playing == true) {
+            await pause(userInitiated: false);
+          }
+          if (!valid()) return;
 
-      if (_playerCount == 0) {
-        return;
-      }
-      // 配置Player 音轨、字幕等等
-      await _createVideoController(dataSource, seekTo, volume, rotate);
+          _stopSourceExpiryTimer();
+          if (!_refreshingSource) _cancelRecoveryRetry();
+          setSourceRefreshCallback(onSourceRefresh);
+          _sourceOpenedAt = DateTime.now();
+          _sourceExpiresAt = dataSource is FileSource
+              ? null
+              : PlayUrlExpiry.earliestExpiry([
+                  dataSource.videoSource,
+                  dataSource.audioSource,
+                ]);
+          _lastSeekAt = null;
 
-      if (_playerCount == 0) {
-        _removeListeners();
-        _videoPlayerController?.dispose();
-        _videoPlayerController = null;
-        _videoController = null;
-        return;
-      }
+          await _createVideoController(
+            dataSource,
+            seekTo,
+            volume,
+            rotate,
+            valid,
+          );
 
-      updateDuration(duration ?? _videoPlayerController!.state.duration);
-      position.value = buffered.value = seekTo?.inSeconds ?? 0;
+          if (_playerCount == 0) {
+            _removeListeners();
+            _videoPlayerController?.dispose();
+            _videoPlayerController = null;
+            _videoController = null;
+            return;
+          }
+          if (!valid()) return;
 
-      dataStatus.value = .loaded;
+          updateDuration(duration ?? _videoPlayerController!.state.duration);
+          position.value = buffered.value = seekTo?.inSeconds ?? 0;
+          dataStatus.value = .loaded;
+          _startSourceExpiryTimer();
 
-      if (autoFullScreenFlag && autoEnterFullScreen) {
-        triggerFullScreen(status: true);
-      }
+          if (autoFullScreenFlag && autoEnterFullScreen) {
+            triggerFullScreen(status: true);
+          }
 
-      await _initializePlayer();
-      onInit?.call();
+          await _initializePlayer(valid, canAutoplay);
+          if (valid()) onInit?.call();
+        },
+      );
     } catch (err, stackTrace) {
-      dataStatus.value = DataStatus.error;
+      if (valid()) {
+        _stopSourceExpiryTimer();
+        dataStatus.value = DataStatus.error;
+      }
       if (kDebugMode) {
         debugPrint(stackTrace.toString());
         debugPrint('plPlayer err:  $err');
       }
     } finally {
-      _processing = false;
+      if (generation == _sourceGeneration) {
+        _processing = false;
+        if (!valid() && dataStatus.value == DataStatus.loading) {
+          dataStatus.value = DataStatus.none;
+        }
+      }
     }
   }
 
@@ -896,6 +1260,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     Duration? seekTo,
     Volume? volume,
     int? rotate,
+    bool Function() isCurrent,
   ) async {
     isBuffering.value = false;
     _heartDuration = 0;
@@ -913,10 +1278,12 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
         return;
       }
       _videoPlayerController = player;
+      if (!isCurrent()) return;
       if (isAnim && superResolutionType.value != .disable) {
         await setShader();
       }
     }
+    if (!isCurrent()) return;
 
     final Map<String, String> extras = {
       if (dataSource is FileSource)
@@ -957,20 +1324,46 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     );
   }
 
-  Future<void>? refreshPlayer() {
+  /// Reloads the current source when the user taps the buffering overlay.
+  /// Prefers a full play URL refresh so an expired URL is not reopened.
+  Future<void> recoverOrReload() async {
+    if (_refreshingSource ||
+        _processing ||
+        dataStatus.value == DataStatus.loading) {
+      return;
+    }
+    if (!isFileSource && _onSourceRefresh != null) {
+      final recovered = await _recoverSource(
+        reason: 'manual',
+        force: true,
+        userInitiated: true,
+      );
+      if (recovered) return;
+      if (_isSourceExpiredOrNear) return;
+    }
+    await refreshPlayer();
+  }
+
+  Future<void>? refreshPlayer({bool play = true}) {
     if (dataSource is FileSource) {
       return null;
     }
     if (_videoPlayerController case final ctr? when (ctr.current.isNotEmpty)) {
       var media = ctr.current.last;
       if (!isLive) media = media.copyWith(start: ctr.state.position);
-      return ctr.open(media, play: true);
+      _sourceOpenedAt = DateTime.now();
+      if (!_refreshingSource) _cancelRecoveryRetry();
+      _startSourceExpiryTimer();
+      return ctr.open(media, play: play);
     }
     return null;
   }
 
   // 开始播放
-  Future<void> _initializePlayer() async {
+  Future<void> _initializePlayer(
+    bool Function() isCurrent,
+    bool Function()? canAutoplay,
+  ) async {
     if (_instance == null) return;
     // 设置倍速
     if (_videoPlayerController != null) {
@@ -982,8 +1375,19 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     _initVideoFit();
 
     // 自动播放
-    if (_autoPlay) {
-      playIfExists();
+    // A coalesced URL query may be awaited by the recovery callback itself.
+    // Starting playback through that callback here would await the same
+    // recovery future and deadlock. Recovery resumes playback after it joins.
+    if (_playbackIntent.canAutoplay(
+      requested: _autoPlay,
+      recovering: _refreshingSource,
+      ownerCurrent: isCurrent(),
+    )) {
+      if (canAutoplay?.call() ?? true) {
+        await playIfExists();
+      } else {
+        deferPlaybackUntilForeground();
+      }
     }
   }
 
@@ -995,10 +1399,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   void _startWakeLockTimer() {
     _wakeLockTimer?.cancel();
-    _wakeLockTimer = Timer(
-      const Duration(milliseconds: 500),
-      _stopWakeLock,
-    );
+    _wakeLockTimer = Timer(const Duration(milliseconds: 500), _stopWakeLock);
   }
 
   void _stopWakeLockTimer() {
@@ -1063,6 +1464,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       ///completed
       stream.completed.listen((bool completed) {
         if (completed) {
+          _playbackIntent.complete();
           playerStatus = .completed;
           _startWakeLockTimer();
 
@@ -1126,7 +1528,27 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
           if (event.startsWith('tcp: ffurl_read returned ') ||
               event.startsWith("Failed to open https://") ||
               event.startsWith("Can not open external file https://")) {
-            Timer(const Duration(milliseconds: 3000), refreshPlayer);
+            final generation = _sourceGeneration;
+            final epoch = _recoveryEpoch;
+            Timer(
+              const Duration(milliseconds: 3000),
+              () {
+                if (generation != _sourceGeneration ||
+                    epoch != _recoveryEpoch) {
+                  return;
+                }
+                unawaited(
+                  _recoverSource(reason: 'liveNetwork').then<void>((_) {}),
+                );
+              },
+            );
+          }
+          return;
+        }
+        if (_isCorruptionEvent(event)) {
+          _handleCorruptionEvent();
+          if (!kDebugMode) {
+            Utils.reportError('$event\n${player.state.playlist}');
           }
           return;
         }
@@ -1135,6 +1557,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
             //tcp: ffurl_read returned 0xdfb9b0bb
             //tcp: ffurl_read returned 0xffffff99
             event.startsWith('tcp: ffurl_read returned ')) {
+          final generation = _sourceGeneration;
+          final epoch = _recoveryEpoch;
           EasyThrottle.throttle(
             'controllerStream.error.listen',
             const Duration(milliseconds: 10000),
@@ -1145,12 +1569,15 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
               // if (kDebugMode) {
               //   debugPrint("_buffered.value: ${_buffered.value}");
               // }
-              if (isBuffering.value && buffered.value == 0) {
+              if (generation == _sourceGeneration &&
+                  epoch == _recoveryEpoch &&
+                  isBuffering.value &&
+                  buffered.value == 0) {
                 SmartDialog.showToast(
                   '视频链接打开失败，重试中',
                   displayTime: const Duration(milliseconds: 500),
                 );
-                refreshPlayer();
+                unawaited(_recoverSource(reason: 'network').then<void>((_) {}));
               }
             }),
           );
@@ -1186,7 +1613,16 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     }
   }
 
-  Future<void> seek(Duration position, {bool isSeek = false}) async {
+  Future<void> seek(
+    Duration position, {
+    bool isSeek = false,
+    bool recordIntent = true,
+  }) async {
+    _lastSeekAt = DateTime.now();
+    if (recordIntent) {
+      _playbackIntent.seek(position);
+      _cancelRecoveryRetry();
+    }
     if (isSeek) {
       /// 拖动进度条调节时，不等待第一帧，防止抖动
       await _videoPlayerController?.stream.buffer.first;
@@ -1208,15 +1644,18 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     if (position < Duration.zero) {
       position = Duration.zero;
     }
+    _playbackIntent.seek(position);
+    _lastSeekAt = DateTime.now();
+    _cancelRecoveryRetry();
     _heartDuration = position.inSeconds;
 
     if (duration.value != 0) {
-      seek(position, isSeek: isSeek);
+      seek(position, isSeek: isSeek, recordIntent: false);
     } else {
       // if (kDebugMode) debugPrint('seek duration else');
       _subForSeek?.cancel();
       _subForSeek = duration.listen((_) {
-        seek(position, isSeek: isSeek);
+        seek(position, isSeek: isSeek, recordIntent: false);
         _cancelSubForSeek();
       });
     }
@@ -1244,8 +1683,58 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   /// 播放视频
-  Future<void> play({bool repeat = false, bool hideControls = true}) async {
+  Future<void> play({
+    bool repeat = false,
+    bool hideControls = true,
+    bool userInitiated = true,
+  }) async {
     if (_playerCount == 0) return;
+    if (userInitiated) {
+      _playbackIntent.requestPlay();
+    } else if (!wantsPlayback) {
+      return;
+    }
+    final intentRevision = _playbackIntent.intentRevision;
+
+    final needsRecovery =
+        _isSourceExpiredOrNear || _recoveryPolicy.hasRetryAttempts;
+    final running = _recoveryFuture;
+    bool? recovered;
+    if (userInitiated && running != null) {
+      recovered = await running;
+      if (recovered &&
+          _playbackIntent.intentRevision == intentRevision &&
+          wantsPlayback &&
+          _isSourceExpiredOrNear &&
+          !_processing &&
+          _onSourceRefresh != null) {
+        recovered = await _recoverSource(
+          reason: 'playWithExpiredUrl',
+          force: true,
+          userInitiated: true,
+        );
+      }
+    } else if (!_refreshingSource &&
+        !_processing &&
+        _onSourceRefresh != null &&
+        _videoPlayerController != null &&
+        !isFileSource &&
+        needsRecovery) {
+      recovered = await _recoverSource(
+        reason: 'playWithExpiredUrl',
+        force: true,
+        userInitiated: true,
+      );
+    }
+    if (_playbackIntent.intentRevision != intentRevision || !wantsPlayback) {
+      return;
+    }
+    if (recovered == false &&
+        _sourceExpiresAt != null &&
+        !DateTime.now().isBefore(_sourceExpiresAt!)) {
+      return;
+    }
+
     // 播放时自动隐藏控制条
     controls = !hideControls;
     // repeat为true，将从头播放
@@ -1255,13 +1744,70 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
     await _videoPlayerController?.play();
 
+    if (_playbackIntent.intentRevision != intentRevision || !wantsPlayback) {
+      return;
+    }
+
+    _playbackIntent.playbackStarted();
+
     audioSessionHandler?.setActive(true);
 
     playerStatus = .playing;
   }
 
+  /// Rechecks the URL even if background audio still reports itself playing.
+  Future<void> resumeAfterBackground() {
+    final running = _resumeFuture;
+    if (running != null) return running;
+    late final Future<void> future;
+    future = _resumeAfterBackground().whenComplete(() {
+      if (identical(_resumeFuture, future)) _resumeFuture = null;
+    });
+    _resumeFuture = future;
+    return future;
+  }
+
+  Future<void> _resumeAfterBackground() async {
+    if (_playerCount == 0 || !wantsPlayback || playerStatus.isCompleted) return;
+    final revision = _playbackIntent.intentRevision;
+    final running = _recoveryFuture;
+    if (running != null) await running;
+    if (_playbackIntent.intentRevision != revision || !wantsPlayback) return;
+
+    if (_isSourceExpiredOrNear &&
+        !_processing &&
+        _onSourceRefresh != null &&
+        _videoPlayerController != null &&
+        !isFileSource) {
+      final recovered = await _recoverSource(
+        reason: 'resume',
+        force: true,
+        userInitiated: true,
+      );
+      if (_playbackIntent.intentRevision != revision || !wantsPlayback) return;
+      if (!recovered &&
+          _sourceExpiresAt != null &&
+          !DateTime.now().isBefore(_sourceExpiresAt!)) {
+        return;
+      }
+    }
+    if (_videoPlayerController?.state.playing != true) {
+      await play(userInitiated: false);
+    } else {
+      _playbackIntent.playbackStarted();
+    }
+  }
+
   /// 暂停播放
-  Future<void> pause({bool notify = true, bool isInterrupt = false}) async {
+  ///
+  /// [userInitiated] 为 true 表示用户主动暂停，会清除播放意图，
+  /// 后续的自动恢复/回前台续播不会覆盖它；系统原因（中断、切集、最小化
+  /// 等）导致的暂停应传 false，以保留播放意图。
+  Future<void> pause({
+    bool userInitiated = true,
+    bool isInterrupt = false,
+  }) async {
+    _playbackIntent.pause(userInitiated: userInitiated);
     await _videoPlayerController?.pause();
     playerStatus = .paused;
 
@@ -1402,10 +1948,11 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   // 双击播放、暂停
   Future<void> onDoubleTapCenter() async {
     if (!isLive && isCompleted) {
-      await videoPlayerController!.seek(Duration.zero);
-      videoPlayerController!.play();
+      await play(repeat: true, hideControls: false);
+    } else if (videoPlayerController!.state.playing) {
+      await pause();
     } else {
-      videoPlayerController!.playOrPause();
+      await play(hideControls: false);
     }
   }
 
@@ -1706,6 +2253,15 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     _positionListeners.clear();
     _statusListeners.clear();
     _stopWakeLockTimer();
+    _invalidateSourceRecovery();
+    _onSourceRefresh = null;
+    _sourceOwnerTag = null;
+    _sourceExpiresAt = null;
+    _sourceOpenedAt = null;
+    _lastSeekAt = null;
+    _lastRecoveryToastAt = null;
+    _playbackIntent.resetForNewOwner();
+    _sourceGate.invalidate();
     WakelockPlus.disable();
     if (kDebugMode) {
       debugPrint('dispose player');

@@ -48,8 +48,10 @@ import 'package:PiliPlus/pages/video/send_danmaku/view.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
+import 'package:PiliPlus/plugin/pl_player/models/data_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
+import 'package:PiliPlus/plugin/pl_player/utils/source_query_coordinator.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/connectivity_utils.dart';
@@ -58,6 +60,7 @@ import 'package:PiliPlus/utils/extension/nested_scroll_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/play_url_expiry.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/reply_scheme_helper.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -137,6 +140,14 @@ class VideoDetailController extends GetxController
   String? audioUrl;
   Duration? defaultST;
   Duration? playedTime;
+
+  int _sourceRevision = 0;
+  final _sourceQueries = SourceQueryCoordinator();
+  Future<bool>? _sourceRefreshFuture;
+  bool _sourceRefreshForced = false;
+  bool _playerActive = true;
+  late final SourceRefreshCallback _sourceRefreshCallback = _refreshSource;
+
   String playedTimePos(bool hasParams) {
     final pos = playedTime?.inMilliseconds;
     if (pos != null && pos > 0) {
@@ -634,7 +645,7 @@ class VideoDetailController extends GetxController
     final isPlaying =
         _autoPlay.value && plPlayerController.playerStatus.isPlaying;
     if (isPlaying) {
-      await plPlayerController.pause();
+      await plPlayerController.pause(userInitiated: false);
     }
     await Get.key.currentState!.push(
       PublishRoute(
@@ -702,6 +713,7 @@ class VideoDetailController extends GetxController
   void updatePlayer() {
     final currentVideoQa = this.currentVideoQa.value;
     if (currentVideoQa == null) return;
+    _restartSourceGeneration();
     _autoPlay.value = true;
     playedTime = plPlayerController.videoPlayerController?.state.position;
     plPlayerController
@@ -723,14 +735,20 @@ class VideoDetailController extends GetxController
     playerInit();
   }
 
-  Future<void>? initPlayerIfNeeded(bool autoFullScreenFlag) {
+  Future<void>? initPlayerIfNeeded(
+    bool autoFullScreenFlag, {
+    bool? autoplay,
+    bool checkUrlExpiry = true,
+  }) {
     if (_autoPlay.value ||
         (plPlayerController.preInitPlayer && !plPlayerController.processing) &&
             (isFileSource
                 ? true
                 : videoPlayerKey.currentState?.mounted == true)) {
       return playerInit(
+        autoplay: autoplay,
         autoFullScreenFlag: autoFullScreenFlag && _autoPlay.value,
+        checkUrlExpiry: checkUrlExpiry,
       );
     }
     return null;
@@ -739,7 +757,25 @@ class VideoDetailController extends GetxController
   Future<void> playerInit({
     bool? autoplay,
     bool autoFullScreenFlag = false,
+    bool checkUrlExpiry = true,
   }) async {
+    final revision = _sourceRevision;
+    bool isCurrent() => _isActivePlayer && revision == _sourceRevision;
+    if (!isCurrent()) return;
+    if (checkUrlExpiry && !isFileSource && playUrlExpired) {
+      final playIntent = autoplay ?? _autoPlay.value;
+      if (playIntent) plPlayerController.requestAutoplay();
+      if (plPlayerController.isSourceOwnedBy(heroTag) &&
+          plPlayerController.cid == cid.value) {
+        playedTime =
+            plPlayerController.videoPlayerController?.state.position ??
+            playedTime;
+      }
+      defaultST = null;
+      unawaited(_refreshExpiredSourceAndResume(isCurrent, autoFullScreenFlag));
+      return;
+    }
+
     Duration? seek = defaultST ?? playedTime;
     if (seek == .zero) seek = null;
     seek ??= getFirstSegment();
@@ -777,9 +813,13 @@ class VideoDetailController extends GetxController
       volume: volume,
       autoFullScreenFlag: autoFullScreenFlag,
       rotate: _rotate,
+      onSourceRefresh: _sourceRefreshCallback,
+      sourceOwnerTag: heroTag,
+      isCurrent: isCurrent,
+      canAutoplay: () => plPlayerController.canPlayInLifecycle,
     );
 
-    if (isClosed) return;
+    if (!isCurrent()) return;
 
     if (plPlayerController.enableBlock) {
       initSkip();
@@ -798,7 +838,222 @@ class VideoDetailController extends GetxController
     defaultST = null;
   }
 
-  bool isQuerying = false;
+  /// Refreshes an expiring play URL, reopens the player if the coalesced query
+  /// did not, then resumes or defers playback according to the current intent.
+  Future<void> _refreshExpiredSourceAndResume(
+    bool Function() isCurrent,
+    bool autoFullScreenFlag,
+  ) async {
+    bool success;
+    try {
+      success = await queryVideoUrl(
+        fromReset: true,
+        autoFullScreenFlag: autoFullScreenFlag,
+        autoplay: false,
+      );
+    } catch (_) {
+      success = false;
+    }
+    if (!isCurrent()) return;
+    if (success && !_playerHasCurrentSource) {
+      try {
+        await playerInit(autoplay: false, checkUrlExpiry: false);
+      } catch (_) {}
+    }
+    if (!isCurrent()) return;
+    final canPlay =
+        success &&
+        plPlayerController.wantsPlayback &&
+        plPlayerController.canPlayInLifecycle &&
+        plPlayerController.dataStatus.value == DataStatus.loaded &&
+        _playerHasCurrentSource;
+    if (canPlay) {
+      unawaited(plPlayerController.play(userInitiated: false));
+      return;
+    }
+    if (success &&
+        plPlayerController.wantsPlayback &&
+        !plPlayerController.canPlayInLifecycle) {
+      plPlayerController.deferPlaybackUntilForeground();
+    }
+    if (_playerHasCurrentSource) {
+      unawaited(plPlayerController.pause(userInitiated: false));
+    }
+  }
+
+  bool get isQuerying => _sourceQueries.isRunning;
+
+  bool get playUrlExpired =>
+      PlayUrlExpiry.isExpiredOrNear([videoUrl, audioUrl]);
+
+  /// Drops in-flight queries, refreshes and recovery retries by starting a new
+  /// source generation, so any older async result fails its `isCurrent` check.
+  void _restartSourceGeneration() {
+    _sourceRevision++;
+    _sourceRefreshFuture = null;
+    _sourceRefreshForced = false;
+    plPlayerController.cancelSourceRecovery();
+  }
+
+  bool get _isActivePlayer =>
+      _playerActive &&
+      !isClosed &&
+      PlPlayerController.playOwner?.tag == heroTag;
+
+  bool get _playerHasCurrentSource {
+    if (plPlayerController.dataStatus.value != DataStatus.loaded ||
+        !plPlayerController.isSourceOwnedBy(heroTag) ||
+        plPlayerController.cid != cid.value) {
+      return false;
+    }
+    final source = plPlayerController.dataSource;
+    return source is NetworkSource &&
+        source.videoSource == videoUrl &&
+        source.audioSource == audioUrl;
+  }
+
+  ({String bvid, int cid, int? epId, int? seasonId}) get _currentSource =>
+      (bvid: bvid, cid: cid.value, epId: epId, seasonId: seasonId);
+
+  void attachPlayerSourceRefresh() {
+    _playerActive = true;
+    if (_isActivePlayer && plPlayerController.isSourceOwnedBy(heroTag)) {
+      plPlayerController.setSourceRefreshCallback(_sourceRefreshCallback);
+    }
+  }
+
+  void detachPlayerSourceRefresh() {
+    _playerActive = false;
+    _sourceRevision++;
+    _sourceRefreshFuture = null;
+    _sourceRefreshForced = false;
+    plPlayerController.clearSourceRefreshCallback(_sourceRefreshCallback);
+  }
+
+  Future<bool> _refreshSource({required bool force}) async {
+    if (!_isActivePlayer) return false;
+    final running = _sourceRefreshFuture;
+    if (running != null) {
+      if (_sourceRefreshForced || !force) return running;
+      // A lightweight reopen is already running; wait for it before deciding
+      // whether a full play URL refresh is still required.
+      try {
+        await running;
+      } catch (_) {}
+      if (isClosed) return false;
+      return _refreshSource(force: force);
+    }
+
+    late final Future<bool> future;
+    future = _doRefreshSource(force: force).whenComplete(() {
+      if (identical(_sourceRefreshFuture, future)) {
+        _sourceRefreshFuture = null;
+        _sourceRefreshForced = false;
+      }
+    });
+    _sourceRefreshFuture = future;
+    _sourceRefreshForced = force;
+    return future;
+  }
+
+  Future<bool> _doRefreshSource({required bool force}) async {
+    if (!_isActivePlayer ||
+        isFileSource ||
+        !plPlayerController.isSourceOwnedBy(heroTag) ||
+        plPlayerController.cid != cid.value) {
+      return false;
+    }
+
+    final source = _currentSource;
+    final revision = _sourceRevision;
+    final generation = plPlayerController.sourceGeneration;
+    final seekRevision = plPlayerController.seekRevision;
+    bool isCurrent() =>
+        _isActivePlayer &&
+        source == _currentSource &&
+        revision == _sourceRevision;
+    final position =
+        plPlayerController.videoPlayerController?.state.position ??
+        playedTime ??
+        Duration.zero;
+
+    if (!force && !playUrlExpired && !isQuerying) {
+      final future = plPlayerController.refreshPlayer(play: false);
+      if (future == null) return false;
+      try {
+        await future;
+      } catch (_) {
+        return false;
+      }
+      if (!isCurrent()) return false;
+      if (plPlayerController.seekRevision != seekRevision) {
+        await plPlayerController.seek(
+          plPlayerController.positionAfterSeek(seekRevision, position),
+          recordIntent: false,
+        );
+      }
+      if (!isCurrent()) return false;
+      await plPlayerController.applyPlaybackIntent(pauseIfIdle: false);
+      return true;
+    }
+
+    playedTime = position;
+    defaultST = null;
+    try {
+      if (!isCurrent()) return false;
+      final success = await queryVideoUrl(
+        fromReset: true,
+        silent: true,
+        autoplay: false,
+      );
+      if (!success ||
+          !isCurrent() ||
+          videoUrl == null ||
+          audioUrl == null ||
+          plPlayerController.dataStatus.value != DataStatus.loaded ||
+          playUrlExpired) {
+        return false;
+      }
+      if (plPlayerController.sourceGeneration == generation ||
+          !_playerHasCurrentSource) {
+        // The query may have joined an in-flight request that did not open
+        // the player, or its `initPlayerIfNeeded` may have been skipped.
+        // Make sure the player is actually reopened with the new URL. The
+        // query may also have populated `defaultST` from the server's
+        // history position, so restore the local position afterwards.
+        defaultST = null;
+        playedTime = plPlayerController.positionAfterSeek(
+          seekRevision,
+          plPlayerController.videoPlayerController?.state.position ?? position,
+        );
+        await playerInit(autoplay: false);
+        if (!isCurrent() ||
+            plPlayerController.dataStatus.value != DataStatus.loaded ||
+            playUrlExpired) {
+          return false;
+        }
+      }
+      if (plPlayerController.seekRevision != seekRevision) {
+        await plPlayerController.seek(
+          plPlayerController.positionAfterSeek(seekRevision, position),
+          recordIntent: false,
+        );
+      }
+      if (!isCurrent()) return false;
+      await plPlayerController.applyPlaybackIntent();
+      return true;
+    } catch (_) {
+      return false;
+    } finally {
+      if (isCurrent()) {
+        if (playUrlExpired) {
+          try {
+            await plPlayerController.pause(userInitiated: false);
+          } catch (_) {}
+        }
+      }
+    }
+  }
 
   final languages = Rxn<List<LanguageItem>>();
   final currLang = Rxn<String>();
@@ -808,6 +1063,7 @@ class VideoDetailController extends GetxController
       SmartDialog.showToast('账号未登录');
       return;
     }
+    _restartSourceGeneration();
     currLang.value = language;
     queryVideoUrl(fromReset: true);
   }
@@ -826,12 +1082,12 @@ class VideoDetailController extends GetxController
     );
   }
 
-  Future<void> _supplementVideoQualities() async {
-    final quality = data.missingVideoQualityBelowHighest;
+  Future<void> _supplementVideoQualities(PlayUrlModel target) async {
+    final quality = target.missingVideoQualityBelowHighest;
     if (quality == -1) return;
     final result = await _getVideoUrl(quality);
     if (result case Success(:final response)) {
-      data.dash!.video!.merge(response.dash?.video);
+      target.dash!.video!.merge(response.dash?.video);
     }
   }
 
@@ -839,31 +1095,82 @@ class VideoDetailController extends GetxController
 
   // 视频链接
   /// TODO: merge [DownloadHttp.getVideoUrl].
-  Future<void> queryVideoUrl({
+  Future<bool> queryVideoUrl({
     bool fromReset = false,
     bool autoFullScreenFlag = false,
+    bool silent = false,
+    bool? autoplay,
+
+    /// Starts a fresh query even if one is already running for the current
+    /// source revision. Use for user-triggered reloads (e.g. switching CDN),
+    /// where joining the in-flight request would keep the old configuration.
+    bool restart = false,
   }) async {
+    if (!_isActivePlayer) return false;
     if (isFileSource) {
-      return initPlayerIfNeeded(autoFullScreenFlag);
+      final init = initPlayerIfNeeded(autoFullScreenFlag, autoplay: autoplay);
+      if (init != null) await init;
+      return plPlayerController.dataStatus.value == DataStatus.loaded;
     }
-    if (isQuerying) {
-      return;
-    }
-    isQuerying = true;
-    try {
-      await _queryVideoUrl(fromReset, autoFullScreenFlag);
-    } finally {
-      isQuerying = false;
-    }
+    if (restart) _restartSourceGeneration();
+
+    final revision = _sourceRevision;
+    return _sourceQueries.run(
+      revision,
+      () => _queryVideoUrlWithRetry(
+        fromReset,
+        autoFullScreenFlag,
+        revision,
+        silent,
+        autoplay,
+      ),
+    );
   }
 
-  @pragma('vm:prefer-inline')
-  Future<void> _queryVideoUrl(bool fromReset, bool autoFullScreenFlag) async {
+  Future<bool> _queryVideoUrlWithRetry(
+    bool fromReset,
+    bool autoFullScreenFlag,
+    int sourceRevision,
+    bool silent,
+    bool? autoplay,
+  ) async {
+    for (var attempt = 0; attempt < 2; attempt++) {
+      final success = await _queryVideoUrl(
+        fromReset,
+        autoFullScreenFlag,
+        sourceRevision,
+        silent || attempt > 0,
+        autoplay,
+      );
+      if (success) return true;
+      if (!_isActivePlayer ||
+          sourceRevision != _sourceRevision ||
+          !playUrlExpired) {
+        return false;
+      }
+    }
+    if (!silent && playUrlExpired) {
+      SmartDialog.showToast('获取到的播放链接即将过期，请稍后重试');
+    }
+    return false;
+  }
+
+  Future<bool> _queryVideoUrl(
+    bool fromReset,
+    bool autoFullScreenFlag,
+    int sourceRevision,
+    bool silent,
+    bool? autoplay,
+  ) async {
+    bool isStale() => !_isActivePlayer || sourceRevision != _sourceRevision;
+
+    if (isStale()) return false;
     if (plPlayerController.enableSponsorBlock && isBlock && !fromReset) {
       querySponsorBlock(bvid: bvid, cid: cid.value);
     }
     if (PlatformUtils.isMobile || Platform.isLinux) {
       final isWiFi = await ConnectivityUtils.isWiFi;
+      if (isStale()) return false;
       if (plPlayerController.cacheVideoQa == null) {
         plPlayerController
           ..cacheVideoQa = isWiFi
@@ -877,10 +1184,14 @@ class VideoDetailController extends GetxController
     }
 
     final result = await _getVideoUrl(VideoQuality.hdrVivid.code);
+    if (isStale()) return false;
 
     if (result case Success(:final response)) {
+      if (response.dash != null) {
+        await _supplementVideoQualities(response);
+        if (isStale()) return false;
+      }
       data = response;
-      if (data.dash != null) await _supplementVideoQualities();
 
       languages.value = data.language?.items;
       currLang.value = data.curLanguage;
@@ -941,20 +1252,35 @@ class VideoDetailController extends GetxController
           _setVideoHeight();
           currentDecodeFormats = VideoDecodeFormatType.AVC;
           currentVideoQa.value = videoQuality;
-          await initPlayerIfNeeded(autoFullScreenFlag);
-          return;
+          if (isStale() || playUrlExpired) return false;
+          await initPlayerIfNeeded(
+            autoFullScreenFlag,
+            autoplay: autoplay,
+            checkUrlExpiry: false,
+          );
+          return true;
         } else {
-          SmartDialog.showToast('视频资源不存在');
-          _autoPlay.value = false;
-          videoState.value = false;
-          if (plPlayerController.isFullScreen.value) {
-            plPlayerController.triggerFullScreen(status: false);
+          if (!silent) {
+            SmartDialog.showToast('视频资源不存在');
+            _autoPlay.value = false;
+            videoState.value = false;
+            if (plPlayerController.isFullScreen.value) {
+              plPlayerController.triggerFullScreen(status: false);
+            }
           }
-          return;
+          return false;
         }
       }
 
       final cacheVideoQa = plPlayerController.cacheVideoQa!;
+      // Refreshes of the same video should retain a codec explicitly chosen
+      // by the user, while still falling back if it is no longer available.
+      final codecPreference = VideoUtils.preferCurrentCodec(
+        fromReset && videoUrl != null && currentVideoQa.value != null
+            ? currentDecodeFormats
+            : null,
+        preferCodecs,
+      );
       final (
         int targetQuality,
         FormatItem targetFormat,
@@ -965,7 +1291,7 @@ class VideoDetailController extends GetxController
         cacheVideoQa,
         response.acceptQuality,
         response.supportFormats!,
-        preferCodecs,
+        codecPreference,
       );
       firstVideo = targetVideo;
       currentDecodeFormats = targetDecode;
@@ -985,14 +1311,24 @@ class VideoDetailController extends GetxController
       } else {
         audioUrl = '';
       }
-      await initPlayerIfNeeded(autoFullScreenFlag);
+      if (isStale() || playUrlExpired) return false;
+      await initPlayerIfNeeded(
+        autoFullScreenFlag,
+        autoplay: autoplay,
+        checkUrlExpiry: false,
+      );
+      return true;
     } else {
-      _autoPlay.value = false;
-      videoState.value = false;
-      if (plPlayerController.isFullScreen.value) {
-        plPlayerController.triggerFullScreen(status: false);
+      if (isStale()) return false;
+      if (!silent) {
+        _autoPlay.value = false;
+        videoState.value = false;
+        if (plPlayerController.isFullScreen.value) {
+          plPlayerController.triggerFullScreen(status: false);
+        }
+        result.toast();
       }
-      result.toast();
+      return false;
     }
   }
 
@@ -1246,6 +1582,10 @@ class VideoDetailController extends GetxController
 
   @override
   void onClose() {
+    plPlayerController.clearSourceRefreshCallback(_sourceRefreshCallback);
+    _sourceRefreshFuture = null;
+    _sourceRefreshForced = false;
+    _sourceQueries.clear();
     cid.close();
     if (isFileSource) {
       cacheLocalProgress();
@@ -1267,6 +1607,10 @@ class VideoDetailController extends GetxController
       cacheLocalProgress();
     }
 
+    plPlayerController.resetPauseIntent();
+    _sourceRevision++;
+    _sourceRefreshFuture = null;
+    _sourceRefreshForced = false;
     playedTime = null;
     defaultST = null;
     videoUrl = null;
@@ -1586,25 +1930,21 @@ class VideoDetailController extends GetxController
       String? title;
       try {
         if (isUgc) {
-          title = Get.find<UgcIntroController>(
-            tag: heroTag,
-          ).videoDetail.value.title;
+          title = Get.find<UgcIntroController>(tag: heroTag)
+              .videoDetail
+              .value
+              .title;
         } else {
-          title = Get.find<PgcIntroController>(
-            tag: heroTag,
-          ).videoDetail.value.title;
+          title = Get.find<PgcIntroController>(tag: heroTag)
+              .videoDetail
+              .value
+              .title;
         }
       } catch (_) {}
       if (kDebugMode) {
         debugPrint(title);
       }
-      Get.toNamed(
-        '/dlna',
-        parameters: {
-          'url': url,
-          'title': ?title,
-        },
-      );
+      Get.toNamed('/dlna', parameters: {'url': url, 'title': ?title});
     } else {
       res.toast();
     }

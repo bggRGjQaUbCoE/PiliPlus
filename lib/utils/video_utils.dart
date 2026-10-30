@@ -98,6 +98,14 @@ abstract final class VideoUtils {
     return (liveCdnUrl ?? urlInfo.host) + e.baseUrl + urlInfo.extra;
   }
 
+  /// Retains a manually selected codec when refreshing the same video.
+  static List<VideoDecodeFormatType> preferCurrentCodec(
+    VideoDecodeFormatType? current,
+    List<VideoDecodeFormatType> fallback,
+  ) => current == null
+      ? fallback
+      : [current, for (final codec in fallback) if (codec != current) codec];
+
   static VideoDecodeFormatType selectCodec(
     Iterable<String> codecs,
     List<VideoDecodeFormatType> preferCodecs,

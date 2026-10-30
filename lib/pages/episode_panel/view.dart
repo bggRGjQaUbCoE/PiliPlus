@@ -431,7 +431,11 @@ class _EpisodePanelState extends State<EpisodePanel>
       // return;
     }
 
-    _introController.onChangeEpisode(episode);
+    if (_isUgc) {
+      _ugcController.onChangeEpisode(episode);
+    } else {
+      _pgcController.onChangeEpisode(episode, episodeType: .episode);
+    }
   }
 
   Widget _buildEpisodeItem({

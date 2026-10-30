@@ -50,6 +50,7 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:archive/archive.dart' show getCrc32;
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:easy_debounce/easy_throttle.dart';
@@ -697,6 +698,43 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   bool _processing = false;
   bool get processing => _processing;
 
+  /// Expiry of the current network play URLs (`deadline=`, about 2h after
+  /// they were fetched). Past it the CDN rejects new range requests, so the
+  /// player stalls as soon as the buffered part runs out.
+  DateTime? _playUrlDeadline;
+
+  /// Fetches fresh play URLs and reopens the player at the given position.
+  Future<void> Function(Duration position)? _onPlayUrlExpired;
+  bool _refreshingPlayUrl = false;
+
+  /// Last non-zero playback position; mpv reports zero after a failed read.
+  Duration _lastPosition = Duration.zero;
+
+  bool get _isPlayUrlExpired =>
+      _onPlayUrlExpired != null &&
+      _playUrlDeadline != null &&
+      DateTime.now().isAfter(
+        _playUrlDeadline!.subtract(const Duration(seconds: 30)),
+      );
+
+  Future<void>? _refreshExpiredPlayUrl() {
+    final callback = _onPlayUrlExpired;
+    if (callback == null || _refreshingPlayUrl) return null;
+    _refreshingPlayUrl = true;
+    final oldDeadline = _playUrlDeadline;
+    final position = _videoPlayerController?.state.position ?? Duration.zero;
+    return callback(
+      position > Duration.zero ? position : _lastPosition,
+    ).whenComplete(() {
+      _refreshingPlayUrl = false;
+      // freshly fetched URLs still look expired: the device clock is off,
+      // stop checking instead of reloading over and over
+      if (_playUrlDeadline != oldDeadline && _isPlayUrlExpired) {
+        _playUrlDeadline = null;
+      }
+    });
+  }
+
   // offline
   bool get isFileSource => dataSource is FileSource;
 
@@ -726,10 +764,21 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     Volume? volume,
     bool autoFullScreenFlag = false,
     int? rotate,
+    Future<void> Function(Duration position)? onPlayUrlExpired,
   }) async {
     try {
       _processing = true;
       this.isLive = isLive;
+      _onPlayUrlExpired = isLive || dataSource is! NetworkSource
+          ? null
+          : onPlayUrlExpired;
+      _playUrlDeadline = _onPlayUrlExpired == null
+          ? null
+          : VideoUtils.getPlayUrlDeadline([
+              dataSource.videoSource,
+              dataSource.audioSource,
+            ]);
+      _lastPosition = seekTo ?? Duration.zero;
       _videoType = videoType ?? VideoType.ugc;
       this.width = width;
       this.height = height;
@@ -961,9 +1010,17 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     if (dataSource is FileSource) {
       return null;
     }
+    if (_isPlayUrlExpired) {
+      return _refreshExpiredPlayUrl();
+    }
     if (_videoPlayerController case final ctr? when (ctr.current.isNotEmpty)) {
       var media = ctr.current.last;
-      if (!isLive) media = media.copyWith(start: ctr.state.position);
+      if (!isLive) {
+        final position = ctr.state.position;
+        media = media.copyWith(
+          start: position > Duration.zero ? position : _lastPosition,
+        );
+      }
       return ctr.open(media, play: true);
     }
     return null;
@@ -1031,6 +1088,9 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       /// playing
       stream.playing.listen((bool playing) {
         if (playing) {
+          // resumed after a long pause: the buffered part would play, then
+          // stall on the expired URL
+          if (_isPlayUrlExpired) _refreshExpiredPlayUrl();
           playerStatus = .playing;
           _stopWakeLockTimer();
           _updatePlaybackState();
@@ -1076,6 +1136,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
       /// position
       stream.position.listen((Duration position) {
+        if (position > Duration.zero) _lastPosition = position;
         final posInSeconds = position.inSeconds;
 
         if (posInSeconds != this.position.value) {
@@ -1101,6 +1162,9 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       }),
       stream.buffering.listen((bool buffering) {
         isBuffering.value = buffering;
+        // needs new data but the URL has expired (e.g. a long video played
+        // past the deadline, or a seek after it): any new request will fail
+        if (buffering && _isPlayUrlExpired) _refreshExpiredPlayUrl();
         if (!playerStatus.isCompleted) {
           _stopWakeLockTimer();
           _updatePlaybackState();
@@ -1128,6 +1192,10 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
               event.startsWith("Can not open external file https://")) {
             Timer(const Duration(milliseconds: 3000), refreshPlayer);
           }
+          return;
+        }
+        if (_isPlayUrlExpired) {
+          _refreshExpiredPlayUrl();
           return;
         }
         if (event.startsWith("Failed to open https://") ||
@@ -1192,6 +1260,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       await _videoPlayerController?.stream.buffer.first;
     }
     danmakuController?.clear();
+    _lastPosition = position;
     try {
       await _videoPlayerController?.seek(position);
       _updateIOSPip(position);

@@ -3,12 +3,16 @@ import 'dart:io' show Directory, File;
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/ubuntu_touch.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 
 Future<Directory> _cacheDirectoryProvider() async {
+  if (UbuntuTouch.enabled) {
+    return Directory(path.join(UbuntuTouch.cacheHome, Constants.appName));
+  }
   final tmpDirPath = await PathProviderPlatform.instance.getTemporaryPath();
   if (tmpDirPath == null) {
     throw MissingPlatformDirectoryException(

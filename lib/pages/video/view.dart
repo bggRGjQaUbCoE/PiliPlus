@@ -18,6 +18,7 @@ import 'package:PiliPlus/common/widgets/simple_app_bar.dart';
 import 'package:PiliPlus/common/widgets/sliver/video_header.dart';
 import 'package:PiliPlus/common/widgets/svg/play_icon.dart';
 import 'package:PiliPlus/models/common/episode_panel_type.dart';
+import 'package:PiliPlus/models/video/play/url.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/models_new/video/video_tag/data.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
@@ -68,6 +69,7 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
+import 'package:PiliPlus/utils/ubuntu_touch.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, clampDouble;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -297,6 +299,20 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   /// 未开启自动播放时触发播放
   Future<void>? handlePlay() {
+    if (UbuntuTouch.enabled && !videoDetailController.isFileSource) {
+      // ignore: avoid_print
+      print(
+        'piliplus: dash play tapped '
+        'querying=${videoDetailController.isQuerying} '
+        'ready=${videoDetailController.videoUrl != null}',
+      );
+      if (videoDetailController.isQuerying) return null;
+      if (videoDetailController.videoUrl == null) {
+        videoDetailController.queryVideoUrl();
+        return null;
+      }
+      return videoDetailController.playerInit();
+    }
     if (!videoDetailController.isFileSource) {
       if (videoDetailController.isQuerying) {
         if (kDebugMode) debugPrint('handlePlay: querying');
@@ -440,6 +456,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     plPlayerController
       ?..addStatusLister(playerListener)
       ..addPositionListener(positionListener);
+    if (UbuntuTouch.enabled) return;
     if (videoDetailController.autoPlay) {
       videoDetailController.playerInit(
         autoplay: videoDetailController.playerStatus?.isPlaying ?? false,
@@ -1142,11 +1159,12 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
               ],
             ),
           ),
-          Positioned(
-            right: 12,
-            top: height - 70,
-            child: const PlayIcon(),
-          ),
+          if (!UbuntuTouch.enabled)
+            Positioned(
+              right: 12,
+              top: height - 70,
+              child: const PlayIcon(),
+            ),
         ],
       );
     }
@@ -1448,6 +1466,70 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     );
   }
 
+  Widget _ubuntuTouchBar() {
+    return Material(
+      color: const Color(0xCC000000),
+      child: Row(
+        children: [
+          TextButton(
+            onPressed: () => _ubuntuTouchStep(false),
+            child: const Text('上一条'),
+          ),
+          TextButton(
+            onPressed: () => _ubuntuTouchStep(true),
+            child: const Text('下一条'),
+          ),
+          Expanded(
+            child: Obx(() {
+              final label = videoDetailController.ubuntuTouchChoice.value;
+              final items = videoDetailController.ubuntuTouchQualities();
+              return PopupMenuButton<VideoItem>(
+                onSelected: videoDetailController.ubuntuTouchUse,
+                itemBuilder: (context) => [
+                  for (final item in items)
+                    PopupMenuItem(
+                      value: item,
+                      child: Text(
+                        videoDetailController.ubuntuTouchLabel(item),
+                      ),
+                    ),
+                ],
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Text(
+                    label.isEmpty ? '画质' : label,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _ubuntuTouchStep(bool next) {
+    var moved = false;
+    try {
+      if (videoDetailController.isUgc) {
+        moved = next
+            ? ugcIntroController.nextPlay()
+            : ugcIntroController.prevPlay();
+      } else if (!videoDetailController.isFileSource) {
+        moved = next
+            ? pgcIntroController.nextPlay()
+            : pgcIntroController.prevPlay();
+      }
+    } catch (error) {
+      print('piliplus: dash step failed type=${error.runtimeType}');
+    }
+    if (!moved) {
+      SmartDialog.showToast(next ? '没有下一条' : '没有上一条');
+    }
+  }
+
   Widget videoPlayer({required double width, required double height}) {
     final isFullScreen = this.isFullScreen;
     return Stack(
@@ -1465,22 +1547,50 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         Obx(() {
           if (!videoDetailController.autoPlay) {
             return Positioned.fill(
-              child: GestureDetector(
-                onTap: handlePlay,
-                behavior: .opaque,
-                child: Obx(
-                  () => NetworkImgLayer(
-                    type: .emote,
-                    quality: 60,
-                    src: videoDetailController.cover.value,
-                    width: width,
-                    height: height,
-                    cacheWidth: true,
-                    getPlaceHolder: () => Center(
-                      child: Image.asset(Assets.loading),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  GestureDetector(
+                    onTap: handlePlay,
+                    behavior: .opaque,
+                    child: Obx(
+                      () => NetworkImgLayer(
+                        type: .emote,
+                        quality: 60,
+                        src: videoDetailController.cover.value,
+                        width: width,
+                        height: height,
+                        cacheWidth: true,
+                        getPlaceHolder: () => Center(
+                          child: Image.asset(Assets.loading),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  if (UbuntuTouch.enabled) ...[
+                    Center(
+                      child: IconButton(
+                        tooltip: '播放',
+                        onPressed: handlePlay,
+                        iconSize: 64,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 64,
+                          minHeight: 64,
+                        ),
+                        style: IconButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        icon: const Icon(Icons.play_circle_fill),
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: _ubuntuTouchBar(),
+                    ),
+                  ],
+                ],
               ),
             );
           }

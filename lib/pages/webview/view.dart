@@ -13,6 +13,7 @@ import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/linux_cookie_manager.dart';
 import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/ubuntu_touch.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -373,6 +374,14 @@ document.addEventListener('click', function(e) {
 
   @override
   Widget build(BuildContext context) {
+    if (UbuntuTouch.enabled) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('浏览器')),
+        body: const Center(
+          child: Text('Ubuntu Touch 上这一页还没有浏览器。'),
+        ),
+      );
+    }
     if (Platform.isLinux) {
       return _buildLinuxView(context);
     }

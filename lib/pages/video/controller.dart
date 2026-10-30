@@ -64,6 +64,9 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/ubuntu_touch.dart';
+import 'package:PiliPlus/utils/ubuntu_touch_content_hub.dart';
+import 'package:PiliPlus/utils/ubuntu_touch_mpd.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:collection/collection.dart';
 import 'package:dio/dio.dart' show Options;
@@ -117,6 +120,13 @@ class VideoDetailController extends GetxController
 
   /// 播放器配置 画质 音质 解码格式
   final Rxn<VideoQuality> currentVideoQa = Rxn<VideoQuality>();
+  final RxString ubuntuTouchChoice = ''.obs;
+  bool _playUrlReady = false;
+  ({int id, String prefix})? _utPick;
+  int _utChargeSerial = 0;
+  bool _utChargeRunning = false;
+  bool _utChargeAgain = false;
+  bool _utFollowArmed = false;
   AudioQuality? currentAudioQa;
   late VideoDecodeFormatType currentDecodeFormats;
 
@@ -729,10 +739,301 @@ class VideoDetailController extends GetxController
     return null;
   }
 
+  bool _utAvc(VideoItem item) => (item.codecs ?? '').startsWith('avc');
+
+  bool _utHevc(VideoItem item) {
+    final codec = item.codecs ?? '';
+    return codec.startsWith('hev') || codec.startsWith('hvc');
+  }
+
+  String ubuntuTouchLabel(VideoItem item) {
+    final kind = _utAvc(item)
+        ? 'AVC'
+        : _utHevc(item)
+        ? 'HEVC'
+        : item.codecs ?? '';
+    return '${item.quality.shortDesc} $kind';
+  }
+
+  List<VideoItem> ubuntuTouchQualities() {
+    if (!_playUrlReady) return const [];
+    final videos = data.dash?.video;
+    if (videos == null) return const [];
+    return videos.where((item) => _utAvc(item) || _utHevc(item)).toList();
+  }
+
+  void ubuntuTouchUse(VideoItem item) {
+    final codec = item.codecs ?? '';
+    _utPick = (
+      id: item.id,
+      prefix: _utHevc(item) ? codec.substring(0, 3) : 'avc',
+    );
+    firstVideo = item;
+    videoUrl = VideoUtils.getCdnUrl(item.playUrls);
+    currentVideoQa.value = item.quality;
+    currentDecodeFormats = VideoDecodeFormatType.fromString(codec);
+    playerInit();
+  }
+
+  VideoItem? _ubuntuTouchVideo(List<VideoItem> videos) {
+    final usable = videos.where((item) => _utAvc(item) || _utHevc(item));
+    final pick = _utPick;
+    if (pick != null) {
+      for (final item in usable) {
+        final codec = item.codecs ?? '';
+        if (item.id == pick.id && codec.startsWith(pick.prefix)) return item;
+      }
+    }
+    final qa = currentVideoQa.value?.code;
+    for (final item in usable) {
+      if (_utAvc(item) && item.id == qa) return item;
+    }
+    VideoItem? lowest;
+    for (final item in usable) {
+      if (!_utAvc(item)) continue;
+      final bandwidth = item.bandWidth ?? 1 << 30;
+      if (lowest == null || bandwidth < (lowest.bandWidth ?? 1 << 30)) {
+        lowest = item;
+      }
+    }
+    if (lowest != null) return lowest;
+    for (final item in usable) {
+      if (_utHevc(item)) return item;
+    }
+    return null;
+  }
+
+  AudioItem? _ubuntuTouchAudio(List<AudioItem>? audio) {
+    final all = _ubuntuTouchAudios(audio);
+    if (all.isEmpty) return null;
+    return all.first;
+  }
+
+  List<AudioItem> _ubuntuTouchAudios(List<AudioItem>? audio) {
+    if (audio == null) return const [];
+    final aac = audio
+        .where((item) => (item.codecs ?? '').startsWith('mp4a'))
+        .toList();
+    if (aac.isEmpty) return const [];
+    final wanted = currentAudioQa?.code;
+    AudioItem? preferred;
+    for (final item in aac) {
+      if (item.id == wanted) {
+        preferred = item;
+        break;
+      }
+    }
+    final AudioItem first =
+        preferred ?? (aac.toList()..sort(_utBandwidth)).first;
+    final rest = aac.where((item) => !identical(item, first)).toList()
+      ..sort(_utBandwidth);
+    return [first, ...rest];
+  }
+
+  int _utBandwidth(BaseItem a, BaseItem b) =>
+      (a.bandWidth ?? 1 << 30).compareTo(b.bandWidth ?? 1 << 30);
+
+  List<VideoItem> _ubuntuTouchCandidates(List<VideoItem> videos) {
+    final preferred = _ubuntuTouchVideo(videos);
+    final result = <VideoItem>[];
+    void add(VideoItem item) {
+      if (result.contains(item)) return;
+      result.add(item);
+    }
+
+    if (preferred != null) add(preferred);
+    final ceiling = preferred?.bandWidth ?? 1 << 30;
+    int distance(VideoItem item) {
+      final bandwidth = item.bandWidth ?? 0;
+      if (bandwidth <= ceiling) return ceiling - bandwidth;
+      return 1000000000 + bandwidth - ceiling;
+    }
+
+    final avc = videos.where(_utAvc).toList()
+      ..sort((a, b) => distance(a).compareTo(distance(b)));
+    final hevc = videos.where(_utHevc).toList()
+      ..sort((a, b) => distance(a).compareTo(distance(b)));
+    for (final item in avc) {
+      add(item);
+    }
+    for (final item in hevc) {
+      add(item);
+    }
+    return result;
+  }
+
+  void _ubuntuTouchFollowUp() {
+    if (_utFollowArmed) return;
+    final follow = args['utTest'];
+    if (follow != 'hevc' && follow != 'next') return;
+    _utFollowArmed = true;
+    Future<void>.delayed(const Duration(seconds: 15), () {
+      if (isClosed) return;
+      if (follow == 'hevc') {
+        VideoItem? hevc;
+        for (final item in ubuntuTouchQualities()) {
+          if (_utHevc(item)) {
+            hevc = item;
+            break;
+          }
+        }
+        if (hevc == null) {
+          print('piliplus: dash hevc none');
+          return;
+        }
+        print('piliplus: dash follow hevc');
+        ubuntuTouchUse(hevc);
+        return;
+      }
+      if (!isUgc) return;
+      final moved = ugcIntroCtr.nextPlay();
+      print('piliplus: dash follow next moved=$moved');
+    });
+  }
+
+  Future<void> _ubuntuTouchCharge() async {
+    if (_utChargeRunning) {
+      _utChargeAgain = true;
+      _utChargeSerial++;
+      print('piliplus: dash charge queued');
+      return;
+    }
+    _utChargeRunning = true;
+    final serial = ++_utChargeSerial;
+    try {
+      await _ubuntuTouchChargeBody(serial);
+    } finally {
+      _utChargeRunning = false;
+      if (_utChargeAgain && !isClosed) {
+        _utChargeAgain = false;
+        unawaited(_ubuntuTouchCharge());
+      }
+    }
+  }
+
+  Future<void> _ubuntuTouchChargeBody(int serial) async {
+    _autoPlay.value = false;
+    if (!_playUrlReady) {
+      print('piliplus: dash charge skipped ready=false');
+      return;
+    }
+    final videos = data.dash?.video;
+    final candidates = videos == null
+        ? const <VideoItem>[]
+        : _ubuntuTouchCandidates(videos);
+    final audios = _ubuntuTouchAudios(data.dash?.audio);
+    if (candidates.isEmpty || audios.isEmpty) {
+      ubuntuTouchChoice.value = '';
+      SmartDialog.showToast('写不出清单');
+      print('piliplus: dash charge skipped video=${candidates.isNotEmpty}');
+      return;
+    }
+    var avcCount = 0;
+    var hevcCount = 0;
+    for (final item in videos!) {
+      if (_utAvc(item)) avcCount++;
+      if (_utHevc(item)) hevcCount++;
+    }
+    print('piliplus: dash offers avc=$avcCount hevc=$hevcCount');
+    try {
+      final found = await _ubuntuTouchWrite(
+        videos: candidates,
+        audios: audios,
+        serial: serial,
+      );
+      if (serial != _utChargeSerial || isClosed) return;
+      if (found == null) {
+        SmartDialog.showToast('写不出清单');
+        return;
+      }
+      final video = found.video;
+      final audio = found.audio;
+      final state = await chargeUbuntuTouchVideo(found.written.path);
+      if (serial != _utChargeSerial || isClosed) return;
+      firstVideo = video;
+      videoUrl = VideoUtils.getCdnUrl(video.playUrls);
+      currentVideoQa.value = video.quality;
+      currentDecodeFormats = VideoDecodeFormatType.fromString(video.codecs!);
+      ubuntuTouchChoice.value = ubuntuTouchLabel(video);
+      print(
+        'piliplus: dash charge codec=${video.codecs} id=${video.id} '
+        '${video.width}x${video.height} segs=${found.written.videoSegments} '
+        'audio=${audio.codecs} id=${audio.id} segs=${found.written.audioSegments} '
+        'bytes=${found.written.bytes} state=$state',
+      );
+      if (state != 3) {
+        SmartDialog.showToast('没有交给播放器');
+      } else {
+        _ubuntuTouchFollowUp();
+      }
+    } catch (error) {
+      print('piliplus: dash charge failed type=${error.runtimeType}');
+      if (serial == _utChargeSerial && !isClosed) {
+        SmartDialog.showToast('没有交给播放器');
+      }
+    }
+  }
+
+  Future<({UbuntuTouchDashMpd written, VideoItem video, AudioItem audio})?>
+  _ubuntuTouchWrite({
+    required List<VideoItem> videos,
+    required List<AudioItem> audios,
+    required int serial,
+  }) async {
+    final preferredAudio = audios.first;
+    final found = await _ubuntuTouchWritePair(
+      videos: videos,
+      audios: [preferredAudio],
+      serial: serial,
+      logSkip: true,
+    );
+    if (found != null || audios.length == 1) return found;
+    if (serial != _utChargeSerial || isClosed) return null;
+    return _ubuntuTouchWritePair(
+      videos: videos,
+      audios: audios.skip(1).toList(),
+      serial: serial,
+      logSkip: false,
+    );
+  }
+
+  Future<({UbuntuTouchDashMpd written, VideoItem video, AudioItem audio})?>
+  _ubuntuTouchWritePair({
+    required List<VideoItem> videos,
+    required List<AudioItem> audios,
+    required int serial,
+    required bool logSkip,
+  }) async {
+    for (final video in videos) {
+      for (final audio in audios) {
+        if (serial != _utChargeSerial || isClosed) return null;
+        final written = await writeUbuntuTouchDashMpd(
+          name:
+              'pili-$bvid-${cid.value}-${video.codecs}-${DateTime.now().millisecondsSinceEpoch}',
+          video: video,
+          audio: audio,
+        );
+        if (written != null) {
+          return (written: written, video: video, audio: audio);
+        }
+      }
+      if (logSkip) {
+        print(
+          'piliplus: dash quality skip id=${video.id} codec=${video.codecs}',
+        );
+      }
+    }
+    return null;
+  }
+
   Future<void> playerInit({
     bool? autoplay,
     bool autoFullScreenFlag = false,
   }) async {
+    if (UbuntuTouch.enabled && !isFileSource) {
+      await _ubuntuTouchCharge();
+      return;
+    }
     Duration? seek = defaultST ?? playedTime;
     if (seek == .zero) seek = null;
     seek ??= getFirstSegment();
@@ -873,6 +1174,7 @@ class VideoDetailController extends GetxController
 
     if (result case Success(:final response)) {
       data = response;
+      _playUrlReady = true;
       if (data.dash != null) await _supplementVideoQualities();
 
       languages.value = data.language?.items;
@@ -934,6 +1236,11 @@ class VideoDetailController extends GetxController
           _setVideoHeight();
           currentDecodeFormats = VideoDecodeFormatType.AVC;
           currentVideoQa.value = videoQuality;
+          if (UbuntuTouch.enabled) {
+            _autoPlay.value = false;
+            SmartDialog.showToast('这一条不是 DASH，停在占位');
+            return;
+          }
           await initPlayerIfNeeded(autoFullScreenFlag);
           return;
         } else {
@@ -977,6 +1284,10 @@ class VideoDetailController extends GetxController
         currentAudioQa = AudioQuality.fromCode(firstAudio.id);
       } else {
         audioUrl = '';
+      }
+      if (UbuntuTouch.enabled) {
+        await playerInit();
+        return;
       }
       await initPlayerIfNeeded(autoFullScreenFlag);
     } else {
@@ -1264,6 +1575,7 @@ class VideoDetailController extends GetxController
     defaultST = null;
     videoUrl = null;
     audioUrl = null;
+    _playUrlReady = false;
 
     // danmaku
     savedDanmaku = null;

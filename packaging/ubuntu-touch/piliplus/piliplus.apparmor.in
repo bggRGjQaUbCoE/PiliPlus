@@ -1,0 +1,7 @@
+{
+    "policy_groups": [
+        "networking",
+        "content_exchange_source"
+    ],
+    "policy_version": "@APPARMOR_POLICY@"
+}

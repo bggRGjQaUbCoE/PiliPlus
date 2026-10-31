@@ -22,6 +22,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:webview_all/webview_all.dart' hide WebResourceResponse;
 
 final _prefixRegex = RegExp(r'^(?!(https?://))\S+://', caseSensitive: false);
 
@@ -51,7 +52,7 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
   bool _off = false;
 
   InAppWebViewController? _webViewController;
-  LinuxWebviewController? _linuxController;
+  WebViewController? _linuxController;
 
   @override
   void initState() {
@@ -77,7 +78,6 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
   @override
   void dispose() {
     if (Platform.isAndroid) routeObserver.unsubscribe(this);
-    _linuxController?.dispose();
     _linuxController = null;
     _webViewController = null;
     super.dispose();
@@ -136,8 +136,7 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
         break;
       case WebviewMenuItem.copy:
         if (Platform.isLinux) {
-          final url = _linuxController?.currentUrl ?? _currentUrl;
-          Utils.copyText(url);
+          Utils.copyText(_currentUrl);
         } else {
           WebUri? uri = await _webViewController?.getUrl();
           if (uri != null) {
@@ -147,8 +146,7 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
         break;
       case WebviewMenuItem.openInBrowser:
         if (Platform.isLinux) {
-          final url = _linuxController?.currentUrl ?? _currentUrl;
-          PageUtils.launchURL(url);
+          PageUtils.launchURL(_currentUrl);
         } else {
           WebUri? uri = await _webViewController?.getUrl();
           if (uri != null) {
@@ -159,8 +157,7 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
       case WebviewMenuItem.clearCache:
         try {
           if (Platform.isLinux) {
-            await LinuxCookieManager.deleteAllCookies();
-            await LinuxWebviewPlugin.clearCache();
+            await LinuxCookieManager.clearAllWebsiteData();
             _linuxController?.reload();
             SmartDialog.showToast('已清理缓存并刷新', alignment: Alignment.topCenter);
           } else {
@@ -185,11 +182,11 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
         break;
       case WebviewMenuItem.resetCookie:
         if (Platform.isLinux) {
-          final currentUrl = _linuxController?.currentUrl ?? _currentUrl;
+          final currentUrl = _currentUrl;
           if (LinuxCookieManager.isBiliDomain(currentUrl)) {
             final js = LinuxCookieManager.generateCookieInjectionJs();
             if (js.isNotEmpty) {
-              await _linuxController?.evaluateJavaScript(js);
+              await _linuxController?.runJavaScript(js);
             }
           }
           _linuxController?.reload();
@@ -202,7 +199,7 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
     }
   }
 
-  List<Map<String, dynamic>> _getLinuxUserScripts() {
+  List<WebViewUserScript> _getLinuxUserScripts() {
     final shouldInjectCookie = LinuxCookieManager.isBiliDomain(_currentUrl);
     final cookieJs = shouldInjectCookie
         ? LinuxCookieManager.generateCookieInjectionJs()
@@ -210,33 +207,28 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
 
     return [
       if (cookieJs.isNotEmpty)
-        {
-          'source': cookieJs,
-          'injectionTime': 0, // start
-          'forAllFrames': true,
-        },
+        WebViewUserScript(source: cookieJs, forMainFrameOnly: false),
       if (_currentUrl.startsWith('https://www.bilibili.com/h5/note-app'))
-        const {
-          'source': """
+        const WebViewUserScript(
+          source: """
 document.addEventListener('click', function(e) {
   var finishBtn = e.target && e.target.closest ? e.target.closest('.finish-btn') : null;
   if (finishBtn) {
-    window.webkit.messageHandlers.msgToNative.postMessage('finishButtonClicked');
+    window.PiliPlus.postMessage('finishButtonClicked');
     return;
   }
   var infoBar = e.target && e.target.closest ? e.target.closest('.info-bar') : null;
   if (infoBar) {
-    window.webkit.messageHandlers.msgToNative.postMessage('infoBarClicked');
+    window.PiliPlus.postMessage('infoBarClicked');
     return;
   }
 }, true);
 """,
-          'injectionTime': 1, // end
-          'forAllFrames': true,
-        },
+          forMainFrameOnly: false,
+        ),
       if (_currentUrl.startsWith('https://live.bilibili.com'))
-        const {
-          'source': """
+        const WebViewUserScript(
+          source: """
 (function() {
   function injectStyle() {
     if (document.getElementById('pili-live-style')) return;
@@ -252,14 +244,12 @@ document.addEventListener('click', function(e) {
   }
 })();
 """,
-          'injectionTime': 0, // start
-          'forAllFrames': true,
-        },
+          forMainFrameOnly: false,
+        ),
     ];
   }
 
   Widget _buildLinuxView(BuildContext context) {
-    final initUrl = _currentUrl;
     return Scaffold(
       appBar: widget.url != null
           ? null
@@ -313,22 +303,30 @@ document.addEventListener('click', function(e) {
             }
           }
         },
-        onNavigationRequest: (u) {
-          if (u == initUrl) return;
-          final uri = Uri.tryParse(u);
-          final isCustomScheme = _prefixRegex.hasMatch(u);
-
-          if (!_inApp && uri != null) {
-            PiliScheme.routePush(uri, selfHandle: true, off: _off).then((
-              hasMatch,
-            ) {
-              if (!hasMatch && isCustomScheme) {
-                PageUtils.launchURL(u);
-              }
-            });
-          } else if (isCustomScheme) {
-            PageUtils.launchURL(u);
+        onNavigationRequest: (request) async {
+          final url = request.url;
+          final uri = Uri.tryParse(url);
+          if (!request.isMainFrame ||
+              uri == null ||
+              const {
+                'http',
+                'https',
+                'about',
+                'data',
+                'blob',
+              }.contains(uri.scheme)) {
+            return NavigationDecision.navigate;
           }
+          if (!_inApp) {
+            final handled = await PiliScheme.routePush(
+              uri,
+              selfHandle: true,
+              off: _off,
+            );
+            if (handled) return NavigationDecision.prevent;
+          }
+          if (mounted) PageUtils.launchURL(url);
+          return NavigationDecision.prevent;
         },
       ),
     );

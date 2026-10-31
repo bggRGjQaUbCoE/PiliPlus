@@ -95,6 +95,7 @@ void main() async {
   ScaledWidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
   await _initAppPath();
+  await DeviceUtils.init();
   try {
     await GStorage.init();
   } catch (e) {

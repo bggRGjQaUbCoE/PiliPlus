@@ -136,7 +136,8 @@ class _EpisodePanelState extends State<EpisodePanel> {
                   style: const ButtonStyle(
                     padding: WidgetStatePropertyAll(.zero),
                   ),
-                  onPressed: () => widget.showEpisodes(type: .pgc),
+                  onPressed: () =>
+                      widget.showEpisodes(type: .pgc, episodeType: .episode),
                   child: Text(
                     _newEp?.desc?.contains('连载') == true
                         ? '连载中，更新至${Utils.isStringNumeric(_newEp!.title!) ? '第${_newEp!.title}话' : '${_newEp!.title}'}'

@@ -1,9 +1,13 @@
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/episode_panel_type.dart';
+import 'package:PiliPlus/models/common/pgc_episode_type.dart';
 import 'package:PiliPlus/models_new/video/video_detail/arc.dart';
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
 
-typedef ShowEpisodes = void Function({required EpisodeType? type});
+typedef ShowEpisodes = void Function({
+  required EpisodeType? type,
+  PgcEpisodeType? episodeType,
+});
 
 class BaseEpisodeItem {
   int? id;

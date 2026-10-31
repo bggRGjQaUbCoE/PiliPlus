@@ -14,6 +14,7 @@ import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/episode_panel_type.dart';
+import 'package:PiliPlus/models/common/pgc_episode_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart' as pgc;
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
@@ -46,11 +47,13 @@ class EpisodePanel extends CommonSlidePage {
     super.enableSlide,
     this.onReverse,
     required this.type,
+    this.episodeType,
     required this.isSidePanel,
     required this.introController,
   });
 
   final EpisodeType type;
+  final PgcEpisodeType? episodeType;
   final bool isSidePanel;
   final VoidCallback? onReverse;
   final CommonIntroController introController;
@@ -71,6 +74,12 @@ class _EpisodePanelState extends State<EpisodePanel>
   TabController? _tabController;
   late List<SectionItem> _sections;
   late VideoDetailData _videoDetail;
+  PgcEpisodeType get _episodeType =>
+      widget.episodeType ?? _pgcController.episodeType;
+  List<ugc.BaseEpisodeItem> get _pgcEpisodes =>
+      _isSidePanel || _episodeType == .episode
+      ? _pgcItem.episodes!
+      : _pgcItem.sections![_pgcController.sectionIndex].episodes!;
   late final _ugcController = _introController as UgcIntroController;
 
   // pgc
@@ -109,6 +118,10 @@ class _EpisodePanelState extends State<EpisodePanel>
   }
 
   void _refresh([_]) {
+    if (!_isUgc && _isSidePanel && _pgcController.episodeType != .episode) {
+      return;
+    }
+
     if (!mounted) return;
     final tabIndexChanged = _syncTab(_tabIndex(), syncEpisodes: true);
     setState(() {});
@@ -129,7 +142,7 @@ class _EpisodePanelState extends State<EpisodePanel>
         case .pgc:
           tabIndexChanged = _lastTabIndex != _pgcController.seasonIndex;
           _pgcItem = _pgcController.pgcItem;
-          _episodes = _pgcItem.episodes!;
+          _episodes = _pgcEpisodes;
       }
     }
     _lastTabIndex = tabIndex;
@@ -226,9 +239,13 @@ class _EpisodePanelState extends State<EpisodePanel>
         _isUgc = false;
         _isReversed = [false];
         _tabIndex = () => 0;
-        _itemIndex = () => _pgcController.episodeIndex;
+        _itemIndex = _isSidePanel
+            ? () => _pgcController.episodeIndex
+            : () => _episodeType == .episode
+                  ? _pgcController.episodeIndex
+                  : _pgcController.pvIndex;
         _pgcItem = _pgcController.pgcItem;
-        _episodes = _pgcItem.episodes!;
+        _episodes = _pgcEpisodes;
         _addPgcListener();
     }
 
@@ -445,7 +462,10 @@ class _EpisodePanelState extends State<EpisodePanel>
     if (_isUgc) {
       _ugcController.onChangeEpisode(episode);
     } else {
-      _pgcController.onChangeEpisode(episode, episodeType: .episode);
+      _pgcController.onChangeEpisode(
+        episode,
+        episodeType: _isSidePanel ? .episode : _episodeType,
+      );
     }
   }
 

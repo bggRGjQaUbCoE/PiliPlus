@@ -770,6 +770,7 @@ class VideoDetailController extends GetxController
       volume: volume,
       autoFullScreenFlag: autoFullScreenFlag,
       rotate: _rotate,
+      onPlayUrlExpired: isFileSource ? null : _onPlayUrlExpired,
     );
 
     if (isClosed) return;
@@ -792,6 +793,15 @@ class VideoDetailController extends GetxController
   }
 
   bool isQuerying = false;
+
+  /// Play URLs expire about 2h after they are fetched; fetch fresh ones and
+  /// resume from [position].
+  Future<void> _onPlayUrlExpired(Duration position) async {
+    if (isClosed) return;
+    playedTime = position;
+    _autoPlay.value = true;
+    await queryVideoUrl(fromReset: true);
+  }
 
   final languages = Rxn<List<LanguageItem>>();
   final currLang = Rxn<String>();

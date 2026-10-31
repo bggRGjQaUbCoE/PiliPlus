@@ -862,6 +862,20 @@ abstract final class PiliScheme {
         }
         launchURL();
         return false;
+      case 'vote':
+        // www.bilibili.com/h5/vote?vote_id=***&dynamic_id=***
+        final queryParameters = uri.queryParameters;
+        final voteId = parseIntOrNull(queryParameters['vote_id']);
+        final dynamicId = queryParameters['dynamic_id'];
+        if (voteId != null) {
+          showVoteDialog(
+            Get.context!,
+            voteId,
+            dynamicId: parseIntOrNull(dynamicId),
+          );
+          return true;
+        }
+        return false;
       default:
         final res = IdUtils.matchAvorBv(input: area?.split('?').first);
         if (res.isNotEmpty) {

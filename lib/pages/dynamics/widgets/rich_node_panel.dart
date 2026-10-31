@@ -179,7 +179,7 @@ TextSpan? richNode(
                     ..onTap = () => showVoteDialog(
                       context,
                       int.parse(i.rid!),
-                      parseIntOrNull(item.basic?.commentIdStr),
+                      dynamicId: parseIntOrNull(item.basic?.commentIdStr),
                     ),
                 ),
               );

@@ -1,9 +1,6 @@
 import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
-import 'package:PiliPlus/pages/video/introduction/ugc/widgets/page.dart'
-    show scrollOffset;
+import 'package:PiliPlus/utils/scroll_offset_helper.dart';
 import 'package:material_ui/material_ui.dart';
-
-const double _itemExtent = 150;
 
 class SeasonPanel extends StatelessWidget {
   const SeasonPanel({
@@ -15,19 +12,46 @@ class SeasonPanel extends StatelessWidget {
   final VoidCallback onSeasonChanged;
   final PgcIntroController pgcController;
 
+  ScrollController get _scrollController {
+    if (pgcController.seasonController != null) {
+      return pgcController.seasonController!;
+    }
+    if (pgcController.seasonIndex > 0) {
+      WidgetsBinding.instance.addPostFrameCallback(_jumpToCurrent);
+    }
+    return pgcController.seasonController = ScrollController(
+      keepScrollOffset: false,
+    );
+  }
+
+  void _jumpToCurrent([_, bool anim = false]) {
+    final position = pgcController.seasonController!.position;
+    final scrollOffset = calcPageItemOffset(
+      index: pgcController.seasonIndex,
+      itemCount: pgcController.pgcItem.seasons!.length,
+      viewportDimension: position.viewportDimension,
+    );
+    if (anim) {
+      position.animateTo(
+        scrollOffset,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      position.jumpTo(scrollOffset);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final seasons = pgcController.pgcItem.seasons!;
-    final controller = pgcController.seasonController ??= ScrollController(
-      keepScrollOffset: false,
-      initialScrollOffset: scrollOffset(pgcController.seasonIndex, _itemExtent),
-    );
+    final controller = _scrollController;
     final colorScheme = ColorScheme.of(context);
     return SizedBox(
       height: 35,
       child: ListView.builder(
         padding: .zero,
-        itemExtent: _itemExtent,
+        itemExtent: kPageItemExtent,
         controller: controller,
         itemCount: seasons.length,
         scrollDirection: .horizontal,
@@ -36,7 +60,7 @@ class SeasonPanel extends StatelessWidget {
           final item = seasons[index];
           final isCurr = index == pgcController.seasonIndex;
           return Container(
-            width: _itemExtent,
+            width: kPageItemExtent,
             margin: index != seasons.length - 1 ? const .only(right: 10) : null,
             child: Material(
               color: colorScheme.onInverseSurface,
@@ -48,11 +72,7 @@ class SeasonPanel extends StatelessWidget {
                   pgcController.changeSeason(item.seasonId!, index).then((res) {
                     if (context.mounted && res) {
                       onSeasonChanged();
-                      controller.animateTo(
-                        scrollOffset(index, _itemExtent),
-                        duration: const Duration(milliseconds: 500),
-                        curve: Curves.easeInOut,
-                      );
+                      _jumpToCurrent(null, true);
                     }
                   });
                 },

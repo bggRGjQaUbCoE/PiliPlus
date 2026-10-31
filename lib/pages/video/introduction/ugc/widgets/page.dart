@@ -1,19 +1,11 @@
-import 'dart:math' as math;
-
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
 import 'package:PiliPlus/models_new/video/video_detail/page.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
+import 'package:PiliPlus/utils/scroll_offset_helper.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:material_ui/material_ui.dart';
-
-const double _itemExtent = 150;
-
-double scrollOffset(int index, double itemExtent) {
-  if (index < 0) return 0;
-  return math.max(0, index * itemExtent - itemExtent / 2);
-}
 
 class PagePanel extends StatefulWidget {
   const PagePanel({
@@ -54,7 +46,6 @@ class _PagePanelState extends State<PagePanel> {
   late List<Part> _parts;
   late bool _isCurr;
   int get _index => _ugcController.partIndex;
-  double get _scrollOffset => scrollOffset(_index, _itemExtent);
 
   late ColorScheme colorScheme;
   late final ScrollController _scrollController;
@@ -86,10 +77,28 @@ class _PagePanelState extends State<PagePanel> {
   void initState() {
     super.initState();
     _reset();
-    _scrollController = ScrollController(
-      keepScrollOffset: false,
-      initialScrollOffset: _isCurr ? _scrollOffset : 0,
+    _scrollController = ScrollController(keepScrollOffset: false);
+    if (_isCurr && _index > 0) {
+      WidgetsBinding.instance.addPostFrameCallback(_jumpToCurrent);
+    }
+  }
+
+  void _jumpToCurrent([_, bool anim = false]) {
+    final position = _scrollController.position;
+    final scrollOffset = calcPageItemOffset(
+      index: _index,
+      itemCount: _parts.length,
+      viewportDimension: position.viewportDimension,
     );
+    if (anim) {
+      position.animateTo(
+        scrollOffset,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      position.jumpTo(scrollOffset);
+    }
   }
 
   void _reset() {
@@ -118,13 +127,9 @@ class _PagePanelState extends State<PagePanel> {
     if (!mounted) return;
     setState(() {});
     if (bvidChanged) {
-      _scrollController.jumpTo(_scrollOffset);
+      _jumpToCurrent();
     } else {
-      _scrollController.animateTo(
-        _scrollOffset,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      _jumpToCurrent(null, true);
     }
   }
 
@@ -135,7 +140,7 @@ class _PagePanelState extends State<PagePanel> {
             height: 45,
             child: ListView.builder(
               padding: .zero,
-              itemExtent: _itemExtent,
+              itemExtent: kPageItemExtent,
               itemCount: _parts.length,
               scrollDirection: .horizontal,
               controller: _scrollController,
@@ -189,7 +194,7 @@ class _PagePanelState extends State<PagePanel> {
     final isCurr = _isCurr && _index == index;
     final item = _parts[index];
     return Container(
-      width: _itemExtent,
+      width: kPageItemExtent,
       margin: index != _parts.length - 1 ? const .only(right: 10) : null,
       child: Material(
         color: colorScheme.onInverseSurface,

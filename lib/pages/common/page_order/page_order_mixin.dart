@@ -23,8 +23,13 @@ mixin PageOrderMixin<R, T> on CommonListController<R, T> {
   }
 
   void updatePageOrder(bool value) {
-    if (count == 0) return;
-    _pageDesc = value;
+    if (updatePageOrderOnly(value)) return;
     onReload();
+  }
+
+  bool updatePageOrderOnly(bool value) {
+    if (count == 0) return true;
+    _pageDesc = value;
+    return false;
   }
 }

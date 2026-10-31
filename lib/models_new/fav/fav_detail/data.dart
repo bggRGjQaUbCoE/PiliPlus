@@ -8,13 +8,19 @@ class FavDetailData {
 
   FavDetailData({this.info, this.medias, this.hasMore});
 
-  factory FavDetailData.fromJson(Map<String, dynamic> json) => FavDetailData(
+  factory FavDetailData.fromJson(
+    Map<String, dynamic> json, {
+    bool pageDesc = false,
+  }) => FavDetailData(
     info: json['info'] == null
         ? null
         : FavFolderInfo.fromJson(json['info'] as Map<String, dynamic>),
-    medias: (json['medias'] as List<dynamic>?)
-        ?.map((e) => FavDetailItemModel.fromJson(e as Map<String, dynamic>))
-        .toList(),
+    medias:
+        (pageDesc
+                ? (json['medias'] as List<dynamic>?)?.reversed
+                : (json['medias'] as List<dynamic>?))
+            ?.map((e) => FavDetailItemModel.fromJson(e as Map<String, dynamic>))
+            .toList(),
     hasMore: json['has_more'] as bool?,
   );
 }

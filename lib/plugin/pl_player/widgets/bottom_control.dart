@@ -15,19 +15,24 @@ class BottomControl extends StatelessWidget {
     required this.maxWidth,
     required this.isFullScreen,
     required this.controller,
+    required this.controlsAnimation,
     required this.buildBottomControl,
     required this.videoDetailController,
+    this.progressBarKey,
   });
 
   final double maxWidth;
   final bool isFullScreen;
   final PlPlayerController controller;
+  final Animation<double> controlsAnimation;
   final ValueGetter<Widget> buildBottomControl;
   final VideoDetailController videoDetailController;
+  final Key? progressBarKey;
 
   void onDragStart(ThumbDragDetails duration) {
     feedBack();
     controller.onSeekStart(duration.seconds);
+    onDragUpdate(duration);
   }
 
   void onDragUpdate(ThumbDragDetails duration) {
@@ -69,6 +74,7 @@ class BottomControl extends StatelessWidget {
                   children: [
                     Obx(
                       () => ProgressBar(
+                        key: progressBarKey,
                         progress: controller.progress,
                         buffered: controller.buffered.value,
                         total: controller.duration.value,
@@ -83,7 +89,7 @@ class BottomControl extends StatelessWidget {
                         onDragStart: onDragStart,
                         onDragUpdate: onDragUpdate,
                         onSeek: onSeek,
-                      ),
+                      ).withPreview(controller, controlsAnimation),
                     ),
                     if (controller.enableBlock &&
                         videoDetailController.segmentProgressList.isNotEmpty)
@@ -120,6 +126,34 @@ class BottomControl extends StatelessWidget {
           buildBottomControl(),
         ],
       ),
+    );
+  }
+}
+
+extension ProgressBarPreview on ProgressBar {
+  Widget withPreview(
+    PlPlayerController controller,
+    Animation<double> controlsAnimation,
+  ) {
+    if (!controller.showHoverPreview) return this;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        void update(PointerEvent event) {
+          if (!controlsAnimation.isCompleted) return;
+          final width = constraints.maxWidth - barHeight;
+          if (total <= 0 || width <= 0) return;
+          final fraction = ((event.localPosition.dx - barHeight / 2) / width)
+              .clamp(0.0, 1.0);
+          controller.updateHoverPreview((fraction * total).round());
+        }
+
+        return MouseRegion(
+          onEnter: update,
+          onHover: update,
+          onExit: (_) => controller.endHoverPreview(),
+          child: this,
+        );
+      },
     );
   }
 }

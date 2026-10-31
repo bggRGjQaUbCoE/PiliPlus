@@ -746,7 +746,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       _seasonId = seasonId;
       _pgcType = pgcType;
 
-      if (showSeekPreview) {
+      if (showSeekPreview || showHoverPreview) {
         _clearPreview();
       }
       cancelLongPressTimer();
@@ -1277,7 +1277,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   void hideTaskControls() {
     _timer?.cancel();
     _timer = Timer(showControlDuration, () {
-      if (!isSeeking.value && !tripling) {
+      if (!isSeeking.value && hoverPosition.value == null && !tripling) {
         controls = false;
       }
       _timer = null;
@@ -1285,14 +1285,14 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   void onSeekStart(int seekFrom) {
+    hoverPosition.value = null;
+    showPreview.value = false;
     seekPosition.value = seekFrom;
     isSeeking.value = true;
   }
 
   void onSeekEnd() {
-    if (showSeekPreview) {
-      showPreview.value = false;
-    }
+    showPreview.value = false;
     hasToasted = false;
     isSeeking.value = false;
     hideTaskControls();
@@ -1357,6 +1357,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   set controls(bool visible) {
     showControls.value = visible;
+    if (!visible) endHoverPreview();
     _timer?.cancel();
     if (visible) {
       hideTaskControls();
@@ -1690,7 +1691,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     _disableAutoEnterPip();
     setPlayCallBack(null);
     dmState.clear();
-    if (showSeekPreview) {
+    if (showSeekPreview || showHoverPreview) {
       _clearPreview();
     }
     if (Platform.isAndroid) {
@@ -1753,7 +1754,31 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   LoadingState<VideoShotData>? videoShot;
   late final RxBool showPreview = false.obs;
   late final showSeekPreview = Pref.showSeekPreview;
+  late final showHoverPreview = Pref.showHoverPreview;
+  late final seekPreviewPosition = Pref.seekPreviewPosition;
+  final hoverPosition = RxnInt();
   late final previewIndex = RxnInt();
+  int _previewGeneration = 0;
+
+  void updateHoverPreview(int seconds) {
+    if (!showHoverPreview ||
+        isSeeking.value ||
+        controlsLock.value ||
+        isLive ||
+        isFileSource ||
+        duration.value <= 0) {
+      return;
+    }
+    hoverPosition.value = seconds.clamp(0, duration.value);
+    updatePreviewIndex(hoverPosition.value!);
+  }
+
+  void endHoverPreview() {
+    if (hoverPosition.value == null) return;
+    hoverPosition.value = null;
+    if (!isSeeking.value) showPreview.value = false;
+    hideTaskControls();
+  }
 
   void updatePreviewIndex(int seconds) {
     if (videoShot == null) {
@@ -1761,16 +1786,19 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       getVideoShot();
       return;
     }
-    if (videoShot case Success(:final response)) {
-      showPreview.value = true;
+    if (videoShot case Success(:final response)
+        when response.image.isNotEmpty && response.index.isNotEmpty) {
       previewIndex.value = max(
         0,
         (response.index.where((item) => item <= seconds).length - 2),
       );
+      showPreview.value = true;
     }
   }
 
   void _clearPreview() {
+    _previewGeneration++;
+    hoverPosition.value = null;
     showPreview.value = false;
     previewIndex.value = null;
     videoShot = null;
@@ -1781,7 +1809,16 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   Future<void> getVideoShot() async {
-    videoShot = await VideoHttp.videoshot(bvid: bvid, cid: cid!);
+    final generation = _previewGeneration;
+    final result = await VideoHttp.videoshot(bvid: bvid, cid: cid!);
+    if (generation != _previewGeneration) return;
+    videoShot = result;
+    // A stationary pointer still needs a preview once the request finishes.
+    if (isSeeking.value && showSeekPreview && !hasToasted) {
+      updatePreviewIndex(seekPosition.value);
+    } else if (hoverPosition.value case final seconds?) {
+      updatePreviewIndex(seconds);
+    }
   }
 
   int _screenshotState = 0;

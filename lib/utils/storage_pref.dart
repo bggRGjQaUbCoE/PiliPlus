@@ -32,6 +32,7 @@ import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/hwdec_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
+import 'package:PiliPlus/plugin/pl_player/models/seek_preview_position.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
@@ -501,6 +502,15 @@ abstract final class Pref {
 
   static bool get showSeekPreview =>
       _setting.get(SettingBoxKey.showSeekPreview, defaultValue: true);
+
+  static bool get showHoverPreview =>
+      _setting.get(SettingBoxKey.showHoverPreview, defaultValue: false);
+
+  static SeekPreviewPosition get seekPreviewPosition =>
+      SeekPreviewPosition.values[_setting.get(
+        SettingBoxKey.seekPreviewPosition,
+        defaultValue: 0,
+      )];
 
   static bool get showDmChart =>
       _setting.get(SettingBoxKey.showDmChart, defaultValue: false);

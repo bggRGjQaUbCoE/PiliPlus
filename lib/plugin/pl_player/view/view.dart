@@ -72,7 +72,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart'
-    show RenderProxyBox, SemanticsConfiguration;
+    show RenderBox, RenderProxyBox, SemanticsConfiguration;
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
@@ -129,6 +129,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   late final videoDetailController = widget.videoDetailController!;
 
   final _playerKey = GlobalKey();
+  final _progressBarKey = GlobalKey();
+  final _compactProgressBarKey = GlobalKey();
   final _videoKey = GlobalKey();
 
   final RxDouble _brightnessValue = 0.0.obs;
@@ -1318,6 +1320,93 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     }
   }
 
+  Widget _buildSeekPreview() {
+    final centered = plPlayerController.seekPreviewPosition == .playerCenter;
+    final preview = buildSeekPreviewWidget(
+      plPlayerController,
+      maxWidth,
+      maxHeight,
+      () => mounted,
+      centered: centered,
+    );
+    if (centered) return IgnorePointer(child: preview);
+
+    return Obx(() {
+      final hoverPosition = plPlayerController.hoverPosition.value;
+      if (!plPlayerController.isSeeking.value && hoverPosition == null) {
+        return const SizedBox.shrink();
+      }
+      final seconds = hoverPosition ?? plPlayerController.seekPosition.value;
+      final duration = plPlayerController.duration.value;
+      final showControls = plPlayerController.showControls.value;
+      final hasViewPoints =
+          plPlayerController.showViewPoints &&
+          videoDetailController.viewPointList.isNotEmpty &&
+          videoDetailController.showVP.value;
+      final hasChart =
+          (showControls || plPlayerController.showDmChart) &&
+          videoDetailController.showDmTrendChart.value &&
+          videoDetailController.dmTrend.value?.dataOrNull != null;
+      final obstruction = hasChart
+          ? 12 +
+                _dmChartBottomMargin(
+                  videoDetailController,
+                  showControls ? 4.5 : 0,
+                )
+          : hasViewPoints
+          ? 3.5 + (showControls ? 8.75 : 4.25)
+          : 0.0;
+      return Positioned.fill(
+        child: AnimatedBuilder(
+          animation: _animationController,
+          builder: (context, child) => LayoutBuilder(
+            builder: (context, constraints) {
+              final key = showControls
+                  ? _progressBarKey
+                  : _compactProgressBarKey;
+              final target =
+                  key.currentContext?.findRenderObject() as RenderBox?;
+              final bar = target != null && target.hasSize
+                  ? target.localToGlobal(
+                          Offset.zero,
+                          ancestor: _playerKey.currentContext!
+                              .findRenderObject(),
+                        ) &
+                        target.size
+                  : Rect.fromLTWH(
+                      0,
+                      constraints.maxHeight - 5,
+                      constraints.maxWidth,
+                      5,
+                    );
+              return CustomSingleChildLayout(
+                delegate: SeekPreviewLayout(
+                  bar,
+                  duration > 0 ? seconds / duration : 0,
+                  obstruction,
+                ),
+                child: child,
+              );
+            },
+          ),
+          child: IgnorePointer(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                spacing: 8,
+                children: [
+                  if (plPlayerController.showPreview.value) preview,
+                  _buildSeekTime(seconds, duration),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     maxWidth = widget.maxWidth;
@@ -1328,10 +1417,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         : colorScheme.primary;
     late final thumbGlowColor = primary.withAlpha(80);
     late final bufferedBarColor = primary.withValues(alpha: 0.4);
-    const TextStyle textStyle = TextStyle(
-      color: Colors.white,
-      fontSize: 12,
-    );
     final isLive = plPlayerController.isLive;
 
     final child = Stack(
@@ -1412,7 +1497,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           ),
 
         /// 时间进度 toast
-        if (!isLive)
+        if (!isLive && plPlayerController.seekPreviewPosition == .playerCenter)
           IgnorePointer(
             ignoring: true,
             child: Align(
@@ -1424,41 +1509,16 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                 child: Obx(
                   () => AnimatedOpacity(
                     curve: Curves.easeInOut,
-                    opacity: plPlayerController.isSeeking.value ? 1.0 : 0.0,
+                    opacity:
+                        plPlayerController.isSeeking.value ||
+                            plPlayerController.hoverPosition.value != null
+                        ? 1.0
+                        : 0.0,
                     duration: const Duration(milliseconds: 150),
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        color: Color(0x88000000),
-                        borderRadius: BorderRadius.all(Radius.circular(64)),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 8,
-                      ),
-                      child: Row(
-                        spacing: 2,
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Obx(
-                            () => Text(
-                              DurationUtils.formatDuration(
-                                plPlayerController.seekPosition.value,
-                              ),
-                              style: textStyle,
-                            ),
-                          ),
-                          const Text('/', style: textStyle),
-                          Obx(
-                            () => Text(
-                              DurationUtils.formatDuration(
-                                plPlayerController.duration.value,
-                              ),
-                              style: textStyle,
-                            ),
-                          ),
-                        ],
-                      ),
+                    child: _buildSeekTime(
+                      plPlayerController.hoverPosition.value ??
+                          plPlayerController.seekPosition.value,
+                      plPlayerController.duration.value,
                     ),
                   ),
                 ),
@@ -1596,6 +1656,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                     child:
                         widget.bottomControl ??
                         BottomControl(
+                          progressBarKey: _progressBarKey,
+                          controlsAnimation: _animationController,
                           maxWidth: maxWidth,
                           isFullScreen: isFullScreen,
                           controller: plPlayerController,
@@ -1711,6 +1773,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                     children: [
                       Obx(
                         () => ProgressBar(
+                          key: _compactProgressBarKey,
                           progress: plPlayerController.progress,
                           buffered: plPlayerController.buffered.value,
                           total: plPlayerController.duration.value,
@@ -1766,13 +1829,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             ),
           ),
 
-        if (!isLive && plPlayerController.showSeekPreview)
-          buildSeekPreviewWidget(
-            plPlayerController,
-            maxWidth,
-            maxHeight,
-            () => mounted,
-          ),
+        if (!isLive) _buildSeekPreview(),
 
         if (isFullScreen || plPlayerController.isDesktopPip) ...[
           // 锁

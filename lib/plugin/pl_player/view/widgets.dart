@@ -1,5 +1,55 @@
 part of 'view.dart';
 
+class SeekPreviewLayout extends SingleChildLayoutDelegate {
+  const SeekPreviewLayout(this.bar, this.fraction, this.obstructionHeight);
+
+  final Rect bar;
+  final double fraction;
+  final double obstructionHeight;
+
+  double _bottom(Size size) =>
+      (math.min(bar.top, bar.bottom - obstructionHeight) - 8).clamp(
+        0.0,
+        size.height,
+      );
+
+  @override
+  BoxConstraints getConstraintsForChild(BoxConstraints constraints) =>
+      BoxConstraints(
+        maxWidth: math.max(0.0, constraints.maxWidth - 16),
+        maxHeight: math.max(0.0, _bottom(constraints.biggest) - 8),
+      );
+
+  @override
+  Offset getPositionForChild(Size size, Size childSize) {
+    final x =
+        bar.left +
+        1.75 +
+        math.max(0.0, bar.width - 3.5) * fraction.clamp(0.0, 1.0);
+    final margin = math.min(8.0, math.max(0.0, size.width - childSize.width));
+    return Offset(
+      (x - childSize.width / 2).clamp(
+        margin,
+        math.max(margin, size.width - childSize.width - 8),
+      ),
+      _bottom(size) - childSize.height,
+    );
+  }
+
+  @override
+  bool shouldRelayout(SeekPreviewLayout oldDelegate) =>
+      bar != oldDelegate.bar ||
+      fraction != oldDelegate.fraction ||
+      obstructionHeight != oldDelegate.obstructionHeight;
+}
+
+double _dmChartBottomMargin(
+  VideoDetailController controller,
+  double offset,
+) => controller.viewPointList.isNotEmpty && controller.showVP.value
+    ? 19.25 + offset
+    : 4.25 + offset;
+
 Widget buildDmChart(
   Color color,
   List<double> dmTrend,
@@ -10,11 +60,7 @@ Widget buildDmChart(
     child: Container(
       height: 12,
       margin: EdgeInsets.only(
-        bottom:
-            videoDetailController.viewPointList.isNotEmpty &&
-                videoDetailController.showVP.value
-            ? 19.25 + offset
-            : 4.25 + offset,
+        bottom: _dmChartBottomMargin(videoDetailController, offset),
       ),
       child: LineChart(
         LineChartData(
@@ -51,12 +97,34 @@ Widget buildDmChart(
   );
 }
 
+Widget _buildSeekTime(int seconds, int duration) {
+  const textStyle = TextStyle(color: Colors.white, fontSize: 12);
+  return Container(
+    decoration: const BoxDecoration(
+      color: Color(0x88000000),
+      borderRadius: BorderRadius.all(Radius.circular(64)),
+    ),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+    child: Row(
+      spacing: 2,
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(DurationUtils.formatDuration(seconds), style: textStyle),
+        const Text('/', style: textStyle),
+        Text(DurationUtils.formatDuration(duration), style: textStyle),
+      ],
+    ),
+  );
+}
+
 Widget buildSeekPreviewWidget(
   PlPlayerController plPlayerController,
   double maxWidth,
   double maxHeight,
-  ValueGetter<bool> isMounted,
-) {
+  ValueGetter<bool> isMounted, {
+  bool centered = true,
+}) {
   return Obx(
     () {
       if (!plPlayerController.showPreview.value) {
@@ -85,6 +153,8 @@ Widget buildSeekPreviewWidget(
 
         return Align(
           alignment: Alignment.center,
+          widthFactor: centered ? null : 1,
+          heightFactor: centered ? null : 1,
           child: Obx(
             () {
               final index = plPlayerController.previewIndex.value!;
@@ -261,6 +331,11 @@ class _VideoShotImageState extends State<VideoShotImage> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.url != widget.url) {
       _loadImg();
+    }
+    if (oldWidget.height != widget.height ||
+        oldWidget.imgXSize != widget.imgXSize ||
+        oldWidget.imgYSize != widget.imgYSize) {
+      _initSize();
     }
     if (oldWidget.x != widget.x || oldWidget.y != widget.y) {
       _setSrcRect(widget.imgXSize, widget.imgYSize);

@@ -414,7 +414,19 @@ class LiveRoomController extends GetxController {
     acceptQnList = item.acceptQn;
     // 以服务端返回的码率为准
     currentQn.value = item.currentQn;
-    final url = VideoUtils.getLiveCdnUrl(item, index: liveUrlIndex);
+    var url = VideoUtils.getLiveCdnUrl(item, index: liveUrlIndex);
+    if (PlayUrlExpiry.isExpiredOrNear([url])) {
+      // 签名信息在各 CDN 的 extra 中，换一个 CDN 可能仍有有效的地址。
+      for (var index = 0; index < item.urlInfo.length; index++) {
+        if (index == liveUrlIndex) continue;
+        final candidate = VideoUtils.getLiveCdnUrl(item, index: index);
+        if (!PlayUrlExpiry.isExpiredOrNear([candidate])) {
+          liveUrlIndex = index;
+          url = candidate;
+          break;
+        }
+      }
+    }
     if (PlayUrlExpiry.isExpiredOrNear([url])) {
       return fromQuery ? null : queryLiveUrl(autoplay: autoplay);
     }

@@ -1756,6 +1756,9 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   /// Rechecks the URL even if background audio still reports itself playing.
+  /// Live sources are reopened as well: the connection suspended in the
+  /// background is usually dead, so mpv would play the remaining cache and then
+  /// stall.
   Future<void> resumeAfterBackground() {
     final running = _resumeFuture;
     if (running != null) return running;
@@ -1771,16 +1774,19 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     if (_playerCount == 0 || !wantsPlayback || playerStatus.isCompleted) return;
     final revision = _playbackIntent.intentRevision;
     final running = _recoveryFuture;
-    if (running != null) await running;
+    final recoveredByRunning = running == null ? null : await running;
     if (_playbackIntent.intentRevision != revision || !wantsPlayback) return;
 
-    if (_isSourceExpiredOrNear &&
+    // A recovery that was already in flight may have just installed a fresh
+    // live source; opening it again would only add another network round trip.
+    final shouldRefreshLive = isLive && recoveredByRunning != true;
+    if ((shouldRefreshLive || _isSourceExpiredOrNear) &&
         !_processing &&
         _onSourceRefresh != null &&
         _videoPlayerController != null &&
         !isFileSource) {
       final recovered = await _recoverSource(
-        reason: 'resume',
+        reason: isLive ? 'resumeLive' : 'resume',
         force: true,
         userInitiated: true,
       );

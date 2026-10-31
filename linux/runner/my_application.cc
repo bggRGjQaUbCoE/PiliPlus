@@ -8,6 +8,8 @@
 #include "flutter/generated_plugin_registrant.h"
 #include "plugins/linux_webview_plugin.h"
 
+void RegisterLinuxContextMenu(FlView* view);
+
 struct _MyApplication {
   GtkApplication parent_instance;
   char **dart_entrypoint_arguments;
@@ -101,6 +103,7 @@ static void my_application_activate(GApplication *application) {
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
   LinuxWebviewPluginRegister(view, GTK_OVERLAY(overlay));
+  RegisterLinuxContextMenu(view);
 
   gtk_widget_grab_focus(GTK_WIDGET(view));
 }

@@ -10,6 +10,7 @@ add_executable(${BINARY_NAME}
   "main.cc"
   "my_application.cc"
   "plugins/linux_webview_plugin.cc"
+  "plugins/linux_context_menu.cc"
   "${FLUTTER_MANAGED_DIR}/generated_plugin_registrant.cc"
 )
 

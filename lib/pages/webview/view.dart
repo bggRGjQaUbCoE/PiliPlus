@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart'
@@ -15,6 +16,8 @@ import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -118,49 +121,9 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
     ];
   }
 
-  /// GtkMenu 创建下拉栏，防止被 WebKitWebView 遮住
-  List<Widget> get _linuxActions {
-    return [
-      Builder(
-        builder: (btnContext) {
-          return IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () async {
-              final renderBox = btnContext.findRenderObject() as RenderBox?;
-              Rect? rect;
-              if (renderBox != null && renderBox.hasSize) {
-                final offset = renderBox.localToGlobal(Offset.zero);
-                rect = offset & renderBox.size;
-              }
-
-              final menuList = <WebviewMenuItem?>[
-                ...WebviewMenuItem.values.take(
-                  WebviewMenuItem.values.length - 1,
-                ),
-                null, // separator
-                WebviewMenuItem.goBack,
-              ];
-              final itemStrings = menuList
-                  .map((m) => m?.title ?? '---')
-                  .toList();
-
-              final selectedIndex = await LinuxWebviewPlugin.showContextMenu(
-                items: itemStrings,
-                position: rect,
-              );
-
-              if (selectedIndex >= 0 && selectedIndex < menuList.length) {
-                final selectedItem = menuList[selectedIndex];
-                if (selectedItem != null) {
-                  _handleMenuItem(selectedItem);
-                }
-              }
-            },
-          );
-        },
-      ),
-    ];
-  }
+  List<Widget> get _linuxActions => [
+    _LinuxContextMenuButton(onSelected: _handleMenuItem),
+  ];
 
   Future<void> _handleMenuItem(WebviewMenuItem item) async {
     switch (item) {
@@ -583,4 +546,94 @@ document.styleSheets[0].insertRule('#app__display-area > div.control-panel {disp
             ),
     );
   }
+}
+
+/// Opens a GTK menu above the native WebView.
+class _LinuxContextMenuButton extends StatefulWidget {
+  const _LinuxContextMenuButton({required this.onSelected});
+
+  final ValueChanged<WebviewMenuItem> onSelected;
+
+  @override
+  State<_LinuxContextMenuButton> createState() =>
+      _LinuxContextMenuButtonState();
+}
+
+class _LinuxContextMenuButtonState extends State<_LinuxContextMenuButton> {
+  static const _channel = MethodChannel(
+    'com.example.piliplus/linux_context_menu',
+  );
+  static int _nextRequestId = 0;
+  int? _requestId;
+
+  Future<void> _show() async {
+    if (_requestId != null) return;
+    final box = context.findRenderObject();
+    if (box is! RenderBox || !box.hasSize) return;
+    RenderObject? ancestor = box;
+    while (ancestor != null && ancestor is! RenderView) {
+      ancestor = ancestor.parent;
+    }
+    if (ancestor is! RenderView || ancestor.child == null) return;
+
+    // Include the app's UI scaling, excluding the display's device pixel ratio.
+    final rect = MatrixUtils.transformRect(
+      box.getTransformTo(ancestor.child),
+      Offset.zero & box.size,
+    );
+    final scale =
+        ancestor.configuration.devicePixelRatio /
+        ancestor.flutterView.devicePixelRatio;
+    final entries = <WebviewMenuItem?>[
+      ...WebviewMenuItem.values.take(WebviewMenuItem.values.length - 1),
+      null,
+      WebviewMenuItem.goBack,
+    ];
+    final requestId = ++_nextRequestId;
+    _requestId = requestId;
+    final int? index;
+    try {
+      index = await _channel.invokeMethod<int>('show', {
+        'requestId': requestId,
+        'items': entries.map((entry) => entry?.title).toList(),
+        'x': rect.left * scale,
+        'y': rect.top * scale,
+        'width': rect.width * scale,
+        'height': rect.height * scale,
+      });
+    } catch (error) {
+      debugPrint('LinuxContextMenu.show failed: $error');
+      return;
+    } finally {
+      _requestId = null;
+    }
+    if (!mounted) return;
+    final value = index != null && index >= 0 && index < entries.length
+        ? entries[index]
+        : null;
+    if (value != null) widget.onSelected(value);
+  }
+
+  @override
+  void dispose() {
+    if (_requestId case final requestId?) {
+      unawaited(
+        _channel
+            .invokeMethod<void>('dismiss', {
+              'requestId': requestId,
+            })
+            .catchError((Object error) {
+              debugPrint('LinuxContextMenu dismiss failed: $error');
+            }),
+      );
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => IconButton(
+    icon: const Icon(Icons.more_vert),
+    tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+    onPressed: _show,
+  );
 }

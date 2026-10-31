@@ -42,6 +42,7 @@ import 'package:PiliPlus/utils/extension/native_geometry_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:PiliPlus/utils/ios/foldable_helper.dart';
 import 'package:PiliPlus/utils/ios/pip_helper.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
@@ -450,7 +451,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     seconds: fastForBackwardInSeconds,
   );
 
-  late final horizontalSeasonPanel = Pref.horizontalSeasonPanel;
+  bool get horizontalSeasonPanel => Pref.horizontalSeasonPanel;
   late final preInitPlayer = Pref.preInitPlayer;
   late final showRelatedVideo = Pref.showRelatedVideo;
   late final showVideoReply = Pref.showVideoReply;
@@ -1487,7 +1488,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   double screenRatio = 0.0;
   bool isManualFS = true;
   late final FullScreenMode mode = Pref.fullScreenMode;
-  late final horizontalScreen = Pref.horizontalScreen;
+  // 折叠屏展开/合上时会变化，不能缓存
+  bool get horizontalScreen => Pref.horizontalScreen;
   late final removeSafeArea = Pref.removeSafeArea;
 
   Future<void>? changeOrientation({
@@ -1551,7 +1553,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
           if (!removeSafeArea) {
             showSystemBar();
           }
-          if (orientation == null && mode == .none) {
+          final foldChanged = IOSFoldableHelper.consumePendingOrientation();
+          if (orientation == null && mode == .none && !foldChanged) {
             return;
           }
           await resetScreenRotation();

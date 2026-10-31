@@ -68,10 +68,24 @@ import 'package:PiliPlus/pages/video/view.dart';
 import 'package:PiliPlus/pages/webview/view.dart';
 import 'package:PiliPlus/pages/whisper/view.dart';
 import 'package:PiliPlus/pages/whisper_detail/view.dart';
+import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:get/get.dart';
 
 class Routes {
-  static final List<GetPage<dynamic>> getPages = [
+  static final List<GetPage<dynamic>> getPages = _pages
+      .map(_avoidSideInsets)
+      .toList();
+
+  // 自行处理左右安全区的页面：播放器等内容需要延伸到屏幕边缘
+  static const _handlesSideInsets = {'/', '/videoV', '/liveRoom'};
+
+  static GetPage<dynamic> _avoidSideInsets(GetPage<dynamic> page) {
+    if (_handlesSideInsets.contains(page.name)) return page;
+    final builder = page.page;
+    return page.copy(page: () => SideSafeArea(child: builder()));
+  }
+
+  static final List<GetPage<dynamic>> _pages = [
     GetPage(name: '/', page: () => const MainApp()),
     // 首页(推荐)
     GetPage(name: '/home', page: () => const HomePage()),

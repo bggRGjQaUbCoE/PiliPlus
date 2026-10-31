@@ -709,11 +709,11 @@ abstract final class VideoHttp {
     );
     if (res.data['code'] == 0) {
       if (isBlock) {
-        // block
-        Pref.setBlackMid(mid);
+        // Online blocks stay in their own cache while sharing the filter set.
+        Pref.addOnlineBlackMid(mid);
       } else if (act == 6) {
-        // unblock
-        Pref.removeBlackMid(mid);
+        // Removing an online block preserves a matching local block.
+        Pref.removeOnlineBlackMid(mid);
       }
       return const Success(null);
     } else {

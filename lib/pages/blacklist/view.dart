@@ -16,6 +16,8 @@ import 'package:PiliPlus/models_new/blacklist/list.dart';
 import 'package:PiliPlus/pages/blacklist/controller.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
+import 'package:PiliPlus/utils/global_data.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -24,8 +26,7 @@ import 'package:material_ui/material_ui.dart';
 
 enum _BlockType implements EnumWithLabel {
   local('本地'),
-  online('在线'),
-  ;
+  online('在线');
 
   @override
   final String label;
@@ -73,9 +74,21 @@ class _BlackListPageState extends State<BlackListPage>
       appBar: AppBar(title: const Text('黑名单管理')),
       body: Column(
         children: [
-          TabBar(
-            controller: _tabController,
-            tabs: _BlockType.values.map((e) => Tab(text: e.label)).toList(),
+          Obx(
+            () => TabBar(
+              controller: _tabController,
+              tabs: _BlockType.values
+                  .map(
+                    (type) => Tab(
+                      text:
+                          '${type.label} (${switch (type) {
+                            _BlockType.local => _blackListController.localBlackMids.length,
+                            _BlockType.online => _blackListController.onlineCount.value,
+                          }})',
+                    ),
+                  )
+                  .toList(),
+            ),
           ),
           Expanded(
             child: tabBarView(
@@ -121,7 +134,13 @@ class _BlackListPageState extends State<BlackListPage>
       SmartDialog.showToast(e.toString());
       return;
     }
-    _blackListController.blackMids.add(intMid);
+    if (_blackListController.localBlackMids.contains(intMid)) {
+      SmartDialog.showToast('该用户已在本地黑名单中');
+      return;
+    }
+    _blackListController.localBlackMids.add(intMid);
+    Pref.localBlackMids = _blackListController.localBlackMids;
+    GlobalData().blackMids.add(intMid);
     SmartDialog.showToast('屏蔽成功');
     setState(() {});
   }
@@ -155,11 +174,18 @@ class _BlackListPageState extends State<BlackListPage>
       context,
       title: '黑名单',
       localFileName: () => 'blackMids',
-      onExport: () =>
-          Utils.jsonEncoder.convert(_blackListController.blackMids.toList()),
+      onExport: () => Utils.jsonEncoder.convert(
+        _blackListController.localBlackMids.reversed.toList(),
+      ),
       onImport: (json) {
-        final mids = Set<int>.from(json);
-        _blackListController.blackMids.addAll(mids);
+        final importedMids = json.cast<int>();
+        // The exported list is newest-first; append oldest-first to restore it.
+        for (final mid in importedMids.reversed) {
+          if (_blackListController.localBlackMids.contains(mid)) continue;
+          _blackListController.localBlackMids.add(mid);
+          GlobalData().blackMids.add(mid);
+        }
+        Pref.localBlackMids = _blackListController.localBlackMids;
         setState(() {});
       },
     );
@@ -197,34 +223,42 @@ class _BlackListPageState extends State<BlackListPage>
             bottom: 180,
             sliver: SliverPadding(
               padding: const .fromLTRB(12, 12, 12, 0),
-              sliver: SliverFixedWrap(
-                spacing: 8,
-                runSpacing: 8,
-                mainAxisExtent: 30,
-                delegate: SliverChildBuilderDelegate(
-                  addAutomaticKeepAlives: false,
-                  addRepaintBoundaries: false,
-                  childCount: _blackListController.blackMids.length,
-                  (context, index) {
-                    final mid = _blackListController.blackMids.elementAt(index);
-                    return SearchText(
-                      text: mid.toString(),
-                      onTap: (mid) => Get.toNamed('/member?mid=$mid'),
-                      onLongPress: (_) => showConfirmDialog(
-                        context: context,
-                        title: const Text('确定移除该用户？'),
-                        onConfirm: () {
-                          _blackListController.blackMids.remove(mid);
-                          setState(() {});
-                        },
-                      ),
-                      height: 1,
-                      maxLines: 1,
-                      fontSize: 14,
-                      overflow: .ellipsis,
-                      padding: const .fromLTRB(11, 8, 11, 0),
-                    );
-                  },
+              sliver: Obx(
+                () => SliverFixedWrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  mainAxisExtent: 30,
+                  delegate: SliverChildBuilderDelegate(
+                    addAutomaticKeepAlives: false,
+                    addRepaintBoundaries: false,
+                    childCount: _blackListController.localBlackMids.length,
+                    (context, index) {
+                      final mids = _blackListController.localBlackMids;
+                      final mid = mids[mids.length - index - 1];
+                      return SearchText(
+                        text: mid.toString(),
+                        onTap: (mid) => Get.toNamed('/member?mid=$mid'),
+                        onLongPress: (_) => showConfirmDialog(
+                          context: context,
+                          title: const Text('确定移除该用户？'),
+                          onConfirm: () {
+                            _blackListController.localBlackMids.remove(mid);
+                            Pref.localBlackMids =
+                                _blackListController.localBlackMids;
+                            if (!GlobalData().onlineBlackMids.contains(mid)) {
+                              GlobalData().blackMids.remove(mid);
+                            }
+                            setState(() {});
+                          },
+                        ),
+                        height: 1,
+                        maxLines: 1,
+                        fontSize: 14,
+                        overflow: .ellipsis,
+                        padding: const .fromLTRB(11, 8, 11, 0),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
@@ -284,7 +318,14 @@ class _BlackListPageState extends State<BlackListPage>
                           item.mid,
                         );
                         if (mounted && removed) {
-                          if (_blackListController.blackMids.remove(item.mid)) {
+                          if (_blackListController.onlineBlackMids.remove(
+                            item.mid,
+                          )) {
+                            if (!_blackListController.localBlackMids.contains(
+                              item.mid,
+                            )) {
+                              GlobalData().blackMids.remove(item.mid);
+                            }
                             setState(() {});
                           }
                         }

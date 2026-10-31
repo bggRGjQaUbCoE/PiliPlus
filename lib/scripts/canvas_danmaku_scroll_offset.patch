@@ -1,0 +1,39 @@
+diff --git a/lib/danmaku_screen.dart b/lib/danmaku_screen.dart
+--- a/lib/danmaku_screen.dart
++++ b/lib/danmaku_screen.dart
+@@ -15,14 +15,16 @@ class DanmakuScreen<T> extends StatefulWidget {
+   // 创建Screen后返回控制器
+   final ValueChanged<DanmakuController<T>> createdController;
+   final DanmakuOption option;
+   final Size size;
++  final double scrollTopOffset;
+ 
+   const DanmakuScreen({
+     super.key,
+     required this.createdController,
+     required this.option,
+     required this.size,
++    this.scrollTopOffset = 0,
+   });
+ 
+   @override
+   State<DanmakuScreen<T>> createState() => _DanmakuScreenState<T>();
+@@ -516,7 +518,9 @@ class _DanmakuScreenState<T> extends State<DanmakuScreen<T>>
+     return IgnorePointer(
+       child: Stack(
+         children: [
+-          RepaintBoundary.wrap(
++          Transform.translate(
++            offset: Offset(0, widget.scrollTopOffset),
++            child: RepaintBoundary.wrap(
+             ValueListenableBuilder(
+               valueListenable: _notifier,
+               builder: (context, value, child) {
+@@ -540,6 +544,7 @@ class _DanmakuScreenState<T> extends State<DanmakuScreen<T>>
+             ),
+             0,
+           ),
++          ),
+           RepaintBoundary.wrap(
+             ValueListenableBuilder(
+               valueListenable: _staticDanmakuItems,

@@ -294,7 +294,7 @@ class PgcIntroController extends CommonIntroController {
       _updateEpisodeIndex(cid);
 
       videoDetailCtr
-        ..plPlayerController.pause()
+        ..plPlayerController.pause(userInitiated: false)
         ..makeHeartBeat()
         ..onReset()
         ..epId = epId

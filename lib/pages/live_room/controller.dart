@@ -25,6 +25,7 @@ import 'package:PiliPlus/pages/live_room/send_danmaku/view.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
+import 'package:PiliPlus/plugin/pl_player/models/data_status.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/danmaku_options.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/tcp/live.dart';
@@ -37,6 +38,7 @@ import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/rx_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
+import 'package:PiliPlus/utils/play_url_expiry.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
@@ -63,6 +65,28 @@ class LiveRoomController extends GetxController {
   final plPlayerController = PlPlayerController.getInstance(
     isLive: true,
   );
+  late final SourceRefreshCallback _sourceRefreshCallback = _refreshLiveSource;
+  int _liveSourceRevision = 0;
+  int _liveUrlRequestRevision = 0;
+  bool _playerActive = true;
+
+  bool get _isActivePlayer =>
+      _playerActive &&
+      !isClosed &&
+      PlPlayerController.playOwner?.tag == heroTag;
+
+  void attachPlayerSourceRefresh() {
+    _playerActive = true;
+    if (_isActivePlayer && plPlayerController.isSourceOwnedBy(heroTag)) {
+      plPlayerController.setSourceRefreshCallback(_sourceRefreshCallback);
+    }
+  }
+
+  void detachPlayerSourceRefresh() {
+    _playerActive = false;
+    _liveUrlRequestRevision++;
+    plPlayerController.clearSourceRefreshCallback(_sourceRefreshCallback);
+  }
 
   final isLoaded = false.obs;
   final roomInfoH5 = Rxn<RoomInfoH5Data>();
@@ -210,7 +234,8 @@ class LiveRoomController extends GetxController {
     final account = Accounts.main;
     isLogin = account.isLogin;
     mid = account.mid;
-    queryLiveUrl(autoFullScreenFlag: true);
+    // 首次取流由 view 在设置 playOwner 之后触发，避免此时 _isActivePlayer
+    // 尚未成立而导致请求被丢弃。
     queryLiveInfoH5();
     if (Accounts.heartbeat.isLogin && !Pref.historyPause) {
       VideoHttp.roomEntryAction(roomId: roomId);
@@ -224,37 +249,83 @@ class LiveRoomController extends GetxController {
     bool autoplay = true,
     bool autoFullScreenFlag = false,
   }) {
-    if (videoUrl == null) {
+    if (videoUrl == null || !_isActivePlayer) {
       return null;
     }
+    if (PlayUrlExpiry.isExpiredOrNear([videoUrl])) {
+      return queryLiveUrl(
+        autoplay: autoplay,
+        autoFullScreenFlag: autoFullScreenFlag,
+      );
+    }
+    final sourceRevision = _liveSourceRevision;
+    final requestRevision = _liveUrlRequestRevision;
     return plPlayerController.setDataSource(
       NetworkSource(videoSource: videoUrl!, audioSource: null),
       isLive: true,
       autoplay: autoplay,
       isVertical: isPortrait.value,
       autoFullScreenFlag: autoFullScreenFlag,
+      onSourceRefresh: _sourceRefreshCallback,
+      sourceOwnerTag: heroTag,
+      isCurrent: () =>
+          _isActivePlayer &&
+          sourceRevision == _liveSourceRevision &&
+          requestRevision == _liveUrlRequestRevision,
+      canAutoplay: () => plPlayerController.canPlayInLifecycle,
     );
   }
 
-  Future<void> queryLiveUrl({bool autoFullScreenFlag = false}) async {
+  Future<bool> _refreshLiveSource({required bool force}) async {
+    if (!_isActivePlayer || !plPlayerController.isSourceOwnedBy(heroTag)) {
+      return false;
+    }
+    final revision = _liveSourceRevision;
+    final requestRevision = _liveUrlRequestRevision;
+    try {
+      await queryLiveUrl(showError: false, autoplay: false);
+    } catch (_) {
+      return false;
+    }
+    if (!_isActivePlayer ||
+        _liveUrlRequestRevision != requestRevision + 1 ||
+        _liveSourceRevision != revision + 1 ||
+        plPlayerController.dataStatus.value != DataStatus.loaded ||
+        !plPlayerController.isSourceOwnedBy(heroTag) ||
+        PlayUrlExpiry.isExpiredOrNear([videoUrl])) {
+      return false;
+    }
+    await plPlayerController.applyPlaybackIntent();
+    return true;
+  }
+
+  Future<void> queryLiveUrl({
+    bool autoFullScreenFlag = false,
+    bool showError = true,
+    bool autoplay = true,
+  }) async {
+    if (showError) plPlayerController.cancelSourceRecovery();
+    final requestRevision = ++_liveUrlRequestRevision;
     currentQn.value ??= .fromCode(
       await ConnectivityUtils.isWiFi
           ? Pref.liveQuality
           : Pref.liveQualityCellular,
     );
+    if (isClosed || requestRevision != _liveUrlRequestRevision) return;
     final res = await LiveHttp.liveRoomInfo(
       roomId: roomId,
       qn: currentQn.value!.code,
       onlyAudio: plPlayerController.onlyPlayAudio.value,
     );
+    if (!_isActivePlayer || requestRevision != _liveUrlRequestRevision) return;
     if (res case Success(:final response)) {
       if (response.liveStatus != 1) {
-        _showDialog('当前直播间未开播');
+        if (showError) _showDialog('当前直播间未开播');
         return;
       }
       final playurl = response.playurlInfo?.playurl;
       if (playurl == null) {
-        _showDialog('无法获取播放地址');
+        if (showError) _showDialog('无法获取播放地址');
         return;
       }
       ruid = response.uid;
@@ -272,12 +343,14 @@ class LiveRoomController extends GetxController {
           formatIndex: formatIndex,
           codecIndex: codecIndex,
           liveUrlIndex: liveUrlIndex,
+          autoplay: autoplay,
+          fromQuery: true,
         ),
         if (!isLoaded.value && Accounts.heartbeat.isLogin) _fetchBlockRules(),
       ]);
       isLoaded.value = true;
     } else {
-      _showDialog(res.toString());
+      if (showError) _showDialog(res.toString());
     }
   }
 
@@ -319,7 +392,14 @@ class LiveRoomController extends GetxController {
     int formatIndex = 0,
     int codecIndex = 0,
     int liveUrlIndex = 0,
+    bool autoplay = true,
+    bool fromQuery = false,
   }) {
+    if (!_isActivePlayer) return null;
+    if (!fromQuery) {
+      _liveUrlRequestRevision++;
+      plPlayerController.cancelSourceRecovery();
+    }
     this.streamIndex = streamIndex;
     this.formatIndex = formatIndex;
     this.codecIndex = codecIndex;
@@ -334,8 +414,25 @@ class LiveRoomController extends GetxController {
     acceptQnList = item.acceptQn;
     // 以服务端返回的码率为准
     currentQn.value = item.currentQn;
-    videoUrl = VideoUtils.getLiveCdnUrl(item, index: liveUrlIndex);
-    return playerInit()?.whenComplete(_startSizeSub);
+    var url = VideoUtils.getLiveCdnUrl(item, index: liveUrlIndex);
+    if (PlayUrlExpiry.isExpiredOrNear([url])) {
+      // 签名信息在各 CDN 的 extra 中，换一个 CDN 可能仍有有效的地址。
+      for (var index = 0; index < item.urlInfo.length; index++) {
+        if (index == liveUrlIndex) continue;
+        final candidate = VideoUtils.getLiveCdnUrl(item, index: index);
+        if (!PlayUrlExpiry.isExpiredOrNear([candidate])) {
+          liveUrlIndex = index;
+          url = candidate;
+          break;
+        }
+      }
+    }
+    if (PlayUrlExpiry.isExpiredOrNear([url])) {
+      return fromQuery ? null : queryLiveUrl(autoplay: autoplay);
+    }
+    videoUrl = url;
+    _liveSourceRevision++;
+    return playerInit(autoplay: autoplay)?.whenComplete(_startSizeSub);
   }
 
   Future<void> queryLiveInfoH5() async {
@@ -511,6 +608,7 @@ class LiveRoomController extends GetxController {
 
   @override
   void onClose() {
+    detachPlayerSourceRefresh();
     _stopSizeSub();
     closeLiveMsg();
     cancelLikeTimer();

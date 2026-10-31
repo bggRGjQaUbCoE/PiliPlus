@@ -97,7 +97,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   @override
   Future<void> pause() {
     return onPause?.call() ??
-        PlPlayerController.pauseIfExists() ??
+        PlPlayerController.pauseIfExists(userInitiated: true) ??
         Future.syncValue(null);
   }
 

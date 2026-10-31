@@ -272,6 +272,10 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                       _favDetailController.onFav(folderInfo.favState == 1),
                   child: Text('${folderInfo.favState == 1 ? '取消' : ''}收藏'),
                 ),
+              PopupMenuItem(
+                onTap: () => _favDetailController.onDownloadAll(context),
+                child: const Text('缓存全部'),
+              ),
               if (BiliUtils.isPublicFav(folderInfo.attr))
                 PopupMenuItem(
                   onTap: () => showModalBottomSheet(
@@ -336,33 +340,55 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
       ),
       TextButton(
         style: btnStyle,
-        onPressed: () => RequestUtils.onCopyOrMove<FavDetailItemModel>(
-          context: context,
-          isCopy: true,
-          ctr: _favDetailController,
-          mediaId: _favDetailController.mediaId,
-          mid: _favDetailController.account.mid,
-        ),
-        child: Text('复制', style: textStyle),
+        onPressed: () => _favDetailController.onBatchDownload(context),
+        child: Text('缓存', style: textStyle),
       ),
-      TextButton(
-        style: btnStyle,
-        onPressed: () => RequestUtils.onCopyOrMove<FavDetailItemModel>(
-          context: context,
-          isCopy: false,
-          ctr: _favDetailController,
-          mediaId: _favDetailController.mediaId,
-          mid: _favDetailController.account.mid,
-        ),
-        child: Text('移动', style: textStyle),
-      ),
-      TextButton(
-        style: btnStyle,
-        onPressed: _favDetailController.onRemove,
-        child: Text(
-          '删除',
-          style: TextStyle(color: theme.colorScheme.error),
-        ),
+      PopupMenuButton<_FavSelectAction>(
+        enabled: _favDetailController.checkedCount > 0,
+        tooltip: '更多',
+        icon: const Icon(Icons.more_vert),
+        onSelected: (action) {
+          switch (action) {
+            case _FavSelectAction.copy:
+              RequestUtils.onCopyOrMove<FavDetailItemModel>(
+                context: context,
+                isCopy: true,
+                ctr: _favDetailController,
+                mediaId: _favDetailController.mediaId,
+                mid: _favDetailController.account.mid,
+              );
+              break;
+            case _FavSelectAction.move:
+              RequestUtils.onCopyOrMove<FavDetailItemModel>(
+                context: context,
+                isCopy: false,
+                ctr: _favDetailController,
+                mediaId: _favDetailController.mediaId,
+                mid: _favDetailController.account.mid,
+              );
+              break;
+            case _FavSelectAction.remove:
+              _favDetailController.onRemove();
+              break;
+          }
+        },
+        itemBuilder: (context) => [
+          const PopupMenuItem(
+            value: _FavSelectAction.copy,
+            child: Text('复制'),
+          ),
+          const PopupMenuItem(
+            value: _FavSelectAction.move,
+            child: Text('移动'),
+          ),
+          PopupMenuItem(
+            value: _FavSelectAction.remove,
+            child: Text(
+              '删除',
+              style: TextStyle(color: theme.colorScheme.error),
+            ),
+          ),
+        ],
       ),
       const SizedBox(width: 10),
     ];
@@ -528,3 +554,5 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
     };
   }
 }
+
+enum _FavSelectAction { copy, move, remove }

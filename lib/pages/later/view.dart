@@ -164,31 +164,40 @@ class _LaterPageState extends State<LaterPage>
       actions: [
         TextButton(
           style: btnStyle,
-          onPressed: () {
-            final ctr = currCtr();
-            RequestUtils.onCopyOrMove<LaterItemModel>(
-              context: context,
-              isCopy: true,
-              ctr: ctr,
-              mediaId: null,
-              mid: ctr.mid,
-            );
-          },
-          child: Text('复制', style: textStyle),
+          onPressed: () => currCtr().onBatchDownload(context),
+          child: Text('缓存', style: textStyle),
         ),
-        TextButton(
-          style: btnStyle,
-          onPressed: () {
+        PopupMenuButton<_LaterSelectAction>(
+          enabled: currCtr().checkedCount > 0,
+          tooltip: '更多',
+          icon: const Icon(Icons.more_vert),
+          onSelected: (action) {
             final ctr = currCtr();
-            RequestUtils.onCopyOrMove<LaterItemModel>(
-              context: context,
-              isCopy: false,
-              ctr: ctr,
-              mediaId: null,
-              mid: ctr.mid,
-            );
+            switch (action) {
+              case _LaterSelectAction.copy:
+                RequestUtils.onCopyOrMove<LaterItemModel>(
+                  context: context,
+                  isCopy: true,
+                  ctr: ctr,
+                  mediaId: null,
+                  mid: ctr.mid,
+                );
+                break;
+              case _LaterSelectAction.move:
+                RequestUtils.onCopyOrMove<LaterItemModel>(
+                  context: context,
+                  isCopy: false,
+                  ctr: ctr,
+                  mediaId: null,
+                  mid: ctr.mid,
+                );
+                break;
+            }
           },
-          child: Text('移动', style: textStyle),
+          itemBuilder: (context) => const [
+            PopupMenuItem(value: _LaterSelectAction.copy, child: Text('复制')),
+            PopupMenuItem(value: _LaterSelectAction.move, child: Text('移动')),
+          ],
         ),
       ],
       child: AppBar(
@@ -261,7 +270,7 @@ class _LaterPageState extends State<LaterPage>
             },
           ),
           PopupMenuButton(
-            tooltip: '清空',
+            tooltip: '更多',
             borderRadius: const .all(.circular(20)),
             child: Padding(
               padding: const .symmetric(horizontal: 12, vertical: 6),
@@ -274,7 +283,7 @@ class _LaterPageState extends State<LaterPage>
                 ),
                 TextSpan(
                   children: [
-                    const TextSpan(text: '清空'),
+                    const TextSpan(text: '更多'),
                     WidgetSpan(
                       alignment: .middle,
                       child: Icon(
@@ -288,7 +297,12 @@ class _LaterPageState extends State<LaterPage>
                 ),
               ),
             ),
-            itemBuilder: (_) => [
+            itemBuilder: (_) => <PopupMenuEntry>[
+              PopupMenuItem(
+                onTap: () => currCtr().onDownloadAll(context),
+                child: const Text('缓存全部'),
+              ),
+              const PopupMenuDivider(height: 12),
               PopupMenuItem(
                 onTap: () => currCtr().toViewClear(context, 1),
                 child: const Text('清空失效'),
@@ -309,3 +323,5 @@ class _LaterPageState extends State<LaterPage>
     );
   }
 }
+
+enum _LaterSelectAction { copy, move }

@@ -279,13 +279,14 @@ document.addEventListener('click', function(e) {
           _linuxController = ctr;
         },
         onUrlChanged: (u) {
+          final previousUrl = _currentUrl;
           _currentUrl = u;
-          if (_title.value.isEmpty || _title.value == _currentUrl) {
+          if (_title.value.isEmpty || _title.value == previousUrl) {
             _title.value = u;
           }
         },
         onTitleChanged: (t) {
-          if (t.isNotEmpty) _title.value = t;
+          _title.value = t;
         },
         onProgress: (p) {
           _progress.value = p;

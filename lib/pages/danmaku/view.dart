@@ -7,6 +7,7 @@ import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/danmaku_options.dart';
 import 'package:PiliPlus/utils/danmaku_utils.dart';
+import 'package:PiliPlus/utils/ios/external_display_helper.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -116,6 +117,27 @@ class _PlDanmakuState extends State<PlDanmaku> {
     if (currentDanmakuList != null) {
       final blockColorful = DanmakuOptions.blockColorful;
       final danmakuWeight = DanmakuOptions.danmakuWeight;
+      if (IOSExternalDisplayHelper.isActive) {
+        IOSExternalDisplayHelper.sendDanmaku(widget.cid, [
+          for (final e in currentDanmakuList)
+            if (e.weight >= danmakuWeight)
+              {
+                'text': e.content,
+                'mode': e.mode,
+                'fontSize': e.fontsize.toDouble(),
+                'color':
+                    (blockColorful && e.mode != 7
+                            ? Colors.white
+                            : DmUtils.decimalToColor(e.color))
+                        .toARGB32(),
+                'colorful':
+                    playerController.showVipDanmaku &&
+                    e.colorful == DmColorfulType.VipGradualColor,
+                'count': e.count > 1 ? e.count : null,
+                'selfSend': e.isSelf,
+              },
+        ]);
+      }
       for (DanmakuElem e in currentDanmakuList) {
         if (e.weight < danmakuWeight) continue;
         if (e.mode == 7) {

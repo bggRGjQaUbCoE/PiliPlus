@@ -4,10 +4,12 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:material_ui/material_ui.dart';
 
 Widget tabBarView({
+  Key? key,
   required List<Widget> children,
   TabController? controller,
   HitTestBehavior hitTestBehavior = .opaque,
 }) => TabBarView(
+  key: key,
   controller: controller,
   physics: tabBarScrollPhysics,
   hitTestBehavior: hitTestBehavior,

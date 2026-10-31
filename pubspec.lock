@@ -1220,11 +1220,9 @@ packages:
   media_kit_libs_windows_video:
     dependency: "direct overridden"
     description:
-      path: "libs/windows/media_kit_libs_windows_video"
-      ref: native
-      resolved-ref: "73771ec38176be2d984a3049c28177bce23b54a0"
-      url: "https://github.com/My-Responsitories/media-kit.git"
-    source: git
+      path: "packages/media_kit_libs_windows_video"
+      relative: true
+    source: path
     version: "1.0.10"
   media_kit_native_event_loop:
     dependency: "direct overridden"

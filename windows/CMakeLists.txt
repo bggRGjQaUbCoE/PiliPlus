@@ -57,6 +57,15 @@ add_subdirectory("runner")
 
 # Generated plugin build rules, which manage building the plugins and adding
 # them to the application.
+if(FLUTTER_TARGET_PLATFORM STREQUAL "windows-arm64"
+    AND DEFINED ENV{PILI_WINDOWS_ARM64_JAVA_HOME})
+  file(TO_CMAKE_PATH "$ENV{PILI_WINDOWS_ARM64_JAVA_HOME}" ARM64_JAVA_HOME)
+  set(JAVA_JVM_LIBRARY "${ARM64_JAVA_HOME}/lib/jvm.lib" CACHE FILEPATH "" FORCE)
+  set(JAVA_INCLUDE_PATH "${ARM64_JAVA_HOME}/include" CACHE PATH "" FORCE)
+  set(JAVA_INCLUDE_PATH2 "${ARM64_JAVA_HOME}/include/win32" CACHE PATH "" FORCE)
+  # Recheck the platform headers when replacing a previously discovered JDK.
+  unset(JNI_INCLUDE_PATH2_OPTIONAL CACHE)
+endif()
 include(flutter/generated_plugins.cmake)
 
 

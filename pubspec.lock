@@ -1957,6 +1957,70 @@ packages:
       url: "https://github.com/wgh136/webdav_client.git"
     source: git
     version: "1.2.2"
+  webview_all:
+    dependency: "direct main"
+    description:
+      name: webview_all
+      sha256: "9c08f4622a29d01fd0a90251dd2f9b079865c9cabe279a1b7199d3d2f15b26ce"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.4.9"
+  webview_all_android:
+    dependency: transitive
+    description:
+      name: webview_all_android
+      sha256: ec9e9da7fd463e08a12972bbb17286e98891dd59a91106ec376c21784f53fa8f
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.4.9"
+  webview_all_linux:
+    dependency: transitive
+    description:
+      name: webview_all_linux
+      sha256: be506cbf90a140d54e0ccde4e43d5f0795309242fd85ba3cc7564382087e443c
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.4.9"
+  webview_all_ohos:
+    dependency: transitive
+    description:
+      name: webview_all_ohos
+      sha256: "53fe94b963b99eb557c76cc118440d3bb4d8acbcea6ab4d5b6c467092427cc8b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.4.9"
+  webview_all_web:
+    dependency: transitive
+    description:
+      name: webview_all_web
+      sha256: d4828a37a39109d8eac04b702f6f579de4b0f7413ef0f7df09d57666232d43a9
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.4.9"
+  webview_all_windows:
+    dependency: transitive
+    description:
+      name: webview_all_windows
+      sha256: "5bd9013eb33a711cbdeffe95faa42619c63f187519dec93cd4c9e6d41dcfd683"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.4.9"
+  webview_all_wkwebview:
+    dependency: transitive
+    description:
+      name: webview_all_wkwebview
+      sha256: "720b72b4b045471485b3c6835b2867a60f79b2186bcc51490b0889f1e2f3389f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.4.9"
+  webview_platform_interface:
+    dependency: transitive
+    description:
+      name: webview_platform_interface
+      sha256: "1972aec36e718faa216df014917bf760bf18eb5bad8e73a73833345836da64b6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.4.9"
   win32:
     dependency: "direct main"
     description:

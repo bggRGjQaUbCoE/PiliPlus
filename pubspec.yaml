@@ -171,6 +171,7 @@ dependencies:
     git:
       url: https://github.com/wgh136/webdav_client.git
       ref: main
+  webview_all: ^1.4.9
   win32: ^6.3.0
   window_manager:
     git:

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart'
@@ -15,10 +16,13 @@ import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:webview_all/webview_all.dart' hide WebResourceResponse;
 
 final _prefixRegex = RegExp(r'^(?!(https?://))\S+://', caseSensitive: false);
 
@@ -48,7 +52,7 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
   bool _off = false;
 
   InAppWebViewController? _webViewController;
-  LinuxWebviewController? _linuxController;
+  WebViewController? _linuxController;
 
   @override
   void initState() {
@@ -74,7 +78,6 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
   @override
   void dispose() {
     if (Platform.isAndroid) routeObserver.unsubscribe(this);
-    _linuxController?.dispose();
     _linuxController = null;
     _webViewController = null;
     super.dispose();
@@ -118,49 +121,9 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
     ];
   }
 
-  /// GtkMenu 创建下拉栏，防止被 WebKitWebView 遮住
-  List<Widget> get _linuxActions {
-    return [
-      Builder(
-        builder: (btnContext) {
-          return IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () async {
-              final renderBox = btnContext.findRenderObject() as RenderBox?;
-              Rect? rect;
-              if (renderBox != null && renderBox.hasSize) {
-                final offset = renderBox.localToGlobal(Offset.zero);
-                rect = offset & renderBox.size;
-              }
-
-              final menuList = <WebviewMenuItem?>[
-                ...WebviewMenuItem.values.take(
-                  WebviewMenuItem.values.length - 1,
-                ),
-                null, // separator
-                WebviewMenuItem.goBack,
-              ];
-              final itemStrings = menuList
-                  .map((m) => m?.title ?? '---')
-                  .toList();
-
-              final selectedIndex = await LinuxWebviewPlugin.showContextMenu(
-                items: itemStrings,
-                position: rect,
-              );
-
-              if (selectedIndex >= 0 && selectedIndex < menuList.length) {
-                final selectedItem = menuList[selectedIndex];
-                if (selectedItem != null) {
-                  _handleMenuItem(selectedItem);
-                }
-              }
-            },
-          );
-        },
-      ),
-    ];
-  }
+  List<Widget> get _linuxActions => [
+    _LinuxContextMenuButton(onSelected: _handleMenuItem),
+  ];
 
   Future<void> _handleMenuItem(WebviewMenuItem item) async {
     switch (item) {
@@ -173,8 +136,7 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
         break;
       case WebviewMenuItem.copy:
         if (Platform.isLinux) {
-          final url = _linuxController?.currentUrl ?? _currentUrl;
-          Utils.copyText(url);
+          Utils.copyText(_currentUrl);
         } else {
           WebUri? uri = await _webViewController?.getUrl();
           if (uri != null) {
@@ -184,8 +146,7 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
         break;
       case WebviewMenuItem.openInBrowser:
         if (Platform.isLinux) {
-          final url = _linuxController?.currentUrl ?? _currentUrl;
-          PageUtils.launchURL(url);
+          PageUtils.launchURL(_currentUrl);
         } else {
           WebUri? uri = await _webViewController?.getUrl();
           if (uri != null) {
@@ -196,8 +157,7 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
       case WebviewMenuItem.clearCache:
         try {
           if (Platform.isLinux) {
-            await LinuxCookieManager.deleteAllCookies();
-            await LinuxWebviewPlugin.clearCache();
+            await LinuxCookieManager.clearAllWebsiteData();
             _linuxController?.reload();
             SmartDialog.showToast('已清理缓存并刷新', alignment: Alignment.topCenter);
           } else {
@@ -222,11 +182,11 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
         break;
       case WebviewMenuItem.resetCookie:
         if (Platform.isLinux) {
-          final currentUrl = _linuxController?.currentUrl ?? _currentUrl;
+          final currentUrl = _currentUrl;
           if (LinuxCookieManager.isBiliDomain(currentUrl)) {
             final js = LinuxCookieManager.generateCookieInjectionJs();
             if (js.isNotEmpty) {
-              await _linuxController?.evaluateJavaScript(js);
+              await _linuxController?.runJavaScript(js);
             }
           }
           _linuxController?.reload();
@@ -239,7 +199,7 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
     }
   }
 
-  List<Map<String, dynamic>> _getLinuxUserScripts() {
+  List<WebViewUserScript> _getLinuxUserScripts() {
     final shouldInjectCookie = LinuxCookieManager.isBiliDomain(_currentUrl);
     final cookieJs = shouldInjectCookie
         ? LinuxCookieManager.generateCookieInjectionJs()
@@ -247,33 +207,28 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
 
     return [
       if (cookieJs.isNotEmpty)
-        {
-          'source': cookieJs,
-          'injectionTime': 0, // start
-          'forAllFrames': true,
-        },
+        WebViewUserScript(source: cookieJs, forMainFrameOnly: false),
       if (_currentUrl.startsWith('https://www.bilibili.com/h5/note-app'))
-        const {
-          'source': """
+        const WebViewUserScript(
+          source: """
 document.addEventListener('click', function(e) {
   var finishBtn = e.target && e.target.closest ? e.target.closest('.finish-btn') : null;
   if (finishBtn) {
-    window.webkit.messageHandlers.msgToNative.postMessage('finishButtonClicked');
+    window.PiliPlus.postMessage('finishButtonClicked');
     return;
   }
   var infoBar = e.target && e.target.closest ? e.target.closest('.info-bar') : null;
   if (infoBar) {
-    window.webkit.messageHandlers.msgToNative.postMessage('infoBarClicked');
+    window.PiliPlus.postMessage('infoBarClicked');
     return;
   }
 }, true);
 """,
-          'injectionTime': 1, // end
-          'forAllFrames': true,
-        },
+          forMainFrameOnly: false,
+        ),
       if (_currentUrl.startsWith('https://live.bilibili.com'))
-        const {
-          'source': """
+        const WebViewUserScript(
+          source: """
 (function() {
   function injectStyle() {
     if (document.getElementById('pili-live-style')) return;
@@ -289,14 +244,12 @@ document.addEventListener('click', function(e) {
   }
 })();
 """,
-          'injectionTime': 0, // start
-          'forAllFrames': true,
-        },
+          forMainFrameOnly: false,
+        ),
     ];
   }
 
   Widget _buildLinuxView(BuildContext context) {
-    final initUrl = _currentUrl;
     return Scaffold(
       appBar: widget.url != null
           ? null
@@ -326,13 +279,14 @@ document.addEventListener('click', function(e) {
           _linuxController = ctr;
         },
         onUrlChanged: (u) {
+          final previousUrl = _currentUrl;
           _currentUrl = u;
-          if (_title.value.isEmpty || _title.value == _currentUrl) {
+          if (_title.value.isEmpty || _title.value == previousUrl) {
             _title.value = u;
           }
         },
         onTitleChanged: (t) {
-          if (t.isNotEmpty) _title.value = t;
+          _title.value = t;
         },
         onProgress: (p) {
           _progress.value = p;
@@ -350,22 +304,30 @@ document.addEventListener('click', function(e) {
             }
           }
         },
-        onNavigationRequest: (u) {
-          if (u == initUrl) return;
-          final uri = Uri.tryParse(u);
-          final isCustomScheme = _prefixRegex.hasMatch(u);
-
-          if (!_inApp && uri != null) {
-            PiliScheme.routePush(uri, selfHandle: true, off: _off).then((
-              hasMatch,
-            ) {
-              if (!hasMatch && isCustomScheme) {
-                PageUtils.launchURL(u);
-              }
-            });
-          } else if (isCustomScheme) {
-            PageUtils.launchURL(u);
+        onNavigationRequest: (request) async {
+          final url = request.url;
+          final uri = Uri.tryParse(url);
+          if (!request.isMainFrame ||
+              uri == null ||
+              const {
+                'http',
+                'https',
+                'about',
+                'data',
+                'blob',
+              }.contains(uri.scheme)) {
+            return NavigationDecision.navigate;
           }
+          if (!_inApp) {
+            final handled = await PiliScheme.routePush(
+              uri,
+              selfHandle: true,
+              off: _off,
+            );
+            if (handled) return NavigationDecision.prevent;
+          }
+          if (mounted) PageUtils.launchURL(url);
+          return NavigationDecision.prevent;
         },
       ),
     );
@@ -583,4 +545,94 @@ document.styleSheets[0].insertRule('#app__display-area > div.control-panel {disp
             ),
     );
   }
+}
+
+/// Opens a GTK menu above the native WebView.
+class _LinuxContextMenuButton extends StatefulWidget {
+  const _LinuxContextMenuButton({required this.onSelected});
+
+  final ValueChanged<WebviewMenuItem> onSelected;
+
+  @override
+  State<_LinuxContextMenuButton> createState() =>
+      _LinuxContextMenuButtonState();
+}
+
+class _LinuxContextMenuButtonState extends State<_LinuxContextMenuButton> {
+  static const _channel = MethodChannel(
+    'com.example.piliplus/linux_context_menu',
+  );
+  static int _nextRequestId = 0;
+  int? _requestId;
+
+  Future<void> _show() async {
+    if (_requestId != null) return;
+    final box = context.findRenderObject();
+    if (box is! RenderBox || !box.hasSize) return;
+    RenderObject? ancestor = box;
+    while (ancestor != null && ancestor is! RenderView) {
+      ancestor = ancestor.parent;
+    }
+    if (ancestor is! RenderView || ancestor.child == null) return;
+
+    // Include the app's UI scaling, excluding the display's device pixel ratio.
+    final rect = MatrixUtils.transformRect(
+      box.getTransformTo(ancestor.child),
+      Offset.zero & box.size,
+    );
+    final scale =
+        ancestor.configuration.devicePixelRatio /
+        ancestor.flutterView.devicePixelRatio;
+    final entries = <WebviewMenuItem?>[
+      ...WebviewMenuItem.values.take(WebviewMenuItem.values.length - 1),
+      null,
+      WebviewMenuItem.goBack,
+    ];
+    final requestId = ++_nextRequestId;
+    _requestId = requestId;
+    final int? index;
+    try {
+      index = await _channel.invokeMethod<int>('show', {
+        'requestId': requestId,
+        'items': entries.map((entry) => entry?.title).toList(),
+        'x': rect.left * scale,
+        'y': rect.top * scale,
+        'width': rect.width * scale,
+        'height': rect.height * scale,
+      });
+    } catch (error) {
+      debugPrint('LinuxContextMenu.show failed: $error');
+      return;
+    } finally {
+      _requestId = null;
+    }
+    if (!mounted) return;
+    final value = index != null && index >= 0 && index < entries.length
+        ? entries[index]
+        : null;
+    if (value != null) widget.onSelected(value);
+  }
+
+  @override
+  void dispose() {
+    if (_requestId case final requestId?) {
+      unawaited(
+        _channel
+            .invokeMethod<void>('dismiss', {
+              'requestId': requestId,
+            })
+            .catchError((Object error) {
+              debugPrint('LinuxContextMenu dismiss failed: $error');
+            }),
+      );
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => IconButton(
+    icon: const Icon(Icons.more_vert),
+    tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+    onPressed: _show,
+  );
 }

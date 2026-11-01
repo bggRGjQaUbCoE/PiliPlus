@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:webview_all/webview_all.dart';
+import 'package:webview_all_linux/webview_all_linux.dart';
+import 'package:webview_platform_interface/webview_platform_interface.dart';
 
 /// App callbacks and initialization for the Linux WebView plugin.
 class LinuxWebview extends StatefulWidget {
@@ -10,7 +11,7 @@ class LinuxWebview extends StatefulWidget {
   final String? userAgent;
   final bool incognito;
   final List<WebViewUserScript> userScripts;
-  final ValueChanged<WebViewController>? onWebViewCreated;
+  final ValueChanged<LinuxWebViewController>? onWebViewCreated;
   final ValueChanged<String>? onUrlChanged;
   final ValueChanged<double>? onProgress;
   final ValueChanged<String>? onTitleChanged;
@@ -40,8 +41,7 @@ class LinuxWebview extends StatefulWidget {
 }
 
 class _LinuxWebviewState extends State<LinuxWebview> {
-  late final WebViewController _controller;
-  WebViewSession? _session;
+  LinuxWebViewController? _controller;
   bool _ready = false;
   Object? _error;
 
@@ -53,73 +53,67 @@ class _LinuxWebviewState extends State<LinuxWebview> {
 
   Future<void> _initialize() async {
     try {
-      final session = await WebViewSession.create(
-        mode: widget.incognito
-            ? WebViewSessionMode.isolatedIncognito
-            : WebViewSessionMode.shared,
+      final controller = LinuxWebViewController(
+        LinuxWebViewControllerCreationParams(incognito: widget.incognito),
       );
-      if (session == null) {
-        throw UnsupportedError('无法创建所需的网页会话');
-      }
-      if (!mounted) {
-        await session.close();
-        return;
-      }
-      _session = session;
-      _controller = session.controller;
-      await _controller.setNavigationDelegate(
-        NavigationDelegate(
-          onNavigationRequest: (request) {
-            if (!mounted) return NavigationDecision.prevent;
-            return widget.onNavigationRequest?.call(request) ??
-                NavigationDecision.navigate;
-          },
-          onUrlChange: (change) {
-            if (mounted && change.url != null) {
-              widget.onUrlChanged?.call(change.url!);
-            }
-          },
-          onTitleChange: (title) {
-            if (mounted) widget.onTitleChanged?.call(title);
-          },
-          onProgress: (progress) {
-            if (mounted) widget.onProgress?.call(progress / 100);
-          },
-          onPageFinished: (url) {
-            if (mounted) widget.onProgress?.call(1);
-          },
-          onWebResourceError: (error) {
-            if (mounted && error.isForMainFrame != false) {
-              widget.onProgress?.call(1);
-              widget.onLoadFailed?.call(
-                error.url ?? widget.initialUrl ?? '',
-                error.description,
-              );
+      _controller = controller;
+      await controller.prepareSession();
+      if (!mounted) return;
+      final delegate = LinuxNavigationDelegate(
+        const LinuxNavigationDelegateCreationParams(),
+      );
+      await delegate.setOnNavigationRequest((request) {
+        if (!mounted) return NavigationDecision.prevent;
+        return widget.onNavigationRequest?.call(request) ??
+            NavigationDecision.navigate;
+      });
+      await delegate.setOnUrlChange((change) {
+        if (mounted && change.url != null) {
+          widget.onUrlChanged?.call(change.url!);
+        }
+      });
+      await delegate.setOnTitleChange((title) {
+        if (mounted) widget.onTitleChanged?.call(title);
+      });
+      await delegate.setOnProgress((progress) {
+        if (mounted) widget.onProgress?.call(progress / 100);
+      });
+      await delegate.setOnPageFinished((url) {
+        if (mounted) widget.onProgress?.call(1);
+      });
+      await delegate.setOnWebResourceError((error) {
+        if (mounted && error.isForMainFrame != false) {
+          widget.onProgress?.call(1);
+          widget.onLoadFailed?.call(
+            error.url ?? widget.initialUrl ?? '',
+            error.description,
+          );
+        }
+      });
+      await controller.setPlatformNavigationDelegate(delegate);
+      await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+      await controller.setUserAgent(widget.userAgent);
+      await controller.addJavaScriptChannel(
+        JavaScriptChannelParams(
+          name: 'PiliPlus',
+          onMessageReceived: (message) {
+            if (mounted) {
+              widget.onWebMessageReceived?.call(message.message);
             }
           },
         ),
       );
-      await _controller.setJavaScriptMode(JavaScriptMode.unrestricted);
-      await _controller.setUserAgent(widget.userAgent);
-      await _controller.addJavaScriptChannel(
-        'PiliPlus',
-        onMessageReceived: (message) {
-          if (mounted) {
-            widget.onWebMessageReceived?.call(message.message);
-          }
-        },
-      );
       for (final script in widget.userScripts) {
-        await _controller.addUserScript(script);
+        await controller.addUserScript(script);
       }
       if (!mounted) return;
-      widget.onWebViewCreated?.call(_controller);
+      widget.onWebViewCreated?.call(controller);
       if (!mounted) return;
       setState(() => _ready = true);
       if (widget.initialHtml case final html?) {
-        await _controller.loadHtmlString(html);
+        await controller.loadHtmlString(html);
       } else if (widget.initialUrl case final url?) {
-        await _controller.loadRequest(Uri.parse(url));
+        await controller.loadRequest(LoadRequestParams(uri: Uri.parse(url)));
       }
     } catch (error) {
       if (!mounted) return;
@@ -131,9 +125,9 @@ class _LinuxWebviewState extends State<LinuxWebview> {
 
   @override
   void dispose() {
-    if (_session case final session?) {
+    if (_controller case final controller?) {
       unawaited(
-        session.close().catchError((Object error) {
+        controller.dispose().catchError((Object error) {
           debugPrint('LinuxWebview.close failed: $error');
         }),
       );
@@ -149,6 +143,8 @@ class _LinuxWebviewState extends State<LinuxWebview> {
     if (!_ready) {
       return const Center(child: CircularProgressIndicator());
     }
-    return WebViewWidget(controller: _controller);
+    return LinuxWebViewWidget(
+      LinuxWebViewWidgetCreationParams(controller: _controller!),
+    ).build(context);
   }
 }

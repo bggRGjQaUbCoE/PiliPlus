@@ -22,7 +22,9 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:webview_all/webview_all.dart' hide WebResourceResponse;
+import 'package:webview_all_linux/webview_all_linux.dart';
+import 'package:webview_platform_interface/webview_platform_interface.dart'
+    hide WebResourceResponse;
 
 final _prefixRegex = RegExp(r'^(?!(https?://))\S+://', caseSensitive: false);
 
@@ -52,7 +54,7 @@ class _WebviewPageState extends State<WebviewPage> with RouteAware {
   bool _off = false;
 
   InAppWebViewController? _webViewController;
-  WebViewController? _linuxController;
+  LinuxWebViewController? _linuxController;
 
   @override
   void initState() {

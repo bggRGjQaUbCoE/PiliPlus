@@ -93,7 +93,15 @@ Future<void> _initAppPath() async {
 
 void main() async {
   ScaledWidgetsFlutterBinding.ensureInitialized();
-  MediaKit.ensureInitialized();
+  MediaKit.ensureInitialized(
+    libmpv: Platform.isLinux
+        ? path.join(
+            path.dirname(Platform.resolvedExecutable),
+            'lib',
+            'libmpv.so.2',
+          )
+        : null,
+  );
   await _initAppPath();
   try {
     await GStorage.init();

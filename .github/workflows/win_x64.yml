@@ -11,14 +11,25 @@ on:
   workflow_dispatch:
 
 jobs:
+  capture-native:
+    uses: ./.github/workflows/capture-native.yml
+    with:
+      platform: windows
   build-windows-app:
     name: Release Windows x64
+    needs: capture-native
     runs-on: windows-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: capture-native-windows
+          path: native/artifacts/windows
+      - run: python3 native/verify.py windows
 
       - name: Setup flutter
         uses: subosito/flutter-action@v2

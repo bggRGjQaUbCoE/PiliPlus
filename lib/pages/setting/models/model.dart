@@ -278,6 +278,7 @@ SettingsModel getVideoFilterSelectModel({
   required String key,
   required List<int> values,
   int defaultValue = 0,
+  int? minValue,
   bool isFilter = true,
   String? filterScope,
   ValueChanged<int>? onChanged,
@@ -340,7 +341,15 @@ SettingsModel getVideoFilterSelectModel({
                 TextButton(
                   onPressed: () {
                     try {
-                      result = int.parse(valueStr);
+                      final parsed = int.tryParse(valueStr);
+                      if (parsed == null ||
+                          (minValue != null && parsed < minValue)) {
+                        SmartDialog.showToast(
+                          minValue == 1 ? '请输入大于 0 的整数' : '请输入有效整数',
+                        );
+                        return;
+                      }
+                      result = parsed;
                       Get.back();
                     } catch (e) {
                       SmartDialog.showToast(e.toString());

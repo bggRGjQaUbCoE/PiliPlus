@@ -1,0 +1,4 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  package="com.alexmercerind.media_kit_libs_android_video">
+  <application android:extractNativeLibs="true" />
+</manifest>

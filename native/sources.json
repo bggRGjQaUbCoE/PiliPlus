@@ -1,0 +1,22 @@
+{
+  "android": {
+    "url": "https://github.com/My-Responsitories/libmpv-android-video-build.git",
+    "commit": "8e50ecc027cd2443a3ef9b1a87991d37f1acdc41"
+  },
+  "ios": {
+    "url": "https://github.com/gungun974/melodink-libmpv-darwin-build.git",
+    "commit": "f7abbcbaf8154c2d3a044fcfddc437432a1aa05a"
+  },
+  "macos": {
+    "url": "https://github.com/media-kit/libmpv-darwin-build.git",
+    "commit": "4286f5557bdccc0747030e3c376ce5cd160a96a0"
+  },
+  "windows": {
+    "url": "https://github.com/bggRGjQaUbCoE/mpv-winbuild-cmake.git",
+    "commit": "d143f2afa6f90ec7444ba16cb2987eca3db2c7ee"
+  },
+  "linux": {
+    "url": "https://github.com/mpv-player/mpv.git",
+    "commit": "a0fba7be57f3822d967b04f0f6b6d6341e7516e7"
+  }
+}

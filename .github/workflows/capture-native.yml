@@ -1,0 +1,79 @@
+name: Build capture media libraries
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      platform:
+        type: string
+        default: all
+permissions:
+  contents: read
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: ${{ fromJSON((inputs.platform == 'all' || inputs.platform == '') && '["android","ios","macos","linux"]' || format('["{0}"]', inputs.platform)) }}
+    if: inputs.platform != 'windows'
+    runs-on: ${{ (matrix.platform == 'ios' || matrix.platform == 'macos') && 'macos-14' || 'ubuntu-24.04' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v5
+        if: matrix.platform == 'android'
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v5
+        if: matrix.platform == 'android'
+      - uses: subosito/flutter-action@v2
+        if: matrix.platform == 'android'
+        with:
+          flutter-version-file: pubspec.yaml
+      - name: Apple build tools
+        if: runner.os == 'macOS'
+        run: brew install go meson ninja nasm make
+      - name: Linux build dependencies
+        if: matrix.platform == 'linux'
+        run: sudo apt-get update && sudo apt-get install -y build-essential meson ninja-build pkg-config nasm patchelf libwebp-dev libdav1d-dev libgnutls28-dev libass-dev libplacebo-dev libx11-dev libxrandr-dev libxext-dev libxv-dev libegl1-mesa-dev libgl1-mesa-dev libwayland-dev libxkbcommon-dev libpulse-dev libasound2-dev libgtk-3-dev libxi-dev clang
+      - uses: actions/cache@v4
+        if: matrix.platform == 'linux'
+        with:
+          path: native/build/linux/ffmpeg.tar.gz
+          key: linux-ffmpeg-source-7.0.2-056cc367
+      - id: native-build
+        run: python3 native/build.py ${{ matrix.platform }}
+      - run: python3 native/verify.py ${{ matrix.platform }}
+      - uses: subosito/flutter-action@v2
+        if: matrix.platform == 'linux'
+        with:
+          flutter-version-file: pubspec.yaml
+      - name: Test actual Linux export bundle
+        if: matrix.platform == 'linux'
+        env:
+          LD_LIBRARY_PATH: ${{ github.workspace }}/native/artifacts/linux/lib
+          CAPTURE_TEST_LIBMPV: ${{ github.workspace }}/native/artifacts/linux/lib/libmpv.so.2
+          CAPTURE_TEST_VIDEO: ${{ github.workspace }}/native/artifacts/linux/sample.mp4
+          CAPTURE_TEST_FFMPEG: ${{ github.workspace }}/native/build/linux/capture-prefix/bin/ffmpeg
+        run: |
+          native/build/linux/capture-prefix/bin/ffmpeg -f lavfi -i testsrc2=size=320x180:rate=15 -t 3 -c:v mpeg4 "$CAPTURE_TEST_VIDEO"
+          pwsh -File lib/scripts/patch.ps1 Linux
+          bash native/test_linux.sh
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() && steps.native-build.outcome == 'success' }}
+        with:
+          name: capture-native-${{ matrix.platform }}
+          path: native/artifacts/${{ matrix.platform }}/
+          if-no-files-found: error
+  windows:
+    if: (inputs.platform == 'all' || inputs.platform == '') || inputs.platform == 'windows'
+    runs-on: ubuntu-latest
+    container: ghcr.io/shinchiro/archlinux:latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: python3 native/build.py windows
+      - run: python3 native/verify.py windows
+      - uses: actions/upload-artifact@v7
+        with:
+          name: capture-native-windows
+          path: native/artifacts/windows/
+          if-no-files-found: error

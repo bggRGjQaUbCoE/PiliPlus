@@ -48,9 +48,15 @@ on:
                 type: string
 
 jobs:
+    capture-native:
+        if: ${{ (github.event_name == 'pull_request' && github.repository == 'bggRGjQaUbCoE/PiliPlus') || github.event.inputs.build_android == 'true' }}
+        uses: ./.github/workflows/capture-native.yml
+        with:
+          platform: android
     android:
         if: ${{ (github.event_name == 'pull_request' && github.repository == 'bggRGjQaUbCoE/PiliPlus') || github.event.inputs.build_android == 'true' }}
         name: Release Android
+        needs: capture-native
         runs-on: ubuntu-latest
         permissions: write-all
 
@@ -59,6 +65,12 @@ jobs:
               uses: actions/checkout@v7
               with:
                   fetch-depth: 0
+
+            - uses: actions/download-artifact@v4
+              with:
+                  name: capture-native-android
+                  path: native/artifacts/android
+            - run: python3 native/verify.py android
 
             - name: 构建Java环境
               uses: actions/setup-java@v5

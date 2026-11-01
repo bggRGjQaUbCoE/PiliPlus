@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'dart:typed_data' show Uint8List;
 
 import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/plugin/pl_player/models/animated_capture.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
@@ -34,9 +35,7 @@ abstract final class ImageUtils {
   static Future<void> onShareImg(String url) async {
     try {
       SmartDialog.showLoading();
-      final res = await CacheManager.manager.getSingleFile(
-        url.http2https,
-      );
+      final res = await CacheManager.manager.getSingleFile(url.http2https);
       SmartDialog.dismiss();
       await SharePlus.instance.share(
         ShareParams(
@@ -269,6 +268,33 @@ abstract final class ImageUtils {
       res = SaveResult(true, null);
     }
     return res;
+  }
+
+  static Future<void> saveAnimation({
+    required File file,
+    required String fileName,
+    required AnimatedImageFormat format,
+  }) async {
+    if (PlatformUtils.isMobile &&
+        !(Platform.isIOS && format == AnimatedImageFormat.webp)) {
+      if (!await checkPermissionDependOnSdkInt()) return;
+      final result = await SaverGallery.saveFile(
+        filePath: file.path,
+        fileName: fileName,
+        albumPath: _albumPath,
+        skipIfExists: false,
+      );
+      SmartDialog.showToast(
+        result.isSuccess ? '已保存' : '保存失败，${result.errorMessage}',
+      );
+    } else {
+      final result = await FilePicker.saveFile(
+        fileName: fileName,
+        bytes: await file.readAsBytes(),
+        mimeType: format.mimeType,
+      );
+      if (result != null) SmartDialog.showToast('已保存');
+    }
   }
 
   static Future<void> saveFileImg({

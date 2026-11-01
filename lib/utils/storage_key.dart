@@ -130,6 +130,7 @@ abstract final class SettingBoxKey {
       liveQuality = 'liveQuality',
       liveQualityCellular = 'liveQualityCellular',
       fastForBackwardDuration = 'fastForBackwardDuration',
+      screenshotSeekSeconds = 'screenshotSeekSeconds',
       recordSearchHistory = 'recordSearchHistory',
       showPgcTimeline = 'showPgcTimeline',
       pageTransition = 'pageTransition',

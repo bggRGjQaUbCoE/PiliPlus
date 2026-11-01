@@ -234,6 +234,15 @@ List<SettingsModel> get playSettings => [
       onTap: _showMaxVolumeDialog,
     ),
   getVideoFilterSelectModel(
+    title: '动态截图调整步长',
+    suffix: '秒',
+    key: SettingBoxKey.screenshotSeekSeconds,
+    values: [1, 3, 5, 10],
+    defaultValue: 3,
+    minValue: 1,
+    isFilter: false,
+  ),
+  getVideoFilterSelectModel(
     title: '双击快进/快退时长',
     suffix: 's',
     key: SettingBoxKey.fastForBackwardDuration,

@@ -11,8 +11,13 @@ on:
   workflow_dispatch:
 
 jobs:
+  capture-native:
+    uses: ./.github/workflows/capture-native.yml
+    with:
+      platform: linux
   build-linux-app:
     name: Release Linux x64
+    needs: capture-native
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -23,8 +28,14 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev webkit2gtk-4.1 libasound2-dev libmpv-dev
+          sudo apt-get install -y clang cmake ninja-build pkg-config patchelf libgtk-3-dev libwebkit2gtk-4.1-dev libasound2-dev libxi-dev
         shell: bash
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: capture-native-linux
+          path: native/artifacts/linux
+      - run: python3 native/verify.py linux
 
       - name: Setup flutter
         uses: subosito/flutter-action@v2
@@ -44,6 +55,9 @@ jobs:
         #TODO: deb and rpm packages need to be build
       - name: Build Linux
         run: flutter build linux --release --dart-define-from-file=pili_release.json --no-pub
+
+      - name: Prepare relocatable bundle
+        run: python3 native/prepare_linux_bundle.py build/linux/x64/release/bundle
 
       - name: Package .tar.gz
         run: tar -zcvf PiliPlus_linux_${{ env.version }}_amd64.tar.gz -C build/linux/x64/release/bundle .

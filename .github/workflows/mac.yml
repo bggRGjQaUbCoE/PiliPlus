@@ -11,14 +11,25 @@ on:
   workflow_dispatch:
 
 jobs:
+  capture-native:
+    uses: ./.github/workflows/capture-native.yml
+    with:
+      platform: macos
   build-mac-app:
     name: Release Mac
+    needs: capture-native
     runs-on: macos-26
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: capture-native-macos
+          path: native/artifacts/macos
+      - run: python3 native/verify.py macos
 
       - name: Setup flutter
         uses: subosito/flutter-action@v2

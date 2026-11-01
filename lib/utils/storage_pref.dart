@@ -598,6 +598,9 @@ abstract final class Pref {
   static bool get enableDragSubtitle =>
       _setting.get(SettingBoxKey.enableDragSubtitle, defaultValue: false);
 
+  static int get screenshotSeekSeconds =>
+      _setting.get(SettingBoxKey.screenshotSeekSeconds, defaultValue: 3);
+
   static int get fastForBackwardDuration =>
       _setting.get(SettingBoxKey.fastForBackwardDuration, defaultValue: 10);
 

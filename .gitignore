@@ -149,4 +149,6 @@ pili_release.json
 
 dist
 
-test*
+# Keep behavior tests in version control
+!test/
+!test/**

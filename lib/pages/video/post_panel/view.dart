@@ -15,6 +15,7 @@ import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/post_panel/popup_menu_text.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
+import 'package:PiliPlus/plugin/pl_player/models/animated_capture.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -59,19 +60,19 @@ class PostPanel extends CommonSlidePage {
     required PostSegmentModel item,
     required double Function() currentPos, // get real-time pos
     required double videoDuration,
+    int? stepSeconds,
   }) {
     Widget segment(bool isFirst) => Builder(
       builder: (context) {
         String value = DurationUtils.formatDuration(
           isFirst ? item.segment.first : item.segment.second,
         );
-        return Row(
+        return Wrap(
           spacing: 5,
-          mainAxisSize: MainAxisSize.min,
+          runSpacing: 5,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Text(
-              '${isFirst ? '开始' : '结束'}: $value',
-            ),
+            Text('${isFirst ? '开始' : '结束'}: $value'),
             iconButton(
               context: context,
               size: 26,
@@ -222,6 +223,42 @@ class PostPanel extends CommonSlidePage {
                 }
               },
             ),
+            if (stepSeconds != null)
+              for (final direction in [-1, 1])
+                iconButton(
+                  context: context,
+                  size: 26,
+                  tooltip: '${direction < 0 ? '后退' : '前进'}$stepSeconds 秒',
+                  icon: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 3),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        '${direction < 0 ? '−' : '+'}$stepSeconds',
+                        style: TextStyle(
+                          color: theme.colorScheme.onSecondaryContainer,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                  onPressed: () {
+                    final previous = isFirst
+                        ? item.segment.first
+                        : item.segment.second;
+                    updateSegment(
+                      isFirst: isFirst,
+                      item: item,
+                      value: stepCaptureTime(
+                        previous,
+                        direction * stepSeconds,
+                        videoDuration,
+                      ),
+                    );
+                    (context as Element).markNeedsBuild();
+                  },
+                ),
           ],
         );
       },
@@ -269,10 +306,7 @@ class _PostPanelState extends State<PostPanel>
                   list.insert(
                     0,
                     PostSegmentModel(
-                      segment: Pair(
-                        first: 0,
-                        second: currentPos(),
-                      ),
+                      segment: Pair(first: 0, second: currentPos()),
                       category: SegmentType.sponsor,
                       actionType: ActionType.skip,
                     ),
@@ -315,10 +349,7 @@ class _PostPanelState extends State<PostPanel>
                           style: TextStyle(color: theme.colorScheme.outline),
                         ),
                       ),
-                      TextButton(
-                        onPressed: _onPost,
-                        child: const Text('确定提交'),
-                      ),
+                      TextButton(onPressed: _onPost, child: const Text('确定提交')),
                     ],
                   ),
                 ),
@@ -382,10 +413,7 @@ class _PostPanelState extends State<PostPanel>
       children: [
         Container(
           width: double.infinity,
-          margin: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 5,
-          ),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: theme.colorScheme.onInverseSurface,

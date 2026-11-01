@@ -1,0 +1,118 @@
+name: Desktop capture test builds
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        type: choice
+        default: linux
+        options: [all, linux, windows]
+      native_run:
+        description: Reuse Linux media libraries from this workflow run
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  linux-media:
+    if: inputs.platform != 'windows' && inputs.native_run == ''
+    uses: ./.github/workflows/capture-native.yml
+    with:
+      platform: linux
+  windows-media:
+    if: inputs.platform == 'all' || inputs.platform == 'windows'
+    uses: ./.github/workflows/capture-native.yml
+    with:
+      platform: windows
+
+  linux:
+    needs: linux-media
+    if: ${{ !cancelled() && inputs.platform != 'windows' && (needs.linux-media.result == 'success' || inputs.native_run != '') }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config patchelf libgtk-3-dev libwebkit2gtk-4.1-dev libasound2-dev libxi-dev ffmpeg
+      - uses: actions/download-artifact@v4
+        with:
+          name: capture-native-linux
+          path: native/artifacts/linux
+          run-id: ${{ inputs.native_run || github.run_id }}
+          github-token: ${{ github.token }}
+      - run: python3 native/verify.py linux
+      - name: Stage pinned media headers for plugin compilation
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from native.build import checkout
+          from native.linux_sdk import stage
+          stage(checkout('linux'), Path('native/artifacts/linux'))
+          PY
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: pubspec.yaml
+          cache: true
+      - name: Apply project patches
+        shell: pwsh
+        run: lib/scripts/patch.ps1 Linux
+      - name: Analyze Dart
+        run: flutter analyze --no-pub --no-fatal-infos
+      - name: Test crop controls and actual animation exports
+        env:
+          LD_LIBRARY_PATH: ${{ github.workspace }}/native/artifacts/linux/lib
+          CAPTURE_TEST_LIBMPV: ${{ github.workspace }}/native/artifacts/linux/lib/libmpv.so.2
+          CAPTURE_TEST_VIDEO: ${{ github.workspace }}/native/artifacts/linux/sample.mp4
+          CAPTURE_TEST_FFMPEG: ffmpeg
+        run: bash native/test_linux.sh
+      - name: Build Linux x64
+        run: flutter build linux --release --build-number 5 --no-pub
+      - name: Verify library loading and package
+        shell: bash
+        run: |
+          bundle=build/linux/x64/release/bundle
+          python3 native/prepare_linux_bundle.py "$bundle"
+          if ldd "$bundle/piliplus" | grep 'not found'; then exit 1; fi
+          for library in "$bundle/lib/"*.so*; do
+            if LD_LIBRARY_PATH="$bundle/lib" ldd "$library" | grep 'not found'; then exit 1; fi
+          done
+          tar -czf PiliPlus-dev-linux-x64-animated-capture.tar.gz -C "$bundle" .
+          sha256sum PiliPlus-dev-linux-x64-animated-capture.tar.gz > PiliPlus-dev-linux-x64-animated-capture.tar.gz.sha256
+      - uses: actions/upload-artifact@v7
+        with:
+          name: PiliPlus-dev-linux-x64
+          path: PiliPlus-dev-linux-x64-animated-capture.tar.gz*
+          if-no-files-found: error
+
+  windows:
+    needs: windows-media
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v4
+        with:
+          name: capture-native-windows
+          path: native/artifacts/windows
+      - run: python native/verify.py windows
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: pubspec.yaml
+          cache: true
+      - name: Apply project patches
+        shell: pwsh
+        run: lib/scripts/patch.ps1 windows
+      - name: Build Windows x64
+        run: flutter build windows --release --build-number 5 --no-pub
+      - name: Package portable app
+        shell: pwsh
+        run: |
+          Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath PiliPlus-dev-windows-x64-animated-capture.zip
+          $hash = (Get-FileHash PiliPlus-dev-windows-x64-animated-capture.zip -Algorithm SHA256).Hash.ToLower()
+          "$hash  PiliPlus-dev-windows-x64-animated-capture.zip" | Set-Content PiliPlus-dev-windows-x64-animated-capture.zip.sha256
+      - uses: actions/upload-artifact@v7
+        with:
+          name: PiliPlus-dev-windows-x64
+          path: PiliPlus-dev-windows-x64-animated-capture.zip*
+          if-no-files-found: error

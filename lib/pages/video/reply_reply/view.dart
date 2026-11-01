@@ -265,7 +265,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
                   ? IconButton(
                       visualDensity: .compact,
                       onPressed: () {
-                        if (controller.isEnd) {
+                        if (controller.isEnd && controller.foldCard == null) {
                           controller.buildTree();
                         } else if (controller.inFetchReply) {
                           SmartDialog.showToast('正在拉取评论，请稍后');

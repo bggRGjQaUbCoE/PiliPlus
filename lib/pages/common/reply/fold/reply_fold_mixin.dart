@@ -28,6 +28,7 @@ mixin BaseReplyFoldMixin<R> on ReplyController<R> {
       if (isClosed) return;
       if (res case Success(:final response)) {
         foldCard = null;
+        count.value += response.replies.length;
         loadingState
           ..value.data!.addAll(response.replies)
           ..refresh();

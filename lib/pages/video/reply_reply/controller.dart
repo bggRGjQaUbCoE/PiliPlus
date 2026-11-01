@@ -258,12 +258,16 @@ class VideoReplyReplyController extends ReplyController
 
   Future<void> _fetchNextReply() async {
     try {
-      await queryData(false);
+      if (isEnd && foldCard != null) {
+        await loadFoldList();
+      } else {
+        await queryData(false);
+      }
     } finally {
       _inflightReply = null;
     }
     if (!isClosed) {
-      if (isEnd) {
+      if (isEnd && foldCard == null) {
         SmartDialog.showToast('已完成拉取');
       } else {
         _createReplyTimer();

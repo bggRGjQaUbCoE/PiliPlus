@@ -50,11 +50,20 @@ void main() {
           final decoded = await ui.instantiateImageCodec(
             await file.readAsBytes(),
           );
-          expect(decoded.frameCount, greaterThan(1));
-          final first = await decoded.getNextFrame();
-          expect(first.image.width, 160);
-          expect(first.image.height, 90);
-          first.image.dispose();
+          // The fixture is 15 fps and the interval is one second. Also check
+          // timing and looping: valid dimensions alone could hide a still image
+          // or a timestamp error when encoding an interval after time zero.
+          expect(decoded.frameCount, inInclusiveRange(14, 16));
+          expect(decoded.repetitionCount, -1);
+          var duration = Duration.zero;
+          for (var i = 0; i < decoded.frameCount; i++) {
+            final frame = await decoded.getNextFrame();
+            expect(frame.image.width, 160);
+            expect(frame.image.height, 90);
+            duration += frame.duration;
+            frame.image.dispose();
+          }
+          expect(duration.inMilliseconds, inInclusiveRange(900, 1100));
           decoded.dispose();
         }
       } finally {

@@ -37,9 +37,11 @@ rebuilding the application from the selected branch.
 
 ## Runtime verification
 
-Create a 320x180, three-second sample (for example with FFmpeg `testsrc2`), then:
+Create the 320x180, 15 fps, three-second test fixture, then run:
 
-```
+```sh
+ffmpeg -f lavfi -i testsrc2=size=320x180:rate=15 -t 3 -c:v mpeg4 sample.mp4
+
 CAPTURE_TEST_LIBMPV=/absolute/path/to/bundled/libmpv.so.2 \
 CAPTURE_TEST_VIDEO=/absolute/path/to/sample.mp4 \
 flutter test test/player/animation_export_integration_test.dart

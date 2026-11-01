@@ -1,0 +1,230 @@
+name: Build Wear OS armv7 APK
+
+# 用法:把整个文件内容粘贴到仓库的 .github/workflows/wear-armv7.yml
+# 然后到 Actions 页面选 "Build Wear OS armv7 APK" -> Run workflow
+# 它会先自动给源码打上"手表圆屏适配 + 启动防崩溃"补丁,再编译 32 位(armeabi-v7a) APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  android-armv7:
+    name: Wear OS armv7
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: 代码迁出
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: 构建Java环境
+        uses: actions/setup-java@v5
+        with:
+          distribution: "zulu"
+          java-version: "17"
+          cache: "gradle"
+          cache-dependency-path: |
+            android/*.gradle*
+            android/**/gradle-wrapper.properties
+
+      - name: 安装Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+          cache: true
+
+      - name: 应用手表适配补丁
+        shell: bash
+        run: |
+          python3 - <<'PYEOF'
+          #!/usr/bin/env python3
+          """PiliPlus -> Wear OS (round screen, armv7) source patcher. Idempotent; fails loudly if an anchor is missing."""
+          import os, sys
+
+          def read(p):
+              with open(p, encoding='utf-8') as f:
+                  return f.read()
+
+          def write(p, s):
+              with open(p, 'w', encoding='utf-8', newline='\n') as f:
+                  f.write(s)
+
+          def sub(path, old, new, count=1):
+              s = read(path)
+              if s.count(old) != count:
+                  sys.exit(f'[wear_patch] anchor not found/unique in {path}: {old[:60]!r} (found {s.count(old)})')
+              write(path, s.replace(old, new))
+
+          IMPORT = "import 'package:PiliPlus/utils/wear_utils.dart';\n"
+
+          # ---------- 1. new file: wear_utils.dart ----------
+          WEAR_UTILS = r'''import 'dart:io' show Platform;
+          import 'dart:ui' show PlatformDispatcher;
+
+          import 'package:flutter/widgets.dart';
+
+          /// Wear OS / 圆形小屏适配。
+          /// 逻辑宽度小于 300dp 时判定为手表,并把界面缩放到约 320dp 宽(手机最小布局宽度),
+          /// 这样原有所有页面和功能都能正常排布,不需要删减。
+          abstract final class WearUtils {
+            static bool isWatch = false;
+            static double defaultUiScale = 1.0;
+            static const double _targetWidth = 320.0;
+
+            static void init() {
+              try {
+                if (!Platform.isAndroid) return;
+                final views = PlatformDispatcher.instance.views;
+                if (views.isEmpty) return;
+                final view = views.first;
+                final shortest = view.physicalSize.shortestSide / view.devicePixelRatio;
+                if (shortest > 0 && shortest < 300) {
+                  isWatch = true;
+                  defaultUiScale = shortest / _targetWidth;
+                }
+              } catch (_) {}
+            }
+          }
+
+          /// 给圆屏四周留出安全边距,避免内容被圆角裁切。
+          class WearFrame extends StatelessWidget {
+            const WearFrame({super.key, required this.child});
+
+            final Widget child;
+
+            @override
+            Widget build(BuildContext context) {
+              final mq = MediaQuery.of(context);
+              final size = mq.size;
+              final extra = EdgeInsets.symmetric(
+                horizontal: size.width * 0.05,
+                vertical: size.height * 0.09,
+              );
+              return MediaQuery(
+                data: mq.copyWith(
+                  padding: mq.padding + extra,
+                  viewPadding: mq.viewPadding + extra,
+                ),
+                child: child,
+              );
+            }
+          }
+          '''
+          write('lib/utils/wear_utils.dart', WEAR_UTILS)
+
+          # ---------- 2. storage_pref.dart: default uiScale on watch ----------
+          p = 'lib/utils/storage_pref.dart'
+          if 'WearUtils' not in read(p):
+              sub(p, "_setting.get(SettingBoxKey.uiScale, defaultValue: 1.0);",
+                     "_setting.get(SettingBoxKey.uiScale, defaultValue: WearUtils.defaultUiScale);")
+              write(p, IMPORT + read(p))
+
+          # ---------- 3. main.dart ----------
+          p = 'lib/main.dart'
+          if 'WearUtils' not in read(p):
+              sub(p, "  ScaledWidgetsFlutterBinding.ensureInitialized();\n",
+                     "  ScaledWidgetsFlutterBinding.ensureInitialized();\n  WearUtils.init();\n")
+              sub(p, """  try {
+              await GStorage.init();
+            } catch (e) {
+              await Utils.copyText(e.toString(), needToast: false);
+              if (kDebugMode) debugPrint('GStorage init error: $e');
+              DeviceUtils.exitApp();
+            }
+          """, "  await _initStorage();\n")
+              sub(p, "Future<void> _initDownPath() async {", r"""/// 存储初始化失败(残留锁文件/数据损坏)时自动自救,而不是直接退出导致"再也打不开"。
+          Future<void> _initStorage() async {
+            try {
+              await GStorage.init();
+              return;
+            } catch (e) {
+              if (kDebugMode) debugPrint('GStorage init error: $e');
+            }
+            final hiveDir = Directory(path.join(appSupportDirPath, 'hive'));
+            // 第一步:清理残留锁文件后重试
+            try {
+              await Hive.close();
+              if (hiveDir.existsSync()) {
+                for (final f in hiveDir.listSync()) {
+                  if (f is File && f.path.endsWith('.lock')) f.deleteSync();
+                }
+              }
+              await GStorage.init();
+              return;
+            } catch (e) {
+              if (kDebugMode) debugPrint('GStorage retry error: $e');
+            }
+            // 第二步:把损坏的数据目录改名备份,重新建库
+            try {
+              await Hive.close();
+              if (hiveDir.existsSync()) {
+                hiveDir.renameSync(
+                  '${hiveDir.path}_corrupt_${DateTime.now().millisecondsSinceEpoch}',
+                );
+              }
+              await GStorage.init();
+              return;
+            } catch (e) {
+              await Utils.copyText(e.toString(), needToast: false);
+              if (kDebugMode) debugPrint('GStorage rebuild error: $e');
+              DeviceUtils.exitApp();
+            }
+          }
+
+          Future<void> _initDownPath() async {""")
+              sub(p, "    if (PlatformUtils.isDesktop) {\n      return BackDetector(",
+                     "    if (WearUtils.isWatch) {\n      child = WearFrame(child: child);\n    }\n    if (PlatformUtils.isDesktop) {\n      return BackDetector(")
+              sub(p, "import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';\n",
+                     "import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';\nimport 'package:hive_ce/hive.dart' show Hive;\n")
+              write(p, IMPORT + read(p))
+
+          # ---------- 4. login_utils.dart: WebView 缺失时不崩溃 ----------
+          p = 'lib/utils/login_utils.dart'
+          if '_setWebCookie' not in read(p):
+              sub(p, "  static FutureOr setWebCookie([Account? account]) {",
+          """  /// 手表等没有系统 WebView 的设备上,同步 Cookie 失败不应导致应用崩溃/无法启动。
+            static Future<void> setWebCookie([Account? account]) async {
+              try {
+                await _setWebCookie(account);
+              } catch (_) {}
+            }
+
+            static FutureOr _setWebCookie([Account? account]) {""")
+
+          # ---------- 5. AndroidManifest: Wear OS 声明 ----------
+          p = 'android/app/src/main/AndroidManifest.xml'
+          if 'android.hardware.type.watch' not in read(p):
+              sub(p, '    <application xmlns:tools="http://schemas.android.com/tools"',
+                     '    <uses-feature android:name="android.hardware.type.watch" />\n\n    <application xmlns:tools="http://schemas.android.com/tools"')
+              sub(p, '        <meta-data\n            android:name="io.flutter.embedding.android.EnableImpeller"',
+                     '        <uses-library\n            android:name="com.google.android.wearable"\n            android:required="false" />\n        <meta-data\n            android:name="com.google.android.wearable.standalone"\n            android:value="true" />\n        <meta-data\n            android:name="io.flutter.embedding.android.EnableImpeller"')
+
+          print('[wear_patch] done')
+          PYEOF
+
+      - name: Apply Flutter SDK Patch (上游自带)
+        shell: pwsh
+        run: lib/scripts/patch.ps1 android
+
+      - name: Set version (上游自带)
+        shell: pwsh
+        run: lib/scripts/build.ps1 android
+
+      - name: 编译 armv7 (32位) APK
+        run: flutter build apk --release --split-per-abi --target-platform android-arm --dart-define-from-file=pili_release.json --no-pub
+
+      - name: 重命名
+        shell: bash
+        run: |
+          mkdir -p out
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk out/PiliPlus_wear_armeabi-v7a.apk
+          ls -la out
+
+      - name: 上传
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: PiliPlus_wear_armeabi-v7a
+          path: out/PiliPlus_wear_armeabi-v7a.apk

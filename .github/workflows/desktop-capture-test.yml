@@ -35,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Install build tools
-        run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config patchelf libgtk-3-dev libwebkit2gtk-4.1-dev libasound2-dev libxi-dev ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y clang cmake ninja-build pkg-config patchelf libgtk-3-dev libwebkit2gtk-4.1-dev libasound2-dev libxi-dev ffmpeg xvfb xauth
       - uses: actions/download-artifact@v4
         with:
           name: capture-native-linux
@@ -76,14 +76,29 @@ jobs:
           python3 native/prepare_linux_bundle.py "$bundle"
           if ldd "$bundle/piliplus" | grep 'not found'; then exit 1; fi
           for library in "$bundle/lib/"*.so*; do
+            # jni's Linux asset is used only by the guarded Android helper.
+            # It is not loaded by the Linux app and intentionally has no JVM.
+            if [ "$(basename "$library")" = libdartjni.so ]; then continue; fi
             if LD_LIBRARY_PATH="$bundle/lib" ldd "$library" | grep 'not found'; then exit 1; fi
           done
+          mkdir -p "$RUNNER_TEMP/capture-smoke/config" "$RUNNER_TEMP/capture-smoke/data"
+          set +e
+          XDG_CONFIG_HOME="$RUNNER_TEMP/capture-smoke/config" \
+          XDG_DATA_HOME="$RUNNER_TEMP/capture-smoke/data" \
+            timeout 15s xvfb-run -a "$bundle/piliplus" > linux-startup.log 2>&1
+          startup_status=$?
+          set -e
+          cat linux-startup.log
+          # A running GUI is expected to reach timeout rather than exit/crash.
+          if [ "$startup_status" -ne 124 ]; then exit 1; fi
           tar -czf PiliPlus-dev-linux-x64-animated-capture.tar.gz -C "$bundle" .
           sha256sum PiliPlus-dev-linux-x64-animated-capture.tar.gz > PiliPlus-dev-linux-x64-animated-capture.tar.gz.sha256
       - uses: actions/upload-artifact@v7
         with:
           name: PiliPlus-dev-linux-x64
-          path: PiliPlus-dev-linux-x64-animated-capture.tar.gz*
+          path: |
+            PiliPlus-dev-linux-x64-animated-capture.tar.gz*
+            linux-startup.log
           if-no-files-found: error
 
   windows:

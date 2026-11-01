@@ -26,10 +26,7 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 
 android {
-    // Conditional for compatibility with AGP <4.2.
-    if (project.android.hasProperty("namespace")) {
-        namespace 'com.alexmercerind.media_kit_libs_android_video'
-    }
+    namespace 'com.alexmercerind.media_kit_libs_android_video'
 
     compileSdkVersion 31
 

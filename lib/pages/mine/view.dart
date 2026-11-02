@@ -161,6 +161,15 @@ class _MediaPageState extends CommonPageState<MinePage>
         spacing: 5,
         mainAxisSize: .min,
         children: [
+          if (PlatformUtils.isMobile)
+            IconButton(
+              iconSize: iconSize,
+              padding: padding,
+              style: style,
+              tooltip: '扫一扫',
+              onPressed: () => Get.toNamed('/scan'),
+              icon: const Icon(Icons.qr_code_scanner),
+            ),
           if (!_mainController.hasHome) ...[
             IconButton(
               iconSize: iconSize,

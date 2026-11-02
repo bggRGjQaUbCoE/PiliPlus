@@ -49,6 +49,7 @@ import 'package:PiliPlus/pages/music/view.dart';
 import 'package:PiliPlus/pages/my_reply/view.dart';
 import 'package:PiliPlus/pages/popular_precious/view.dart';
 import 'package:PiliPlus/pages/popular_series/view.dart';
+import 'package:PiliPlus/pages/scan/view.dart';
 import 'package:PiliPlus/pages/search/view.dart';
 import 'package:PiliPlus/pages/search_result/view.dart';
 import 'package:PiliPlus/pages/search_trending/view.dart';
@@ -138,6 +139,7 @@ class Routes {
     GetPage(name: '/sysMsg', page: () => const SysMsgPage()),
     // 登录页面
     GetPage(name: '/loginPage', page: () => const LoginPage()),
+    GetPage(name: '/scan', page: () => const ScanPage()),
     // 用户动态
     GetPage(name: '/memberDynamics', page: () => const MemberDynamicsPage()),
     // 日志

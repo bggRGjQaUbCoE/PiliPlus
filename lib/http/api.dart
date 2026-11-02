@@ -619,6 +619,15 @@ abstract final class Api {
   static const qrcodeConfirm =
       '${HttpString.passBaseUrl}/x/passport-tv-login/h5/qrcode/confirm';
 
+  static const scanWebCheck =
+      '${HttpString.passBaseUrl}/x/passport-login/web/qrcode/check';
+  static const scanWebScene =
+      '${HttpString.passBaseUrl}/x/passport-login/web/qrcode/scene';
+  static const scanWebConfirm =
+      '${HttpString.passBaseUrl}/x/passport-login/web/qrcode/confirm';
+  static const scanSmsCheck =
+      '${HttpString.passBaseUrl}/x/safecenter/common/sms/check';
+
   /// 申请二维码(TV端)
   static const getTVCode =
       '${HttpString.passBaseUrl}/x/passport-tv-login/qrcode/auth_code';

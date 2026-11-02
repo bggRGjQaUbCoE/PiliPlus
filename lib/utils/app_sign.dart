@@ -23,7 +23,7 @@ abstract final class AppSign {
         .toString(); // 获取MD5哈希值
   }
 
-  /// from [Uri]
+  /// 空字段保留等号，与提交的表单编码一致。
   static String _makeQueryFromParametersDefault(
     List<MapEntry<String, dynamic /*String?|Iterable<String>*/>>
     queryParameters,
@@ -36,7 +36,7 @@ abstract final class AppSign {
       result.write(separator);
       separator = '&';
       result.write(Uri.encodeComponent(key));
-      if (value != null && value.isNotEmpty) {
+      if (value != null) {
         result
           ..write('=')
           ..write(Uri.encodeComponent(value));

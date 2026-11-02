@@ -73,7 +73,7 @@
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>请允许APP保存图片到相册</string>
 		<key>NSCameraUsageDescription</key>
-		<string>App需要您的同意,才能访问相册</string>
+		<string>用于扫描二维码或拍摄图片</string>
 		<key>NSAppleMusicUsageDescription</key>
 		<string>App需要您的同意,才能访问媒体资料库</string>
 		<key>LSApplicationQueriesSchemes</key>

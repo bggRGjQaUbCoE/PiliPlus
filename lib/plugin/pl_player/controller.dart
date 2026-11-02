@@ -50,6 +50,7 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliPlus/utils/volume_boost.dart';
 import 'package:archive/archive.dart' show getCrc32;
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:easy_debounce/easy_throttle.dart';
@@ -849,9 +850,6 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     final opt = {
       'video-sync': Pref.videoSync,
       if (Platform.isAndroid) 'ao': Pref.audioOutput,
-      'volume':
-          (PlatformUtils.isMobile ? Pref.playerVolume : volume.value * 100)
-              .toString(),
     };
     final autosync = Pref.autosync;
     if (autosync != '0') {
@@ -863,6 +861,11 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
         logLevel: kDebugMode ? .warn : .error,
         options: opt,
       ),
+    );
+
+    // >100% 的音量走 af 增益+限幅，避免直接放大 mpv volume 导致削波
+    await player.setVolumeCapped(
+      PlatformUtils.isMobile ? Pref.playerVolume / 100 : volume.value,
     );
 
     assert(_videoController == null);
@@ -1309,7 +1312,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       this.volume.value = volume;
       try {
         if (PlatformUtils.isDesktop) {
-          await _videoPlayerController!.setVolume(volume * 100);
+          await _videoPlayerController!.setVolumeCapped(volume);
         } else {
           FlutterVolumeController.updateShowSystemUI(false);
           await FlutterVolumeController.setVolume(volume);

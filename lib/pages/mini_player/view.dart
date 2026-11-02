@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
@@ -29,7 +30,62 @@ class _MiniPlayerViewState extends State<MiniPlayerView> {
   /// 当前布局计算出来的位置，供拖拽时使用
   Offset _layoutOffset = Offset.zero;
 
+  /// 控件（标题、关闭、播放/暂停）是否显示
+  ///
+  /// 小窗常驻播放画面，控件默认隐藏以免遮挡内容；
+  /// 点击小窗后短暂出现，随后自动隐藏。
+  bool _controlsVisible = false;
+
+  Timer? _controlsTimer;
+
+  Worker? _showingWorker;
+
   static final _borderRadius = BorderRadius.circular(12);
+
+  @override
+  void initState() {
+    super.initState();
+    _showingWorker = ever(MiniPlayerService.instance.isShowing, (bool value) {
+      if (value) {
+        // 刚进入小窗时短暂展示一次控件，提示可以暂停或关闭
+        _showControls();
+      } else {
+        _hideControls();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _showingWorker?.dispose();
+    _controlsTimer?.cancel();
+    super.dispose();
+  }
+
+  void _showControls([Duration duration = const Duration(seconds: 3)]) {
+    _controlsTimer?.cancel();
+    if (mounted && !_controlsVisible) {
+      setState(() => _controlsVisible = true);
+    }
+    _controlsTimer = Timer(duration, _hideControls);
+  }
+
+  void _hideControls() {
+    _controlsTimer?.cancel();
+    _controlsTimer = null;
+    if (mounted && _controlsVisible) {
+      setState(() => _controlsVisible = false);
+    }
+  }
+
+  /// 点击小窗：控件未显示时先唤出控件，已显示时展开为视频页
+  void _onTapCard() {
+    if (_controlsVisible) {
+      MiniPlayerService.instance.expand();
+    } else {
+      _showControls();
+    }
+  }
 
   double _aspectRatio(PlPlayerController ctrl) {
     final width = ctrl.width;
@@ -101,7 +157,7 @@ class _MiniPlayerViewState extends State<MiniPlayerView> {
   ) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: MiniPlayerService.instance.expand,
+      onTap: _onTapCard,
       onPanUpdate: (details) {
         setState(() {
           _offset = _layoutOffset + details.delta;
@@ -142,41 +198,15 @@ class _MiniPlayerViewState extends State<MiniPlayerView> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              SimpleVideo(
-                controller: videoController,
-                fill: Colors.black,
-                aspectRatio: null,
-              ),
-              // 顶部信息栏
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: _buildTopBar(context, ctrl),
-              ),
-              // 播放/暂停
-              Center(
-                child: _MiniPlayerButton(
-                  size: 40,
-                  onTap: () {
-                    if (ctrl.playerStatus.isPlaying) {
-                      ctrl.pause();
-                    } else {
-                      ctrl.play();
-                    }
-                  },
-                  child: Obx(
-                    () => Icon(
-                      ctrl.playerStatus.isPlaying
-                          ? Icons.pause
-                          : Icons.play_arrow,
-                      size: 24,
-                      color: Colors.white,
-                    ),
-                  ),
+              // 视频区域不参与手势，避免内层播放控件吞掉小窗的点击/拖拽
+              IgnorePointer(
+                child: SimpleVideo(
+                  controller: videoController,
+                  fill: Colors.black,
+                  aspectRatio: null,
                 ),
               ),
-              // 进度条
+              // 播放进度细线，不遮挡画面，常驻显示
               Positioned(
                 left: 0,
                 right: 0,
@@ -191,6 +221,53 @@ class _MiniPlayerViewState extends State<MiniPlayerView> {
                     valueColor: const AlwaysStoppedAnimation(Colors.white),
                   );
                 }),
+              ),
+              // 操作控件：默认隐藏，点击小窗后淡入，3 秒后自动淡出
+              IgnorePointer(
+                ignoring: !_controlsVisible,
+                child: AnimatedOpacity(
+                  opacity: _controlsVisible ? 1 : 0,
+                  duration: const Duration(milliseconds: 180),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // 顶部信息栏
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        child: _buildTopBar(context, ctrl),
+                      ),
+                      // 播放/暂停
+                      Center(
+                        child: StreamBuilder<bool>(
+                          stream: videoController.player.stream.playing,
+                          initialData: videoController.player.state.playing,
+                          builder: (context, snapshot) {
+                            final playing = snapshot.data ?? false;
+                            return _MiniPlayerButton(
+                              size: 40,
+                              onTap: () {
+                                if (playing) {
+                                  ctrl.pause();
+                                } else {
+                                  ctrl.play();
+                                }
+                                // 操作后重新计时，避免手刚抬起控件就消失
+                                _showControls();
+                              },
+                              child: Icon(
+                                playing ? Icons.pause : Icons.play_arrow,
+                                size: 24,
+                                color: Colors.white,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
@@ -223,7 +300,10 @@ class _MiniPlayerViewState extends State<MiniPlayerView> {
           ),
           _MiniPlayerButton(
             size: 24,
-            onTap: MiniPlayerService.instance.release,
+            onTap: () {
+              _hideControls();
+              MiniPlayerService.instance.release();
+            },
             child: const Icon(Icons.close, size: 14, color: Colors.white),
           ),
         ],

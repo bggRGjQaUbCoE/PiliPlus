@@ -123,7 +123,9 @@ abstract final class ReplyGrpc {
         //   next: cursorNext,
         // ),
         mode: mode,
-        pagination: offset == null ? null : FeedPagination(offset: offset),
+        // 首屏（offset == null）也必须带上 pagination，
+        // 否则部分视频的热门评论只会返回一条（如 BV1Baxj61ESa）
+        pagination: FeedPagination(offset: offset ?? ''),
       ),
       MainListReply.fromBuffer,
     );

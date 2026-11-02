@@ -8,24 +8,25 @@ enum VideoType {
   pgc(
     type: 4,
     api: Api.ogvUrl,
-    method: 'POST',
+    bizType: 'ogv',
   ),
   pugv(
     type: 10,
     replyType: 33,
     api: Api.ogvUrl,
+    bizType: 'pugv',
   ),
   ;
 
   final int type;
   final String api;
-  final String method;
   final int replyType;
+  final String? bizType;
 
   const VideoType({
     required this.api,
     required this.type,
-    this.method = 'GET',
     this.replyType = 1,
+    this.bizType,
   });
 }

@@ -32,7 +32,8 @@ Future<VideoPlayerServiceHandler> initAudioService() {
   if (Platform.isLinux) {
     AudioServiceMpris.init(
       dBusName: 'com.example.piliplus.audio',
-      identity: 'Audio Service ${Constants.appName}',
+      identity: Constants.appName,
+      desktopEntry: 'com.example.piliplus',
       canGoNext: true,
       canGoPrevious: true,
       canPlay: true,

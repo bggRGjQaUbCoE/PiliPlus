@@ -154,7 +154,13 @@ class PlayerFocus extends StatelessWidget {
 
     if (key == LogicalKeyboardKey.arrowRight) {
       if (!plPlayerController.isLive) {
-        if (event is KeyDownEvent) {
+        if (!plPlayerController.enableLongPressSpeed) {
+          if (event is KeyDownEvent && hasPlayer) {
+            plPlayerController.onForward(
+              plPlayerController.fastForBackwardDuration,
+            );
+          }
+        } else if (event is KeyDownEvent) {
           if (hasPlayer && !plPlayerController.longPressStatus.value) {
             plPlayerController
               ..longPressTimer?.cancel()

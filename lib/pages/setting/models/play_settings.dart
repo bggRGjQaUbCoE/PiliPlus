@@ -327,6 +327,14 @@ List<SettingsModel> get playSettings => [
       setKey: SettingBoxKey.continuePlayInBackground,
       defaultVal: false,
     ),
+  const SwitchModel(
+    title: '返回时进入小窗播放',
+    subtitle: '视频页返回时不结束播放，改为在应用内以小窗继续播放，可继续浏览并挑选其他视频；'
+        '仅转小窗时播放器保持播放，小窗可拖动、点击展开视频页、点击关闭退出播放',
+    leading: Icon(Icons.picture_in_picture_alt_outlined),
+    setKey: SettingBoxKey.miniPlayerOnBack,
+    defaultVal: false,
+  ),
   if ((Platform.isAndroid && PiliAndroidHelper.isPipAvailable) ||
       (Platform.isIOS && IOSPipHelper.isAvailable))
     SwitchModel(

@@ -679,6 +679,9 @@ abstract final class Pref {
   static bool get pipNoDanmaku =>
       _setting.get(SettingBoxKey.pipNoDanmaku, defaultValue: false);
 
+  static bool get miniPlayerOnBack =>
+      _setting.get(SettingBoxKey.miniPlayerOnBack, defaultValue: false);
+
   static bool get enableVerticalExpand =>
       _setting.get(SettingBoxKey.enableVerticalExpand, defaultValue: false);
 

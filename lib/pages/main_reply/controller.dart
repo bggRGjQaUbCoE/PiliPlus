@@ -31,7 +31,6 @@ class MainReplyController extends ReplyController<MainListReply>
     type: replyType,
     oid: oid,
     mode: mode,
-    cursorNext: cursorNext,
-    offset: paginationReply?.nextOffset,
+    offset: nextOffset,
   );
 }

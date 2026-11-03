@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 abstract class CommonListController<R, T> extends CommonController<R, T> {
   int page = 1;
   bool isEnd = false;
+  bool get endIfNullOrEmpty => true;
   bool get hasFooter => false;
 
   @override
@@ -28,7 +29,7 @@ abstract class CommonListController<R, T> extends CommonController<R, T> {
       if (!customHandleResponse(isRefresh, res)) {
         final dataList = getDataList(response);
         if (dataList == null || dataList.isEmpty) {
-          isEnd = true;
+          if (endIfNullOrEmpty) isEnd = true;
           if (isRefresh) {
             loadingState.value = Success(dataList);
           } else if (hasFooter) {

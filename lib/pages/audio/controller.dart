@@ -46,7 +46,6 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
-import 'package:PiliPlus/utils/volume_boost.dart';
 import 'package:fixnum/fixnum.dart' show Int64;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -144,14 +143,14 @@ class AudioController extends GetxController
       _lastVolume = null;
     }
     desktopVolume.value = volume;
-    player?.setVolumeCapped(volume);
+    setVolumeCapped(player, volume);
   }
 
   void syncVolume([_]) {
     final volume = desktopVolume.value;
     PlPlayerController.instance
       ?..volume.value = volume
-      ..videoPlayerController?.setVolumeCapped(volume);
+      ..setVolumeCapped(player, volume);
     GStorage.setting.put(SettingBoxKey.desktopVolume, volume.toPrecision(3));
   }
 
@@ -403,7 +402,8 @@ class AudioController extends GetxController
       return;
     }
     // >100% 的音量走 af 增益+限幅，避免直接放大 mpv volume 导致削波
-    await player!.setVolumeCapped(
+    await setVolumeCapped(
+      player,
       PlatformUtils.isDesktop ? desktopVolume.value : Pref.playerVolume / 100,
     );
     final stream = player!.stream;

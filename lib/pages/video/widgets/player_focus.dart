@@ -8,7 +8,6 @@ import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:PiliPlus/utils/volume_boost.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/services.dart'
     show KeyDownEvent, KeyUpEvent, LogicalKeyboardKey, HardwareKeyboard;
@@ -230,7 +229,8 @@ class PlayerFocus extends StatelessWidget {
         case LogicalKeyboardKey.keyM:
           if (hasPlayer) {
             final isMuted = !plPlayerController.isMuted;
-            plPlayerController.videoPlayerController!.setVolumeCapped(
+            plPlayerController.setVolumeCapped(
+              plPlayerController.videoPlayerController,
               isMuted ? 0 : plPlayerController.volume.value,
             );
             plPlayerController.isMuted = isMuted;

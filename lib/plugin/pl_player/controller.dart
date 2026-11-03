@@ -50,7 +50,6 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
-import 'package:PiliPlus/utils/volume_boost.dart';
 import 'package:archive/archive.dart' show getCrc32;
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:easy_debounce/easy_throttle.dart';
@@ -864,7 +863,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     );
 
     // >100% 的音量走 af 增益+限幅，避免直接放大 mpv volume 导致削波
-    await player.setVolumeCapped(
+    await setVolumeCapped(
+      player,
       PlatformUtils.isMobile ? Pref.playerVolume / 100 : volume.value,
     );
 
@@ -1312,7 +1312,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       this.volume.value = volume;
       try {
         if (PlatformUtils.isDesktop) {
-          await _videoPlayerController!.setVolumeCapped(volume);
+          await setVolumeCapped(_videoPlayerController, volume);
         } else {
           FlutterVolumeController.updateShowSystemUI(false);
           await FlutterVolumeController.setVolume(volume);

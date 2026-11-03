@@ -49,21 +49,33 @@ abstract final class VideoHttp {
   static bool enableFilter = zoneRegExp.pattern.isNotEmpty;
 
   // 首页推荐视频
+  //
+  // [desktop] 为 true 时沿用同一个公开接口，改用 PC 端公开参数组合：
+  // fresh_type 由 4 提升到 8（文档：值越大推荐内容越相关）、补上主页的
+  // web_location 与 fresh_idx_1h。参数出处见 bilibili-API-collect
+  // 「获取首页视频推荐列表（web端）」。
   static Future<LoadingState<List<RcmdVideoItemModel>>> rcmdVideoList({
     required int ps,
     required int freshIdx,
+    bool desktop = false,
   }) async {
+    final params = <String, Object>{
+      'version': 1,
+      'feed_version': 'V8',
+      'homepage_ver': 1,
+      'ps': ps,
+      'fresh_idx': freshIdx,
+      'brush': freshIdx,
+      'fresh_type': desktop ? 8 : 4,
+    };
+    if (desktop) {
+      params
+        ..['web_location'] = 1430650
+        ..['fresh_idx_1h'] = freshIdx;
+    }
     final res = await Request().get(
       Api.recommendListWeb,
-      queryParameters: await WbiSign.makSign({
-        'version': 1,
-        'feed_version': 'V8',
-        'homepage_ver': 1,
-        'ps': ps,
-        'fresh_idx': freshIdx,
-        'brush': freshIdx,
-        'fresh_type': 4,
-      }),
+      queryParameters: await WbiSign.makSign(params),
     );
     if (res.data['code'] == 0) {
       List<RcmdVideoItemModel> list = <RcmdVideoItemModel>[];

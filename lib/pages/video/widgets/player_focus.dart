@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart'
+import 'package:window_manager/window_manager.dart';
     show KeyDownEvent, KeyUpEvent, LogicalKeyboardKey;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:window_manager/window_manager.dart';
 
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
@@ -132,19 +132,19 @@ class PlayerFocus extends StatelessWidget {
       switch (key) {
           case LogicalKeyboardKey.f2:
           if (PlatformUtils.isDesktop) {
-          windowManager.isAlwaysOnTop().then((isTop) {
-          windowManager.setAlwaysOnTop(!isTop);
+          WindowManager.instance.isAlwaysOnTop().then((isTop) {
+          WindowManager.instance.setAlwaysOnTop(!isTop);
           });
         }
         return true;
         case LogicalKeyboardKey.f3:
         if (PlatformUtils.isDesktop) {
-          windowManager.restore();
+          WindowManager.instance.restore();
           }
         return true;
         case LogicalKeyboardKey.f4:
           if (PlatformUtils.isDesktop) {
-          windowManager.minimize();
+          WindowManager.instance.minimize();
           }
             return true;
         case LogicalKeyboardKey.space:

@@ -23,14 +23,9 @@ void exitDesktopFullScreen() {
 }
 
 List<DeviceOrientation>? _lastOrientation;
-
-/// 设置首选方向
-///
-/// ChromeOS 上方向由系统决定，App 不请求任何固定方向。
 Future<void>? _setPreferredOrientations(List<DeviceOrientation> orientations) {
-  if (DeviceUtils.isChromeOS) {
-    return null;
-  }
+  if (DeviceUtils.isChromeOS) return null;
+
   if (_lastOrientation == orientations) {
     return null;
   }

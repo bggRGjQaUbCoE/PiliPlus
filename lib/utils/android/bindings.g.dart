@@ -836,6 +836,36 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
       _id_manufacturer.pointer,
     ).object<jni$_.JString?>();
   }
+
+  static final _id_get$isChromeOS = _class.staticMethodId(
+    r'isChromeOS',
+    r'()Z',
+  );
+
+  static final _get$isChromeOS =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallStaticBooleanMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `static public boolean isChromeOS()`
+  static core$_.bool get isChromeOS {
+    final _$$classRef = _class.reference;
+    return _get$isChromeOS(
+      _$$classRef.pointer,
+      _id_get$isChromeOS.pointer,
+    ).boolean;
+  }
 }
 
 final class $AndroidHelper$Type$ extends jni$_.JType<AndroidHelper> {

@@ -867,12 +867,13 @@ class ReplyItemGrpc extends StatelessWidget {
           matchStr = matchStr.replaceAll('：', ':');
           bool isValid = false;
           try {
-            final ctr = Get.find<VideoDetailController>(
-              tag: getTag?.call() ?? Get.arguments['heroTag'],
-            );
-            isValid =
-                DurationUtils.parseDuration(matchStr) * 1000 <=
-                ctr.data.timeLength!;
+            final tag = getTag?.call() ?? Get.arguments?['heroTag'];
+            if (tag != null) {
+              final ctr = Get.find<VideoDetailController>(tag: tag);
+              isValid =
+                  DurationUtils.parseDuration(matchStr) * 1000 <=
+                  ctr.data.timeLength!;
+            }
           } catch (e) {
             if (kDebugMode) debugPrint('failed to validate: $e');
           }

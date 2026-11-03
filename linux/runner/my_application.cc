@@ -6,7 +6,8 @@
 #endif
 
 #include "flutter/generated_plugin_registrant.h"
-#include "plugins/linux_webview_plugin.h"
+
+void RegisterLinuxContextMenu(FlView* view);
 
 struct _MyApplication {
   GtkApplication parent_instance;
@@ -88,10 +89,7 @@ static void my_application_activate(GApplication *application) {
   fl_view_set_background_color(view, &background_color);
   gtk_widget_show(GTK_WIDGET(view));
 
-  GtkWidget* overlay = gtk_overlay_new();
-  gtk_widget_show(overlay);
-  gtk_container_add(GTK_CONTAINER(window), overlay);
-  gtk_container_add(GTK_CONTAINER(overlay), GTK_WIDGET(view));
+  gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(view));
 
   // Show the window when Flutter renders.
   // Requires the view to be realized so we can start rendering.
@@ -100,7 +98,7 @@ static void my_application_activate(GApplication *application) {
   gtk_widget_realize(GTK_WIDGET(view));
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
-  LinuxWebviewPluginRegister(view, GTK_OVERLAY(overlay));
+  RegisterLinuxContextMenu(view);
 
   gtk_widget_grab_focus(GTK_WIDGET(view));
 }

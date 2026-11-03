@@ -6,7 +6,9 @@ import 'package:PiliPlus/pages/download/download/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
+import 'package:PiliPlus/utils/scroll_offset_helper.dart';
+import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart'
+    show ExtendedNestedScrollController;
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/scheduler.dart' show SchedulerBinding;
 import 'package:get/get.dart';
@@ -75,15 +77,31 @@ class LocalIntroController extends CommonIntroController {
     }
     if (index != 0) {
       SchedulerBinding.instance.addPostFrameCallback((_) {
+        final (double offset, double remain) = calcFixedItemOffset(
+          index: index,
+          itemCount: list.length,
+        );
         try {
           final state = videoDetailCtr.scrollKey.currentState;
           if (state != null && state.mounted) {
-            (state.innerController as ExtendedNestedScrollController)
-                .nestedPositions
-                .first
-                .localJumpTo(_offset);
+            final position =
+                (state.innerController as ExtendedNestedScrollController)
+                    .nestedPositions
+                    .first;
+            final adjustOffset = adjustScrollOffset(
+              offset: offset,
+              remain: remain,
+              viewportDimension: position.viewportDimension,
+            );
+            position.localJumpTo(adjustOffset);
           } else if (videoDetailCtr.introScrollCtr?.hasClients ?? false) {
-            videoDetailCtr.introScrollCtr!.jumpTo(_offset);
+            final position = videoDetailCtr.introScrollCtr!.position;
+            final adjustOffset = adjustScrollOffset(
+              offset: offset,
+              remain: remain,
+              viewportDimension: position.viewportDimension,
+            );
+            position.jumpTo(adjustOffset);
           }
         } catch (_) {
           if (kDebugMode) rethrow;
@@ -93,7 +111,6 @@ class LocalIntroController extends CommonIntroController {
   }
 
   final index = (-1).obs;
-  double get _offset => index * 112 + 7 - 35;
   final list = RxList<BiliDownloadEntryInfo>();
 
   @override

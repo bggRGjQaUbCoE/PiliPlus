@@ -68,10 +68,11 @@ class PgcInfoModel {
       }
     }
 
-    return (
-      episodes?.firstOrNull ?? sections?.firstOrNull?.episodes?.firstOrNull,
-      null,
-    );
+    var episode = episodes?.firstOrNull;
+    if (episode != null) return (episode, null);
+    episode = sections?.firstOrNull?.episodes?.firstOrNull;
+    if (episode != null) return (episode, 0);
+    return const (null, null);
   }
 
   PgcInfoModel({

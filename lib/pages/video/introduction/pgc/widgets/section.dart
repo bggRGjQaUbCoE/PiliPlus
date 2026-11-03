@@ -8,19 +8,17 @@ import 'package:PiliPlus/models_new/pgc/pgc_info_model/section.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart'
     hide EpisodeItem;
 import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
-import 'package:PiliPlus/pages/video/introduction/ugc/widgets/page.dart'
-    show scrollOffset;
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
+import 'package:PiliPlus/utils/scroll_offset_helper.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
 const double _itemExtent = 140;
-const double _itemWidth = _itemExtent + 10;
 
 class SectionPanel extends StatefulWidget {
   const SectionPanel({
@@ -42,7 +40,6 @@ class _SectionPanelState extends State<SectionPanel> {
   int? _seasonId;
   int get _index => _pgcController.pvIndex;
   bool get _isSection => _pgcController.episodeType == .section;
-  double get _scrollOffset => scrollOffset(_index, _itemWidth);
   late List<Section> _sections;
   late List<EpisodeItem> _episodes;
 
@@ -84,10 +81,7 @@ class _SectionPanelState extends State<SectionPanel> {
     _initIfNeeded();
     _isVip = Accounts.isVideoVip;
 
-    _scrollController = ScrollController(
-      keepScrollOffset: false,
-      initialScrollOffset: _scrollOffset,
-    );
+    _scrollController = ScrollController(keepScrollOffset: false);
     _listener = _videoDetailCtr.cid.listen(_onCidChanged);
     _sectionScrollController = ScrollController(keepScrollOffset: false);
     _sectionListController = ListController();
@@ -98,6 +92,29 @@ class _SectionPanelState extends State<SectionPanel> {
         scrollController: _sectionScrollController,
       ),
     );
+    if (_index > 0) {
+      WidgetsBinding.instance.addPostFrameCallback(_jumpToCurrent);
+    }
+  }
+
+  void _jumpToCurrent([_, bool anim = false]) {
+    final position = _scrollController.position;
+    final scrollOffset = calcPageItemOffsetSeparated(
+      index: _index,
+      separator: 10,
+      extent: _itemExtent,
+      itemCount: _episodes.length,
+      viewportDimension: position.viewportDimension,
+    );
+    if (anim) {
+      position.animateTo(
+        scrollOffset,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      position.jumpTo(scrollOffset);
+    }
   }
 
   (bool seasonChanged, bool dispose) _initIfNeeded() {
@@ -115,13 +132,9 @@ class _SectionPanelState extends State<SectionPanel> {
     if (dispose || !mounted) return;
     setState(() {});
     if (seasonChanged) {
-      _scrollController.jumpTo(_scrollOffset);
+      _jumpToCurrent();
     } else if (_isSection) {
-      _scrollController.animateTo(
-        _scrollOffset,
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
+      _jumpToCurrent(null, true);
     }
   }
 
@@ -132,7 +145,7 @@ class _SectionPanelState extends State<SectionPanel> {
     setState(() {});
     final episode = _episodes.getOrNull(_index);
     if (episode?.cid == _pgcController.cid.rawValue) {
-      _scrollController.jumpTo(_scrollOffset);
+      _jumpToCurrent();
     } else {
       _scrollController.jumpToTop();
     }

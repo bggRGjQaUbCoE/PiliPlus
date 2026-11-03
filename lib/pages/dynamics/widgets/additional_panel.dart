@@ -403,7 +403,7 @@ Widget? addWidget(
           onTap: () => showVoteDialog(
             context,
             vote.voteId!,
-            idStr is int
+            dynamicId: idStr is int
                 ? idStr
                 : idStr is String
                 ? int.parse(idStr)
@@ -460,7 +460,7 @@ Widget? addWidget(
                   onPressed: () => showVoteDialog(
                     context,
                     vote.voteId!,
-                    idStr is int
+                    dynamicId: idStr is int
                         ? idStr
                         : idStr is String
                         ? int.parse(idStr)

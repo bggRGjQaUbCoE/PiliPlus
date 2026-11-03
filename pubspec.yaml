@@ -17,11 +17,11 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
 # update when release
-version: 2.1.6+1
+version: 2.2.0+1
 
 environment:
   sdk: ">=3.13.0"
-  flutter: 3.47.8
+  flutter: 3.47.9
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -171,6 +171,8 @@ dependencies:
     git:
       url: https://github.com/wgh136/webdav_client.git
       ref: main
+  webview_all_linux: ^1.4.9
+  webview_platform_interface: ^1.4.9
   win32: ^6.3.0
   window_manager:
     git:

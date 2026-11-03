@@ -10,6 +10,6 @@ Widget blockedItem(
 }) {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 1),
-    child: moduleBlockedItem(context, theme, blocked),
+    child: moduleBlockedItem(context, theme.colorScheme, blocked),
   );
 }

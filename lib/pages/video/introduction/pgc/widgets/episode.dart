@@ -6,17 +6,14 @@ import 'package:PiliPlus/models_new/pgc/pgc_info_model/new_ep.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart'
     hide EpisodeItem;
 import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
-import 'package:PiliPlus/pages/video/introduction/ugc/widgets/page.dart'
-    show scrollOffset;
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
+import 'package:PiliPlus/utils/scroll_offset_helper.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:material_ui/material_ui.dart';
-
-const double _itemExtent = 150;
 
 class EpisodePanel extends StatefulWidget {
   const EpisodePanel({
@@ -38,7 +35,7 @@ class _EpisodePanelState extends State<EpisodePanel> {
   int? _seasonId;
   int get _index => _pgcController.episodeIndex;
   bool get _isEpisode => _pgcController.episodeType == .episode;
-  double get _scrollOffset => scrollOffset(_index, _itemExtent);
+
   late NewEp? _newEp;
   late List<EpisodeItem> _episodes;
   late final isPugv = _episodes.first.from == 'pugv';
@@ -76,11 +73,29 @@ class _EpisodePanelState extends State<EpisodePanel> {
     _initIfNeeded();
     _isVip = Accounts.isVideoVip;
 
-    _scrollController = ScrollController(
-      keepScrollOffset: false,
-      initialScrollOffset: _scrollOffset,
-    );
+    _scrollController = ScrollController(keepScrollOffset: false);
     _listener = _videoDetailCtr.cid.listen(_onCidChanged);
+    if (_index > 0) {
+      WidgetsBinding.instance.addPostFrameCallback(_jumpToCurrent);
+    }
+  }
+
+  void _jumpToCurrent([_, bool anim = false]) {
+    final position = _scrollController.position;
+    final scrollOffset = calcPageItemOffset(
+      index: _index,
+      itemCount: _episodes.length,
+      viewportDimension: position.viewportDimension,
+    );
+    if (anim) {
+      position.animateTo(
+        scrollOffset,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      position.jumpTo(scrollOffset);
+    }
   }
 
   (bool seasonChanged, bool dispose) _initIfNeeded() {
@@ -98,13 +113,9 @@ class _EpisodePanelState extends State<EpisodePanel> {
     if (dispose || !mounted) return;
     setState(() {});
     if (seasonChanged) {
-      _scrollController.jumpTo(_scrollOffset);
+      _jumpToCurrent();
     } else if (_isEpisode) {
-      _scrollController.animateTo(
-        _scrollOffset,
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
+      _jumpToCurrent(null, true);
     }
   }
 
@@ -136,7 +147,8 @@ class _EpisodePanelState extends State<EpisodePanel> {
                   style: const ButtonStyle(
                     padding: WidgetStatePropertyAll(.zero),
                   ),
-                  onPressed: () => widget.showEpisodes(type: .pgc),
+                  onPressed: () =>
+                      widget.showEpisodes(type: .pgc, episodeType: .episode),
                   child: Text(
                     _newEp?.desc?.contains('连载') == true
                         ? '连载中，更新至${Utils.isStringNumeric(_newEp!.title!) ? '第${_newEp!.title}话' : '${_newEp!.title}'}'
@@ -152,7 +164,7 @@ class _EpisodePanelState extends State<EpisodePanel> {
           height: 60,
           child: ListView.builder(
             padding: .zero,
-            itemExtent: _itemExtent,
+            itemExtent: kPageItemExtent,
             scrollDirection: .horizontal,
             controller: _scrollController,
             itemCount: _episodes.length,
@@ -170,7 +182,7 @@ class _EpisodePanelState extends State<EpisodePanel> {
     final hasLongTitle = item.longTitle?.isNotEmpty == true;
     final color = isCurr ? colorScheme.primary : colorScheme.onSurface;
     return Container(
-      width: _itemExtent,
+      width: kPageItemExtent,
       height: 60,
       margin: index != _episodes.length - 1 ? const .only(right: 10) : null,
       child: Material(

@@ -223,76 +223,45 @@ abstract final class VideoHttp {
     required VideoType videoType,
     String? language,
     bool voiceBalance = false,
+    bool fallback = false,
   }) async {
-    final Map<String, dynamic> params;
-    Map<String, dynamic>? data;
-
-    switch (videoType) {
-      case .ugc || .pugv:
-        final dmImgStr = Utils.base64EncodeRandomString(16, 64);
-        final dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
-        params = await WbiSign.makSign({
-          'avid': ?avid,
-          'bvid': ?bvid,
-          'ep_id': ?epid,
-          'season_id': ?seasonId,
-          'cid': cid,
-          'qn': qn,
-          // 获取所有格式的视频
-          'fnval': 4048,
-          'fourk': 1,
-          'fnver': 0,
-          'voice_balance': voiceBalance ? 1 : 0,
-          'gaia_source': 'pre-load',
-          'isGaiaAvoided': true,
-          'web_location': 1315873,
-          if (videoType == .pugv) ...const {
-            'biz_type': 'pugv',
-            'scene': 'normal',
-            'from_client': 'BROWSER',
-            'drm_tech_type': 0,
-            'app_id': 100,
-          },
-          // 免登录查看1080p
-          if (tryLook) 'try_look': 1,
-          'dm_img_list': '[]',
-          'dm_img_str': dmImgStr,
-          'dm_cover_img_str': dmCoverImgStr,
-          'dm_img_inter': '{"ds":[],"wh":[0,0,0],"of":[0,0,0]}',
-          'cur_language': ?language,
-        });
-      case .pgc:
-        final video = Accounts.video;
-        params = await WbiSign.makSign({
-          'x-bili-locale-json':
-              '{"c_locale":{"language":"zh-Hans"},"always_translate":false}',
-          'x-bili-device-req-json': '{"platform":"web","device":"pc","spmid":"666.25","mobi_app":"web_cn"}',
-          if (video.isLogin) 'csrf': video.csrf,
-        });
-        data = {
-          "scene": "normal",
-          "video_index": {
-            "bvid": null,
-            "cid": null,
-            "ogv_season_id": seasonId,
-            "ogv_episode_id": epid,
-          },
-          "video_param": {"qn": qn},
-          "player_param": const {
-            "fnver": 0,
-            "fnval": 4048,
-            "drm_tech_type": 0,
-            "app_id": 100,
-          },
-        };
-    }
+    final dmImgStr = Utils.base64EncodeRandomString(16, 64);
+    final dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
+    final params = await WbiSign.makSign({
+      'avid': ?avid,
+      'bvid': ?bvid,
+      'ep_id': ?epid,
+      'season_id': ?seasonId,
+      'cid': cid,
+      'qn': qn,
+      // 获取所有格式的视频
+      'fnval': 4048,
+      'fourk': 1,
+      'fnver': 0,
+      'voice_balance': voiceBalance ? 1 : 0,
+      'gaia_source': 'pre-load',
+      'isGaiaAvoided': true,
+      'web_location': 1315873,
+      if (videoType != .ugc && !fallback) ...{
+        'biz_type': ?videoType.bizType,
+        'scene': 'normal',
+        'from_client': 'BROWSER',
+        'drm_tech_type': 0,
+        'app_id': 100,
+      },
+      // 免登录查看1080p
+      if (tryLook) 'try_look': 1,
+      'dm_img_list': '[]',
+      'dm_img_str': dmImgStr,
+      'dm_cover_img_str': dmCoverImgStr,
+      'dm_img_inter': '{"ds":[],"wh":[0,0,0],"of":[0,0,0]}',
+      'cur_language': ?language,
+    });
 
     try {
-      final res = await Request().request(
-        videoType.api,
-        data: data,
+      final res = await Request().get(
+        fallback ? videoType.fallbackApi : videoType.api,
         queryParameters: params,
-        options: Options(method: videoType.method),
       );
 
       if (res.data['code'] == 0) {
@@ -301,7 +270,8 @@ abstract final class VideoHttp {
           case .ugc:
             data = PlayUrlModel.fromJson(res.data['data']);
 
-          case .pgc || .pugv:
+          // ogv
+          case .pgc || .pugv when !fallback:
             final result = res.data['data'];
             final videoInfo = result['video_info'];
             if (videoInfo != null) {
@@ -312,12 +282,40 @@ abstract final class VideoHttp {
                     progress['current_watch_progress'] ??
                     progress['current_progress'];
               }
+            } else if (result['arc']?['is_drm'] == true) {
+              return await videoUrl(
+                avid: avid,
+                bvid: bvid,
+                cid: cid,
+                qn: qn,
+                epid: epid,
+                seasonId: seasonId,
+                tryLook: tryLook,
+                videoType: videoType,
+                language: language,
+                voiceBalance: voiceBalance,
+                fallback: true,
+              );
             } else {
               final reason = result['not_playable_reason'];
               if (reason != null) {
                 return Error(_parseVideoErr(reason['code'], reason['message']));
+              } else {
+                return Error(result.toString());
               }
             }
+
+          case .pgc:
+            final result = res.data['result'];
+            data = PlayUrlModel.fromJson(result['video_info'])
+              ..lastPlayTime =
+                  result['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress'];
+
+          case .pugv:
+            final result = res.data['data'];
+            data = PlayUrlModel.fromJson(result)
+              ..lastPlayTime =
+                  result['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress'];
         }
         return Success(data);
       } else if (epid != null && videoType == .ugc) {
@@ -330,6 +328,9 @@ abstract final class VideoHttp {
           seasonId: seasonId,
           tryLook: tryLook,
           videoType: .pgc,
+          language: language,
+          voiceBalance: voiceBalance,
+          fallback: fallback,
         );
       }
       return Error(_parseVideoErr(res.data['code'], res.data['message']));

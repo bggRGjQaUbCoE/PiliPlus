@@ -578,11 +578,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             return;
           }
           widget.showEpisodes?.call(
-            type: isPart
-                ? .part
+            type: isSeason
+                ? .season
                 : isPgc
                 ? .pgc
-                : .season,
+                : .part,
           );
         },
       ),
@@ -1424,7 +1424,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                 child: Obx(
                   () => AnimatedOpacity(
                     curve: Curves.easeInOut,
-                    opacity: plPlayerController.isSeeking.value ? 1.0 : 0.0,
+                    opacity:
+                        plPlayerController.isSeeking.value &&
+                            plPlayerController.hoverDx == null
+                        ? 1.0
+                        : 0.0,
                     duration: const Duration(milliseconds: 150),
                     child: Container(
                       decoration: const BoxDecoration(
@@ -1598,6 +1602,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                         BottomControl(
                           maxWidth: maxWidth,
                           isFullScreen: isFullScreen,
+                          animCtr: _animationController,
                           controller: plPlayerController,
                           videoDetailController: videoDetailController,
                           buildBottomControl: () => buildBottomControl(

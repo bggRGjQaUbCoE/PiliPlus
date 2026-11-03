@@ -11,7 +11,7 @@ import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/pages/common/multi_select/multi_select_controller.dart';
-import 'package:PiliPlus/pages/common/page_order_mixin.dart';
+import 'package:PiliPlus/pages/common/page_order/page_order_mixin.dart';
 import 'package:PiliPlus/pages/fav_sort/view.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
@@ -130,9 +130,6 @@ class FavDetailController
     } else if (response.hasMore == false) {
       isEnd = true;
     }
-    if (pageDesc) {
-      return response.medias?.reversed.toList();
-    }
     return response.medias;
   }
 
@@ -166,6 +163,7 @@ class FavDetailController
         ps: _ps,
         mediaId: mediaId,
         order: order.value,
+        pageDesc: pageDesc,
       );
 
   void toViewPlayAll() {

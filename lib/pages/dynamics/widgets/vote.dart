@@ -531,9 +531,9 @@ class PercentageChip extends StatelessWidget {
 
 Future<void> showVoteDialog(
   BuildContext context,
-  int voteId, [
+  int voteId, {
   int? dynamicId,
-]) async {
+}) async {
   final voteInfo = await DynamicsHttp.voteInfo(voteId);
   if (context.mounted) {
     if (voteInfo case Success(:final response)) {

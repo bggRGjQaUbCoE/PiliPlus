@@ -29,6 +29,7 @@ class CroppedImage extends LeafRenderObjectWidget {
     required this.rrect,
     required this.imgPaint,
     required this.borderPaint,
+    this.position,
   });
 
   final Size size;
@@ -38,6 +39,7 @@ class CroppedImage extends LeafRenderObjectWidget {
   final RRect rrect;
   final Paint imgPaint;
   final Paint borderPaint;
+  final String? position;
 
   @override
   RenderObject createRenderObject(BuildContext context) {
@@ -49,6 +51,7 @@ class CroppedImage extends LeafRenderObjectWidget {
       rrect: rrect,
       imgPaint: imgPaint,
       borderPaint: borderPaint,
+      position: position,
     );
   }
 
@@ -64,7 +67,8 @@ class CroppedImage extends LeafRenderObjectWidget {
       ..dstRect = dstRect
       ..rrect = rrect
       ..imgPaint = imgPaint
-      ..borderPaint = borderPaint;
+      ..borderPaint = borderPaint
+      ..position = position;
   }
 }
 
@@ -77,6 +81,7 @@ class RenderCroppedImage extends RenderBox {
     required this._rrect,
     required this._imgPaint,
     required this._borderPaint,
+    this._position,
   });
 
   Size _preferredSize;
@@ -135,6 +140,14 @@ class RenderCroppedImage extends RenderBox {
     markNeedsPaint();
   }
 
+  String? _position;
+  String? get position => _position;
+  set position(String? value) {
+    if (_position == value) return;
+    _position = value;
+    markNeedsPaint();
+  }
+
   @override
   void performLayout() {
     size = constraints.constrain(_preferredSize);
@@ -142,11 +155,46 @@ class RenderCroppedImage extends RenderBox {
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    context.canvas
+    final canvas = context.canvas
       ..drawImageRect(image, srcRect, dstRect, _imgPaint)
       ..drawRRect(rrect, _borderPaint);
+
+    if (position != null) {
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: position,
+          style: const TextStyle(fontSize: 12.5, color: _kPosForeground),
+        ),
+        textDirection: .ltr,
+      )..layout();
+      final dx = (size.width - textPainter.width) / 2;
+      final dy =
+          size.height - textPainter.height - _kPosPaddingV - kPreviewStroke;
+      canvas.drawRRect(
+        .fromRectAndRadius(
+          .fromLTWH(
+            dx - _kPosPaddingH,
+            dy - _kPosPaddingV,
+            textPainter.width + 2 * _kPosPaddingH,
+            textPainter.height + 2 * _kPosPaddingV,
+          ),
+          _kPosRadius,
+        ),
+        Paint()..color = _kPosBackground,
+      );
+      textPainter
+        ..paint(canvas, Offset(dx, dy))
+        ..dispose();
+    }
   }
 
   @override
   bool get isRepaintBoundary => true;
 }
+
+const kPreviewStroke = 1.5;
+const _kPosPaddingH = 4.0;
+const _kPosPaddingV = 2.0;
+const _kPosRadius = Radius.circular(2);
+const Color _kPosForeground = Color(0xFFFFFFFF);
+const Color _kPosBackground = Color(0xCC000000);

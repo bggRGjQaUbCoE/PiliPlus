@@ -59,9 +59,13 @@ abstract final class PiliScheme {
   }
 
   static int? _videoProgress(Map<String, String> queryParameters) {
-    if ((queryParameters['start_progress'] ?? queryParameters['dm_progress'])
-        case final p?) {
+    if (queryParameters['start_progress'] case final p?) {
       return int.tryParse(p);
+    } else if (queryParameters['dm_progress'] case final p?) {
+      if (int.tryParse(p) case final progress?) {
+        // 弹幕定位：与官方客户端一致，提前 3 秒
+        return progress > 3000 ? progress - 3000 : 0;
+      }
     } else if (queryParameters['t'] case final t0?) {
       if (double.tryParse(t0) case final t1?) {
         return (t1 * 1000).toInt();

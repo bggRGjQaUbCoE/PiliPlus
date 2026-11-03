@@ -50,28 +50,40 @@ abstract final class VideoHttp {
 
   // 首页推荐视频
   //
-  // [desktop] 为 true 时沿用同一个公开接口，改用 PC 端公开参数组合：
-  // fresh_type 由 4 提升到 8（文档：值越大推荐内容越相关）、补上主页的
-  // web_location 与 fresh_idx_1h。参数出处见 bilibili-API-collect
-  // 「获取首页视频推荐列表（web端）」。
+  // [desktop] 为 true 时沿用同一个公开网页接口，改用哔哩哔哩官方 Windows
+  // 客户端（Electron 版）首页实际发送的参数组合：plat=1、feed_version=V1、
+  // fresh_type 表示操作类型（0 初次 / 3 刷新 / 4 加载更多）、x_num 与 y_num
+  // 为可视网格的行列数、pc_wx_install 等标记。参数取自该客户端自身渲染层的
+  // 请求代码，不涉及私有接口与设备指纹。
   static Future<LoadingState<List<RcmdVideoItemModel>>> rcmdVideoList({
     required int ps,
     required int freshIdx,
     bool desktop = false,
   }) async {
-    final params = <String, Object>{
-      'version': 1,
-      'feed_version': 'V8',
-      'homepage_ver': 1,
-      'ps': ps,
-      'fresh_idx': freshIdx,
-      'brush': freshIdx,
-      'fresh_type': desktop ? 8 : 4,
-    };
+    final Map<String, Object> params;
     if (desktop) {
-      params
-        ..['web_location'] = 1430650
-        ..['fresh_idx_1h'] = freshIdx;
+      params = <String, Object>{
+        'plat': 1,
+        'feed_version': 'V1',
+        'ps': ps,
+        'fresh_idx': freshIdx,
+        // 0 初次进入、3 下拉刷新、4 加载更多
+        'fresh_type': freshIdx == 0 ? 0 : 4,
+        'x_num': 3,
+        'y_num': 4,
+        'pc_wx_install': 0,
+        'pc_wx_gm_install': 0,
+      };
+    } else {
+      params = <String, Object>{
+        'version': 1,
+        'feed_version': 'V8',
+        'homepage_ver': 1,
+        'ps': ps,
+        'fresh_idx': freshIdx,
+        'brush': freshIdx,
+        'fresh_type': 4,
+      };
     }
     final res = await Request().get(
       Api.recommendListWeb,

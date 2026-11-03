@@ -4,10 +4,10 @@ import 'package:PiliPlus/models/common/enum_with_label.dart';
 ///
 /// - [app]：官方 App 端推荐接口（`/x/v2/feed/index`）
 /// - [web]：主页 Web 端推荐接口（`/x/web-interface/wbi/index/top/feed/rcmd`）
-/// - [desktop]：与 Web 端同一个公开接口，但使用 PC 端的公开参数组合
-///   （`fresh_type=8`、`web_location=1430650`、`fresh_idx_1h`、`ps=30`），
-///   参数依据见 bilibili-API-collect「获取首页视频推荐列表（web端）」
-///   与 Bilibili-Gate 的 PC 桌面端推荐参数，不涉及私有接口或设备指纹。
+/// - [desktop]：与 Web 端同一个公开网页接口，改用哔哩哔哩官方 Windows
+///   客户端首页实际发送的参数组合（`plat=1`、`feed_version=V1`、
+///   `fresh_type` 操作类型、`x_num`/`y_num` 网格尺寸、`ps=30`），
+///   不涉及私有接口或设备指纹。
 enum RcmdSource implements EnumWithLabel {
   app('App 端'),
   web('Web 端'),

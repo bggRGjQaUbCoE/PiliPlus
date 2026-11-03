@@ -27,7 +27,7 @@ class RcmdController extends CommonListController {
   Future<LoadingState> customGetData() {
     return switch (rcmdSource) {
       RcmdSource.app => VideoHttp.rcmdVideoListApp(freshIdx: page),
-      // 桌面端：同一公开接口 + PC 端参数组合，ps 取接口上限 30
+      // 桌面端：与官方 Windows 客户端一致，每次请求 30 条
       RcmdSource.desktop => VideoHttp.rcmdVideoList(
         freshIdx: page,
         ps: 30,

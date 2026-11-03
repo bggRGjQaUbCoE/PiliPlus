@@ -21,8 +21,9 @@ List<SettingsModel> get recommendSettings => [
   ),
   const NormalModel(
     title: '桌面端 / PC',
-    subtitle: '沿用公开的网页推荐接口，仅调整相关性等参数，'
-        '以获得更接近官方 Windows 客户端的推荐体验；不涉及私有接口与设备指纹',
+    subtitle: '沿用公开的网页推荐接口，按哔哩哔哩官方 Windows 客户端首页'
+        '实际发送的参数组合请求，以获得更接近官方客户端的推荐体验；'
+        '不涉及私有接口与设备指纹',
     leading: Icon(Icons.desktop_windows_outlined),
   ),
   SwitchModel(

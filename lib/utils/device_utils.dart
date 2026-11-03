@@ -9,6 +9,8 @@ import 'package:win32/win32.dart' as kernel32;
 abstract final class DeviceUtils {
   static final int sdkInt = AndroidHelper.sdkInt();
 
+  static final isChromeOS = Platform.isAndroid && AndroidHelper.isChromeOS;
+
   static bool get isTablet {
     return size.shortestSide >= 600;
   }

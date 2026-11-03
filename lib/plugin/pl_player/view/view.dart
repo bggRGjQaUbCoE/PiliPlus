@@ -1306,8 +1306,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     _gestureType = null;
   }
 
-  void _onPointerSignal(PointerSignalEvent event) {
-    if (event is PointerScrollEvent) {
+void _onPointerSignal(PointerSignalEvent event) {
+  if (event is PointerScrollEvent) {
+    if (plPlayerController.enableScrollVolume) {
+      // 开启调节音量
       final offset = -event.scrollDelta.dy / 4000;
       final volume = clampDouble(
         plPlayerController.volume.value + offset,
@@ -1315,8 +1317,27 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         plPlayerController.maxVolume,
       );
       plPlayerController.setVolume(volume);
+    } else {
+      // 关闭调节倍速
+      if (plPlayerController.isLive) return;
+      final List<double> speedList = plPlayerController.speedList;
+      double currentSpeed = plPlayerController.playbackSpeed;
+      int idx = speedList.indexOf(currentSpeed);
+      if (idx == -1) {
+        idx = speedList.indexOf(1.0);
+        if (idx == -1) idx = 0;
+      }
+      if (event.scrollDelta.dy < 0) {
+        if (idx < speedList.length - 1) idx++;
+      } else {
+        if (idx > 0) idx--;
+      }
+      final double targetSpeed = speedList[idx];
+      plPlayerController.setPlaybackSpeed(targetSpeed);
+      SmartDialog.showToast('${targetSpeed}x');
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {

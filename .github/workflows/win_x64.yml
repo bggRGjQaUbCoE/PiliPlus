@@ -26,15 +26,17 @@ jobs:
           channel: stable
           flutter-version-file: pubspec.yaml
 
-      - name: Add fastforge and Inno Setup
+      # 【新增】强制更新依赖以解决 window_manager 版本问题
+      - name: Update Dependencies
         run: |
-          dart pub global activate fastforge
-          choco install innosetup
+          flutter pub cache clean --force
+          rm -f pubspec.lock
+          flutter pub get
+          echo "Current window_manager version:"
+          flutter pub deps | grep window_manager
 
-      - name: Add Chinese language file for Inno Setup
-        run: |
-          Copy-Item "windows/packaging/exe/ChineseSimplified.isl" "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl"
-        shell: pwsh
+      - name: Add fastforge
+        run: dart pub global activate fastforge
 
       - name: Set and Extract version
         shell: pwsh
@@ -51,9 +53,7 @@ jobs:
       - name: Prepare Upload
         run: |
           mkdir -p Release/PiliPlus-Win
-          mkdir -p PiliPlus-Win-Setup
           mv build/windows/x64/runner/Release/* Release/PiliPlus-Win/
-          mv dist/**/*.exe PiliPlus-Win-Setup/PiliPlus_windows_${{env.version}}_x64_setup.exe
 
       - name: Compress
         run: |
@@ -68,7 +68,6 @@ jobs:
           name: ${{ github.event.inputs.tag }}
           files: |
             PiliPlus_windows_*.zip
-            PiliPlus-Win-Setup/PiliPlus_windows_*.exe
 
       - name: Upload windows file release
         uses: actions/upload-artifact@v7
@@ -76,10 +75,3 @@ jobs:
           archive: false
           name: Windows-file-x64-release
           path: PiliPlus_windows_*.zip
-
-      - name: Upload windows setup release
-        uses: actions/upload-artifact@v7
-        with:
-          archive: false
-          name: Windows-setup-x64-release
-          path: PiliPlus-Win-Setup/PiliPlus_windows_*.exe

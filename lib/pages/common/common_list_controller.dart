@@ -20,41 +20,56 @@ abstract class CommonListController<R, T> extends CommonController<R, T> {
 
   void checkIsEnd(int length) {}
 
+  int _queryId = 0;
+
   @override
-  Future<void> queryData([bool isRefresh = true]) async {
-    if (isLoading || (!isRefresh && isEnd)) return;
+  Future<void> queryData([bool isRefresh = true]) =>
+      _queryData(isRefresh: isRefresh);
+
+  Future<void> refreshQueryData() =>
+      _queryData(isRefresh: true, force: true);
+
+  Future<void> _queryData({
+    required bool isRefresh,
+    bool force = false,
+  }) async {
+    if (!force && (isLoading || (!isRefresh && isEnd))) return;
+    final int queryId = ++_queryId;
     isLoading = true;
-    final LoadingState<R> res = await customGetData();
-    if (res case Success(:final response)) {
-      if (!customHandleResponse(isRefresh, res)) {
-        final dataList = getDataList(response);
-        if (dataList == null || dataList.isEmpty) {
-          if (endIfNullOrEmpty) isEnd = true;
+    try {
+      final LoadingState<R> res = await customGetData();
+      if (queryId != _queryId) return;
+      if (res case Success(:final response)) {
+        if (!customHandleResponse(isRefresh, res)) {
+          final dataList = getDataList(response);
+          if (dataList == null || dataList.isEmpty) {
+            if (endIfNullOrEmpty) isEnd = true;
+            if (isRefresh) {
+              loadingState.value = Success(dataList);
+            } else if (hasFooter) {
+              loadingState.refresh();
+            }
+            return;
+          }
+          handleListResponse(dataList);
           if (isRefresh) {
+            checkIsEnd(dataList.length);
             loadingState.value = Success(dataList);
-          } else if (hasFooter) {
+          } else if (loadingState.value case Success(:final response)) {
+            response!.addAll(dataList);
+            checkIsEnd(response.length);
             loadingState.refresh();
           }
-          isLoading = false;
-          return;
         }
-        handleListResponse(dataList);
-        if (isRefresh) {
-          checkIsEnd(dataList.length);
-          loadingState.value = Success(dataList);
-        } else if (loadingState.value case Success(:final response)) {
-          response!.addAll(dataList);
-          checkIsEnd(response.length);
-          loadingState.refresh();
+        page++;
+      } else {
+        if (isRefresh && !handleError(res is Error ? res.errMsg : null)) {
+          loadingState.value = res as Error;
         }
       }
-      page++;
-    } else {
-      if (isRefresh && !handleError(res is Error ? res.errMsg : null)) {
-        loadingState.value = res as Error;
-      }
+    } finally {
+      if (queryId == _queryId) isLoading = false;
     }
-    isLoading = false;
   }
 
   @override

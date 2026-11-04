@@ -1,0 +1,74 @@
+#include <cstdint>
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <mutex>
+#include <stdexcept>
+#include <unordered_map>
+
+struct FlutterDesktopGpuSurfaceDescriptor {};
+struct FlutterDesktopPixelBuffer {};
+struct SurfaceManager {
+  int reads = 0;
+  void Read() { ++reads; }
+};
+
+class CallbackFixture {
+ public:
+  std::mutex textures_mutex_;
+  int64_t texture_id_ = 0;
+  std::unique_ptr<SurfaceManager> surface_manager_ = std::make_unique<SurfaceManager>();
+  std::unordered_map<int64_t, std::unique_ptr<FlutterDesktopGpuSurfaceDescriptor>> textures_;
+  std::unordered_map<int64_t, std::unique_ptr<FlutterDesktopPixelBuffer>> pixel_buffer_textures_;
+
+  auto GpuCallback(const std::unique_ptr<FlutterDesktopGpuSurfaceDescriptor>& texture) {
+    return @GPU_CALLBACK@;
+  }
+  auto SoftwareCallback(const std::unique_ptr<FlutterDesktopPixelBuffer>& pixel_buffer_texture) {
+    return @SOFTWARE_CALLBACK@;
+  }
+};
+
+void Require(bool condition, const char* message) {
+  if (!condition) throw std::runtime_error(message);
+}
+
+int main() {
+  CallbackFixture fixture;
+  auto gpu = std::make_unique<FlutterDesktopGpuSurfaceDescriptor>();
+  auto software = std::make_unique<FlutterDesktopPixelBuffer>();
+  auto gpu_callback = fixture.GpuCallback(gpu);
+  auto software_callback = fixture.SoftwareCallback(software);
+  Require(gpu_callback(0, 0) == nullptr, "GPU before registration");
+  Require(software_callback(0, 0) == nullptr, "software before registration");
+
+  fixture.texture_id_ = 1;
+  Require(gpu_callback(0, 0) == nullptr, "GPU registration gap");
+  Require(software_callback(0, 0) == nullptr, "software registration gap");
+  auto* gpu_descriptor = gpu.get();
+  auto* software_descriptor = software.get();
+  fixture.textures_.emplace(1, std::move(gpu));
+  fixture.pixel_buffer_textures_.emplace(1, std::move(software));
+  Require(gpu_callback(0, 0) == gpu_descriptor, "GPU current frame");
+  Require(software_callback(0, 0) == software_descriptor, "software current frame");
+  Require(fixture.surface_manager_->reads == 1, "current GPU copied once");
+
+  fixture.texture_id_ = 2;
+  Require(gpu_callback(0, 0) == nullptr, "old GPU during resize registration gap");
+  Require(software_callback(0, 0) == nullptr, "old software during resize registration gap");
+  fixture.textures_.emplace(2, std::make_unique<FlutterDesktopGpuSurfaceDescriptor>());
+  fixture.pixel_buffer_textures_.emplace(2, std::make_unique<FlutterDesktopPixelBuffer>());
+  Require(gpu_callback(0, 0) == nullptr, "old GPU must not return replacement descriptor");
+  Require(software_callback(0, 0) == nullptr, "old software must not return replacement descriptor");
+  Require(fixture.surface_manager_->reads == 1, "old GPU must not copy replacement surface");
+
+  auto new_gpu_callback = fixture.GpuCallback(fixture.textures_.at(2));
+  auto new_software_callback = fixture.SoftwareCallback(fixture.pixel_buffer_textures_.at(2));
+  Require(new_gpu_callback(0, 0) == fixture.textures_.at(2).get(), "replacement GPU frame");
+  Require(new_software_callback(0, 0) == fixture.pixel_buffer_textures_.at(2).get(), "replacement software frame");
+  fixture.textures_.clear();
+  fixture.pixel_buffer_textures_.clear();
+  Require(new_gpu_callback(0, 0) == nullptr, "GPU after unregister");
+  Require(new_software_callback(0, 0) == nullptr, "software after unregister");
+  std::cout << "Texture callback regression checks passed\n";
+}

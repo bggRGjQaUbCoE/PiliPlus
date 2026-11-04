@@ -1,14 +1,25 @@
+import 'package:PiliPlus/utils/desktop/window_bounds.dart';
+import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter/rendering.dart' show Offset, Size;
+import 'package:flutter/rendering.dart' show Offset, Rect, Size;
 import 'package:nativeapi/nativeapi.dart' as nativeapi;
 import 'package:screen_retriever/screen_retriever.dart';
 
 const _displayManager = nativeapi.DisplayManager.instance;
 
 nativeapi.Rectangle calcWindowBounds() {
-  final windowSize = Pref.windowSize;
-  final offset = calcWindowPosition(windowSize);
+  final workArea = _currentWorkArea;
+  final windowSize = workArea == null
+      ? Pref.windowSize
+      : fitWindowSizeToWorkArea(Pref.windowSize, workArea);
+  final offset = workArea == null
+      ? Offset.zero
+      : calcWindowOffset(
+          windowSize: windowSize,
+          workArea: workArea,
+          savedPosition: _savedWindowPosition,
+        );
   return nativeapi.Rectangle(
     x: offset.dx,
     y: offset.dy,
@@ -17,43 +28,35 @@ nativeapi.Rectangle calcWindowBounds() {
   );
 }
 
-Offset calcWindowPosition(Size windowSize) {
+/// 最小窗口尺寸：默认取 [DeviceUtils.desktopMinSize]，但不得超过当前工作区。
+///
+/// 小屏（例如 1024×640 的平板，或高分屏开启整数缩放）上，720 的最小高度
+/// 比屏幕还高，窗口无法收缩到屏幕内，标题栏和底栏会一直被裁掉。
+nativeapi.Size calcWindowMinSize() {
+  const base = DeviceUtils.desktopMinSize;
+  final workArea = _currentWorkArea;
+  if (workArea == null) return base;
+  final size = fitMinSizeToWorkArea(
+    Size(base.width, base.height),
+    workArea,
+  );
+  return nativeapi.Size(width: size.width, height: size.height);
+}
+
+Rect? get _currentWorkArea => _currentDisplay?.workArea.toRect();
+
+Offset? get _savedWindowPosition {
+  final position = Pref.windowPosition;
+  if (position == null || position.length < 2) return null;
+  return Offset(position[0], position[1]);
+}
+
+nativeapi.Display? get _currentDisplay {
   final displays = _displayManager.getAll();
   final cursorPosition = _displayManager.getCursorPosition().toOffset();
-
-  final currentDisplay =
-      displays.firstWhereOrNull(
+  return displays.firstWhereOrNull(
         (display) => (display.position.toOffset() & display.size.toSize())
             .contains(cursorPosition),
       ) ??
       _displayManager.getPrimary();
-
-  if (currentDisplay == null) return .zero;
-
-  final workArea = currentDisplay.workArea.toRect();
-
-  final double visibleWidth = workArea.width;
-  final double visibleHeight = workArea.height;
-
-  final double visibleStartX = workArea.left;
-  final double visibleStartY = workArea.top;
-
-  final windowPosition = Pref.windowPosition;
-  if (windowPosition != null) {
-    try {
-      final dx = windowPosition[0];
-      final dy = windowPosition[1];
-      if (dx >= visibleStartX &&
-          dy >= visibleStartY &&
-          dx < (visibleWidth - 30) &&
-          dy < (visibleHeight - 30)) {
-        return Offset(dx, dy);
-      }
-    } catch (_) {}
-  }
-
-  return Offset(
-    visibleStartX + (visibleWidth / 2) - (windowSize.width / 2),
-    visibleStartY + ((visibleHeight / 2) - (windowSize.height / 2)),
-  );
 }

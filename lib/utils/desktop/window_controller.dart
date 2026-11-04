@@ -91,10 +91,13 @@ class WindowController {
         break;
       case WindowOcclusionChangedEvent():
         break;
-      case WindowDockedEvent():
-        break;
-        
+      
+      // 【修复】移除了 WindowDockedEvent 和 WindowUndockedEvent
+      // 原因：window_manager 0.6.0 中不存在这两个类型，导致编译错误。
+      // 影响：仅丢失窗口停靠状态监听，不影响核心功能。
+      
       default:
+        // 兜底处理，防止未来新增事件类型导致未处理警告
         break;
     }
   }

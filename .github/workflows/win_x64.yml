@@ -26,14 +26,15 @@ jobs:
           channel: stable
           flutter-version-file: pubspec.yaml
 
-      # 【新增】强制更新依赖以解决 window_manager 版本问题
+      # 【修复点】使用 PowerShell 原生命令清理缓存和更新依赖
       - name: Update Dependencies
+        shell: pwsh
         run: |
           flutter pub cache clean --force
-          rm -f pubspec.lock
+          Remove-Item -Path pubspec.lock -Force -ErrorAction SilentlyContinue
           flutter pub get
-          echo "Current window_manager version:"
-          flutter pub deps | grep window_manager
+          Write-Host "Current window_manager version:"
+          flutter pub deps | Select-String "window_manager"
 
       - name: Add fastforge
         run: dart pub global activate fastforge
@@ -50,28 +51,18 @@ jobs:
         run: |
           fastforge package --platform windows --targets exe --flutter-build-args="dart-define-from-file=pili_release.json,no-pub" --skip-clean
 
+      # 【修改点】只准备便携版目录，移除安装版相关操作
       - name: Prepare Upload
+        shell: pwsh
         run: |
-          mkdir -p Release/PiliPlus-Win
-          mv build/windows/x64/runner/Release/* Release/PiliPlus-Win/
+          New-Item -ItemType Directory -Path "Release/PiliPlus-Win" -Force
+          Move-Item -Path "build/windows/x64/runner/Release/*" -Destination "Release/PiliPlus-Win/" -Force
 
       - name: Compress
-        run: |
-          Compress-Archive -Path "Release/PiliPlus-Win" -DestinationPath "PiliPlus_windows_${{env.version}}_x64_portable.zip"
         shell: pwsh
+        run: |
+          Compress-Archive -Path "Release/PiliPlus-Win" -DestinationPath "PiliPlus_windows_${{env.version}}_x64_portable.zip" -Force
 
       - name: Release
         if: ${{ github.event.inputs.tag != '' }}
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ github.event.inputs.tag }}
-          name: ${{ github.event.inputs.tag }}
-          files: |
-            PiliPlus_windows_*.zip
-
-      - name: Upload windows file release
-        uses: actions/upload-artifact@v7
-        with:
-          archive: false
-          name: Windows-file-x64-release
-          path: PiliPlus_windows_*.zip
+        uses: softprops/action-gh-release@v

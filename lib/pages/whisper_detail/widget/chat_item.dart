@@ -260,7 +260,7 @@ class ChatItem extends StatelessWidget {
         children: [
           Row(
             children: [
-              for (final i in content['image_urls'])
+              for (final i in content['image_urls'] ?? const [])
                 NetworkImgLayer(
                   width: 130,
                   height: 73.125,

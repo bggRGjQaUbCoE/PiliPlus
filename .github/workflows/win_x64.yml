@@ -65,4 +65,16 @@ jobs:
 
       - name: Release
         if: ${{ github.event.inputs.tag != '' }}
-        uses: softprops/action-gh-release@v
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.event.inputs.tag }}
+          name: ${{ github.event.inputs.tag }}
+          files: |
+            PiliPlus_windows_*.zip
+
+      - name: Upload windows file release
+        uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: Windows-file-x64-release
+          path: PiliPlus_windows_*.zip

@@ -197,26 +197,24 @@ void main() async {
   }
 
   if (PlatformUtils.isDesktop) {
-    await WindowManager.instance.ensureInitialized();
-    final window = WindowManager.instance.getCurrent();
-    if (window != null) {
-      window
-        ..titleBarStyle = Pref.showWindowTitleBar ? TitleBarStyle.normal : TitleBarStyle.hidden
-        ..isWindowControlButtonsVisible = true
-        ..bounds = calcWindowBounds()
-        ..minimumSize = DeviceUtils.desktopMinSize
-        ..isVisibleInTaskbar = true
-        ..title = Constants.appName;
-      if (Pref.isWindowMaximized) window.maximize();
-      void show([_]) => window
-        ..focus()
-        ..show();
-      switch (WidgetsBinding.instance.schedulerPhase) {
-        case SchedulerPhase.idle || SchedulerPhase.postFrameCallbacks:
-          WidgetsBinding.instance.scheduleFrameCallback(show);
-        case SchedulerPhase.transientCallbacks || SchedulerPhase.midFrameMicrotasks || SchedulerPhase.persistentCallbacks:
-          WidgetsBinding.instance.addPostFrameCallback(show);
-      }
+    final window = windowManager;
+    window
+      ..titleBarStyle = Pref.showWindowTitleBar ? TitleBarStyle.normal : TitleBarStyle.hidden
+      ..isWindowControlButtonsVisible = true
+      ..bounds = calcWindowBounds()
+      ..minimumSize = DeviceUtils.desktopMinSize
+      ..isVisibleInTaskbar = true
+      ..title = Constants.appName;
+    if (Pref.isWindowMaximized) window.maximize();
+    void show([_]) => window
+      ..focus()
+      ..show();
+    switch (WidgetsBinding.instance.schedulerPhase) {
+      case SchedulerPhase.idle:
+      case SchedulerPhase.postFrameCallbacks:
+        WidgetsBinding.instance.scheduleFrameCallback(show);
+      default:
+        WidgetsBinding.instance.addPostFrameCallback(show);
     }
   }
 }

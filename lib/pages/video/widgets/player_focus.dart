@@ -132,21 +132,19 @@ class PlayerFocus extends StatelessWidget {
       switch (key) {
         case LogicalKeyboardKey.f2:
           if (PlatformUtils.isDesktop) {
-            WindowManager.instance.isAlwaysOnTop().then((isTop) {
-              if (isTop != null) {
-                WindowManager.instance.setAlwaysOnTop(!isTop);
-              }
+            windowManager.isAlwaysOnTop().then((isTop) {
+              windowManager.setAlwaysOnTop(!isTop);
             });
           }
           return true;
         case LogicalKeyboardKey.f3:
           if (PlatformUtils.isDesktop) {
-            WindowManager.instance.restore();
+            windowManager.restore();
           }
           return true;
         case LogicalKeyboardKey.f4:
           if (PlatformUtils.isDesktop) {
-            WindowManager.instance.minimize();
+            windowManager.minimize();
           }
           return true;
         case LogicalKeyboardKey.space:

@@ -25,6 +25,14 @@ jobs:
         with:
           channel: stable
           flutter-version-file: pubspec.yaml
+      - name: Clean Pub Cache
+        shell: pwsh
+        run: |
+          Write-Host "Cleaning Flutter pub cache..."
+          flutter pub cache clean --force
+          
+          Write-Host "Running flutter pub get with existing lock file..."
+          flutter pub get
 
       - name: Add fastforge and Inno Setup
         run: |

@@ -132,9 +132,7 @@ class PlayerFocus extends StatelessWidget {
       switch (key) {
         case LogicalKeyboardKey.f2:
           if (PlatformUtils.isDesktop) {
-            WindowManager.instance.isAlwaysOnTop().then((isTop) {
-              WindowManager.instance.setAlwaysOnTop(!(isTop ?? false));
-            });
+            _toggleAlwaysOnTop();
           }
           return true;
         case LogicalKeyboardKey.f3:
@@ -195,6 +193,16 @@ class PlayerFocus extends StatelessWidget {
     }
 
     return false;
+  }
+
+  void _toggleAlwaysOnTop() async {
+    try {
+      final wm = WindowManager.instance;
+      final isTop = await wm.isAlwaysOnTop();
+      await wm.setAlwaysOnTop(!(isTop ?? false));
+    } catch (e) {
+      debugPrint('Error toggling always on top: $e');
+    }
   }
 
   void _setVolume({required bool isIncrease}) {

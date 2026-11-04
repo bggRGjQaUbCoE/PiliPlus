@@ -132,17 +132,17 @@ class PlayerFocus extends StatelessWidget {
       switch (key) {
         case LogicalKeyboardKey.f2:
           if (PlatformUtils.isDesktop) {
-            _toggleAlwaysOnTop();
+            _safeWindowAction('toggleAlwaysOnTop');
           }
           return true;
         case LogicalKeyboardKey.f3:
           if (PlatformUtils.isDesktop) {
-            WindowManager.instance.restore();
+            _safeWindowAction('restore');
           }
           return true;
         case LogicalKeyboardKey.f4:
           if (PlatformUtils.isDesktop) {
-            WindowManager.instance.minimize();
+            _safeWindowAction('minimize');
           }
           return true;
         case LogicalKeyboardKey.space:
@@ -195,13 +195,25 @@ class PlayerFocus extends StatelessWidget {
     return false;
   }
 
-  void _toggleAlwaysOnTop() async {
+  void _safeWindowAction(String action) async {
     try {
       final wm = WindowManager.instance;
-      final isTop = await wm.isAlwaysOnTop();
-      await wm.setAlwaysOnTop(!(isTop ?? false));
+      final dynamic wmDynamic = wm;
+      
+      switch (action) {
+        case 'restore':
+          await wmDynamic.restore();
+          break;
+        case 'minimize':
+          await wmDynamic.minimize();
+          break;
+        case 'toggleAlwaysOnTop':
+          final bool? isTop = await wmDynamic.isAlwaysOnTop();
+          await wmDynamic.setAlwaysOnTop(!(isTop ?? false));
+          break;
+      }
     } catch (e) {
-      debugPrint('Error toggling always on top: $e');
+      debugPrint('Window action $action failed: $e');
     }
   }
 
@@ -214,7 +226,6 @@ class PlayerFocus extends StatelessWidget {
         : math.max(0.0, plPlayerController.volume.value - 0.1);
     plPlayerController.setVolume(volume);
   }
-
   void _updateVolume(KeyEvent event, {required bool isIncrease}) {
     if (event is KeyDownEvent) {
       if (hasPlayer) {

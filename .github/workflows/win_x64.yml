@@ -26,18 +26,40 @@ jobs:
           channel: stable
           flutter-version-file: pubspec.yaml
 
-      # 【修复点】使用 PowerShell 原生命令清理缓存和更新依赖
-      - name: Update Dependencies
+      # 【新增】清除缓存并更新依赖，解决潜在的依赖冲突
+      - name: Clean Cache and Update Dependencies
         shell: pwsh
         run: |
+          Write-Host "Cleaning Flutter pub cache..."
           flutter pub cache clean --force
+          
+          Write-Host "Removing pubspec.lock..."
           Remove-Item -Path pubspec.lock -Force -ErrorAction SilentlyContinue
+          
+          Write-Host "Running flutter pub get..."
           flutter pub get
-          Write-Host "Current window_manager version:"
+          
+          Write-Host "Checking window_manager version..."
           flutter pub deps | Select-String "window_manager"
 
       - name: Add fastforge
         run: dart pub global activate fastforge
+
+      # 【新增】修复 Inno Setup 中文语言包缺失问题，确保安装版能正常打包
+      - name: Fix Inno Setup Chinese Language Pack
+        shell: pwsh
+        run: |
+          $islPath = "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl"
+          if (-Not (Test-Path $islPath)) {
+            Write-Host "Downloading ChineseSimplified.isl to $islPath ..."
+            # 创建目录（如果不存在）
+            New-Item -ItemType Directory -Force -Path (Split-Path $islPath) | Out-Null
+            # 从官方源码仓库下载语言文件
+            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/ChineseSimplified.isl" -OutFile $islPath
+            Write-Host "Download complete."
+          } else {
+            Write-Host "ChineseSimplified.isl already exists. Skipping download."
+          }
 
       - name: Set and Extract version
         shell: pwsh
@@ -47,18 +69,17 @@ jobs:
         shell: pwsh
         run: lib/scripts/patch.ps1 windows
 
-      - name: Build Windows
+      - name: Build Windows (Portable & Installer)
         run: |
           fastforge package --platform windows --targets exe --flutter-build-args="dart-define-from-file=pili_release.json,no-pub" --skip-clean
 
-      # 【修改点】只准备便携版目录，移除安装版相关操作
       - name: Prepare Upload
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Path "Release/PiliPlus-Win" -Force
           Move-Item -Path "build/windows/x64/runner/Release/*" -Destination "Release/PiliPlus-Win/" -Force
 
-      - name: Compress
+      - name: Compress Portable Version
         shell: pwsh
         run: |
           Compress-Archive -Path "Release/PiliPlus-Win" -DestinationPath "PiliPlus_windows_${{env.version}}_x64_portable.zip" -Force
@@ -71,10 +92,15 @@ jobs:
           name: ${{ github.event.inputs.tag }}
           files: |
             PiliPlus_windows_*.zip
+            # 如果 fastforge 生成了安装包，通常会在 build/windows/x64/runner/Release 或 dist 目录下
+            # 请根据实际生成的文件名调整此处，例如：
+            # dist/**/*.exe
 
       - name: Upload windows file release
         uses: actions/upload-artifact@v7
         with:
           archive: false
           name: Windows-file-x64-release
-          path: PiliPlus_windows_*.zip
+          path: |
+            PiliPlus_windows_*.zip
+            # 同样，如果有安装包生成，也可以在此处上传

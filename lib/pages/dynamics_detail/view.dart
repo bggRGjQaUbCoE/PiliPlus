@@ -389,9 +389,7 @@ class _DynamicDetailPageState extends CommonDynPageMultiState<DynamicDetailPage>
             left: 0,
             right: 0,
             top: displacement,
-            child: Obx(
-              () => RefreshIndicator_(isRefreshing: _isRefreshing.value),
-            ),
+            child: RefreshIndicator_(isRefreshing: _isRefreshing),
           ),
         ],
       );

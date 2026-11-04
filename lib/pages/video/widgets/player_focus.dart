@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart'
-import 'package:window_manager/window_manager.dart';
     show KeyDownEvent, KeyUpEvent, LogicalKeyboardKey;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:window_manager/window_manager.dart';
 
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
@@ -130,25 +130,27 @@ class PlayerFocus extends StatelessWidget {
 
     if (event is KeyDownEvent) {
       switch (key) {
-          case LogicalKeyboardKey.f2:
+        case LogicalKeyboardKey.f2:
           if (PlatformUtils.isDesktop) {
-          WindowManager.instance.isAlwaysOnTop().then((isTop) {
-          WindowManager.instance.setAlwaysOnTop(!isTop);
-          });
-        }
-        return true;
-        case LogicalKeyboardKey.f3:
-        if (PlatformUtils.isDesktop) {
-          WindowManager.instance.restore();
+            WindowManager.instance.isAlwaysOnTop().then((isTop) {
+              if (isTop != null) {
+                WindowManager.instance.setAlwaysOnTop(!isTop);
+              }
+            });
           }
-        return true;
+          return true;
+        case LogicalKeyboardKey.f3:
+          if (PlatformUtils.isDesktop) {
+            WindowManager.instance.restore();
+          }
+          return true;
         case LogicalKeyboardKey.f4:
           if (PlatformUtils.isDesktop) {
-          WindowManager.instance.minimize();
+            WindowManager.instance.minimize();
           }
-            return true;
+          return true;
         case LogicalKeyboardKey.space:
-           if (plPlayerController.isLive || canPlay!()) {
+          if (plPlayerController.isLive || canPlay!()) {
             if (hasPlayer) {
               plPlayerController.onDoubleTapCenter();
             }

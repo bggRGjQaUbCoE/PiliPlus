@@ -107,7 +107,7 @@ void main() async {
     _initDownPath(),
     _initTmpPath(),
     CacheManager.ensureInitialized(),
-    FontUtils.init(),
+    ?FontUtils.init(),
   ]);
   Get
     ..lazyPut(AccountService.new)
@@ -117,7 +117,7 @@ void main() async {
   if (PlatformUtils.isMobile) {
     if (Platform.isAndroid) MaxScreenSize.init();
     await Future.wait([
-      if (Pref.horizontalScreen) fullMode() else portraitUpMode(),
+      if (Pref.horizontalScreen) ?fullMode() else ?portraitUpMode(),
       setupServiceLocator(),
       if (Platform.isIOS) IOSPipHelper.init(),
     ]);
@@ -142,7 +142,7 @@ void main() async {
   FocusManager.instance.addEarlyKeyEventHandler(_onKeyEvent);
 
   if (PlatformUtils.isMobile) {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setEnabledSystemUIMode(.edgeToEdge);
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         systemNavigationBarColor: Colors.transparent,
@@ -187,7 +187,7 @@ void main() async {
     final fileHandler = await JsonFileHandler.init();
 
     Catcher2(
-      [fileHandler, const ConsoleHandler()],
+      [?fileHandler, const ConsoleHandler()],
       const MyApp(),
       logger: logger,
       customParameters: customParameters,
@@ -197,34 +197,41 @@ void main() async {
   }
 
   if (PlatformUtils.isDesktop) {
-    final window = windowManager;
-    window
-      ..titleBarStyle = Pref.showWindowTitleBar ? TitleBarStyle.normal : TitleBarStyle.hidden
-      ..isWindowControlButtonsVisible = true
-      ..bounds = calcWindowBounds()
-      ..minimumSize = DeviceUtils.desktopMinSize
-      ..isVisibleInTaskbar = true
-      ..title = Constants.appName;
-    if (Pref.isWindowMaximized) window.maximize();
-    void show([_]) => window
-      ..focus()
-      ..show();
-    switch (WidgetsBinding.instance.schedulerPhase) {
-      case SchedulerPhase.idle:
-      case SchedulerPhase.postFrameCallbacks:
-        WidgetsBinding.instance.scheduleFrameCallback(show);
-      default:
-        WidgetsBinding.instance.addPostFrameCallback(show);
+    final window = WindowManager.instance.getCurrent();
+    if (window != null) {
+      final showTitleBar = Pref.showWindowTitleBar;
+      // macOS 隐藏标题栏时改用 contentUnderTitleBar，保持窗口可拖动
+      final useContentUnderTitleBar = Platform.isMacOS && !showTitleBar;
+      window
+        ..titleBarStyle = useContentUnderTitleBar || showTitleBar
+            ? .normal
+            : .hidden
+        ..isWindowControlButtonsVisible = true
+        ..bounds = calcWindowBounds()
+        ..minimumSize = DeviceUtils.desktopMinSize
+        ..isVisibleInTaskbar = true
+        ..title = Constants.appName;
+      if (useContentUnderTitleBar) window.setContentUnderTitleBar(true);
+      if (Pref.isWindowMaximized) window.maximize();
+      void show([_]) => window
+        ..focus()
+        ..show();
+      switch (WidgetsBinding.instance.schedulerPhase) {
+        case .idle || .postFrameCallbacks:
+          WidgetsBinding.instance.scheduleFrameCallback(show);
+        case .transientCallbacks || .midFrameMicrotasks || .persistentCallbacks:
+          WidgetsBinding.instance.addPostFrameCallback(show);
+      }
     }
   }
 }
 
 KeyEventResult _onKeyEvent(KeyEvent event) {
-  if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.escape) {
+  if (event is KeyDownEvent && event.logicalKey == .escape) {
     _onBack();
-    return KeyEventResult.handled;
+    return .handled;
   }
-  return KeyEventResult.ignored;
+  return .ignored;
 }
 
 void _onBack() {
@@ -235,7 +242,7 @@ void _onBack() {
 
   final route = Get.routing.route;
   if (route is GetPageRoute) {
-    if (route.popDisposition == RoutePopDisposition.doNotPop) {
+    if (route.popDisposition == .doNotPop) {
       route.onPopInvokedWithResult(false, null);
       return;
     }
@@ -266,8 +273,8 @@ class MyApp extends StatelessWidget {
           Color(customColor);
       final variant = Pref.schemeVariant;
 
-      lightScheme = brandColor.asColorSchemeSeed(variant, Brightness.light);
-      darkScheme = brandColor.asColorSchemeSeed(variant, Brightness.dark);
+      lightScheme = brandColor.asColorSchemeSeed(variant, .light);
+      darkScheme = brandColor.asColorSchemeSeed(variant, .dark);
     }
 
     return (
@@ -383,8 +390,8 @@ class MyApp extends StatelessWidget {
           debugPrint('dynamic_color: Accent color detected.');
         }
         final variant = Pref.schemeVariant;
-        _light = accentColor.asColorSchemeSeed(variant, Brightness.light);
-        _dark = accentColor.asColorSchemeSeed(variant, Brightness.dark);
+        _light = accentColor.asColorSchemeSeed(variant, .light);
+        _dark = accentColor.asColorSchemeSeed(variant, .dark);
         return true;
       }
     } on PlatformException {

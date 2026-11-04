@@ -26,11 +26,18 @@ class _RefreshIndicatorState extends State<RefreshIndicator_>
     _scaleController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 200),
-    );
+    )..addStatusListener(_onScaleStatus);
     _progressController = AnimationController(
       vsync: this,
       duration: CircularProgressIndicator.defaultAnimationDuration,
     );
+  }
+
+  // Shrunk away, it lets the spinner go: see build.
+  void _onScaleStatus(AnimationStatus status) {
+    if (status.isDismissed && mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -67,6 +74,12 @@ class _RefreshIndicatorState extends State<RefreshIndicator_>
 
   @override
   Widget build(BuildContext context) {
+    // Hidden, it builds no spinner: an indeterminate CircularProgressIndicator
+    // repeats an animation of its own, a controller given or not, which drew
+    // the page under it at 60 fps forever, still as it stood.
+    if (!widget.isRefreshing && _scaleController.isDismissed) {
+      return const SizedBox.shrink();
+    }
     return ScaleTransition(
       scale: _scaleController,
       child: Center(

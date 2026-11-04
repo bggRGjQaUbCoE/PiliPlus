@@ -149,4 +149,7 @@ pili_release.json
 
 dist
 
+# Keep ignoring top-level test* scratch files, but track the Flutter test/ directory
 test*
+!test/
+!test/**

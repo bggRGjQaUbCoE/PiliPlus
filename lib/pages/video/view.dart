@@ -1,3 +1,4 @@
+import 'dart:async' show unawaited;
 import 'dart:io' show Platform;
 import 'dart:math';
 
@@ -189,6 +190,10 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     final isResume = state == .resumed;
     final ctr = videoDetailController.plPlayerController..visible = isResume;
     if (isResume) {
+      videoDetailController.attachPlayerSourceRefresh();
+      if (ctr.pendingForegroundPlayback && ctr.isSourceOwnedBy(heroTag)) {
+        unawaited(ctr.resumeAfterBackground());
+      }
       if (!ctr.showDanmaku) {
         introController.startTimer();
         ctr.showDanmaku = true;
@@ -333,6 +338,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   @override
   void dispose() {
+    videoDetailController.detachPlayerSourceRefresh();
     plPlayerController
       ?..removeStatusLister(playerListener)
       ..removePositionListener(positionListener);
@@ -390,10 +396,18 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       ..brightness = plPlayerController?.brightness.value;
     if (plPlayerController != null) {
       videoDetailController.makeHeartBeat();
+      if (plPlayerController!.isSourceOwnedBy(heroTag)) {
+        videoDetailController.playedTime =
+            plPlayerController!.videoPlayerController?.state.position ??
+            videoDetailController.playedTime;
+      }
+      videoDetailController.detachPlayerSourceRefresh();
       plPlayerController!
         ..removeStatusLister(playerListener)
         ..removePositionListener(positionListener)
-        ..pause();
+        ..pause(userInitiated: false);
+    } else {
+      videoDetailController.detachPlayerSourceRefresh();
     }
   }
 
@@ -413,10 +427,11 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     plPlayerController?.isLive = false;
     if (videoDetailController.plPlayerController.playerStatus.isPlaying &&
         videoDetailController.playerStatus != PlayerStatus.playing) {
-      videoDetailController.plPlayerController.pause();
+      videoDetailController.plPlayerController.pause(userInitiated: false);
     }
 
     _setPlayCallBack();
+    videoDetailController.attachPlayerSourceRefresh();
 
     introController.startTimer();
 
@@ -442,9 +457,15 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       ?..addStatusLister(playerListener)
       ..addPositionListener(positionListener);
     if (videoDetailController.autoPlay) {
-      videoDetailController.playerInit(
-        autoplay: videoDetailController.playerStatus?.isPlaying ?? false,
-      );
+      if (!videoDetailController.isFileSource &&
+          (videoDetailController.videoUrl == null ||
+              videoDetailController.audioUrl == null)) {
+        videoDetailController.queryVideoUrl();
+      } else {
+        videoDetailController.playerInit(
+          autoplay: videoDetailController.playerStatus?.isPlaying ?? false,
+        );
+      }
     } else if (videoDetailController.plPlayerController.preInitPlayer &&
         !videoDetailController.isQuerying &&
         videoDetailController.videoUrl != null) {

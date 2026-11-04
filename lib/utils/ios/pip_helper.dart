@@ -41,14 +41,14 @@ abstract final class IOSPipHelper {
         if (args['closed'] == true && !isResumed) {
           if (PlPlayerController.instance case final ctr?
               when !ctr.continuePlayInBackground.value) {
-            PlPlayerController.pauseIfExists();
+            PlPlayerController.pauseIfExists(userInitiated: true);
           }
         }
       case 'setPlaying':
         if (call.arguments as bool) {
           PlPlayerController.playIfExists();
         } else {
-          PlPlayerController.pauseIfExists();
+          PlPlayerController.pauseIfExists(userInitiated: true);
         }
       case 'skip':
         if (PlPlayerController.instance case final ctr?) {

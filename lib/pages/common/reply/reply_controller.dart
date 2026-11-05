@@ -184,8 +184,8 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
   }
 
   void hanelePagination({required CursorReply cursor, required String offset}) {
-    nextOffset = offset;
     if (cursor.isEnd || offset.isEmpty || nextOffset == offset) isEnd = true;
+    nextOffset = offset;
   }
 
   void haneleSubjectControl(SubjectControl control) {

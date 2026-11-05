@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 import 'dart:ui' show Offset, Rect, Size;
 
+import 'package:nativeapi/nativeapi.dart' as nativeapi;
+
 /// 判定上次保存的窗口位置是否还有效时，要求至少有多少像素留在工作区内
 const double kWindowKeepVisible = 30.0;
 
@@ -11,10 +13,11 @@ Size fitWindowSizeToWorkArea(Size windowSize, Rect workArea) => Size(
 );
 
 /// 最小窗口尺寸不得超过工作区，否则小屏（如 1024×640）上窗口无法收缩到屏幕内
-Size fitMinSizeToWorkArea(Size minSize, Rect workArea) => Size(
-  math.min(minSize.width, workArea.width),
-  math.min(minSize.height, workArea.height),
-);
+nativeapi.Size fitMinSizeToWorkArea(nativeapi.Size minSize, Rect workArea) =>
+    nativeapi.Size(
+      width: math.min(minSize.width, workArea.width),
+      height: math.min(minSize.height, workArea.height),
+    );
 
 /// 计算窗口左上角坐标。
 ///

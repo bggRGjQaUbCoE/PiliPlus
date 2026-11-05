@@ -2,6 +2,7 @@ import 'dart:ui' show Offset, Rect, Size;
 
 import 'package:PiliPlus/utils/desktop/window_bounds.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nativeapi/nativeapi.dart' as nativeapi;
 
 void main() {
   group('fitWindowSizeToWorkArea', () {
@@ -30,20 +31,20 @@ void main() {
     test('小屏 1024×640：最小高度不再超过屏幕', () {
       expect(
         fitMinSizeToWorkArea(
-          const Size(400, 720),
+          const nativeapi.Size(width: 400, height: 720),
           const Rect.fromLTWH(0, 0, 1024, 640),
         ),
-        const Size(400, 640),
+        const nativeapi.Size(width: 400, height: 640),
       );
     });
 
     test('1080p 1x：最小尺寸保持 400×720', () {
       expect(
         fitMinSizeToWorkArea(
-          const Size(400, 720),
+          const nativeapi.Size(width: 400, height: 720),
           const Rect.fromLTWH(0, 0, 1920, 1080),
         ),
-        const Size(400, 720),
+        const nativeapi.Size(width: 400, height: 720),
       );
     });
   });

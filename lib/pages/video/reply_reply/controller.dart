@@ -299,6 +299,12 @@ class VideoReplyReplyController extends ReplyController
   }
 
   @override
+  void queryBySort() {
+    if (replyTree.rawValue != null) return;
+    super.queryBySort();
+  }
+
+  @override
   Future<void> onRefresh() async {
     if (replyTree.rawValue != null) return Future.syncValue(null);
     if (_inflightReply != null) await _inflightReply;

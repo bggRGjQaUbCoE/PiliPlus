@@ -258,30 +258,35 @@ class ChatItem extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              for (final i in content['image_urls'])
-                NetworkImgLayer(
-                  width: 130,
-                  height: 73.125,
-                  src: i,
-                ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            content['title'] ?? "",
-            style: TextStyle(
-              letterSpacing: 0.6,
-              height: 1.5,
-              color: textColor,
-              fontWeight: FontWeight.bold,
+          if (content['image_urls'] case final List urls
+              when urls.isNotEmpty) ...[
+            Row(
+              children: [
+                for (final url in urls)
+                  NetworkImgLayer(
+                    width: 130,
+                    height: 73.125,
+                    src: url,
+                  ),
+              ],
             ),
-          ),
-          if (content['summary'] != null && content['summary'] != '') ...[
+            const SizedBox(height: 6),
+          ],
+          if (content['title'] case final String title when title.isNotEmpty)
+            Text(
+              title,
+              style: TextStyle(
+                letterSpacing: 0.6,
+                height: 1.5,
+                color: textColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          if (content['summary'] case final String summary
+              when summary.isNotEmpty) ...[
             const SizedBox(height: 1),
             Text(
-              content['summary'],
+              summary,
               style: TextStyle(
                 letterSpacing: 0.6,
                 height: 1.5,

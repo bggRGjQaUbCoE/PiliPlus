@@ -28,35 +28,19 @@ Offset calcWindowOffset({
   required Rect workArea,
   Offset? savedPosition,
 }) {
-  final centered = Offset(
-    workArea.left + (workArea.width - windowSize.width) / 2,
-    workArea.top + (workArea.height - windowSize.height) / 2,
-  );
-
-  if (savedPosition == null) return centered;
-
-  final dx = savedPosition.dx;
-  final dy = savedPosition.dy;
-  if (dx + kWindowKeepVisible <= workArea.left ||
-      dy + kWindowKeepVisible <= workArea.top ||
-      dx >= workArea.right - kWindowKeepVisible ||
-      dy >= workArea.bottom - kWindowKeepVisible) {
-    return centered;
+  if (savedPosition != null) {
+    final dx = savedPosition.dx;
+    final dy = savedPosition.dy;
+    if (dx > workArea.left + kWindowKeepVisible &&
+        dy > workArea.top + kWindowKeepVisible &&
+        dx < workArea.right - kWindowKeepVisible &&
+        dy < workArea.bottom - kWindowKeepVisible) {
+      return Offset(dx, dy);
+    }
   }
 
   return Offset(
-    _clamp(
-      dx,
-      workArea.left,
-      math.max(workArea.left, workArea.right - windowSize.width),
-    ),
-    _clamp(
-      dy,
-      workArea.top,
-      math.max(workArea.top, workArea.bottom - windowSize.height),
-    ),
+    workArea.left + (workArea.width - windowSize.width) / 2,
+    workArea.top + (workArea.height - windowSize.height) / 2,
   );
 }
-
-double _clamp(double value, double min, double max) =>
-    value < min ? min : (value > max ? max : value);

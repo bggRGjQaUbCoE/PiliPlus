@@ -152,7 +152,9 @@ Widget _replyContentLayout({
   Widget? actions,
   Widget? subReplies,
 }) {
-  final padding = EdgeInsets.only(left: noPad ? 6 : 45, right: 6);
+  final EdgeInsets padding = noPad
+      ? const .symmetric(horizontal: 6)
+      : const .only(left: 45, right: 6);
 
   return Column(
     mainAxisSize: MainAxisSize.min,
@@ -314,11 +316,12 @@ Widget _replyTranslateButton({
 Widget _replyActionBarLayout({
   required List<Widget> leftButtons,
   Widget? rightButton,
+  required bool noPad,
 }) {
   return Row(
     spacing: 2,
     children: [
-      const SizedBox(width: 36),
+      if (!noPad) const SizedBox(width: 36),
       ...leftButtons,
       if (rightButton != null) ...[
         const Spacer(),
@@ -477,7 +480,7 @@ class ReplyItemGrpc extends StatelessWidget {
       onTapLine: toggleCollapse,
       onScrollLeft: onScrollLeft,
       content: _replyContentLayout(
-        noPad: replyLevel == 0,
+        noPad: true,
         header: _buildHeader(context, colorScheme),
         message: TextMore(
           reason!.desc,
@@ -489,6 +492,7 @@ class ReplyItemGrpc extends StatelessWidget {
           ),
         ),
         actions: _replyActionBarLayout(
+          noPad: true,
           leftButtons: [
             _replyTextButton(
               label: collapsed == 0 ? '折叠' : '展开 $collapsed 条评论',
@@ -503,6 +507,7 @@ class ReplyItemGrpc extends StatelessWidget {
 
   Widget _buildCommon(BuildContext context, ColorScheme colorScheme) {
     final replyControl = replyItem.replyControl;
+    final noPad = replyLevel == 0 || depth >= 0;
     return _replyItemLayout(
       context: context,
       depth: depth,
@@ -512,7 +517,7 @@ class ReplyItemGrpc extends StatelessWidget {
       onTapLine: toggleCollapse,
       onScrollLeft: onScrollLeft,
       content: _replyContentLayout(
-        noPad: replyLevel == 0,
+        noPad: noPad,
         header: _buildHeader(context, colorScheme),
         voteOption: replyControl.hasVoteOption()
             ? _buildVoteOption(colorScheme, replyControl.voteOption)
@@ -521,7 +526,7 @@ class ReplyItemGrpc extends StatelessWidget {
         pictures: _buildPictures(),
         actions: replyLevel == 0
             ? null
-            : _buttonAction(context, colorScheme, replyControl),
+            : _buttonAction(context, colorScheme, replyControl, noPad),
         subReplies: replyLevel == 1 && replyItem.count > Int64.ZERO
             ? _replyItemRow(context, colorScheme, replyItem.replies)
             : null,
@@ -780,6 +785,7 @@ class ReplyItemGrpc extends StatelessWidget {
     BuildContext context,
     ColorScheme colorScheme,
     ReplyControl replyControl,
+    bool noPad,
   ) {
     final textStyle = _getActionStyle(colorScheme);
 
@@ -805,6 +811,7 @@ class ReplyItemGrpc extends StatelessWidget {
     }
 
     return _replyActionBarLayout(
+      noPad: noPad,
       leftButtons: [
         if (onReply != null)
           _replyTextButton(

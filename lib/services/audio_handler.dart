@@ -17,6 +17,7 @@ import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:PiliPlus/utils/ios/airplay_helper.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:audio_service/audio_service.dart';
@@ -94,6 +95,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
 
   @override
   Future<void> play() {
+    if (IOSAirPlayHelper.isActive) return IOSAirPlayHelper.play();
     return onPlay?.call() ??
         PlPlayerController.playIfExists() ??
         Future.syncValue(null);
@@ -101,6 +103,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
 
   @override
   Future<void> pause() {
+    if (IOSAirPlayHelper.isActive) return IOSAirPlayHelper.pause();
     return onPause?.call() ??
         PlPlayerController.pauseIfExists() ??
         Future.syncValue(null);
@@ -126,18 +129,21 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
 
   @override
   Future<void> skipToNext() {
+    if (IOSAirPlayHelper.isActive) return Future.syncValue(null);
     final func = onSkipToNext ?? _findIntroController()?.nextPlay;
     return func == null ? Future.syncValue(null) : Future.sync(func);
   }
 
   @override
   Future<void> skipToPrevious() {
+    if (IOSAirPlayHelper.isActive) return Future.syncValue(null);
     final func = onSkipToPrevious ?? _findIntroController()?.prevPlay;
     return func == null ? Future.syncValue(null) : Future.sync(func);
   }
 
   @override
   Future<void> seek(Duration position) {
+    if (IOSAirPlayHelper.isActive) return IOSAirPlayHelper.seek(position);
     return onSeek?.call(position) ??
         PlPlayerController.seekToIfExists(position, isSeek: false) ??
         Future.syncValue(null);
@@ -164,7 +170,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     required double speed,
     String? debugLabel,
   }) {
-    if (!enableBackgroundPlay || _item.isEmpty) {
+    if (IOSAirPlayHelper.isActive || !enableBackgroundPlay || _item.isEmpty) {
       return;
     }
 

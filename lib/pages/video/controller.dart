@@ -10,6 +10,8 @@ import 'package:PiliPlus/common/widgets/scaffold/mini_scaffold.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pbenum.dart'
     show PlaylistSource;
 import 'package:PiliPlus/grpc/dm.dart';
+import 'package:PiliPlus/grpc/bilibili/community/service/dm/v1.pb.dart'
+    show DanmakuElem;
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/init.dart';
@@ -50,6 +52,8 @@ import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
+import 'package:PiliPlus/plugin/pl_player/utils/danmaku_options.dart';
+import 'package:PiliPlus/services/airplay_hls.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/connectivity_utils.dart';
@@ -57,6 +61,10 @@ import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/nested_scroll_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
+import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:PiliPlus/utils/ios/airplay_helper.dart';
+import 'package:PiliPlus/utils/ios/airplay_danmaku.dart';
+import 'package:PiliPlus/utils/ios/external_display_helper.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/reply_scheme_helper.dart';
@@ -70,6 +78,7 @@ import 'package:dio/dio.dart' show Options;
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart'
     show ExtendedNestedScrollViewState;
 import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/painting.dart' as painting;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:get/get.dart';
@@ -114,6 +123,7 @@ class VideoDetailController extends GetxController
   // 请求返回的视频信息
   late PlayUrlModel data;
   final RxBool videoState = false.obs;
+  final RxBool externalDisplayConnected = false.obs;
 
   /// 播放器配置 画质 音质 解码格式
   final Rxn<VideoQuality> currentVideoQa = Rxn<VideoQuality>();
@@ -641,6 +651,20 @@ class VideoDetailController extends GetxController
             onSuccess: (danmakuModel) {
               savedDanmaku = null;
               plPlayerController.danmakuController?.addDanmaku(danmakuModel);
+              IOSExternalDisplayHelper.sendDanmaku(cid.value, [
+                {
+                  'text': danmakuModel.text,
+                  'color': danmakuModel.color.toARGB32(),
+                  'mode': switch (danmakuModel.type) {
+                    .top => 5,
+                    .bottom => 4,
+                    _ => 1,
+                  },
+                  'colorful': danmakuModel.isColorful,
+                  'selfSend': true,
+                  'count': danmakuModel.count,
+                },
+              ]);
             },
             dmConfig: dmConfig,
             onSaveDmConfig: (dmConfig) => this.dmConfig = dmConfig,
@@ -789,6 +813,9 @@ class VideoDetailController extends GetxController
     }
 
     defaultST = null;
+    if (Platform.isIOS && IOSExternalDisplayHelper.continuesToNextVideo) {
+      unawaited(_continueExternalDisplay());
+    }
   }
 
   bool isQuerying = false;
@@ -1557,20 +1584,266 @@ class VideoDetailController extends GetxController
     );
   }
 
-  @pragma('vm:notify-debugger-on-exception')
-  Future<void> onCast() async {
+  bool _casting = false;
+  final externalDanmakuScale = DanmakuOptions.danmakuFontScaleFS.obs;
+
+  void setExternalDanmakuScale(double value, {bool save = false}) {
+    final scale = value.clamp(0.5, 2.5).toPrecision(2);
+    DanmakuOptions.danmakuFontScaleFS = scale;
+    externalDanmakuScale.value = scale;
+    IOSExternalDisplayHelper.refresh();
+    if (save) {
+      unawaited(DanmakuOptions.save(plPlayerController.danmakuOpacity.value));
+    }
+  }
+
+  Completer<void>? _castFinished;
+  bool _resumingExternalDisplay = false;
+
+  Future<void> _continueExternalDisplay() async {
+    if (_resumingExternalDisplay) return;
+    _resumingExternalDisplay = true;
+    final nextCid = cid.value;
+    final nextPlayer = player;
+    final playing = plPlayerController.playerStatus.isPlaying;
+    try {
+      if (!await IOSExternalDisplayHelper.prepareNextVideo()) return;
+      await _castFinished?.future;
+      if (isClosed ||
+          cid.value != nextCid ||
+          player != nextPlayer ||
+          !IOSExternalDisplayHelper.continuesToNextVideo) {
+        return;
+      }
+      unawaited(onCast(automatic: true, playWhenConnected: playing));
+    } catch (error) {
+      if (kDebugMode) {
+        debugPrint('External display resume failed: ${error.runtimeType}');
+      }
+    } finally {
+      _resumingExternalDisplay = false;
+    }
+  }
+
+  Future<void> onCast({bool automatic = false, bool? playWhenConnected}) async {
+    if (_casting) {
+      if (!automatic && IOSExternalDisplayHelper.isActive) {
+        await IOSExternalDisplayHelper.showControls();
+      }
+      return;
+    }
+    _casting = true;
+    final finished = Completer<void>();
+    _castFinished = finished;
+    try {
+      final mode = Platform.isIOS
+          ? await _castExternalDisplay(
+              showControls: !automatic,
+              playWhenConnected: playWhenConnected,
+            )
+          : 'dlna';
+      if (mode != null && !isClosed) {
+        await _castVideo(mode == 'airplay');
+      }
+    } catch (error) {
+      if (kDebugMode) debugPrint('AirPlay start failed: ${error.runtimeType}');
+      SmartDialog.showToast('投屏启动失败，请稍后重试');
+    } finally {
+      _casting = false;
+      _castFinished = null;
+      finished.complete();
+    }
+  }
+
+  Future<String?> _castExternalDisplay({
+    bool showControls = true,
+    bool? playWhenConnected,
+  }) async {
+    final castCid = cid.value;
+    final currentPlayer = player;
+    if (currentPlayer == null) throw StateError('Video player is not ready');
+    String title = 'PiliPlus';
+    try {
+      title = isUgc
+          ? ugcIntroCtr.videoDetail.value.title ?? title
+          : Get.find<PgcIntroController>(tag: heroTag)
+                    .videoDetail
+                    .value
+                    .title ??
+                title;
+    } catch (_) {}
+    var playOnConnect =
+        playWhenConnected ?? plPlayerController.playerStatus.isPlaying;
+    await plPlayerController.pause();
+    await plPlayerController.triggerFullScreen(status: false);
+    plPlayerController.showControls.value = false;
+    final subtitleSubscription = currentPlayer.stream.subtitle.listen((_) {
+      IOSExternalDisplayHelper.refresh();
+    });
+    try {
+      return await IOSExternalDisplayHelper.present(
+        title: title,
+        artwork: ImageUtils.safeThumbnailUrl(cover.value),
+        darkMode: Theme.of(Get.context!).brightness == Brightness.dark,
+        cid: castCid,
+        showControls: showControls,
+        state: () {
+          if (isClosed || cid.value != castCid || player != currentPlayer) {
+            return null;
+          }
+          final subtitle = vttSubtitlesIndex.value;
+          final state = currentPlayer.state;
+          final speed = plPlayerController.playbackSpeed;
+          return {
+            'textureId': plPlayerController.videoController?.id.value ?? -1,
+            'width':
+                plPlayerController.videoController?.rect.value?.width ??
+                state.width,
+            'height':
+                plPlayerController.videoController?.rect.value?.height ??
+                state.height,
+            'speed': speed,
+            'fit': plPlayerController.videoFit.value.boxFit.index,
+            'flipX': plPlayerController.flipX.value,
+            'flipY': plPlayerController.flipY.value,
+            'subtitleText': state.subtitle.toString(),
+            'subtitleStyle': {
+              'fontSize': 16 * plPlayerController.subtitleFontScaleFS,
+              'fontWeight': plPlayerController.subtitleFontWeight,
+              'backgroundOpacity': plPlayerController.subtitleBgOpacity,
+              'strokeWidth': plPlayerController.subtitleStrokeWidth,
+              'horizontalPadding': plPlayerController.subtitlePaddingH,
+              'bottomPadding': plPlayerController.subtitlePaddingB,
+            },
+            'danmakuOptions': {
+              'fontSize': 15 * DanmakuOptions.danmakuFontScaleFS,
+              'fontWeight': DanmakuOptions.danmakuFontWeight,
+              'area': DanmakuOptions.danmakuShowArea,
+              'duration': DanmakuOptions.danmakuDuration / speed,
+              'staticDuration': DanmakuOptions.danmakuStaticDuration / speed,
+              'hideBottom': DanmakuOptions.blockTypes.contains(4),
+              'hideScroll': DanmakuOptions.blockTypes.contains(2),
+              'hideTop': DanmakuOptions.blockTypes.contains(5),
+              'hideSpecial': DanmakuOptions.blockTypes.contains(7),
+              'strokeWidth': DanmakuOptions.danmakuStrokeWidth,
+              'fixedVelocity': DanmakuOptions.danmakuFixedV,
+              'massiveMode': DanmakuOptions.danmakuMassiveMode,
+              'static2Scroll': DanmakuOptions.danmakuStatic2Scroll,
+              'lineHeight': DanmakuOptions.danmakuLineHeight,
+            },
+            'danmakuOpacity': plPlayerController.danmakuOpacity.value,
+            'danmakuScale': DanmakuOptions.danmakuFontScaleFS,
+            'playing': plPlayerController.playerStatus.isPlaying,
+            'positionMs': plPlayerController.positionInMilliseconds,
+            'durationMs': plPlayerController.durationInMilliseconds,
+            'danmaku': plPlayerController.enableShowDanmaku.value,
+            'subtitle': subtitle > 0 && subtitle <= subtitles.length
+                ? subtitles[subtitle - 1].lanDoc ?? subtitles[subtitle - 1].lan
+                : '关闭',
+            'subtitleIndex': subtitle.clamp(0, subtitles.length),
+            'subtitles': [
+              '关闭',
+              for (final item in subtitles) item.lanDoc ?? item.lan,
+            ],
+          };
+        },
+        onCommand: (command, value) async {
+          if (isClosed || cid.value != castCid || player != currentPlayer) {
+            return;
+          }
+          switch (command) {
+            case 'connected':
+              animController?.stop();
+              isExpanding = false;
+              isCollapsing = false;
+              externalDisplayConnected.value = true;
+              if (playOnConnect) {
+                await plPlayerController.play();
+              }
+            case 'disconnected':
+              externalDisplayConnected.value = false;
+              playOnConnect = plPlayerController.playerStatus.isPlaying;
+              await plPlayerController.pause();
+              plPlayerController.danmakuController?.clear();
+              IOSExternalDisplayHelper.clearDanmaku();
+            case 'close':
+              externalDisplayConnected.value = false;
+              await plPlayerController.pause();
+              plPlayerController.danmakuController?.clear();
+            case 'togglePlayback':
+              if (plPlayerController.playerStatus.isPlaying) {
+                await plPlayerController.pause();
+              } else {
+                await plPlayerController.play();
+              }
+            case 'skip' || 'seek':
+              final milliseconds = command == 'skip'
+                  ? plPlayerController.positionInMilliseconds + (value ?? 0)
+                  : value ?? 0;
+              await plPlayerController.seekTo(
+                Duration(
+                  milliseconds: milliseconds
+                      .clamp(0, plPlayerController.durationInMilliseconds)
+                      .round(),
+                ),
+                isSeek: false,
+              );
+            case 'toggleDanmaku':
+              plPlayerController.enableShowDanmaku.toggle();
+            case 'danmakuScale' || 'saveDanmakuScale':
+              if (value != null) {
+                setExternalDanmakuScale(
+                  value,
+                  save: command == 'saveDanmakuScale',
+                );
+              }
+            case 'selectSubtitle':
+              final index = value?.toInt();
+              if (index != null && index >= 0 && index <= subtitles.length) {
+                await setSubtitle(index);
+              }
+          }
+          plPlayerController.showControls.value = false;
+        },
+      );
+    } finally {
+      await subtitleSubscription.cancel();
+      if (!isClosed) externalDisplayConnected.value = false;
+      if (!isClosed && cid.value == castCid && player == currentPlayer) {
+        await plPlayerController.pause();
+      }
+    }
+  }
+
+  Future<void> _castVideo(bool airPlay) async {
+    final castCid = cid.value;
+    if (airPlay && data.dash != null) {
+      await _castDashAirPlay(castCid);
+      return;
+    }
     SmartDialog.showLoading();
-    final res = await VideoHttp.tvPlayUrl(
-      cid: cid.value,
-      objectId: epId ?? aid,
-      playurlType: epId != null ? 2 : 1,
-      qn: currentVideoQa.value?.code,
-    );
-    SmartDialog.dismiss();
+    final LoadingState<PlayUrlModel> res;
+    try {
+      res = await VideoHttp.tvPlayUrl(
+        cid: castCid,
+        objectId: epId ?? aid,
+        playurlType: epId != null ? 2 : 1,
+        qn: currentVideoQa.value?.code,
+      );
+    } finally {
+      SmartDialog.dismiss();
+    }
+    if (isClosed || cid.value != castCid) return;
     if (res case Success(:final response)) {
       final first = response.durl?.firstOrNull;
       if (first == null || first.playUrls.isEmpty) {
         SmartDialog.showToast('不支持投屏');
+        return;
+      }
+      if (airPlay &&
+          (response.durl!.length != 1 ||
+              !(response.format?.startsWith('mp4') ?? false))) {
+        SmartDialog.showToast('此视频暂不支持 AirPlay，请尝试 DLNA 投屏');
         return;
       }
       final url = VideoUtils.getCdnUrl(first.playUrls);
@@ -1578,27 +1851,271 @@ class VideoDetailController extends GetxController
       String? title;
       try {
         if (isUgc) {
-          title = Get.find<UgcIntroController>(
-            tag: heroTag,
-          ).videoDetail.value.title;
+          title = Get.find<UgcIntroController>(tag: heroTag)
+              .videoDetail
+              .value
+              .title;
         } else {
-          title = Get.find<PgcIntroController>(
-            tag: heroTag,
-          ).videoDetail.value.title;
+          title = Get.find<PgcIntroController>(tag: heroTag)
+              .videoDetail
+              .value
+              .title;
         }
       } catch (_) {}
       if (kDebugMode) {
         debugPrint(title);
       }
-      Get.toNamed(
-        '/dlna',
-        parameters: {
-          'url': url,
-          'title': ?title,
-        },
-      );
+      if (airPlay) {
+        final currentPlayer = player;
+        final position = Duration(
+          milliseconds: plPlayerController.positionInMilliseconds,
+        );
+        await plPlayerController.pause();
+        final result = await IOSAirPlayHelper.present(
+          url: url,
+          title: title ?? 'PiliPlus',
+          position: position,
+        );
+        if (!isClosed && cid.value == castCid && player == currentPlayer) {
+          // Returning from the system player keeps local playback paused.
+          await plPlayerController.seekTo(result.position, isSeek: false);
+          if (result.error case final error?) SmartDialog.showToast(error);
+        }
+        return;
+      }
+      Get.toNamed('/dlna', parameters: {'url': url, 'title': ?title});
     } else {
       res.toast();
+    }
+  }
+
+  Future<void> _castDashAirPlay(int castCid) async {
+    final dash = data.dash!;
+    final quality = currentVideoQa.value?.code;
+    final video =
+        dash.video?.firstWhereOrNull(
+          (item) =>
+              item.id == quality && (item.codecs?.startsWith('avc1') ?? false),
+        ) ??
+        dash.video?.firstWhereOrNull(
+          (item) =>
+              item.id == quality && (item.codecs?.startsWith('hvc1') ?? false),
+        );
+    final audio =
+        dash.audio?.firstWhereOrNull(
+          (item) =>
+              item.id == currentAudioQa?.code &&
+              (item.codecs?.startsWith('mp4a') ?? false),
+        ) ??
+        dash.audio?.firstWhereOrNull(
+          (item) => item.codecs?.startsWith('mp4a') ?? false,
+        );
+    if (video == null ||
+        audio == null ||
+        (video.width ?? 0) <= 0 ||
+        (video.height ?? 0) <= 0) {
+      SmartDialog.showToast('当前画质暂无 AirPlay 支持的音视频编码，请切换画质后重试');
+      return;
+    }
+    final playerAtStart = player;
+    final position = Duration(
+      milliseconds: plPlayerController.positionInMilliseconds,
+    );
+    final withDanmaku = plPlayerController.enableShowDanmaku.value;
+    final view = PlatformDispatcher.instance.views.first;
+    final referenceHeight =
+        (view.physicalSize.shortestSide / view.devicePixelRatio).clamp(
+          200.0,
+          1500.0,
+        );
+    final fontSize = 15 * DanmakuOptions.danmakuFontScaleFS;
+    final fontFamily = Get.context == null
+        ? null
+        : DefaultTextStyle.of(Get.context!).style.fontFamily;
+    final danmakuStyle = AirPlayDanmakuStyle(
+      duration: DanmakuOptions.danmakuDuration,
+      staticDuration: DanmakuOptions.danmakuStaticDuration,
+      area: DanmakuOptions.danmakuShowArea,
+      fontSize: fontSize / referenceHeight * 100,
+      fontWeight: DanmakuOptions.danmakuFontWeight,
+      opacity: plPlayerController.danmakuOpacity.value,
+      strokeWidth: DanmakuOptions.danmakuStrokeWidth,
+      lineHeight: DanmakuOptions.danmakuLineHeight,
+      aspectRatio: video.width! / video.height!,
+      hideScroll: DanmakuOptions.blockTypes.contains(2),
+      hideTop: DanmakuOptions.blockTypes.contains(5),
+      hideBottom: DanmakuOptions.blockTypes.contains(4),
+      whiteOnly: DanmakuOptions.blockColorful,
+      fixedVelocity: DanmakuOptions.danmakuFixedV,
+      static2Scroll: DanmakuOptions.danmakuStatic2Scroll,
+      massiveMode: DanmakuOptions.danmakuMassiveMode,
+      fontFamily: fontFamily,
+    );
+    final minimumWeight = DanmakuOptions.danmakuWeight;
+    final mergeDanmaku = plPlayerController.mergeDanmaku;
+    double measureWidth(String text) {
+      final painter = painting.TextPainter(
+        text: painting.TextSpan(
+          text: text,
+          style: painting.TextStyle(
+            fontFamily: fontFamily,
+            fontSize: fontSize,
+            fontWeight: FontWeight.values[danmakuStyle.fontWeight.clamp(0, 8)],
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+        maxLines: 1,
+      )..layout();
+      final width =
+          painter.width / (referenceHeight * danmakuStyle.aspectRatio) * 100;
+      painter.dispose();
+      return width;
+    }
+
+    var diagnosticCount = 0;
+    void trace(String message) {
+      if (kDebugMode && diagnosticCount++ < 48) {
+        debugPrint('[AirPlay] $message');
+      }
+    }
+
+    trace(
+      'enabled=$withDanmaku weight=$minimumWeight '
+      'hidden=${danmakuStyle.hideScroll}/${danmakuStyle.hideTop}/${danmakuStyle.hideBottom} '
+      'opacity=${danmakuStyle.opacity}',
+    );
+    final dmSegments = <int, Future<List<DanmakuElem>>>{};
+    Future<List<DanmakuElem>> loadComments(int index) async {
+      final pending = dmSegments.putIfAbsent(index, () async {
+        final result = await DmGrpc.dmSegMobile(
+          cid: castCid,
+          segmentIndex: index + 1,
+        );
+        if (result case Success(:final response)) {
+          trace('source $index count=${response.elems.length}');
+          return response.elems;
+        }
+        trace('source $index failed ${result.runtimeType}');
+        throw StateError('投屏弹幕加载失败');
+      });
+      try {
+        final comments = await pending;
+        if (dmSegments.length > 3) {
+          dmSegments.remove(dmSegments.keys.firstWhere((key) => key != index));
+        }
+        return comments;
+      } catch (_) {
+        if (identical(dmSegments[index], pending)) dmSegments.remove(index);
+        rethrow;
+      }
+    }
+
+    final AirPlayHlsSession session;
+    SmartDialog.showLoading();
+    try {
+      session = await AirPlayHlsSession.start(
+        onDiagnostic: trace,
+        video: AirPlayTrack(
+          url: VideoUtils.getCdnUrl(video.playUrls),
+          codecs: video.codecs!,
+          bandwidth: video.bandWidth ?? 5000000,
+          width: video.width!,
+          height: video.height!,
+        ),
+        audio: AirPlayTrack(
+          url: VideoUtils.getCdnUrl(audio.playUrls, isAudio: true),
+          codecs: audio.codecs!,
+          bandwidth: audio.bandWidth ?? 192000,
+        ),
+        subtitles: withDanmaku
+            ? (segment) async {
+                final comments = <AirPlayComment>[];
+                // DM API data arrives in six-minute blocks; native subtitle
+                // files use short intervals to bound parsing/memory on receivers.
+                final dmIndex = segment * airPlaySubtitleSegmentSeconds ~/ 360;
+                for (final index in [if (dmIndex > 0) dmIndex - 1, dmIndex]) {
+                  final source = await loadComments(index);
+                  final entries = <({DanmakuElem item, int count})>[];
+                  final merged = <String, int>{};
+                  for (final item in source) {
+                    final self = item.midHash == plPlayerController.midHash;
+                    if (item.weight < minimumWeight ||
+                        (!self &&
+                            plPlayerController.filters.count != 0 &&
+                            plPlayerController.filters.remove(item))) {
+                      continue;
+                    }
+                    if (mergeDanmaku && !self) {
+                      final previous = merged[item.content];
+                      if (previous != null) {
+                        final entry = entries[previous];
+                        entries[previous] = (
+                          item: entry.item,
+                          count: entry.count + 1,
+                        );
+                        continue;
+                      }
+                      merged[item.content] = entries.length;
+                    }
+                    entries.add((item: item, count: 1));
+                  }
+                  for (final entry in entries) {
+                    final item = entry.item;
+                    comments.add(
+                      AirPlayComment(
+                        item.progress,
+                        item.mode,
+                        entry.count > 1
+                            ? '(${entry.count})${item.content}'
+                            : item.content,
+                        item.color,
+                      ),
+                    );
+                  }
+                }
+                trace('segment $segment filtered=${comments.length}');
+                return airPlayDanmakuVtt(
+                  comments,
+                  segment,
+                  style: danmakuStyle,
+                  measureWidth: measureWidth,
+                  segmentDurationMs: airPlaySubtitleSegmentSeconds * 1000,
+                );
+              }
+            : null,
+      );
+    } finally {
+      SmartDialog.dismiss();
+    }
+    try {
+      if (isClosed || cid.value != castCid || player != playerAtStart) return;
+      String title = 'PiliPlus';
+      try {
+        title = isUgc
+            ? ugcIntroCtr.videoDetail.value.title ?? title
+            : Get.find<PgcIntroController>(tag: heroTag)
+                      .videoDetail
+                      .value
+                      .title ??
+                  title;
+      } catch (_) {}
+      await plPlayerController.pause();
+      final result = await IOSAirPlayHelper.present(
+        url: session.url,
+        title: title,
+        position: position,
+        localNetwork: true,
+        subtitles: withDanmaku,
+        subtitleStyle: withDanmaku ? danmakuStyle.nativeStyle : null,
+      );
+      if (!isClosed && cid.value == castCid && player == playerAtStart) {
+        // mpv is paused throughout AirPlay, so no new buffer event is
+        // guaranteed. A gesture seek would wait for that event indefinitely.
+        await plPlayerController.seekTo(result.position, isSeek: false);
+        if (result.error case final error?) SmartDialog.showToast(error);
+      }
+    } finally {
+      await session.close();
     }
   }
 }

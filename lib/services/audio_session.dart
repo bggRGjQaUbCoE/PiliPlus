@@ -1,5 +1,6 @@
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
+import 'package:PiliPlus/utils/ios/airplay_helper.dart';
 import 'package:audio_session/audio_session.dart';
 
 class AudioSessionHandler {
@@ -19,6 +20,10 @@ class AudioSessionHandler {
     session.configure(const AudioSessionConfiguration.music());
 
     session.interruptionEventStream.listen((event) {
+      if (IOSAirPlayHelper.isActive) {
+        _playInterrupted = false;
+        return; // AVKit handles interruptions during external playback.
+      }
       final playerStatus = PlPlayerController.getPlayerStatusIfExists();
       // final player = PlPlayerController.getInstance();
       if (event.begin) {
@@ -65,6 +70,10 @@ class AudioSessionHandler {
 
     // 耳机拔出暂停
     session.becomingNoisyEventStream.listen((_) {
+      if (IOSAirPlayHelper.isActive) {
+        IOSAirPlayHelper.pause();
+        return;
+      }
       PlPlayerController.pauseIfExists();
       // final player = PlPlayerController.getInstance();
       // if (player.playerStatus.playing) {

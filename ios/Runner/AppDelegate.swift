@@ -16,5 +16,11 @@ import UIKit
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "PipPlugin") {
       PipPlugin.register(with: registrar)
     }
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "AirPlayPlugin") {
+      AirPlayPlugin.register(with: registrar)
+    }
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "ExternalDisplayPlugin") {
+      ExternalDisplayPlugin.register(with: registrar)
+    }
   }
 }

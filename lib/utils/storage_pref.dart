@@ -19,6 +19,7 @@ import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
 import 'package:PiliPlus/models/common/super_chat_type.dart';
 import 'package:PiliPlus/models/common/super_resolution_type.dart';
+import 'package:PiliPlus/models/common/theme/palette_registry.dart';
 import 'package:PiliPlus/models/common/theme/theme_type.dart';
 import 'package:PiliPlus/models/common/video/base_quality.dart';
 import 'package:PiliPlus/models/common/video/cdn_type.dart';
@@ -750,6 +751,23 @@ abstract final class Pref {
 
   static int get customColor =>
       _setting.get(SettingBoxKey.customColor, defaultValue: 0);
+
+  /// 当前调色板方案，见 [PaletteRegistry]。
+  static int get paletteId => _setting.get(
+    SettingBoxKey.paletteId,
+    defaultValue: PaletteRegistry.seedId,
+  );
+
+  /// 某个方案当前的取色：小于 [PaletteTheme.accents] 长度时是下标，
+  /// 否则是自定义颜色的 ARGB。
+  static int paletteAccent(int id) {
+    final theme = PaletteRegistry.byId(id);
+    if (id == PaletteRegistry.seedId) return customColor;
+    return _setting.get(
+      '${SettingBoxKey.paletteAccent}.$id',
+      defaultValue: theme.defaultAccent,
+    );
+  }
 
   static bool get dynamicColor =>
       !Platform.isIOS &&

@@ -233,6 +233,8 @@ abstract final class SettingBoxKey {
       appFontWeightV2 = 'appFontWeightV2',
       dynamicColor = 'dynamicColor',
       customColor = 'customColor',
+      paletteId = 'paletteId',
+      paletteAccent = 'paletteAccent',
       displayMode = 'displayMode',
       smallCardWidth = 'smallCardWidth',
       recommendCardWidth = 'recommendCardWidth',

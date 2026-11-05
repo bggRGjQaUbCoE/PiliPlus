@@ -381,7 +381,9 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
       onReply: (replyItem) => controller.onReply(replyItem, index: index),
       onDelete: (item, subIndex) => controller.onRemove(index, item, subIndex),
       upMid: controller.upMid,
-      dialogueCallback: isDialogue ? _onJumpToParent : _showDialogue,
+      dialogueCallback: isDialogue
+          ? _onJumpToParent
+          : (replyItem) => _showDialogue(context, replyItem),
       getReplyChain: () => controller.getParentChain(index, firstFloor),
       onCheckReply: controller.onCheckReply,
     );
@@ -393,7 +395,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
     }
   }
 
-  void _showDialogue(ReplyInfo replyItem) {
+  void _showDialogue(BuildContext context, ReplyInfo replyItem) {
     MiniScaffold.of(context).showBottomSheet(
       constraints: const BoxConstraints(),
       (context) => VideoReplyReplyPanel(

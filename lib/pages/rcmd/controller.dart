@@ -4,6 +4,7 @@ import 'package:PiliPlus/models/common/rcmd_source.dart';
 import 'package:PiliPlus/pages/common/common_controller.dart'
     show RefreshImplMixin;
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
+import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 
 class RcmdController extends CommonListController with RefreshImplMixin {
@@ -67,5 +68,10 @@ class RcmdController extends CommonListController with RefreshImplMixin {
     page = 0;
     isEnd = false;
     return queryData();
+  }
+
+  void toTopAndRefresh() {
+    scrollController.jumpToTop();
+    showRefresh();
   }
 }

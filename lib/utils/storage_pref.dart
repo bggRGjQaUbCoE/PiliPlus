@@ -1116,5 +1116,5 @@ abstract final class Pref {
       _setting.get(SettingBoxKey.filterIntro, defaultValue: false);
 
   static int get foldDepth =>
-      _setting.get(SettingBoxKey.foldDepth, defaultValue: 0);
+      _setting.get(SettingBoxKey.foldDepth, defaultValue: 5);
 }

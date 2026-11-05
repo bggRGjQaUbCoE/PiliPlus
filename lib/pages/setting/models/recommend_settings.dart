@@ -1,20 +1,30 @@
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/models/common/rcmd_source.dart';
 import 'package:PiliPlus/pages/rcmd/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/utils/recommend_filter.dart';
+import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart' hide StatefulBuilder;
 
 List<SettingsModel> get recommendSettings => [
-  const SwitchModel(
-    title: '首页使用app端推荐',
-    subtitle: '若web端推荐不太符合预期，可尝试切换至app端推荐',
-    leading: Icon(Icons.model_training_outlined),
-    setKey: SettingBoxKey.appRcmd,
-    defaultVal: true,
-    needReboot: true,
+  PopupModel(
+    title: '首页推荐来源',
+    leading: const Icon(Icons.swap_horiz_outlined),
+    value: () => Pref.rcmdSource,
+    items: RcmdSource.values,
+    onSelected: _switchRcmdSource,
+  ),
+  const NormalModel(
+    title: '桌面端 / PC',
+    subtitle: '沿用公开的网页推荐接口，按哔哩哔哩官方 Windows 客户端首页'
+        '实际发送的参数组合请求，以获得更接近官方客户端的推荐体验；'
+        '不涉及私有接口与设备指纹',
+    leading: Icon(Icons.desktop_windows_outlined),
   ),
   SwitchModel(
     title: '保留首页推荐刷新',
@@ -106,3 +116,22 @@ List<SettingsModel> get recommendSettings => [
     onChanged: (value) => RecommendFilter.applyFilterToRelatedVideos = value,
   ),
 ];
+
+void _switchRcmdSource(RcmdSource value, VoidCallback setState) {
+  // 同步旧键（旧版本只有 app / web 二选一），保证降级后语义一致
+  GStorage.setting
+      .put(SettingBoxKey.appRcmd, value == RcmdSource.app)
+      .whenComplete(setState);
+  GStorage.setting.put(SettingBoxKey.rcmdSource, value.index);
+  try {
+    Get.find<RcmdController>()
+      ..rcmdSource = value
+      ..lastRefreshAt = null
+      // 用 onReload 而不是 onRefresh：切换来源后不应把旧来源的列表
+      // 拼到新来源的数据前面（"保留上次内容"只在同一来源内生效）
+      ..onReload();
+  } catch (e) {
+    if (kDebugMode) debugPrint('$e');
+  }
+  SmartDialog.showToast('已切换为${value.label}');
+}

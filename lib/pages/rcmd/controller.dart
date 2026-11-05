@@ -1,11 +1,14 @@
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/models/common/rcmd_source.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 
 class RcmdController extends CommonListController {
   late bool enableSaveLastData = Pref.enableSaveLastData;
-  final bool appRcmd = Pref.appRcmd;
+
+  /// 可在设置页切换后立即生效，无需重启
+  RcmdSource rcmdSource = Pref.rcmdSource;
 
   int? lastRefreshAt;
   late bool savedRcmdTip = Pref.savedRcmdTip;
@@ -22,9 +25,16 @@ class RcmdController extends CommonListController {
 
   @override
   Future<LoadingState> customGetData() {
-    return appRcmd
-        ? VideoHttp.rcmdVideoListApp(freshIdx: page)
-        : VideoHttp.rcmdVideoList(freshIdx: page, ps: 20);
+    return switch (rcmdSource) {
+      RcmdSource.app => VideoHttp.rcmdVideoListApp(freshIdx: page),
+      // 桌面端：与官方 Windows 客户端一致，每次请求 30 条
+      RcmdSource.desktop => VideoHttp.rcmdVideoList(
+        freshIdx: page,
+        ps: 30,
+        desktop: true,
+      ),
+      RcmdSource.web => VideoHttp.rcmdVideoList(freshIdx: page, ps: 20),
+    };
   }
 
   @override

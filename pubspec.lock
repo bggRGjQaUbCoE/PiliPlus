@@ -21,10 +21,10 @@ packages:
     dependency: transitive
     description:
       name: android_file_picker
-      sha256: "03d3dd3cb578ab26b1e528aeea27bf6b976942f5a24e3da82d270369b8e161a8"
+      sha256: "868183c959e754e915954d8074c20cfa4cfdb4684b35ecc08378437be1a542d8"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.2"
+    version: "2.1.3"
   ansicolor:
     dependency: transitive
     description:
@@ -308,10 +308,10 @@ packages:
     dependency: transitive
     description:
       name: cnativeapi
-      sha256: "7a298b9e3c8de50713cec75458e13d5e5dded47ba94d1231de84f6371785a554"
+      sha256: "15c23cf1713a98ceba66d1068e9470621a47e10429c843884ad70ad3600071be"
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.3"
+    version: "0.5.7"
   code_assets:
     dependency: transitive
     description:
@@ -451,10 +451,11 @@ packages:
   dlna_dart:
     dependency: "direct main"
     description:
-      name: dlna_dart
-      sha256: da607931548720331b7503f72c426fa7fbd19e9144a4778d293c16a5bc186407
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: master
+      resolved-ref: fe347512768400a4309dd73269f104ba65668f07
+      url: "https://github.com/suconghou/dlna-dart.git"
+    source: git
     version: "0.1.1"
   dynamic_color:
     dependency: "direct main"
@@ -533,26 +534,26 @@ packages:
     dependency: "direct main"
     description:
       name: file_picker
-      sha256: e67f1bcbef00f8b28f3b6ce09a1f0d2d9de37cf1e1e7e73b70df7a20d3eee8be
+      sha256: c64036857780d7125f011d543f89eedcb5df61da473668bace4eee9ab875284d
       url: "https://pub.dev"
     source: hosted
-    version: "13.3.0"
+    version: "13.3.2"
   file_picker_darwin:
     dependency: transitive
     description:
       name: file_picker_darwin
-      sha256: "13e731433fb3e59c1aff5a1197e41c5c5f930fad16342d101579086271a70d7b"
+      sha256: daeb0219f6279c73eb9c63ae9a566beef04ae13d59b8feba0be2a7f3b258d3d4
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.0"
+    version: "2.4.2"
   file_picker_linux:
     dependency: transitive
     description:
       name: file_picker_linux
-      sha256: e7db600f50672ce5ebbe422ac0906e0f3d2a476188cc93e7126afee12bf08063
+      sha256: eb00de71b123e91d3c61f389a05b8cc90f9cbe7e4c88da30ebe2f0442b281b61
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.0"
+    version: "2.0.3"
   file_picker_platform_interface:
     dependency: transitive
     description:
@@ -1281,18 +1282,18 @@ packages:
     dependency: "direct main"
     description:
       name: nativeapi
-      sha256: "8ddc6e8d892489456093a28fdc889d6aa394cd0a1c9f23c4952180925ad7d025"
+      sha256: c6155e67d3565b6b36947c376b420f84f0939ce893a2d2a0cf6108441df6dd2e
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.3"
+    version: "0.5.7"
   nativeapi_flutter:
     dependency: transitive
     description:
       name: nativeapi_flutter
-      sha256: "7d9e4c9aebf04ba415b65a523b3a6348b602c494ae5b33c8210b551077d3a63b"
+      sha256: ddde55e8460e744ae30f51dfdbed4bac2d9f53bcafe71acf595539b5eff87871
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.3"
+    version: "0.5.7"
   nm:
     dependency: "direct main"
     description:
@@ -1418,10 +1419,10 @@ packages:
     dependency: "direct main"
     description:
       name: permission_handler_apple
-      sha256: b69e6b8300f9584af5ab81b41cdaa544e1b45e6fca0a30b0f9a9a120d90fc8a5
+      sha256: "82d31c9b321c45785ccd73bce9c63af17037116193b4000b998a4363059adb6e"
       url: "https://pub.dev"
     source: hosted
-    version: "9.6.4"
+    version: "9.6.5"
   permission_handler_platform_interface:
     dependency: "direct main"
     description:
@@ -1760,10 +1761,10 @@ packages:
     dependency: "direct main"
     description:
       name: tray_manager
-      sha256: bbdde2fd0497a4936f41aeeb9cbfe41c54a29855fd6fdda6871dbe736a4da437
+      sha256: bc433331d714919a8d40b6575c084be78de56dbe2327c11ce995fca4ec51bbff
       url: "https://pub.dev"
     source: hosted
-    version: "0.8.1"
+    version: "0.8.2"
   typed_data:
     dependency: transitive
     description:
@@ -1864,10 +1865,10 @@ packages:
     dependency: transitive
     description:
       name: vector_graphics
-      sha256: "4e5f106dfc6f0e4e7efe11603e38c34352d912905320b930128a9b1ad61363f4"
+      sha256: "82885f6ac633044e7a4e4d8d745724a67aa0dc50af5d8a81ec29379f63c29035"
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.5"
+    version: "1.2.6"
   vector_graphics_codec:
     dependency: transitive
     description:
@@ -1961,18 +1962,18 @@ packages:
     dependency: "direct main"
     description:
       name: webview_all_linux
-      sha256: be506cbf90a140d54e0ccde4e43d5f0795309242fd85ba3cc7564382087e443c
+      sha256: "323defb2cb47fb895128901fa28bfe90181a24b27dafec39549690489ca7b178"
       url: "https://pub.dev"
     source: hosted
-    version: "1.4.9"
+    version: "1.4.10"
   webview_platform_interface:
     dependency: "direct main"
     description:
       name: webview_platform_interface
-      sha256: "1972aec36e718faa216df014917bf760bf18eb5bad8e73a73833345836da64b6"
+      sha256: "942a83228679c16e8aabb9fff1e3dbc6fdf842517d0f566699f10a567b681b9a"
       url: "https://pub.dev"
     source: hosted
-    version: "1.4.9"
+    version: "1.4.10"
   win32:
     dependency: "direct main"
     description:
@@ -1992,11 +1993,10 @@ packages:
   window_manager:
     dependency: "direct main"
     description:
-      path: "."
-      ref: main
-      resolved-ref: "80acd536a1ea1c121c36e32d30e638a295087ed1"
-      url: "https://github.com/leanflutter/window_manager.git"
-    source: git
+      name: window_manager
+      sha256: bdd6b1a2c1ce50f3bba7ffbaa0d5dc5feb6b6a24fd20269da4de90244f77a471
+      url: "https://pub.dev"
+    source: hosted
     version: "0.6.0"
   windows_file_picker:
     dependency: transitive

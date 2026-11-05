@@ -337,6 +337,15 @@ public final class AndroidHelper {
         return Build.MANUFACTURER;
     }
 
+    public static boolean isChromeOS() {
+        PackageManager pm = getContext().getPackageManager();
+        if (Build.VERSION.SDK_INT >= 27 && pm.hasSystemFeature(PackageManager.FEATURE_PC)) {
+            return true;
+        }
+        return pm.hasSystemFeature("org.chromium.arc") || pm.hasSystemFeature("org.chromium.arc.device_management")
+                || (Build.DEVICE != null && Build.DEVICE.matches(".+_cheets|cheets_.+"));
+    }
+
     public static final class ToDart {
         public static volatile Runnable onUserLeaveHint;
         public static Runnable onConfigurationChanged;

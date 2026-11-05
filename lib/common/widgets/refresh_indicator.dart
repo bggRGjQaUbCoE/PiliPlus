@@ -1,4 +1,7 @@
+import 'dart:async' show StreamSubscription;
+
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
+import 'package:get/get_rx/src/rx_types/rx_types.dart' show RxBool;
 import 'package:material_ui/material_ui.dart';
 
 // ignore: camel_case_types
@@ -8,7 +11,7 @@ class RefreshIndicator_ extends StatefulWidget {
     required this.isRefreshing,
   });
 
-  final bool isRefreshing;
+  final RxBool isRefreshing;
 
   @override
   State<RefreshIndicator_> createState() => _RefreshIndicatorState();
@@ -16,9 +19,24 @@ class RefreshIndicator_ extends StatefulWidget {
 
 class _RefreshIndicatorState extends State<RefreshIndicator_>
     with TickerProviderStateMixin {
-  late final AnimationController _scaleController;
-  late final AnimationController _progressController;
   late Color _color;
+  late final StreamSubscription _listener;
+  late final AnimationController _scaleController;
+
+  void _onRefreshChanged(bool isRefreshing) {
+    if (!mounted) return;
+    if (isRefreshing) {
+      _scaleController.value = 1;
+      setState(() {});
+    } else {
+      _scaleController.reverse().whenComplete(_stopProgress);
+    }
+  }
+
+  void _stopProgress() {
+    if (!mounted) return;
+    setState(() {});
+  }
 
   @override
   void initState() {
@@ -27,33 +45,14 @@ class _RefreshIndicatorState extends State<RefreshIndicator_>
       vsync: this,
       duration: const Duration(milliseconds: 200),
     );
-    _progressController = AnimationController(
-      vsync: this,
-      duration: CircularProgressIndicator.defaultAnimationDuration,
-    );
+    _listener = widget.isRefreshing.listen(_onRefreshChanged);
   }
 
   @override
   void dispose() {
+    _listener.cancel();
     _scaleController.dispose();
-    _progressController.dispose();
     super.dispose();
-  }
-
-  @override
-  void didUpdateWidget(RefreshIndicator_ oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.isRefreshing != widget.isRefreshing) {
-      if (widget.isRefreshing) {
-        _scaleController.value = 1;
-        _progressController
-          ..value = 0.0
-          ..repeat();
-      } else {
-        _scaleController.reverse();
-        _progressController.stop();
-      }
-    }
   }
 
   @override
@@ -67,6 +66,9 @@ class _RefreshIndicatorState extends State<RefreshIndicator_>
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.isRefreshing.value) {
+      return const SizedBox.shrink();
+    }
     return ScaleTransition(
       scale: _scaleController,
       child: Center(
@@ -76,12 +78,9 @@ class _RefreshIndicatorState extends State<RefreshIndicator_>
             type: .circle,
             elevation: 2.0,
             color: _color,
-            child: Padding(
-              padding: const .all(6),
-              child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                controller: _progressController,
-              ),
+            child: const Padding(
+              padding: .all(6),
+              child: CircularProgressIndicator(strokeWidth: 2.5),
             ),
           ),
         ),

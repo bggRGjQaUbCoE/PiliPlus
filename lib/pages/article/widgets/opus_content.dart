@@ -21,9 +21,11 @@ import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliPlus/utils/parse_string.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -56,6 +58,7 @@ class OpusContent extends StatelessWidget {
     required ColorScheme colorScheme,
     required ValueGetter<double> surfaceLuminance,
   }) {
+    const iconSize = 17.0;
     switch (item.type) {
       case 'TEXT_NODE_TYPE_RICH' when (item.rich != null):
         final rich = item.rich!;
@@ -79,75 +82,133 @@ class OpusContent extends StatelessWidget {
                 ),
               ),
             );
-          case 'RICH_TEXT_NODE_TYPE_LOTTERY':
-            return TextSpan(
-              children: [
-                WidgetSpan(
+          default:
+            InlineSpan? icon;
+            final isRich = rich.type != 'RICH_TEXT_NODE_TYPE_TEXT';
+            final color = isRich ? colorScheme.primary : null;
+            switch (rich.type) {
+              case 'RICH_TEXT_NODE_TYPE_WEB':
+                icon = WidgetSpan(
                   alignment: .middle,
                   child: Icon(
-                    Icons.redeem_rounded,
-                    size: 16,
-                    color: colorScheme.primary,
+                    Icons.link,
+                    color: color,
+                    size: iconSize,
                   ),
-                ),
-                TextSpan(
-                  text: '${rich.origText} ',
-                  style: TextStyle(color: colorScheme.primary),
-                  recognizer: NoDeadlineTapGestureRecognizer()
-                    ..onTap = () => Get.toNamed(
-                      '/webview',
-                      parameters: {
-                        'url':
-                            'https://www.bilibili.com/h5/lottery/result?business_id=$opusId',
-                      },
-                    ),
-                ),
-              ],
-            );
-          case 'RICH_TEXT_NODE_TYPE_VOTE':
-            final rid = rich.rid != null ? int.tryParse(rich.rid!) : null;
-            return TextSpan(
-              children: [
-                WidgetSpan(
+                );
+              case 'RICH_TEXT_NODE_TYPE_AV':
+                icon = WidgetSpan(
+                  alignment: .middle,
+                  child: Icon(
+                    Icons.play_circle_outline_rounded,
+                    color: color,
+                    size: iconSize,
+                  ),
+                );
+              case 'RICH_TEXT_NODE_TYPE_VOTE':
+                icon = WidgetSpan(
                   alignment: .middle,
                   child: Icon(
                     Icons.bar_chart_rounded,
-                    size: 16,
+                    size: iconSize,
                     color: colorScheme.primary,
                   ),
-                ),
+                );
+              case 'RICH_TEXT_NODE_TYPE_LOTTERY':
+                icon = WidgetSpan(
+                  alignment: .middle,
+                  child: Icon(
+                    Icons.redeem_rounded,
+                    size: iconSize,
+                    color: colorScheme.primary,
+                  ),
+                );
+              case 'RICH_TEXT_NODE_TYPE_LIVE':
+                icon = WidgetSpan(
+                  alignment: .middle,
+                  child: Icon(
+                    Icons.live_tv,
+                    color: color,
+                    size: iconSize,
+                  ),
+                );
+              case 'RICH_TEXT_NODE_TYPE_COMMENT':
+                icon = WidgetSpan(
+                  alignment: .middle,
+                  child: Icon(
+                    FontAwesomeIcons.comment,
+                    color: color,
+                    size: 16,
+                  ),
+                );
+              case 'RICH_TEXT_NODE_TYPE_GAME':
+                icon = WidgetSpan(
+                  alignment: .middle,
+                  child: Icon(
+                    Icons.sports_esports_outlined,
+                    color: color,
+                    size: 19,
+                  ),
+                );
+              case 'RICH_TEXT_NODE_TYPE_MUSIC':
+                icon = WidgetSpan(
+                  alignment: .middle,
+                  child: Icon(
+                    MdiIcons.musicCircleOutline,
+                    color: color,
+                    size: iconSize,
+                  ),
+                );
+              case 'RICH_TEXT_NODE_TYPE_GOODS':
+                icon = WidgetSpan(
+                  alignment: .middle,
+                  child: Icon(
+                    Icons.shopping_bag_outlined,
+                    color: color,
+                    size: iconSize,
+                  ),
+                );
+              case 'RICH_TEXT_NODE_TYPE_MANGA':
+                icon = WidgetSpan(
+                  alignment: .middle,
+                  child: Icon(
+                    Icons.newspaper,
+                    color: color,
+                    size: iconSize,
+                  ),
+                );
+            }
+            return TextSpan(
+              style: _getStyle(rich.style, color: color),
+              children: [
+                ?icon,
+                if (isRich) const TextSpan(text: ' '),
                 TextSpan(
-                  text: ' ${rich.origText} ',
-                  style: TextStyle(color: colorScheme.primary),
-                  recognizer: rid != null
-                      ? (NoDeadlineTapGestureRecognizer()
-                          ..onTap = () => showVoteDialog(Get.context!, rid))
-                      : null,
+                  text: '${rich.text}',
+                  recognizer: NoDeadlineTapGestureRecognizer()
+                    ..onTap = () {
+                      switch (rich.type) {
+                        case 'RICH_TEXT_NODE_TYPE_AT':
+                          Get.toNamed('/member?mid=${rich.rid}');
+                        case 'RICH_TEXT_NODE_TYPE_VOTE':
+                          final rid = parseIntOrNull(rich.rid);
+                          if (rid != null) showVoteDialog(Get.context!, rid);
+                        case 'RICH_TEXT_NODE_TYPE_LOTTERY':
+                          Get.toNamed(
+                            '/webview',
+                            parameters: {
+                              'url':
+                                  'https://www.bilibili.com/h5/lottery/result?business_id=$opusId',
+                            },
+                          );
+                        default:
+                          if (rich.jumpUrl != null) {
+                            PiliScheme.routePushFromUrl(rich.jumpUrl!);
+                          }
+                      }
+                    },
                 ),
               ],
-            );
-          default:
-            return TextSpan(
-              text:
-                  '${rich.type == 'RICH_TEXT_NODE_TYPE_WEB' ? '\u{1F517}' : ''}${item.rich!.text}',
-              style: _getStyle(
-                rich.style,
-                rich.type == 'RICH_TEXT_NODE_TYPE_TEXT'
-                    ? null
-                    : colorScheme.primary,
-              ),
-              recognizer: NoDeadlineTapGestureRecognizer()
-                ..onTap = () {
-                  switch (rich.type) {
-                    case 'RICH_TEXT_NODE_TYPE_AT':
-                      Get.toNamed('/member?mid=${rich.rid}');
-                    // case 'RICH_TEXT_NODE_TYPE_TOPIC':
-                    default:
-                      if (rich.jumpUrl != null) {
-                        PiliScheme.routePushFromUrl(rich.jumpUrl!);
-                      }
-                  }
-                },
             );
         }
       case 'TEXT_NODE_TYPE_FORMULA' when (item.formula != null):
@@ -175,17 +236,20 @@ class OpusContent extends StatelessWidget {
     }
   }
 
-  static TextStyle _getStyle(Style? style, [Color? color, double? fontSize]) =>
-      TextStyle(
-        decoration: style?.strikethrough == true
-            ? TextDecoration.lineThrough
-            : null,
-        decorationColor: color,
-        fontStyle: style?.italic == true ? FontStyle.italic : null,
-        fontWeight: style?.bold == true ? .bold : null,
-        color: color,
-        fontSize: fontSize,
-      );
+  static TextStyle _getStyle(
+    Style? style, {
+    Color? color,
+    double? fontSize,
+  }) => TextStyle(
+    decoration: style?.strikethrough == true
+        ? TextDecoration.lineThrough
+        : null,
+    decorationColor: color,
+    fontStyle: style?.italic == true ? .italic : null,
+    fontWeight: style?.bold == true ? .bold : null,
+    color: color,
+    fontSize: style?.fontSize ?? fontSize ?? 16,
+  );
 
   static TextSpan _getSpan(
     Word? word, {
@@ -212,8 +276,8 @@ class OpusContent extends StatelessWidget {
       text: word?.words,
       style: _getStyle(
         word?.style,
-        color ?? defaultColor,
-        word?.effectiveFontSize,
+        color: color ?? defaultColor,
+        fontSize: word?.effectiveFontSize,
       ),
     );
   }
@@ -268,7 +332,11 @@ class OpusContent extends StatelessWidget {
                 ];
               }
               Widget widget = Text.rich(
-                textAlign: element.align == 1 ? .center : null,
+                textAlign: switch (element.align) {
+                  1 => .center,
+                  2 => .end,
+                  _ => null,
+                },
                 TextSpan(children: spans),
               );
               if (isQuote) {

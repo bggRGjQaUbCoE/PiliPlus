@@ -3,7 +3,6 @@ import 'dart:collection';
 
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo, DetailListReply;
-import 'package:PiliPlus/grpc/bilibili/pagination.pb.dart';
 import 'package:PiliPlus/grpc/reply.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/reply/reply_sort_type.dart';
@@ -77,13 +76,9 @@ class VideoReplyReplyController extends ReplyController
   bool customHandleResponse(bool isRefresh, Success response) {
     final data = response.response;
 
-    subjectControl = data.subjectControl;
-    upMid ??= data.subjectControl.upMid;
-    final FeedPaginationReply paginationReply = data.paginationReply;
-    isEnd =
-        data.cursor.isEnd ||
-        paginationReply.nextOffset == this.paginationReply?.nextOffset;
-    this.paginationReply = paginationReply;
+    if (isRefresh) {
+      haneleSubjectControl(data.subjectControl);
+    }
 
     // reply2Reply // isDialogue.not
     if (data is DetailListReply) {
@@ -98,6 +93,11 @@ class VideoReplyReplyController extends ReplyController
 
       getFoldCard(data.mixedCards);
     }
+
+    hanelePagination(
+      cursor: data.cursor,
+      offset: data.paginationReply.nextOffset,
+    );
 
     return false;
   }
@@ -158,7 +158,7 @@ class VideoReplyReplyController extends ReplyController
           oid: oid,
           root: rpid,
           dialog: dialog!,
-          offset: paginationReply?.nextOffset,
+          offset: nextOffset,
         )
       : ReplyGrpc.detailList(
           type: replyType,
@@ -166,7 +166,7 @@ class VideoReplyReplyController extends ReplyController
           root: rpid,
           rpid: id ?? 0,
           mode: mode,
-          offset: paginationReply?.nextOffset,
+          offset: nextOffset,
           removed: removedReply,
         );
 

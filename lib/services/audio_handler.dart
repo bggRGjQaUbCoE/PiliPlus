@@ -15,6 +15,7 @@ import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
+import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -31,7 +32,8 @@ Future<VideoPlayerServiceHandler> initAudioService() {
   if (Platform.isLinux) {
     AudioServiceMpris.init(
       dBusName: 'com.example.piliplus.audio',
-      identity: 'Audio Service ${Constants.appName}',
+      identity: Constants.appName,
+      desktopEntry: 'com.example.piliplus',
       canGoNext: true,
       canGoPrevious: true,
       canPlay: true,
@@ -63,7 +65,10 @@ typedef _StatusConfig = (
 
 class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
   VideoPlayerServiceHandler() {
-    if (Platform.isAndroid) {
+    // Android 14 dispatches volume keys from the activity straight to the
+    // session without checking canHandleVolumeKey(), so a FIXED remote
+    // session swallows them there. Only verified to fall back on Android 16.
+    if (Platform.isAndroid && DeviceUtils.sdkInt >= 36) {
       final jStr = AndroidHelper.manufacturer();
       if (jStr != null &&
           jStr.toDartString(releaseOriginal: true).toLowerCase() == 'vivo') {

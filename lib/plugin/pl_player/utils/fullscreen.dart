@@ -24,6 +24,8 @@ void exitDesktopFullScreen() {
 
 List<DeviceOrientation>? _lastOrientation;
 Future<void>? _setPreferredOrientations(List<DeviceOrientation> orientations) {
+  if (DeviceUtils.isChromeOS) return null;
+
   if (_lastOrientation == orientations) {
     return null;
   }

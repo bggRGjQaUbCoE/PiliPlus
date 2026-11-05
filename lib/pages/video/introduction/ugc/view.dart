@@ -269,12 +269,25 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
 
   List<Widget> _infos(VideoDetailData videoDetail) => [
     const SizedBox(height: 8, width: .infinity),
-    GestureDetector(
-      onTap: () => Utils.copyText('${videoDetail.bvid}'),
-      child: Text(
-        videoDetail.bvid ?? '',
-        style: TextStyle(fontSize: 14, color: colorScheme.secondary),
-      ),
+    Row(
+      spacing: 12,
+      mainAxisSize: .min,
+      children: [
+        GestureDetector(
+          onTap: () => Utils.copyText(introController.bvid),
+          child: Text(
+            introController.bvid,
+            style: TextStyle(fontSize: 14, color: colorScheme.secondary),
+          ),
+        ),
+        GestureDetector(
+          onTap: () => Utils.copyText('av${introController.aid}'),
+          child: Text(
+            'av${introController.aid}',
+            style: TextStyle(fontSize: 14, color: colorScheme.secondary),
+          ),
+        ),
+      ],
     ),
     if (videoDetail.descV2 case final descV2? when descV2.isNotEmpty) ...[
       const SizedBox(height: 8),

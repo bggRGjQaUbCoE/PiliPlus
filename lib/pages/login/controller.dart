@@ -8,6 +8,7 @@ import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/login.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
+import 'package:PiliPlus/models/login/captcha_config.dart';
 import 'package:PiliPlus/models/login/model.dart';
 import 'package:PiliPlus/pages/login/geetest/geetest_webview_dialog.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -48,6 +49,7 @@ class LoginPageController extends GetxController
   Timer? smsSendCooldownTimer;
 
   bool _isReq = false;
+  bool _isVerifyingCaptcha = false;
 
   @override
   void onInit() {
@@ -118,24 +120,78 @@ class LoginPageController extends GetxController
   }
 
   // 申请极验验证码
-  void getCaptcha(
+  Future<void> getCaptcha(
     String geeGt,
     String geeChallenge,
-    VoidCallback onSuccess,
-  ) {
-    GeetestWebviewDialog.geetest(geeGt, geeChallenge).then((res) {
-      if (res != null) {
-        captchaData
-          ..validate = res['geetest_validate']
-          ..seccode = res['geetest_seccode']
-          ..geetest = GeetestData(
-            challenge: res['geetest_challenge'],
-            gt: geeGt,
-          );
-        SmartDialog.showToast('验证成功');
-        onSuccess();
+    VoidCallback onSuccess, {
+    bool canRefreshRegistration = false,
+  }) async {
+    if (_isVerifyingCaptcha || isClosed) return;
+    _isVerifyingCaptcha = true;
+    var succeeded = false;
+    try {
+      captchaData
+        ..validate = null
+        ..seccode = null
+        ..geetest = null;
+      LoginCaptcha session = (
+        gt: geeGt,
+        challenge: geeChallenge,
+        token: captchaData.token,
+      );
+      if (Platform.isIOS && canRefreshRegistration) {
+        // Only SMS verification supports a new registration from preCapture.
+        final resolved = await resolveLoginCaptcha(
+          session,
+          isUnavailable: LoginHttp.isGeetestConfigUnavailable,
+          refresh: () async {
+            if (isClosed) return null;
+            final res = await LoginHttp.preCapture();
+            return res['status'] == true
+                ? parseLoginCaptcha(res['data'])
+                : null;
+          },
+        );
+        if (isClosed) return;
+        if (resolved == null) {
+          SmartDialog.showToast('验证码服务暂时不可用，请稍后重试或使用扫码登录');
+          return;
+        }
+        session = resolved;
       }
-    });
+
+      final res = await GeetestWebviewDialog.geetest(
+        session.gt,
+        session.challenge,
+      );
+      if (res == null || isClosed) return;
+      final validate = res['geetest_validate'];
+      final seccode = res['geetest_seccode'];
+      final challenge = res['geetest_challenge'];
+      if (validate is! String ||
+          validate.isEmpty ||
+          seccode is! String ||
+          seccode.isEmpty ||
+          challenge is! String ||
+          challenge.isEmpty) {
+        SmartDialog.showToast('验证结果不完整，请重试');
+        return;
+      }
+      captchaData
+        ..token = session.token
+        ..validate = validate
+        ..seccode = seccode
+        ..geetest = GeetestData(challenge: challenge, gt: session.gt);
+      succeeded = true;
+      SmartDialog.showToast('验证成功');
+    } catch (_) {
+      if (!isClosed) {
+        SmartDialog.showToast('加载验证码失败，请稍后重试或使用扫码登录');
+      }
+    } finally {
+      _isVerifyingCaptcha = false;
+    }
+    if (succeeded && !isClosed) onSuccess();
   }
 
   static String validateCookie(String cookie) {
@@ -302,6 +358,7 @@ class LoginPageController extends GetxController
                       "获取验证码失败，请尝试其它登录方式\n"
                       "(${preCaptureRes['code']}) ${preCaptureRes['msg']} ${preCaptureRes['data']}",
                     );
+                    return;
                   }
                   String geeGt = preCaptureRes['data']['gee_gt'];
                   String geeChallenge = preCaptureRes['data']['gee_challenge'];
@@ -321,7 +378,7 @@ class LoginPageController extends GetxController
                       final safeCenterSendSmsCodeRes =
                           await LoginHttp.safeCenterSmsCode(
                             tmpCode: currentUri.queryParameters['tmp_token']!,
-                            geeChallenge: geeChallenge,
+                            geeChallenge: captchaData.geetest?.challenge,
                             geeSeccode: captchaData.seccode,
                             geeValidate: captchaData.validate,
                             recaptchaToken: captchaData.token,
@@ -338,6 +395,7 @@ class LoginPageController extends GetxController
                       captchaKey =
                           safeCenterSendSmsCodeRes['data']['captcha_key'];
                     },
+                    canRefreshRegistration: true,
                   );
                 },
               ),
@@ -594,7 +652,12 @@ class LoginPageController extends GetxController
             return;
           }
 
-          getCaptcha(geeGt!, geeChallenge!, sendSmsCode);
+          getCaptcha(
+            geeGt!,
+            geeChallenge!,
+            sendSmsCode,
+            canRefreshRegistration: true,
+          );
           break;
         default:
           SmartDialog.showToast(res['msg']);

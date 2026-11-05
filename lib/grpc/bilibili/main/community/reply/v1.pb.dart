@@ -9836,6 +9836,7 @@ class ReplyInfo extends $pb.GeneratedMessage {
     MemberV2? memberV2,
     $core.String? trackInfo,
     Content? translatedContent,
+    Member? parentReplyMember,
   }) {
     final result = ReplyInfo._();
     if (replies != null) result.replies.addAll(replies);
@@ -9855,6 +9856,7 @@ class ReplyInfo extends $pb.GeneratedMessage {
     if (memberV2 != null) result.memberV2 = memberV2;
     if (trackInfo != null) result.trackInfo = trackInfo;
     if (translatedContent != null) result.translatedContent = translatedContent;
+    if (parentReplyMember != null) result.parentReplyMember = parentReplyMember;
     return result;
   }
 
@@ -9895,6 +9897,8 @@ class ReplyInfo extends $pb.GeneratedMessage {
     ..aOS(16, _omitFieldNames ? '' : 'trackInfo')
     ..aOM<Content>(17, _omitFieldNames ? '' : 'translatedContent',
         subBuilder: Content.$_createMessage)
+    ..aOM<Member>(100, _omitFieldNames ? '' : 'parentReplyMember',
+        subBuilder: Member.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -10073,6 +10077,17 @@ class ReplyInfo extends $pb.GeneratedMessage {
   void clearTranslatedContent() => $_clearField(17);
   @$pb.TagNumber(17)
   Content ensureTranslatedContent() => $_ensure(16);
+
+  @$pb.TagNumber(100)
+  Member get parentReplyMember => $_getN(17);
+  @$pb.TagNumber(100)
+  set parentReplyMember(Member value) => $_setField(100, value);
+  @$pb.TagNumber(100)
+  $core.bool hasParentReplyMember() => $_has(17);
+  @$pb.TagNumber(100)
+  void clearParentReplyMember() => $_clearField(100);
+  @$pb.TagNumber(100)
+  Member ensureParentReplyMember() => $_ensure(17);
 }
 
 class ReplyInfoReply extends $pb.GeneratedMessage {

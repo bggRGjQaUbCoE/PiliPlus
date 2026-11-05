@@ -34,6 +34,7 @@ class _RcmdPageState extends State<RcmdPage>
       margin: const .symmetric(horizontal: Style.safeSpace),
       decoration: const BoxDecoration(borderRadius: Style.mdRadius),
       child: refreshIndicator(
+        key: controller.refreshKey,
         onRefresh: controller.onRefresh,
         child: CustomScrollView(
           controller: controller.scrollController,

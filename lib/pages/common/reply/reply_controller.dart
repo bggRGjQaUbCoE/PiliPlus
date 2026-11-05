@@ -173,7 +173,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
       }
     }
 
-    hanelePagination(
+    handlePagination(
       cursor: data.cursor,
       offset: data.paginationReply.nextOffset,
     );
@@ -183,7 +183,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
     return false;
   }
 
-  void hanelePagination({required CursorReply cursor, required String offset}) {
+  void handlePagination({required CursorReply cursor, required String offset}) {
     if (cursor.isEnd || offset.isEmpty || nextOffset == offset) isEnd = true;
     nextOffset = offset;
   }

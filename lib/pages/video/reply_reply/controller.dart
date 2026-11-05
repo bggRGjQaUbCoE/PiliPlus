@@ -94,7 +94,7 @@ class VideoReplyReplyController extends ReplyController
       getFoldCard(data.mixedCards);
     }
 
-    hanelePagination(
+    handlePagination(
       cursor: data.cursor,
       offset: data.paginationReply.nextOffset,
     );

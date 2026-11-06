@@ -751,7 +751,11 @@ class _LiveRoomPageState extends State<LiveRoomPage>
           Container(
             width: width,
             height: height,
-            margin: EdgeInsets.only(bottom: padding.bottom),
+            // 全屏时容器已经铺满，再留 padding.bottom 会顶掉一截视频高度，
+            // 表现为底部一条黑边（顶部没有）。全屏应直接铺到边缘。
+            margin: isFullScreen
+                ? EdgeInsets.zero
+                : EdgeInsets.only(bottom: padding.bottom),
             child: videoPlayerPanel(
               isFullScreen,
               fill: Colors.transparent,

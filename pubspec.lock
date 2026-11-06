@@ -308,10 +308,10 @@ packages:
     dependency: transitive
     description:
       name: cnativeapi
-      sha256: "15c23cf1713a98ceba66d1068e9470621a47e10429c843884ad70ad3600071be"
+      sha256: c43703998995e132b0656d2b8a95ed2bedc6b22ccee2c827bcdc075e0330e319
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.7"
+    version: "0.5.10"
   code_assets:
     dependency: transitive
     description:
@@ -1282,10 +1282,10 @@ packages:
     dependency: "direct main"
     description:
       name: nativeapi
-      sha256: c6155e67d3565b6b36947c376b420f84f0939ce893a2d2a0cf6108441df6dd2e
+      sha256: "118045bb549cb6fabad472a3a22a537e7310bbf20097350f5027808b4a5853ce"
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.7"
+    version: "0.5.10"
   nativeapi_flutter:
     dependency: transitive
     description:

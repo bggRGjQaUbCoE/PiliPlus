@@ -121,11 +121,7 @@ class _DLNAPageState extends State<DLNAPage> {
               ? '局域网权限未授权，请在系统设置中允许附近的设备，返回后点击搜索'
               : '需要局域网权限才能搜索投屏设备',
           btnText: permanentlyDenied ? '前往设置' : '授予权限',
-          onReload: permanentlyDenied
-              ? () {
-                  openAppSettings();
-                }
-              : _onSearch,
+          onReload: permanentlyDenied ? openAppSettings : _onSearch,
         );
       }
       return HttpError(

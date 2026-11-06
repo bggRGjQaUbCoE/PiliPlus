@@ -37,6 +37,7 @@ abstract final class SettingBoxKey {
       feedBackEnable = 'feedBackEnable',
       enableLongShowControl = 'enableLongShowControl',
       horizontalScreen = 'horizontalScreen',
+      foldableAutoHorizontal = 'foldableAutoHorizontal',
       CDNService = 'CDNService',
       disableAudioCDN = 'disableAudioCDN',
       autoPiP = 'autoPiP',

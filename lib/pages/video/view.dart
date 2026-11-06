@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -56,6 +57,7 @@ import 'package:PiliPlus/plugin/pl_player/view/view.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart'
     show shutdownTimerService;
+import 'package:PiliPlus/utils/ios/native_tab_bar.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
@@ -148,6 +150,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     super.initState();
 
     videoDetailController = Get.put(VideoDetailController(), tag: heroTag);
+    IOSNativeTabBar.verticalBarHidden.addListener(_onVerticalBarHidden);
 
     introController = _initIntroCtr();
 
@@ -333,6 +336,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   @override
   void dispose() {
+    IOSNativeTabBar.verticalBarHidden.removeListener(_onVerticalBarHidden);
     plPlayerController
       ?..removeStatusLister(playerListener)
       ..removePositionListener(positionListener);
@@ -369,10 +373,50 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     super.dispose();
   }
 
+  // iPhone Duo：视频页隐藏竖状态栏，内容铺满竖状态栏的位置
+  bool _isOnTop = false;
+
+  void _updateVerticalBar() {
+    IOSNativeTabBar.setHidesVerticalBar(_isOnTop);
+  }
+
+  void _onVerticalBarHidden() {
+    if (mounted) setState(_updatePadding);
+  }
+
+  void _updatePadding() {
+    if (videoDetailController.removeSafeArea) {
+      padding = .zero;
+      return;
+    }
+    padding = MediaQuery.viewPaddingOf(context);
+    // 竖状态栏隐藏后横屏布局铺满它的位置。竖屏（合上）时摄像头在竖状态栏中，
+    // 只让播放器下方的内容铺满，见 childWhenDisabled
+    if (!isPortrait && IOSNativeTabBar.verticalBarHidden.value) {
+      padding = padding.copyWith(left: 0, right: 0);
+    }
+  }
+
+  @override
+  void didPush() {
+    super.didPush();
+    // 订阅路由时调用，随后的 didChangeDependencies 会更新状态栏
+    _isOnTop = true;
+  }
+
+  @override
+  void didPop() {
+    _isOnTop = false;
+    _updateVerticalBar();
+    super.didPop();
+  }
+
   @override
   // 离开当前页面时
   void didPushNext() {
     super.didPushNext();
+    _isOnTop = false;
+    _updateVerticalBar();
     isShowing = false;
 
     removeObserverMobile(this);
@@ -401,6 +445,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   // 返回当前页面时
   void didPopNext() {
     super.didPopNext();
+    _isOnTop = true;
+    _updateVerticalBar();
 
     if (videoDetailController.plPlayerController.isCloseAll) {
       return;
@@ -455,12 +501,6 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (videoDetailController.removeSafeArea) {
-      padding = .zero;
-    } else {
-      padding = MediaQuery.viewPaddingOf(context);
-    }
-
     final size = MediaQuery.sizeOf(context);
     maxWidth = size.width;
     maxHeight = size.height;
@@ -480,10 +520,13 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       ..videoHeight = videoDetailController.isVertical.value
           ? maxVideoHeight
           : minVideoHeight;
+    _updatePadding();
 
     theme = videoDetailController.plPlayerController.darkVideoPage
         ? ThemeUtils.darkTheme
         : Theme.of(context);
+
+    _updateVerticalBar();
   }
 
   bool removeAppBar(bool isFullScreen) =>
@@ -586,24 +629,46 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                 ),
               ];
             },
-            body: MiniScaffold(
-              key: videoDetailController.childKey,
-              body: Column(
-                children: [
-                  buildTabBar(onTap: videoDetailController.animToTop),
-                  Expanded(
-                    child: tabBarView(
-                      hitTestBehavior: .translucent,
-                      controller: videoDetailController.tabCtr,
-                      children: [
-                        videoIntro(isHorizontal: false, needCtr: false),
-                        if (videoDetailController.showReply)
-                          videoReplyPanel(isNested: true),
-                        if (_shouldShowSeasonPanel) seasonPanel,
-                      ],
-                    ),
+            // 播放器延伸到左右安全区下面，下方内容避开；
+            // 竖状态栏隐藏后（iPhone Duo）下方内容也铺满
+            body: ValueListenableBuilder(
+              valueListenable: IOSNativeTabBar.verticalBarHidden,
+              builder: (context, verticalBarHidden, child) {
+                final padding = MediaQuery.paddingOf(context);
+                return Padding(
+                  padding: verticalBarHidden
+                      ? EdgeInsets.zero
+                      : EdgeInsets.only(
+                          left: padding.left,
+                          right: padding.right,
+                        ),
+                  child: MediaQuery.removePadding(
+                    context: context,
+                    removeLeft: true,
+                    removeRight: true,
+                    child: child!,
                   ),
-                ],
+                );
+              },
+              child: MiniScaffold(
+                key: videoDetailController.childKey,
+                body: Column(
+                  children: [
+                    buildTabBar(onTap: videoDetailController.animToTop),
+                    Expanded(
+                      child: tabBarView(
+                        hitTestBehavior: .translucent,
+                        controller: videoDetailController.tabCtr,
+                        children: [
+                          videoIntro(isHorizontal: false, needCtr: false),
+                          if (videoDetailController.showReply)
+                            videoReplyPanel(isNested: true),
+                          if (_shouldShowSeasonPanel) seasonPanel,
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -769,7 +834,14 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
           padding: isFullScreen
               ? EdgeInsets.zero
               : padding.copyWith(top: 0, bottom: 0),
-          child: childWhenDisabledLandscapeInner(isFullScreen),
+          // The padding above takes the side insets, so the player controls must
+          // not add them again.
+          child: MediaQuery.removePadding(
+            context: context,
+            removeLeft: !isFullScreen,
+            removeRight: !isFullScreen,
+            child: childWhenDisabledLandscapeInner(isFullScreen),
+          ),
         ),
       );
     },
@@ -891,10 +963,18 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   }
 
   Widget _childWhenDisabledLandscapeInner(bool isFullScreen) {
+    // 扣除左右安全区（如 iPhone Duo 右侧状态栏），保证右侧栏的最小宽度
+    final availableWidth = maxWidth - padding.horizontal;
     double width =
-        clampDouble(maxHeight / maxWidth * 1.08, 0.5, 0.7) * maxWidth;
-    if (maxWidth >= 560) {
-      width = maxWidth - clampDouble(maxWidth - width, 280, 425);
+        clampDouble(maxHeight / availableWidth * 1.08, 0.5, 0.7) *
+        availableWidth;
+    if (availableWidth >= 560) {
+      // 右侧栏的横向视频卡片封面固定 160 宽，栏宽不足约 380 时
+      // 播放数、弹幕数会和更多按钮重叠；宽屏下尽量留足
+      final minRightWidth = clampDouble(availableWidth * 0.4, 280, 380);
+      width =
+          availableWidth -
+          clampDouble(availableWidth - width, minRightWidth, 425);
     }
     final videoWidth = isFullScreen ? maxWidth : width;
     final double height = width / Style.aspectRatio16x9;
@@ -940,7 +1020,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         Offstage(
           offstage: isFullScreen,
           child: SizedBox(
-            width: maxWidth - width - padding.horizontal,
+            width: availableWidth - width,
             height: maxHeight - padding.top,
             child: MiniScaffold(
               key: videoDetailController.childKey,
@@ -1000,7 +1080,14 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         padding: isFullScreen
             ? EdgeInsets.zero
             : padding.copyWith(top: 0, bottom: 0),
-        child: childWhenDisabledAlmostSquareInner(isFullScreen),
+        // The padding above takes the side insets, so the player controls must
+        // not add them again.
+        child: MediaQuery.removePadding(
+          context: context,
+          removeLeft: !isFullScreen,
+          removeRight: !isFullScreen,
+          child: childWhenDisabledAlmostSquareInner(isFullScreen),
+        ),
       ),
     );
   });
@@ -1082,73 +1169,75 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   Widget manualPlayerWidget(double height) => Obx(() {
     if (!videoDetailController.autoPlay) {
-      return Stack(
-        children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: kToolbarHeight,
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 42,
-                  height: 34,
-                  child: IconButton(
-                    tooltip: '返回',
-                    icon: const Icon(
-                      FontAwesomeIcons.arrowLeft,
-                      size: 15,
-                      color: Colors.white,
-                      shadows: [
-                        Shadow(
-                          blurRadius: 1.5,
-                          color: Colors.black,
-                        ),
-                      ],
+      return ViewSafeArea(
+        child: Stack(
+          children: [
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: kToolbarHeight,
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 42,
+                    height: 34,
+                    child: IconButton(
+                      tooltip: '返回',
+                      icon: const Icon(
+                        FontAwesomeIcons.arrowLeft,
+                        size: 15,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 1.5,
+                            color: Colors.black,
+                          ),
+                        ],
+                      ),
+                      onPressed: Get.back,
                     ),
-                    onPressed: Get.back,
                   ),
-                ),
-                SizedBox(
-                  width: 42,
-                  height: 34,
-                  child: IconButton(
-                    tooltip: '返回主页',
-                    icon: const Icon(
-                      FontAwesomeIcons.house,
-                      size: 15,
-                      color: Colors.white,
-                      shadows: [
-                        Shadow(
-                          blurRadius: 1.5,
-                          color: Colors.black,
-                        ),
-                      ],
+                  SizedBox(
+                    width: 42,
+                    height: 34,
+                    child: IconButton(
+                      tooltip: '返回主页',
+                      icon: const Icon(
+                        FontAwesomeIcons.house,
+                        size: 15,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 1.5,
+                            color: Colors.black,
+                          ),
+                        ],
+                      ),
+                      onPressed:
+                          videoDetailController.plPlayerController.onCloseAll,
                     ),
-                    onPressed:
-                        videoDetailController.plPlayerController.onCloseAll,
                   ),
-                ),
-                const Spacer(),
-                _moreBtn(
-                  Colors.white,
-                  shadows: const [
-                    Shadow(
-                      blurRadius: 1.5,
-                      color: Colors.black,
-                    ),
-                  ],
-                ),
-              ],
+                  const Spacer(),
+                  _moreBtn(
+                    Colors.white,
+                    shadows: const [
+                      Shadow(
+                        blurRadius: 1.5,
+                        color: Colors.black,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          Positioned(
-            right: 12,
-            top: height - 70,
-            child: const PlayIcon(),
-          ),
-        ],
+            Positioned(
+              right: 12,
+              top: height - 70,
+              child: const PlayIcon(),
+            ),
+          ],
+        ),
       );
     }
     return const SizedBox.shrink();

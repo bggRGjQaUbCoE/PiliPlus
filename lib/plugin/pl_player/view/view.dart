@@ -1581,7 +1581,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   AppBarAni(
                     isTop: true,
                     controller: _animationController,
-                    isFullScreen: isFullScreen,
                     removeSafeArea: plPlayerController.removeSafeArea,
                     child: plPlayerController.isDesktopPip
                         ? GestureDetector(
@@ -1595,7 +1594,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   AppBarAni(
                     isTop: false,
                     controller: _animationController,
-                    isFullScreen: isFullScreen,
                     removeSafeArea: plPlayerController.removeSafeArea,
                     child:
                         widget.bottomControl ??

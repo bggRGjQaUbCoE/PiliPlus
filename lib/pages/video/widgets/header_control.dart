@@ -347,7 +347,7 @@ class HeaderControlState extends State<HeaderControl>
   @override
   bool get isPortrait => widget.isPortrait;
   @override
-  late final horizontalScreen = videoDetailCtr.horizontalScreen;
+  bool get horizontalScreen => videoDetailCtr.horizontalScreen;
 
   Box setting = GStorage.setting;
 

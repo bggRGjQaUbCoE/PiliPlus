@@ -7,14 +7,12 @@ class AppBarAni extends StatelessWidget {
     required this.child,
     required this.controller,
     required this.isTop,
-    required this.isFullScreen,
     required this.removeSafeArea,
   });
 
   final Widget child;
   final AnimationController controller;
   final bool isTop;
-  final bool isFullScreen;
   final bool removeSafeArea;
 
   static final _topPos = Tween<Offset>(
@@ -55,13 +53,10 @@ class AppBarAni extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: isTop ? _topDecoration : _bottomDecoration,
         ),
-        child: removeSafeArea
-            ? child
-            : ViewSafeArea(
-                left: isFullScreen,
-                right: isFullScreen,
-                child: child,
-              ),
+        // Layouts that pad the player for the side insets also remove them
+        // from MediaQuery, so this only applies where the player spans them,
+        // such as fullscreen or iPhone Duo's vertical status bar.
+        child: removeSafeArea ? child : ViewSafeArea(child: child),
       ),
     );
   }

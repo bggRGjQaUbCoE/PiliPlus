@@ -266,9 +266,10 @@ class _ViewerState extends State<Viewer> with SingleTickerProviderStateMixin {
       if (widget.isLongPic) {
         final imageHeight = _scale * _imageSize.height;
         final containerHeight = widget.containerSize.height;
-        if (_downPos != null && _calc(_downPos!, details.focalPoint)) {
+        final focalPoint = details.localFocalPoint;
+        if (_downPos != null && _calc(_downPos!, focalPoint)) {
           final bool drag;
-          if (details.focalPoint.dy > _downPos!.dy) {
+          if (focalPoint.dy > _downPos!.dy) {
             drag = _position.dy.equals(
               (imageHeight - _scale * containerHeight) / 2,
               1e-6,

@@ -247,7 +247,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
       child: Padding(
         padding: const .fromLTRB(12, 2.5, 6, 2.5),
         child: Row(
-          spacing: 8,
+          spacing: 6,
           children: [
             Obx(
               () {
@@ -278,7 +278,10 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
                           );
                         }
                       },
-                      icon: const Icon(Icons.view_comfortable_outlined),
+                      icon: const Icon(
+                        Icons.view_comfortable_outlined,
+                        size: 22,
+                      ),
                       color: colorScheme.outline,
                       tooltip: '线程化展示',
                     )
@@ -286,7 +289,13 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
             ),
             Expanded(
               child: Obx(
-                () => LinearProgressIndicator(value: controller.progress.value),
+                () => LinearProgressIndicator(
+                  // ignore: deprecated_member_use
+                  year2023: true,
+                  borderRadius: const .all(.circular(4)),
+                  value: controller.progress.value,
+                  stopIndicatorColor: Colors.transparent,
+                ),
               ),
             ),
             TextButton.icon(
@@ -321,8 +330,12 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
         if (controller.replyTree.value case final tree?) {
           return SuperSliverList.builder(
             listController: controller.listController,
-            itemCount: tree.length,
+            itemCount: tree.length + 1,
             itemBuilder: (context, index) {
+              if (index == tree.length) {
+                return buildEndItem();
+              }
+
               final node = tree[index];
               final child = ReplyItemGrpc(
                 replyItem: node.reply,

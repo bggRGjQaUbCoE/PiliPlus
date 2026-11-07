@@ -17,7 +17,6 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
@@ -77,7 +76,7 @@ class VideoReplyReplyController extends ReplyController
     final data = response.response;
 
     if (isRefresh) {
-      haneleSubjectControl(data.subjectControl);
+      handleSubjectControl(data.subjectControl);
     }
 
     // reply2Reply // isDialogue.not
@@ -259,7 +258,7 @@ class VideoReplyReplyController extends ReplyController
   Future<void> _fetchNextReply() async {
     try {
       if (isEnd && foldCard != null) {
-        await loadFoldList();
+        await loadFoldList(toast: false);
       } else {
         await queryData(false);
       }
@@ -268,7 +267,7 @@ class VideoReplyReplyController extends ReplyController
     }
     if (!isClosed) {
       if (isEnd && foldCard == null) {
-        SmartDialog.showToast('已完成拉取');
+        buildTree();
       } else {
         _createReplyTimer();
       }

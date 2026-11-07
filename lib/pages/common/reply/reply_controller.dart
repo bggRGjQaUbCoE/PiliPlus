@@ -164,7 +164,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
     final data = response.response as MainListReply;
     count.value = data.subjectControl.count.toInt();
     if (isRefresh) {
-      haneleSubjectControl(data.subjectControl);
+      handleSubjectControl(data.subjectControl);
       if (hasUpTop = data.hasUpTop()) {
         data.replies.insert(0, data.upTop);
       }
@@ -188,7 +188,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
     nextOffset = offset;
   }
 
-  void haneleSubjectControl(SubjectControl control) {
+  void handleSubjectControl(SubjectControl control) {
     subjectControl = control;
     upMid = control.upMid;
   }

@@ -10,15 +10,19 @@ import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
+import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 class BlackListController
     extends CommonListController<BlackListData, BlackListItem> {
   int? _total;
-  final blackMids = GlobalData().blackMids;
+  final onlineBlackMids = GlobalData().onlineBlackMids;
+  final localBlackMids = GlobalData().localBlackMids;
+  final onlineCount = 0.obs;
 
   @override
   void onInit() {
+    onlineCount.value = onlineBlackMids.length;
     super.onInit();
     if (Accounts.main.isLogin) {
       queryData();
@@ -30,6 +34,7 @@ class BlackListController
   @override
   List<BlackListItem>? getDataList(BlackListData response) {
     _total = response.total;
+    onlineCount.value = response.total ?? 0;
     return response.list;
   }
 
@@ -51,7 +56,13 @@ class BlackListController
         loadingState
           ..value.data!.removeAt(index)
           ..refresh();
-        _total -= 1;
+        _total = (_total ?? 1) - 1;
+        onlineCount.value = _total!;
+        onlineBlackMids.remove(mid);
+        if (!localBlackMids.contains(mid)) {
+          GlobalData().blackMids.remove(mid);
+        }
+        Pref.blackMids = onlineBlackMids;
         SmartDialog.showToast('移除成功');
         return true;
       }
@@ -67,8 +78,10 @@ class BlackListController
   void onClose() {
     super.onClose();
     if (loadingState.value case Success(:final response?)) {
-      blackMids.addAll(response.map((e) => e.mid!));
+      final mids = response.map((item) => item.mid!).toSet();
+      onlineBlackMids.addAll(mids);
+      GlobalData().blackMids.addAll(mids);
     }
-    Pref.blackMids = blackMids;
+    Pref.blackMids = onlineBlackMids;
   }
 }

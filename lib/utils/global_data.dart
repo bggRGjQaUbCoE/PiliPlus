@@ -1,4 +1,5 @@
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:get/get.dart';
 
 class GlobalData {
   int imgQuality = Pref.picQuality;
@@ -11,7 +12,14 @@ class GlobalData {
     }
   }
 
-  Set<int> blackMids = Pref.blackMids;
+  /// Ordered local IDs; newest blocks are appended.
+  final RxList<int> localBlackMids = Pref.localBlackMids.obs;
+
+  /// IDs from the online blacklist, kept separate from local blocks.
+  Set<int> onlineBlackMids = Pref.blackMids;
+
+  /// Combined filter set: both local and online blocks hide matching users.
+  Set<int> blackMids = {...Pref.blackMids, ...Pref.localBlackMids};
 
   bool dynamicsWaterfallFlow = Pref.dynamicsWaterfallFlow;
 

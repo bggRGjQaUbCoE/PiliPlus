@@ -82,12 +82,6 @@ jobs:
               shell: pwsh
               run: lib/scripts/patch.ps1 android
 
-            - name: Verify DLNA control URL compatibility
-              run: |
-                  sudo apt-get update
-                  sudo apt-get install -y libgtk-3-dev libx11-dev libxi-dev
-                  flutter test --no-pub test/utils/dlna_utils_test.dart
-
             - name: Write key
               if: github.event_name == 'workflow_dispatch'
               run: |

@@ -1,3 +1,4 @@
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/browser_ua.dart';
 import 'package:PiliPlus/http/init.dart';
@@ -129,10 +130,12 @@ abstract final class SearchHttp {
     dynamic aid,
     dynamic bvid,
     int? part,
+    Account? account,
   }) async {
     final res = await Request().get(
       Api.ab2c,
       queryParameters: {'aid': ?aid, 'bvid': ?bvid},
+      options: Options(extra: account == null ? null : {'account': account}),
     );
     if (res.data['code'] == 0) {
       if (res.data['data'] case List list) {

@@ -1,8 +1,8 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
+import 'package:PiliPlus/common/widgets/video_card/video_cover_preview.dart';
 import 'package:PiliPlus/common/widgets/video_popup_menu.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/home/rcmd/result.dart';
@@ -107,10 +107,20 @@ class VideoCardV extends StatelessWidget {
                       return Stack(
                         clipBehavior: Clip.none,
                         children: [
-                          NetworkImgLayer(
-                            src: videoItem.cover,
+                          VideoCoverPreview(
+                            cover: videoItem.cover,
                             width: maxWidth,
                             height: maxHeight,
+                            aid: videoItem.aid,
+                            bvid: videoItem.bvid,
+                            cid: videoItem.cid,
+                            isVertical:
+                                videoItem is RcmdVideoItemAppModel &&
+                                videoItem.uri?.isVerticalFromUri == true,
+                            enabled:
+                                videoItem.goto == 'av' &&
+                                (videoItem.aid != null ||
+                                    videoItem.bvid?.isNotEmpty == true),
                             borderRadius: const .vertical(top: .circular(12)),
                           ),
                           if (videoItem.duration > 0)

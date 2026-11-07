@@ -28,6 +28,7 @@ import 'package:PiliPlus/models_new/video/video_play_info/data.dart';
 import 'package:PiliPlus/models_new/video/video_relation/data.dart';
 import 'package:PiliPlus/models_new/video/video_shot/data.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/app_sign.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
@@ -248,6 +249,7 @@ abstract final class VideoHttp {
     String? language,
     bool voiceBalance = false,
     bool fallback = false,
+    Account? account,
   }) async {
     final dmImgStr = Utils.base64EncodeRandomString(16, 64);
     final dmCoverImgStr = Utils.base64EncodeRandomString(32, 128);
@@ -286,6 +288,7 @@ abstract final class VideoHttp {
       final res = await Request().get(
         fallback ? videoType.fallbackApi : videoType.api,
         queryParameters: params,
+        options: Options(extra: account == null ? null : {'account': account}),
       );
 
       if (res.data['code'] == 0) {
@@ -319,6 +322,7 @@ abstract final class VideoHttp {
                 language: language,
                 voiceBalance: voiceBalance,
                 fallback: true,
+                account: account,
               );
             } else {
               final reason = result['not_playable_reason'];
@@ -355,6 +359,7 @@ abstract final class VideoHttp {
           language: language,
           voiceBalance: voiceBalance,
           fallback: fallback,
+          account: account,
         );
       }
       return Error(_parseVideoErr(res.data['code'], res.data['message']));

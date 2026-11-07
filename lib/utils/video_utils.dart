@@ -104,6 +104,27 @@ abstract final class VideoUtils {
               .toString();
   }
 
+  // `deadline=` on upos/mcdn URLs, `exp=` inside Akamai `hdnts`; either may be
+  // percent-encoded when the URL is nested in a proxy query.
+  static final _expiryRegex = RegExp(
+    r'(?:[?&=~]|%3F|%26|%3D|%7E)(?:deadline|exp)(?:=|%3D)(\d{9,11})\b',
+    caseSensitive: false,
+  );
+
+  /// Earliest expiry time of all play URLs found in [urls], or `null` when no
+  /// URL carries one. Accepts plain URLs as well as `edl://` strings.
+  static DateTime? getPlayUrlDeadline(Iterable<String?> urls) {
+    int? min;
+    for (final url in urls) {
+      if (url == null || url.isEmpty) continue;
+      for (final match in _expiryRegex.allMatches(url)) {
+        final value = int.parse(match.group(1)!);
+        if (min == null || value < min) min = value;
+      }
+    }
+    return min == null ? null : DateTime.fromMillisecondsSinceEpoch(min * 1000);
+  }
+
   static String getLiveCdnUrl(CodecItem e, {int index = 0}) {
     final urlInfo = e.urlInfo.getOrFirst(index);
     return (liveCdnUrl ?? urlInfo.host) + e.baseUrl + urlInfo.extra;

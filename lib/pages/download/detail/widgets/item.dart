@@ -185,7 +185,7 @@ class DetailItem extends StatelessWidget {
                 downloadNext: false,
               );
             } else {
-              downloadService.startDownload(entry);
+              downloadService.queueDownload(entry);
             }
           }
         },

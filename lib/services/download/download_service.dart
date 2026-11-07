@@ -43,7 +43,7 @@ class DownloadService extends GetxService {
   static const _indexFile = 'index.json';
   static const _maxDanmakuConcurrency = 4;
 
-  final _lock = Lock();
+  final _downloadLock = Lock();
 
   final flagNotifier = SetNotifier();
   final waitDownloadQueue = RxList<BiliDownloadEntryInfo>();
@@ -276,7 +276,7 @@ class DownloadService extends GetxService {
       ..status = DownloadStatus.wait;
     waitDownloadQueue.add(entry);
     if (curDownload.value?.status.isDownloading != true) {
-      startDownload(entry);
+      queueDownload(entry);
     }
   }
 
@@ -307,23 +307,25 @@ class DownloadService extends GetxService {
     return dir.path;
   }
 
-  Future<void> startDownload(BiliDownloadEntryInfo entry) {
-    return _lock.synchronized(() async {
-      await _downloadManager?.cancel(isDelete: false);
-      await _audioDownloadManager?.cancel(isDelete: false);
-      _downloadManager = null;
-      _audioDownloadManager = null;
-      if (curDownload.value case final curEntry?) {
-        if (curEntry.status.isDownloading) {
-          curEntry.status = DownloadStatus.pause;
-        }
-      }
+  Future<void> queueDownload(BiliDownloadEntryInfo entry) {
+    return _downloadLock.synchronized(() => _prepareDownload(entry));
+  }
 
-      _curCid = entry.cid;
-      curDownload.value = entry;
-      waitDownloadQueue.refresh();
-      await _startDownload(entry);
-    });
+  Future<void> _prepareDownload(BiliDownloadEntryInfo entry) async {
+    await _downloadManager?.cancel(isDelete: false);
+    await _audioDownloadManager?.cancel(isDelete: false);
+    _downloadManager = null;
+    _audioDownloadManager = null;
+    if (curDownload.value case final curEntry?) {
+      if (curEntry.status.isDownloading) {
+        curEntry.status = .pause;
+      }
+    }
+
+    _curCid = entry.cid;
+    curDownload.value = entry;
+    waitDownloadQueue.refresh();
+    await _startDownload(entry);
   }
 
   Future<bool> downloadDanmaku({
@@ -514,6 +516,11 @@ class DownloadService extends GetxService {
         return;
       }
 
+      // ugc segments
+      if (entry.pageData != null && Pref.enableSponsorBlock) {
+        _updateBlockSegments(entry);
+      }
+
       _updateCurStatus(DownloadStatus.getPlayUrl);
 
       final noSegmentBefore = entry.segments == null;
@@ -539,9 +546,6 @@ class DownloadService extends GetxService {
       await Future.wait([
         mediaJsonFile.writeAsString(jsonEncode(mediaFileInfo.toJson())),
         _downloadCover(entry: entry),
-        // ugc segments
-        if (entry.pageData != null && Pref.enableSponsorBlock)
-          _updateBlockSegments(entry),
         if (cachePlayInfo) updatePlayInfo(entry),
       ]);
 
@@ -671,7 +675,7 @@ class DownloadService extends GetxService {
 
   void nextDownload() {
     if (waitDownloadQueue.isNotEmpty) {
-      startDownload(waitDownloadQueue.first);
+      queueDownload(waitDownloadQueue.first);
     }
   }
 

@@ -15,6 +15,15 @@ class Subtitle implements Comparable<Subtitle> {
     '$id${PathUtils.subtitleExt}',
   );
 
+  LocalSubtitle toLocal(String entryDirPath) => LocalSubtitle(
+    id: id,
+    lan: lan,
+    lanDoc: lanDoc,
+    type: type,
+    isAi: isAi,
+    entryDirPath: entryDirPath,
+  );
+
   Subtitle({
     required this.id,
     required this.lan,
@@ -52,6 +61,17 @@ class Subtitle implements Comparable<Subtitle> {
 
 class LocalSubtitle extends Subtitle {
   late final String path;
+
+  LocalSubtitle({
+    required super.id,
+    required super.lan,
+    required super.lanDoc,
+    required super.type,
+    required super.isAi,
+    required String entryDirPath,
+  }) {
+    path = toPath(entryDirPath);
+  }
 
   LocalSubtitle._fromLocal(Map<String, dynamic> json, String entryDirPath)
     : super(id: json["id"], lan: json["lan"]) {

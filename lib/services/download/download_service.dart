@@ -477,7 +477,9 @@ class DownloadService extends GetxService {
                 : null);
 
         if (subtitles != null && subtitles.isNotEmpty) {
-          entry.subtitles = subtitles;
+          entry.subtitles = subtitles
+              .map((e) => e.toLocal(entry.entryDirPath))
+              .toList();
           needsUpdate = true;
           Future.wait(subtitles.map((sub) => _downloadSubtitle(entry, sub)));
         }

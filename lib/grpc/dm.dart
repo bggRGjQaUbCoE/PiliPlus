@@ -43,6 +43,7 @@ abstract final class DmGrpc {
                 id: e.id.toInt(),
                 lan: e.lan,
                 lanDoc: e.lanDoc,
+                type: e.type.value,
                 subtitleUrl: e.subtitleUrl,
                 isAi: e.type == .AI,
               ),

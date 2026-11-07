@@ -60,10 +60,12 @@ double calcItemHeight(ugc.BaseEpisodeItem episode) {
   required int index,
   required int itemCount,
   double extent = _kItemHeight,
+  double topPadding = _kTopPadding,
+  double bottomPadding = _kBottomPadding,
 }) {
   final offset = extent * index;
   final remain = (itemCount - index - 1) * extent;
-  return (offset, remain);
+  return (offset + topPadding, remain + bottomPadding);
 }
 
 const double kPageItemExtent = 150;

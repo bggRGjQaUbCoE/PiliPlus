@@ -80,6 +80,7 @@ class LocalIntroController extends CommonIntroController {
         final (double offset, double remain) = calcFixedItemOffset(
           index: index,
           itemCount: list.length,
+          // bottomPadding: ignore view padding
         );
         try {
           final state = videoDetailCtr.scrollKey.currentState;

@@ -189,6 +189,14 @@ class _EpisodePanelState extends State<EpisodePanel>
     WidgetsBinding.instance.addPostFrameCallback(_refresh);
   }
 
+  late EdgeInsets padding;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    padding = MediaQuery.viewPaddingOf(context);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -309,6 +317,7 @@ class _EpisodePanelState extends State<EpisodePanel>
       index: itemIndex,
       episodes: episodes,
       isReversed: isReversed,
+      bottomPadding: padding.bottom + 100,
     );
 
     final position = _hasSections

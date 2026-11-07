@@ -78,6 +78,29 @@ class SearchVideoController
     return response.list;
   }
 
+  @override
+  bool customHandleResponse(bool isRefresh, Success<SearchVideoData> response) {
+    if (super.customHandleResponse(isRefresh, response)) return true;
+    final list = response.response.list;
+    if (list != null && list.isNotEmpty) {
+      final ids = <String?>{
+        if (!isRefresh)
+          ...?loadingState.value.dataOrNull?.map((video) => video.bvid),
+      };
+      list.removeWhere((video) {
+        final bvid = video.bvid;
+        // Search results also include live rooms without a video ID.
+        return bvid != null && bvid.isNotEmpty && !ids.add(bvid);
+      });
+      if (!isRefresh && list.isEmpty) {
+        // Keep paging when the server returns only previously seen videos.
+        loadingState.refresh();
+        return true;
+      }
+    }
+    return false;
+  }
+
   final Rx<ArchiveFilterType> selectedType = ArchiveFilterType.totalrank.obs;
   VideoPubTimeType? pubTimeType = VideoPubTimeType.all;
   late DateTime pubBeginDate;

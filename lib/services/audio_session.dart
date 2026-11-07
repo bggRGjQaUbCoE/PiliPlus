@@ -37,9 +37,12 @@ class AudioSessionHandler {
           }
         case .pause:
         case .unknown:
-          if (videoPlayerServiceHandler?.isPlaying?.call() == true) {
-            _shouldResume = true;
-            videoPlayerServiceHandler?.onPause?.call();
+          final isAudioPlaying = videoPlayerServiceHandler?.isPlaying;
+          if (isAudioPlaying != null) {
+            if (isAudioPlaying()) {
+              _shouldResume = true;
+              videoPlayerServiceHandler?.onPause?.call();
+            }
           } else if (player != null && player.playerStatus.isPlaying) {
             _shouldResume = true;
             player.pause(isInterrupt: true);

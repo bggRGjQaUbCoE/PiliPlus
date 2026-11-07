@@ -359,15 +359,17 @@ class VideoDetailController extends GetxController
     // block
     _initLocalSkipIfNeeded();
     // viewPoint
-    final viewPoints = entry.viewPoints;
-    if (viewPoints != null && viewPoints.isNotEmpty) {
-      try {
-        final duration = (entry.totalTimeMilli / 1000);
-        viewPointList.value = viewPoints
-            .map((e) => e.toSegment(duration))
-            .toList();
-      } catch (_) {
-        if (kDebugMode) rethrow;
+    if (plPlayerController.showViewPoints) {
+      final viewPoints = entry.viewPoints;
+      if (viewPoints != null && viewPoints.isNotEmpty) {
+        try {
+          final duration = (entry.totalTimeMilli / 1000);
+          viewPointList.value = viewPoints
+              .map((e) => e.toSegment(duration))
+              .toList();
+        } catch (_) {
+          if (kDebugMode) rethrow;
+        }
       }
     }
     // subtitle

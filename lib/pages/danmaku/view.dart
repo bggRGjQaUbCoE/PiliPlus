@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:PiliPlus/grpc/bilibili/community/service/dm/v1.pb.dart';
 import 'package:PiliPlus/pages/danmaku/controller.dart';
@@ -6,7 +8,9 @@ import 'package:PiliPlus/pages/danmaku/danmaku_model.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/danmaku_options.dart';
+import 'package:PiliPlus/utils/android/android_helper.dart';
 import 'package:PiliPlus/utils/danmaku_utils.dart';
+import 'package:PiliPlus/utils/display_cutout.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -42,6 +46,55 @@ class _PlDanmakuState extends State<PlDanmaku> {
   late final PlDanmakuController _plDanmakuController;
   DanmakuController<DanmakuExtra>? _controller;
   int latestAddedPosition = -1;
+  int _cutoutRequestId = 0;
+  double _scrollTopOffset = 0;
+
+  static const double _foldableCameraFallbackOffset = 32;
+  static const double _cutoutMargin = 4;
+
+  bool get _shouldAvoidFoldCamera {
+    if (!widget.isFullScreen ||
+        widget.isPipMode ||
+        !PiliAndroidHelper.isFoldable) {
+      return false;
+    }
+    return MediaQuery.sizeOf(context).shortestSide >= 600;
+  }
+
+  void _applyScrollTopOffset(double offset) {
+    if (_scrollTopOffset == offset) return;
+    _scrollTopOffset = offset;
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> _syncScrollTopOffset() async {
+    final requestId = ++_cutoutRequestId;
+    if (!_shouldAvoidFoldCamera) {
+      _applyScrollTopOffset(0);
+      return;
+    }
+
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final cutouts = await DisplayCutoutHelper.bounds();
+    if (!mounted || requestId != _cutoutRequestId) return;
+
+    double cutoutBottom = 0;
+    for (final rect in cutouts) {
+      if (rect.top < screenHeight / 2) {
+        cutoutBottom = max(cutoutBottom, rect.bottom);
+      }
+    }
+
+    final cutoutOffset = cutoutBottom > 0
+        ? cutoutBottom + _cutoutMargin
+        : 0.0;
+
+    _applyScrollTopOffset(
+      cutoutOffset > 0 ? cutoutOffset : _foldableCameraFallbackOffset,
+    );
+  }
 
   @override
   void initState() {
@@ -66,6 +119,12 @@ class _PlDanmakuState extends State<PlDanmaku> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    unawaited(_syncScrollTopOffset());
+  }
+
+  @override
   void didUpdateWidget(PlDanmaku oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.notFullscreen != widget.notFullscreen &&
@@ -76,6 +135,11 @@ class _PlDanmakuState extends State<PlDanmaku> {
           speed: playerController.playbackSpeed,
         ),
       );
+    }
+    if (oldWidget.isFullScreen != widget.isFullScreen ||
+        oldWidget.isPipMode != widget.isPipMode ||
+        oldWidget.size != widget.size) {
+      unawaited(_syncScrollTopOffset());
     }
   }
 
@@ -160,6 +224,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
 
   @override
   void dispose() {
+    _cutoutRequestId++;
     playerController
       ..removePositionListener(videoPositionListen)
       ..removeStatusLister(playerListener);
@@ -186,6 +251,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
           },
           option: option,
           size: widget.size,
+          scrollTopOffset: _scrollTopOffset,
         ),
       ),
     );

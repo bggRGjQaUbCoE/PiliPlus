@@ -76,13 +76,7 @@ dependencies:
   device_info_plus: ^13.1.0
   dio: ^5.9.1
   dio_http2_adapter: ^2.7.1
-  # dlna_dart: ^0.1.0
-  # TOOD:
-  # https://github.com/bggRGjQaUbCoE/PiliPlus/issues/2680#issuecomment-6597938908
-  dlna_dart:
-    git:
-      url: https://github.com/suconghou/dlna-dart.git
-      ref: master
+  dlna_dart: ^0.1.2
   dynamic_color: ^2.1.0
   easy_debounce: ^2.0.3
   encrypt: ^5.0.3

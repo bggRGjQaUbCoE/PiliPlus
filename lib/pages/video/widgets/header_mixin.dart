@@ -203,6 +203,27 @@ mixin HeaderMixin<T extends StatefulWidget> on State<T> {
                           ),
                         ],
                       ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: .spaceBetween,
+                        children: [
+                          const Text('屏蔽助手'),
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            onPressed: () => Get
+                              ..back()
+                              ..toNamed(
+                                '/danmakuAssistant',
+                                arguments: plPlayerController,
+                              ),
+                            child: const Text('本地规则'),
+                          ),
+                        ],
+                      ),
                       Padding(
                         padding: sliderPadding,
                         child: Slider(

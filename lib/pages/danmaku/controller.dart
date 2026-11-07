@@ -4,6 +4,7 @@ import 'dart:io' show File;
 import 'package:PiliPlus/grpc/bilibili/community/service/dm/v1.pb.dart';
 import 'package:PiliPlus/grpc/dm.dart';
 import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/models/user/danmaku_assistant.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -29,10 +30,24 @@ class PlDanmakuController {
   final Map<int, List<DanmakuElem>> _dmSegMap = HashMap();
   // 已请求的段落标记
   late final Set<int> _requestedSeg = HashSet();
+  int _generation = 0;
 
   void dispose() {
+    _generation++;
     _dmSegMap.clear();
     _requestedSeg.clear();
+  }
+
+  void reloadAt(int progress) {
+    _generation++;
+    _dmSegMap.clear();
+    _requestedSeg.clear();
+    _fileDmLoaded = false;
+    if (_isFileSource) {
+      initFileDmIfNeeded();
+    } else {
+      queryDanmaku(DmUtils.calcSegment(progress));
+    }
   }
 
   Future<void> queryDanmaku(int segmentIndex) async {
@@ -43,10 +58,13 @@ class PlDanmakuController {
       return;
     }
     _requestedSeg.add(segmentIndex);
+    final generation = _generation;
     final res = await DmGrpc.dmSegMobile(
       cid: _cid,
       segmentIndex: segmentIndex + 1,
     );
+
+    if (generation != _generation) return;
 
     if (res case Success(:final response)) {
       if (response.state == 1) {
@@ -61,15 +79,34 @@ class PlDanmakuController {
   void handleDanmaku(List<DanmakuElem> elems) {
     if (elems.isEmpty) return;
     final uniques = HashMap<String, DanmakuElem>();
+    final samples = <DanmakuAssistantRecord>[];
+    final hits = <DanmakuAssistantRecord>[];
 
     final filters = _plPlayerController.filters;
     final shouldFilter = filters.count != 0;
+    final assistant = _plPlayerController.danmakuAssistantConfig;
     for (final element in elems) {
       if (_isLogin) {
         element.isSelf = element.midHash == _plPlayerController.midHash;
       }
 
       if (!element.isSelf) {
+        final match = assistant.match(element.content);
+        final record = DanmakuAssistantRecord(
+          content: element.content,
+          progress: element.progress,
+          match: match,
+        );
+        samples.add(record);
+        if (match != null) {
+          hits.add(record);
+          continue;
+        }
+
+        if (shouldFilter && filters.remove(element)) {
+          continue;
+        }
+
         if (_mergeDanmaku) {
           final elem = uniques[element.content];
           if (elem == null) {
@@ -79,15 +116,15 @@ class PlDanmakuController {
             continue;
           }
         }
-
-        if (shouldFilter && filters.remove(element)) {
-          continue;
-        }
       }
 
       final int pos = element.progress ~/ 100; //每0.1秒存储一次
       (_dmSegMap[pos] ??= []).add(element);
     }
+    _plPlayerController.recordDanmakuAssistantBatch(
+      samples: samples,
+      hits: hits,
+    );
   }
 
   List<DanmakuElem>? getCurrentDanmaku(int progress) {
@@ -113,6 +150,7 @@ class PlDanmakuController {
 
   @pragma('vm:notify-debugger-on-exception')
   Future<void> _initFileDm() async {
+    final generation = _generation;
     try {
       final file = File(
         path.join(
@@ -122,6 +160,7 @@ class PlDanmakuController {
       );
       if (!file.existsSync()) return;
       final bytes = await file.readAsBytes();
+      if (generation != _generation) return;
       if (bytes.isEmpty) return;
       final elem = DmSegMobileReply.fromBuffer(bytes).elems;
       handleDanmaku(elem);

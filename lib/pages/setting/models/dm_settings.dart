@@ -4,7 +4,6 @@ import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/filtering_text.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -21,14 +20,13 @@ List<SettingsModel> get dmSettings => [
     setKey: SettingBoxKey.enableShowDanmaku,
     defaultVal: true,
   ),
-  if (PlatformUtils.isMobile)
-    const SwitchModel(
-      title: '启用点击弹幕',
-      subtitle: '点击弹幕悬停，支持点赞、复制、举报操作',
-      leading: Icon(Icons.touch_app_outlined),
-      setKey: SettingBoxKey.enableTapDm,
-      defaultVal: true,
-    ),
+  const SwitchModel(
+    title: '启用点击弹幕',
+    subtitle: '点击弹幕悬停，支持快速屏蔽、点赞、复制和举报',
+    leading: Icon(Icons.touch_app_outlined),
+    setKey: SettingBoxKey.enableTapDm,
+    defaultVal: true,
+  ),
   NormalModel(
     title: '弹幕行高',
     subtitle: '默认1.6',

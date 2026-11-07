@@ -51,6 +51,9 @@ class _PlDanmakuState extends State<PlDanmaku> {
       playerController,
       widget.isFileSource,
     );
+    playerController
+      ..beginDanmakuAssistantSession(widget.cid)
+      ..addDanmakuFilterReloader(_reloadDanmakuFilters);
     if (playerController.enableShowDanmaku.value) {
       if (widget.isFileSource) {
         _plDanmakuController.initFileDmIfNeeded();
@@ -63,6 +66,12 @@ class _PlDanmakuState extends State<PlDanmaku> {
     playerController
       ..addStatusLister(playerListener)
       ..addPositionListener(videoPositionListen);
+  }
+
+  void _reloadDanmakuFilters() {
+    _controller?.clear();
+    latestAddedPosition = -1;
+    _plDanmakuController.reloadAt(playerController.positionInMilliseconds);
   }
 
   @override
@@ -162,7 +171,8 @@ class _PlDanmakuState extends State<PlDanmaku> {
   void dispose() {
     playerController
       ..removePositionListener(videoPositionListen)
-      ..removeStatusLister(playerListener);
+      ..removeStatusLister(playerListener)
+      ..removeDanmakuFilterReloader(_reloadDanmakuFilters);
     _plDanmakuController.dispose();
     _controller = null;
     super.dispose();

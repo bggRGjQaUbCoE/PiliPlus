@@ -3375,6 +3375,14 @@ const ReplyInfo$json = {
       '6': '.bilibili.main.community.reply.v1.Content',
       '10': 'translatedContent'
     },
+    {
+      '1': 'parent_reply_member',
+      '3': 100,
+      '4': 1,
+      '5': 11,
+      '6': '.bilibili.main.community.reply.v1.Member',
+      '10': 'parentReplyMember'
+    },
   ],
 };
 
@@ -3392,7 +3400,9 @@ final $typed_data.Uint8List replyInfoDescriptor = $convert.base64Decode(
     'NvbnRyb2wSRwoJbWVtYmVyX3YyGA8gASgLMiouYmlsaWJpbGkubWFpbi5jb21tdW5pdHkucmVw'
     'bHkudjEuTWVtYmVyVjJSCG1lbWJlclYyEh0KCnRyYWNrX2luZm8YECABKAlSCXRyYWNrSW5mbx'
     'JYChJ0cmFuc2xhdGVkX2NvbnRlbnQYESABKAsyKS5iaWxpYmlsaS5tYWluLmNvbW11bml0eS5y'
-    'ZXBseS52MS5Db250ZW50UhF0cmFuc2xhdGVkQ29udGVudA==');
+    'ZXBseS52MS5Db250ZW50UhF0cmFuc2xhdGVkQ29udGVudBJYChNwYXJlbnRfcmVwbHlfbWVtYm'
+    'VyGGQgASgLMiguYmlsaWJpbGkubWFpbi5jb21tdW5pdHkucmVwbHkudjEuTWVtYmVyUhFwYXJl'
+    'bnRSZXBseU1lbWJlcg==');
 
 @$core.Deprecated('Use replyInfoReplyDescriptor instead')
 const ReplyInfoReply$json = {

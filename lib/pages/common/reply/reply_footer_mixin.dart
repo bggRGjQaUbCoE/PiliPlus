@@ -20,7 +20,7 @@ mixin ReplyFooterMixin<T extends StatefulWidget, R> on State<T> {
     if (fold != null) return _buildFoldItem(fold);
 
     controller.onLoadMore();
-    return _buildEndItem();
+    return buildEndItem();
   }
 
   Widget _buildFoldItem(FoldCard fold) {
@@ -48,7 +48,7 @@ mixin ReplyFooterMixin<T extends StatefulWidget, R> on State<T> {
     );
   }
 
-  Widget _buildEndItem() {
+  Widget buildEndItem() {
     return Container(
       height: 125,
       alignment: .center,

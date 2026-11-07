@@ -256,7 +256,8 @@ abstract final class SettingBoxKey {
       reduceLuxColor = 'reduceLuxColor',
       liveCdnUrl = 'liveCdnUrl',
       saveReply = 'saveReply',
-      appFont = 'appFont';
+      appFont = 'appFont',
+      foldDepth = 'foldDepth';
 }
 
 abstract final class LocalCacheKey {

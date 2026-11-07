@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:collection';
+
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo, DetailListReply;
 import 'package:PiliPlus/grpc/reply.dart';
@@ -8,6 +11,7 @@ import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/pages/common/reply/fold/reply_fold_mixin.dart';
 import 'package:PiliPlus/pages/common/reply/reply_controller.dart';
 import 'package:PiliPlus/pages/video/reply_new/view.dart';
+import 'package:PiliPlus/pages/video/reply_reply/tree.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
@@ -54,6 +58,8 @@ class VideoReplyReplyController extends ReplyController
   @override
   ReplySortType get prefSortType => Pref.reply2SortType;
 
+  late final removedReply = HashMap<Int64, ReplyInfo>();
+
   @override
   void onInit() {
     super.onInit();
@@ -70,7 +76,7 @@ class VideoReplyReplyController extends ReplyController
     final data = response.response;
 
     if (isRefresh) {
-      haneleSubjectControl(data.subjectControl);
+      handleSubjectControl(data.subjectControl);
     }
 
     // reply2Reply // isDialogue.not
@@ -87,12 +93,29 @@ class VideoReplyReplyController extends ReplyController
       getFoldCard(data.mixedCards);
     }
 
-    hanelePagination(
+    handlePagination(
       cursor: data.cursor,
       offset: data.paginationReply.nextOffset,
     );
 
     return false;
+  }
+
+  Iterable<ReplyInfo> getParentChain(int index, ReplyInfo? firstFloor) {
+    final data = loadingState.value.data!;
+    final item = data[index];
+    final replies = [item];
+    for (var i = index - 1, parent = item.parent; i >= 0; i--) {
+      final item = data[i];
+      if (item.id == parent) {
+        replies.add(item);
+        parent = item.parent;
+      }
+    }
+    if (firstFloor != null && firstFloor.id != replies.last.id) {
+      replies.add(firstFloor);
+    }
+    return replies.reversed;
   }
 
   bool setIndexById(Int64 id64, [List<ReplyInfo>? replies]) {
@@ -143,6 +166,7 @@ class VideoReplyReplyController extends ReplyController
           rpid: id ?? 0,
           mode: mode,
           offset: nextOffset,
+          removed: removedReply,
         );
 
   @override
@@ -153,60 +177,202 @@ class VideoReplyReplyController extends ReplyController
     return super.onReload();
   }
 
-  @override
-  void onReply(
-    ReplyInfo? replyItem, {
-    int? oid,
-    int? replyType,
-    int? index,
-    MentionItem? mentionItem,
-  }) {
-    assert(replyItem != null && index != null);
-
+  Future<ReplyInfo?> _sendReply(ReplyInfo replyItem) async {
     final (bool inputDisable, String? hint) = replyHint;
-    if (inputDisable) {
-      return;
-    }
+    if (inputDisable) return null;
 
-    final oid = replyItem!.oid.toInt();
+    final oid = replyItem.oid.toInt();
     final root = replyItem.id.toInt();
     final key = oid + root;
 
-    Get.key.currentState!
-        .push(
-          PublishRoute(
-            pageBuilder: (buildContext, animation, secondaryAnimation) {
-              return ReplyPage(
-                hint: hint,
-                oid: oid,
-                root: root,
-                parent: root,
-                replyType: this.replyType,
-                replyItem: replyItem,
-                items: savedReplies[key],
-                onSave: (reply) {
-                  if (reply.isEmpty) {
-                    savedReplies.remove(key);
-                  } else {
-                    savedReplies[key] = reply.toList();
-                  }
-                },
-              );
+    final replyInfo = await Get.key.currentState!.push(
+      PublishRoute<ReplyInfo>(
+        pageBuilder: (context, _, _) {
+          return ReplyPage(
+            hint: hint,
+            oid: oid,
+            root: root,
+            parent: root,
+            replyType: replyType,
+            replyItem: replyItem,
+            items: savedReplies[key],
+            onSave: (reply) {
+              if (reply.isEmpty) {
+                savedReplies.remove(key);
+              } else {
+                savedReplies[key] = reply.toList();
+              }
             },
-          ),
-        )
-        .then((replyInfo) {
-          if (replyInfo is ReplyInfo) {
-            savedReplies.remove(key);
+          );
+        },
+      ),
+    );
 
-            count.value += 1;
-            loadingState
-              ..value.dataOrNull?.insert(index! + 1, replyInfo)
-              ..refresh();
-            if (enableCommAntifraud) {
-              onCheckReply(replyInfo, isManual: false);
-            }
-          }
-        });
+    if (replyInfo != null) {
+      savedReplies.remove(key);
+      count.value += 1;
+      if (enableCommAntifraud) {
+        onCheckReply(replyInfo, isManual: false);
+      }
+    }
+    return replyInfo;
+  }
+
+  @override
+  Future<void> onReply(
+    covariant ReplyInfo replyItem, {
+    int? oid,
+    int? replyType,
+    covariant int index = -1,
+    MentionItem? mentionItem,
+  }) async {
+    assert(index != -1 || replyItem.root == replyItem.id);
+
+    if (await _sendReply(replyItem) case final replyInfo?) {
+      loadingState
+        ..value.dataOrNull?.insert(index + 1, replyInfo)
+        ..refresh();
+    }
+  }
+
+  Timer? _replyTimer;
+  Future<void>? _inflightReply;
+  final progress = RxDouble(0);
+
+  bool get inFetchReply => _replyTimer != null || _inflightReply != null;
+
+  void _cancelReplyTimer() {
+    _replyTimer?.cancel();
+    _replyTimer = null;
+  }
+
+  void nextReplyRound() {
+    _replyTimer = null;
+    _inflightReply = _fetchNextReply();
+  }
+
+  void _createReplyTimer() {
+    _replyTimer = Timer(const Duration(milliseconds: 300), nextReplyRound);
+  }
+
+  Future<void> _fetchNextReply() async {
+    try {
+      if (isEnd && foldCard != null) {
+        await loadFoldList(toast: false);
+      } else {
+        await queryData(false);
+      }
+    } finally {
+      _inflightReply = null;
+    }
+    if (!isClosed) {
+      if (isEnd && foldCard == null) {
+        buildTree();
+      } else {
+        _createReplyTimer();
+      }
+    }
+  }
+
+  @override
+  Future<void> queryData([bool isRefresh = true]) async {
+    await super.queryData(isRefresh);
+    if (isEnd) {
+      progress.value = 1;
+    } else if (count.rawValue > 0) {
+      progress.value =
+          (loadingState.rawValue.dataOrNull?.length ?? 0) / count.rawValue;
+    }
+  }
+
+  @override
+  Future<void> onLoadMore() {
+    if (_replyTimer != null) {
+      assert(_inflightReply == null);
+      _cancelReplyTimer();
+      return _inflightReply = _fetchNextReply();
+    } else if (_inflightReply case final future?) {
+      return future;
+    }
+    return super.onLoadMore();
+  }
+
+  @override
+  void queryBySort() {
+    if (replyTree.rawValue != null) return;
+    super.queryBySort();
+  }
+
+  @override
+  Future<void> onRefresh() async {
+    if (replyTree.rawValue != null) return Future.syncValue(null);
+    if (_inflightReply != null) await _inflightReply;
+    _cancelReplyTimer();
+    return super.onRefresh();
+  }
+
+  @override
+  void onClose() {
+    _cancelReplyTimer();
+    super.onClose();
+  }
+
+  final replyTree = Rxn<ReplyTree>();
+
+  void buildTree() {
+    final data = loadingState.rawValue.data!;
+    final seen = HashSet<Int64>();
+    data.retainWhere((i) => seen.add(i.id));
+    replyTree.value = ReplyTree.build(
+      data: data,
+      seen: seen,
+      rootId: firstFloor.rawValue?.id ?? data.first.root,
+      removed: removedReply,
+      foldDepth: Pref.foldDepth,
+    );
+  }
+
+  void toggleCollapseTree(int index) {
+    replyTree
+      ..rawValue!.toggleCollapse(index)
+      ..refresh();
+  }
+
+  bool setIndexByTreeNode(int end, ReplyTreeNode? node) {
+    if (node != null) {
+      final index = replyTree.rawValue!.reverseIdentityIndexOf(node, end);
+      if (index != -1) {
+        this.index.value = index;
+        jumpToItem(index);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Future<void> onReplyByTreeNode(int index, ReplyInfo replyItem) async {
+    if (await _sendReply(replyItem) case final replyInfo?) {
+      replyTree
+        ..rawValue!.appendLeaf(replyInfo, index)
+        ..refresh();
+
+      final data = loadingState.rawValue.dataOrNull;
+      if (data != null) {
+        final index = data.reverseIdentityIndexOf(replyItem);
+        data.insert(index + 1, replyInfo);
+      }
+    }
+  }
+
+  void onRemoveByTreeNode(int index, ReplyInfo replyItem) {
+    replyTree
+      ..rawValue!.remove(index)
+      ..refresh();
+
+    final data = loadingState.rawValue.dataOrNull;
+    if (data != null) {
+      final index = data.reverseIdentityIndexOf(replyItem);
+      onRemove(index, replyItem, null);
+    }
   }
 }

@@ -18,6 +18,7 @@ class SelectDialog<T> extends StatelessWidget {
   final String title;
   final List<(T, String)> values;
   final Widget Function(BuildContext, int)? subtitleBuilder;
+  final List<Widget>? actions;
   final bool toggleable;
 
   const SelectDialog({
@@ -26,6 +27,7 @@ class SelectDialog<T> extends StatelessWidget {
     required this.values,
     required this.title,
     this.subtitleBuilder,
+    this.actions,
     this.toggleable = false,
   });
 
@@ -67,6 +69,7 @@ class SelectDialog<T> extends StatelessWidget {
           ),
         ),
       ),
+      actions: actions,
     );
   }
 }
@@ -85,8 +88,10 @@ class CdnSelectDialog extends StatefulWidget {
 
 class _CdnSelectDialogState extends State<CdnSelectDialog> {
   late final List<ValueNotifier<String?>> _cdnResList;
+  late final List<double?> _cdnSpeedList;
   late final List<CancelToken?> _tokens;
   late final bool _cdnSpeedTest;
+  bool _isTesting = false;
 
   @override
   void initState() {
@@ -108,8 +113,8 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
         length,
         (_) => ValueNotifier<String?>(null),
       );
+      _cdnSpeedList = List.filled(length, null);
       _tokens = List.generate(length, (_) => CancelToken());
-      _startSpeedTest();
     }
     super.initState();
   }
@@ -141,12 +146,41 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
     return item;
   }
 
-  Future<void> _startSpeedTest() async {
+  Future<void> _startSpeedTest({required bool autoSelect}) async {
+    if (_isTesting) return;
+    setState(() => _isTesting = true);
+
+    for (int i = 0; i < _cdnResList.length; i++) {
+      _tokens[i]?.cancel();
+      _tokens[i] = CancelToken();
+      _cdnResList[i].value = null;
+      _cdnSpeedList[i] = null;
+    }
+
+    CDNService? fastestCdn;
     try {
       final videoItem = widget.sample ?? await _getSampleUrl();
       await _testAllCdnServices(videoItem);
+      if (autoSelect) {
+        double? fastestSpeed;
+        for (final item in CDNService.values) {
+          final speed = _cdnSpeedList[item.index];
+          if (speed != null && (fastestSpeed == null || speed > fastestSpeed)) {
+            fastestCdn = item;
+            fastestSpeed = speed;
+          }
+        }
+      }
     } catch (e) {
       if (kDebugMode) debugPrint('CDN speed test failed: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isTesting = false);
+      }
+    }
+
+    if (fastestCdn != null && mounted) {
+      Navigator.of(context).pop(fastestCdn);
     }
   }
 
@@ -213,8 +247,9 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
   }
 
   void _updateSpeedResult(int index, int downloaded, int duration) {
-    final speed = (downloaded / duration).toStringAsPrecision(3);
-    _cdnResList[index].value = '${speed}MB/s';
+    final speed = downloaded / duration;
+    _cdnSpeedList[index] = speed;
+    _cdnResList[index].value = '${speed.toStringAsPrecision(3)}MB/s';
   }
 
   void _handleSpeedTestError(dynamic error, int index) {
@@ -264,6 +299,22 @@ class _CdnSelectDialogState extends State<CdnSelectDialog> {
                 },
               );
             }
+          : null,
+      actions: _cdnSpeedTest
+          ? [
+              TextButton(
+                onPressed: _isTesting
+                    ? null
+                    : () => _startSpeedTest(autoSelect: false),
+                child: const Text('全部测速'),
+              ),
+              TextButton(
+                onPressed: _isTesting
+                    ? null
+                    : () => _startSpeedTest(autoSelect: true),
+                child: Text(_isTesting ? '测速中...' : '一键自动测速并选择'),
+              ),
+            ]
           : null,
     );
   }

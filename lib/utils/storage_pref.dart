@@ -896,6 +896,9 @@ abstract final class Pref {
   static bool get autoEnterFullScreen =>
       _setting.get(SettingBoxKey.enableAutoEnter, defaultValue: false);
 
+  static bool get enableLongPressSpeed =>
+      _setting.get(SettingBoxKey.enableLongPressSpeed, defaultValue: true);
+
   static bool get enableAutoLongPressSpeed =>
       _setting.get(SettingBoxKey.enableAutoLongPressSpeed, defaultValue: false);
 

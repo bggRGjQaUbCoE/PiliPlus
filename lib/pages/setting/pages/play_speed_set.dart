@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/pages/setting/widgets/switch_item.dart';
+import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/filtering_text.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -25,6 +26,7 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
   late double playSpeedDefault = Pref.playSpeedDefault;
   late double longPressSpeedDefault = Pref.longPressSpeedDefault;
   late List<double> speedList = Pref.speedList;
+  late bool enableLongPressSpeed = Pref.enableLongPressSpeed;
   late bool enableAutoLongPressSpeed = Pref.enableAutoLongPressSpeed;
   List<({int id, String title, Icon icon})> sheetMenu = [
     (
@@ -129,7 +131,8 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
             const SizedBox(height: 10),
             ...sheetMenu.map(
               (item) => ListTile(
-                enabled: enableAutoLongPressSpeed && item.id == 2
+                enabled: (!enableLongPressSpeed || enableAutoLongPressSpeed) &&
+                        item.id == 2
                     ? false
                     : true,
                 onTap: () {
@@ -220,18 +223,32 @@ class _PlaySpeedPageState extends State<PlaySpeedPage> {
               subtitle: Text(playSpeedDefault.toString()),
             ),
             SetSwitchItem(
-              title: '动态长按倍速',
-              subtitle: '根据默认倍速长按时自动双倍',
-              setKey: SettingBoxKey.enableAutoLongPressSpeed,
-              defaultVal: enableAutoLongPressSpeed,
-              onChanged: (val) =>
-                  setState(() => enableAutoLongPressSpeed = val),
+              title: '长按倍速',
+              subtitle: '长按视频快进倍速播放',
+              setKey: SettingBoxKey.enableLongPressSpeed,
+              defaultVal: enableLongPressSpeed,
+              onChanged: (val) {
+                PlPlayerController.instance?.enableLongPressSpeed = val;
+                setState(() => enableLongPressSpeed = val);
+              },
             ),
-            if (!enableAutoLongPressSpeed)
-              ListTile(
-                title: const Text('默认长按倍速'),
-                subtitle: Text(longPressSpeedDefault.toString()),
+            if (enableLongPressSpeed) ...[
+              SetSwitchItem(
+                title: '动态长按倍速',
+                subtitle: '根据默认倍速长按时自动双倍',
+                setKey: SettingBoxKey.enableAutoLongPressSpeed,
+                defaultVal: enableAutoLongPressSpeed,
+                onChanged: (val) {
+                  PlPlayerController.instance?.enableAutoLongPressSpeed = val;
+                  setState(() => enableAutoLongPressSpeed = val);
+                },
               ),
+              if (!enableAutoLongPressSpeed)
+                ListTile(
+                  title: const Text('默认长按倍速'),
+                  subtitle: Text(longPressSpeedDefault.toString()),
+                ),
+            ],
             Padding(
               padding: const EdgeInsets.only(
                 left: 14,

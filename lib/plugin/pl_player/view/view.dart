@@ -1220,7 +1220,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       if (controlsUnlock) {
         if (!plPlayerController.isLive) {
           _doubleTapGestureRecognizer.addPointer(event);
-          longPressRecognizer.addPointer(event);
+          if (plPlayerController.enableLongPressSpeed) {
+            longPressRecognizer.addPointer(event);
+          }
         }
         _scaleGestureRecognizer
           ..isPosAllowed = _isPositionAllowed(event.localPosition)
@@ -1232,7 +1234,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       } else {
         _tapGestureRecognizer.addPointer(event);
         _doubleTapGestureRecognizer.addPointer(event);
-        longPressRecognizer.addPointer(event);
+        if (plPlayerController.enableLongPressSpeed) {
+          longPressRecognizer.addPointer(event);
+        }
       }
       _scaleGestureRecognizer.addPointer(event);
     }

@@ -53,6 +53,7 @@ import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/plugin/pl_player/view/view.dart';
+import 'package:PiliPlus/services/mini_player_service.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart'
     show shutdownTimerService;
@@ -148,6 +149,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     super.initState();
 
     videoDetailController = Get.put(VideoDetailController(), tag: heroTag);
+
+    // 从应用内小窗重新进入视频页时，交还小窗持有的播放器引用
+    MiniPlayerService.instance.release();
 
     introController = _initIntroCtr();
 
@@ -356,7 +360,10 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     }
 
     if (!videoDetailController.plPlayerController.isCloseAll) {
-      videoPlayerServiceHandler?.onVideoDetailDispose(heroTag);
+      // 播放器已交由应用内小窗接管时，保留后台播放的媒体信息
+      if (!videoDetailController.plPlayerController.handedOffToMiniPlayer) {
+        videoPlayerServiceHandler?.onVideoDetailDispose(heroTag);
+      }
       if (plPlayerController != null) {
         videoDetailController.makeHeartBeat();
         plPlayerController!.dispose();
@@ -1200,6 +1207,57 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     ],
   );
 
+  /// 返回时转为应用内小窗播放
+  ///
+  /// 返回 true 表示播放器已交由小窗接管，调用方需要主动退出当前页面
+  bool _enterMiniPlayer() {
+    if (!videoDetailController.plPlayerController.miniPlayerOnBack) {
+      return false;
+    }
+    if (videoDetailController.isFileSource) {
+      return false;
+    }
+
+    final plPlayerController = videoDetailController.plPlayerController;
+    if (plPlayerController.isFullScreen.value ||
+        plPlayerController.isDesktopPip ||
+        plPlayerController.controlsLock.value) {
+      return false;
+    }
+    // 仅播放中的视频转小窗，避免出现一个静止的小窗
+    if (!plPlayerController.playerStatus.isPlaying ||
+        plPlayerController.videoController == null) {
+      return false;
+    }
+
+    String? title;
+    try {
+      title = videoDetailController.isUgc
+          ? ugcIntroController.videoDetail.value.title
+          : pgcIntroController.pgcItem.title;
+    } catch (_) {}
+
+    // 先按退页流程收尾（保持播放），再交给小窗持有一个播放器引用
+    plPlayerController
+      ..onPopInvokedCleanup(pause: false)
+      ..handedOffToMiniPlayer = true;
+    MiniPlayerService.instance.enter(
+      info: MiniPlayerVideoInfo(
+        aid: videoDetailController.aid,
+        bvid: videoDetailController.bvid,
+        cid: videoDetailController.cid.value,
+        videoType: videoDetailController.videoType,
+        epId: videoDetailController.epId,
+        seasonId: videoDetailController.seasonId,
+        pgcType: videoDetailController.pgcType,
+        cover: videoDetailController.cover.value,
+        title: title,
+        isVertical: videoDetailController.isVertical.value,
+      ),
+    );
+    return true;
+  }
+
   Widget plPlayer({
     required double width,
     required double height,
@@ -1209,9 +1267,19 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     canPop:
         !isFullScreen &&
         !videoDetailController.plPlayerController.isDesktopPip &&
-        (videoDetailController.horizontalScreen || isPortrait),
-    onPopInvokedWithResult:
-        videoDetailController.plPlayerController.onPopInvokedWithResult,
+        (videoDetailController.horizontalScreen || isPortrait) &&
+        // 开启「返回时进入小窗播放」后需要拦截返回事件
+        !videoDetailController.plPlayerController.miniPlayerOnBack,
+    onPopInvokedWithResult: (didPop, result) {
+      if (!didPop && _enterMiniPlayer()) {
+        Get.back();
+        return;
+      }
+      videoDetailController.plPlayerController.onPopInvokedWithResult(
+        didPop,
+        result,
+      );
+    },
     child: Obx(
       () =>
           !videoDetailController.videoState.value ||

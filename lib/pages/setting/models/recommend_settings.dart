@@ -2,6 +2,7 @@ import 'package:PiliPlus/http/video.dart';
 import 'package:PiliPlus/models/common/rcmd_source.dart';
 import 'package:PiliPlus/pages/rcmd/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
+import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/utils/recommend_filter.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -12,19 +13,11 @@ import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart' hide StatefulBuilder;
 
 List<SettingsModel> get recommendSettings => [
-  PopupModel(
+  NormalModel(
     title: '首页推荐来源',
+    getSubtitle: () => Pref.rcmdSource.label,
     leading: const Icon(Icons.swap_horiz_outlined),
-    value: () => Pref.rcmdSource,
-    items: RcmdSource.values,
-    onSelected: _switchRcmdSource,
-  ),
-  const NormalModel(
-    title: '桌面端 / PC',
-    subtitle: '沿用公开的网页推荐接口，按哔哩哔哩官方 Windows 客户端首页'
-        '实际发送的参数组合请求，以获得更接近官方客户端的推荐体验；'
-        '不涉及私有接口与设备指纹',
-    leading: Icon(Icons.desktop_windows_outlined),
+    onTap: _showRcmdSourceDialog,
   ),
   SwitchModel(
     title: '保留首页推荐刷新',
@@ -116,6 +109,32 @@ List<SettingsModel> get recommendSettings => [
     onChanged: (value) => RecommendFilter.applyFilterToRelatedVideos = value,
   ),
 ];
+
+Future<void> _showRcmdSourceDialog(
+  BuildContext context,
+  VoidCallback setState,
+) async {
+  final res = await showDialog<RcmdSource>(
+    context: context,
+    builder: (context) => SelectDialog<RcmdSource>(
+      title: '首页推荐来源',
+      value: Pref.rcmdSource,
+      values: RcmdSource.values.map((e) => (e, e.label)).toList(),
+      subtitleBuilder: (context, index) {
+        if (RcmdSource.values[index] != RcmdSource.desktop) {
+          return null;
+        }
+        return const Text(
+          '沿用公开的网页推荐接口，按哔哩哔哩官方 Windows 客户端'
+          '首页实际发送的参数组合请求，不涉及私有接口与设备指纹',
+        );
+      },
+    ),
+  );
+  if (res != null) {
+    _switchRcmdSource(res, setState);
+  }
+}
 
 void _switchRcmdSource(RcmdSource value, VoidCallback setState) {
   // 同步旧键（旧版本只有 app / web 二选一），保证降级后语义一致

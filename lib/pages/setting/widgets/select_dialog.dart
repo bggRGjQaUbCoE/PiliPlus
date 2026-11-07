@@ -17,7 +17,7 @@ class SelectDialog<T> extends StatelessWidget {
   final T? value;
   final String title;
   final List<(T, String)> values;
-  final Widget Function(BuildContext, int)? subtitleBuilder;
+  final Widget? Function(BuildContext, int)? subtitleBuilder;
   final bool toggleable;
 
   const SelectDialog({
@@ -51,15 +51,48 @@ class SelectDialog<T> extends StatelessWidget {
                 values.length,
                 (index) {
                   final item = values[index];
-                  return RadioListTile<T>(
-                    toggleable: toggleable,
-                    dense: true,
-                    value: item.$1,
-                    title: Text(
-                      item.$2,
-                      style: titleMedium,
+                  final subtitle = subtitleBuilder?.call(context, index);
+                  return InkWell(
+                    onTap: () => Navigator.of(context).pop(
+                      toggleable && value == item.$1 ? null : item.$1,
                     ),
-                    subtitle: subtitleBuilder?.call(context, index),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 单选按钮锚定在标题行，副标题缩进到下方
+                          SizedBox(
+                            height: 48,
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 48,
+                                  child: IgnorePointer(
+                                    child: Radio<T>(value: item.$1),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    item.$2,
+                                    style: titleMedium,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (subtitle != null)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: 56,
+                                right: 8,
+                                bottom: 8,
+                              ),
+                              child: subtitle,
+                            ),
+                        ],
+                      ),
+                    ),
                   );
                 },
               ),

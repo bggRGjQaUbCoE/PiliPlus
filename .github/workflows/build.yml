@@ -82,6 +82,9 @@ jobs:
               shell: pwsh
               run: lib/scripts/patch.ps1 android
 
+            - name: Verify DLNA control URL compatibility
+              run: flutter test --no-pub test/utils/dlna_utils_test.dart
+
             - name: Write key
               if: github.event_name == 'workflow_dispatch'
               run: |

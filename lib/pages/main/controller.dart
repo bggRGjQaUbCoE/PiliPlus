@@ -312,8 +312,8 @@ class MainController extends GetxController
           'topOrRefresh',
           const Duration(milliseconds: 500),
           () => switch (currentNav) {
-            .home => homeController.onRefresh(),
-            .dynamics => dynamicController.onRefresh(),
+            .home => homeController.showRefresh(),
+            .dynamics => dynamicController.showRefresh(),
             .mine => null,
           },
         );
@@ -338,7 +338,7 @@ class MainController extends GetxController
     if (navigationBars[selectedIndex.value] == NavigationBarType.home &&
         homeController.tabs[homeController.tabController.index] ==
             HomeTabType.rcmd) {
-      homeController.onRefresh();
+      homeController.showRefresh();
       return true;
     }
     return false;

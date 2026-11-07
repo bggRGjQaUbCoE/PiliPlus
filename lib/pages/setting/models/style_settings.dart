@@ -111,6 +111,14 @@ List<SettingsModel> get styleSettings => [
     defaultVal: false,
     needReboot: true,
   ),
+  if (PlatformUtils.isDesktop)
+    const SwitchModel(
+      title: '首页显示刷新按钮',
+      leading: Icon(Icons.refresh),
+      setKey: SettingBoxKey.showRefreshFAB,
+      defaultVal: true,
+      needReboot: true,
+    ),
   NormalModel(
     title: '页面过渡动画',
     leading: const Icon(Icons.animation),

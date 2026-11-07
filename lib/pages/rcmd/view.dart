@@ -3,10 +3,12 @@ import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/video_card/video_card_v.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/rcmd/controller.dart';
 import 'package:PiliPlus/utils/grid.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -29,11 +31,12 @@ class _RcmdPageState extends State<RcmdPage>
   Widget build(BuildContext context) {
     super.build(context);
     final colorScheme = ColorScheme.of(context);
-    return Container(
+    final child = Container(
       clipBehavior: .hardEdge,
       margin: const .symmetric(horizontal: Style.safeSpace),
       decoration: const BoxDecoration(borderRadius: Style.mdRadius),
       child: refreshIndicator(
+        key: controller.refreshKey,
         onRefresh: controller.onRefresh,
         child: CustomScrollView(
           controller: controller.scrollController,
@@ -49,6 +52,25 @@ class _RcmdPageState extends State<RcmdPage>
         ),
       ),
     );
+    if (PlatformUtils.isDesktop && Pref.showRefreshFAB) {
+      return ScaffoldLayout(
+        body: child,
+        fab: Padding(
+          padding: const .only(
+            right: kFloatingActionButtonMargin,
+            bottom: 80 + kFloatingActionButtonMargin,
+          ),
+          child: FloatingActionButton(
+            tooltip: '刷新',
+            onPressed: controller.toTopAndRefresh,
+            backgroundColor: colorScheme.secondaryContainer,
+            foregroundColor: colorScheme.onSecondaryContainer,
+            child: const Icon(Icons.refresh),
+          ),
+        ),
+      );
+    }
+    return child;
   }
 
   late final gridDelegate = SliverGridDelegateWithExtentAndRatio(

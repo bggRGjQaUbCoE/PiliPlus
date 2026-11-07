@@ -199,7 +199,8 @@ class AudioController extends GetxController
       ..onPause = onPause
       ..onSeek = onSeek
       ..onSkipToNext = playNext
-      ..onSkipToPrevious = playPrev;
+      ..onSkipToPrevious = playPrev
+      ..isPlaying = () => player?.state.playing ?? false;
 
     animController = AnimationController(
       vsync: this,
@@ -217,12 +218,25 @@ class AudioController extends GetxController
     return player?.state.playing ?? false;
   }
 
-  Future<void>? onPlay() {
-    return player?.play();
+  Future<void>? onPlay() async {
+    if (player == null) return;
+    await player?.play();
+    await audioSessionHandler?.setActive(true);
   }
 
-  Future<void>? onPause() {
-    return player?.pause();
+  Future<void>? onPause() async {
+    if (player == null) return;
+    await player?.pause();
+    await audioSessionHandler?.setActive(false);
+  }
+
+  Future<void>? playOrPause() {
+    if (player == null) return null;
+    if (player!.state.playing) {
+      return onPause();
+    } else {
+      return onPlay();
+    }
   }
 
   Future<void>? onSeek(Duration duration) {
@@ -361,14 +375,17 @@ class AudioController extends GetxController
     http_model.Volume? volume,
   }) async {
     await _initPlayerIfNeeded();
-    final extras = audioFilterExtras(volume);
-    player
-      ?..setMediaHeader(
-        userAgent: ua,
-        // mpv cannot clear referer option
-        headers: {'Referer': ?referer},
-      )
-      ..open(Media(url, start: _start, extras: extras));
+    if (player == null) return;
+    player!.setMediaHeader(
+      userAgent: ua,
+      // mpv cannot clear referer option
+      headers: {'Referer': ?referer},
+    );
+    await player!.open(
+      Media(url, start: _start, extras: audioFilterExtras(volume)),
+      play: false,
+    );
+    await onPlay();
     _start = null;
   }
 
@@ -695,10 +712,6 @@ class AudioController extends GetxController
     );
   }
 
-  Future<void>? playOrPause() {
-    return player?.playOrPause();
-  }
-
   bool playPrev() {
     if (index != null && playlist != null && player != null) {
       final prev = index! - 1;
@@ -831,6 +844,7 @@ class AudioController extends GetxController
       ..onSeek = null
       ..onSkipToNext = null
       ..onSkipToPrevious = null
+      ..isPlaying = null
       ..onVideoDetailDispose(hashCode.toString())
       ..clearIfNeeded();
     _subscriptions?.forEach((e) => e.cancel());

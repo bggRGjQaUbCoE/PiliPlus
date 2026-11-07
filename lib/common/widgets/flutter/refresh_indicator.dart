@@ -312,11 +312,13 @@ class RefreshIndicatorState extends State<RefreshIndicator>
     // user dragging. It may be a result of ScrollController.jumpTo or ballistic scroll.
     // In this case, we don't want to trigger the refresh indicator.
     return _status == null &&
-        ((notification is ScrollStartNotification &&
-                notification.dragDetails != null) ||
-            (notification is ScrollUpdateNotification &&
-                notification.dragDetails != null)) &&
         notification.metrics.extentBefore == 0.0 &&
+        ((notification is OverscrollNotification &&
+                notification.dragDetails != null &&
+                notification.dragDetails!.delta.dy > 0) ||
+            (notification is ScrollUpdateNotification &&
+                notification.dragDetails != null &&
+                notification.dragDetails!.delta.dy > 0)) &&
         _start();
   }
 

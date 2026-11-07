@@ -208,6 +208,8 @@ class _DownloadPagePageState extends State<DownloadPagePage>
                           enableMultiSelect: enableMultiSelect,
                           progress: widget.progress,
                           updatePageDm: updatePageDm,
+                          updatePageSeg: updatePageSeg,
+                          updatePagePlayInfo: updatePagePlayInfo,
                         );
                       },
                       itemCount: _pages.length,

@@ -129,8 +129,13 @@ abstract final class ReplyGrpc {
     );
     if (res case Success(:final response)) {
       // keyword filter
-      if (response.hasUpTop() && needRemoveGrpc(response.upTop)) {
-        response.clearUpTop();
+      if (response.hasUpTop()) {
+        final topReply = response.upTop;
+        if (needRemoveGrpc(topReply)) {
+          response.clearUpTop();
+        } else {
+          topReply.replies.removeWhere(needRemoveGrpc);
+        }
       }
 
       if (response.replies.isNotEmpty) {

@@ -929,7 +929,7 @@ abstract final class VideoHttp {
     String subtitleUrl, {
     SubtitleFormat format = .vtt,
   }) async {
-    final res = await Request().get("https:$subtitleUrl");
+    final res = await Request().get(subtitleUrl.http2https);
     if (res.data?['body'] case List list) {
       switch (format) {
         case .json:

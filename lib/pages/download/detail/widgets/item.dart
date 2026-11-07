@@ -73,6 +73,16 @@ class DetailItem extends StatelessWidget {
     ),
   );
 
+  Future<void> _onUpdate(Future<bool> Function() onUpdate) async {
+    Get.back();
+    final res = await onUpdate();
+    if (res) {
+      SmartDialog.showToast('更新成功');
+    } else {
+      SmartDialog.showToast('更新失败');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -96,22 +106,16 @@ class DetailItem extends StatelessWidget {
                       onConfirm: onDelete,
                     );
                   },
-                  child: const Text('删除', style: TextStyle(fontSize: 14)),
+                  child: const Text('删除'),
                 ),
                 DialogOption(
-                  onPressed: () async {
-                    Get.back();
-                    final res = await downloadService.downloadDanmaku(
+                  onPressed: () => _onUpdate(
+                    () => downloadService.downloadDanmaku(
                       entry: entry,
                       isUpdate: true,
-                    );
-                    if (res) {
-                      SmartDialog.showToast('更新成功');
-                    } else {
-                      SmartDialog.showToast('更新失败');
-                    }
-                  },
-                  child: const Text('更新弹幕', style: TextStyle(fontSize: 14)),
+                    ),
+                  ),
+                  child: const Text('更新弹幕'),
                 ),
                 if (entry.segments != null)
                   DialogOption(
@@ -121,19 +125,18 @@ class DetailItem extends StatelessWidget {
                     },
                     child: const Text('空降片段'),
                   ),
-                if (entry.isCompleted)
+                if (entry.isCompleted) ...[
                   DialogOption(
-                    onPressed: () async {
-                      Get.back();
-                      final res = await downloadService.updateSegments(entry);
-                      if (res) {
-                        SmartDialog.showToast('更新成功');
-                      } else {
-                        SmartDialog.showToast('更新失败');
-                      }
-                    },
+                    onPressed: () =>
+                        _onUpdate(() => downloadService.updateSegments(entry)),
                     child: const Text('更新空降片段'),
                   ),
+                  DialogOption(
+                    onPressed: () =>
+                        _onUpdate(() => downloadService.updatePlayInfo(entry)),
+                    child: const Text('更新字幕、分段信息'),
+                  ),
+                ],
               ],
             ),
           )

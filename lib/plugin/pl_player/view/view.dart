@@ -872,7 +872,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     final List<BottomControlType> userSpecifyItemRight = [
       if (isNotFileSource && plPlayerController.showDmChart) .dmChart,
       if (plPlayerController.isAnim) .superResolution,
-      if (isNotFileSource && plPlayerController.showViewPoints) .viewPoints,
+      if (plPlayerController.showViewPoints) .viewPoints,
       if (isNotFileSource && anySeason) .episode,
       if (flag) .fit,
       if (isNotFileSource) .aiTranslate,

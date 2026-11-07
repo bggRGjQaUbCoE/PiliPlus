@@ -1,0 +1,98 @@
+diff --git a/packages/flutter_tools/lib/src/commands/build_windows.dart b/packages/flutter_tools/lib/src/commands/build_windows.dart
+index 037dff7f14c..ac354bf8a28 100644
+--- a/packages/flutter_tools/lib/src/commands/build_windows.dart
++++ b/packages/flutter_tools/lib/src/commands/build_windows.dart
+@@ -26,6 +26,11 @@ class BuildWindowsCommand extends BuildSubCommand {
+        super(verboseHelp: verboseHelp) {
+     addCommonDesktopBuildOptions(verboseHelp: verboseHelp);
+     usesFlavorOption();
++    argParser.addOption(
++      'target-platform',
++      allowed: <String>['windows-x64', 'windows-arm64'],
++      help: 'The Windows architecture to build.',
++    );
+     argParser.addFlag(
+       'config-only',
+       help: 'Update the project configuration without performing a build.',
+@@ -68,7 +73,9 @@ class BuildWindowsCommand extends BuildSubCommand {
+     final defaultTargetPlatform = (_operatingSystemUtils.hostPlatform == HostPlatform.windows_arm64)
+         ? 'windows-arm64'
+         : 'windows-x64';
+-    final targetPlatform = TargetPlatform.fromName(defaultTargetPlatform);
++    final targetPlatform = TargetPlatform.fromName(
++      stringArg('target-platform') ?? defaultTargetPlatform,
++    );
+
+     await buildWindows(
+       project.windows,
+diff --git a/packages/flutter_tools/lib/src/flutter_cache.dart b/packages/flutter_tools/lib/src/flutter_cache.dart
+index bf144dbc2a5..c6c4196acc9 100644
+--- a/packages/flutter_tools/lib/src/flutter_cache.dart
++++ b/packages/flutter_tools/lib/src/flutter_cache.dart
+@@ -330,7 +330,11 @@ class WindowsEngineArtifacts extends EngineCachedArtifact {
+   List<List<String>> getBinaryDirs() {
+     if (_platform.isWindows || ignorePlatformFiltering) {
+       final String arch = cache.getHostPlatformArchName();
+-      return _getWindowsDesktopBinaryDirs(arch);
++      return <List<String>>[
++        ..._getWindowsDesktopBinaryDirs(arch),
++        if (arch == 'x64') <String>['windows-arm64', 'windows-arm64/artifacts.zip'],
++        if (arch == 'x64') ..._getWindowsDesktopBinaryDirs('arm64'),
++      ];
+     }
+     return const <List<String>>[];
+   }
+diff --git a/packages/flutter_tools/lib/src/isolated/native_assets/targets.dart b/packages/flutter_tools/lib/src/isolated/native_assets/targets.dart
+index e4726d0a48f..cd9e1838bc9 100644
+--- a/packages/flutter_tools/lib/src/isolated/native_assets/targets.dart
++++ b/packages/flutter_tools/lib/src/isolated/native_assets/targets.dart
+@@ -260,7 +260,7 @@ class WindowsAssetTarget extends CodeAssetTarget {
+   @override
+   Future<void> setCCompilerConfig({bool mustMatchAppBuild = true}) async =>
+       // TODO(simolus3): Respect the mustMatchAppBuild option in cCompilerConfigWindows.
+-      cCompilerConfigSync = await cCompilerConfigWindows();
++      cCompilerConfigSync = await cCompilerConfigWindows(architecture: architecture);
+ }
+
+ final class LinuxAssetTarget extends CodeAssetTarget {
+diff --git a/packages/flutter_tools/lib/src/isolated/native_assets/windows/native_assets.dart b/packages/flutter_tools/lib/src/isolated/native_assets/windows/native_assets.dart
+index 02030565180..4f241f6cd6d 100644
+--- a/packages/flutter_tools/lib/src/isolated/native_assets/windows/native_assets.dart
++++ b/packages/flutter_tools/lib/src/isolated/native_assets/windows/native_assets.dart
+@@ -7,7 +7,7 @@ import 'package:code_assets/code_assets.dart';
+ import '../../../globals.dart' as globals;
+ import '../../../windows/visual_studio.dart';
+
+-Future<CCompilerConfig?> cCompilerConfigWindows() async {
++Future<CCompilerConfig?> cCompilerConfigWindows({Architecture? architecture}) async {
+   final visualStudio = VisualStudio(
+     fileSystem: globals.fs,
+     platform: globals.platform,
+@@ -26,6 +26,27 @@ Future<CCompilerConfig?> cCompilerConfigWindows() async {
+     return null;
+   }
+
++  if (architecture == Architecture.arm64 && Architecture.current == Architecture.x64) {
++    final String? toolsOverride = globals.platform.environment['PILI_WINDOWS_ARM64_TOOLCHAIN'];
++    final String? environmentOverride = globals.platform.environment['PILI_WINDOWS_ARM64_ENV'];
++    final Uri tools = toolsOverride == null
++        ? compiler.resolve('../arm64/')
++        : Uri.directory(toolsOverride);
++    return CCompilerConfig(
++      compiler: tools.resolve('cl.exe'),
++      archiver: tools.resolve('lib.exe'),
++      linker: tools.resolve('link.exe'),
++      windows: WindowsCCompilerConfig(
++        developerCommandPrompt: DeveloperCommandPrompt(
++          script: environmentOverride == null
++              ? envScript.resolve('vcvarsamd64_arm64.bat')
++              : Uri.file(environmentOverride),
++          arguments: <String>[],
++        ),
++      ),
++    );
++  }
++
+   return CCompilerConfig(
+     compiler: compiler,
+     archiver: archiver,

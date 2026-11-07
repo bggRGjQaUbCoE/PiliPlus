@@ -1,0 +1,88 @@
+name: Build for Windows ARM64
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        required: false
+        default: ""
+        type: string
+  workflow_dispatch:
+
+jobs:
+  build-windows-arm64:
+    name: Release Windows ARM64
+    runs-on: windows-11-arm
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Read Flutter version
+        id: flutter-version
+        shell: pwsh
+        run: |
+          $versions = @(Select-String -LiteralPath pubspec.yaml -Pattern '^  flutter:\s*(\d+\.\d+\.\d+)\s*$')
+          if ($versions.Count -ne 1) {
+            throw 'Expected one exact Flutter version in pubspec.yaml.'
+          }
+          "version=$($versions[0].Matches[0].Groups[1].Value)" >> $env:GITHUB_OUTPUT
+
+      # Windows ARM64 has engine/Dart artifacts, but no flutter-action SDK archive.
+      - name: Checkout Flutter SDK source
+        uses: actions/checkout@v7
+        with:
+          repository: flutter/flutter
+          ref: ${{ steps.flutter-version.outputs.version }}
+          path: .build/flutter
+          persist-credentials: false
+
+      - name: Bootstrap native ARM64 Flutter
+        shell: pwsh
+        run: |
+          if ([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture -ne 'Arm64') {
+            throw 'This workflow requires native ARM64 PowerShell.'
+          }
+          $flutterRoot = Join-Path $env:GITHUB_WORKSPACE '.build/flutter'
+          "FLUTTER_ROOT=$flutterRoot" >> $env:GITHUB_ENV
+          "$flutterRoot/bin" >> $env:GITHUB_PATH
+          & "$flutterRoot/bin/flutter.bat" config --enable-windows-desktop
+          if ($LASTEXITCODE -ne 0) { throw 'Flutter SDK bootstrap failed.' }
+          $dartVersion = & "$flutterRoot/bin/cache/dart-sdk/bin/dart.exe" --version 2>&1 | Out-String
+          if ($LASTEXITCODE -ne 0 -or $dartVersion -notmatch 'windows_arm64') {
+            throw "Expected native ARM64 Dart SDK: $dartVersion"
+          }
+          Write-Output $dartVersion
+
+      - name: Setup ARM64 JDK for JNI
+        uses: actions/setup-java@v5
+        with:
+          distribution: zulu
+          java-version: "21"
+          architecture: aarch64
+
+      - name: Set and extract version
+        shell: pwsh
+        run: lib/scripts/build.ps1
+
+      - name: Apply project patches
+        shell: pwsh
+        run: lib/scripts/patch.ps1 windows
+
+      - name: Build and verify ARM64 package
+        shell: pwsh
+        run: lib/scripts/build_windows_arm64.ps1 -NoPub -Arm64JavaHome $env:JAVA_HOME
+
+      - name: Release
+        if: ${{ inputs.tag != '' }}
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ inputs.tag }}
+          files: dist/PiliPlus_windows_*_arm64_portable.zip
+
+      - uses: actions/upload-artifact@v7
+        with:
+          archive: false
+          name: Windows-file-arm64-release
+          path: dist/PiliPlus_windows_*_arm64_portable.zip
+          if-no-files-found: error

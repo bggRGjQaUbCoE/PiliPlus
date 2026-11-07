@@ -1,4 +1,5 @@
 import 'dart:io' show Platform;
+import 'dart:ffi' show Abi;
 
 import 'package:PiliPlus/build_config.dart';
 import 'package:PiliPlus/common/constants.dart';
@@ -119,11 +120,12 @@ abstract final class Update {
   static Future<void> onDownload(Map data, {String? ext}) async {
     SmartDialog.dismiss();
     try {
-      void download(String plat) {
+      void download(String plat, {String? architecture}) {
         if (data['assets'].isNotEmpty) {
           for (Map<String, dynamic> i in data['assets']) {
             final String name = i['name'];
             if (name.contains(plat) &&
+                (architecture == null || name.contains('_${architecture}_')) &&
                 (ext == null || ext.isEmpty ? true : name.endsWith(ext))) {
               PageUtils.launchURL(i['browser_download_url']);
               return;
@@ -138,6 +140,11 @@ abstract final class Update {
         AndroidDeviceInfo androidInfo = await DeviceInfoPlugin().androidInfo;
         // [arm64-v8a]
         download(androidInfo.supportedAbis.first);
+      } else if (Platform.isWindows) {
+        download(
+          'windows',
+          architecture: Abi.current() == Abi.windowsArm64 ? 'arm64' : 'x64',
+        );
       } else {
         download(Platform.operatingSystem);
       }

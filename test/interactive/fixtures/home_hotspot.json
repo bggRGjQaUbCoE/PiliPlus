@@ -1,0 +1,228 @@
+{
+  "title": "家",
+  "edge_id": 45728410,
+  "story_list": [
+    {
+      "node_id": 1,
+      "edge_id": 1,
+      "title": "0-0",
+      "cid": 29589572356,
+      "start_pos": 29000,
+      "cover": "http://i0.hdslb.com/bfs/steins-gate/29589572356_screenshot.jpg",
+      "is_current": 1,
+      "cursor": 0
+    }
+  ],
+  "edges": {
+    "dimension": {
+      "width": 854,
+      "height": 480,
+      "rotate": 0,
+      "sar": ""
+    },
+    "questions": [
+      {
+        "id": 0,
+        "type": 2,
+        "start_time_r": 300,
+        "duration": -1,
+        "pause_video": 1,
+        "title": "",
+        "choices": [
+          {
+            "id": 45728413,
+            "platform_action": "JUMP 45728413 29589573437",
+            "native_action": "$G4hNq_35_yorHf=$G4hNq_35_yorHf+1.00",
+            "condition": "",
+            "cid": 29589573437,
+            "x": 41,
+            "y": 206,
+            "text_align": 2,
+            "option": "A 检查收音机",
+            "is_default": 1
+          },
+          {
+            "id": 45728414,
+            "platform_action": "JUMP 45728414 29589635188",
+            "native_action": "$mSkOb2wmud=0.00;$3VfRcNH8SaV=0.00",
+            "condition": "",
+            "cid": 29589635188,
+            "x": 534,
+            "y": 224,
+            "text_align": 2,
+            "option": "B 检查保险箱"
+          },
+          {
+            "id": 45728415,
+            "platform_action": "JUMP 45728415 29589636652",
+            "native_action": "",
+            "condition": "",
+            "cid": 29589636652,
+            "x": 630,
+            "y": 52,
+            "text_align": 2,
+            "option": "C 出门"
+          },
+          {
+            "id": 45728416,
+            "platform_action": "JUMP 45728416 29589635618",
+            "native_action": "$G4hNq_35_yorHf=0.00",
+            "condition": "",
+            "cid": 29589635618,
+            "x": 203,
+            "y": 342,
+            "text_align": 2,
+            "option": "D 回去睡下"
+          }
+        ]
+      }
+    ],
+    "skin": {
+      "choice_image": "https://i0.hdslb.com/bfs/app/fde2a002c9efd5242ca1625544e1ca57fa0f30f2.png",
+      "title_text_color": "ffffffff",
+      "title_shadow_color": "00000000",
+      "progressbar_color": "ffffffff",
+      "progressbar_shadow_color": "000000cc"
+    }
+  },
+  "preload": {
+    "video": [
+      {
+        "aid": 114393031378502,
+        "cid": 29589573437
+      },
+      {
+        "aid": 114393031378502,
+        "cid": 29589635188
+      },
+      {
+        "aid": 114393031378502,
+        "cid": 29589636652
+      },
+      {
+        "aid": 114393031378502,
+        "cid": 29589635618
+      }
+    ]
+  },
+  "hidden_vars": [
+    {
+      "value": 0,
+      "id": "v-10Oxo6wIAqF",
+      "id_v2": "$10Oxo6wIAqF",
+      "type": 1,
+      "is_show": 0,
+      "name": "拒绝值",
+      "skip_overwrite": 0
+    },
+    {
+      "value": 0,
+      "id": "v-1rkrxISfN@v",
+      "id_v2": "$1rkrxISfN_64_v",
+      "type": 1,
+      "is_show": 0,
+      "name": "数值12",
+      "skip_overwrite": 0
+    },
+    {
+      "value": 0,
+      "id": "v-3VfRcNH8SaV",
+      "id_v2": "$3VfRcNH8SaV",
+      "type": 1,
+      "is_show": 0,
+      "name": "保险箱额外数值",
+      "skip_overwrite": 0
+    },
+    {
+      "value": 33,
+      "id": "v-5TtpHdWa#YB",
+      "id_v2": "$5TtpHdWa_35_YB",
+      "type": 2,
+      "is_show": 0,
+      "name": "随机值",
+      "skip_overwrite": 0
+    },
+    {
+      "value": 0,
+      "id": "v-G4hNq#yorHf",
+      "id_v2": "$G4hNq_35_yorHf",
+      "type": 1,
+      "is_show": 1,
+      "name": "谵妄值",
+      "skip_overwrite": 0
+    },
+    {
+      "value": 0,
+      "id": "v-R3zWWoY5FS2",
+      "id_v2": "$R3zWWoY5FS2",
+      "type": 1,
+      "is_show": 1,
+      "name": "limbo",
+      "skip_overwrite": 0
+    },
+    {
+      "value": 0,
+      "id": "v-RsH0OG#NWQx",
+      "id_v2": "$RsH0OG_35_NWQx",
+      "type": 1,
+      "is_show": 0,
+      "name": "F结局",
+      "skip_overwrite": 0
+    },
+    {
+      "value": 0,
+      "id": "v-V1hCFWujx3c",
+      "id_v2": "$V1hCFWujx3c",
+      "type": 1,
+      "is_show": 0,
+      "name": "数值10",
+      "skip_overwrite": 0
+    },
+    {
+      "value": 0,
+      "id": "v-aBw0JrxDs#I",
+      "id_v2": "$aBw0JrxDs_35_I",
+      "type": 1,
+      "is_show": 1,
+      "name": "mortis的子弹",
+      "skip_overwrite": 0
+    },
+    {
+      "value": 0,
+      "id": "v-fnxzKdYW#rh",
+      "id_v2": "$fnxzKdYW_35_rh",
+      "type": 1,
+      "is_show": 0,
+      "name": "墨提斯点数",
+      "skip_overwrite": 0
+    },
+    {
+      "value": 0,
+      "id": "v-mSkOb2wmud",
+      "id_v2": "$mSkOb2wmud",
+      "type": 1,
+      "is_show": 0,
+      "name": "保险箱数值",
+      "skip_overwrite": 0
+    },
+    {
+      "value": 0,
+      "id": "v-ncx0TVZYU#q",
+      "id_v2": "$ncx0TVZYU_35_q",
+      "type": 1,
+      "is_show": 0,
+      "name": "数值11",
+      "skip_overwrite": 0
+    },
+    {
+      "value": 0,
+      "id": "v-xriKZV5sm#u",
+      "id_v2": "$xriKZV5sm_35_u",
+      "type": 1,
+      "is_show": 0,
+      "name": "E结局",
+      "skip_overwrite": 0
+    }
+  ],
+  "is_leaf": 0
+}

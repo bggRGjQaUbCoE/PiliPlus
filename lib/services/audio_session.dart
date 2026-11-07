@@ -6,6 +6,12 @@ class AudioSessionHandler {
   late AudioSession _session;
   bool _shouldResume = false;
 
+  /// 闪避前记录音量，闪避结束后精确恢复
+  ///
+  /// 移动端音量以系统刻度为准（见 PlPlayerController.setVolume），
+  /// 用「当前音量 x2」恢复会因刻度取整而回不到原值，所以直接记住原值。
+  double? _volumeBeforeDuck;
+
   Future<bool> setActive(bool active) {
     return _session.setActive(active);
   }
@@ -33,7 +39,8 @@ class AudioSessionHandler {
       switch (event.type) {
         case .duck:
           if (player != null && player.playerStatus.isPlaying) {
-            player.setVolume(player.volume.value * 0.5, showIndicator: false);
+            final volume = _volumeBeforeDuck ??= player.volume.value;
+            player.setVolume(volume * 0.5, showIndicator: false);
           }
         case .pause:
         case .unknown:
@@ -52,7 +59,11 @@ class AudioSessionHandler {
       switch (event.type) {
         case .duck:
           final player = PlPlayerController.instance;
-          player?.setVolume(player.volume.value * 2, showIndicator: false);
+          final volume = _volumeBeforeDuck;
+          _volumeBeforeDuck = null;
+          if (player != null && volume != null) {
+            player.setVolume(volume, showIndicator: false);
+          }
         case .pause:
           if (_shouldResume) {
             _shouldResume = false;

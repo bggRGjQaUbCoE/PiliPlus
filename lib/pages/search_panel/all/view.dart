@@ -1,8 +1,11 @@
+import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/search/result.dart';
 import 'package:PiliPlus/models/search/search_esports.dart';
 import 'package:PiliPlus/pages/search_panel/all/controller.dart';
 import 'package:PiliPlus/pages/search_panel/all/widgets/activity.dart';
+import 'package:PiliPlus/pages/search_panel/all/widgets/crisis_card.dart';
 import 'package:PiliPlus/pages/search_panel/all/widgets/esports.dart';
+import 'package:PiliPlus/pages/search_panel/all/widgets/tip.dart';
 import 'package:PiliPlus/pages/search_panel/all/widgets/user.dart';
 import 'package:PiliPlus/pages/search_panel/pgc/widgets/item.dart';
 import 'package:PiliPlus/pages/search_panel/video/view.dart';
@@ -49,9 +52,30 @@ class _SearchAllPanelState
   }
 
   @override
+  Widget buildHeader() {
+    // 高危词卡片放在 header，保证结果为空时也能展示；
+    // 读取 loadingState 以便搜索完成后重建。
+    // 非高危词回落到 mixin 的排序筛选栏。
+    return Obx(() {
+      final loaded = controller.loadingState.value is! Loading;
+      if (controller.isCrisis && loaded) {
+        return const SliverToBoxAdapter(child: CrisisCard());
+      }
+      return super.buildHeader();
+    });
+  }
+
+  @override
   Widget buildList(List<SearchVideoItemModel> list) {
+    // 高危词：屏蔽搜索结果（含视频），关怀卡片由 buildHeader 渲染
+    if (controller.isCrisis) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
     return SliverMainAxisGroup(
       slivers: [
+        ...?controller.searchTips?.map((e) {
+          return SliverToBoxAdapter(child: SearchTipItem(item: e));
+        }),
         if (controller.searchEsports != null) ...[
           _buildEsports(controller.searchEsports!),
           SliverToBoxAdapter(

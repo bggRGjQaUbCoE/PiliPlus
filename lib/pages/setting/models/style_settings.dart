@@ -20,7 +20,8 @@ import 'package:PiliPlus/models/common/member/tab_type.dart';
 import 'package:PiliPlus/models/common/mine_tab_type.dart';
 import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
-import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
+import 'package:PiliPlus/models/common/theme/palette_registry.dart';
+import 'package:PiliPlus/models/common/theme/palette_theme.dart';
 import 'package:PiliPlus/models/common/theme/theme_type.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
@@ -35,7 +36,6 @@ import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
-import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -895,16 +895,19 @@ Widget _themeTrailing(ThemeData theme) {
   if (Pref.dynamicColor) {
     return Icon(Icons.color_lens_rounded, color: theme.colorScheme.primary);
   }
-  final customColor = Pref.customColor;
-  final color =
-      colorThemeTypes.elementAtOrNull(customColor)?.color ?? Color(customColor);
+  final palette = PaletteRegistry.byId(Pref.paletteId);
+  final brightness = theme.brightness;
+  final accent = Pref.paletteAccent(palette.id);
+  final color = accent >= 0 && accent < palette.accents.length
+      ? palette.accents[accent].colorOf(brightness)
+      : Color(accent);
+  final variant = palette.id == PaletteRegistry.seedId
+      ? Pref.schemeVariant
+      : palette.variant;
   return SizedBox.square(
     dimension: 20,
     child: ColorPalette(
-      colorScheme: color.asColorSchemeSeed(
-        Pref.schemeVariant,
-        theme.brightness,
-      ),
+      colorScheme: buildPaletteScheme(palette, brightness, color, variant),
       selected: false,
       showBgColor: false,
     ),

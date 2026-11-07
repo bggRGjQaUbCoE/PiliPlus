@@ -9,14 +9,14 @@ import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/main.dart' show MyApp;
 import 'package:PiliPlus/models/common/home_tab_type.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
-import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
+import 'package:PiliPlus/models/common/theme/palette_registry.dart';
+import 'package:PiliPlus/models/common/theme/palette_theme.dart';
 import 'package:PiliPlus/models/common/theme/theme_type.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
 import 'package:PiliPlus/pages/setting/widgets/popup_item.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
-import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -47,9 +47,10 @@ class Item {
   bool isExpanded;
 }
 
+typedef _PaletteMenuValue = ({FlexSchemeVariant? variant, int paletteId});
+
 class _ColorSelectPageState extends State<ColorSelectPage> {
   final ctr = Get.put(_ColorSelectController());
-  FlexSchemeVariant _dynamicSchemeVariant = Pref.schemeVariant;
 
   Future<void> _onChanged([bool? val]) async {
     val ??= !ctr.dynamicColor.value;
@@ -117,22 +118,53 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
             ),
           ),
           Obx(
-            () => PopupListTile<FlexSchemeVariant>(
+            () => PopupListTile<_PaletteMenuValue>(
               enabled: !ctr.dynamicColor.value,
               leading: const Icon(Icons.palette_outlined),
               title: const Text('调色板风格'),
-              value: () =>
-                  (_dynamicSchemeVariant, _dynamicSchemeVariant.variantName),
-              itemBuilder: (_) => FlexSchemeVariant.values
-                  .map(
-                    (e) => PopupMenuItem(value: e, child: Text(e.variantName)),
-                  )
-                  .toList(),
-              onSelected: (value, setState) {
-                _dynamicSchemeVariant = value;
-                GStorage.setting
-                    .put(SettingBoxKey.schemeVariant, value.index)
-                    .whenComplete(Get.updateMyAppTheme);
+              value: () {
+                final id = ctr.paletteId.value;
+                if (id == PaletteRegistry.seedId) {
+                  final variant = ctr.variant.value;
+                  return (
+                    (variant: variant, paletteId: id),
+                    variant.variantName,
+                  );
+                }
+                return (
+                  (variant: null, paletteId: id),
+                  PaletteRegistry.byId(id).label,
+                );
+              },
+              itemBuilder: (_) => <PopupMenuEntry<_PaletteMenuValue>>[
+                ...FlexSchemeVariant.values.map(
+                  (e) => PopupMenuItem(
+                    value: (variant: e, paletteId: PaletteRegistry.seedId),
+                    child: Text(e.variantName),
+                  ),
+                ),
+                ...PaletteRegistry.overlays.map(
+                  (e) => PopupMenuItem(
+                    value: (variant: null, paletteId: e.id),
+                    child: Text(e.label),
+                  ),
+                ),
+              ],
+              onSelected: (value, setState) async {
+                ctr.paletteId.value = value.paletteId;
+                if (value.variant != null) {
+                  ctr.variant.value = value.variant!;
+                  await GStorage.setting.put(
+                    SettingBoxKey.schemeVariant,
+                    value.variant!.index,
+                  );
+                }
+                ctr.paletteAccent.value = Pref.paletteAccent(value.paletteId);
+                await GStorage.setting.put(
+                  SettingBoxKey.paletteId,
+                  value.paletteId,
+                );
+                Get.updateMyAppTheme();
               },
             ),
           ),
@@ -165,7 +197,36 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
   }
 
   Widget _buildColorPanel() {
-    final currentColor = ctr.currentColor.value;
+    final palette = PaletteRegistry.byId(ctr.paletteId.value);
+    final accents = palette.accents;
+    final brightness = theme.brightness;
+    final variant = palette.id == PaletteRegistry.seedId
+        ? ctr.variant.value
+        : palette.variant;
+    final current = palette.id == PaletteRegistry.seedId
+        ? ctr.currentColor.value
+        : ctr.paletteAccent.value;
+    final isCustom = current < 0 || current >= accents.length;
+
+    ColorPalette paletteOf(Color color, bool selected) => ColorPalette(
+      colorScheme: buildPaletteScheme(palette, brightness, color, variant),
+      selected: selected,
+    );
+
+    Future<void> save(int value) async {
+      if (palette.id == PaletteRegistry.seedId) {
+        ctr.currentColor.value = value;
+        await GStorage.setting.put(SettingBoxKey.customColor, value);
+      } else {
+        ctr.paletteAccent.value = value;
+        await GStorage.setting.put(
+          '${SettingBoxKey.paletteAccent}.${palette.id}',
+          value,
+        );
+      }
+      Get.updateMyAppTheme();
+    }
+
     return AnimatedHeightWidgetExt(
       expand: !ctr.dynamicColor.value,
       duration: const Duration(milliseconds: 200),
@@ -176,10 +237,9 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
         children: [
           Builder(
             builder: (context) {
-              final isCurr = currentColor > colorThemeTypes.length;
-              final color = isCurr
-                  ? Color(currentColor)
-                  : colorThemeTypes[currentColor].color;
+              final color = isCustom
+                  ? Color(current)
+                  : accents[current].colorOf(brightness);
               return GestureDetector(
                 behavior: .opaque,
                 onTap: () {
@@ -193,11 +253,7 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
                         color: color,
                         onChanged: (Color? color) {
                           if (color != null) {
-                            final res = color.toARGB32();
-                            ctr.currentColor.value = res;
-                            GStorage.setting
-                                .put(SettingBoxKey.customColor, res)
-                                .whenComplete(Get.updateMyAppTheme);
+                            save(color.toARGB32());
                           }
                         },
                       ),
@@ -207,18 +263,12 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
                 child: Column(
                   spacing: 3,
                   children: [
-                    ColorPalette(
-                      colorScheme: color.asColorSchemeSeed(
-                        _dynamicSchemeVariant,
-                        theme.brightness,
-                      ),
-                      selected: isCurr,
-                    ),
+                    paletteOf(color, isCustom),
                     Text(
                       '自定义',
                       style: TextStyle(
                         fontSize: 12,
-                        color: isCurr
+                        color: isCustom
                             ? null
                             : theme.colorScheme.onSurfaceVariant,
                       ),
@@ -228,28 +278,17 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
               );
             },
           ),
-          ...colorThemeTypes.mapIndexed(
+          ...accents.mapIndexed(
             (i, e) {
-              final color = e.color;
-              final isCurr = currentColor == i;
+              final color = e.colorOf(brightness);
+              final isCurr = !isCustom && current == i;
               return GestureDetector(
                 behavior: .opaque,
-                onTap: () {
-                  ctr.currentColor.value = i;
-                  GStorage.setting
-                      .put(SettingBoxKey.customColor, i)
-                      .whenComplete(Get.updateMyAppTheme);
-                },
+                onTap: () => save(i),
                 child: Column(
                   spacing: 3,
                   children: [
-                    ColorPalette(
-                      colorScheme: color.asColorSchemeSeed(
-                        _dynamicSchemeVariant,
-                        theme.brightness,
-                      ),
-                      selected: isCurr,
-                    ),
+                    paletteOf(color, isCurr),
                     Text(
                       e.label,
                       style: TextStyle(
@@ -272,6 +311,9 @@ class _ColorSelectController extends GetxController {
   final RxBool dynamicColor = Pref.dynamicColor.obs;
   final RxInt currentColor = Pref.customColor.obs;
   final Rx<ThemeType> themeType = Pref.themeType.obs;
+  final RxInt paletteId = Pref.paletteId.obs;
+  final RxInt paletteAccent = Pref.paletteAccent(Pref.paletteId).obs;
+  final Rx<FlexSchemeVariant> variant = Pref.schemeVariant.obs;
 }
 
 class _Preview extends StatelessWidget {

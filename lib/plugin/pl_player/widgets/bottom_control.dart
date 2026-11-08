@@ -52,6 +52,7 @@ class BottomControl extends StatelessWidget {
 
   void _onHover(double dx, int seconds) {
     if (animCtr.isAnimating) return;
+    if (controller.isSeeking.rawValue) return;
     controller
       ..hoverDx = dx
       ..seekPosition.value = seconds
@@ -59,12 +60,11 @@ class BottomControl extends StatelessWidget {
   }
 
   void _onExit() {
-    if (controller.isSeeking.value || controller.hoverDx == null) {
+    if (controller.isSeeking.rawValue || controller.hoverDx == null) {
       return;
     }
     controller
-      ..hoverDx = null
-      ..showPreview.value = false
+      ..hidePreview()
       ..hideTaskControls();
   }
 

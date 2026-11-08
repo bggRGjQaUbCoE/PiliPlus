@@ -14,6 +14,7 @@ import 'package:PiliPlus/grpc/bilibili/im/interfaces/v1.pb.dart'
 import 'package:PiliPlus/grpc/bilibili/im/type.pb.dart' show Msg, MsgType;
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
+import 'package:PiliPlus/pages/article/view.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
@@ -23,7 +24,6 @@ import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 class ChatItem extends StatelessWidget {
@@ -248,12 +248,9 @@ class ChatItem extends StatelessWidget {
   Widget msgTypeArticleCard_12(dynamic content, Color textColor) {
     return GestureDetector(
       behavior: .opaque,
-      onTap: () => Get.toNamed(
-        '/articlePage',
-        parameters: {
-          'id': '${content['rid']}',
-          'type': "read",
-        },
+      onTap: () => ArticlePage.toArticlePage(
+        id: content['rid'].toString(),
+        type: .read,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -551,12 +548,9 @@ class ChatItem extends StatelessWidget {
       // article
       case 6:
         type = '专栏';
-        onTap = () => Get.toNamed(
-          '/articlePage',
-          parameters: {
-            'id': '${content['id']}',
-            'type': 'read',
-          },
+        onTap = () => ArticlePage.toArticlePage(
+          id: content['id'].toString(),
+          type: .read,
         );
         break;
 

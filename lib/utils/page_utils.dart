@@ -13,6 +13,7 @@ import 'package:PiliPlus/models/common/video/video_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart';
 import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
+import 'package:PiliPlus/pages/article/view.dart';
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/pages/contact/view.dart';
@@ -128,16 +129,11 @@ abstract final class PageUtils {
     SmartDialog.dismiss();
     if (res case Success(:final response)) {
       if (response.basic?.commentType == 12) {
-        toDupNamed(
-          '/articlePage',
-          parameters: {
-            'id': id!,
-            'type': 'opus',
-          },
-          arguments: {
-            rootRpIdKey: ?rootRpId,
-            secondRpIdKey: ?secondRpId,
-          },
+        ArticlePage.toArticlePage(
+          id: id!,
+          type: .opus,
+          rootRpId: rootRpId,
+          secondRpId: secondRpId,
           off: off,
         );
       } else {
@@ -240,13 +236,10 @@ abstract final class PageUtils {
 
     void push() {
       if (item.basic?.commentType == 12) {
-        toDupNamed(
-          '/articlePage',
-          parameters: {
-            'id': item.idStr,
-            'type': 'opus',
-            if (viewComment) 'viewComment': '',
-          },
+        ArticlePage.toArticlePage(
+          id: item.idStr,
+          type: .opus,
+          viewComment: viewComment,
         );
       } else {
         if (item.linkFolded) {
@@ -319,13 +312,10 @@ abstract final class PageUtils {
 
       /// 专栏文章查看
       case 'DYNAMIC_TYPE_ARTICLE':
-        toDupNamed(
-          '/articlePage',
-          parameters: {
-            'id': item.idStr,
-            'type': 'opus',
-            if (viewComment) 'viewComment': '',
-          },
+        ArticlePage.toArticlePage(
+          id: item.idStr,
+          type: .opus,
+          viewComment: viewComment,
         );
         break;
 

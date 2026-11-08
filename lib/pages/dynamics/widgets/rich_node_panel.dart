@@ -10,6 +10,7 @@ import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart'
     show SourceModel;
 import 'package:PiliPlus/models/dynamics/result.dart';
+import 'package:PiliPlus/pages/article/view.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/parse_string.dart';
@@ -34,13 +35,14 @@ TextSpan? richNode(
     final List<InlineSpan> spanChildren = [];
 
     final moduleDynamic = item.modules.moduleDynamic;
+    final opus = moduleDynamic?.major?.opus;
     List<RichTextNodeItem>? richTextNodes;
     if (moduleDynamic?.desc case final desc?) {
       richTextNodes = desc.richTextNodes;
       if (richTextNodes == null || richTextNodes.isEmpty) {
         return TextSpan(text: desc.text);
       }
-    } else if (moduleDynamic?.major?.opus case DynamicOpusModel(
+    } else if (opus case DynamicOpusModel(
       :final title,
       :final summary,
     )) {
@@ -373,6 +375,17 @@ TextSpan? richNode(
             );
             break;
         }
+      }
+      if (opus?.redirect ?? false) {
+        spanChildren.add(
+          TextSpan(
+            text: '\n${DynamicOpusModel.redirectText}',
+            style: style,
+            recognizer: (NoDeadlineTapGestureRecognizer()
+              ..onTap = () =>
+                  ArticlePage.toArticlePage(id: item.idStr, type: .opus)),
+          ),
+        );
       }
       return TextSpan(
         children: spanChildren,

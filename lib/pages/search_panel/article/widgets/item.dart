@@ -2,9 +2,9 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models/search/result.dart';
+import 'package:PiliPlus/pages/article/view.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 class SearchArticleItem extends StatelessWidget {
@@ -26,13 +26,8 @@ class SearchArticleItem extends StatelessWidget {
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
-        onTap: () => Get.toNamed(
-          '/articlePage',
-          parameters: {
-            'id': '${item.id}',
-            'type': 'read',
-          },
-        ),
+        onTap: () =>
+            ArticlePage.toArticlePage(id: item.id.toString(), type: .read),
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         child: Padding(

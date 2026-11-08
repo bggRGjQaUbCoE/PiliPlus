@@ -1405,7 +1405,11 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   void multiBackwardStart([_]) {
-    isSeeking.value = true;
+    if (!isSeeking.value) {
+      hoverDx = null;
+      showPreview.value = false;
+      onSeekStart(position.value);
+    }
     seekPosition.value = max(0, seekPosition.value - fastForBackwardInSeconds);
   }
 

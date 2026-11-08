@@ -120,14 +120,14 @@ Future<void> _showRcmdSourceDialog(
       title: '首页推荐来源',
       value: Pref.rcmdSource,
       values: RcmdSource.values.map((e) => (e, e.label)).toList(),
-      subtitleBuilder: (context, index) {
-        if (RcmdSource.values[index] != RcmdSource.desktop) {
-          return null;
+      subtitleBuilder: (context, index, type) {
+        if (type == .desktop) {
+          return const Text(
+            '沿用公开的网页推荐接口，按哔哩哔哩官方 Windows 客户端'
+            '首页实际发送的参数组合请求，不涉及私有接口与设备指纹',
+          );
         }
-        return const Text(
-          '沿用公开的网页推荐接口，按哔哩哔哩官方 Windows 客户端'
-          '首页实际发送的参数组合请求，不涉及私有接口与设备指纹',
-        );
+        return null;
       },
     ),
   );

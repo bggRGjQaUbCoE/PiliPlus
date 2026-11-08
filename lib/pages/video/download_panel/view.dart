@@ -114,7 +114,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
   Widget _buildHeader() {
     final textStyle = TextStyle(color: colorScheme.onSurfaceVariant);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 0, 12),
+      padding: const .symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
           Expanded(
@@ -182,27 +182,27 @@ class _DownloadPanelState extends State<DownloadPanel> {
             ),
           ),
           if (PlatformUtils.isMobile)
-            Padding(
-              padding: const .only(left: 6, right: 16),
-              child: StreamBuilder(
-                stream: Connectivity().onConnectivityChanged,
-                builder: (context, snapshot) {
-                  if (snapshot.data case final data?) {
-                    return Icon(
+            StreamBuilder(
+              stream: Connectivity().onConnectivityChanged,
+              builder: (context, snapshot) {
+                if (snapshot.data case final data?) {
+                  return Padding(
+                    padding: const .only(left: 6),
+                    child: Icon(
                       data.contains(ConnectivityResult.wifi)
                           ? Icons.wifi
                           : Icons.signal_cellular_alt,
                       size: 20,
                       color: colorScheme.primary,
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
             )
           else if (kDebugMode)
             Padding(
-              padding: const .only(left: 6, right: 16),
+              padding: const .only(left: 6),
               child: Icon(
                 Icons.wifi,
                 size: 20,

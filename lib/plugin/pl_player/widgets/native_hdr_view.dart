@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:PiliPlus/utils/android/native_hdr_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show PlatformViewHitTestBehavior;
@@ -39,32 +41,91 @@ class NativeHdrView extends StatelessWidget {
               ? size.$1 / pixelRatio
               : logicalHeight * aspectRatio!,
           height: logicalHeight,
-          child: PlatformViewLink(
-            viewType: NativeHdrPlayer.viewType,
-            surfaceFactory: (context, controller) => AndroidViewSurface(
-              controller: controller as AndroidViewController,
-              hitTestBehavior: PlatformViewHitTestBehavior.transparent,
-              gestureRecognizers: const {},
-            ),
-            onCreatePlatformView: (params) {
-              // Hybrid composition keeps decoding on the native SurfaceView.
-              final controller = PlatformViewsService.initExpensiveAndroidView(
-                id: params.id,
-                viewType: params.viewType,
-                layoutDirection: Directionality.of(context),
-                creationParams: player.id,
-                creationParamsCodec: const StandardMessageCodec(),
-                onFocus: () => params.onFocusChanged(true),
-              );
-              return controller
-                ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
-                ..create();
-            },
-          ),
+          child: switch (player.textureId) {
+            final id? => Texture(textureId: id),
+            null => _NativeHdrSurface(playerId: player.id),
+          },
         );
       },
     );
   }
+}
+
+class _NativeHdrSurface extends StatefulWidget {
+  const _NativeHdrSurface({required this.playerId});
+
+  final int playerId;
+
+  @override
+  State<_NativeHdrSurface> createState() => _NativeHdrSurfaceState();
+}
+
+class _NativeHdrSurfaceState extends State<_NativeHdrSurface> {
+  static int _activeViews = 0;
+  static Future<void>? _prepareComposition;
+  late final Future<void> _ready;
+
+  static Future<void> _setSynchronization(bool enabled) async {
+    try {
+      // Keep the main Flutter scene on its render surface while Android
+      // composites the video and Flutter's controls as separate layers.
+      await SystemChannels.platform_views.invokeMethod<void>(
+        'synchronizeToNativeViewHierarchy',
+        enabled,
+      );
+    } on PlatformException catch (error) {
+      debugPrint('Dolby Vision composition: ${error.code}');
+    } on MissingPluginException catch (error) {
+      debugPrint('Dolby Vision composition: ${error.message}');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _activeViews++;
+    _ready = _prepareComposition ??= _setSynchronization(false);
+  }
+
+  @override
+  void dispose() {
+    if (--_activeViews == 0) {
+      _prepareComposition = null;
+      unawaited(_setSynchronization(true));
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder<void>(
+    future: _ready,
+    builder: (context, snapshot) {
+      if (snapshot.connectionState != ConnectionState.done) {
+        return const SizedBox.expand();
+      }
+      return PlatformViewLink(
+        viewType: NativeHdrPlayer.viewType,
+        surfaceFactory: (context, controller) => AndroidViewSurface(
+          controller: controller as AndroidViewController,
+          hitTestBehavior: PlatformViewHitTestBehavior.transparent,
+          gestureRecognizers: const {},
+        ),
+        onCreatePlatformView: (params) {
+          final controller = PlatformViewsService.initExpensiveAndroidView(
+            id: params.id,
+            viewType: params.viewType,
+            layoutDirection: Directionality.of(context),
+            creationParams: widget.playerId,
+            creationParamsCodec: const StandardMessageCodec(),
+            onFocus: () => params.onFocusChanged(true),
+          );
+          return controller
+            ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
+            ..create();
+        },
+      );
+    },
+  );
 }
 
 class NativeHdrSubtitleView extends StatefulWidget {

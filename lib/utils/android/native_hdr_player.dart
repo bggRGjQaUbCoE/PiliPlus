@@ -9,16 +9,21 @@ final class NativeHdrPlayer extends PlatformPlayer {
   static const _host = MethodChannel(viewType);
   static int _nextId = 0;
 
-  NativeHdrPlayer._(this.id)
+  NativeHdrPlayer._(this.id, this.textureId)
     : super(configuration: const PlayerConfiguration());
 
   final int id;
+  final int? textureId;
   late final MethodChannel _channel = MethodChannel('$viewType/$id');
   bool _disposed = false;
 
-  static Future<NativeHdrPlayer> create() async {
-    final player = NativeHdrPlayer._(++_nextId);
-    await _host.invokeMethod<void>('create', player.id);
+  static Future<NativeHdrPlayer> create({required bool useTexture}) async {
+    final id = ++_nextId;
+    final textureId = await _host.invokeMethod<int>('create', {
+      'id': id,
+      'useTexture': useTexture,
+    });
+    final player = NativeHdrPlayer._(id, textureId);
     player._channel.setMethodCallHandler(player._onEvent);
     return player;
   }

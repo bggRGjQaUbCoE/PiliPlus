@@ -10,6 +10,7 @@ import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/pages/fullscreen_sc.dart';
 import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/slider_dialog.dart';
+import 'package:PiliPlus/plugin/pl_player/models/dolby_vision_output.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
@@ -69,11 +70,28 @@ List<SettingsModel> get playSettings => [
     onTap: _showSuperResolutionDialog,
   ),
   if (Platform.isAndroid)
-    const SwitchModel(
-      title: '杜比视界原生解码',
-      subtitle: '适用于支持杜比视界的设备。选择杜比视界画质时使用，下次加载视频时生效',
-      leading: Icon(Icons.hdr_on),
-      setKey: SettingBoxKey.enableNativeDolbyVision,
+    NormalModel(
+      title: '杜比视界播放器',
+      getSubtitle: () => '${Pref.dolbyVisionOutput.label} · 下次加载视频时生效',
+      leading: const Icon(Icons.hdr_on),
+      onTap: (context, setState) async {
+        final output = await showDialog<DolbyVisionOutput>(
+          context: context,
+          builder: (_) => SelectDialog<DolbyVisionOutput>(
+            title: '杜比视界播放器',
+            value: Pref.dolbyVisionOutput,
+            values: [
+              for (final mode in DolbyVisionOutput.values) (mode, mode.label),
+            ],
+          ),
+        );
+        if (output == null) return;
+        await GStorage.setting.put(
+          SettingBoxKey.dolbyVisionOutput,
+          output.name,
+        );
+        if (context.mounted) setState();
+      },
     ),
   const SwitchModel(
     title: '自动播放',

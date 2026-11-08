@@ -28,6 +28,7 @@ import 'package:PiliPlus/models/user/danmaku_rule.dart';
 import 'package:PiliPlus/models/user/info.dart';
 import 'package:PiliPlus/pages/setting/pages/fullscreen_sc.dart'
     show kFullScreenSCWidth;
+import 'package:PiliPlus/plugin/pl_player/models/dolby_vision_output.dart';
 import 'package:PiliPlus/plugin/pl_player/models/audio_output_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
@@ -1086,8 +1087,19 @@ abstract final class Pref {
   static int get angleDegrees =>
       _setting.get(SettingBoxKey.angleDegrees, defaultValue: 30);
 
-  static bool get enableNativeDolbyVision =>
-      _setting.get(SettingBoxKey.enableNativeDolbyVision, defaultValue: false);
+  static DolbyVisionOutput get dolbyVisionOutput =>
+      switch (_setting.get(SettingBoxKey.dolbyVisionOutput)) {
+        'mpv' => .mpv,
+        'surface' => .surface,
+        'texture' => .texture,
+        _ =>
+          _setting.get(
+                SettingBoxKey.enableNativeDolbyVision,
+                defaultValue: false,
+              )
+              ? .surface
+              : .mpv,
+      };
 
   static double get nativeDolbyVisionVolume =>
       _setting.get(SettingBoxKey.nativeDolbyVisionVolume, defaultValue: 100.0);

@@ -6,6 +6,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Surface;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -39,6 +41,7 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.StandardMessageCodec;
 import io.flutter.plugin.platform.PlatformView;
 import io.flutter.plugin.platform.PlatformViewFactory;
+import io.flutter.view.TextureRegistry;
 
 /** Owns playback independently of the SurfaceView's layout and fullscreen lifecycle. */
 @OptIn(markerClass = UnstableApi.class)
@@ -73,7 +76,8 @@ public final class NativeHdrPlayback implements FlutterPlugin {
                 result.notImplemented();
                 return;
             }
-            int id = ((Number) call.arguments).intValue();
+            int id = call.<Integer>argument("id");
+            boolean useTexture = Boolean.TRUE.equals(call.argument("useTexture"));
             if (sessions.containsKey(id)) {
                 result.error("duplicate_session", null, null);
                 return;
@@ -81,8 +85,15 @@ public final class NativeHdrPlayback implements FlutterPlugin {
             MethodChannel channel = new MethodChannel(
                     binding.getBinaryMessenger(), CHANNEL + "/" + id);
             Session session = new Session(channel, () -> sessions.remove(id));
-            sessions.put(id, session);
-            result.success(null);
+            try {
+                if (useTexture) session.attachTexture(binding.getTextureRegistry());
+                sessions.put(id, session);
+                result.success(session.texture == null ? null : session.texture.id());
+            } catch (RuntimeException error) {
+                session.release();
+                Log.e(TAG, "textureCreationFailed=" + error.getClass().getSimpleName());
+                result.error("texture_creation_failed", null, null);
+            }
         });
     }
 
@@ -106,6 +117,8 @@ public final class NativeHdrPlayback implements FlutterPlugin {
         private DefaultMediaSourceFactory sources;
         private MediaItem.SubtitleConfiguration subtitle;
         private PlayerView attachedView;
+        private TextureRegistry.SurfaceTextureEntry texture;
+        private Surface textureSurface;
         private boolean released;
 
         Session(MethodChannel channel, Runnable onRelease) {
@@ -123,9 +136,20 @@ public final class NativeHdrPlayback implements FlutterPlugin {
             channel.setMethodCallHandler(this::handle);
         }
 
+        void attachTexture(TextureRegistry registry) {
+            texture = registry.createSurfaceTexture();
+            textureSurface = new Surface(texture.surfaceTexture());
+            player.setVideoSurface(textureSurface);
+        }
+
         PlatformView createView(Context viewContext) {
             PlayerView view = (PlayerView) LayoutInflater.from(viewContext)
                     .inflate(R.layout.native_hdr_player, null);
+            View videoSurface = view.getVideoSurfaceView();
+            if (videoSurface instanceof SurfaceView) {
+                // Place video above Flutter's render surface and below its controls.
+                ((SurfaceView) videoSurface).setZOrderMediaOverlay(true);
+            }
             if (view.getSubtitleView() != null) view.getSubtitleView().setVisibility(View.GONE);
             PlayerView.switchTargetView(player, attachedView, view);
             attachedView = view;
@@ -258,6 +282,8 @@ public final class NativeHdrPlayback implements FlutterPlugin {
             if (attachedView != null) attachedView.setPlayer(null);
             attachedView = null;
             player.release();
+            if (textureSurface != null) textureSurface.release();
+            if (texture != null) texture.release();
             onRelease.run();
         }
     }

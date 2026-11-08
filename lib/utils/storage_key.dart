@@ -20,6 +20,7 @@ abstract final class SettingBoxKey {
       liveBufferSec = 'liveBufferSec',
       hardwareDecoding = 'hardwareDecoding',
       enableNativeDolbyVision = 'enableNativeDolbyVision',
+      dolbyVisionOutput = 'dolbyVisionOutput',
       nativeDolbyVisionVolume = 'nativeDolbyVisionVolume',
       videoSync = 'videoSync',
       autosync = 'autosync',

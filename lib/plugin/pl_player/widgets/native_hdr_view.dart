@@ -43,7 +43,7 @@ class NativeHdrView extends StatelessWidget {
           height: logicalHeight,
           child: switch (player.textureId) {
             final id? => Texture(textureId: id),
-            null => _NativeHdrSurface(playerId: player.id),
+            null => _NativeHdrSurface(player: player),
           },
         );
       },
@@ -52,9 +52,9 @@ class NativeHdrView extends StatelessWidget {
 }
 
 class _NativeHdrSurface extends StatefulWidget {
-  const _NativeHdrSurface({required this.playerId});
+  const _NativeHdrSurface({required this.player});
 
-  final int playerId;
+  final NativeHdrPlayer player;
 
   @override
   State<_NativeHdrSurface> createState() => _NativeHdrSurfaceState();
@@ -62,10 +62,10 @@ class _NativeHdrSurface extends StatefulWidget {
 
 class _NativeHdrSurfaceState extends State<_NativeHdrSurface> {
   static int _activeViews = 0;
-  static Future<void>? _prepareComposition;
-  late final Future<void> _ready;
+  static Future<bool>? _prepareComposition;
+  late final Future<bool> _ready;
 
-  static Future<void> _setSynchronization(bool enabled) async {
+  static Future<bool> _setSynchronization(bool enabled) async {
     try {
       // Keep the main Flutter scene on its render surface while Android
       // composites the video and Flutter's controls as separate layers.
@@ -73,11 +73,13 @@ class _NativeHdrSurfaceState extends State<_NativeHdrSurface> {
         'synchronizeToNativeViewHierarchy',
         enabled,
       );
+      return true;
     } on PlatformException catch (error) {
       debugPrint('Dolby Vision composition: ${error.code}');
     } on MissingPluginException catch (error) {
       debugPrint('Dolby Vision composition: ${error.message}');
     }
+    return false;
   }
 
   @override
@@ -85,6 +87,11 @@ class _NativeHdrSurfaceState extends State<_NativeHdrSurface> {
     super.initState();
     _activeViews++;
     _ready = _prepareComposition ??= _setSynchronization(false);
+    unawaited(
+      _ready.then((ready) {
+        if (mounted) return widget.player.setSurfaceAvailable(ready);
+      }),
+    );
   }
 
   @override
@@ -97,11 +104,23 @@ class _NativeHdrSurfaceState extends State<_NativeHdrSurface> {
   }
 
   @override
-  Widget build(BuildContext context) => FutureBuilder<void>(
+  Widget build(BuildContext context) => FutureBuilder<bool>(
     future: _ready,
     builder: (context, snapshot) {
       if (snapshot.connectionState != ConnectionState.done) {
         return const SizedBox.expand();
+      }
+      if (snapshot.data != true) {
+        return const Center(
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Text(
+              '杜比视界画面初始化失败。请在播放器设置切回 mpv 后重新打开视频。',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        );
       }
       return PlatformViewLink(
         viewType: NativeHdrPlayer.viewType,
@@ -115,7 +134,7 @@ class _NativeHdrSurfaceState extends State<_NativeHdrSurface> {
             id: params.id,
             viewType: params.viewType,
             layoutDirection: Directionality.of(context),
-            creationParams: widget.playerId,
+            creationParams: widget.player.id,
             creationParamsCodec: const StandardMessageCodec(),
             onFocus: () => params.onFocusChanged(true),
           );

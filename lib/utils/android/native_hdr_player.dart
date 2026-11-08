@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 
@@ -16,6 +17,9 @@ final class NativeHdrPlayer extends PlatformPlayer {
   final int? textureId;
   late final MethodChannel _channel = MethodChannel('$viewType/$id');
   bool _disposed = false;
+  bool _surfaceUnavailable = false;
+
+  bool get surfaceUnavailable => _surfaceUnavailable;
 
   static Future<NativeHdrPlayer> create({required bool useTexture}) async {
     final id = ++_nextId;
@@ -46,10 +50,26 @@ final class NativeHdrPlayer extends PlatformPlayer {
     'userAgent': userAgent,
   });
 
-  Future<void> retry() => _call('retry');
+  Future<void> setSurfaceAvailable(bool available) async {
+    if (_surfaceUnavailable == !available) return;
+    _surfaceUnavailable = !available;
+    if (_surfaceUnavailable) {
+      try {
+        await pause();
+      } on PlatformException catch (error) {
+        debugPrint('Dolby Vision pause after surface failure: ${error.code}');
+      }
+    }
+  }
+
+  Future<void> retry() async {
+    if (!_surfaceUnavailable) await _call('retry');
+  }
 
   @override
-  Future<void> play() => _call('play');
+  Future<void> play() async {
+    if (!_surfaceUnavailable) await _call('play');
+  }
 
   @override
   Future<void> pause() => _call('pause');

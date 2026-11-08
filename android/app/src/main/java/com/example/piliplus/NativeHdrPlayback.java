@@ -48,6 +48,7 @@ import io.flutter.view.TextureRegistry;
 public final class NativeHdrPlayback implements FlutterPlugin {
     private static final String CHANNEL = "piliplus/native_hdr";
     private static final String TAG = "PiliNativeHDR";
+    private static final long[] NETWORK_RETRY_DELAYS_MS = {1_000, 3_000, 9_000};
     private Context context;
     private MethodChannel hostChannel;
     private final Map<Integer, Session> sessions = new HashMap<>();
@@ -112,6 +113,9 @@ public final class NativeHdrPlayback implements FlutterPlugin {
         private final Handler handler = new Handler(Looper.getMainLooper());
         private final ExoPlayer player = new ExoPlayer.Builder(context).build();
         private final Runnable tick = this::publishState;
+        private final Runnable retryNetwork = this::retryNetworkPlayback;
+        private int networkRetryCount;
+        private boolean networkRetryPending;
         private MediaItem video;
         private String audio;
         private DefaultMediaSourceFactory sources;
@@ -181,15 +185,25 @@ public final class NativeHdrPlayback implements FlutterPlugin {
                         prepare(((Number) call.argument("position")).longValue(), false);
                         break;
                     case "play":
-                        if (player.getPlayerError() != null) player.prepare();
+                        if (player.getPlayerError() != null) {
+                            resetNetworkRetry();
+                            player.prepare();
+                        }
                         if (player.getPlaybackState() == Player.STATE_ENDED) player.seekTo(0);
                         player.play();
                         break;
-                    case "pause": player.pause(); break;
+                    case "pause":
+                        resetNetworkRetry();
+                        player.pause();
+                        break;
                     case "seek": player.seekTo(((Number) call.arguments).longValue()); break;
                     case "rate": player.setPlaybackSpeed(((Number) call.arguments).floatValue()); break;
                     case "volume": player.setVolume(((Number) call.arguments).floatValue()); break;
-                    case "retry": player.prepare(); player.play(); break;
+                    case "retry":
+                        resetNetworkRetry();
+                        player.prepare();
+                        player.play();
+                        break;
                     case "subtitle":
                         String uri = call.argument("uri");
                         String mimeType = call.argument("mimeType");
@@ -221,6 +235,7 @@ public final class NativeHdrPlayback implements FlutterPlugin {
         }
 
         private void prepare(long position, boolean play) {
+            resetNetworkRetry();
             MediaItem item = video.buildUpon().setSubtitleConfigurations(
                     subtitle == null ? Collections.emptyList() : Collections.singletonList(subtitle))
                     .build();
@@ -235,6 +250,9 @@ public final class NativeHdrPlayback implements FlutterPlugin {
 
         @Override
         public void onEvents(Player ignored, Player.Events events) {
+            if (player.getPlaybackState() == Player.STATE_READY || !player.getPlayWhenReady()) {
+                resetNetworkRetry();
+            }
             publishState();
         }
 
@@ -253,7 +271,32 @@ public final class NativeHdrPlayback implements FlutterPlugin {
         @Override
         public void onPlayerError(PlaybackException error) {
             Log.e(TAG, "playbackError=" + error.getErrorCodeName());
-            if (!released) channel.invokeMethod("error", error.getErrorCodeName());
+            if (released) return;
+            boolean retryable = error.errorCode == PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED
+                    || error.errorCode == PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT;
+            if (retryable && player.getPlayWhenReady()
+                    && networkRetryCount < NETWORK_RETRY_DELAYS_MS.length) {
+                if (!networkRetryPending) {
+                    networkRetryPending = true;
+                    handler.postDelayed(retryNetwork, NETWORK_RETRY_DELAYS_MS[networkRetryCount++]);
+                }
+                return;
+            }
+            channel.invokeMethod("error", error.getErrorCodeName());
+        }
+
+        private void retryNetworkPlayback() {
+            networkRetryPending = false;
+            if (!released && player.getPlayWhenReady() && player.getPlayerError() != null) {
+                // Reprepare the same source and position without changing play intent.
+                player.prepare();
+            }
+        }
+
+        private void resetNetworkRetry() {
+            handler.removeCallbacks(retryNetwork);
+            networkRetryPending = false;
+            networkRetryCount = 0;
         }
 
         private void publishState() {
@@ -263,9 +306,9 @@ public final class NativeHdrPlayback implements FlutterPlugin {
             VideoSize size = player.getVideoSize();
             Map<String, Object> state = new HashMap<>();
             state.put("playing", player.getPlayWhenReady() && playbackState != Player.STATE_ENDED
-                    && player.getPlayerError() == null);
+                    && (player.getPlayerError() == null || networkRetryPending));
             state.put("completed", playbackState == Player.STATE_ENDED);
-            state.put("buffering", playbackState == Player.STATE_BUFFERING);
+            state.put("buffering", playbackState == Player.STATE_BUFFERING || networkRetryPending);
             state.put("position", player.getCurrentPosition());
             state.put("duration", Math.max(0, player.getDuration()));
             state.put("buffer", player.getBufferedPosition());
@@ -277,6 +320,7 @@ public final class NativeHdrPlayback implements FlutterPlugin {
 
         private void release() {
             released = true;
+            resetNetworkRetry();
             handler.removeCallbacks(tick);
             channel.setMethodCallHandler(null);
             if (attachedView != null) attachedView.setPlayer(null);

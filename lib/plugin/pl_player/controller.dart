@@ -1284,6 +1284,9 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   /// 播放视频
   Future<void> play({bool repeat = false, bool hideControls = true}) async {
     if (_playerCount == 0) return;
+    if (_videoPlayerController case NativeHdrPlayer(surfaceUnavailable: true)) {
+      return;
+    }
     // 播放时自动隐藏控制条
     if (hideControls) controls = false;
     // repeat为true，将从头播放

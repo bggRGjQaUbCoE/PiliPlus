@@ -37,6 +37,16 @@ flutter build apk --release --target-platform android-arm64 --split-per-abi \
   verify the native volume does not change the saved mpv volume. Press M on an
   external keyboard to mute, switch quality while muted, then press M again
   to restore the current backend's saved volume.
+- Interrupt the network while playing an online Dolby Vision video and restore
+  it during the 1, 3, or 9 second backoff. Verify playback resumes near the same
+  position. Repeat with the network left disconnected, and with manual pause
+  or a quality switch during backoff. Verify retries stop after three attempts
+  or when the previous session is no longer active.
+- Simulate an error from the composition setup channel. Verify the player
+  shows the mpv instructions and does not create a SurfaceView or continue
+  playing audio.
+- Leave the playback page and return, then open a page with a native view after
+  closing playback. Verify the UI after repeated Dolby Vision to SDR switches.
 - Test consecutive videos, fullscreen, picture-in-picture and folding.
 - Record model, firmware, BV/CID and the stream profile. Decoder name alone does
   not establish HDR display output. `adb logcat -s PiliNativeHDR` records decoder

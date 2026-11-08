@@ -9,19 +9,14 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
 abstract final class UrlUtils {
   // 302重定向路由截取
-  static Future<String?> parseRedirectUrl(
-    String url, [
-    bool returnOri = false,
-  ]) async {
+  static Future<String?> parseRedirectUrl(String url) async {
     String? redirectUrl;
     try {
       final response = await Request.dio.head(
-        url,
+        url.endsWith('/') ? url : '$url/',
         options: Options(
           followRedirects: false,
-          validateStatus: (status) {
-            return 200 <= status! && status < 400;
-          },
+          validateStatus: (status) => 200 <= status! && status < 400,
           extra: {'account': AnonymousAccount()},
         ),
       );
@@ -31,10 +26,6 @@ abstract final class UrlUtils {
         redirectUrl = Uri.parse(url).resolve(redirectUrl).toString();
       }
     } catch (_) {}
-    if (returnOri && redirectUrl == null) redirectUrl = url;
-    if (redirectUrl != null && redirectUrl.endsWith('/')) {
-      redirectUrl = redirectUrl.substring(0, redirectUrl.length - 1);
-    }
     return redirectUrl;
   }
 

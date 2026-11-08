@@ -290,7 +290,7 @@ abstract final class PageUtils {
             }
           }
           // redirectUrl from jumpUrl
-          if (await UrlUtils.parseRedirectUrl(archive.jumpUrl.http2https, false)
+          if (await UrlUtils.parseRedirectUrl(archive.jumpUrl.http2https)
               case final redirectUrl?) {
             if (viewPgcFromUri(redirectUrl)) {
               return;

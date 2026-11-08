@@ -1086,6 +1086,9 @@ abstract final class Pref {
   static int get angleDegrees =>
       _setting.get(SettingBoxKey.angleDegrees, defaultValue: 30);
 
+  static bool get enableNativeDolbyVision =>
+      _setting.get(SettingBoxKey.enableNativeDolbyVision, defaultValue: false);
+
   static double get playerVolume => // mobile
       _setting.get(SettingBoxKey.playerVolume, defaultValue: 100.0);
 

@@ -238,7 +238,7 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
               color: Colors.white,
             ),
           ),
-          if (plPlayerController.videoPlayerController case final player?)
+          if (plPlayerController.mpvPlayer case final player?)
             SizedBox.square(
               dimension: 30,
               child: PopupMenuButton(

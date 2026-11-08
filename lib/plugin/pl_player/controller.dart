@@ -30,6 +30,7 @@ import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/danmaku_options.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/services/service_locator.dart';
+import 'package:PiliPlus/utils/android/native_hdr_player.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
@@ -69,12 +70,13 @@ import 'package:path/path.dart' as path;
 import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:synchronized/synchronized.dart';
 
 typedef PlayCallback = Future<void>? Function();
 typedef PlayOwner = ({String tag, Type? type});
 
 class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
-  Player? _videoPlayerController;
+  PlatformPlayer? _videoPlayerController;
   VideoController? _videoController;
 
   static PlPlayerController? _instance;
@@ -171,7 +173,14 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   double get longPressSpeed => _longPressSpeed.value;
 
   /// [videoPlayerController] instance of Player
-  Player? get videoPlayerController => _videoPlayerController;
+  PlatformPlayer? get videoPlayerController => _videoPlayerController;
+
+  NativePlayer? get mpvPlayer => switch (_videoPlayerController) {
+    final NativePlayer player => player,
+    _ => null,
+  };
+
+  final playbackBackendRevision = 0.obs;
 
   /// [videoController] instance of Player
   VideoController? get videoController => _videoController;
@@ -358,7 +367,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   void enterPip({bool autoEnter = false}) {
-    if (videoPlayerController case NativePlayer(:final state)) {
+    if (videoPlayerController case PlatformPlayer(:final state)) {
       if (Platform.isIOS) {
         if (videoController?.id.value case final textureId?) {
           IOSPipHelper.enter(
@@ -704,9 +713,12 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   bool get isFileSource => dataSource is FileSource;
 
   // 初始化资源
+  final _sourceLock = Lock();
+
   Future<void> setDataSource(
     DataSource dataSource, {
     bool isLive = false,
+    bool useNativeHdr = false,
     bool autoplay = true,
     // 初始化播放位置
     Duration? seekTo,
@@ -729,7 +741,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     Volume? volume,
     bool autoFullScreenFlag = false,
     int? rotate,
-  }) async {
+  }) => _sourceLock.synchronized(() async {
+    if (_playerCount == 0) return;
     try {
       _processing = true;
       this.isLive = isLive;
@@ -762,7 +775,18 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
         return;
       }
       // 配置Player 音轨、字幕等等
-      await _createVideoController(dataSource, seekTo, volume, rotate);
+      await _createVideoController(
+        dataSource,
+        seekTo,
+        volume,
+        rotate,
+        useNativeHdr:
+            Platform.isAndroid &&
+            Pref.enableNativeDolbyVision &&
+            useNativeHdr &&
+            !isLive &&
+            !onlyPlayAudio.value,
+      );
 
       if (_playerCount == 0) {
         _removeListeners();
@@ -792,7 +816,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     } finally {
       _processing = false;
     }
-  }
+  });
 
   String? shadersDirPath;
   Future<String> get copyShadersToExternalDirectory async {
@@ -819,7 +843,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
         setting.put(SettingBoxKey.superResolutionType, type.index);
       }
     }
-    pp ??= _videoPlayerController!;
+    pp ??= mpvPlayer;
+    if (pp == null) return;
     switch (type) {
       case SuperResolutionType.disable:
         return pp.command(const ['change-list', 'glsl-shaders', 'clr', '']);
@@ -846,7 +871,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     }
   }
 
-  Future<Player> _initPlayer() async {
+  Future<NativePlayer> _initPlayer() async {
     assert(_videoPlayerController == null);
     final opt = {
       'video-sync': Pref.videoSync,
@@ -888,8 +913,6 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
     player.setMediaHeader(userAgent: BrowserUa.pc, referer: HttpString.baseUrl);
 
-    _startListeners(player);
-
     return player;
   }
 
@@ -901,27 +924,55 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     DataSource dataSource,
     Duration? seekTo,
     Volume? volume,
-    int? rotate,
-  ) async {
+    int? rotate, {
+    required bool useNativeHdr,
+  }) async {
     isBuffering.value = false;
     _heartDuration = 0;
     danmakuController?.clear();
 
-    var player = _videoPlayerController;
+    if (_videoPlayerController case final previous?
+        when useNativeHdr || previous is NativeHdrPlayer) {
+      _removeListeners();
+      _cancelSubForSeek();
+      _stopWakeLockTimer();
+      _videoPlayerController = null;
+      _videoController = null;
+      playbackBackendRevision.value++;
+      await previous.dispose();
+      if (_playerCount == 0) return;
+    }
 
+    var player = _videoPlayerController;
     if (player == null) {
-      player = await _initPlayer();
+      player = useNativeHdr
+          ? await NativeHdrPlayer.create()
+          : await _initPlayer();
       if (_playerCount == 0) {
-        _removeListeners();
-        player.dispose();
-        player = null;
+        await player.dispose();
         _videoController = null;
         return;
       }
       _videoPlayerController = player;
-      if (isAnim && superResolutionType.value != .disable) {
+      _startListeners(player);
+      playbackBackendRevision.value++;
+      if (player is NativePlayer &&
+          isAnim &&
+          superResolutionType.value != .disable) {
         await setShader();
       }
+    }
+
+    if (player is NativeHdrPlayer) {
+      await player.setVolume(Pref.playerVolume.toDouble());
+      await player.load(
+        video: dataSource.videoSource,
+        audio: dataSource.audioSource,
+        position: seekTo,
+        referer: HttpString.baseUrl,
+        userAgent: BrowserUa.pc,
+      );
+      return;
     }
 
     final Map<String, String> extras = {
@@ -967,7 +1018,10 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     if (dataSource is FileSource) {
       return null;
     }
-    if (_videoPlayerController case final ctr? when (ctr.current.isNotEmpty)) {
+    if (_videoPlayerController case final NativeHdrPlayer player) {
+      return player.retry();
+    }
+    if (mpvPlayer case final ctr? when (ctr.current.isNotEmpty)) {
       var media = ctr.current.last;
       if (!isLive) media = media.copyWith(start: ctr.state.position);
       return ctr.open(media, play: true);
@@ -1022,7 +1076,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       playerStatus,
       isBuffering.value,
       isLive,
-      position: position ?? _videoPlayerController!.state.position,
+      position: position ?? _videoPlayerController?.state.position ?? .zero,
       speed: playbackSpeed,
       debugLabel: debugLabel,
     );
@@ -1030,7 +1084,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   /// 播放事件监听
-  void _startListeners(NativePlayer player) {
+  void _startListeners(PlatformPlayer player) {
     assert(_subscriptions == null);
     final stream = player.stream;
     _subscriptions = [
@@ -1124,6 +1178,10 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
           }
         })),
       stream.error.listen((String event) {
+        if (player is NativeHdrPlayer) {
+          SmartDialog.showToast('杜比视界播放失败（$event）');
+          return;
+        }
         if (dataSource is FileSource &&
             event.startsWith("Failed to open file")) {
           return;
@@ -1193,7 +1251,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   Future<void> seek(Duration position, {bool isSeek = false}) async {
-    if (isSeek) {
+    if (isSeek && _videoPlayerController is NativePlayer) {
       /// 拖动进度条调节时，不等待第一帧，防止抖动
       await _videoPlayerController?.stream.buffer.first;
     }
@@ -1314,7 +1372,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
       this.volume.value = volume;
       try {
         if (PlatformUtils.isDesktop) {
-          await setVolumeCapped(_videoPlayerController, volume);
+          await setVolumeCapped(mpvPlayer, volume);
         } else {
           FlutterVolumeController.updateShowSystemUI(false);
           await FlutterVolumeController.setVolume(volume);
@@ -1402,15 +1460,17 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   bool get isCompleted =>
-      videoPlayerController!.state.completed ||
+      videoPlayerController?.state.completed == true ||
       durationInMilliseconds - positionInMilliseconds <= 50;
 
   // 双击播放、暂停
   Future<void> onDoubleTapCenter() async {
+    final player = videoPlayerController;
+    if (player == null) return;
     if (!isLive && isCompleted) {
-      await videoPlayerController!.seek(Duration.zero);
-      await videoPlayerController!.play();
-    } else if (videoPlayerController!.state.playing) {
+      await player.seek(Duration.zero);
+      await player.play();
+    } else if (player.state.playing) {
       await pause();
     } else {
       await play(hideControls: false);
@@ -1429,11 +1489,15 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   void onForward(Duration duration) {
-    onForwardBackward(videoPlayerController!.state.position + duration);
+    if (videoPlayerController case final player?) {
+      onForwardBackward(player.state.position + duration);
+    }
   }
 
   void onBackward(Duration duration) {
-    onForwardBackward(videoPlayerController!.state.position - duration);
+    if (videoPlayerController case final player?) {
+      onForwardBackward(player.state.position - duration);
+    }
   }
 
   void multiBackwardStart([_]) {
@@ -1451,8 +1515,10 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   void onForwardBackward(Duration duration) {
+    final player = videoPlayerController;
+    if (player == null) return;
     seekTo(
-      duration.clamp(Duration.zero, videoPlayerController!.state.duration),
+      duration.clamp(Duration.zero, player.state.duration),
       isSeek: false,
     ).whenComplete(play);
   }
@@ -1800,6 +1866,10 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   int _screenshotState = 0;
   Future<void> takeScreenshot() async {
+    if (_videoPlayerController is NativeHdrPlayer) {
+      SmartDialog.showToast('杜比视界播放暂不支持截图');
+      return;
+    }
     if (_screenshotState > 0) return;
     _screenshotState = 1;
     SmartDialog.showToast('截图中');

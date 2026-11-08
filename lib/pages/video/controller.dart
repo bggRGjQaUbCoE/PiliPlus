@@ -157,7 +157,7 @@ class VideoDetailController extends GetxController
   int calcRotate(int value) => (_rotate! + value) % 360;
   set rotate(int value) {
     if (_rotate == value) return;
-    final player = plPlayerController.videoPlayerController;
+    final player = plPlayerController.mpvPlayer;
     if (player == null) return;
     _rotate = value;
     player.setProperty('video-rotate', _rotate.toString());
@@ -571,7 +571,7 @@ class VideoDetailController extends GetxController
   @override
   BlockConfigMixin get blockConfig => plPlayerController;
   @override
-  Player? get player => plPlayerController.videoPlayerController;
+  PlatformPlayer? get player => plPlayerController.videoPlayerController;
   @override
   bool get isFullScreen => plPlayerController.isFullScreen.value;
   @override
@@ -756,8 +756,9 @@ class VideoDetailController extends GetxController
   Future<void> playerInit({
     bool? autoplay,
     bool autoFullScreenFlag = false,
+    Duration? position,
   }) async {
-    Duration? seek = defaultST ?? playedTime;
+    Duration? seek = position ?? defaultST ?? playedTime;
     if (seek == .zero) seek = null;
     seek ??= getFirstSegment();
     await plPlayerController.setDataSource(
@@ -772,6 +773,8 @@ class VideoDetailController extends GetxController
               videoSource: videoUrl!,
               audioSource: audioUrl,
             ),
+      useNativeHdr:
+          !isFileSource && firstVideo.quality == VideoQuality.dolbyVision,
       seekTo: seek,
       duration: data.timeLength == null
           ? null

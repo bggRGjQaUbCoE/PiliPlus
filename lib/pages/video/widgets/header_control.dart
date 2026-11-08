@@ -579,11 +579,19 @@ class HeaderControlState extends State<HeaderControl>
                               onTap: () {
                                 plPlayerController.onlyPlayAudio.value =
                                     !onlyPlayAudio;
-                                final player =
-                                    plPlayerController.videoPlayerController!;
-                                if (onlyPlayAudio &&
-                                    player.state.tracks.video.length <= 2) {
-                                  videoDetailCtr.playerInit();
+                                final player = plPlayerController.mpvPlayer;
+                                if (player == null ||
+                                    onlyPlayAudio &&
+                                        (player.state.tracks.video.length <=
+                                                2 ||
+                                            videoDetailCtr.firstVideo.quality ==
+                                                VideoQuality.dolbyVision)) {
+                                  videoDetailCtr.playerInit(
+                                    position: plPlayerController
+                                        .videoPlayerController
+                                        ?.state
+                                        .position,
+                                  );
                                 } else {
                                   player.setProperty(
                                     'file-local-options/vid',
@@ -742,7 +750,7 @@ class HeaderControlState extends State<HeaderControl>
                     leading: const Icon(Icons.download_outlined, size: 20),
                     title: const Text('保存字幕', style: titleStyle),
                   ),
-                if (plPlayerController.videoPlayerController case final player?)
+                if (plPlayerController.mpvPlayer case final player?)
                   ListTile(
                     dense: true,
                     title: const Text('播放信息', style: titleStyle),

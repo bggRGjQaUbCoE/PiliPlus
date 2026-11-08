@@ -68,6 +68,13 @@ List<SettingsModel> get playSettings => [
         '当前:「${Pref.superResolutionType.label}」\n默认设置对番剧生效, 其他视频默认关闭\n超分辨率需要启用硬件解码, 若启用硬件解码后仍然不生效, 尝试切换硬件解码器为 auto-copy',
     onTap: _showSuperResolutionDialog,
   ),
+  if (Platform.isAndroid)
+    const SwitchModel(
+      title: '杜比视界原生解码',
+      subtitle: '适用于支持杜比视界的设备。选择杜比视界画质时使用，下次加载视频时生效',
+      leading: Icon(Icons.hdr_on),
+      setKey: SettingBoxKey.enableNativeDolbyVision,
+    ),
   const SwitchModel(
     title: '自动播放',
     subtitle: '进入详情页自动播放',

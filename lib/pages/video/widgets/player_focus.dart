@@ -230,7 +230,7 @@ class PlayerFocus extends StatelessWidget {
           if (hasPlayer) {
             final isMuted = !plPlayerController.isMuted;
             plPlayerController.setVolumeCapped(
-              plPlayerController.videoPlayerController,
+              plPlayerController.mpvPlayer,
               isMuted ? 0 : plPlayerController.volume.value,
             );
             plPlayerController.isMuted = isMuted;

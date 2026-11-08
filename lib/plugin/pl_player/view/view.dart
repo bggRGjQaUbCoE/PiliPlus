@@ -48,8 +48,10 @@ import 'package:PiliPlus/plugin/pl_player/widgets/bottom_control.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/common_btn.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/forward_seek.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/mpv_convert_webp.dart';
+import 'package:PiliPlus/plugin/pl_player/widgets/native_hdr_view.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/play_pause_btn.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
+import 'package:PiliPlus/utils/android/native_hdr_player.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/desktop/window_controller.dart';
@@ -122,7 +124,6 @@ class PLVideoPlayer extends StatefulWidget {
 class _PLVideoPlayerState extends State<PLVideoPlayer>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   late AnimationController _animationController;
-  late VideoController videoController;
   late final CommonIntroController introController = widget.introController!;
   PgcIntroController get pgcController => introController as PgcIntroController;
   UgcIntroController get ugcController => introController as UgcIntroController;
@@ -264,7 +265,6 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       vsync: this,
       duration: const Duration(milliseconds: 100),
     );
-    videoController = plPlayerController.videoController!;
 
     if (PlatformUtils.isMobile) {
       Future.microtask(() {
@@ -1348,12 +1348,32 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             child: IgnorePointer(
               ignoring: !plPlayerController.enableDragSubtitle,
               child: Obx(
-                () => SubtitleView(
-                  controller: videoController,
-                  configuration: plPlayerController.subtitleConfig.value,
-                  enableDragSubtitle: plPlayerController.enableDragSubtitle,
-                  onUpdatePadding: plPlayerController.onUpdatePadding,
-                ),
+                () {
+                  final revision =
+                      plPlayerController.playbackBackendRevision.value;
+                  final config = plPlayerController.subtitleConfig.value;
+                  if (plPlayerController.videoPlayerController
+                      case final NativeHdrPlayer player) {
+                    return NativeHdrSubtitleView(
+                      key: ValueKey(revision),
+                      player: player,
+                      configuration: config,
+                      enableDrag: plPlayerController.enableDragSubtitle,
+                      onUpdatePadding: plPlayerController.onUpdatePadding,
+                    );
+                  }
+                  if (plPlayerController.videoController
+                      case final controller?) {
+                    return SubtitleView(
+                      key: ValueKey(revision),
+                      controller: controller,
+                      configuration: config,
+                      enableDragSubtitle: plPlayerController.enableDragSubtitle,
+                      onUpdatePadding: plPlayerController.onUpdatePadding,
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
               ),
             ),
           ),
@@ -2029,17 +2049,32 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             child: Obx(
               () {
                 final videoFit = plPlayerController.videoFit.value;
+                final revision =
+                    plPlayerController.playbackBackendRevision.value;
+                final player = plPlayerController.videoPlayerController;
+                final controller = plPlayerController.videoController;
                 return Transform.flip(
                   flipX: plPlayerController.flipX.value,
                   flipY: plPlayerController.flipY.value,
                   child: FittedBox(
                     fit: videoFit.boxFit,
                     alignment: widget.alignment,
-                    child: SimpleVideo(
-                      controller: plPlayerController.videoController!,
-                      fill: widget.fill,
-                      aspectRatio: videoFit.aspectRatio,
-                    ),
+                    child: player is NativeHdrPlayer
+                        ? NativeHdrView(
+                            key: ValueKey(revision),
+                            player: player,
+                            width: plPlayerController.width,
+                            height: plPlayerController.height,
+                            aspectRatio: videoFit.aspectRatio,
+                          )
+                        : controller == null
+                        ? const SizedBox.shrink()
+                        : SimpleVideo(
+                            key: ValueKey(revision),
+                            controller: controller,
+                            fill: widget.fill,
+                            aspectRatio: videoFit.aspectRatio,
+                          ),
                   ),
                 );
               },

@@ -48,7 +48,7 @@ mixin BlockMixin on GetxController {
   late final List<Object> listData = [];
 
   RxString? get videoLabel => null;
-  Player? get player;
+  PlatformPlayer? get player;
   bool get autoPlay;
   int? get timeLength;
   bool get preInitPlayer;

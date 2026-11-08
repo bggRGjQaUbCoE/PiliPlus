@@ -132,6 +132,51 @@ class Request {
     Connectivity().onConnectivityChanged.skip(1).listen(_onConnectivityChanged);
   }
 
+  /// Prefer IPv4 when connecting directly and fall back to other address
+  /// families on failure. Some networks have an IPv6 path which completes the
+  /// TCP/TLS handshake but then stalls without returning the HTTP response
+  /// (e.g. Bilibili IPv6 edges); trying IPv4 first avoids multi-second stalls.
+  /// See https://github.com/bggRGjQaUbCoE/PiliPlus/issues/3525
+  static Future<ConnectionTask<Socket>> _ipv4FirstConnectionFactory(
+    Uri uri,
+    String? proxyHost,
+    int? proxyPort,
+  ) async {
+    if (proxyHost != null) {
+      return Socket.startConnect(proxyHost, proxyPort ?? 80);
+    }
+    final addresses = await InternetAddress.lookup(uri.host);
+    if (addresses.isEmpty) {
+      throw SocketException('Failed to resolve ${uri.host}');
+    }
+    final ordered = <InternetAddress>[
+      ...addresses.where((e) => e.type == InternetAddressType.IPv4),
+      ...addresses.where((e) => e.type != InternetAddressType.IPv4),
+    ];
+    final isHttps = uri.isScheme('https');
+    Object? lastError;
+    for (final address in ordered) {
+      ConnectionTask<Socket>? raw;
+      try {
+        raw = await Socket.startConnect(address.address, uri.port)
+            .timeout(const Duration(milliseconds: 1500));
+        if (!isHttps) return raw;
+        return _SecureConnectionTask(
+          raw,
+          SecureSocket.secure(raw.socket, host: uri.host),
+        );
+      } on SocketException catch (e) {
+        lastError = e;
+        raw?.cancel();
+      } on TimeoutException catch (e) {
+        lastError = e;
+        raw?.cancel();
+      }
+    }
+    if (lastError != null) throw lastError;
+    throw SocketException('Failed to connect to ${uri.host}');
+  }
+
   static (IOHttpClientAdapter, ConnectionManager?) _createPool() {
     final bool enableSystemProxy;
     late final String systemProxyHost;
@@ -153,7 +198,8 @@ class Request {
               ..badCertificateCallback = (cert, host, port) => true
           : () => HttpClient()
               ..idleTimeout = const Duration(seconds: 15)
-              ..autoUncompress = false, // Http2Adapter没有自动解压, 统一行为
+              ..autoUncompress = false
+              ..connectionFactory = _ipv4FirstConnectionFactory, // 统一行为
     );
 
     final connectionManager = _enableHttp2
@@ -382,4 +428,18 @@ class Request {
     responseBytesDecoder(responseBytes, responseBody.headers),
     allowMalformed: true,
   );
+}
+
+
+/// Wraps a plain TCP [ConnectionTask] whose socket is upgraded to TLS.
+class _SecureConnectionTask implements ConnectionTask<Socket> {
+  _SecureConnectionTask(this._inner, this.socket);
+
+  final ConnectionTask<Socket> _inner;
+
+  @override
+  final Future<Socket> socket;
+
+  @override
+  void cancel() => _inner.cancel();
 }

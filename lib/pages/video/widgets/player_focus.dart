@@ -228,13 +228,7 @@ class PlayerFocus extends StatelessWidget {
 
         case LogicalKeyboardKey.keyM:
           if (hasPlayer) {
-            final isMuted = !plPlayerController.isMuted;
-            plPlayerController.setVolumeCapped(
-              plPlayerController.mpvPlayer,
-              isMuted ? 0 : plPlayerController.volume.value,
-            );
-            plPlayerController.isMuted = isMuted;
-            SmartDialog.showToast('${isMuted ? '' : '取消'}静音');
+            unawaited(plPlayerController.toggleMute());
           }
           return true;
 

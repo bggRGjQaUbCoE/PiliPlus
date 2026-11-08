@@ -75,7 +75,8 @@ class LocalSubtitle extends Subtitle {
 
   LocalSubtitle._fromLocal(Map<String, dynamic> json, String entryDirPath)
     : super(id: json["id"], lan: json["lan"]) {
-    isAi = json["type"] == 1;
+    type = json["type"];
+    isAi = type == 1;
     lanDoc = json["lan_doc"];
     path = toPath(entryDirPath);
   }

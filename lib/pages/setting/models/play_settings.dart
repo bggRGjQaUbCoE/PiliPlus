@@ -487,13 +487,21 @@ Future<void> showPlayerVolumeDialog(
   BuildContext context,
   VoidCallback setState, {
   ValueChanged<double>? onChanged,
+  bool nativeDolbyVision = false,
 }) {
   return showVolumeDialog(
     context,
     title: const Text('播放器音量'),
-    value: Pref.playerVolume,
+    value: nativeDolbyVision ? Pref.nativeDolbyVisionVolume : Pref.playerVolume,
+    min: nativeDolbyVision ? 0 : kMinVolume,
+    max: nativeDolbyVision ? 100 : kMaxVolume,
     onChanged: (value) => GStorage.setting
-        .put(SettingBoxKey.playerVolume, value)
+        .put(
+          nativeDolbyVision
+              ? SettingBoxKey.nativeDolbyVisionVolume
+              : SettingBoxKey.playerVolume,
+          value,
+        )
         .whenComplete(() {
           setState();
           onChanged?.call(value);
@@ -529,16 +537,18 @@ Future<void> showVolumeDialog(
   required Widget title,
   required double value,
   required ValueChanged<double> onChanged,
+  double min = kMinVolume,
+  double max = kMaxVolume,
 }) async {
   final res = await showDialog<double>(
     context: context,
     builder: (context) => SliderDialog(
       title: title,
-      min: kMinVolume,
-      max: kMaxVolume,
-      divisions: 40,
+      min: min,
+      max: max,
+      divisions: ((max - min) / 5).round(),
       precise: 0,
-      value: value,
+      value: value.clamp(min, max),
       suffix: '%',
     ),
   );

@@ -81,7 +81,7 @@ mixin AudioNormalizationMixin {
     return {_kNormalizationKey: audioNormalization};
   }
 
-  String? _alimiter;
+  final _alimiter = Expando<String>();
 
   /// mpv 的 volume 属性是三次方曲线（`gain = (volume / 100) ^ 3`），且这层
   /// 增益直接乘在 PCM 样值上：200% 就是 8 倍（+18dB），300% 是 27 倍
@@ -105,17 +105,17 @@ mixin AudioNormalizationMixin {
     if (player == null) return null;
     final boost = _boostAf(volume);
     if (boost == null) {
-      if (_alimiter != null) {
+      if (_alimiter[player] != null) {
         player.setProperty('af', '');
-        _alimiter = null;
+        _alimiter[player] = null;
       }
       return player.setVolume(volume * 100);
     } else {
       // 拖动音量时增益连续变化，重建滤镜链开销偏大，
       // 增益按 0.5dB 取整，值未变化时跳过
-      if (_alimiter != boost) {
+      if (_alimiter[player] != boost) {
         player.setProperty('af', boost);
-        _alimiter = boost;
+        _alimiter[player] = boost;
       }
       return player.setVolume(100);
     }

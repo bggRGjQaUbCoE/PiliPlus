@@ -158,7 +158,6 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   late DataSource dataSource;
 
   Timer? _timer;
-  StreamSubscription? _subForSeek;
 
   Box setting = GStorage.setting;
 
@@ -185,7 +184,12 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   /// [videoController] instance of Player
   VideoController? get videoController => _videoController;
 
-  bool isMuted = false;
+  bool _isMuted = false;
+
+  bool get usesNativeDolbyVision => _videoPlayerController is NativeHdrPlayer;
+
+  double get playerVolume =>
+      usesNativeDolbyVision ? Pref.nativeDolbyVisionVolume : Pref.playerVolume;
 
   /// 听视频
   late final RxBool onlyPlayAudio = false.obs;
@@ -592,11 +596,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     return null;
   }
 
-  static Future<void>? seekToIfExists(
-    Duration position, {
-    bool isSeek = true,
-  }) {
-    return _instance?.seekTo(position, isSeek: isSeek);
+  static Future<void>? seekToIfExists(Duration position) {
+    return _instance?.seekTo(position);
   }
 
   static double? getVolumeIfExists() {
@@ -890,10 +891,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     );
 
     // >100% 的音量走 af 增益+限幅，避免直接放大 mpv volume 导致削波
-    await setVolumeCapped(
-      player,
-      PlatformUtils.isMobile ? Pref.playerVolume / 100 : volume.value,
-    );
+    await _applyPlayerVolume(player, _isMuted ? 0 : _unmutedVolume(player));
 
     assert(_videoController == null);
 
@@ -934,7 +932,6 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     if (_videoPlayerController case final previous?
         when useNativeHdr || previous is NativeHdrPlayer) {
       _removeListeners();
-      _cancelSubForSeek();
       _stopWakeLockTimer();
       _videoPlayerController = null;
       _videoController = null;
@@ -964,7 +961,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     }
 
     if (player is NativeHdrPlayer) {
-      await player.setVolume(Pref.playerVolume.toDouble());
+      await _applyPlayerVolume(player, _isMuted ? 0 : _unmutedVolume(player));
       await player.load(
         video: dataSource.videoSource,
         audio: dataSource.audioSource,
@@ -1243,46 +1240,18 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     _subscriptions = null;
   }
 
-  void _cancelSubForSeek() {
-    if (_subForSeek != null) {
-      _subForSeek!.cancel();
-      _subForSeek = null;
-    }
-  }
+  /// 跳转至指定位置
+  Future<void> seekTo(Duration position) async {
+    if (_playerCount == 0) return;
 
-  Future<void> seek(Duration position, {bool isSeek = false}) async {
-    if (isSeek && _videoPlayerController is NativePlayer) {
-      /// 拖动进度条调节时，不等待第一帧，防止抖动
-      await _videoPlayerController?.stream.buffer.first;
-    }
+    _heartDuration = position.inSeconds;
+
     danmakuController?.clear();
     try {
       await _videoPlayerController?.seek(position);
       _updateIOSPip(position);
     } catch (e) {
       if (kDebugMode) debugPrint('seek failed: $e');
-    }
-  }
-
-  /// 跳转至指定位置
-  Future<void> seekTo(Duration position, {bool isSeek = true}) async {
-    if (_playerCount == 0) {
-      return;
-    }
-    if (position < Duration.zero) {
-      position = Duration.zero;
-    }
-    _heartDuration = position.inSeconds;
-
-    if (duration.value != 0) {
-      seek(position, isSeek: isSeek);
-    } else {
-      // if (kDebugMode) debugPrint('seek duration else');
-      _subForSeek?.cancel();
-      _subForSeek = duration.listen((_) {
-        seek(position, isSeek: isSeek);
-        _cancelSubForSeek();
-      });
     }
   }
 
@@ -1314,7 +1283,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     if (hideControls) controls = false;
     // repeat为true，将从头播放
     if (repeat) {
-      await seekTo(Duration.zero, isSeek: false);
+      await seekTo(Duration.zero);
     }
 
     await _videoPlayerController?.play();
@@ -1366,13 +1335,47 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   Timer? volumeTimer;
   bool volumeInterceptEventStream = false;
 
+  double _unmutedVolume(PlatformPlayer player) {
+    if (player is NativeHdrPlayer) return Pref.nativeDolbyVisionVolume;
+    return PlatformUtils.isMobile ? Pref.playerVolume : volume.value * 100;
+  }
+
+  Future<void> _applyPlayerVolume(PlatformPlayer player, double percent) async {
+    if (player is NativePlayer) {
+      await setVolumeCapped(player, percent / 100);
+    } else {
+      await player.setVolume(percent);
+    }
+  }
+
+  Future<void> updatePlayerVolume() => _sourceLock.synchronized(() async {
+    if (_videoPlayerController case final player? when !_isMuted) {
+      await _applyPlayerVolume(player, _unmutedVolume(player));
+    }
+  });
+
+  Future<void> toggleMute() => _sourceLock.synchronized(() async {
+    final player = _videoPlayerController;
+    if (player == null) return;
+    final muted = !_isMuted;
+    try {
+      await _applyPlayerVolume(player, muted ? 0 : _unmutedVolume(player));
+    } catch (err) {
+      if (kDebugMode) debugPrint('toggle mute failed: $err');
+      SmartDialog.showToast(muted ? '静音失败' : '取消静音失败');
+      return;
+    }
+    _isMuted = muted;
+    SmartDialog.showToast(muted ? '静音' : '取消静音');
+  });
+
   final double maxVolume = PlatformUtils.isDesktop ? Pref.maxVolume : 1.0;
   Future<void> setVolume(double volume, {bool showIndicator = true}) async {
     if (this.volume.value != volume) {
       this.volume.value = volume;
       try {
         if (PlatformUtils.isDesktop) {
-          await setVolumeCapped(mpvPlayer, volume);
+          await updatePlayerVolume();
         } else {
           FlutterVolumeController.updateShowSystemUI(false);
           await FlutterVolumeController.setVolume(volume);
@@ -1519,7 +1522,6 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     if (player == null) return;
     seekTo(
       duration.clamp(Duration.zero, player.state.duration),
-      isSeek: false,
     ).whenComplete(play);
   }
 
@@ -1748,7 +1750,6 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     // 每次减1，最后销毁
     resetScreenRotation();
     cancelLongPressTimer();
-    _cancelSubForSeek();
     if (!_isCloseAll && _playerCount > 1) {
       _playerCount -= 1;
       _heartDuration = 0;

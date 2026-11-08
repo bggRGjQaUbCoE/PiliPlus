@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -7,6 +9,7 @@ import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
+import 'package:PiliPlus/utils/scroll_offset_helper.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -26,12 +29,45 @@ class ViewPointsPage extends CommonSlidePage {
 }
 
 class _ViewPointsPageState extends State<ViewPointsPage>
-    with SingleTickerProviderStateMixin, CommonSlideMixin {
+    with SingleTickerProviderStateMixin, CommonSlideMixin, ScrollOffsetMixin {
   VideoDetailController get videoDetailController =>
       widget.videoDetailController;
   PlPlayerController? get plPlayerController => widget.plPlayerController;
 
-  int currentIndex = -1;
+  @override
+  final scrollController = ScrollController();
+
+  @override
+  late final int itemIndex;
+  @override
+  int get itemCount => videoDetailController.viewPointList.length;
+
+  ColorScheme get colorScheme => theme.colorScheme;
+
+  @override
+  void initState() {
+    super.initState();
+    final posInSeconds =
+        videoDetailController.plPlayerController.position.value;
+    itemIndex = max(
+      0,
+      videoDetailController.viewPointList.indexWhere((e) {
+        if (e.from != null && e.to != null) {
+          return posInSeconds >= e.from! && posInSeconds < e.to!;
+        }
+        return false;
+      }),
+    );
+    if (itemIndex > 0) {
+      WidgetsBinding.instance.addPostFrameCallback(jumpToCurrent);
+    }
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget buildPage() {
@@ -41,7 +77,7 @@ class _ViewPointsPageState extends State<ViewPointsPage>
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: theme.colorScheme.outline.withValues(alpha: 0.1),
+              color: colorScheme.outline.withValues(alpha: 0.1),
             ),
           ),
         ),
@@ -49,9 +85,10 @@ class _ViewPointsPageState extends State<ViewPointsPage>
           children: [
             const SizedBox(width: 16),
             const Expanded(child: Text('分段信息', style: TextStyle(fontSize: 16))),
+            const Text('分段进度条 ', style: TextStyle(fontSize: 16)),
             Obx(
               () => Transform.scale(
-                alignment: Alignment.centerLeft,
+                alignment: .centerLeft,
                 scale: 0.8,
                 child: Switch(
                   value: videoDetailController.showVP.value,
@@ -74,62 +111,47 @@ class _ViewPointsPageState extends State<ViewPointsPage>
     );
   }
 
-  late Key _key;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final controller = PrimaryScrollController.of(context);
-    _key = ValueKey(controller.hashCode);
-  }
-
   @override
   Widget buildList() {
-    return ListView.builder(
-      key: _key,
+    return CustomScrollView(
+      controller: scrollController,
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.only(
-        top: 7,
-        bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
-      ),
-      itemCount: videoDetailController.viewPointList.length,
-      itemBuilder: (context, index) {
-        final segment = videoDetailController.viewPointList[index];
-        if (currentIndex == -1 && segment.from != null && segment.to != null) {
-          final positionSeconds =
-              videoDetailController.plPlayerController.position.value;
-          if (positionSeconds >= segment.from! &&
-              positionSeconds < segment.to!) {
-            currentIndex = index;
-          }
-        }
-        final isCurr = currentIndex == index;
-        return _buildItem(theme.colorScheme, segment, isCurr);
-      },
+      slivers: [
+        SliverPadding(
+          padding: EdgeInsets.only(
+            top: 7,
+            bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
+          ),
+          sliver: SliverFixedExtentList.builder(
+            itemExtent: 112,
+            itemCount: videoDetailController.viewPointList.length,
+            itemBuilder: (context, index) {
+              final segment = videoDetailController.viewPointList[index];
+              return Padding(
+                padding: const .only(bottom: 2),
+                child: _buildItem(segment, itemIndex == index),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildItem(
-    ColorScheme colorScheme,
-    ViewPointSegment segment,
-    bool isCurr,
-  ) {
+  Widget _buildItem(ViewPointSegment segment, bool isCurr) {
     return Material(
-      type: MaterialType.transparency,
+      type: .transparency,
       child: InkWell(
         onTap: segment.from != null
             ? () {
                 Get.back();
-                plPlayerController?.seekTo(
-                  Duration(seconds: segment.from!),
-                  isSeek: false,
-                );
+                plPlayerController?.seekTo(Duration(seconds: segment.from!));
               }
             : null,
         child: Padding(
           padding: const .symmetric(horizontal: Style.safeSpace, vertical: 5),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: .start,
             children: [
               NetworkImgLayer(
                 src: segment.url,
@@ -140,16 +162,16 @@ class _ViewPointsPageState extends State<ViewPointsPage>
               Expanded(
                 child: Column(
                   spacing: 10,
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: .min,
+                  crossAxisAlignment: .start,
                   children: [
                     Text(
                       segment.title ?? '',
                       maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                      overflow: .ellipsis,
                       style: isCurr
                           ? TextStyle(
-                              fontWeight: FontWeight.bold,
+                              fontWeight: .bold,
                               color: colorScheme.primary,
                             )
                           : null,

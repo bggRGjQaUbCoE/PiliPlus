@@ -1089,6 +1089,9 @@ abstract final class Pref {
   static bool get enableNativeDolbyVision =>
       _setting.get(SettingBoxKey.enableNativeDolbyVision, defaultValue: false);
 
+  static double get nativeDolbyVisionVolume =>
+      _setting.get(SettingBoxKey.nativeDolbyVisionVolume, defaultValue: 100.0);
+
   static double get playerVolume => // mobile
       _setting.get(SettingBoxKey.playerVolume, defaultValue: 100.0);
 

@@ -56,10 +56,9 @@ class NativeHdrView extends StatelessWidget {
                 creationParamsCodec: const StandardMessageCodec(),
                 onFocus: () => params.onFocusChanged(true),
               );
-              controller
+              return controller
                 ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
                 ..create();
-              return controller;
             },
           ),
         );

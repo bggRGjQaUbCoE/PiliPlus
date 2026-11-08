@@ -486,24 +486,26 @@ class HeaderControlState extends State<HeaderControl>
                   descPosType: .subtitle,
                   descStyle: subTitleStyle,
                 ),
-                if (PlatformUtils.isMobile)
-                  if (plPlayerController.videoPlayerController
-                      case final player?)
-                    Builder(
-                      builder: (context) => ListTile(
-                        dense: true,
-                        leading: const Icon(Icons.volume_up, size: 20),
-                        title: const Text('播放器音量'),
-                        subtitle: Text(
-                          '当前: ${Pref.playerVolume.toStringAsFixed(0)}%',
-                        ),
-                        onTap: () => showPlayerVolumeDialog(
-                          context,
-                          () => (context as Element).markNeedsBuild(),
-                          onChanged: player.setVolume,
-                        ),
+                if (PlatformUtils.isMobile &&
+                    plPlayerController.videoPlayerController != null)
+                  Builder(
+                    builder: (context) => ListTile(
+                      dense: true,
+                      leading: const Icon(Icons.volume_up, size: 20),
+                      title: const Text('播放器音量'),
+                      subtitle: Text(
+                        '当前: ${plPlayerController.playerVolume.toStringAsFixed(0)}%',
+                      ),
+                      onTap: () => showPlayerVolumeDialog(
+                        context,
+                        () => (context as Element).markNeedsBuild(),
+                        nativeDolbyVision:
+                            plPlayerController.usesNativeDolbyVision,
+                        onChanged: (_) =>
+                            plPlayerController.updatePlayerVolume(),
                       ),
                     ),
+                  ),
                 if (!isFileSource)
                   ListTile(
                     dense: true,

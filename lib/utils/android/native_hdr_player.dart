@@ -61,8 +61,9 @@ final class NativeHdrPlayer extends PlatformPlayer {
 
   @override
   Future<void> setVolume(double volume) async {
-    await _call('volume', (volume / 100).clamp(0.0, 1.0));
-    state.volume = volume;
+    final percent = volume.clamp(0.0, 100.0);
+    await _call('volume', percent / 100);
+    state.volume = percent;
   }
 
   @override

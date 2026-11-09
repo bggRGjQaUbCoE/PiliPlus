@@ -21,21 +21,27 @@ nativeapi.Size fitMinSizeToWorkArea(nativeapi.Size minSize, Rect workArea) =>
 
 /// 计算窗口左上角坐标。
 ///
-/// [savedPosition] 是上次退出时的位置：已经完全不在工作区内（换了显示器、
-/// 换了分辨率）时重新居中；仍然可见时留在原处，但会被拉回工作区内。
+/// [savedPosition] 是上次退出时的位置。仍有足够可见区域时将窗口拉回工作区，
+/// 否则重新居中。
 Offset calcWindowOffset({
   required Size windowSize,
   required Rect workArea,
   Offset? savedPosition,
 }) {
   if (savedPosition != null) {
-    final dx = savedPosition.dx;
-    final dy = savedPosition.dy;
-    if (dx > workArea.left + kWindowKeepVisible &&
-        dy > workArea.top + kWindowKeepVisible &&
-        dx < workArea.right - kWindowKeepVisible &&
-        dy < workArea.bottom - kWindowKeepVisible) {
-      return Offset(dx, dy);
+    final visible = (savedPosition & windowSize).intersect(workArea);
+    if (visible.width >= kWindowKeepVisible &&
+        visible.height >= kWindowKeepVisible) {
+      return Offset(
+        savedPosition.dx.clamp(
+          workArea.left,
+          math.max(workArea.left, workArea.right - windowSize.width),
+        ),
+        savedPosition.dy.clamp(
+          workArea.top,
+          math.max(workArea.top, workArea.bottom - windowSize.height),
+        ),
+      );
     }
   }
 

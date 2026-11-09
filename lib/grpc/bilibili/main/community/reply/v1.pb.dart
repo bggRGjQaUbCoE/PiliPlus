@@ -14,13 +14,13 @@ import 'dart:core' as $core;
 
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
-import 'package:protobuf/well_known_types/google/protobuf/any.pb.dart' as $1;
+import 'package:protobuf/well_known_types/google/protobuf/any.pb.dart' as $0;
 
-import '../../../account/service/v1.pb.dart' as $5;
-import '../../../app/dynamic/v2.pb.dart' as $6;
-import '../../../dagw/component/avatar/v1.pb.dart' as $4;
-import '../../../pagination.pb.dart' as $2;
-import '../../../vas/garb/model.pb.dart' as $3;
+import '../../../account/service/v1.pb.dart' as $4;
+import '../../../app/dynamic/v2.pb.dart' as $5;
+import '../../../dagw/component/avatar/v1.pb.dart' as $3;
+import '../../../pagination.pb.dart' as $1;
+import '../../../vas/garb/model.pb.dart' as $2;
 import 'v1.pbenum.dart';
 
 export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
@@ -764,7 +764,7 @@ class AtSearchReq extends $pb.GeneratedMessage {
 
 class CM extends $pb.GeneratedMessage {
   factory CM({
-    $1.Any? sourceContent,
+    $0.Any? sourceContent,
   }) {
     final result = CM._();
     if (sourceContent != null) result.sourceContent = sourceContent;
@@ -785,8 +785,8 @@ class CM extends $pb.GeneratedMessage {
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.main.community.reply.v1'),
       createEmptyInstance: CM.$_createMessage)
-    ..aOM<$1.Any>(1, _omitFieldNames ? '' : 'sourceContent',
-        subBuilder: $1.Any.$_createMessage)
+    ..aOM<$0.Any>(1, _omitFieldNames ? '' : 'sourceContent',
+        subBuilder: $0.Any.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -810,15 +810,15 @@ class CM extends $pb.GeneratedMessage {
   static CM? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Any get sourceContent => $_getN(0);
+  $0.Any get sourceContent => $_getN(0);
   @$pb.TagNumber(1)
-  set sourceContent($1.Any value) => $_setField(1, value);
+  set sourceContent($0.Any value) => $_setField(1, value);
   @$pb.TagNumber(1)
   $core.bool hasSourceContent() => $_has(0);
   @$pb.TagNumber(1)
   void clearSourceContent() => $_clearField(1);
   @$pb.TagNumber(1)
-  $1.Any ensureSourceContent() => $_ensure(0);
+  $0.Any ensureSourceContent() => $_ensure(0);
 }
 
 class Content extends $pb.GeneratedMessage {
@@ -1304,7 +1304,7 @@ class DetailListReply extends $pb.GeneratedMessage {
     LikeInfo? likes,
     Mode? mode,
     $core.String? modeText,
-    $2.FeedPaginationReply? paginationReply,
+    $1.FeedPaginationReply? paginationReply,
     $core.String? sessionId,
     DetailListReply_SubjectTitle? subjectTitle,
     $core.Iterable<MixedCard>? mixedCards,
@@ -1350,8 +1350,8 @@ class DetailListReply extends $pb.GeneratedMessage {
         subBuilder: LikeInfo.$_createMessage)
     ..aE<Mode>(6, _omitFieldNames ? '' : 'mode', enumValues: Mode.values)
     ..aOS(7, _omitFieldNames ? '' : 'modeText')
-    ..aOM<$2.FeedPaginationReply>(8, _omitFieldNames ? '' : 'paginationReply',
-        subBuilder: $2.FeedPaginationReply.$_createMessage)
+    ..aOM<$1.FeedPaginationReply>(8, _omitFieldNames ? '' : 'paginationReply',
+        subBuilder: $1.FeedPaginationReply.$_createMessage)
     ..aOS(9, _omitFieldNames ? '' : 'sessionId')
     ..aOM<DetailListReply_SubjectTitle>(
         10, _omitFieldNames ? '' : 'subjectTitle',
@@ -1456,15 +1456,15 @@ class DetailListReply extends $pb.GeneratedMessage {
   void clearModeText() => $_clearField(7);
 
   @$pb.TagNumber(8)
-  $2.FeedPaginationReply get paginationReply => $_getN(7);
+  $1.FeedPaginationReply get paginationReply => $_getN(7);
   @$pb.TagNumber(8)
-  set paginationReply($2.FeedPaginationReply value) => $_setField(8, value);
+  set paginationReply($1.FeedPaginationReply value) => $_setField(8, value);
   @$pb.TagNumber(8)
   $core.bool hasPaginationReply() => $_has(7);
   @$pb.TagNumber(8)
   void clearPaginationReply() => $_clearField(8);
   @$pb.TagNumber(8)
-  $2.FeedPaginationReply ensurePaginationReply() => $_ensure(7);
+  $1.FeedPaginationReply ensurePaginationReply() => $_ensure(7);
 
   @$pb.TagNumber(9)
   $core.String get sessionId => $_getSZ(8);
@@ -1499,7 +1499,7 @@ class DetailListReq extends $pb.GeneratedMessage {
     CursorReq? cursor,
     DetailListScene? scene,
     Mode? mode,
-    $2.FeedPagination? pagination,
+    $1.FeedPagination? pagination,
     $core.String? extra,
     $core.String? adExtra,
     $core.bool? needSubjectTitle,
@@ -1542,8 +1542,8 @@ class DetailListReq extends $pb.GeneratedMessage {
     ..aE<DetailListScene>(6, _omitFieldNames ? '' : 'scene',
         enumValues: DetailListScene.values)
     ..aE<Mode>(7, _omitFieldNames ? '' : 'mode', enumValues: Mode.values)
-    ..aOM<$2.FeedPagination>(8, _omitFieldNames ? '' : 'pagination',
-        subBuilder: $2.FeedPagination.$_createMessage)
+    ..aOM<$1.FeedPagination>(8, _omitFieldNames ? '' : 'pagination',
+        subBuilder: $1.FeedPagination.$_createMessage)
     ..aOS(9, _omitFieldNames ? '' : 'extra')
     ..aOS(10, _omitFieldNames ? '' : 'adExtra')
     ..aOB(11, _omitFieldNames ? '' : 'needSubjectTitle')
@@ -1637,15 +1637,15 @@ class DetailListReq extends $pb.GeneratedMessage {
   void clearMode() => $_clearField(7);
 
   @$pb.TagNumber(8)
-  $2.FeedPagination get pagination => $_getN(7);
+  $1.FeedPagination get pagination => $_getN(7);
   @$pb.TagNumber(8)
-  set pagination($2.FeedPagination value) => $_setField(8, value);
+  set pagination($1.FeedPagination value) => $_setField(8, value);
   @$pb.TagNumber(8)
   $core.bool hasPagination() => $_has(7);
   @$pb.TagNumber(8)
   void clearPagination() => $_clearField(8);
   @$pb.TagNumber(8)
-  $2.FeedPagination ensurePagination() => $_ensure(7);
+  $1.FeedPagination ensurePagination() => $_ensure(7);
 
   @$pb.TagNumber(9)
   $core.String get extra => $_getSZ(8);
@@ -1681,7 +1681,7 @@ class DialogListReply extends $pb.GeneratedMessage {
     SubjectControl? subjectControl,
     $core.Iterable<ReplyInfo>? replies,
     Activity? activity,
-    $2.FeedPaginationReply? paginationReply,
+    $1.FeedPaginationReply? paginationReply,
     $core.String? sessionId,
   }) {
     final result = DialogListReply._();
@@ -1716,8 +1716,8 @@ class DialogListReply extends $pb.GeneratedMessage {
         subBuilder: ReplyInfo.$_createMessage)
     ..aOM<Activity>(4, _omitFieldNames ? '' : 'activity',
         subBuilder: Activity.$_createMessage)
-    ..aOM<$2.FeedPaginationReply>(5, _omitFieldNames ? '' : 'paginationReply',
-        subBuilder: $2.FeedPaginationReply.$_createMessage)
+    ..aOM<$1.FeedPaginationReply>(5, _omitFieldNames ? '' : 'paginationReply',
+        subBuilder: $1.FeedPaginationReply.$_createMessage)
     ..aOS(6, _omitFieldNames ? '' : 'sessionId')
     ..hasRequiredFields = false;
 
@@ -1780,15 +1780,15 @@ class DialogListReply extends $pb.GeneratedMessage {
   Activity ensureActivity() => $_ensure(3);
 
   @$pb.TagNumber(5)
-  $2.FeedPaginationReply get paginationReply => $_getN(4);
+  $1.FeedPaginationReply get paginationReply => $_getN(4);
   @$pb.TagNumber(5)
-  set paginationReply($2.FeedPaginationReply value) => $_setField(5, value);
+  set paginationReply($1.FeedPaginationReply value) => $_setField(5, value);
   @$pb.TagNumber(5)
   $core.bool hasPaginationReply() => $_has(4);
   @$pb.TagNumber(5)
   void clearPaginationReply() => $_clearField(5);
   @$pb.TagNumber(5)
-  $2.FeedPaginationReply ensurePaginationReply() => $_ensure(4);
+  $1.FeedPaginationReply ensurePaginationReply() => $_ensure(4);
 
   @$pb.TagNumber(6)
   $core.String get sessionId => $_getSZ(5);
@@ -1807,7 +1807,7 @@ class DialogListReq extends $pb.GeneratedMessage {
     $fixnum.Int64? root,
     $fixnum.Int64? dialog,
     CursorReq? cursor,
-    $2.FeedPagination? pagination,
+    $1.FeedPagination? pagination,
     $core.String? extra,
     $core.String? adExtra,
   }) {
@@ -1843,8 +1843,8 @@ class DialogListReq extends $pb.GeneratedMessage {
     ..aInt64(4, _omitFieldNames ? '' : 'dialog')
     ..aOM<CursorReq>(5, _omitFieldNames ? '' : 'cursor',
         subBuilder: CursorReq.$_createMessage)
-    ..aOM<$2.FeedPagination>(6, _omitFieldNames ? '' : 'pagination',
-        subBuilder: $2.FeedPagination.$_createMessage)
+    ..aOM<$1.FeedPagination>(6, _omitFieldNames ? '' : 'pagination',
+        subBuilder: $1.FeedPagination.$_createMessage)
     ..aOS(7, _omitFieldNames ? '' : 'extra')
     ..aOS(8, _omitFieldNames ? '' : 'adExtra')
     ..hasRequiredFields = false;
@@ -1919,15 +1919,15 @@ class DialogListReq extends $pb.GeneratedMessage {
   CursorReq ensureCursor() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $2.FeedPagination get pagination => $_getN(5);
+  $1.FeedPagination get pagination => $_getN(5);
   @$pb.TagNumber(6)
-  set pagination($2.FeedPagination value) => $_setField(6, value);
+  set pagination($1.FeedPagination value) => $_setField(6, value);
   @$pb.TagNumber(6)
   $core.bool hasPagination() => $_has(5);
   @$pb.TagNumber(6)
   void clearPagination() => $_clearField(6);
   @$pb.TagNumber(6)
-  $2.FeedPagination ensurePagination() => $_ensure(5);
+  $1.FeedPagination ensurePagination() => $_ensure(5);
 
   @$pb.TagNumber(7)
   $core.String get extra => $_getSZ(6);
@@ -3131,7 +3131,7 @@ class MainListReply extends $pb.GeneratedMessage {
     OperationV2? operationV2,
     Mode? mode,
     $core.String? modeText,
-    $2.FeedPaginationReply? paginationReply,
+    $1.FeedPaginationReply? paginationReply,
     $core.String? sessionId,
     $core.String? reportParams,
     VoteCard? voteCard,
@@ -3225,8 +3225,8 @@ class MainListReply extends $pb.GeneratedMessage {
         subBuilder: OperationV2.$_createMessage)
     ..aE<Mode>(18, _omitFieldNames ? '' : 'mode', enumValues: Mode.values)
     ..aOS(19, _omitFieldNames ? '' : 'modeText')
-    ..aOM<$2.FeedPaginationReply>(20, _omitFieldNames ? '' : 'paginationReply',
-        subBuilder: $2.FeedPaginationReply.$_createMessage)
+    ..aOM<$1.FeedPaginationReply>(20, _omitFieldNames ? '' : 'paginationReply',
+        subBuilder: $1.FeedPaginationReply.$_createMessage)
     ..aOS(21, _omitFieldNames ? '' : 'sessionId')
     ..aOS(22, _omitFieldNames ? '' : 'reportParams')
     ..aOM<VoteCard>(23, _omitFieldNames ? '' : 'voteCard',
@@ -3445,15 +3445,15 @@ class MainListReply extends $pb.GeneratedMessage {
   void clearModeText() => $_clearField(19);
 
   @$pb.TagNumber(20)
-  $2.FeedPaginationReply get paginationReply => $_getN(19);
+  $1.FeedPaginationReply get paginationReply => $_getN(19);
   @$pb.TagNumber(20)
-  set paginationReply($2.FeedPaginationReply value) => $_setField(20, value);
+  set paginationReply($1.FeedPaginationReply value) => $_setField(20, value);
   @$pb.TagNumber(20)
   $core.bool hasPaginationReply() => $_has(19);
   @$pb.TagNumber(20)
   void clearPaginationReply() => $_clearField(20);
   @$pb.TagNumber(20)
-  $2.FeedPaginationReply ensurePaginationReply() => $_ensure(19);
+  $1.FeedPaginationReply ensurePaginationReply() => $_ensure(19);
 
   @$pb.TagNumber(21)
   $core.String get sessionId => $_getSZ(20);
@@ -3531,7 +3531,7 @@ class MainListReq extends $pb.GeneratedMessage {
     $fixnum.Int64? seekRpid,
     $core.String? filterTagName,
     Mode? mode,
-    $2.FeedPagination? pagination,
+    $1.FeedPagination? pagination,
     $core.Iterable<$fixnum.Int64>? clientRecallRpids,
     WordSearchParam? wordSearchParam,
   }) {
@@ -3576,8 +3576,8 @@ class MainListReq extends $pb.GeneratedMessage {
     ..aInt64(7, _omitFieldNames ? '' : 'seekRpid')
     ..aOS(8, _omitFieldNames ? '' : 'filterTagName')
     ..aE<Mode>(9, _omitFieldNames ? '' : 'mode', enumValues: Mode.values)
-    ..aOM<$2.FeedPagination>(10, _omitFieldNames ? '' : 'pagination',
-        subBuilder: $2.FeedPagination.$_createMessage)
+    ..aOM<$1.FeedPagination>(10, _omitFieldNames ? '' : 'pagination',
+        subBuilder: $1.FeedPagination.$_createMessage)
     ..p<$fixnum.Int64>(
         11, _omitFieldNames ? '' : 'clientRecallRpids', $pb.PbFieldType.K6)
     ..aOM<WordSearchParam>(12, _omitFieldNames ? '' : 'wordSearchParam',
@@ -3690,15 +3690,15 @@ class MainListReq extends $pb.GeneratedMessage {
   void clearMode() => $_clearField(9);
 
   @$pb.TagNumber(10)
-  $2.FeedPagination get pagination => $_getN(9);
+  $1.FeedPagination get pagination => $_getN(9);
   @$pb.TagNumber(10)
-  set pagination($2.FeedPagination value) => $_setField(10, value);
+  set pagination($1.FeedPagination value) => $_setField(10, value);
   @$pb.TagNumber(10)
   $core.bool hasPagination() => $_has(9);
   @$pb.TagNumber(10)
   void clearPagination() => $_clearField(10);
   @$pb.TagNumber(10)
-  $2.FeedPagination ensurePagination() => $_ensure(9);
+  $1.FeedPagination ensurePagination() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $pb.PbList<$fixnum.Int64> get clientRecallRpids => $_getList(10);
@@ -4386,8 +4386,8 @@ class MemberV2_Basic extends $pb.GeneratedMessage {
     $core.String? sex,
     $core.String? face,
     $fixnum.Int64? level,
-    $4.AvatarItem? avatarItem,
-    $5.NameRender? nameRender,
+    $3.AvatarItem? avatarItem,
+    $4.NameRender? nameRender,
   }) {
     final result = MemberV2_Basic._();
     if (mid != null) result.mid = mid;
@@ -4419,10 +4419,10 @@ class MemberV2_Basic extends $pb.GeneratedMessage {
     ..aOS(3, _omitFieldNames ? '' : 'sex')
     ..aOS(4, _omitFieldNames ? '' : 'face')
     ..aInt64(5, _omitFieldNames ? '' : 'level')
-    ..aOM<$4.AvatarItem>(6, _omitFieldNames ? '' : 'avatarItem',
-        subBuilder: $4.AvatarItem.$_createMessage)
-    ..aOM<$5.NameRender>(7, _omitFieldNames ? '' : 'nameRender',
-        subBuilder: $5.NameRender.$_createMessage)
+    ..aOM<$3.AvatarItem>(6, _omitFieldNames ? '' : 'avatarItem',
+        subBuilder: $3.AvatarItem.$_createMessage)
+    ..aOM<$4.NameRender>(7, _omitFieldNames ? '' : 'nameRender',
+        subBuilder: $4.NameRender.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -4493,26 +4493,26 @@ class MemberV2_Basic extends $pb.GeneratedMessage {
   void clearLevel() => $_clearField(5);
 
   @$pb.TagNumber(6)
-  $4.AvatarItem get avatarItem => $_getN(5);
+  $3.AvatarItem get avatarItem => $_getN(5);
   @$pb.TagNumber(6)
-  set avatarItem($4.AvatarItem value) => $_setField(6, value);
+  set avatarItem($3.AvatarItem value) => $_setField(6, value);
   @$pb.TagNumber(6)
   $core.bool hasAvatarItem() => $_has(5);
   @$pb.TagNumber(6)
   void clearAvatarItem() => $_clearField(6);
   @$pb.TagNumber(6)
-  $4.AvatarItem ensureAvatarItem() => $_ensure(5);
+  $3.AvatarItem ensureAvatarItem() => $_ensure(5);
 
   @$pb.TagNumber(7)
-  $5.NameRender get nameRender => $_getN(6);
+  $4.NameRender get nameRender => $_getN(6);
   @$pb.TagNumber(7)
-  set nameRender($5.NameRender value) => $_setField(7, value);
+  set nameRender($4.NameRender value) => $_setField(7, value);
   @$pb.TagNumber(7)
   $core.bool hasNameRender() => $_has(6);
   @$pb.TagNumber(7)
   void clearNameRender() => $_clearField(7);
   @$pb.TagNumber(7)
-  $5.NameRender ensureNameRender() => $_ensure(6);
+  $4.NameRender ensureNameRender() => $_ensure(6);
 }
 
 class MemberV2_Contractor extends $pb.GeneratedMessage {
@@ -5559,7 +5559,7 @@ class MemberV2 extends $pb.GeneratedMessage {
     MemberV2_Nft? nft,
     MemberV2_Senior? senior,
     MemberV2_Contractor? contractor,
-    $3.UserSailing? userSailing,
+    $2.UserSailing? userSailing,
   }) {
     final result = MemberV2._();
     if (basic != null) result.basic = basic;
@@ -5604,8 +5604,8 @@ class MemberV2 extends $pb.GeneratedMessage {
         subBuilder: MemberV2_Senior.$_createMessage)
     ..aOM<MemberV2_Contractor>(8, _omitFieldNames ? '' : 'contractor',
         subBuilder: MemberV2_Contractor.$_createMessage)
-    ..aOM<$3.UserSailing>(9, _omitFieldNames ? '' : 'userSailing',
-        subBuilder: $3.UserSailing.$_createMessage)
+    ..aOM<$2.UserSailing>(9, _omitFieldNames ? '' : 'userSailing',
+        subBuilder: $2.UserSailing.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -5717,18 +5717,18 @@ class MemberV2 extends $pb.GeneratedMessage {
   MemberV2_Contractor ensureContractor() => $_ensure(7);
 
   @$pb.TagNumber(9)
-  $3.UserSailing get userSailing => $_getN(8);
+  $2.UserSailing get userSailing => $_getN(8);
   @$pb.TagNumber(9)
-  set userSailing($3.UserSailing value) => $_setField(9, value);
+  set userSailing($2.UserSailing value) => $_setField(9, value);
   @$pb.TagNumber(9)
   $core.bool hasUserSailing() => $_has(8);
   @$pb.TagNumber(9)
   void clearUserSailing() => $_clearField(9);
   @$pb.TagNumber(9)
-  $3.UserSailing ensureUserSailing() => $_ensure(8);
+  $2.UserSailing ensureUserSailing() => $_ensure(8);
 }
 
-enum MixedCard_Item { question, fold, notSet }
+enum MixedCard_Item { question, fold, hotspot, notSet }
 
 class MixedCard extends $pb.GeneratedMessage {
   factory MixedCard({
@@ -5737,6 +5737,7 @@ class MixedCard extends $pb.GeneratedMessage {
     $fixnum.Int64? displayRank,
     QuestionCard? question,
     FoldCard? fold,
+    HotspotCard? hotspot,
   }) {
     final result = MixedCard._();
     if (type != null) result.type = type;
@@ -5744,6 +5745,7 @@ class MixedCard extends $pb.GeneratedMessage {
     if (displayRank != null) result.displayRank = displayRank;
     if (question != null) result.question = question;
     if (fold != null) result.fold = fold;
+    if (hotspot != null) result.hotspot = hotspot;
     return result;
   }
 
@@ -5759,6 +5761,7 @@ class MixedCard extends $pb.GeneratedMessage {
   static const $core.Map<$core.int, MixedCard_Item> _MixedCard_ItemByTag = {
     4: MixedCard_Item.question,
     5: MixedCard_Item.fold,
+    6: MixedCard_Item.hotspot,
     0: MixedCard_Item.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
@@ -5766,7 +5769,7 @@ class MixedCard extends $pb.GeneratedMessage {
       package: const $pb.PackageName(
           _omitMessageNames ? '' : 'bilibili.main.community.reply.v1'),
       createEmptyInstance: MixedCard.$_createMessage)
-    ..oo(0, [4, 5])
+    ..oo(0, [4, 5, 6])
     ..aE<MixedCard_Type>(1, _omitFieldNames ? '' : 'type',
         enumValues: MixedCard_Type.values)
     ..aOS(2, _omitFieldNames ? '' : 'oid')
@@ -5775,6 +5778,8 @@ class MixedCard extends $pb.GeneratedMessage {
         subBuilder: QuestionCard.$_createMessage)
     ..aOM<FoldCard>(5, _omitFieldNames ? '' : 'fold',
         subBuilder: FoldCard.$_createMessage)
+    ..aOM<HotspotCard>(6, _omitFieldNames ? '' : 'hotspot',
+        subBuilder: HotspotCard.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -5799,9 +5804,11 @@ class MixedCard extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(4)
   @$pb.TagNumber(5)
+  @$pb.TagNumber(6)
   MixedCard_Item whichItem() => _MixedCard_ItemByTag[$_whichOneof(0)]!;
   @$pb.TagNumber(4)
   @$pb.TagNumber(5)
+  @$pb.TagNumber(6)
   void clearItem() => $_clearField($_whichOneof(0));
 
   @$pb.TagNumber(1)
@@ -5852,6 +5859,17 @@ class MixedCard extends $pb.GeneratedMessage {
   void clearFold() => $_clearField(5);
   @$pb.TagNumber(5)
   FoldCard ensureFold() => $_ensure(4);
+
+  @$pb.TagNumber(6)
+  HotspotCard get hotspot => $_getN(5);
+  @$pb.TagNumber(6)
+  set hotspot(HotspotCard value) => $_setField(6, value);
+  @$pb.TagNumber(6)
+  $core.bool hasHotspot() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearHotspot() => $_clearField(6);
+  @$pb.TagNumber(6)
+  HotspotCard ensureHotspot() => $_ensure(5);
 }
 
 class Notice extends $pb.GeneratedMessage {
@@ -6631,7 +6649,7 @@ class PictureListReq extends $pb.GeneratedMessage {
     $core.String? extra,
     $fixnum.Int64? afterRpid,
     Mode? mode,
-    $2.FeedPagination? pagination,
+    $1.FeedPagination? pagination,
     $core.String? sessionId,
     $core.String? mainListSessionId,
   }) {
@@ -6666,8 +6684,8 @@ class PictureListReq extends $pb.GeneratedMessage {
     ..aOS(3, _omitFieldNames ? '' : 'extra')
     ..aInt64(4, _omitFieldNames ? '' : 'afterRpid')
     ..aE<Mode>(5, _omitFieldNames ? '' : 'mode', enumValues: Mode.values)
-    ..aOM<$2.FeedPagination>(6, _omitFieldNames ? '' : 'pagination',
-        subBuilder: $2.FeedPagination.$_createMessage)
+    ..aOM<$1.FeedPagination>(6, _omitFieldNames ? '' : 'pagination',
+        subBuilder: $1.FeedPagination.$_createMessage)
     ..aOS(7, _omitFieldNames ? '' : 'sessionId')
     ..aOS(8, _omitFieldNames ? '' : 'mainListSessionId')
     ..hasRequiredFields = false;
@@ -6740,15 +6758,15 @@ class PictureListReq extends $pb.GeneratedMessage {
   void clearMode() => $_clearField(5);
 
   @$pb.TagNumber(6)
-  $2.FeedPagination get pagination => $_getN(5);
+  $1.FeedPagination get pagination => $_getN(5);
   @$pb.TagNumber(6)
-  set pagination($2.FeedPagination value) => $_setField(6, value);
+  set pagination($1.FeedPagination value) => $_setField(6, value);
   @$pb.TagNumber(6)
   $core.bool hasPagination() => $_has(5);
   @$pb.TagNumber(6)
   void clearPagination() => $_clearField(6);
   @$pb.TagNumber(6)
-  $2.FeedPagination ensurePagination() => $_ensure(5);
+  $1.FeedPagination ensurePagination() => $_ensure(5);
 
   @$pb.TagNumber(7)
   $core.String get sessionId => $_getSZ(6);
@@ -6772,7 +6790,7 @@ class PictureListReq extends $pb.GeneratedMessage {
 class PictureListResp extends $pb.GeneratedMessage {
   factory PictureListResp({
     $core.Iterable<ReplyInfo>? replies,
-    $2.FeedPaginationReply? paginationReply,
+    $1.FeedPaginationReply? paginationReply,
     $core.String? sessionId,
     $core.String? reportParams,
     $core.String? contextFeature,
@@ -6804,8 +6822,8 @@ class PictureListResp extends $pb.GeneratedMessage {
       createEmptyInstance: PictureListResp.$_createMessage)
     ..pPM<ReplyInfo>(1, _omitFieldNames ? '' : 'replies',
         subBuilder: ReplyInfo.$_createMessage)
-    ..aOM<$2.FeedPaginationReply>(2, _omitFieldNames ? '' : 'paginationReply',
-        subBuilder: $2.FeedPaginationReply.$_createMessage)
+    ..aOM<$1.FeedPaginationReply>(2, _omitFieldNames ? '' : 'paginationReply',
+        subBuilder: $1.FeedPaginationReply.$_createMessage)
     ..aOS(3, _omitFieldNames ? '' : 'sessionId')
     ..aOS(4, _omitFieldNames ? '' : 'reportParams')
     ..aOS(5, _omitFieldNames ? '' : 'contextFeature')
@@ -6838,15 +6856,15 @@ class PictureListResp extends $pb.GeneratedMessage {
   $pb.PbList<ReplyInfo> get replies => $_getList(0);
 
   @$pb.TagNumber(2)
-  $2.FeedPaginationReply get paginationReply => $_getN(1);
+  $1.FeedPaginationReply get paginationReply => $_getN(1);
   @$pb.TagNumber(2)
-  set paginationReply($2.FeedPaginationReply value) => $_setField(2, value);
+  set paginationReply($1.FeedPaginationReply value) => $_setField(2, value);
   @$pb.TagNumber(2)
   $core.bool hasPaginationReply() => $_has(1);
   @$pb.TagNumber(2)
   void clearPaginationReply() => $_clearField(2);
   @$pb.TagNumber(2)
-  $2.FeedPaginationReply ensurePaginationReply() => $_ensure(1);
+  $1.FeedPaginationReply ensurePaginationReply() => $_ensure(1);
 
   @$pb.TagNumber(3)
   $core.String get sessionId => $_getSZ(2);
@@ -9817,6 +9835,158 @@ class ReplyInAppPushPayload extends $pb.GeneratedMessage {
   ReplyInAppPushPayload_SubjectMaterial ensureSubjectMaterial() => $_ensure(3);
 }
 
+class ParentReplyMember extends $pb.GeneratedMessage {
+  factory ParentReplyMember({
+    $fixnum.Int64? mid,
+    $core.String? name,
+  }) {
+    final result = ParentReplyMember._();
+    if (mid != null) result.mid = mid;
+    if (name != null) result.name = name;
+    return result;
+  }
+
+  ParentReplyMember._();
+
+  factory ParentReplyMember.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      ParentReplyMember()..mergeFromBuffer(data, registry);
+  factory ParentReplyMember.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      ParentReplyMember()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ParentReplyMember',
+      package: const $pb.PackageName(
+          _omitMessageNames ? '' : 'bilibili.main.community.reply.v1'),
+      createEmptyInstance: ParentReplyMember.$_createMessage)
+    ..aInt64(1, _omitFieldNames ? '' : 'mid')
+    ..aOS(2, _omitFieldNames ? '' : 'name')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ParentReplyMember clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ParentReplyMember copyWith(void Function(ParentReplyMember) updates) =>
+      super.copyWith((message) => updates(message as ParentReplyMember))
+          as ParentReplyMember;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use ParentReplyMember() / ParentReplyMember.new instead')
+  static ParentReplyMember create() => ParentReplyMember._();
+  static $pb.GeneratedMessage $_createMessage() => ParentReplyMember._();
+  @$core.override
+  ParentReplyMember createEmptyInstance() => ParentReplyMember._();
+  @$core.pragma('dart2js:noInline')
+  static ParentReplyMember getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ParentReplyMember>(
+          ParentReplyMember.$_createMessage);
+  static ParentReplyMember? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get mid => $_getI64(0);
+  @$pb.TagNumber(1)
+  set mid($fixnum.Int64 value) => $_setInt64(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasMid() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMid() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get name => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set name($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearName() => $_clearField(2);
+}
+
+class HotReplyInfo extends $pb.GeneratedMessage {
+  factory HotReplyInfo({
+    $core.String? arcTitle,
+    $core.int? opinionIdx,
+    $core.String? fromText,
+  }) {
+    final result = HotReplyInfo._();
+    if (arcTitle != null) result.arcTitle = arcTitle;
+    if (opinionIdx != null) result.opinionIdx = opinionIdx;
+    if (fromText != null) result.fromText = fromText;
+    return result;
+  }
+
+  HotReplyInfo._();
+
+  factory HotReplyInfo.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      HotReplyInfo()..mergeFromBuffer(data, registry);
+  factory HotReplyInfo.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      HotReplyInfo()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'HotReplyInfo',
+      package: const $pb.PackageName(
+          _omitMessageNames ? '' : 'bilibili.main.community.reply.v1'),
+      createEmptyInstance: HotReplyInfo.$_createMessage)
+    ..aOS(1, _omitFieldNames ? '' : 'arcTitle')
+    ..aI(2, _omitFieldNames ? '' : 'opinionIdx')
+    ..aOS(3, _omitFieldNames ? '' : 'fromText')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  HotReplyInfo clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  HotReplyInfo copyWith(void Function(HotReplyInfo) updates) =>
+      super.copyWith((message) => updates(message as HotReplyInfo))
+          as HotReplyInfo;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use HotReplyInfo() / HotReplyInfo.new instead')
+  static HotReplyInfo create() => HotReplyInfo._();
+  static $pb.GeneratedMessage $_createMessage() => HotReplyInfo._();
+  @$core.override
+  HotReplyInfo createEmptyInstance() => HotReplyInfo._();
+  @$core.pragma('dart2js:noInline')
+  static HotReplyInfo getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<HotReplyInfo>(
+          HotReplyInfo.$_createMessage);
+  static HotReplyInfo? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get arcTitle => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set arcTitle($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasArcTitle() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearArcTitle() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get opinionIdx => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set opinionIdx($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasOpinionIdx() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearOpinionIdx() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get fromText => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set fromText($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasFromText() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearFromText() => $_clearField(3);
+}
+
 class ReplyInfo extends $pb.GeneratedMessage {
   factory ReplyInfo({
     $core.Iterable<ReplyInfo>? replies,
@@ -9836,7 +10006,8 @@ class ReplyInfo extends $pb.GeneratedMessage {
     MemberV2? memberV2,
     $core.String? trackInfo,
     Content? translatedContent,
-    Member? parentReplyMember,
+    ParentReplyMember? parentReplyMember,
+    HotReplyInfo? hotInfo,
   }) {
     final result = ReplyInfo._();
     if (replies != null) result.replies.addAll(replies);
@@ -9857,6 +10028,7 @@ class ReplyInfo extends $pb.GeneratedMessage {
     if (trackInfo != null) result.trackInfo = trackInfo;
     if (translatedContent != null) result.translatedContent = translatedContent;
     if (parentReplyMember != null) result.parentReplyMember = parentReplyMember;
+    if (hotInfo != null) result.hotInfo = hotInfo;
     return result;
   }
 
@@ -9897,8 +10069,10 @@ class ReplyInfo extends $pb.GeneratedMessage {
     ..aOS(16, _omitFieldNames ? '' : 'trackInfo')
     ..aOM<Content>(17, _omitFieldNames ? '' : 'translatedContent',
         subBuilder: Content.$_createMessage)
-    ..aOM<Member>(100, _omitFieldNames ? '' : 'parentReplyMember',
-        subBuilder: Member.$_createMessage)
+    ..aOM<ParentReplyMember>(18, _omitFieldNames ? '' : 'parentReplyMember',
+        subBuilder: ParentReplyMember.$_createMessage)
+    ..aOM<HotReplyInfo>(19, _omitFieldNames ? '' : 'hotInfo',
+        subBuilder: HotReplyInfo.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -10067,6 +10241,7 @@ class ReplyInfo extends $pb.GeneratedMessage {
   @$pb.TagNumber(16)
   void clearTrackInfo() => $_clearField(16);
 
+  /// 翻译结果(仅在翻译请求中返回)
   @$pb.TagNumber(17)
   Content get translatedContent => $_getN(16);
   @$pb.TagNumber(17)
@@ -10078,16 +10253,27 @@ class ReplyInfo extends $pb.GeneratedMessage {
   @$pb.TagNumber(17)
   Content ensureTranslatedContent() => $_ensure(16);
 
-  @$pb.TagNumber(100)
-  Member get parentReplyMember => $_getN(17);
-  @$pb.TagNumber(100)
-  set parentReplyMember(Member value) => $_setField(100, value);
-  @$pb.TagNumber(100)
+  @$pb.TagNumber(18)
+  ParentReplyMember get parentReplyMember => $_getN(17);
+  @$pb.TagNumber(18)
+  set parentReplyMember(ParentReplyMember value) => $_setField(18, value);
+  @$pb.TagNumber(18)
   $core.bool hasParentReplyMember() => $_has(17);
-  @$pb.TagNumber(100)
-  void clearParentReplyMember() => $_clearField(100);
-  @$pb.TagNumber(100)
-  Member ensureParentReplyMember() => $_ensure(17);
+  @$pb.TagNumber(18)
+  void clearParentReplyMember() => $_clearField(18);
+  @$pb.TagNumber(18)
+  ParentReplyMember ensureParentReplyMember() => $_ensure(17);
+
+  @$pb.TagNumber(19)
+  HotReplyInfo get hotInfo => $_getN(18);
+  @$pb.TagNumber(19)
+  set hotInfo(HotReplyInfo value) => $_setField(19, value);
+  @$pb.TagNumber(19)
+  $core.bool hasHotInfo() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearHotInfo() => $_clearField(19);
+  @$pb.TagNumber(19)
+  HotReplyInfo ensureHotInfo() => $_ensure(18);
 }
 
 class ReplyInfoReply extends $pb.GeneratedMessage {
@@ -10285,7 +10471,7 @@ enum RichText_Item { note, opus, notSet }
 class RichText extends $pb.GeneratedMessage {
   factory RichText({
     RichTextNote? note,
-    $6.OpusItem? opus,
+    $5.OpusItem? opus,
   }) {
     final result = RichText._();
     if (note != null) result.note = note;
@@ -10315,8 +10501,8 @@ class RichText extends $pb.GeneratedMessage {
     ..oo(0, [1, 2])
     ..aOM<RichTextNote>(1, _omitFieldNames ? '' : 'note',
         subBuilder: RichTextNote.$_createMessage)
-    ..aOM<$6.OpusItem>(2, _omitFieldNames ? '' : 'opus',
-        subBuilder: $6.OpusItem.$_createMessage)
+    ..aOM<$5.OpusItem>(2, _omitFieldNames ? '' : 'opus',
+        subBuilder: $5.OpusItem.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -10358,15 +10544,15 @@ class RichText extends $pb.GeneratedMessage {
   RichTextNote ensureNote() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $6.OpusItem get opus => $_getN(1);
+  $5.OpusItem get opus => $_getN(1);
   @$pb.TagNumber(2)
-  set opus($6.OpusItem value) => $_setField(2, value);
+  set opus($5.OpusItem value) => $_setField(2, value);
   @$pb.TagNumber(2)
   $core.bool hasOpus() => $_has(1);
   @$pb.TagNumber(2)
   void clearOpus() => $_clearField(2);
   @$pb.TagNumber(2)
-  $6.OpusItem ensureOpus() => $_ensure(1);
+  $5.OpusItem ensureOpus() => $_ensure(1);
 }
 
 class RichTextNote extends $pb.GeneratedMessage {
@@ -14527,6 +14713,7 @@ class WordSearchParam extends $pb.GeneratedMessage {
   void clearShownCount() => $_clearField(1);
 }
 
+/// 翻译评论请求
 class TranslateReplyReq extends $pb.GeneratedMessage {
   factory TranslateReplyReq({
     $fixnum.Int64? type,
@@ -14581,6 +14768,7 @@ class TranslateReplyReq extends $pb.GeneratedMessage {
           TranslateReplyReq.$_createMessage);
   static TranslateReplyReq? _defaultInstance;
 
+  /// 业务type
   @$pb.TagNumber(1)
   $fixnum.Int64 get type => $_getI64(0);
   @$pb.TagNumber(1)
@@ -14590,6 +14778,7 @@ class TranslateReplyReq extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   void clearType() => $_clearField(1);
 
+  /// 稿件id
   @$pb.TagNumber(2)
   $fixnum.Int64 get oid => $_getI64(1);
   @$pb.TagNumber(2)
@@ -14599,10 +14788,12 @@ class TranslateReplyReq extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   void clearOid() => $_clearField(2);
 
+  /// 评论id
   @$pb.TagNumber(3)
   $pb.PbList<$fixnum.Int64> get rpids => $_getList(2);
 }
 
+/// 翻译评论请求响应
 class TranslateReplyResp extends $pb.GeneratedMessage {
   factory TranslateReplyResp({
     $core.Iterable<$core.MapEntry<$fixnum.Int64, ReplyInfo>>? translatedReplies,
@@ -14662,10 +14853,221 @@ class TranslateReplyResp extends $pb.GeneratedMessage {
   $pb.PbMap<$fixnum.Int64, ReplyInfo> get translatedReplies => $_getMap(0);
 }
 
+class HotspotCard extends $pb.GeneratedMessage {
+  factory HotspotCard({
+    $core.String? icon,
+    $core.String? title,
+    $core.String? titleText,
+    $fixnum.Int64? rpid,
+    $fixnum.Int64? oid,
+    Content? content,
+    MemberV2? member,
+    $fixnum.Int64? hotspotId,
+    ReplyControl? replyControl,
+    $fixnum.Int64? like,
+    $core.String? arcTitle,
+    $core.String? fromText,
+    $core.int? type,
+  }) {
+    final result = HotspotCard._();
+    if (icon != null) result.icon = icon;
+    if (title != null) result.title = title;
+    if (titleText != null) result.titleText = titleText;
+    if (rpid != null) result.rpid = rpid;
+    if (oid != null) result.oid = oid;
+    if (content != null) result.content = content;
+    if (member != null) result.member = member;
+    if (hotspotId != null) result.hotspotId = hotspotId;
+    if (replyControl != null) result.replyControl = replyControl;
+    if (like != null) result.like = like;
+    if (arcTitle != null) result.arcTitle = arcTitle;
+    if (fromText != null) result.fromText = fromText;
+    if (type != null) result.type = type;
+    return result;
+  }
+
+  HotspotCard._();
+
+  factory HotspotCard.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      HotspotCard()..mergeFromBuffer(data, registry);
+  factory HotspotCard.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      HotspotCard()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'HotspotCard',
+      package: const $pb.PackageName(
+          _omitMessageNames ? '' : 'bilibili.main.community.reply.v1'),
+      createEmptyInstance: HotspotCard.$_createMessage)
+    ..aOS(1, _omitFieldNames ? '' : 'icon')
+    ..aOS(2, _omitFieldNames ? '' : 'title')
+    ..aOS(3, _omitFieldNames ? '' : 'titleText')
+    ..aInt64(4, _omitFieldNames ? '' : 'rpid')
+    ..aInt64(5, _omitFieldNames ? '' : 'oid')
+    ..aOM<Content>(6, _omitFieldNames ? '' : 'content',
+        subBuilder: Content.$_createMessage)
+    ..aOM<MemberV2>(7, _omitFieldNames ? '' : 'member',
+        subBuilder: MemberV2.$_createMessage)
+    ..aInt64(8, _omitFieldNames ? '' : 'hotspotId')
+    ..aOM<ReplyControl>(9, _omitFieldNames ? '' : 'replyControl',
+        subBuilder: ReplyControl.$_createMessage)
+    ..aInt64(10, _omitFieldNames ? '' : 'like')
+    ..aOS(11, _omitFieldNames ? '' : 'arcTitle')
+    ..aOS(12, _omitFieldNames ? '' : 'fromText')
+    ..aI(13, _omitFieldNames ? '' : 'type')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  HotspotCard clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  HotspotCard copyWith(void Function(HotspotCard) updates) =>
+      super.copyWith((message) => updates(message as HotspotCard))
+          as HotspotCard;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  @$core.Deprecated('Use HotspotCard() / HotspotCard.new instead')
+  static HotspotCard create() => HotspotCard._();
+  static $pb.GeneratedMessage $_createMessage() => HotspotCard._();
+  @$core.override
+  HotspotCard createEmptyInstance() => HotspotCard._();
+  @$core.pragma('dart2js:noInline')
+  static HotspotCard getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<HotspotCard>(
+          HotspotCard.$_createMessage);
+  static HotspotCard? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get icon => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set icon($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasIcon() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearIcon() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get title => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set title($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasTitle() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTitle() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get titleText => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set titleText($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasTitleText() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTitleText() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get rpid => $_getI64(3);
+  @$pb.TagNumber(4)
+  set rpid($fixnum.Int64 value) => $_setInt64(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasRpid() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearRpid() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $fixnum.Int64 get oid => $_getI64(4);
+  @$pb.TagNumber(5)
+  set oid($fixnum.Int64 value) => $_setInt64(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasOid() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearOid() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  Content get content => $_getN(5);
+  @$pb.TagNumber(6)
+  set content(Content value) => $_setField(6, value);
+  @$pb.TagNumber(6)
+  $core.bool hasContent() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearContent() => $_clearField(6);
+  @$pb.TagNumber(6)
+  Content ensureContent() => $_ensure(5);
+
+  @$pb.TagNumber(7)
+  MemberV2 get member => $_getN(6);
+  @$pb.TagNumber(7)
+  set member(MemberV2 value) => $_setField(7, value);
+  @$pb.TagNumber(7)
+  $core.bool hasMember() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearMember() => $_clearField(7);
+  @$pb.TagNumber(7)
+  MemberV2 ensureMember() => $_ensure(6);
+
+  @$pb.TagNumber(8)
+  $fixnum.Int64 get hotspotId => $_getI64(7);
+  @$pb.TagNumber(8)
+  set hotspotId($fixnum.Int64 value) => $_setInt64(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasHotspotId() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearHotspotId() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  ReplyControl get replyControl => $_getN(8);
+  @$pb.TagNumber(9)
+  set replyControl(ReplyControl value) => $_setField(9, value);
+  @$pb.TagNumber(9)
+  $core.bool hasReplyControl() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearReplyControl() => $_clearField(9);
+  @$pb.TagNumber(9)
+  ReplyControl ensureReplyControl() => $_ensure(8);
+
+  @$pb.TagNumber(10)
+  $fixnum.Int64 get like => $_getI64(9);
+  @$pb.TagNumber(10)
+  set like($fixnum.Int64 value) => $_setInt64(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasLike() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearLike() => $_clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get arcTitle => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set arcTitle($core.String value) => $_setString(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasArcTitle() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearArcTitle() => $_clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get fromText => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set fromText($core.String value) => $_setString(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasFromText() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearFromText() => $_clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.int get type => $_getIZ(12);
+  @$pb.TagNumber(13)
+  set type($core.int value) => $_setSignedInt32(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasType() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearType() => $_clearField(13);
+}
+
 class FoldCard extends $pb.GeneratedMessage {
   factory FoldCard({
     $core.String? bottomText,
-    $2.FeedPagination? foldPagination,
+    $1.FeedPagination? foldPagination,
   }) {
     final result = FoldCard._();
     if (bottomText != null) result.bottomText = bottomText;
@@ -14688,8 +15090,8 @@ class FoldCard extends $pb.GeneratedMessage {
           _omitMessageNames ? '' : 'bilibili.main.community.reply.v1'),
       createEmptyInstance: FoldCard.$_createMessage)
     ..aOS(1, _omitFieldNames ? '' : 'bottomText')
-    ..aOM<$2.FeedPagination>(2, _omitFieldNames ? '' : 'foldPagination',
-        subBuilder: $2.FeedPagination.$_createMessage)
+    ..aOM<$1.FeedPagination>(2, _omitFieldNames ? '' : 'foldPagination',
+        subBuilder: $1.FeedPagination.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -14722,15 +15124,15 @@ class FoldCard extends $pb.GeneratedMessage {
   void clearBottomText() => $_clearField(1);
 
   @$pb.TagNumber(2)
-  $2.FeedPagination get foldPagination => $_getN(1);
+  $1.FeedPagination get foldPagination => $_getN(1);
   @$pb.TagNumber(2)
-  set foldPagination($2.FeedPagination value) => $_setField(2, value);
+  set foldPagination($1.FeedPagination value) => $_setField(2, value);
   @$pb.TagNumber(2)
   $core.bool hasFoldPagination() => $_has(1);
   @$pb.TagNumber(2)
   void clearFoldPagination() => $_clearField(2);
   @$pb.TagNumber(2)
-  $2.FeedPagination ensureFoldPagination() => $_ensure(1);
+  $1.FeedPagination ensureFoldPagination() => $_ensure(1);
 }
 
 class FoldListReq extends $pb.GeneratedMessage {
@@ -14738,7 +15140,7 @@ class FoldListReq extends $pb.GeneratedMessage {
     $fixnum.Int64? oid,
     $fixnum.Int64? type,
     $core.String? extra,
-    $2.FeedPagination? pagination,
+    $1.FeedPagination? pagination,
   }) {
     final result = FoldListReq._();
     if (oid != null) result.oid = oid;
@@ -14765,8 +15167,8 @@ class FoldListReq extends $pb.GeneratedMessage {
     ..aInt64(1, _omitFieldNames ? '' : 'oid')
     ..aInt64(2, _omitFieldNames ? '' : 'type')
     ..aOS(3, _omitFieldNames ? '' : 'extra')
-    ..aOM<$2.FeedPagination>(4, _omitFieldNames ? '' : 'pagination',
-        subBuilder: $2.FeedPagination.$_createMessage)
+    ..aOM<$1.FeedPagination>(4, _omitFieldNames ? '' : 'pagination',
+        subBuilder: $1.FeedPagination.$_createMessage)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -14819,21 +15221,21 @@ class FoldListReq extends $pb.GeneratedMessage {
   void clearExtra() => $_clearField(3);
 
   @$pb.TagNumber(4)
-  $2.FeedPagination get pagination => $_getN(3);
+  $1.FeedPagination get pagination => $_getN(3);
   @$pb.TagNumber(4)
-  set pagination($2.FeedPagination value) => $_setField(4, value);
+  set pagination($1.FeedPagination value) => $_setField(4, value);
   @$pb.TagNumber(4)
   $core.bool hasPagination() => $_has(3);
   @$pb.TagNumber(4)
   void clearPagination() => $_clearField(4);
   @$pb.TagNumber(4)
-  $2.FeedPagination ensurePagination() => $_ensure(3);
+  $1.FeedPagination ensurePagination() => $_ensure(3);
 }
 
 class FoldListResp extends $pb.GeneratedMessage {
   factory FoldListResp({
     $core.Iterable<ReplyInfo>? replies,
-    $2.FeedPaginationReply? paginationReply,
+    $1.FeedPaginationReply? paginationReply,
     $core.String? title,
     SubjectControl? subjectControl,
   }) {
@@ -14861,8 +15263,8 @@ class FoldListResp extends $pb.GeneratedMessage {
       createEmptyInstance: FoldListResp.$_createMessage)
     ..pPM<ReplyInfo>(1, _omitFieldNames ? '' : 'replies',
         subBuilder: ReplyInfo.$_createMessage)
-    ..aOM<$2.FeedPaginationReply>(2, _omitFieldNames ? '' : 'paginationReply',
-        subBuilder: $2.FeedPaginationReply.$_createMessage)
+    ..aOM<$1.FeedPaginationReply>(2, _omitFieldNames ? '' : 'paginationReply',
+        subBuilder: $1.FeedPaginationReply.$_createMessage)
     ..aOS(3, _omitFieldNames ? '' : 'title')
     ..aOM<SubjectControl>(4, _omitFieldNames ? '' : 'subjectControl',
         subBuilder: SubjectControl.$_createMessage)
@@ -14894,15 +15296,15 @@ class FoldListResp extends $pb.GeneratedMessage {
   $pb.PbList<ReplyInfo> get replies => $_getList(0);
 
   @$pb.TagNumber(2)
-  $2.FeedPaginationReply get paginationReply => $_getN(1);
+  $1.FeedPaginationReply get paginationReply => $_getN(1);
   @$pb.TagNumber(2)
-  set paginationReply($2.FeedPaginationReply value) => $_setField(2, value);
+  set paginationReply($1.FeedPaginationReply value) => $_setField(2, value);
   @$pb.TagNumber(2)
   $core.bool hasPaginationReply() => $_has(1);
   @$pb.TagNumber(2)
   void clearPaginationReply() => $_clearField(2);
   @$pb.TagNumber(2)
-  $2.FeedPaginationReply ensurePaginationReply() => $_ensure(1);
+  $1.FeedPaginationReply ensurePaginationReply() => $_ensure(1);
 
   @$pb.TagNumber(3)
   $core.String get title => $_getSZ(2);

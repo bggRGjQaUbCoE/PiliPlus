@@ -53,6 +53,7 @@ class BiliDownloadEntryInfo with MultiSelectData {
   List<SegmentItemModel>? segments;
   SeasonInfo? seasonInfo;
   List<Subtitle>? subtitles;
+  bool forceCachePlayInfo;
   List<ViewPoint>? viewPoints;
   Volume? volume;
 
@@ -195,6 +196,7 @@ class BiliDownloadEntryInfo with MultiSelectData {
     this.segments,
     this.seasonInfo,
     this.subtitles,
+    this.forceCachePlayInfo = false,
     this.viewPoints,
     this.volume,
   });
@@ -244,6 +246,7 @@ class BiliDownloadEntryInfo with MultiSelectData {
         ? SeasonInfo.fromJson(json['season_info'] as Map<String, dynamic>)
         : null,
     subtitles: LocalSubtitle.fromCache(json['subtitles'], entryDirPath),
+    forceCachePlayInfo: json['force_cache_play_info'] == true,
     viewPoints: ViewPoint.fromCache(json['view_points']),
     volume: .fromCache(json['volume']),
   );
@@ -280,6 +283,7 @@ class BiliDownloadEntryInfo with MultiSelectData {
     'segments': ?segments?.map((e) => e.toJson()).toList(),
     'season_info': ?seasonInfo?.toJson(),
     'subtitles': ?subtitles?.map((e) => e.toJson()).toList(),
+    if (forceCachePlayInfo) 'force_cache_play_info': true,
     'view_points': ?viewPoints?.map((e) => e.toJson()).toList(),
     'volume': ?volume?.toJson(),
   };

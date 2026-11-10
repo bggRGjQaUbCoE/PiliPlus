@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 class LaterBaseController extends GetxController {
   RxBool enableMultiSelect = false.obs;
   RxInt checkedCount = 0.obs;
+  final isCachingAll = false.obs;
 
   RxList<int> counts = List.filled(LaterViewType.values.length, -1).obs;
 

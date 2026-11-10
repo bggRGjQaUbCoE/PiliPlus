@@ -194,6 +194,20 @@ class _LaterPageState extends State<LaterPage>
       child: AppBar(
         title: const Text('稍后再看'),
         actions: [
+          Obx(
+            () => IconButton(
+              tooltip: '一键缓存全部（含字幕）',
+              onPressed: _baseCtr.isCachingAll.value
+                  ? null
+                  : () => currCtr().cacheAll(),
+              icon: _baseCtr.isCachingAll.value
+                  ? const SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.download_for_offline_outlined),
+            ),
+          ),
           IconButton(
             tooltip: '搜索',
             onPressed: () {

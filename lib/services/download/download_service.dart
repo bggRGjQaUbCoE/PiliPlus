@@ -27,6 +27,7 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/subtitle_utils.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart'
     show kDebugMode, debugPrint, VoidCallback;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -131,21 +132,16 @@ class DownloadService extends GetxService {
     return result;
   }
 
-  void downloadVideo({
+  Future<bool> downloadVideo({
     required Part page,
     VideoDetailData? videoDetail,
     ugc.EpisodeItem? videoArc,
     required VideoQuality videoQuality,
     AudioQuality? audioQuality,
     SeasonInfo? seasonInfo,
+    bool forceCachePlayInfo = false,
   }) {
     final cid = page.cid!;
-    if (downloadList.indexWhere((e) => e.cid == cid) != -1) {
-      return;
-    }
-    if (waitDownloadQueue.indexWhere((e) => e.cid == cid) != -1) {
-      return;
-    }
     final pageData = PageInfo(
       cid: cid,
       page: page.page!,
@@ -191,24 +187,20 @@ class DownloadService extends GetxService {
       ownerName: videoDetail?.owner?.name ?? videoArc?.arc?.author?.name,
       pageData: pageData,
       seasonInfo: seasonInfo,
+      forceCachePlayInfo: forceCachePlayInfo,
     );
-    _createDownload(entry);
+    return _createDownload(entry);
   }
 
-  void downloadBangumi({
+  Future<bool> downloadBangumi({
     required int index,
     required PgcInfoModel pgcItem,
     required pgc.EpisodeItem episode,
     required VideoQuality quality,
     AudioQuality? audioQuality,
+    bool forceCachePlayInfo = false,
   }) {
     final cid = episode.cid!;
-    if (downloadList.indexWhere((e) => e.cid == cid) != -1) {
-      return;
-    }
-    if (waitDownloadQueue.indexWhere((e) => e.cid == cid) != -1) {
-      return;
-    }
     final currentTime = DateTime.now().millisecondsSinceEpoch;
     final source = SourceInfo(
       avId: episode.aid!,
@@ -262,12 +254,49 @@ class DownloadService extends GetxService {
       ownerId: pgcItem.upInfo?.mid,
       ownerName: pgcItem.upInfo?.uname,
       pageData: null,
+      forceCachePlayInfo: forceCachePlayInfo,
     );
-    _createDownload(entry);
+    return _createDownload(entry);
   }
 
-  Future<void> _createDownload(BiliDownloadEntryInfo entry) =>
-      _downloadLock.synchronized(() => _writeNewDownload(entry));
+  Future<bool> _createDownload(BiliDownloadEntryInfo entry) =>
+      _downloadLock.synchronized(() async {
+        final existing = downloadList
+            .followedBy(waitDownloadQueue)
+            .firstWhereOrNull((item) => item.cid == entry.cid);
+        if (existing != null) {
+          if (entry.forceCachePlayInfo) {
+            if (!existing.forceCachePlayInfo) {
+              existing.forceCachePlayInfo = true;
+              await _updateBiliDownloadEntryJson(existing);
+            }
+            if (existing.isCompleted ||
+                identical(curDownload.value, existing)) {
+              final tracks = existing.subtitles?.whereType<LocalSubtitle>();
+              if (tracks == null ||
+                  !tracks.any((track) => File(track.path).existsSync())) {
+                await updatePlayInfo(existing);
+              }
+            }
+            if (!existing.isCompleted &&
+                (_isDownloadFailure(existing.status) ||
+                    existing.status == DownloadStatus.pause)) {
+              existing.status = DownloadStatus.wait;
+              waitDownloadQueue.refresh();
+              nextDownload(existing);
+              return true;
+            }
+            if (!existing.isCompleted &&
+                existing.status == DownloadStatus.wait &&
+                curDownload.value?.status.isDownloading != true) {
+              nextDownload(existing);
+            }
+          }
+          return false;
+        }
+        await _writeNewDownload(entry);
+        return true;
+      });
 
   Future<void> _writeNewDownload(BiliDownloadEntryInfo entry) async {
     final entryDir = await _getDownloadEntryDir(entry);
@@ -280,7 +309,7 @@ class DownloadService extends GetxService {
       ..status = DownloadStatus.wait;
     waitDownloadQueue.add(entry);
     if (curDownload.value?.status.isDownloading != true) {
-      queueDownload(entry);
+      nextDownload(entry);
     }
   }
 
@@ -657,7 +686,7 @@ class DownloadService extends GetxService {
 
   Future<void> _startDownload(BiliDownloadEntryInfo entry) async {
     try {
-      if (!await downloadDanmaku(entry: entry)) {
+      if (!await downloadDanmaku(entry: entry) && !entry.forceCachePlayInfo) {
         return;
       }
 
@@ -695,7 +724,7 @@ class DownloadService extends GetxService {
       await Future.wait([
         mediaJsonFile.writeAsString(jsonEncode(mediaFileInfo.toJson())),
         _downloadCover(entry: entry),
-        if (cachePlayInfo) updatePlayInfo(entry),
+        if (cachePlayInfo || entry.forceCachePlayInfo) updatePlayInfo(entry),
       ]);
 
       if (curDownload.value != entry ||
@@ -746,6 +775,8 @@ class DownloadService extends GetxService {
       if (kDebugMode) {
         debugPrint('get download url error: $e\n\n$s');
       }
+    } finally {
+      _advanceAfterBatchFailure();
     }
   }
 
@@ -771,6 +802,7 @@ class DownloadService extends GetxService {
   void _onDone([Object? error]) {
     if (error != null) {
       _updateCurStatus(_downloadManager?.status ?? DownloadStatus.pause);
+      _advanceAfterBatchFailure();
       return;
     }
 
@@ -787,6 +819,7 @@ class DownloadService extends GetxService {
         _completeDownload(curEntryInfo);
       } else {
         _updateBiliDownloadEntryJson(curEntryInfo);
+        _advanceAfterBatchFailure();
       }
     }
   }
@@ -803,6 +836,7 @@ class DownloadService extends GetxService {
               ? DownloadStatus.failDownloadAudio
               : status,
         );
+        _advanceAfterBatchFailure();
       }
     }
   }
@@ -828,10 +862,55 @@ class DownloadService extends GetxService {
     nextDownload();
   }
 
-  void nextDownload() {
-    if (waitDownloadQueue.isNotEmpty) {
-      queueDownload(waitDownloadQueue.first);
+  static bool _isDownloadFailure(DownloadStatus status) => switch (status) {
+    DownloadStatus.failDownload ||
+    DownloadStatus.failDownloadAudio ||
+    DownloadStatus.failDanmaku ||
+    DownloadStatus.failPlayUrl => true,
+    _ => false,
+  };
+
+  void _advanceAfterBatchFailure() {
+    final entry = curDownload.value;
+    if (entry == null ||
+        !entry.forceCachePlayInfo ||
+        !_isDownloadFailure(entry.status)) {
+      return;
     }
+    unawaited(
+      _downloadLock.synchronized(() async {
+        if (!identical(curDownload.value, entry) ||
+            !_isDownloadFailure(entry.status)) {
+          return;
+        }
+        final status = entry.status;
+        await cancelDownload(isDelete: true, downloadNext: false);
+        entry.status = status;
+        waitDownloadQueue.refresh();
+        nextDownload();
+      }),
+    );
+  }
+
+  void nextDownload([BiliDownloadEntryInfo? preferred]) {
+    unawaited(
+      _downloadLock.synchronized(() async {
+        final status = curDownload.value?.status;
+        if (status?.isDownloading == true ||
+            status == DownloadStatus.completed) {
+          return;
+        }
+        final entry = preferred != null && waitDownloadQueue.contains(preferred)
+            ? preferred
+            : waitDownloadQueue.firstWhereOrNull(
+                    (item) => item.status == DownloadStatus.wait,
+                  ) ??
+                  waitDownloadQueue.firstWhereOrNull(
+                    (item) => !item.forceCachePlayInfo,
+                  );
+        if (entry != null) await _prepareDownload(entry);
+      }),
+    );
   }
 
   Future<bool> deleteDownload({

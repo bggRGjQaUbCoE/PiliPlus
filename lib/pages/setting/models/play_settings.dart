@@ -337,7 +337,8 @@ List<SettingsModel> get playSettings => [
       defaultVal: false,
       onChanged: Platform.isAndroid
           ? (val) {
-              if (val && !videoPlayerServiceHandler!.enableBackgroundPlay) {
+              if (val &&
+                  videoPlayerServiceHandler?.enableBackgroundPlay == false) {
                 SmartDialog.showToast('建议开启后台音频服务');
               }
             }
@@ -394,8 +395,12 @@ List<SettingsModel> get playSettings => [
       leading: const Icon(Icons.volume_up_outlined),
       setKey: SettingBoxKey.enableBackgroundPlay,
       defaultVal: true,
-      onChanged: (value) =>
-          videoPlayerServiceHandler!.enableBackgroundPlay = value,
+      onChanged: (value) {
+        final audioService = videoPlayerServiceHandler;
+        if (audioService != null) {
+          audioService.enableBackgroundPlay = value;
+        }
+      },
     ),
   PopupModel(
     title: '播放顺序',

@@ -1,3 +1,4 @@
+import 'dart:async' show unawaited;
 import 'dart:io';
 
 import 'package:PiliPlus/build_config.dart';
@@ -54,6 +55,17 @@ WebViewEnvironment? webViewEnvironment;
 
 EdgeInsets? tmpPadding;
 
+Future<void> _runOptionalStartupTask(
+  String taskName,
+  Future<void> Function() initialize,
+) async {
+  try {
+    await initialize();
+  } catch (error, stackTrace) {
+    debugPrint('Piliterra 启动任务「$taskName」失败：$error\n$stackTrace');
+  }
+}
+
 Future<void> _initDownPath() async {
   if (PlatformUtils.isDesktop) {
     final customDownPath = Pref.downloadPath;
@@ -75,21 +87,89 @@ Future<void> _initDownPath() async {
       downloadPath = defDownloadPath;
     }
   } else if (Platform.isAndroid) {
-    final externalStorageDirPath = (await getExternalStorageDirectory())?.path;
-    downloadPath = externalStorageDirPath != null
-        ? path.join(externalStorageDirPath, PathUtils.downloadDir)
-        : defDownloadPath;
+    try {
+      final externalStorageDirPath =
+          (await getExternalStorageDirectory())?.path;
+      downloadPath = externalStorageDirPath != null
+          ? path.join(externalStorageDirPath, PathUtils.downloadDir)
+          : defDownloadPath;
+    } catch (error, stackTrace) {
+      downloadPath = defDownloadPath;
+      debugPrint('Piliterra 下载目录初始化失败，已使用默认目录：$error\n$stackTrace');
+    }
   } else {
     downloadPath = defDownloadPath;
   }
 }
 
 Future<void> _initTmpPath() async {
-  tmpDirPath = (await getTemporaryDirectory()).path;
+  try {
+    tmpDirPath = (await getTemporaryDirectory()).path;
+  } catch (error, stackTrace) {
+    tmpDirPath = Directory.systemTemp.path;
+    debugPrint('Piliterra 临时目录初始化失败，已使用系统临时目录：$error\n$stackTrace');
+  }
 }
 
 Future<void> _initAppPath() async {
   appSupportDirPath = (await getApplicationSupportDirectory()).path;
+}
+
+/// 首帧显示后再初始化可选的平台服务，避免插件延迟阻塞应用启动。
+Future<void> _initializeOptionalPlatformFeatures() async {
+  final tasks = <Future<void>>[];
+
+  if (PlatformUtils.isMobile) {
+    if (Platform.isAndroid) {
+      tasks.add(
+        _runOptionalStartupTask('屏幕尺寸', () async {
+          MaxScreenSize.init();
+        }),
+      );
+    }
+    tasks
+      ..add(
+        _runOptionalStartupTask('屏幕方向', () async {
+          if (Pref.horizontalScreen) {
+            await fullMode();
+          } else {
+            await portraitUpMode();
+          }
+        }),
+      )
+      ..add(_runOptionalStartupTask('后台音频服务', setupServiceLocator));
+    if (Platform.isIOS) {
+      tasks.add(_runOptionalStartupTask('画中画服务', IOSPipHelper.init));
+    }
+  } else if (Platform.isWindows) {
+    tasks.add(
+      _runOptionalStartupTask('WebView 环境', () async {
+        if (await WebViewEnvironment.getAvailableVersion() == null) return;
+        webViewEnvironment = await WebViewEnvironment.create(
+          settings: WebViewEnvironmentSettings(
+            userDataFolder: path.join(
+              appSupportDirPath,
+              'flutter_inappwebview',
+            ),
+          ),
+        );
+      }),
+    );
+  } else if (Platform.isMacOS || Platform.isLinux) {
+    tasks.add(_runOptionalStartupTask('后台音频服务', setupServiceLocator));
+  }
+
+  if (PlatformUtils.isMobile && Pref.dynamicColor) {
+    tasks.add(
+      _runOptionalStartupTask('动态取色', () async {
+        if (await MyApp.initPlatformState() && Get.key.currentState != null) {
+          Get.forceAppUpdate();
+        }
+      }),
+    );
+  }
+
+  await Future.wait(tasks);
 }
 
 void main() async {
@@ -107,32 +187,13 @@ void main() async {
   await Future.wait([
     _initDownPath(),
     _initTmpPath(),
-    CacheManager.ensureInitialized(),
+    _runOptionalStartupTask('缓存管理器', CacheManager.ensureInitialized),
     ?FontUtils.init(),
   ]);
   Get
     ..lazyPut(AccountService.new)
     ..lazyPut(DownloadService.new);
   HttpOverrides.global = _CustomHttpOverrides();
-
-  if (PlatformUtils.isMobile) {
-    if (Platform.isAndroid) MaxScreenSize.init();
-    await Future.wait([
-      if (Pref.horizontalScreen) ?fullMode() else ?portraitUpMode(),
-      setupServiceLocator(),
-      if (Platform.isIOS) IOSPipHelper.init(),
-    ]);
-  } else if (Platform.isWindows) {
-    if (await WebViewEnvironment.getAvailableVersion() != null) {
-      webViewEnvironment = await WebViewEnvironment.create(
-        settings: WebViewEnvironmentSettings(
-          userDataFolder: path.join(appSupportDirPath, 'flutter_inappwebview'),
-        ),
-      );
-    }
-  } else if (Platform.isMacOS || Platform.isLinux) {
-    await setupServiceLocator();
-  }
 
   Request();
   Request.setCookie();
@@ -170,10 +231,6 @@ void main() async {
     }
   }
 
-  if (Pref.dynamicColor) {
-    await MyApp.initPlatformState();
-  }
-
   if (Pref.enableLog) {
     // 异常捕获 logo记录
     final customParameters = {
@@ -196,6 +253,11 @@ void main() async {
   } else {
     runApp(const MyApp());
   }
+
+  // 平台插件均为可选增强，首帧显示后再初始化，避免失败时停留在黑色启动页。
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(_initializeOptionalPlatformFeatures());
+  });
 
   if (PlatformUtils.isDesktop) {
     final window = WindowManager.instance.getCurrent();
@@ -364,7 +426,7 @@ class MyApp extends StatelessWidget {
   /// from [DynamicColorBuilderState.initPlatformState]
   static Future<bool> initPlatformState() async {
     if (_light != null || _dark != null) return true;
-    // Platform messages may fail, so we use a try/catch PlatformException.
+    // 动态取色依赖可选的平台插件，失败时回退默认主题，不影响首帧显示。
     try {
       final colors = await DynamicColorPlugin.channel.invokeMethod(
         DynamicColorPlugin.methodName,
@@ -379,9 +441,12 @@ class MyApp extends StatelessWidget {
         _dark = corePalettes.toColorScheme(brightness: Brightness.dark);
         return true;
       }
-    } on PlatformException {
+    } catch (error, stackTrace) {
+      // 动态取色属于可选能力，平台插件异常时继续使用默认配色。
       if (kDebugMode) {
-        debugPrint('dynamic_color: Failed to obtain core palette.');
+        debugPrint(
+          'dynamic_color: Core palette unavailable: $error\n$stackTrace',
+        );
       }
     }
 
@@ -397,9 +462,12 @@ class MyApp extends StatelessWidget {
         _dark = accentColor.asColorSchemeSeed(variant, .dark);
         return true;
       }
-    } on PlatformException {
+    } catch (error, stackTrace) {
+      // 缺少取色插件或系统能力时，保留应用默认主题并继续启动。
       if (kDebugMode) {
-        debugPrint('dynamic_color: Failed to obtain accent color.');
+        debugPrint(
+          'dynamic_color: Accent color unavailable: $error\n$stackTrace',
+        );
       }
     }
     if (kDebugMode) {

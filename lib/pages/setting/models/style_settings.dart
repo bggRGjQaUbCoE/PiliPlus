@@ -58,6 +58,7 @@ List<SettingsModel> get styleSettings => [
       setKey: SettingBoxKey.showWindowTitleBar,
       defaultVal: true,
       needReboot: true,
+      onChanged: _onShowWindowTitleBarChanged,
     ),
     const SwitchModel(
       title: '显示托盘图标',
@@ -865,6 +866,17 @@ void _setThemeType(ThemeType value, VoidCallback setState) {
   GStorage.setting.put(SettingBoxKey.themeMode, value.index);
   Get.changeThemeMode(ThemeUtils.themeMode = value.toThemeMode);
   setState();
+}
+
+void _onShowWindowTitleBarChanged(bool value) {
+  final file = File(path.join(appSupportDirPath, 'hide_title_bar'));
+  try {
+    if (value) {
+      if (file.existsSync()) file.deleteSync();
+    } else {
+      file.createSync(recursive: true);
+    }
+  } catch (_) {}
 }
 
 NormalModel _useSSDModel() {

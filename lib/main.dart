@@ -54,6 +54,8 @@ WebViewEnvironment? webViewEnvironment;
 
 EdgeInsets? tmpPadding;
 
+const _windowChannel = MethodChannel('com.example.piliplus/window');
+
 Future<void> _initDownPath() async {
   if (PlatformUtils.isDesktop) {
     final customDownPath = Pref.downloadPath;
@@ -92,6 +94,29 @@ Future<void> _initAppPath() async {
   appSupportDirPath = (await getApplicationSupportDirectory()).path;
 }
 
+Future<void> _initLinuxTitleBar() async {
+  if (!Platform.isLinux) return;
+  final marker = File(path.join(appSupportDirPath, 'hide_title_bar'));
+  if (Pref.showWindowTitleBar) {
+    if (marker.existsSync()) marker.deleteSync();
+    return;
+  }
+  if (marker.existsSync()) return;
+  // 旧版本保存的 showWindowTitleBar=false 没有标记文件，本次启动
+  // 仍会创建 GtkHeaderBar。先消除阴影 gutter 避免持续重绘，并写入
+  // 标记让下次启动直接跳过 GtkHeaderBar。
+  try {
+    marker.createSync(recursive: true);
+  } catch (e) {
+    debugPrint('create hide_title_bar marker failed: $e');
+  }
+  try {
+    await _windowChannel.invokeMethod<void>('relaxShadow');
+  } catch (e) {
+    debugPrint('relaxShadow failed: $e');
+  }
+}
+
 void main() async {
   ScaledWidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
@@ -104,6 +129,7 @@ void main() async {
     DeviceUtils.exitApp();
   }
   ScaledWidgetsFlutterBinding.instance.scaleFactor = Pref.uiScale;
+  await _initLinuxTitleBar();
   await Future.wait([
     _initDownPath(),
     _initTmpPath(),

@@ -26,6 +26,7 @@ class SeasonInfoItem extends StatelessWidget {
     required this.progress,
     required this.updateSeasonDm,
     required this.updateSeasonSeg,
+    required this.updateSeasonVolume,
     required this.updateSeasonPlayInfo,
   });
 
@@ -37,6 +38,7 @@ class SeasonInfoItem extends StatelessWidget {
   final ChangeNotifier progress;
   final ValueChanged<DownloadSeasonInfo> updateSeasonDm;
   final ValueChanged<DownloadSeasonInfo> updateSeasonSeg;
+  final ValueChanged<DownloadSeasonInfo> updateSeasonVolume;
   final ValueChanged<DownloadSeasonInfo> updateSeasonPlayInfo;
 
   @override
@@ -84,6 +86,13 @@ class SeasonInfoItem extends StatelessWidget {
                     updateSeasonSeg(season);
                   },
                   child: const Text('更新片段'),
+                ),
+                DialogOption(
+                  onPressed: () {
+                    Get.back();
+                    updateSeasonVolume(season);
+                  },
+                  child: const Text('更新音量均衡'),
                 ),
                 DialogOption(
                   onPressed: () {

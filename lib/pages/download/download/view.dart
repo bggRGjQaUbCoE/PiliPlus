@@ -104,6 +104,9 @@ class _DownloadPageState extends State<DownloadPage>
   Future<void> _updateSeasonSeg(DownloadSeasonInfo seasonInfo) =>
       _updateSeason(seasonInfo, downloadService.updateSegments);
 
+  Future<void> _updateSeasonVolume(DownloadSeasonInfo seasonInfo) =>
+      _updateSeason(seasonInfo, downloadService.updateVolume);
+
   Future<void> _updateSeasonPlayInfo(DownloadSeasonInfo seasonInfo) =>
       _updateSeason(seasonInfo, downloadService.updatePlayInfo);
 
@@ -260,6 +263,7 @@ class _DownloadPageState extends State<DownloadPage>
                                 progress: _progress,
                                 updateSeasonDm: _updateSeasonDm,
                                 updateSeasonSeg: _updateSeasonSeg,
+                                updateSeasonVolume: _updateSeasonVolume,
                                 updateSeasonPlayInfo: _updateSeasonPlayInfo,
                               );
                             }
@@ -296,6 +300,7 @@ class _DownloadPageState extends State<DownloadPage>
                               progress: _progress,
                               updatePageDm: updatePageDm,
                               updatePageSeg: updatePageSeg,
+                              updatePageVolume: updatePageVolume,
                               updatePagePlayInfo: updatePagePlayInfo,
                             );
                           },

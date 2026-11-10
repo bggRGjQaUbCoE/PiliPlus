@@ -126,11 +126,27 @@ class DetailItem extends StatelessWidget {
                     child: const Text('空降片段'),
                   ),
                 if (entry.isCompleted) ...[
-                  DialogOption(
-                    onPressed: () =>
-                        _onUpdate(() => downloadService.updateSegments(entry)),
-                    child: const Text('更新空降片段'),
-                  ),
+                  if (entry.ep != null)
+                    DialogOption(
+                      onPressed: () => _onUpdate(
+                        () => downloadService.updatePgcSegmentsAndVolume(entry),
+                      ),
+                      child: const Text('更新空降、音量均衡'),
+                    )
+                  else ...[
+                    DialogOption(
+                      onPressed: () => _onUpdate(
+                        () => downloadService.updateUgcSegments(entry),
+                      ),
+                      child: const Text('更新空降片段'),
+                    ),
+                    DialogOption(
+                      onPressed: () => _onUpdate(
+                        () => downloadService.updateUgcVolume(entry),
+                      ),
+                      child: const Text('更新音量均衡'),
+                    ),
+                  ],
                   DialogOption(
                     onPressed: () =>
                         _onUpdate(() => downloadService.updatePlayInfo(entry)),

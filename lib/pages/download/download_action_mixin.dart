@@ -85,6 +85,9 @@ mixin BaseDownloadActionMixin<
   Future<void> updatePageSeg(DownloadPageInfo pageInfo) =>
       updatePage(pageInfo, downloadService.updateSegments);
 
+  Future<void> updatePageVolume(DownloadPageInfo pageInfo) =>
+      updatePage(pageInfo, downloadService.updateVolume);
+
   Future<void> updatePagePlayInfo(DownloadPageInfo pageInfo) =>
       updatePage(pageInfo, downloadService.updatePlayInfo);
 
@@ -120,6 +123,8 @@ mixin BaseDownloadActionMixin<
 
   void _onUpdateSeg() => onUpdate(downloadService.updateSegments);
 
+  void _onUpdateVolume() => onUpdate(downloadService.updateVolume);
+
   void _onUpdatePlayInfo() => onUpdate(downloadService.updatePlayInfo);
 
   void _showUpdateMenu(BuildContext context) {
@@ -137,6 +142,10 @@ mixin BaseDownloadActionMixin<
         PopupMenuItem(
           onTap: _onUpdateSeg,
           child: const Text('更新片段'),
+        ),
+        PopupMenuItem(
+          onTap: _onUpdateVolume,
+          child: const Text('更新音量均衡'),
         ),
         PopupMenuItem(
           onTap: _onUpdatePlayInfo,

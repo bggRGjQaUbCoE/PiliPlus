@@ -412,6 +412,23 @@ class Volume {
     );
   }
 
+  Map<String, dynamic> toJson() => {
+    'measured_i': measuredI,
+    'measured_lra': measuredLra,
+    'measured_tp': measuredTp,
+    'measured_threshold': measuredThreshold,
+    'target_offset': targetOffset,
+    'target_i': targetI,
+    'target_tp': targetTp,
+  };
+
+  static Volume? fromCache(Map<String, dynamic> json) {
+    try {
+      return .fromJson(json);
+    } catch (_) {}
+    return null;
+  }
+
   String format(Map<String, num> config) {
     final lra = max(config['lra'] ?? 11, measuredLra);
     num i = config['i'] ?? targetI;

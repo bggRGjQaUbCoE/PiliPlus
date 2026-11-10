@@ -209,6 +209,7 @@ class _DownloadPagePageState extends State<DownloadPagePage>
                           progress: widget.progress,
                           updatePageDm: updatePageDm,
                           updatePageSeg: updatePageSeg,
+                          updatePageVolume: updatePageVolume,
                           updatePagePlayInfo: updatePagePlayInfo,
                         );
                       },

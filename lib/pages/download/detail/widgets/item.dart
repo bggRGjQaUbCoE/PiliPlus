@@ -136,6 +136,15 @@ class DetailItem extends StatelessWidget {
                   else ...[
                     DialogOption(
                       onPressed: () => _onUpdate(
+                        () => downloadService.updateUgcSeasonInfo(
+                          entry,
+                          refresh: true,
+                        ),
+                      ),
+                      child: const Text('更新合集信息'),
+                    ),
+                    DialogOption(
+                      onPressed: () => _onUpdate(
                         () => downloadService.updateUgcSegments(entry),
                       ),
                       child: const Text('更新空降片段'),

@@ -121,7 +121,9 @@ class DownloadService extends GetxService {
             } else {
               waitDownloadQueue.add(entry..status = DownloadStatus.wait);
             }
-          } catch (_) {}
+          } catch (_) {
+            if (kDebugMode) rethrow;
+          }
         }
       }
     }
@@ -550,6 +552,52 @@ class DownloadService extends GetxService {
         await _updateBiliDownloadEntryJson(entry);
       }
       return true;
+    }
+    return false;
+  }
+
+  Future<bool> updateSeasonInfo(
+    BiliDownloadEntryInfo entry, {
+    bool refresh = false,
+  }) {
+    if (entry.pageData != null) {
+      return updateUgcSeasonInfo(entry, refresh: refresh);
+    } else {
+      return Future.syncValue(true);
+    }
+  }
+
+  void refreshIfUpdated(bool isSuccess) {
+    if (isSuccess) flagNotifier.refresh();
+  }
+
+  Future<bool> updateUgcSeasonInfo(
+    BiliDownloadEntryInfo entry, {
+    bool refresh = false,
+  }) async {
+    assert(entry.ep == null);
+    try {
+      final bvid = entry.bvid;
+      final res = await VideoHttp.videoIntro(bvid: bvid);
+      if (res case Success(:final response)) {
+        if (response.hasSeason) {
+          int indexInSeason = 0;
+          for (final section in response.ugcSeason!.sections!) {
+            for (final episode in section.episodes!) {
+              if (episode.bvid == bvid) {
+                entry.seasonInfo = response.seasonInfo(indexInSeason);
+                await _updateBiliDownloadEntryJson(entry);
+                if (refresh) flagNotifier.refresh();
+                return true;
+              }
+              indexInSeason++;
+            }
+          }
+        }
+        return true;
+      }
+    } catch (_) {
+      if (kDebugMode) rethrow;
     }
     return false;
   }

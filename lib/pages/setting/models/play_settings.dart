@@ -22,6 +22,7 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/video_tag_filter.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -405,6 +406,15 @@ List<SettingsModel> get playSettings => [
     onSelected: (value, setState) => GStorage.video
         .put(VideoBoxKey.playRepeat, value.index)
         .whenComplete(setState),
+  ),
+  getBanWordModel(
+    title: '标签关键词过滤',
+    key: SettingBoxKey.banWordForVideoTag,
+    banScope: '播放页标签 / 话题（BGM 不过滤）',
+    onChanged: (value) {
+      VideoTagFilter.regExp = value;
+      VideoTagFilter.enableFilter = value.pattern.isNotEmpty;
+    },
   ),
   const SwitchModel(
     title: '播放器设置仅对当前生效',

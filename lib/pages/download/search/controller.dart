@@ -39,15 +39,16 @@ class DownloadSearchController
     );
   }
 
-  void onRemoveSingle(int index, BiliDownloadEntryInfo entry) {
-    loadingState
-      ..value.data!.removeAt(index)
-      ..refresh();
-    _downloadService.deleteDownload(
+  Future<void> onRemoveSingle(BiliDownloadEntryInfo entry) async {
+    if (!await _downloadService.deleteDownload(
       entry: entry,
       removeList: true,
-    );
-    GStorage.watchProgress.delete(entry.cid.toString());
+    )) {
+      return;
+    }
+    loadingState.value.data?.remove(entry);
+    loadingState.refresh();
+    await GStorage.watchProgress.delete(entry.cid.toString());
   }
 
   @override
@@ -59,16 +60,16 @@ class DownloadSearchController
         SmartDialog.showLoading();
         final allChecked = this.allChecked.toSet();
         for (final entry in allChecked) {
-          await GStorage.watchProgress.delete(entry.cid.toString());
-          await _downloadService.deleteDownload(
+          if (await _downloadService.deleteDownload(
             entry: entry,
             removeList: true,
             refresh: false,
-          );
+          )) {
+            loadingState.value.data?.remove(entry);
+            await GStorage.watchProgress.delete(entry.cid.toString());
+          }
         }
-        loadingState
-          ..value.data!.removeWhere(allChecked.contains)
-          ..refresh();
+        loadingState.refresh();
         _downloadService.flagNotifier.refresh();
         if (enableMultiSelect.value) {
           rxCount.value = 0;

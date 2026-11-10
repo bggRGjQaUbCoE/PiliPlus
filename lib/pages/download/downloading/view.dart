@@ -115,11 +115,11 @@ class _DownloadingPageState extends State<DownloadingPage>
         for (final entry in allChecked) {
           await _downloadService.deleteDownload(
             entry: entry,
+            removeQueue: true,
             refresh: false,
             downloadNext: false,
           );
         }
-        _downloadService.waitDownloadQueue.removeWhere(allChecked.contains);
         if (isDownloading && _downloadService.curDownload.value == null) {
           _downloadService.nextDownload();
         }

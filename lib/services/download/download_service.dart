@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert' show jsonDecode, jsonEncode, utf8;
-import 'dart:io' show Directory, File;
+import 'dart:io' show Directory, File, FileSystemException, FileSystemEntityType;
 
 import 'package:PiliPlus/grpc/dm.dart';
 import 'package:PiliPlus/http/download.dart';
@@ -20,7 +20,6 @@ import 'package:PiliPlus/models_new/video/video_play_info/subtitle.dart';
 import 'package:PiliPlus/services/download/download_manager.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/danmaku_utils.dart';
-import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
@@ -267,7 +266,10 @@ class DownloadService extends GetxService {
     _createDownload(entry);
   }
 
-  Future<void> _createDownload(BiliDownloadEntryInfo entry) async {
+  Future<void> _createDownload(BiliDownloadEntryInfo entry) =>
+      _downloadLock.synchronized(() => _writeNewDownload(entry));
+
+  Future<void> _writeNewDownload(BiliDownloadEntryInfo entry) async {
     final entryDir = await _getDownloadEntryDir(entry);
     final entryDirPath = entryDir.path;
     final entryJsonFile = File(path.join(entryDirPath, _entryFile));
@@ -310,7 +312,26 @@ class DownloadService extends GetxService {
   }
 
   Future<void> queueDownload(BiliDownloadEntryInfo entry) {
-    return _downloadLock.synchronized(() => _prepareDownload(entry));
+    return _downloadLock.synchronized(() async {
+      if (waitDownloadQueue.contains(entry)) await _prepareDownload(entry);
+    });
+  }
+
+  Future<({String directory, int bytes})> getStorageUsage() async {
+    final directory = Directory(downloadPath);
+    var bytes = 0;
+    if (await directory.exists()) {
+      await for (final item in directory.list(
+        recursive: true,
+        followLinks: false,
+      )) {
+        if (item is File) {
+          final stat = await item.stat();
+          if (stat.type == FileSystemEntityType.file) bytes += stat.size;
+        }
+      }
+    }
+    return (directory: directory.path, bytes: bytes);
   }
 
   Future<void> _prepareDownload(BiliDownloadEntryInfo entry) async {
@@ -763,7 +784,7 @@ class DownloadService extends GetxService {
     if (curDownload.value case final curEntryInfo?) {
       curEntryInfo.downloadedBytes = curEntryInfo.totalBytes;
       if (status == DownloadStatus.completed) {
-        _completeDownload();
+        _completeDownload(curEntryInfo);
       } else {
         _updateBiliDownloadEntryJson(curEntryInfo);
       }
@@ -773,7 +794,8 @@ class DownloadService extends GetxService {
   void _onAudioDone([Object? error]) {
     if (_downloadManager?.status == DownloadStatus.completed) {
       if (error == null) {
-        _completeDownload();
+        final entry = curDownload.value;
+        if (entry != null) _completeDownload(entry);
       } else {
         final status = _audioDownloadManager?.status ?? DownloadStatus.pause;
         _updateCurStatus(
@@ -785,9 +807,11 @@ class DownloadService extends GetxService {
     }
   }
 
-  Future<void> _completeDownload() async {
-    final entry = curDownload.value;
-    if (entry == null) {
+  Future<void> _completeDownload(BiliDownloadEntryInfo entry) =>
+      _downloadLock.synchronized(() => _finishDownload(entry));
+
+  Future<void> _finishDownload(BiliDownloadEntryInfo entry) async {
+    if (!identical(curDownload.value, entry) || entry.isCompleted) {
       return;
     }
     entry
@@ -810,51 +834,83 @@ class DownloadService extends GetxService {
     }
   }
 
-  Future<void> deleteDownload({
+  Future<bool> deleteDownload({
     required BiliDownloadEntryInfo entry,
     bool removeList = false,
     bool removeQueue = false,
     bool refresh = true,
     bool downloadNext = true,
-  }) async {
-    if (removeList) {
-      downloadList.remove(entry);
-    }
-    if (removeQueue) {
-      waitDownloadQueue.remove(entry);
-    }
-    if (curDownload.value?.cid == entry.cid) {
-      await cancelDownload(
-        isDelete: true,
-        downloadNext: downloadNext,
-      );
-    }
-    final downloadDir = Directory(entry.pageDirPath);
-    if (downloadDir.existsSync()) {
-      if (!await downloadDir.lengthGte(2)) {
-        await downloadDir.tryDel(recursive: true);
-      } else {
-        final entryDir = Directory(entry.entryDirPath);
-        if (entryDir.existsSync()) {
-          await entryDir.tryDel(recursive: true);
-        }
-      }
-    }
-    if (refresh) {
-      flagNotifier.refresh();
-    }
-  }
+  }) => _deleteCache(
+    entry.entryDirPath,
+    (item) => path.equals(item.entryDirPath, entry.entryDirPath),
+    removeList: removeList,
+    removeQueue: removeQueue,
+    refresh: refresh,
+    downloadNext: downloadNext,
+  );
 
-  Future<void> deletePage({
+  Future<bool> deletePage({
     required String pageDirPath,
     bool refresh = true,
-  }) async {
-    await Directory(pageDirPath).tryDel(recursive: true);
-    downloadList.removeWhere((e) => e.pageDirPath == pageDirPath);
-    if (refresh) {
-      flagNotifier.refresh();
+  }) => _deleteCache(
+    pageDirPath,
+    (item) => path.equals(item.pageDirPath, pageDirPath),
+    removeList: true,
+    removeQueue: true,
+    refresh: refresh,
+    downloadNext: true,
+  );
+
+  Future<bool> _deleteCache(
+    String dirPath,
+    bool Function(BiliDownloadEntryInfo) matches, {
+    required bool removeList,
+    required bool removeQueue,
+    required bool refresh,
+    required bool downloadNext,
+  }) => _downloadLock.synchronized(() async {
+    final directory = Directory(path.normalize(path.absolute(dirPath)));
+    final root = Directory(path.normalize(path.absolute(downloadPath)));
+    try {
+      if (!path.isWithin(root.path, directory.path)) {
+        throw FileSystemException('Cache path is outside the download folder');
+      }
+      final exists = await directory.exists();
+      if (exists) {
+        final resolvedRoot = await root.resolveSymbolicLinks();
+        final expectedPath = path.join(
+          resolvedRoot,
+          path.relative(directory.path, from: root.path),
+        );
+        if (!path.equals(await directory.resolveSymbolicLinks(), expectedPath)) {
+          throw FileSystemException('Cache path resolves to a different folder');
+        }
+      }
+      final active = curDownload.value;
+      final cancelActive = active != null && matches(active);
+      if (cancelActive) {
+        await cancelDownload(isDelete: false, downloadNext: false);
+      }
+      await _playInfoLock.synchronized(
+        () => _entryWriteLock.synchronized(() async {
+          if (exists) await directory.delete(recursive: true);
+        }),
+      );
+      if (removeList) downloadList.removeWhere(matches);
+      if (removeQueue) waitDownloadQueue.removeWhere(matches);
+      if (cancelActive) {
+        _curCid = null;
+        curDownload.value = null;
+        if (downloadNext) nextDownload();
+      }
+      if (refresh) flagNotifier.refresh();
+      return true;
+    } on FileSystemException catch (e, s) {
+      if (kDebugMode) debugPrint('$e\n\n$s');
+      SmartDialog.showToast('缓存文件删除失败，请检查存储权限或关闭播放器后重试');
+      return false;
     }
-  }
+  });
 
   Future<void> cancelDownload({
     required bool isDelete,

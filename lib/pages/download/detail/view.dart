@@ -143,21 +143,16 @@ class _DownloadDetailPageState extends State<DownloadDetailPage>
                           downloadService: downloadService,
                           showTitle: false,
                           onDelete: () async {
-                            if (_downloadItems.length == 1) {
-                              await _closeSub();
-                              await downloadService.deletePage(
-                                pageDirPath: entry.pageDirPath,
+                            final isLast = _downloadItems.length == 1;
+                            if (await downloadService.deleteDownload(
+                              entry: entry,
+                              removeList: true,
+                            )) {
+                              await GStorage.watchProgress.delete(
+                                entry.cid.toString(),
                               );
-                              if (mounted) {
-                                Get.back();
-                              }
-                            } else {
-                              downloadService.deleteDownload(
-                                entry: entry,
-                                removeList: true,
-                              );
+                              if (mounted && isLast) Get.back();
                             }
-                            GStorage.watchProgress.delete(entry.cid.toString());
                           },
                           controller: this,
                         );
@@ -184,20 +179,20 @@ class _DownloadDetailPageState extends State<DownloadDetailPage>
         SmartDialog.showLoading();
         final allChecked = this.allChecked.toList();
         final isDeleteAll = allChecked.length == _downloadItems.length;
-        await Future.wait([
-          if (isDeleteAll) _closeSub(),
-          GStorage.watchProgress.deleteAll(
-            allChecked.map((e) => e.cid.toString()),
-          ),
-          for (final entry in allChecked)
-            downloadService.deleteDownload(
-              entry: entry,
-              removeList: true,
-              refresh: false,
-            ),
-        ]);
+        var allDeleted = true;
+        for (final entry in allChecked) {
+          if (await downloadService.deleteDownload(
+            entry: entry,
+            removeList: true,
+            refresh: false,
+          )) {
+            await GStorage.watchProgress.delete(entry.cid.toString());
+          } else {
+            allDeleted = false;
+          }
+        }
         downloadService.flagNotifier.refresh();
-        if (isDeleteAll) {
+        if (isDeleteAll && allDeleted) {
           SmartDialog.dismiss();
           if (mounted) {
             Get.back();

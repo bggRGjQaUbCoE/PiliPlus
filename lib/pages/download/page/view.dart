@@ -188,14 +188,15 @@ class _DownloadPagePageState extends State<DownloadPagePage>
                             progress: widget.progress,
                             downloadService: downloadService,
                             showTitle: true,
-                            onDelete: () {
-                              downloadService.deleteDownload(
+                            onDelete: () async {
+                              if (await downloadService.deleteDownload(
                                 entry: entry,
                                 removeList: true,
-                              );
-                              GStorage.watchProgress.delete(
-                                entry.cid.toString(),
-                              );
+                              )) {
+                                await GStorage.watchProgress.delete(
+                                  entry.cid.toString(),
+                                );
+                              }
                             },
                             checked: page.checked,
                             onSelect: (_) => onSelect(page),
@@ -238,13 +239,14 @@ class _DownloadPagePageState extends State<DownloadPagePage>
         SmartDialog.showLoading();
         final watchProgress = GStorage.watchProgress;
         for (final page in allChecked) {
-          await watchProgress.deleteAll(
-            page.entries.map((e) => e.cid.toString()),
-          );
-          await downloadService.deletePage(
+          if (await downloadService.deletePage(
             pageDirPath: page.dirPath,
             refresh: false,
-          );
+          )) {
+            await watchProgress.deleteAll(
+              page.entries.map((e) => e.cid.toString()),
+            );
+          }
         }
         downloadService.flagNotifier.refresh();
         if (enableMultiSelect.value) {

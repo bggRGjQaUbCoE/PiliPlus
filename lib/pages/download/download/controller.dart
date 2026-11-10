@@ -92,13 +92,14 @@ class DownloadController extends GetxController
         final watchProgress = GStorage.watchProgress;
         for (final season in allChecked) {
           for (final page in season.pages) {
-            await watchProgress.deleteAll(
-              page.entries.map((e) => e.cid.toString()),
-            );
-            await _downloadService.deletePage(
+            if (await _downloadService.deletePage(
               pageDirPath: page.dirPath,
               refresh: false,
-            );
+            )) {
+              await watchProgress.deleteAll(
+                page.entries.map((e) => e.cid.toString()),
+              );
+            }
           }
         }
         _downloadService.flagNotifier.refresh();

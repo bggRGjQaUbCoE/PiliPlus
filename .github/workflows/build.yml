@@ -84,14 +84,18 @@ jobs:
 
             - name: Write key
               if: github.event_name == 'workflow_dispatch'
+              env:
+                  SIGNING_KEYSTORE: ${{ secrets.PILIPLUS_CC_KEYSTORE_BASE64 }}
+                  SIGNING_PASSWORD: ${{ secrets.PILIPLUS_CC_KEYSTORE_PASSWORD }}
               run: |
-                  if [ ! -z "${{ secrets.SIGN_KEYSTORE_BASE64 }}" ]; then
-                    echo "${{ secrets.SIGN_KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.jks
-                    echo storeFile='key.jks' >> android/key.properties
-                    echo storePassword='${{ secrets.KEYSTORE_PASSWORD }}' >> android/key.properties
-                    echo keyAlias='${{ secrets.KEY_ALIAS }}' >> android/key.properties
-                    echo keyPassword='${{ secrets.KEY_PASSWORD }}' >> android/key.properties
+                  if [ -z "$SIGNING_KEYSTORE" ] || [ -z "$SIGNING_PASSWORD" ]; then
+                    echo "::error::Configure PILIPLUS_CC_KEYSTORE_BASE64 and PILIPLUS_CC_KEYSTORE_PASSWORD before building Android."
+                    exit 1
                   fi
+                  umask 077
+                  printf '%s' "$SIGNING_KEYSTORE" | base64 --decode > android/app/piliplus_cc.p12
+                  printf 'storeFile=piliplus_cc.p12\nstorePassword=%s\nkeyAlias=piliplus_cc\nkeyPassword=%s\n' \
+                    "$SIGNING_PASSWORD" "$SIGNING_PASSWORD" > android/key.properties
 
             - name: Set and Extract version
               if: ${{ github.event_name == 'workflow_dispatch' }}

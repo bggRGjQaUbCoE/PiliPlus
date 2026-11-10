@@ -15,6 +15,7 @@ import 'package:PiliPlus/pages/download/download_action_mixin.dart';
 import 'package:PiliPlus/pages/download/search/view.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
+import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:collection/collection.dart';
@@ -40,6 +41,35 @@ class _DownloadPageState extends State<DownloadPage>
 
   @override
   BaseMultiSelectMixin<DownloadSeasonInfo> get multiSelectCtr => _controller;
+
+  void _showStorageUsage() {
+    final usage = downloadService.getStorageUsage();
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('缓存存储'),
+        content: FutureBuilder<({String directory, int bytes})>(
+          future: usage,
+          builder: (context, snapshot) {
+            if (snapshot.hasError) return const Text('无法读取缓存目录');
+            final data = snapshot.data;
+            if (data == null) return const Text('正在统计文件大小…');
+            return Text(
+              '目录内文件：${data.bytes.formatSize}\n\n'
+              '缓存目录：${data.directory}\n\n'
+              '在离线缓存列表中长按或使用多选，即可删除对应的缓存文件。',
+            );
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('关闭'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -178,6 +208,11 @@ class _DownloadPageState extends State<DownloadPage>
               title: const Text('离线缓存'),
               actions: [
                 IconButton(
+                  tooltip: '缓存存储',
+                  onPressed: _showStorageUsage,
+                  icon: const Icon(Icons.storage_outlined),
+                ),
+                IconButton(
                   tooltip: '搜索',
                   onPressed: () async {
                     await downloadService.waitForInitialization;
@@ -287,14 +322,15 @@ class _DownloadPageState extends State<DownloadPage>
                                 progress: _progress,
                                 downloadService: downloadService,
                                 showTitle: true,
-                                onDelete: () {
-                                  downloadService.deleteDownload(
+                                onDelete: () async {
+                                  if (await downloadService.deleteDownload(
                                     entry: entry,
                                     removeList: true,
-                                  );
-                                  GStorage.watchProgress.delete(
-                                    entry.cid.toString(),
-                                  );
+                                  )) {
+                                    await GStorage.watchProgress.delete(
+                                      entry.cid.toString(),
+                                    );
+                                  }
                                 },
                                 checked: season.checked,
                                 onSelect: (_) => _controller.onSelect(season),

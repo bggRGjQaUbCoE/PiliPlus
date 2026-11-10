@@ -63,12 +63,13 @@ class SeasonInfoItem extends StatelessWidget {
                       title: const Text('确定删除？'),
                       onConfirm: () async {
                         for (final pageInfo in season.pages) {
-                          await GStorage.watchProgress.deleteAll(
-                            pageInfo.entries.map((e) => e.cid.toString()),
-                          );
-                          downloadService.deletePage(
+                          if (await downloadService.deletePage(
                             pageDirPath: pageInfo.dirPath,
-                          );
+                          )) {
+                            await GStorage.watchProgress.deleteAll(
+                              pageInfo.entries.map((e) => e.cid.toString()),
+                            );
+                          }
                         }
                       },
                     );

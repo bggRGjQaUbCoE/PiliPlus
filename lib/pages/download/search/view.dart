@@ -77,7 +77,7 @@ class _DownloadSearchPageState
             progress: widget.progress,
             downloadService: downloadService,
             showTitle: true,
-            onDelete: () => controller.onRemoveSingle(index, entry),
+            onDelete: () => controller.onRemoveSingle(entry),
             controller: controller,
           );
         },

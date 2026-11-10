@@ -63,12 +63,13 @@ class PageInfoItem<T extends MultiSelectData> extends StatelessWidget {
                       context: context,
                       title: const Text('确定删除？'),
                       onConfirm: () async {
-                        await GStorage.watchProgress.deleteAll(
-                          pageInfo.entries.map((e) => e.cid.toString()),
-                        );
-                        downloadService.deletePage(
+                        if (await downloadService.deletePage(
                           pageDirPath: pageInfo.dirPath,
-                        );
+                        )) {
+                          await GStorage.watchProgress.deleteAll(
+                            pageInfo.entries.map((e) => e.cid.toString()),
+                          );
+                        }
                       },
                     );
                   },

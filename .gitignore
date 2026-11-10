@@ -75,6 +75,7 @@ app.*.map.json
 **/android/**/GeneratedPluginRegistrant.java
 **/android/key.properties
 *.jks
+/android/app/piliplus_cc.p12
 
 # iOS/XCode related
 **/ios/**/*.mode1v3

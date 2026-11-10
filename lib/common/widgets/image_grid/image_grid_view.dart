@@ -161,6 +161,12 @@ class ImageGridView extends StatelessWidget {
           onTap: () => ImageUtils.downloadImg([item.url]),
           child: const Text('保存图片', style: TextStyle(fontSize: 14)),
         ),
+        if (Platform.isWindows)
+          PopupMenuItem(
+            height: 42,
+            onTap: () => ImageUtils.copyImage(item.url),
+            child: const Text('复制图片', style: TextStyle(fontSize: 14)),
+          ),
         if (PlatformUtils.isDesktop)
           PopupMenuItem(
             height: 42,

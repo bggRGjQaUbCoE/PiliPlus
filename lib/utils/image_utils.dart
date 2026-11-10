@@ -2,6 +2,7 @@ import 'dart:async' show FutureOr;
 import 'dart:io' show File, Platform;
 import 'dart:math' as math;
 import 'dart:typed_data' show Uint8List;
+import 'dart:ui' as ui;
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/http/init.dart';
@@ -17,6 +18,7 @@ import 'package:PiliPlus/utils/share_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/services.dart' show MethodChannel;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:live_photo_maker/live_photo_maker.dart';
 import 'package:material_ui/material_ui.dart';
@@ -25,6 +27,44 @@ import 'package:saver_gallery/saver_gallery.dart';
 import 'package:share_plus/share_plus.dart';
 
 abstract final class ImageUtils {
+  static const _imageClipboard = MethodChannel('piliplus/image_clipboard');
+
+  static Future<void> copyImage(String url) async {
+    if (!Platform.isWindows) return;
+    SmartDialog.showLoading(msg: '正在复制图片');
+    try {
+      final file = await CacheManager.manager.getSingleFile(url.http2https);
+      final codec = await ui.instantiateImageCodec(await file.readAsBytes());
+      final isAnimated = codec.frameCount > 1;
+      try {
+        final frame = await codec.getNextFrame();
+        try {
+          final pixels = await frame.image.toByteData(
+            format: ui.ImageByteFormat.rawStraightRgba,
+          );
+          if (pixels == null) throw StateError('无法读取图片');
+          await _imageClipboard.invokeMethod<void>('copyImage', {
+            'width': frame.image.width,
+            'height': frame.image.height,
+            'pixels': pixels.buffer.asUint8List(
+              pixels.offsetInBytes,
+              pixels.lengthInBytes,
+            ),
+          });
+        } finally {
+          frame.image.dispose();
+        }
+      } finally {
+        codec.dispose();
+      }
+      SmartDialog.showToast(isAnimated ? '已复制动图首帧（静态图片）' : '图片已复制');
+    } catch (e) {
+      SmartDialog.showToast('复制图片失败：$e');
+    } finally {
+      SmartDialog.dismiss(status: SmartStatus.loading);
+    }
+  }
+
   static bool silentDownImg = Pref.silentDownImg;
   static final _albumPath = Platform.isAndroid
       ? 'Pictures/${Constants.appName}'

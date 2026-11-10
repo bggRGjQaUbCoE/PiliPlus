@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
@@ -12,6 +14,7 @@ import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
 import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
+import 'package:PiliPlus/utils/scroll_offset_helper.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -48,17 +51,31 @@ class MediaListPanel extends CommonSlidePage {
 }
 
 class _MediaListPanelState extends State<MediaListPanel>
-    with SingleTickerProviderStateMixin, CommonSlideMixin {
-  late final ScrollController _controller;
+    with SingleTickerProviderStateMixin, CommonSlideMixin, ScrollOffsetMixin {
+  @override
+  final scrollController = ScrollController();
+  @override
+  late final int itemIndex;
+  @override
+  int get itemCount => widget.mediaList.length;
 
   @override
   void initState() {
     super.initState();
     final bvid = widget.bvid;
-    final bvIndex = widget.mediaList.indexWhere((item) => item.bvid == bvid);
-    _controller = ScrollController(
-      initialScrollOffset: bvIndex <= 0 ? 0 : bvIndex * 112.0 + 7,
+    itemIndex = max(
+      0,
+      widget.mediaList.indexWhere((item) => item.bvid == bvid),
     );
+    if (itemIndex > 0) {
+      WidgetsBinding.instance.addPostFrameCallback(jumpToCurrent);
+    }
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -125,7 +142,7 @@ class _MediaListPanelState extends State<MediaListPanel>
   Widget _buildList() {
     final showDelBtn = widget.onDelete != null && widget.mediaList.length > 1;
     return CustomScrollView(
-      controller: _controller,
+      controller: scrollController,
       physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
         SliverPadding(

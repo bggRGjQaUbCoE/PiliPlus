@@ -57,6 +57,7 @@ abstract final class FavHttp {
     String keyword = '',
     FavOrderType order = FavOrderType.mtime,
     int type = 0,
+    bool pageDesc = false,
   }) async {
     final res = await Request().get(
       Api.favResourceList,
@@ -72,7 +73,9 @@ abstract final class FavHttp {
       },
     );
     if (res.data['code'] == 0) {
-      return Success(FavDetailData.fromJson(res.data['data']));
+      return Success(
+        FavDetailData.fromJson(res.data['data'], pageDesc: pageDesc),
+      );
     } else {
       return Error(res.data['message']);
     }
@@ -112,6 +115,7 @@ abstract final class FavHttp {
     required int id,
     required int pn,
     required int ps,
+    bool pageDesc = false,
   }) async {
     final res = await Request().get(
       Api.favSeasonList,
@@ -122,7 +126,9 @@ abstract final class FavHttp {
       },
     );
     if (res.data['code'] == 0) {
-      return Success(SubDetailData.fromJson(res.data['data']));
+      return Success(
+        SubDetailData.fromJson(res.data['data'], pageDesc: pageDesc),
+      );
     } else {
       return Error(res.data['message']);
     }

@@ -16,7 +16,7 @@ mixin BaseReplyFoldMixin<R> on ReplyController<R> {
     }
   }
 
-  Future<void> loadFoldList() async {
+  Future<void> loadFoldList({bool toast = true}) async {
     if (isLoading) return;
     isLoading = true;
     try {
@@ -28,10 +28,11 @@ mixin BaseReplyFoldMixin<R> on ReplyController<R> {
       if (isClosed) return;
       if (res case Success(:final response)) {
         foldCard = null;
+        count.value += response.replies.length;
         loadingState
           ..value.data!.addAll(response.replies)
           ..refresh();
-        if (response.hasTitle()) {
+        if (toast && response.hasTitle()) {
           SmartDialog.showToast(response.title);
         }
       } else {

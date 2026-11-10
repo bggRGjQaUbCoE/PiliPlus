@@ -190,25 +190,17 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                               .horizontalSeasonPanel)) ...[
                     if (videoDetail.hasSeason)
                       NoTranslucentArea(
-                        child: Obx(
-                          () => SeasonPanel(
-                            key: ValueKey(introController.videoDetail.value),
-                            heroTag: widget.heroTag,
-                            showEpisodes: widget.showEpisodes,
-                            ugcIntroController: introController,
-                          ),
+                        child: SeasonPanel(
+                          showEpisodes: widget.showEpisodes,
+                          ugcIntroController: introController,
                         ),
                       ),
                     if (videoDetail.hasParts)
                       NoTranslucentArea(
-                        child: Obx(
-                          () => PagesPanel(
-                            key: ValueKey(introController.videoDetail.value),
-                            heroTag: widget.heroTag,
-                            ugcIntroController: introController,
-                            bvid: introController.bvid,
-                            showEpisodes: widget.showEpisodes,
-                          ),
+                        child: PagePanel(
+                          ugcIntroController: introController,
+                          bvid: introController.bvid,
+                          showEpisodes: widget.showEpisodes,
                         ),
                       ),
                   ],
@@ -277,12 +269,25 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
 
   List<Widget> _infos(VideoDetailData videoDetail) => [
     const SizedBox(height: 8, width: .infinity),
-    GestureDetector(
-      onTap: () => Utils.copyText('${videoDetail.bvid}'),
-      child: Text(
-        videoDetail.bvid ?? '',
-        style: TextStyle(fontSize: 14, color: colorScheme.secondary),
-      ),
+    Row(
+      spacing: 12,
+      mainAxisSize: .min,
+      children: [
+        GestureDetector(
+          onTap: () => Utils.copyText(introController.bvid),
+          child: Text(
+            introController.bvid,
+            style: TextStyle(fontSize: 14, color: colorScheme.secondary),
+          ),
+        ),
+        GestureDetector(
+          onTap: () => Utils.copyText('av${introController.aid}'),
+          child: Text(
+            'av${introController.aid}',
+            style: TextStyle(fontSize: 14, color: colorScheme.secondary),
+          ),
+        ),
+      ],
     ),
     if (videoDetail.descV2 case final descV2? when descV2.isNotEmpty) ...[
       const SizedBox(height: 8),
@@ -676,7 +681,6 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                             Duration(
                               seconds: DurationUtils.parseDuration(matchStr),
                             ),
-                            isSeek: false,
                           );
                         } catch (_) {}
                       },

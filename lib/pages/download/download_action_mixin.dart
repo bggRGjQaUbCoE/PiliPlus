@@ -77,7 +77,21 @@ mixin BaseDownloadActionMixin<
     colorScheme = ColorScheme.of(context);
   }
 
-  Future<void> updatePageDm(DownloadPageInfo pageInfo) async {
+  Future<void> updatePageDm(DownloadPageInfo pageInfo) => updatePage(
+    pageInfo,
+    (e) => downloadService.downloadDanmaku(entry: e, isUpdate: true),
+  );
+
+  Future<void> updatePageSeg(DownloadPageInfo pageInfo) =>
+      updatePage(pageInfo, downloadService.updateSegments);
+
+  Future<void> updatePagePlayInfo(DownloadPageInfo pageInfo) =>
+      updatePage(pageInfo, downloadService.updatePlayInfo);
+
+  Future<void> updatePage(
+    DownloadPageInfo pageInfo,
+    Future<bool> Function(BiliDownloadEntryInfo e) toElement,
+  ) async {
     if (checkUpdateCount(pageInfo.entries.length)) return;
 
     bool dismiss = false;
@@ -86,7 +100,7 @@ mixin BaseDownloadActionMixin<
     bool isSuccess = true;
     for (final chunk in pageInfo.entries.mapChunked(
       kUpdateConcurrency,
-      (e) => downloadService.downloadDanmaku(entry: e, isUpdate: true),
+      toElement,
     )) {
       final res = await Future.wait(chunk);
       if (res.any((e) => !e)) isSuccess = false;
@@ -104,9 +118,9 @@ mixin BaseDownloadActionMixin<
     onUpdate((e) => downloadService.downloadDanmaku(entry: e, isUpdate: true));
   }
 
-  void _onUpdateSeg() {
-    onUpdate(downloadService.updateSegments);
-  }
+  void _onUpdateSeg() => onUpdate(downloadService.updateSegments);
+
+  void _onUpdatePlayInfo() => onUpdate(downloadService.updatePlayInfo);
 
   void _showUpdateMenu(BuildContext context) {
     final renderBox = context.findRenderObject() as RenderBox;
@@ -123,6 +137,10 @@ mixin BaseDownloadActionMixin<
         PopupMenuItem(
           onTap: _onUpdateSeg,
           child: const Text('更新片段'),
+        ),
+        PopupMenuItem(
+          onTap: _onUpdatePlayInfo,
+          child: const Text('更新字幕、分段信息'),
         ),
       ],
     );

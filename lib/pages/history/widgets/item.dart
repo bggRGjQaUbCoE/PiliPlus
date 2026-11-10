@@ -5,6 +5,7 @@ import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/models_new/history/list.dart';
 import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
+import 'package:PiliPlus/pages/article/view.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
@@ -219,14 +220,10 @@ class HistoryItem extends StatelessWidget {
 Future<void> onPushHistory(HistoryItemModel item) async {
   final business = item.history.business;
   if (business?.contains('article') == true) {
-    PageUtils.toDupNamed(
-      '/articlePage',
-      parameters: {
-        'id': business == 'article-list'
-            ? '${item.history.cid}'
-            : '${item.history.oid}',
-        'type': 'read',
-      },
+    ArticlePage.toArticlePage(
+      id: (business == 'article-list' ? item.history.cid : item.history.oid)
+          .toString(),
+      type: .read,
     );
   } else if (business == 'live') {
     if (item.liveStatus == 1) {

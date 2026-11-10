@@ -136,6 +136,8 @@ class PlayerFocus extends StatelessWidget {
         if (event is KeyDownEvent) {
           if (hasPlayer) {
             plPlayerController
+              ..hidePreviewIfNeeded()
+              ..seekPosition.value = plPlayerController.position.value
               ..longPressTimer?.cancel()
               ..longPressTimer = Timer.periodic(
                 const Duration(milliseconds: 200),
@@ -229,8 +231,9 @@ class PlayerFocus extends StatelessWidget {
         case LogicalKeyboardKey.keyM:
           if (hasPlayer) {
             final isMuted = !plPlayerController.isMuted;
-            plPlayerController.videoPlayerController!.setVolume(
-              isMuted ? 0 : plPlayerController.volume.value * 100,
+            plPlayerController.setVolumeCapped(
+              plPlayerController.videoPlayerController,
+              isMuted ? 0 : plPlayerController.volume.value,
             );
             plPlayerController.isMuted = isMuted;
             SmartDialog.showToast('${isMuted ? '' : '取消'}静音');

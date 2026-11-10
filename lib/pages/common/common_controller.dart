@@ -1,17 +1,30 @@
 import 'dart:async';
 
+import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:easy_debounce/easy_throttle.dart';
-import 'package:flutter/widgets.dart' show ScrollController;
+import 'package:flutter/widgets.dart' show ScrollController, GlobalKey;
 import 'package:get/get.dart';
+
+mixin RefreshImplMixin on ScrollOrRefreshMixin {
+  @override
+  final GlobalKey<RefreshIndicatorState> refreshKey = .new();
+
+  @override
+  Future<void> showRefresh() => refreshKey.currentState?.show() ?? onRefresh();
+}
 
 mixin ScrollOrRefreshMixin {
   ScrollController get scrollController;
 
+  GlobalKey<RefreshIndicatorState>? get refreshKey => null;
+
   void animateToTop() => scrollController.animToTop();
 
   Future<void> onRefresh();
+
+  Future<void> showRefresh() => onRefresh();
 
   void toTopOrRefresh() {
     if (scrollController.hasClients) {
@@ -19,7 +32,7 @@ mixin ScrollOrRefreshMixin {
         EasyThrottle.throttle(
           'topOrRefresh',
           const Duration(milliseconds: 500),
-          onRefresh,
+          showRefresh,
         );
       } else {
         animateToTop();

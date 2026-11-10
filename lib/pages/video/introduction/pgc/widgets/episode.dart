@@ -1,39 +1,28 @@
 import 'dart:async' show StreamSubscription;
-import 'dart:math';
 
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/new_ep.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart'
     hide EpisodeItem;
-import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
-import 'package:PiliPlus/pages/video/introduction/ugc/widgets/page.dart'
-    show scrollOffset;
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
+import 'package:PiliPlus/utils/scroll_offset_helper.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
-
-const double _itemExtent = 150;
 
 class EpisodePanel extends StatefulWidget {
   const EpisodePanel({
     super.key,
-    required this.item,
-    required this.heroTag,
     required this.pgcController,
     required this.showEpisodes,
     required this.onChangeEpisode,
   });
 
-  final String heroTag;
-  final PgcInfoModel item;
   final ShowEpisodes showEpisodes;
   final PgcIntroController pgcController;
   final OnChangePgcEpisode onChangeEpisode;
@@ -43,26 +32,21 @@ class EpisodePanel extends StatefulWidget {
 }
 
 class _EpisodePanelState extends State<EpisodePanel> {
-  late bool _isEpisode;
-  late int _index;
-  double get _scrollOffset => scrollOffset(_index, _itemExtent);
+  int? _seasonId;
+  int get _index => _pgcController.episodeIndex;
+  bool get _isEpisode => _pgcController.episodeType == .episode;
+
   late NewEp? _newEp;
   late List<EpisodeItem> _episodes;
   late final isPugv = _episodes.first.from == 'pugv';
 
   late final _pgcController = widget.pgcController;
+  late final _videoDetailCtr = _pgcController.videoDetailCtr;
   late final StreamSubscription<int> _listener;
   late final ScrollController _scrollController;
-  late final VideoDetailController _videoDetailCtr;
 
   late final bool _isVip;
   late ColorScheme colorScheme;
-
-  void _init() {
-    final item = widget.item;
-    _episodes = item.episodes!;
-    _newEp = item.newEp!;
-  }
 
   @override
   void didChangeDependencies() {
@@ -73,45 +57,7 @@ class _EpisodePanelState extends State<EpisodePanel> {
   @override
   void didUpdateWidget(EpisodePanel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.item != oldWidget.item) {
-      _init();
-    }
-  }
-
-  void _updateIndex() {
-    final cid = _videoDetailCtr.cid.value;
-    if (_isEpisode = _pgcController.episodeType == .episode) {
-      _index = max(0, _episodes.indexWhere((e) => e.cid == cid));
-    } else {
-      _index = -1;
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _init();
-    _isVip = Accounts.isVideoVip;
-
-    _videoDetailCtr = Get.find<VideoDetailController>(tag: widget.heroTag);
-    _updateIndex();
-    _scrollController = ScrollController(initialScrollOffset: _scrollOffset);
-    _listener = _videoDetailCtr.cid.listen(_onCidChanged);
-  }
-
-  void _onCidChanged(int cid) {
-    _updateIndex();
-    if (!mounted) return;
-    setState(() {});
-    if (_isEpisode) {
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => _scrollController.animateTo(
-          _scrollOffset,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-        ),
-      );
-    }
+    _initIfNeeded();
   }
 
   @override
@@ -119,6 +65,58 @@ class _EpisodePanelState extends State<EpisodePanel> {
     _listener.cancel();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initIfNeeded();
+    _isVip = Accounts.isVideoVip;
+
+    _scrollController = ScrollController(keepScrollOffset: false);
+    _listener = _videoDetailCtr.cid.listen(_onCidChanged);
+    if (_index > 0) {
+      WidgetsBinding.instance.addPostFrameCallback(_jumpToCurrent);
+    }
+  }
+
+  void _jumpToCurrent([_, bool anim = false]) {
+    final position = _scrollController.position;
+    final scrollOffset = calcPageItemOffset(
+      index: _index,
+      itemCount: _episodes.length,
+      viewportDimension: position.viewportDimension,
+    );
+    if (anim) {
+      position.animateTo(
+        scrollOffset,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      position.jumpTo(scrollOffset);
+    }
+  }
+
+  (bool seasonChanged, bool dispose) _initIfNeeded() {
+    if (_seasonId == _pgcController.seasonId) return const (false, false);
+    final item = _pgcController.pgcItem;
+    if (!item.hasEpisodes) return const (true, true);
+    _seasonId = _pgcController.seasonId;
+    _episodes = item.episodes!;
+    _newEp = item.newEp;
+    return const (true, false);
+  }
+
+  void _onCidChanged(int cid) {
+    final (bool seasonChanged, bool dispose) = _initIfNeeded();
+    if (dispose || !mounted) return;
+    setState(() {});
+    if (seasonChanged) {
+      _jumpToCurrent();
+    } else if (_isEpisode) {
+      _jumpToCurrent(null, true);
+    }
   }
 
   Widget _currEpisodeTitle() {
@@ -149,12 +147,8 @@ class _EpisodePanelState extends State<EpisodePanel> {
                   style: const ButtonStyle(
                     padding: WidgetStatePropertyAll(.zero),
                   ),
-                  onPressed: () => widget.showEpisodes(
-                    episodes: _episodes,
-                    bvid: _videoDetailCtr.bvid,
-                    aid: _videoDetailCtr.aid,
-                    cid: _videoDetailCtr.cid.value,
-                  ),
+                  onPressed: () =>
+                      widget.showEpisodes(type: .pgc, episodeType: .episode),
                   child: Text(
                     _newEp?.desc?.contains('连载') == true
                         ? '连载中，更新至${Utils.isStringNumeric(_newEp!.title!) ? '第${_newEp!.title}话' : '${_newEp!.title}'}'
@@ -170,11 +164,10 @@ class _EpisodePanelState extends State<EpisodePanel> {
           height: 60,
           child: ListView.builder(
             padding: .zero,
-            itemExtent: _itemExtent,
+            itemExtent: kPageItemExtent,
             scrollDirection: .horizontal,
             controller: _scrollController,
             itemCount: _episodes.length,
-            key: const PageStorageKey(_EpisodePanelState),
             physics: const AlwaysScrollableScrollPhysics(),
             itemBuilder: (context, index) => _buildItem(index),
           ),
@@ -185,10 +178,11 @@ class _EpisodePanelState extends State<EpisodePanel> {
 
   Widget _buildItem(int index) {
     final item = _episodes[index];
+    final isCurr = index == _index;
     final hasLongTitle = item.longTitle?.isNotEmpty == true;
-    final color = index == _index ? colorScheme.primary : colorScheme.onSurface;
+    final color = isCurr ? colorScheme.primary : colorScheme.onSurface;
     return Container(
-      width: _itemExtent,
+      width: kPageItemExtent,
       height: 60,
       margin: index != _episodes.length - 1 ? const .only(right: 10) : null,
       child: Material(
@@ -197,6 +191,7 @@ class _EpisodePanelState extends State<EpisodePanel> {
         child: InkWell(
           borderRadius: const .all(.circular(6)),
           onTap: () {
+            if (isCurr) return;
             if (item.badge == '会员' && !_isVip) {
               SmartDialog.showToast('需要大会员');
             }
@@ -215,7 +210,7 @@ class _EpisodePanelState extends State<EpisodePanel> {
                         maxLines: hasLongTitle ? 1 : 2,
                         TextSpan(
                           children: [
-                            if (index == _index)
+                            if (isCurr)
                               WidgetSpan(
                                 alignment: .middle,
                                 child: Padding(

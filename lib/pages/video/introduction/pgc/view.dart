@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
+import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero.dart';
@@ -59,7 +60,7 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
       PgcIntroController.new,
       tag: widget.heroTag,
     );
-    videoDetailCtr = Get.find<VideoDetailController>(tag: widget.heroTag);
+    videoDetailCtr = introController.videoDetailCtr;
   }
 
   @override
@@ -94,7 +95,6 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
               Padding(
                 padding: const .only(top: 5),
                 child: SeasonPanel(
-                  seasons: item.seasons!,
                   pgcController: introController,
                   onSeasonChanged: () {
                     if (mounted) setState(() {});
@@ -104,8 +104,6 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
             // 番剧分集
             if (item.hasEpisodes)
               EpisodePanel(
-                item: item,
-                heroTag: widget.heroTag,
                 pgcController: introController,
                 showEpisodes: widget.showEpisodes,
                 onChangeEpisode: introController.onChangeEpisode,
@@ -113,8 +111,6 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
           ],
           if (item.hasSections)
             SectionPanel(
-              item: item,
-              heroTag: widget.heroTag,
               pgcController: introController,
               showEpisodes: widget.showEpisodes,
               onChangeEpisode: introController.onChangeEpisode,
@@ -450,6 +446,12 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
               semanticsLabel: '收藏',
               text: NumUtils.numFormat(stat.favorite),
             ),
+          ),
+          ActionItem(
+            icon: const Icon(CustomIcons.download),
+            onTap: () => videoDetailCtr.onDownload(context),
+            text: '缓存',
+            semanticsLabel: '缓存',
           ),
           Obx(
             () => ActionItem(

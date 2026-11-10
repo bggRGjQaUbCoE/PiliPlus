@@ -77,51 +77,63 @@ mixin BlockMixin on GetxController {
     }
   }
 
-  void initSkip() {
+  Future<void> initSkip() async {
     if (isClosed) return;
     if (_segmentList.isNotEmpty) {
       _blockListener?.cancel();
-      _blockListener = player?.stream.position.listen((position) {
-        int currentPos = position.inSeconds;
-        if (currentPos != _lastBlockPos) {
-          _lastBlockPos = currentPos;
-          final msPos = currentPos * 1000;
-          for (SegmentModel item in _segmentList) {
-            // if (kDebugMode) {
-            //   debugPrint(
-            //       '${position.inSeconds},,${item.segment.first},,${item.segment.second},,${item.skipType.name},,${item.hasSkipped}');
-            // }
-            if (msPos <= item.segment.$1 && item.segment.$1 <= msPos + 1000) {
-              switch (item.skipType) {
-                case SkipType.alwaysSkip:
-                  onSkip(item, isSeek: false);
-                  break;
-                case SkipType.skipOnce:
-                  if (!item.hasSkipped) {
-                    item.hasSkipped = true;
-                    onSkip(item, isSeek: false);
-                  }
-                  break;
-                case SkipType.skipManually:
-                  onAddItem(item);
-                  break;
-                default:
-                  break;
-              }
-              break;
-            }
-          }
-        }
-      });
+      await player?.stream.buffer.first;
+      if (isClosed) return;
+      _blockListener = player?.stream.position.listen(_onPosChanged);
     }
   }
 
-  Future<void> handleSBData(List<SegmentItemModel> list) async {
+  void _onPosChanged(Duration position) {
+    final currentPos = position.inSeconds;
+    if (currentPos != _lastBlockPos) {
+      _lastBlockPos = currentPos;
+      final msPos = position.inMilliseconds;
+      for (SegmentModel item in _segmentList) {
+        // if (kDebugMode) {
+        //   debugPrint(
+        //       '${position.inSeconds},,${item.segment.first},,${item.segment.second},,${item.skipType.name},,${item.hasSkipped}');
+        // }
+        if (msPos >= item.segment.$1 && msPos < item.segment.$2) {
+          switch (item.skipType) {
+            case SkipType.alwaysSkip:
+              onSkip(item);
+              break;
+            case SkipType.skipOnce:
+              if (!item.hasSkipped) {
+                item.hasSkipped = true;
+                onSkip(item);
+              }
+              break;
+            case SkipType.skipManually:
+              if (!item.hasSkipped) {
+                item.hasSkipped = true;
+                onAddItem(item);
+              }
+              break;
+            default:
+              break;
+          }
+          break;
+        } else {
+          switch (item.skipType) {
+            case .skipManually:
+              item.hasSkipped = false;
+            default:
+          }
+        }
+      }
+    }
+  }
+
+  void handleSBData(List<SegmentItemModel> list) {
     if (isClosed) return;
 
     if (list.isNotEmpty) {
       try {
-        Future<void>? future;
         final duration = list.first.videoDuration ?? timeLength!;
         // segmentList
         _segmentList.addAll(
@@ -140,37 +152,6 @@ mixin BlockMixin on GetxController {
                   if (segmentModel.segment == const (0, 0)) {
                     videoLabel?.value +=
                         '${videoLabel!.value.isNotEmpty ? '/' : ''}${segmentModel.segmentType.title}';
-                  }
-
-                  if (_blockListener == null && autoPlay && player != null) {
-                    final currPos = currPosInMilliseconds;
-
-                    if (segmentModel.segment.contains(currPos)) {
-                      _lastBlockPos = currPos;
-
-                      switch (segmentModel.skipType) {
-                        case SkipType.alwaysSkip:
-                        case SkipType.skipOnce:
-                          segmentModel.hasSkipped = true;
-                          if (!isFileSource && player!.state.playing) {
-                            future = onSkip(segmentModel);
-                          } else {
-                            player!.stream.playing.firstWhere((e) {
-                              if (e) {
-                                future = onSkip(segmentModel);
-                                return true;
-                              }
-                              return false;
-                            }, orElse: () => false);
-                          }
-                          break;
-                        case SkipType.skipManually:
-                          onAddItem(segmentModel);
-                          break;
-                        default:
-                          break;
-                      }
-                    }
                   }
 
                   return segmentModel;
@@ -192,7 +173,6 @@ mixin BlockMixin on GetxController {
         );
 
         if (_blockListener == null && (autoPlay || preInitPlayer)) {
-          await future;
           initSkip();
         }
       } catch (e) {
@@ -241,7 +221,7 @@ mixin BlockMixin on GetxController {
     }
   }
 
-  Future<void>? seekTo(Duration duration, {required bool isSeek});
+  Future<void>? seekTo(Duration duration);
 
   void _skipToast(SegmentModel item) {
     if (autoPlay && Pref.blockToast) {
@@ -252,16 +232,9 @@ mixin BlockMixin on GetxController {
     }
   }
 
-  Future<void> onSkip(
-    SegmentModel item, {
-    bool isSkip = true,
-    bool isSeek = true,
-  }) async {
+  Future<void> onSkip(SegmentModel item, {bool isSkip = true}) async {
     try {
-      await seekTo(
-        Duration(milliseconds: item.segment.$2),
-        isSeek: isSeek,
-      );
+      await seekTo(Duration(milliseconds: item.segment.$2));
       if (isSkip) {
         _skipToast(item);
       } else {
@@ -435,7 +408,6 @@ mixin BlockMixin on GetxController {
                             onSkip(
                               item,
                               isSkip: item.skipType != SkipType.showOnly,
-                              isSeek: false,
                             );
                           },
                           style: IconButton.styleFrom(

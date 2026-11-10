@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
@@ -34,6 +35,9 @@ class SpaceOpusItem extends StatelessWidget {
                       src: item.cover!.url,
                       borderRadius: const .vertical(top: .circular(6)),
                       quality: 60,
+                      alignment: item.cover!.ratio >= Style.imgMaxRatio
+                          ? .topCenter
+                          : .center,
                     ),
                   ),
                   Positioned(

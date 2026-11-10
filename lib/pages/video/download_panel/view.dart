@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
+import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/stat/stat.dart';
@@ -113,7 +114,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
   Widget _buildHeader() {
     final textStyle = TextStyle(color: colorScheme.onSurfaceVariant);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 0, 12),
+      padding: const .symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
           Expanded(
@@ -161,28 +162,47 @@ class _DownloadPanelState extends State<DownloadPanel> {
               ],
             ),
           ),
+          Builder(
+            builder: (context) => iconButton(
+              size: 34,
+              iconSize: 20,
+              tooltip: '缓存字幕/分段',
+              onPressed: () {
+                _downloadService.toggleCachePlayInfo();
+                (context as Element).markNeedsBuild();
+              },
+              icon: Icon(
+                _downloadService.cachePlayInfo
+                    ? Icons.subtitles_outlined
+                    : Icons.subtitles_off_outlined,
+                color: _downloadService.cachePlayInfo
+                    ? colorScheme.onSurfaceVariant
+                    : colorScheme.outline,
+              ),
+            ),
+          ),
           if (PlatformUtils.isMobile)
-            Padding(
-              padding: const .only(right: 16),
-              child: StreamBuilder(
-                stream: Connectivity().onConnectivityChanged,
-                builder: (context, snapshot) {
-                  if (snapshot.data case final data?) {
-                    return Icon(
+            StreamBuilder(
+              stream: Connectivity().onConnectivityChanged,
+              builder: (context, snapshot) {
+                if (snapshot.data case final data?) {
+                  return Padding(
+                    padding: const .only(left: 6),
+                    child: Icon(
                       data.contains(ConnectivityResult.wifi)
                           ? Icons.wifi
                           : Icons.signal_cellular_alt,
                       size: 20,
                       color: colorScheme.primary,
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
             )
           else if (kDebugMode)
             Padding(
-              padding: const .only(right: 16),
+              padding: const .only(left: 6),
               child: Icon(
                 Icons.wifi,
                 size: 20,
@@ -249,14 +269,13 @@ class _DownloadPanelState extends State<DownloadPanel> {
                             horizontal: 12,
                             vertical: 5,
                           ),
-                          child: PagesPanel(
-                            list: episode.pages,
+                          child: PagePanel(
+                            parts: episode.pages,
                             cover: episode.arc?.pic,
-                            heroTag: widget.heroTag,
                             ugcIntroController: widget.ugcIntroController!,
                             bvid: episode.bvid ?? IdUtils.av2bv(episode.aid!),
                             cidSet: cidSet,
-                            onDownload: (Part part) => _onDownload(
+                            onDownload: (part) => _onDownload(
                               index: index,
                               episode: part,
                               parent: episode,
@@ -475,11 +494,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
                                 text: episode.badge,
                                 top: 6,
                                 right: 6,
-                                type: switch (episode.badge) {
-                                  '预告' => PBadgeType.gray,
-                                  '限免' => PBadgeType.free,
-                                  _ => PBadgeType.primary,
-                                },
+                                type: episode.badgeType,
                               ),
                           ],
                         )

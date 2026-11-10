@@ -4,6 +4,7 @@ import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/grpc/reply.dart';
 import 'package:PiliPlus/models/common/reply/reply_sort_type.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
+import 'package:PiliPlus/pages/setting/widgets/slider_dialog.dart';
 import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -94,6 +95,12 @@ List<SettingsModel> get replySettings => [
       ReplyGrpc.replyRegExp = value;
       ReplyGrpc.enableFilter = value.pattern.isNotEmpty;
     },
+  ),
+  NormalModel(
+    title: '线程式评论折叠阈值',
+    getSubtitle: () => '当前：「${Pref.foldDepth}」，0为不折叠',
+    leading: const Icon(Icons.compress),
+    onTap: _showReplyDepthDialog,
   ),
   SwitchModel(
     title: '评论区搜索关键词',
@@ -233,3 +240,24 @@ Future<void> _showReplyAtBlockDialog(
 
 void _onBlockAtOnlyReplyChanged(bool value) =>
     ReplyGrpc.blockAtOnlyReply = value;
+
+Future<void> _showReplyDepthDialog(
+  BuildContext context,
+  VoidCallback setState,
+) async {
+  final res = await showDialog<double>(
+    context: context,
+    builder: (context) => SliderDialog(
+      title: const Text('线程式评论折叠阈值'),
+      min: 0,
+      max: 18,
+      divisions: 19,
+      precise: 0,
+      value: Pref.foldDepth.toDouble(),
+    ),
+  );
+  if (res != null) {
+    GStorage.setting.put(SettingBoxKey.foldDepth, res.toInt());
+    setState();
+  }
+}

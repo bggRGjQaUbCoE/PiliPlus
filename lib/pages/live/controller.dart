@@ -6,13 +6,15 @@ import 'package:PiliPlus/models_new/live/live_feed_index/card_list.dart';
 import 'package:PiliPlus/models_new/live/live_feed_index/data.dart';
 import 'package:PiliPlus/models_new/live/live_second_list/data.dart';
 import 'package:PiliPlus/models_new/live/live_second_list/tag.dart';
+import 'package:PiliPlus/pages/common/common_controller.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:flutter/widgets.dart' show ScrollController;
 import 'package:get/get.dart';
 
-class LiveController extends CommonListController with AccountMixin {
+class LiveController extends CommonListController
+    with AccountMixin, RefreshImplMixin {
   @override
   void onInit() {
     super.onInit();

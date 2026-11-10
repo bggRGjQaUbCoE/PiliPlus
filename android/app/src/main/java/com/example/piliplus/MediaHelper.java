@@ -25,9 +25,16 @@ import android.media.session.PlaybackState;
 import android.os.Build;
 import android.view.KeyEvent;
 import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import com.ryanheise.audioservice.AudioService;
+
 class MediaHelper {
+    private static @NonNull Intent getIntent(@NonNull Context context) {
+        return new Intent(context, com.ryanheise.audioservice.MediaButtonReceiver.class);
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     static RemoteAction getRemoteAction(Context context, @DrawableRes int resId, String title, int action) {
         return new RemoteAction(
@@ -38,8 +45,27 @@ class MediaHelper {
         );
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    static RemoteAction getCustomRemoteAction(Context context, @DrawableRes int resId, int code, @NonNull String title) {
+        return new RemoteAction(
+                Icon.createWithResource(context, resId),
+                title,
+                title,
+                buildCustomActionPendingIntent(context, code, title)
+        );
+    }
+
+    static @NonNull PendingIntent buildCustomActionPendingIntent(@NonNull Context context, int code, String customAction) {
+        Intent intent = getIntent(context);
+        intent.setAction(AudioService.NOTIFICATION_CUSTOM_ACTION);
+        intent.putExtra(AudioService.NOTIFICATION_CUSTOM_ACTION_NAME, customAction);
+        intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+        return PendingIntent.getBroadcast(context, code, intent,
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ? PendingIntent.FLAG_MUTABLE : 0);
+    }
+
     private static PendingIntent buildMediaButtonPendingIntent(Context context, int keyCode) {
-        Intent intent = new Intent(context, com.ryanheise.audioservice.MediaButtonReceiver.class);
+        Intent intent = getIntent(context);
         intent.setAction(Intent.ACTION_MEDIA_BUTTON);
         intent.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_DOWN, keyCode));
         intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);

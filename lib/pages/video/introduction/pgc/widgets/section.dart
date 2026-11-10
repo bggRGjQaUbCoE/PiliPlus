@@ -1,43 +1,33 @@
 import 'dart:async' show StreamSubscription;
-import 'dart:math';
 
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/section.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart'
     hide EpisodeItem;
-import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
-import 'package:PiliPlus/pages/video/introduction/ugc/widgets/page.dart'
-    show scrollOffset;
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
+import 'package:PiliPlus/utils/scroll_offset_helper.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
 const double _itemExtent = 140;
-const double _itemWidth = _itemExtent + 10;
 
 class SectionPanel extends StatefulWidget {
   const SectionPanel({
     super.key,
-    required this.item,
-    required this.heroTag,
     required this.pgcController,
     required this.showEpisodes,
     required this.onChangeEpisode,
   });
 
-  final String heroTag;
-  final PgcInfoModel item;
   final ShowEpisodes showEpisodes;
   final PgcIntroController pgcController;
   final OnChangePgcEpisode onChangeEpisode;
@@ -47,27 +37,22 @@ class SectionPanel extends StatefulWidget {
 }
 
 class _SectionPanelState extends State<SectionPanel> {
-  late bool _isSection;
-  late int _index;
-  double get _scrollOffset => scrollOffset(_index, _itemWidth);
+  int? _seasonId;
+  int get _index => _pgcController.pvIndex;
+  bool get _isSection => _pgcController.episodeType == .section;
   late List<Section> _sections;
   late List<EpisodeItem> _episodes;
 
   late final _pgcController = widget.pgcController;
+  late final _videoDetailCtr = _pgcController.videoDetailCtr;
   int get _sectionIndex => _pgcController.sectionIndex;
   late final StreamSubscription<int> _listener;
   late final ScrollController _scrollController;
   late final ListController _sectionListController;
   late final ScrollController _sectionScrollController;
-  late final VideoDetailController _videoDetailCtr;
 
   late final bool _isVip;
   late ColorScheme colorScheme;
-
-  void _init() {
-    _sections = widget.item.sections!;
-    _episodes = _sections[_sectionIndex].episodes!;
-  }
 
   @override
   void didChangeDependencies() {
@@ -78,9 +63,7 @@ class _SectionPanelState extends State<SectionPanel> {
   @override
   void didUpdateWidget(SectionPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.item != oldWidget.item) {
-      _init();
-    }
+    _initIfNeeded();
   }
 
   @override
@@ -95,14 +78,12 @@ class _SectionPanelState extends State<SectionPanel> {
   @override
   void initState() {
     super.initState();
-    _init();
+    _initIfNeeded();
     _isVip = Accounts.isVideoVip;
 
-    _videoDetailCtr = Get.find<VideoDetailController>(tag: widget.heroTag);
-    _updateIndex();
-    _scrollController = ScrollController(initialScrollOffset: _scrollOffset);
+    _scrollController = ScrollController(keepScrollOffset: false);
     _listener = _videoDetailCtr.cid.listen(_onCidChanged);
-    _sectionScrollController = ScrollController();
+    _sectionScrollController = ScrollController(keepScrollOffset: false);
     _sectionListController = ListController();
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => _sectionListController.jumpToItem(
@@ -111,29 +92,49 @@ class _SectionPanelState extends State<SectionPanel> {
         scrollController: _sectionScrollController,
       ),
     );
-  }
-
-  void _updateIndex() {
-    final cid = _videoDetailCtr.cid.rawValue;
-    if (_isSection = _pgcController.episodeType == .section) {
-      _index = max(0, _episodes.indexWhere((e) => e.cid == cid));
-    } else {
-      _index = -1;
+    if (_index > 0) {
+      WidgetsBinding.instance.addPostFrameCallback(_jumpToCurrent);
     }
   }
 
-  void _onCidChanged(int cid) {
-    _updateIndex();
-    if (!mounted) return;
-    setState(() {});
-    if (_isSection) {
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => _scrollController.animateTo(
-          _scrollOffset,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-        ),
+  void _jumpToCurrent([_, bool anim = false]) {
+    final position = _scrollController.position;
+    final scrollOffset = calcPageItemOffsetSeparated(
+      index: _index,
+      separator: 10,
+      extent: _itemExtent,
+      itemCount: _episodes.length,
+      viewportDimension: position.viewportDimension,
+    );
+    if (anim) {
+      position.animateTo(
+        scrollOffset,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
       );
+    } else {
+      position.jumpTo(scrollOffset);
+    }
+  }
+
+  (bool seasonChanged, bool dispose) _initIfNeeded() {
+    if (_seasonId == _pgcController.seasonId) return const (false, false);
+    final item = _pgcController.pgcItem;
+    if (!item.hasSections) return const (true, true);
+    _seasonId = _pgcController.seasonId;
+    _sections = item.sections!;
+    _episodes = _sections[_sectionIndex].episodes!;
+    return const (true, false);
+  }
+
+  void _onCidChanged(int cid) {
+    final (bool seasonChanged, bool dispose) = _initIfNeeded();
+    if (dispose || !mounted) return;
+    setState(() {});
+    if (seasonChanged) {
+      _jumpToCurrent();
+    } else if (_isSection) {
+      _jumpToCurrent(null, true);
     }
   }
 
@@ -144,7 +145,7 @@ class _SectionPanelState extends State<SectionPanel> {
     setState(() {});
     final episode = _episodes.getOrNull(_index);
     if (episode?.cid == _pgcController.cid.rawValue) {
-      _scrollController.jumpTo(_scrollOffset);
+      _jumpToCurrent();
     } else {
       _scrollController.jumpToTop();
     }
@@ -191,7 +192,6 @@ class _SectionPanelState extends State<SectionPanel> {
           height: 30,
           child: CustomScrollView(
             scrollDirection: .horizontal,
-            key: const PageStorageKey(Section),
             controller: _sectionScrollController,
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
@@ -208,13 +208,12 @@ class _SectionPanelState extends State<SectionPanel> {
         ),
         const SizedBox(height: 4),
         SizedBox(
-          height: 108,
+          height: 125,
           child: ListView.separated(
             padding: .zero,
             scrollDirection: .horizontal,
             controller: _scrollController,
             itemCount: _episodes.length,
-            key: const PageStorageKey(_SectionPanelState),
             physics: const AlwaysScrollableScrollPhysics(),
             itemBuilder: (context, index) =>
                 SizedBox(width: _itemExtent, child: _buildItem(index)),
@@ -243,7 +242,7 @@ class _SectionPanelState extends State<SectionPanel> {
         widget.onChangeEpisode(item, episodeType: .section);
       },
       child: Column(
-        spacing: 6,
+        spacing: 4,
         crossAxisAlignment: .stretch,
         children: [
           Stack(
@@ -262,14 +261,29 @@ class _SectionPanelState extends State<SectionPanel> {
                   bottom: 4,
                   type: .gray,
                   size: .small,
+                  padding: const .symmetric(horizontal: 2, vertical: 1),
+                ),
+              if (item.badge?.isNotEmpty ?? false)
+                PBadge(
+                  text: item.badge,
+                  top: 4,
+                  right: 4,
+                  size: .small,
+                  type: item.badgeType,
+                  padding: const .symmetric(horizontal: 2, vertical: 1),
                 ),
             ],
           ),
-          Text(
-            item.title!,
-            maxLines: 1,
+          Text.rich(
+            TextSpan(
+              text: item.title,
+              children: item.longTitle?.isNotEmpty == true
+                  ? [TextSpan(text: ' ${item.longTitle}')]
+                  : null,
+            ),
+            maxLines: 2,
             overflow: .ellipsis,
-            style: TextStyle(fontSize: 13, color: color, height: 1),
+            style: TextStyle(fontSize: 12.5, color: color, height: 1.3),
           ),
         ],
       ),

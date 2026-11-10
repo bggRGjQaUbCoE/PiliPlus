@@ -50,6 +50,7 @@ class _DynamicsTabPageState extends State<DynamicsTabPage>
   Widget build(BuildContext context) {
     super.build(context);
     return refreshIndicator(
+      key: controller.refreshKey,
       onRefresh: onRefresh,
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),

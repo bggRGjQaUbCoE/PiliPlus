@@ -31,6 +31,7 @@ import 'package:PiliPlus/pages/live_room/widgets/bottom_control.dart'
     as live_bottom;
 import 'package:PiliPlus/pages/video/controller.dart';
 import 'package:PiliPlus/pages/video/introduction/pgc/controller.dart';
+import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliPlus/pages/video/post_panel/popup_menu_text.dart';
 import 'package:PiliPlus/pages/video/post_panel/view.dart';
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
@@ -56,7 +57,6 @@ import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
-import 'package:PiliPlus/utils/id_utils.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/ios/pip_helper.dart';
 import 'package:PiliPlus/utils/mobile_observer.dart';
@@ -124,8 +124,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   late AnimationController _animationController;
   late VideoController videoController;
   late final CommonIntroController introController = widget.introController!;
-  late final VideoDetailController videoDetailController =
-      widget.videoDetailController!;
+  PgcIntroController get pgcController => introController as PgcIntroController;
+  UgcIntroController get ugcController => introController as UgcIntroController;
+  late final videoDetailController = widget.videoDetailController!;
 
   final _playerKey = GlobalKey();
   final _videoKey = GlobalKey();
@@ -336,16 +337,16 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     // Keep playing in the PiP window.
     if (Platform.isIOS && IOSPipHelper.isActive) return;
     if (!plPlayerController.continuePlayInBackground.value) {
-      late final player = plPlayerController.videoPlayerController;
       if (const <AppLifecycleState>[.paused, .detached].contains(state)) {
+        final player = plPlayerController.videoPlayerController;
         if (player != null && player.state.playing) {
           _pauseDueToPauseUponEnteringBackgroundMode = true;
-          player.pause();
+          plPlayerController.pause();
         }
       } else {
         if (_pauseDueToPauseUponEnteringBackgroundMode) {
           _pauseDueToPauseUponEnteringBackgroundMode = false;
-          player?.play();
+          plPlayerController.play();
         }
       }
     }
@@ -573,27 +574,15 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           }
           // part -> playAll -> season(pgc)
           if (isPlayAll && !isPart) {
-            widget.showEpisodes?.call();
+            widget.showEpisodes?.call(type: null);
             return;
           }
-          final bvid = plPlayerController.bvid;
-          List<ugc.BaseEpisodeItem>? episodes;
-          if (isPart) {
-            episodes = videoDetail.pages!;
-          } else if (isPgc) {
-            episodes = (introController as PgcIntroController).episodes;
-          }
           widget.showEpisodes?.call(
-            seasonIndex: isSeason
-                ? videoDetailController.seasonIndex.value
-                : null,
-            season: isSeason ? videoDetail.ugcSeason! : null,
-            episodes: isSeason ? null : episodes,
-            bvid: bvid,
-            aid: IdUtils.bv2av(bvid),
-            cid: isSeason
-                ? videoDetailController.seasonCid
-                : plPlayerController.cid!,
+            type: isSeason
+                ? .season
+                : isPgc
+                ? .pgc
+                : .part,
           );
         },
       ),
@@ -883,7 +872,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     final List<BottomControlType> userSpecifyItemRight = [
       if (isNotFileSource && plPlayerController.showDmChart) .dmChart,
       if (plPlayerController.isAnim) .superResolution,
-      if (isNotFileSource && plPlayerController.showViewPoints) .viewPoints,
+      if (plPlayerController.showViewPoints) .viewPoints,
       if (isNotFileSource && anySeason) .episode,
       if (flag) .fit,
       if (isNotFileSource) .aiTranslate,
@@ -965,7 +954,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       feedBack();
       plPlayerController
         ..position.value = seekToPos.inSeconds
-        ..seekTo(seekToPos, isSeek: false)
+        ..seekTo(seekToPos)
         ..seekToPos = null;
     } else {
       plPlayerController.position.value =
@@ -1032,10 +1021,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         if (!plPlayerController.hasToasted) {
           plPlayerController
             ..seekToPos = null
-            ..hasToasted = true;
-          if (plPlayerController.showSeekPreview) {
-            plPlayerController.showPreview.value = false;
-          }
+            ..hasToasted = true
+            ..hidePreviewIfNeeded();
           SmartDialog.showAttach(
             targetContext: context,
             alignment: .center,
@@ -1435,7 +1422,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                 child: Obx(
                   () => AnimatedOpacity(
                     curve: Curves.easeInOut,
-                    opacity: plPlayerController.isSeeking.value ? 1.0 : 0.0,
+                    opacity:
+                        plPlayerController.isSeeking.value &&
+                            plPlayerController.hoverDx == null
+                        ? 1.0
+                        : 0.0,
                     duration: const Duration(milliseconds: 150),
                     child: Container(
                       decoration: const BoxDecoration(
@@ -1609,6 +1600,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                         BottomControl(
                           maxWidth: maxWidth,
                           isFullScreen: isFullScreen,
+                          animCtr: _animationController,
                           controller: plPlayerController,
                           videoDetailController: videoDetailController,
                           buildBottomControl: () => buildBottomControl(
@@ -1756,10 +1748,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                                     if (!plPlayerController
                                         .controlsLock
                                         .value) {
-                                      plPlayerController.seekTo(
-                                        position,
-                                        isSeek: false,
-                                      );
+                                      plPlayerController.seekTo(position);
                                     }
                                   }
                                 : null,
@@ -2364,10 +2353,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                     Icons.gps_fixed_outlined,
                     color: Colors.white,
                   ),
-                  onTap: () => plPlayerController.seekTo(
-                    Duration(seconds: seekOffset),
-                    isSeek: false,
-                  ),
+                  onTap: () =>
+                      plPlayerController.seekTo(Duration(seconds: seekOffset)),
                 ),
             ],
             LiveDanmaku() => [

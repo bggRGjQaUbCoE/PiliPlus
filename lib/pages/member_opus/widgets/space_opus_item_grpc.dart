@@ -37,15 +37,17 @@ class SpaceOpusItemGrpc extends StatelessWidget {
                   LayoutBuilder(
                     builder: (context, constraints) {
                       final double height;
+                      final bool isLongPic;
                       if (coverPic!.hasWidth() && coverPic.hasHeight()) {
-                        height =
-                            constraints.maxWidth *
-                            clampDouble(
-                              coverPic.height.toInt() / coverPic.width.toInt(),
-                              0.68,
-                              2.7,
-                            );
+                        final ratio = clampDouble(
+                          coverPic.height.toInt() / coverPic.width.toInt(),
+                          0.68,
+                          2.7,
+                        );
+                        isLongPic = ratio >= Style.imgMaxRatio;
+                        height = constraints.maxWidth * ratio;
                       } else {
+                        isLongPic = false;
                         height = constraints.maxWidth;
                       }
                       return NetworkImgLayer(
@@ -54,6 +56,7 @@ class SpaceOpusItemGrpc extends StatelessWidget {
                         src: coverPic.src,
                         borderRadius: const .vertical(top: .circular(6)),
                         quality: 60,
+                        alignment: isLongPic ? .topCenter : .center,
                       );
                     },
                   ),

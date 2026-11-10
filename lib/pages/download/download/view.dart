@@ -96,7 +96,21 @@ class _DownloadPageState extends State<DownloadPage>
     toastUpdateResult(dismiss, isSuccess);
   }
 
-  Future<void> _updateSeasonDm(DownloadSeasonInfo seasonInfo) async {
+  Future<void> _updateSeasonDm(DownloadSeasonInfo seasonInfo) => _updateSeason(
+    seasonInfo,
+    (e) => downloadService.downloadDanmaku(entry: e, isUpdate: true),
+  );
+
+  Future<void> _updateSeasonSeg(DownloadSeasonInfo seasonInfo) =>
+      _updateSeason(seasonInfo, downloadService.updateSegments);
+
+  Future<void> _updateSeasonPlayInfo(DownloadSeasonInfo seasonInfo) =>
+      _updateSeason(seasonInfo, downloadService.updatePlayInfo);
+
+  Future<void> _updateSeason(
+    DownloadSeasonInfo seasonInfo,
+    Future<bool> Function(BiliDownloadEntryInfo e) toElement,
+  ) async {
     if (checkUpdateCount(
       seasonInfo.pages.fold(0, (a, b) => a + b.entries.length),
     )) {
@@ -108,18 +122,24 @@ class _DownloadPageState extends State<DownloadPage>
 
     bool isSuccess = true;
 
-    for (final page in seasonInfo.pages) {
-      for (final chunk in page.entries.mapChunked(
-        kUpdateConcurrency,
-        (e) => downloadService.downloadDanmaku(
-          entry: e,
-          isUpdate: true,
-        ),
-      )) {
-        final res = await Future.wait(chunk);
-        if (res.any((e) => !e)) isSuccess = false;
-        if (dismiss) break;
-      }
+    for (final chunk in seasonInfo.pages.mapChunked(
+      kUpdateConcurrency,
+      (page) async {
+        bool isSuccess = true;
+        for (final chunk in page.entries.mapChunked(
+          kUpdateConcurrency,
+          toElement,
+        )) {
+          final res = await Future.wait(chunk);
+          if (res.any((e) => !e)) isSuccess = false;
+          if (dismiss) break;
+        }
+        return isSuccess;
+      },
+    )) {
+      final res = await Future.wait(chunk);
+      if (res.any((e) => !e)) isSuccess = false;
+      if (dismiss) break;
     }
 
     toastUpdateResult(dismiss, isSuccess);
@@ -239,6 +259,8 @@ class _DownloadPageState extends State<DownloadPage>
                                 enableMultiSelect: enableMultiSelect,
                                 progress: _progress,
                                 updateSeasonDm: _updateSeasonDm,
+                                updateSeasonSeg: _updateSeasonSeg,
+                                updateSeasonPlayInfo: _updateSeasonPlayInfo,
                               );
                             }
 
@@ -273,6 +295,8 @@ class _DownloadPageState extends State<DownloadPage>
                               enableMultiSelect: enableMultiSelect,
                               progress: _progress,
                               updatePageDm: updatePageDm,
+                              updatePageSeg: updatePageSeg,
+                              updatePagePlayInfo: updatePagePlayInfo,
                             );
                           },
                           itemCount: _controller.seasons.length,

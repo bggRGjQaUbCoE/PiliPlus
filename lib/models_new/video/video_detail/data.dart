@@ -132,4 +132,18 @@ class VideoDetailData {
             .toList(),
         redirectUrl: nonNullOrEmptyString(json['redirect_url']),
       );
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is VideoDetailData) {
+      return cid == other.cid;
+    }
+    return false;
+  }
+
+  @override
+  int get hashCode => cid.hashCode;
 }

@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/bubble/dyn_list.dart';
+import 'package:PiliPlus/pages/article/view.dart';
 import 'package:PiliPlus/pages/bubble/controller.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliPlus/utils/grid.dart';
@@ -202,13 +203,8 @@ class _BubblePageState extends State<BubblePage>
                   safeArea: false,
                   visualDensity: .standard,
                   // PageUtils.pushDynFromId(id: item.dynId);
-                  onTap: () => Get.toNamed(
-                    '/articlePage',
-                    parameters: {
-                      'id': item.dynId!,
-                      'type': 'opus',
-                    },
-                  ),
+                  onTap: () =>
+                      ArticlePage.toArticlePage(id: item.dynId!, type: .opus),
                   title: Text(
                     item.title!,
                     maxLines: 1,

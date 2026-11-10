@@ -101,6 +101,45 @@ abstract final class Pref {
     List<String>.from(hashes),
   );
 
+  /// 本地 UID 屏蔽时间，使用秒级时间戳以便兼容日期格式工具。
+  static Map<String, int> get localBlackMidAddedAt =>
+      _readBlacklistTimestamps(LocalCacheKey.localBlackMidAddedAt);
+
+  static set localBlackMidAddedAt(Map<String, int> timestamps) =>
+      _localCache.put(
+        LocalCacheKey.localBlackMidAddedAt,
+        Map<String, int>.from(timestamps),
+      );
+
+  /// 仅本地弹幕作者哈希的添加时间。
+  static Map<String, int> get localDanmakuMidHashAddedAt =>
+      _readBlacklistTimestamps(LocalCacheKey.localDanmakuMidHashAddedAt);
+
+  static set localDanmakuMidHashAddedAt(Map<String, int> timestamps) =>
+      _localCache.put(
+        LocalCacheKey.localDanmakuMidHashAddedAt,
+        Map<String, int>.from(timestamps),
+      );
+
+  static Map<String, int> _readBlacklistTimestamps(String key) =>
+      parseBlacklistTimestamps(_localCache.get(key));
+
+  /// 解析归档中的黑名单时间；忽略格式错误或无效的旧数据。
+  static Map<String, int> parseBlacklistTimestamps(Object? value) {
+    if (value is! Map) return <String, int>{};
+
+    final timestamps = <String, int>{};
+    for (final entry in value.entries) {
+      final seconds = int.tryParse(entry.value.toString());
+      if (seconds == null || seconds <= 0) continue;
+      timestamps[entry.key.toString()] = seconds;
+    }
+    return timestamps;
+  }
+
+  static int _currentTimeSeconds() =>
+      DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
   static RuleFilter get danmakuFilterRule => _localCache.get(
     LocalCacheKey.danmakuFilterRules,
     defaultValue: RuleFilter.empty(),
@@ -115,6 +154,9 @@ abstract final class Pref {
 
     globalData.localDanmakuMidHashes.add(hash);
     localDanmakuMidHashes = globalData.localDanmakuMidHashes;
+    final timestamps = localDanmakuMidHashAddedAt
+      ..[hash] = _currentTimeSeconds();
+    localDanmakuMidHashAddedAt = timestamps;
   }
 
   /// 移除一条仅依据弹幕哈希保存的本地屏蔽。
@@ -123,6 +165,8 @@ abstract final class Pref {
     if (!globalData.localDanmakuMidHashes.remove(hash)) return;
 
     localDanmakuMidHashes = globalData.localDanmakuMidHashes;
+    final timestamps = localDanmakuMidHashAddedAt..remove(hash);
+    localDanmakuMidHashAddedAt = timestamps;
   }
 
   static void setBlackMid(int mid) {
@@ -132,12 +176,18 @@ abstract final class Pref {
     globalData.localBlackMids.add(mid);
     localBlackMids = globalData.localBlackMids;
     globalData.blackMids.add(mid);
+    final timestamps = localBlackMidAddedAt
+      ..[mid.toString()] = _currentTimeSeconds();
+    localBlackMidAddedAt = timestamps;
   }
 
   static void removeBlackMid(int mid) {
     final globalData = GlobalData();
     globalData.localBlackMids.remove(mid);
     localBlackMids = globalData.localBlackMids;
+
+    final timestamps = localBlackMidAddedAt..remove(mid.toString());
+    localBlackMidAddedAt = timestamps;
 
     if (!globalData.onlineBlackMids.contains(mid)) {
       globalData.blackMids.remove(mid);

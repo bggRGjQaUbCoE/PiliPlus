@@ -264,7 +264,11 @@ abstract final class LocalCacheKey {
   static const String historyPause = 'historyPause',
       blackMids = 'blackMids',
       localBlackMids = 'localBlackMids',
+      localBlackMidAddedAt =
+          'localBlackMidAddedAt', // UID 添加时间（秒级）
       localDanmakuMidHashes = 'localDanmakuMidHashes',
+      localDanmakuMidHashAddedAt =
+          'localDanmakuMidHashAddedAt', // 弹幕哈希添加时间（秒级）
       danmakuFilterRules = 'danmakuFilterRules',
       mixinKey = 'mixinKey',
       timeStamp = 'timeStamp';

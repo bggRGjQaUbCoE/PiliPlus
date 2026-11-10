@@ -257,13 +257,15 @@ abstract final class SettingBoxKey {
       liveCdnUrl = 'liveCdnUrl',
       saveReply = 'saveReply',
       appFont = 'appFont',
-      foldDepth = 'foldDepth';
+      foldDepth = 'foldDepth',
+      autoCleanDeletedBlacklist = 'autoCleanDeletedBlacklist';
 }
 
 abstract final class LocalCacheKey {
   static const String historyPause = 'historyPause',
       blackMids = 'blackMids',
       localBlackMids = 'localBlackMids',
+      localDanmakuMidHashes = 'localDanmakuMidHashes',
       danmakuFilterRules = 'danmakuFilterRules',
       mixinKey = 'mixinKey',
       timeStamp = 'timeStamp';

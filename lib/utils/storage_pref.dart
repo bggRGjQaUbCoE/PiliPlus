@@ -56,6 +56,12 @@ abstract final class Pref {
   static UserInfoData? get userInfoCache =>
       GStorage.userInfo.get('userInfoCache');
 
+  /// 默认在每次启动时静默检查并清理已注销的本地屏蔽用户。
+  static bool get autoCleanDeletedBlacklist => _setting.get(
+    SettingBoxKey.autoCleanDeletedBlacklist,
+    defaultValue: true,
+  );
+
   static List<double> get dynamicDetailRatio => List<double>.from(
     _setting.get(
       SettingBoxKey.dynamicDetailRatio,
@@ -88,10 +94,42 @@ abstract final class Pref {
   static set localBlackMids(List<int> mids) =>
       _localCache.put(LocalCacheKey.localBlackMids, List<int>.from(mids));
 
+  /// 仅依据弹幕哈希屏蔽的用户标识，无法还原为 B 站 UID。
+  static List<String> get localDanmakuMidHashes => List<String>.from(
+    _localCache.get(
+      LocalCacheKey.localDanmakuMidHashes,
+      defaultValue: <String>[],
+    ),
+  );
+
+  static set localDanmakuMidHashes(List<String> hashes) => _localCache.put(
+    LocalCacheKey.localDanmakuMidHashes,
+    List<String>.from(hashes),
+  );
+
   static RuleFilter get danmakuFilterRule => _localCache.get(
     LocalCacheKey.danmakuFilterRules,
     defaultValue: RuleFilter.empty(),
   );
+
+  /// 记录只在当前设备生效的弹幕作者哈希屏蔽。
+  static void addLocalDanmakuMidHash(String hash) {
+    if (hash.isEmpty) return;
+
+    final globalData = GlobalData();
+    if (globalData.localDanmakuMidHashes.contains(hash)) return;
+
+    globalData.localDanmakuMidHashes.add(hash);
+    localDanmakuMidHashes = globalData.localDanmakuMidHashes;
+  }
+
+  /// 移除一条仅依据弹幕哈希保存的本地屏蔽。
+  static void removeLocalDanmakuMidHash(String hash) {
+    final globalData = GlobalData();
+    if (!globalData.localDanmakuMidHashes.remove(hash)) return;
+
+    localDanmakuMidHashes = globalData.localDanmakuMidHashes;
+  }
 
   static void setBlackMid(int mid) {
     final globalData = GlobalData();

@@ -1,10 +1,8 @@
-import 'dart:convert';
-
 import 'package:PiliPlus/http/danmaku_block.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/dm_block_type.dart';
 import 'package:PiliPlus/models/user/danmaku_block.dart';
-import 'package:archive/archive.dart' show getCrc32;
+import 'package:PiliPlus/utils/danmaku_mid_hash.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -64,7 +62,7 @@ class DanmakuBlockController extends GetxController
     required int type,
   }) async {
     if (type == 2) {
-      filter = getCrc32(ascii.encode(filter), 0).toRadixString(16);
+      filter = danmakuMidHashOf(filter);
     }
     SmartDialog.showLoading(msg: '正在添加弹幕屏蔽规则……');
     final res = await DanmakuFilterHttp.danmakuFilterAdd(

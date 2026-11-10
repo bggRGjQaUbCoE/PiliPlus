@@ -1,4 +1,4 @@
-import 'dart:async' show Timer;
+import 'dart:async' show Timer, unawaited;
 import 'dart:convert' show utf8;
 import 'dart:io' show Platform;
 import 'dart:typed_data' show Uint8List;
@@ -11,6 +11,7 @@ import 'package:PiliPlus/common/widgets/marquee.dart';
 import 'package:PiliPlus/common/widgets/player_bar.dart';
 import 'package:PiliPlus/http/danmaku.dart';
 import 'package:PiliPlus/http/danmaku_block.dart';
+import 'package:PiliPlus/http/black.dart';
 import 'package:PiliPlus/http/live.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
@@ -40,6 +41,7 @@ import 'package:PiliPlus/services/shutdown_timer_service.dart'
     show shutdownTimerService, ShutdownPanel;
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
+import 'package:PiliPlus/utils/blacklist_utils.dart';
 import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
@@ -245,33 +247,54 @@ class HeaderControl extends StatefulWidget {
     required VideoDanmaku extra,
     required PlPlayerController ctr,
   }) {
-    if (Accounts.main.isLogin) {
-      return autoWrapReportDialog(
-        context,
-        mid: () => int.parse(extra.mid),
-        ReportOptions.danmakuReport,
-        withContent: ReportOptions.danmakuReportCheck,
-        contentRequired: ReportOptions.danmakuReportCheck,
-        (reasonType, reasonDesc, banUid) {
-          if (banUid) {
-            final filter = ctr.filters;
-            if (filter.dmUid.add(extra.mid)) {
-              filter.count++;
-              GStorage.localCache.put(LocalCacheKey.danmakuFilterRules, filter);
-            }
-            DanmakuFilterHttp.danmakuFilterAdd(filter: extra.mid, type: 2);
-          }
-          return DanmakuHttp.danmakuReport(
-            reason: reasonType,
-            cid: ctr.cid!,
-            id: extra.id,
-            content: reasonDesc,
-          );
-        },
-      );
-    } else {
+    if (!Accounts.main.isLogin) {
       return SmartDialog.showToast('请先登录');
     }
+
+    var locallyBlocked = false;
+    return autoWrapReportDialog(
+      context,
+      ReportOptions.danmakuReport,
+      (reasonType, reasonDesc, banUid) async {
+        if (banUid) {
+          final filter = ctr.filters;
+          if (filter.dmUid.add(extra.mid)) {
+            filter.count++;
+            GStorage.localCache.put(LocalCacheKey.danmakuFilterRules, filter);
+          }
+          unawaited(
+            DanmakuFilterHttp.danmakuFilterAdd(filter: extra.mid, type: 2),
+          );
+        }
+
+        final result = await DanmakuHttp.danmakuReport(
+          reason: reasonType,
+          cid: ctr.cid!,
+          id: extra.id,
+          content: reasonDesc,
+        );
+        if (!result.isSuccess) return result;
+
+        try {
+          // 举报完成后读取服务端总数，只有在线名单确实达到上限才本地兜底。
+          final onlineList = await BlackHttp.blackList(pn: 1);
+          final onlineCount = onlineList.dataOrNull?.total;
+          if (shouldUseLocalBlacklistFallback(onlineCount) &&
+              extra.mid.isNotEmpty) {
+            Pref.addLocalDanmakuMidHash(extra.mid);
+            locallyBlocked = true;
+          }
+        } catch (_) {
+          // 数量无法确认时保持举报成功，但不启用本地兜底。
+        }
+
+        return result;
+      },
+      showBanUid: true,
+      successMessage: () => locallyBlocked ? '举报成功，在线黑名单已满，已本地屏蔽该弹幕用户' : '举报成功',
+      withContent: ReportOptions.danmakuReportCheck,
+      contentRequired: ReportOptions.danmakuReportCheck,
+    );
   }
 
   static Future<void> reportLiveDanmaku(
@@ -286,21 +309,7 @@ class HeaderControl extends StatefulWidget {
         ReportOptions.liveDanmakuReport,
         withContent: ReportOptions.liveDanmakuReportCheck,
         contentRequired: ReportOptions.liveDanmakuReportCheck,
-        (reasonType, reasonDesc, banUid) {
-          // if (banUid) {
-          //   final filter = ctr.filters;
-          //   if (filter.dmUid.add(extra.mid)) {
-          //     filter.count++;
-          //     GStorage.localCache.put(
-          //       LocalCacheKey.danmakuFilterRules,
-          //       filter,
-          //     );
-          //   }
-          //   DanmakuFilterHttp.danmakuFilterAdd(
-          //     filter: extra.mid,
-          //     type: 2,
-          //   );
-          // }
+        (reasonType, reasonDesc, _) {
           return LiveHttp.liveDmReport(
             roomId: roomId,
             mid: extra.mid,

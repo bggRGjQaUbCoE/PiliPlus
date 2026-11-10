@@ -7,14 +7,12 @@ import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
-import 'package:PiliPlus/common/widgets/sliver_wrap.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/blacklist/list.dart';
 import 'package:PiliPlus/pages/blacklist/controller.dart';
-import 'package:PiliPlus/pages/search/widgets/search_text.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -82,7 +80,7 @@ class _BlackListPageState extends State<BlackListPage>
                     (type) => Tab(
                       text:
                           '${type.label} (${switch (type) {
-                            _BlockType.local => _blackListController.localBlackMids.length,
+                            _BlockType.local => _blackListController.localBlackMids.length + GlobalData().localDanmakuMidHashes.length,
                             _BlockType.online => _blackListController.onlineCount.value,
                           }})',
                     ),
@@ -223,44 +221,101 @@ class _BlackListPageState extends State<BlackListPage>
             bottom: 180,
             sliver: SliverPadding(
               padding: const .fromLTRB(12, 12, 12, 0),
-              sliver: Obx(
-                () => SliverFixedWrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  mainAxisExtent: 30,
-                  delegate: SliverChildBuilderDelegate(
-                    addAutomaticKeepAlives: false,
-                    addRepaintBoundaries: false,
-                    childCount: _blackListController.localBlackMids.length,
-                    (context, index) {
-                      final mids = _blackListController.localBlackMids;
-                      final mid = mids[mids.length - index - 1];
-                      return SearchText(
-                        text: mid.toString(),
-                        onTap: (mid) => Get.toNamed('/member?mid=$mid'),
-                        onLongPress: (_) => showConfirmDialog(
-                          context: context,
-                          title: const Text('确定移除该用户？'),
-                          onConfirm: () {
-                            _blackListController.localBlackMids.remove(mid);
-                            Pref.localBlackMids =
-                                _blackListController.localBlackMids;
-                            if (!GlobalData().onlineBlackMids.contains(mid)) {
-                              GlobalData().blackMids.remove(mid);
-                            }
-                            setState(() {});
-                          },
+              sliver: Obx(() {
+                final localDanmakuHashes = GlobalData().localDanmakuMidHashes;
+                return SliverMainAxisGroup(
+                  slivers: [
+                    SliverList.builder(
+                      itemCount: _blackListController.localBlackMids.length,
+                      itemBuilder: (context, index) {
+                        final mids = _blackListController.localBlackMids;
+                        // 按插入顺序保存的数据倒序展示，让最新屏蔽项排在最前。
+                        final mid = mids[mids.length - index - 1];
+                        return ListTile(
+                          visualDensity: .standard,
+                          onTap: () => Get.toNamed('/member?mid=$mid'),
+                          leading: const CircleAvatar(
+                            radius: 22,
+                            child: Icon(Icons.person_outline),
+                          ),
+                          title: Text(
+                            'UID: $mid',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                          subtitle: Text(
+                            '本地屏蔽',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.outline,
+                            ),
+                          ),
+                          dense: true,
+                          trailing: TextButton(
+                            onPressed: () => showConfirmDialog(
+                              context: context,
+                              title: const Text('确定移除该用户？'),
+                              onConfirm: () => Pref.removeBlackMid(mid),
+                            ),
+                            child: const Text('移除'),
+                          ),
+                        );
+                      },
+                    ),
+                    if (localDanmakuHashes.isNotEmpty) ...[
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(4, 16, 4, 6),
+                          child: Text(
+                            '自动屏蔽的弹幕作者 (${localDanmakuHashes.length})',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.outline,
+                              fontSize: 13,
+                            ),
+                          ),
                         ),
-                        height: 1,
-                        maxLines: 1,
-                        fontSize: 14,
-                        overflow: .ellipsis,
-                        padding: const .fromLTRB(11, 8, 11, 0),
-                      );
-                    },
-                  ),
-                ),
-              ),
+                      ),
+                      SliverList.builder(
+                        itemCount: localDanmakuHashes.length,
+                        itemBuilder: (context, index) {
+                          final hash =
+                              localDanmakuHashes[localDanmakuHashes.length -
+                                  index -
+                                  1];
+                          return ListTile(
+                            dense: true,
+                            leading: const CircleAvatar(
+                              radius: 22,
+                              child: Icon(Icons.subtitles_off_outlined),
+                            ),
+                            title: Text(
+                              '弹幕作者标识：$hash',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            subtitle: Text(
+                              'B站弹幕未提供 UID，仅在本机屏蔽该作者的弹幕',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.outline,
+                              ),
+                            ),
+                            trailing: TextButton(
+                              onPressed: () => showConfirmDialog(
+                                context: context,
+                                title: const Text('确定移除该弹幕屏蔽？'),
+                                onConfirm: () =>
+                                    Pref.removeLocalDanmakuMidHash(hash),
+                              ),
+                              child: const Text('移除'),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ],
+                );
+              }),
             ),
           ),
         ],

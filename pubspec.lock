@@ -109,11 +109,12 @@ packages:
   audio_service_mpris:
     dependency: "direct main"
     description:
-      name: audio_service_mpris
-      sha256: c30403539b027a6331ac5e2031d00046d7a0a5a0df88cd70665ed509cc1e6903
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.0-beta.2"
+      path: "."
+      ref: piliplus
+      resolved-ref: "9a60ad52c7102c82dc919bfd082f17fd8e7b62d7"
+      url: "https://github.com/Tobiichi-Origuchi/audio-service-mpris.git"
+    source: git
+    version: "1.0.0-beta.3"
   audio_service_platform_interface:
     dependency: transitive
     description:

@@ -720,11 +720,24 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                         color: Colors.white,
                       )
                     : const Icon(
-                        Icons.closed_caption_off_rounded,
+                        Icons.closed_caption_rounded,
                         size: 22,
                         color: Colors.white,
                       ),
               ),
+            );
+          }
+          if (videoDetailController.isFileSource) {
+            return ComBtn(
+              width: widgetWidth,
+              height: 30,
+              tooltip: '字幕',
+              icon: const Icon(
+                Icons.closed_caption_off_outlined,
+                size: 22,
+                color: Colors.white,
+              ),
+              onTap: () => SmartDialog.showToast('此视频暂无已缓存字幕'),
             );
           }
           return const SizedBox.shrink();

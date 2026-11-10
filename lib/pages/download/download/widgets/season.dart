@@ -28,7 +28,6 @@ class SeasonInfoItem extends StatelessWidget {
     required this.updateSeasonSeg,
     required this.updateSeasonVolume,
     required this.updateSeasonPlayInfo,
-    required this.updateSeasonSeasonInfo,
   });
 
   final BaseMultiSelectMixin<DownloadSeasonInfo> controller;
@@ -41,7 +40,6 @@ class SeasonInfoItem extends StatelessWidget {
   final ValueChanged<DownloadSeasonInfo> updateSeasonSeg;
   final ValueChanged<DownloadSeasonInfo> updateSeasonVolume;
   final ValueChanged<DownloadSeasonInfo> updateSeasonPlayInfo;
-  final ValueChanged<DownloadSeasonInfo> updateSeasonSeasonInfo;
 
   @override
   Widget build(BuildContext context) {
@@ -88,13 +86,6 @@ class SeasonInfoItem extends StatelessWidget {
                     updateSeasonSeg(season);
                   },
                   child: const Text('更新片段'),
-                ),
-                DialogOption(
-                  onPressed: () {
-                    Get.back();
-                    updateSeasonSeasonInfo(season);
-                  },
-                  child: const Text('更新合集信息'),
                 ),
                 DialogOption(
                   onPressed: () {

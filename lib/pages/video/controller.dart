@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:convert' show utf8, jsonDecode;
+import 'dart:convert' show jsonDecode;
 import 'dart:io' show Platform, File;
 import 'dart:math' show min;
 import 'dart:ui';
@@ -59,7 +59,6 @@ import 'package:PiliPlus/utils/extension/nested_scroll_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/reply_scheme_helper.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -373,11 +372,12 @@ class VideoDetailController extends GetxController
       }
     }
     // subtitle
-    final subtitles = entry.subtitles;
-    if (subtitles != null && subtitles.isNotEmpty) {
-      this.subtitles.assignAll(subtitles);
-      vttSubtitlesIndex.value = 0;
-    }
+    subtitles.assignAll(
+      (entry.subtitles ?? const <Subtitle>[])
+          .whereType<LocalSubtitle>()
+          .where((sub) => File(sub.path).existsSync()),
+    );
+    vttSubtitlesIndex.value = 0;
     // volume
     volume = entry.volume;
     firstVideo = VideoItem(
@@ -1059,79 +1059,72 @@ class VideoDetailController extends GetxController
   final RxList<Subtitle> subtitles = RxList<Subtitle>();
   final Map<int, SubtitleData> vttSubtitles = {};
   late final vttSubtitlesIndex = (-1).obs;
+  int _subtitleRequest = 0;
+
   Future<SubtitleData?> loadFileSubtitle({
     required String path,
     required String fileName,
   }) async {
-    SubtitleData? data;
     final length = subtitles.length;
-    if (SubtitleUtils.isJson(fileName)) {
-      final file = File(path);
-      final stream = file.openRead().transform(utf8.decoder);
-      final buffer = StringBuffer();
-      await for (final chunk in stream) {
-        if (isClosed) return null;
-        buffer.write(chunk);
-      }
-      if (isClosed) return null;
-      String sub = buffer.toString();
-      sub = await compute<List, String>(
-        SubtitleUtils.json2Vtt,
-        jsonDecode(sub)['body'],
-      );
-      if (isClosed) return null;
-      data = (isData: true, id: sub);
-      vttSubtitles[length] = data;
-    } else {
-      data = (isData: false, id: path);
-      vttSubtitles[length] = data;
-    }
+    final data = SubtitleUtils.isJson(fileName)
+        ? await _readJsonSubtitle(path)
+        : (isData: false, id: path);
+    if (isClosed) return null;
+    vttSubtitles[length] = data;
     return data;
+  }
+
+  Future<SubtitleData> _readJsonSubtitle(String path) async {
+    final json = jsonDecode(await File(path).readAsString());
+    final vtt = await compute<List, String>(SubtitleUtils.json2Vtt, json['body']);
+    return (isData: true, id: vtt);
   }
 
   // 设定字幕轨道
   Future<void> setSubtitle(int index) async {
+    final request = ++_subtitleRequest;
     if (index <= 0) {
       await plPlayerController.videoPlayerController?.setSubtitleTrack(.no());
-      vttSubtitlesIndex.value = index;
+      if (!isClosed && request == _subtitleRequest) {
+        vttSubtitlesIndex.value = index;
+      }
       return;
     }
 
-    var subtitle = vttSubtitles[index - 1];
-    if (subtitle == null) {
-      final rawSub = subtitles[index - 1];
-      if (rawSub is LocalSubtitle) {
-        subtitle = await loadFileSubtitle(
-          path: rawSub.path,
-          fileName: PathUtils.subtitleExt,
-        );
-      } else {
-        final result = await VideoHttp.getSubtitles(
-          subtitles[index - 1].subtitleUrl!,
-        );
-        if (!isClosed && result != null) {
-          subtitle = (isData: true, id: result);
-          vttSubtitles[index - 1] = subtitle;
+    final trackIndex = index - 1;
+    if (trackIndex >= subtitles.length) return;
+    final rawSub = subtitles[trackIndex];
+    try {
+      var subtitle = vttSubtitles[trackIndex];
+      if (subtitle == null) {
+        if (rawSub is LocalSubtitle) {
+          subtitle = await _readJsonSubtitle(rawSub.path);
         } else {
-          return;
+          final result = await VideoHttp.getSubtitles(rawSub.subtitleUrl!);
+          if (result == null) return;
+          subtitle = (isData: true, id: result);
         }
       }
+      if (isClosed ||
+          request != _subtitleRequest ||
+          trackIndex >= subtitles.length ||
+          !identical(subtitles[trackIndex], rawSub)) {
+        return;
+      }
+      vttSubtitles[trackIndex] = subtitle;
+      final subUri = subtitle.isData ? 'memory://${subtitle.id}' : subtitle.id;
+      await plPlayerController.videoPlayerController?.setSubtitleTrack(
+        SubtitleTrack(subUri, rawSub.lanDoc, rawSub.lan, uri: true),
+      );
+      if (!isClosed && request == _subtitleRequest) {
+        vttSubtitlesIndex.value = index;
+      }
+    } catch (e, s) {
+      if (kDebugMode) debugPrint('$e\n\n$s');
+      if (!isClosed && request == _subtitleRequest) {
+        SmartDialog.showToast('字幕加载失败');
+      }
     }
-    if (subtitle == null) return;
-    await _setSub(index, subtitle);
-  }
-
-  Future<void> _setSub(int index, SubtitleData subtitle) async {
-    final sub = subtitles[index - 1];
-
-    String subUri = subtitle.id;
-    if (subtitle.isData) {
-      subUri = 'memory://$subUri';
-    }
-    await plPlayerController.videoPlayerController?.setSubtitleTrack(
-      SubtitleTrack(subUri, sub.lanDoc, sub.lan, uri: true),
-    );
-    vttSubtitlesIndex.value = index;
   }
 
   // interactive video
@@ -1314,6 +1307,7 @@ class VideoDetailController extends GetxController
     savedDanmaku = null;
 
     // subtitle
+    _subtitleRequest++;
     subtitles.clear();
     vttSubtitlesIndex.value = -1;
     vttSubtitles.clear();

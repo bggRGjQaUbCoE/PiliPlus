@@ -48,10 +48,10 @@ class _DownloadPageState extends State<DownloadPage>
   }
 
   @override
-  Future<bool> onUpdate(
+  Future<void> onUpdate(
     Future<bool> Function(BiliDownloadEntryInfo e) toElement,
   ) async {
-    if (checkUpdateCount(_controller.checkedCount)) return false;
+    if (checkUpdateCount(_controller.checkedCount)) return;
 
     bool dismiss = false;
     SmartDialog.showLoading(
@@ -94,8 +94,6 @@ class _DownloadPageState extends State<DownloadPage>
     }
 
     toastUpdateResult(dismiss, isSuccess);
-
-    return isSuccess;
   }
 
   Future<void> _updateSeasonDm(DownloadSeasonInfo seasonInfo) => _updateSeason(
@@ -112,20 +110,14 @@ class _DownloadPageState extends State<DownloadPage>
   Future<void> _updateSeasonPlayInfo(DownloadSeasonInfo seasonInfo) =>
       _updateSeason(seasonInfo, downloadService.updatePlayInfo);
 
-  Future<void> _updateSeasonSeasonInfo(DownloadSeasonInfo seasonInfo) =>
-      _updateSeason(
-        seasonInfo,
-        downloadService.updateSeasonInfo,
-      ).then(downloadService.refreshIfUpdated);
-
-  Future<bool> _updateSeason(
+  Future<void> _updateSeason(
     DownloadSeasonInfo seasonInfo,
     Future<bool> Function(BiliDownloadEntryInfo e) toElement,
   ) async {
     if (checkUpdateCount(
       seasonInfo.pages.fold(0, (a, b) => a + b.entries.length),
     )) {
-      return false;
+      return;
     }
 
     bool dismiss = false;
@@ -154,8 +146,6 @@ class _DownloadPageState extends State<DownloadPage>
     }
 
     toastUpdateResult(dismiss, isSuccess);
-
-    return isSuccess;
   }
 
   @override
@@ -275,7 +265,6 @@ class _DownloadPageState extends State<DownloadPage>
                                 updateSeasonSeg: _updateSeasonSeg,
                                 updateSeasonVolume: _updateSeasonVolume,
                                 updateSeasonPlayInfo: _updateSeasonPlayInfo,
-                                updateSeasonSeasonInfo: _updateSeasonSeasonInfo,
                               );
                             }
 
@@ -313,7 +302,6 @@ class _DownloadPageState extends State<DownloadPage>
                               updatePageSeg: updatePageSeg,
                               updatePageVolume: updatePageVolume,
                               updatePagePlayInfo: updatePagePlayInfo,
-                              updatePageSeasonInfo: updatePageSeasonInfo,
                             );
                           },
                           itemCount: _controller.seasons.length,

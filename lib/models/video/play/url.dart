@@ -422,8 +422,7 @@ class Volume {
     'target_tp': targetTp,
   };
 
-  static Volume? fromCache(dynamic json) {
-    if (json == null) return null;
+  static Volume? fromCache(Map<String, dynamic> json) {
     try {
       return .fromJson(json);
     } catch (_) {}

@@ -5,6 +5,7 @@ import 'dart:math' as math;
 
 import 'package:PiliPlus/common/widgets/dialog/report.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart';
+import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/live.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
@@ -19,6 +20,7 @@ import 'package:PiliPlus/models_new/live/live_room_info_h5/data.dart';
 import 'package:PiliPlus/models_new/live/live_room_play_info/codec.dart';
 import 'package:PiliPlus/models_new/live/live_room_play_info/stream.dart';
 import 'package:PiliPlus/models_new/live/live_superchat/item.dart';
+import 'package:PiliPlus/models_new/live/live_trace/data.dart';
 import 'package:PiliPlus/pages/common/publish/publish_route.dart';
 import 'package:PiliPlus/pages/danmaku/danmaku_model.dart';
 import 'package:PiliPlus/pages/live_room/send_danmaku/view.dart';
@@ -26,9 +28,11 @@ import 'package:PiliPlus/pages/video/widgets/header_control.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/danmaku_options.dart';
+import 'package:PiliPlus/services/logger.dart' show logger;
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/tcp/live.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/connectivity_utils.dart';
 import 'package:PiliPlus/utils/danmaku_utils.dart';
@@ -45,6 +49,7 @@ import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/video_utils.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
+import 'package:collection/collection.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, kReleaseMode;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -69,21 +74,130 @@ class LiveRoomController extends GetxController {
   final isLoaded = false.obs;
   final roomInfoH5 = Rxn<RoomInfoH5Data>();
 
+  // live time
+  Timer? _liveTimeTimer;
   final liveTime = Rxn<int>();
-  Timer? liveTimeTimer;
 
-  void startLiveTimer() {
+  void _startLiveTimeTimer() {
+    if (isClosed) return;
     if (liveTime.value != null) {
-      liveTimeTimer ??= Timer.periodic(
+      _liveTimeTimer ??= Timer.periodic(
         const Duration(minutes: 5),
         (_) => liveTime.refresh(),
       );
     }
   }
 
-  void cancelLiveTimer() {
-    liveTimeTimer?.cancel();
-    liveTimeTimer = null;
+  void _stopLiveTimeTimer() {
+    _liveTimeTimer?.cancel();
+    _liveTimeTimer = null;
+  }
+
+  // live trace
+  Timer? _liveTraceTimer;
+  LiveTraceReq? _liveTraceReq;
+  LiveTraceResp? _liveTraceResp;
+  int get _liveTraceInterval =>
+      _liveTraceResp?.interval ?? LiveTraceResp.kInterval;
+
+  Future<void> _initLiveTraceIfNeeded() async {
+    if (isClosed || !isLoaded.value || !heartbeat.isLogin) return;
+    try {
+      // id
+      final ruid = this.ruid!;
+      final roomInfo = roomInfoH5.rawValue?.roomInfo;
+      if (roomInfo == null) {
+        Utils.reportError('liveTrace: null roomInfo');
+        return;
+      }
+      final parentAreaId = roomInfo.parentAreaId!;
+      final areaId = roomInfo.areaId!;
+
+      // liveBuvid
+      final cookies = await heartbeat.cookieJar.loadForRequest(
+        Uri.parse(HttpString.baseUrl),
+      );
+      final liveBuvid = cookies
+          .firstWhereOrNull((cookie) => cookie.name == 'LIVE_BUVID')
+          ?.value;
+      if (isClosed) return;
+      if (liveBuvid == null) {
+        Utils.reportError('liveTrace: null liveBuvid');
+        return;
+      }
+
+      _liveTraceReq = LiveTraceReq(
+        parentAreaId: parentAreaId,
+        areaId: areaId,
+        roomId: roomId,
+        liveBuvid: liveBuvid,
+        ruid: ruid,
+      );
+      _startLiveTraceTimer();
+    } catch (_) {
+      if (kDebugMode) rethrow;
+    }
+  }
+
+  void _startLiveTraceTimer() {
+    if (_liveTraceReq == null || isClosed || _liveTraceTimer != null) {
+      return;
+    }
+    _liveTraceReq!.seqId = 0; // reset
+    _onLiveTrace();
+    _liveTraceTimer = Timer.periodic(
+      Duration(seconds: _liveTraceInterval),
+      _onLiveTrace,
+    );
+  }
+
+  void _stopLiveTraceTimer() {
+    _liveTraceTimer?.cancel();
+    _liveTraceTimer = null;
+  }
+
+  Future<void> _onLiveTrace([_]) async {
+    if (kDebugMode) logger.i('liveTraceReq: $_liveTraceReq');
+    final res = _liveTraceReq!.seqId == 0
+        ? await LiveHttp.liveTraceE(
+            traceReq: _liveTraceReq!,
+            heartbeat: heartbeat,
+          )
+        : await LiveHttp.liveTraceX(
+            traceReq: _liveTraceReq!,
+            traceResp: _liveTraceResp!,
+            heartbeat: heartbeat,
+          );
+    if (isClosed) return;
+    if (res case Success(:final response)) {
+      if (kDebugMode) logger.i('liveTraceResp: $response');
+      // update interval
+      final newInterval = response.interval;
+      if (_liveTraceInterval != newInterval) {
+        _liveTraceTimer?.cancel();
+        _liveTraceTimer = Timer.periodic(
+          Duration(seconds: newInterval),
+          _onLiveTrace,
+        );
+      }
+
+      _liveTraceResp = response;
+    } else {
+      Utils.reportError('live trace error: $res');
+      _stopLiveTraceTimer();
+    }
+  }
+
+  void startService({bool startDM = true}) {
+    _startLiveTimeTimer();
+    _startLiveTraceTimer();
+    if (startDM) startLiveMsg();
+  }
+
+  void stopService({bool stopDM = true}) {
+    _stopLiveTimeTimer();
+    _stopLiveTraceTimer();
+    if (stopDM) closeLiveMsg();
   }
 
   Widget get timeWidget => Obx(() {
@@ -139,8 +253,9 @@ class LiveRoomController extends GetxController {
         : .fromCode(Pref.liveQuality),
   );
 
-  late final bool isLogin;
   late final int mid;
+  late final bool isMainLogin;
+  late final Account heartbeat;
 
   String? videoUrl;
   bool? isPlaying;
@@ -209,12 +324,14 @@ class LiveRoomController extends GetxController {
   void onInit() {
     super.onInit();
     scrollController = ScrollController()..addListener(listener);
-    final account = Accounts.main;
-    isLogin = account.isLogin;
-    mid = account.mid;
-    queryLiveUrl(autoFullScreenFlag: true);
-    queryLiveInfoH5();
-    if (Accounts.heartbeat.isLogin && !Pref.historyPause) {
+    final mainAccount = Accounts.main;
+    heartbeat = Accounts.heartbeat;
+    isMainLogin = mainAccount.isLogin;
+    mid = mainAccount.mid;
+    Future.wait(
+      [queryLiveUrl(autoFullScreenFlag: true), queryLiveInfoH5()],
+    ).whenComplete(_initLiveTraceIfNeeded);
+    if (heartbeat.isLogin && !Pref.historyPause) {
       VideoHttp.roomEntryAction(roomId: roomId);
     }
     if (showSuperChat) {
@@ -259,12 +376,19 @@ class LiveRoomController extends GetxController {
         _showDialog('无法获取播放地址');
         return;
       }
+
+      // uid
       ruid = response.uid;
+
+      // roomId
       if (response.roomId case final roomId?) {
         this.roomId = roomId;
       }
+
+      // live time
       liveTime.value = response.liveTime;
-      startLiveTimer();
+      _startLiveTimeTimer();
+
       isPortrait.value = response.isPortrait ?? false;
       stream = playurl.stream;
       _initStreamIndex();
@@ -514,9 +638,8 @@ class LiveRoomController extends GetxController {
   @override
   void onClose() {
     _stopSizeSub();
-    closeLiveMsg();
-    cancelLikeTimer();
-    cancelLiveTimer();
+    _stopLiveLikeTimer();
+    stopService();
     savedDanmaku?.clear();
     savedDanmaku = null;
     messages.clear();
@@ -636,7 +759,7 @@ class LiveRoomController extends GetxController {
                   : DmUtils.decimalToColor(extra['color']),
               type: DmUtils.getPosition(extra['mode']),
               // extra['send_from_me'] is invalid
-              selfSend: isLogin && uid == mid,
+              selfSend: isMainLogin && uid == mid,
               extra: liveExtra,
             ),
           );
@@ -695,25 +818,26 @@ class LiveRoomController extends GetxController {
     }
   }
 
+  // live like
   final RxInt likeClickTime = 0.obs;
-  Timer? likeClickTimer;
+  Timer? _likeClickTimer;
 
-  void cancelLikeTimer() {
-    likeClickTimer?.cancel();
-    likeClickTimer = null;
+  void _stopLiveLikeTimer() {
+    _likeClickTimer?.cancel();
+    _likeClickTimer = null;
   }
 
   void onLikeTapDown(_) {
-    cancelLikeTimer();
+    _stopLiveLikeTimer();
     likeClickTime.value++;
   }
 
   void onLikeTapUp([_]) {
-    likeClickTimer ??= Timer(const Duration(milliseconds: 800), onLike);
+    _likeClickTimer ??= Timer(const Duration(milliseconds: 800), onLike);
   }
 
   Future<void> onLike() async {
-    if (!isLogin) {
+    if (!isMainLogin) {
       likeClickTime.value = 0;
       return;
     }
@@ -736,7 +860,7 @@ class LiveRoomController extends GetxController {
   }
 
   void onSendDanmaku([bool fromEmote = false]) {
-    if (kReleaseMode && !isLogin) {
+    if (kReleaseMode && !isMainLogin) {
       toastNotLogin();
       return;
     }
@@ -784,7 +908,7 @@ class LiveRoomController extends GetxController {
   }
 
   void reportSC(SuperChatItem item) {
-    if (!isLogin) {
+    if (!isMainLogin) {
       toastNotLogin();
       return;
     }

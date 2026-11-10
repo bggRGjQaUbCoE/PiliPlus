@@ -1021,4 +1021,11 @@ abstract final class Api {
 
   static const String liveMasterInfo =
       '${HttpString.liveBaseUrl}/live_user/v1/Master/info';
+
+  static const String _liveTrace =
+      '${HttpString.liveTraceBaseUrl}/xlive/data-interface/v1/x25Kn';
+
+  static const String liveTraceE = '$_liveTrace/E';
+
+  static const String liveTraceX = '$_liveTrace/X';
 }

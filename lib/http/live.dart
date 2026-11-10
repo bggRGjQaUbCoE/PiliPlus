@@ -24,9 +24,11 @@ import 'package:PiliPlus/models_new/live/live_room_play_info/data.dart';
 import 'package:PiliPlus/models_new/live/live_search/data.dart';
 import 'package:PiliPlus/models_new/live/live_second_list/data.dart';
 import 'package:PiliPlus/models_new/live/live_superchat/data.dart';
+import 'package:PiliPlus/models_new/live/live_trace/data.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/app_sign.dart';
+import 'package:PiliPlus/utils/live_trace_utils.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
 
@@ -802,6 +804,77 @@ abstract final class LiveHttp {
     if (res.data['code'] == 0) {
       try {
         return Success(res.data['data']['medal_name'] as String);
+      } catch (e) {
+        return Error(e.toString());
+      }
+    } else {
+      return Error(res.data['message']);
+    }
+  }
+
+  static Future<LoadingState<LiveTraceResp>> liveTraceE({
+    required LiveTraceReq traceReq,
+    required Account heartbeat,
+  }) async {
+    final res = await Request().post(
+      Api.liveTraceE,
+      queryParameters: await WbiSign.makSign({
+        'id': traceReq.id,
+        'device': traceReq.device,
+        'ruid': traceReq.ruid,
+        'ts': DateTime.now().millisecondsSinceEpoch,
+        'is_patch': 0,
+        'heart_beat': const [],
+        'ua': BrowserUa.pc,
+        'web_location': '444.8',
+        'csrf': heartbeat.csrf,
+      }),
+    );
+    if (res.data['code'] == 0) {
+      try {
+        traceReq.seqId++;
+        return Success(LiveTraceResp.fromJson(res.data['data']));
+      } catch (e) {
+        return Error(e.toString());
+      }
+    } else {
+      return Error(res.data['message']);
+    }
+  }
+
+  static Future<LoadingState<LiveTraceResp>> liveTraceX({
+    required LiveTraceReq traceReq,
+    required LiveTraceResp traceResp,
+    required Account heartbeat,
+  }) async {
+    final tsMs = DateTime.now().millisecondsSinceEpoch;
+    final s = LiveTraceUtils.buildX25KnSignature(
+      traceReq: traceReq,
+      traceResp: traceResp,
+      tsMs: tsMs,
+    );
+    if (s == null) return const Error(null);
+    final res = await Request().post(
+      Api.liveTraceX,
+      queryParameters: await WbiSign.makSign({
+        's': s,
+        'id': traceReq.id,
+        'device': traceReq.device,
+        'ruid': traceReq.ruid,
+        'ets': traceResp.timestamp,
+        'benchmark': traceResp.secretKey,
+        'time': traceResp.interval,
+        'ts': tsMs,
+        'ua': BrowserUa.pc,
+        'trackid': '-99998',
+        'web_location': '444.8',
+        'csrf': heartbeat.csrf,
+      }),
+    );
+    if (res.data['code'] == 0) {
+      try {
+        traceReq.seqId++;
+        return Success(LiveTraceResp.fromJson(res.data['data']));
       } catch (e) {
         return Error(e.toString());
       }

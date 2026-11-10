@@ -136,8 +136,11 @@ abstract final class Update {
       if (Platform.isAndroid) {
         // 获取设备信息
         AndroidDeviceInfo androidInfo = await DeviceInfoPlugin().androidInfo;
-        // [arm64-v8a]
-        download(androidInfo.supportedAbis.first);
+        // 该发行版仅提供 arm64-v8a APK；旧设备没有兼容包时应提示无法下载。
+        if (!androidInfo.supportedAbis.contains('arm64-v8a')) {
+          throw UnsupportedError('Piliterra is only available for arm64-v8a');
+        }
+        download('arm64-v8a');
       } else {
         download(Platform.operatingSystem);
       }

@@ -1,4 +1,4 @@
-package com.example.piliplus
+package com.ivyczz.piliterra
 
 import android.content.res.Configuration
 import android.os.Build

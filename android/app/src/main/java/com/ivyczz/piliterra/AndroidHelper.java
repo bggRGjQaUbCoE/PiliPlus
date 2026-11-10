@@ -1,7 +1,7 @@
-package com.example.piliplus;
+package com.ivyczz.piliterra;
 
-import static com.example.piliplus.MediaHelper.getCustomRemoteAction;
-import static com.example.piliplus.MediaHelper.getRemoteAction;
+import static com.ivyczz.piliterra.MediaHelper.getCustomRemoteAction;
+import static com.ivyczz.piliterra.MediaHelper.getRemoteAction;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;

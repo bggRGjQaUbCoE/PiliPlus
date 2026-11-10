@@ -1,66 +1,29 @@
-name: Build
+name: Piliterra Android APK
 
 on:
-    # pull_request:
-    #     types:
-    #         - opened
-    #         - synchronize
-    #         - reopened
-    #         - ready_for_review
-    #     paths-ignore:
-    #         - "**.md"
     workflow_dispatch:
         inputs:
-            build_android:
-                description: "Build Android"
-                required: false
-                default: true
-                type: boolean
-
-            build_ios:
-                description: "Build iOS"
-                required: false
-                default: true
-                type: boolean
-
-            build_mac:
-                description: "Build Mac"
-                required: false
-                default: true
-                type: boolean
-
-            build_win_x64:
-                description: "Build Win-x64"
-                required: false
-                default: true
-                type: boolean
-
-            build_linux_x64:
-                description: "Build Linux-x64"
-                required: false
-                default: true
-                type: boolean
-
             tag:
-                description: "tag"
+                description: "Release tag (leave empty to upload a workflow artifact only)"
                 required: false
                 default: ""
                 type: string
 
+permissions:
+    contents: write
+
 jobs:
-    android:
-        if: ${{ (github.event_name == 'pull_request' && github.repository == 'bggRGjQaUbCoE/PiliPlus') || github.event.inputs.build_android == 'true' }}
-        name: Release Android
+    android-arm64:
+        name: Build Piliterra arm64-v8a APK
         runs-on: ubuntu-latest
-        permissions: write-all
 
         steps:
-            - name: 代码迁出
+            - name: Check out source
               uses: actions/checkout@v7
               with:
                   fetch-depth: 0
 
-            - name: 构建Java环境
+            - name: Set up Java
               uses: actions/setup-java@v5
               with:
                   distribution: "zulu"
@@ -70,104 +33,73 @@ jobs:
                       android/*.gradle*
                       android/**/gradle-wrapper.properties
 
-            - name: 安装Flutter
+            - name: Set up Flutter
               uses: subosito/flutter-action@v2
-              id: flutter-action
               with:
                   channel: stable
                   flutter-version-file: pubspec.yaml
                   cache: true
 
-            - name: Apply Patch
+            - name: Apply Android patches
               shell: pwsh
               run: lib/scripts/patch.ps1 android
 
-            - name: Write key
-              if: github.event_name == 'workflow_dispatch'
-              run: |
-                  if [ ! -z "${{ secrets.SIGN_KEYSTORE_BASE64 }}" ]; then
-                    echo "${{ secrets.SIGN_KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.jks
-                    echo storeFile='key.jks' >> android/key.properties
-                    echo storePassword='${{ secrets.KEYSTORE_PASSWORD }}' >> android/key.properties
-                    echo keyAlias='${{ secrets.KEY_ALIAS }}' >> android/key.properties
-                    echo keyPassword='${{ secrets.KEY_PASSWORD }}' >> android/key.properties
-                  fi
-
-            - name: Set and Extract version
-              if: ${{ github.event_name == 'workflow_dispatch' }}
-              shell: pwsh
-              run: lib/scripts/build.ps1 android
-
-            - name: Flutter Build Release Apk
-              if: ${{ github.event_name == 'workflow_dispatch' }}
-              run: flutter build apk --release --split-per-abi --dart-define-from-file=pili_release.json --no-pub
-
-            - name: Flutter Build Dev Apk
-              if: ${{ github.event_name == 'pull_request' }}
-              run: |
-                  flutter build apk --release --split-per-abi --android-project-arg dev=1 --no-pub
-
-            - name: Rename
-              run: |
-                  for file in build/app/outputs/flutter-apk/app-*-release.apk; do
-                    abi=$(echo "$file" | sed -E 's|.*app-(.*)-release\.apk|\1|')
-                    mv "$file" "PiliPlus_android_${{ env.version }}_${abi}.apk"
-                  done
+            - name: Require stable signing secrets
               shell: bash
+              env:
+                  SIGN_KEYSTORE_BASE64: ${{ secrets.SIGN_KEYSTORE_BASE64 }}
+                  KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+                  KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+                  KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+              run: |
+                  for name in SIGN_KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+                    if [ -z "${!name}" ]; then
+                      echo "Missing required repository secret: ${name}" >&2
+                      exit 1
+                    fi
+                  done
 
-            - name: Release
-              if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag != '' }}
+            - name: Configure release signing
+              shell: bash
+              env:
+                  SIGN_KEYSTORE_BASE64: ${{ secrets.SIGN_KEYSTORE_BASE64 }}
+                  KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+                  KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+                  KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+              run: |
+                  printf '%s' "$SIGN_KEYSTORE_BASE64" | base64 --decode > android/app/key.jks
+                  {
+                    echo "storeFile=key.jks"
+                    echo "storePassword=$KEYSTORE_PASSWORD"
+                    echo "keyAlias=$KEY_ALIAS"
+                    echo "keyPassword=$KEY_PASSWORD"
+                  } > android/key.properties
+
+            - name: Set version metadata
+              shell: pwsh
+              run: lib/scripts/build.ps1
+
+            - name: Build arm64-v8a APK
+              run: flutter build apk --release --target-platform android-arm64 --dart-define-from-file=pili_release.json --no-pub
+
+            - name: Name APK
+              shell: bash
+              run: |
+                  version=$(grep '^version:' pubspec.yaml | sed -E 's/version: ([^+]*)\+([0-9]+)/\1+\2/')
+                  mv build/app/outputs/flutter-apk/app-release.apk "Piliterra_android_${version}_arm64-v8a.apk"
+                  echo "apk_name=Piliterra_android_${version}_arm64-v8a.apk" >> "$GITHUB_ENV"
+
+            - name: Publish APK release
+              if: ${{ github.event.inputs.tag != '' }}
               uses: softprops/action-gh-release@v3
               with:
                   tag_name: ${{ github.event.inputs.tag }}
                   name: ${{ github.event.inputs.tag }}
-                  files: PiliPlus_android_*.apk
+                  files: ${{ env.apk_name }}
 
-            - name: 上传
+            - name: Upload APK artifact
               uses: actions/upload-artifact@v7
               with:
                   archive: false
-                  name: Android_arm64-v8a
-                  path: PiliPlus_android_*_arm64-v8a.apk
-
-            - name: 上传
-              uses: actions/upload-artifact@v7
-              with:
-                  archive: false
-                  name: Android_armeabi-v7a
-                  path: PiliPlus_android_*_armeabi-v7a.apk
-
-            - name: 上传
-              uses: actions/upload-artifact@v7
-              with:
-                  archive: false
-                  name: Android_x86_64
-                  path: PiliPlus_android_*_x86_64.apk
-
-    ios:
-        if: ${{ (github.event_name == 'pull_request' && github.repository == 'bggRGjQaUbCoE/PiliPlus') || github.event.inputs.build_ios == 'true' }}
-        uses: ./.github/workflows/ios.yml
-        permissions: write-all
-        with:
-            tag: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || '' }}
-
-    mac:
-        if: ${{ github.event.inputs.build_mac == 'true' }}
-        uses: ./.github/workflows/mac.yml
-        permissions: write-all
-        with:
-            tag: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || '' }}
-
-    win_x64:
-        if: ${{ (github.event_name == 'pull_request' && github.repository == 'bggRGjQaUbCoE/PiliPlus') || github.event.inputs.build_win_x64 == 'true' }}
-        uses: ./.github/workflows/win_x64.yml
-        permissions: write-all
-        with:
-            tag: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || '' }}
-
-    linux_x64:
-        if: ${{ github.event.inputs.build_linux_x64 == 'true' }}
-        uses: ./.github/workflows/linux_x64.yml
-        permissions: write-all
-        with:
-            tag: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || '' }}
+                  name: Piliterra_android_arm64-v8a
+                  path: ${{ env.apk_name }}

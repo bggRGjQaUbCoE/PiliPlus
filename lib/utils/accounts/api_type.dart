@@ -1,4 +1,6 @@
+import 'package:PiliPlus/grpc/url.dart';
 import 'package:PiliPlus/http/api.dart';
+import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
 
 abstract final class ApiType {
@@ -83,15 +85,20 @@ abstract final class ApiType {
       Api.topicFeed,
       Api.topicTop,
       Api.liveFeedback,
-      // 不同账号搜索结果可能不一样
+      // 不携带用户搜索关键词，仍按「推荐」账号身份请求
       Api.hotSearchList,
       Api.searchDefault,
-      Api.searchSuggest,
-      Api.searchByType,
+      Api.searchArchive, // 支持 keyword，但当前仅用于空间投稿列表（不传）
+    },
+    // 会携带用户输入关键词的搜索接口
+    AccountType.search: {
       Api.searchAll,
-      Api.dynSearch,
-      Api.searchArchive,
+      Api.searchByType,
+      Api.searchSuggest,
       Api.liveSearch,
+      Api.dynSearch,
+      // 空间投稿搜索（grpc 请求路径为 appBaseUrl + url）
+      '${HttpString.appBaseUrl}${GrpcUrl.searchArchive}',
     },
     // progress
     AccountType.video: {

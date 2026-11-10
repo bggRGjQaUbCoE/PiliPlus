@@ -526,12 +526,14 @@ class DownloadService extends GetxService {
 
       final noSegmentBefore = entry.segments == null;
 
+      final qaBefore = entry.preferedVideoQuality;
       final mediaFileInfo = await DownloadHttp.getVideoUrl(
         entry: entry,
         ep: entry.ep,
         source: entry.source,
         pageData: entry.pageData,
       );
+      if (qaBefore != entry.preferedVideoQuality) waitDownloadQueue.refresh();
 
       // pgc segments
       if (noSegmentBefore && entry.segments != null) {

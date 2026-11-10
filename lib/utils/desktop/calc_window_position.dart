@@ -1,4 +1,5 @@
 import 'package:PiliPlus/utils/desktop/window_bounds.dart';
+import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/rendering.dart' show Offset, Rect;
@@ -26,12 +27,13 @@ const _displayManager = nativeapi.DisplayManager.instance;
       height: windowSize.height,
     );
   } else {
-    minSize = fitMinSizeToWorkArea(_kMinSize, workArea);
+    final usable = _usableWorkArea(workArea);
+    minSize = fitMinSizeToWorkArea(_kMinSize, usable);
 
-    final windowSize = fitWindowSizeToWorkArea(Pref.windowSize, workArea);
+    final windowSize = fitWindowSizeToWorkArea(Pref.windowSize, usable);
     final offset = calcWindowOffset(
       windowSize: windowSize,
-      workArea: workArea,
+      workArea: usable,
       savedPosition: _savedWindowPosition,
     );
     bounds = nativeapi.Rectangle(
@@ -44,6 +46,11 @@ const _displayManager = nativeapi.DisplayManager.instance;
 
   return (minSize, bounds);
 }
+
+/// Wayland 的 workArea 只是显示器几何，不含顶栏与窗口间隙，
+/// 先扣掉这部分再参与计算，否则最小高度会等于整屏高度，把平铺窗口顶出屏幕。
+Rect _usableWorkArea(Rect workArea) =>
+    PlatformUtils.isWayland ? reserveWindowChrome(workArea) : workArea;
 
 Rect? get _currentWorkArea => _currentDisplay?.workArea.toRect();
 

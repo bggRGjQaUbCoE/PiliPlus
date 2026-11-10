@@ -19,6 +19,18 @@ nativeapi.Size fitMinSizeToWorkArea(nativeapi.Size minSize, Rect workArea) =>
       height: math.min(minSize.height, workArea.height),
     );
 
+/// Wayland 下 GDK 的 workArea 只是显示器几何，不含顶栏（layer-shell 面板）、
+/// 窗口间隙与标题栏。按经验预留这么多高度，避免窗口被顶出屏幕。
+const double kWindowChromeReserve = 96.0;
+
+/// 扣除 Wayland 无法感知的面板/间隙/装饰占用后的可用工作区。
+Rect reserveWindowChrome(Rect workArea) {
+  final height = workArea.height - kWindowChromeReserve;
+  // 屏幕本身过小时保留整个工作区，避免算出不可用的高度
+  if (height < kWindowKeepVisible) return workArea;
+  return Rect.fromLTWH(workArea.left, workArea.top, workArea.width, height);
+}
+
 /// 计算窗口左上角坐标。
 ///
 /// [savedPosition] 是上次退出时的位置。仍有足够可见区域时将窗口拉回工作区，

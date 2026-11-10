@@ -49,6 +49,20 @@ void main() {
     });
   });
 
+  group('reserveWindowChrome', () {
+    test('1024×640：扣掉 Wayland 无法感知的顶栏与间隙', () {
+      expect(
+        reserveWindowChrome(const Rect.fromLTWH(0, 0, 1024, 640)),
+        const Rect.fromLTWH(0, 0, 1024, 640 - 96),
+      );
+    });
+
+    test('工作区太小时不改变原值', () {
+      const area = Rect.fromLTWH(0, 0, 320, 80);
+      expect(reserveWindowChrome(area), area);
+    });
+  });
+
   group('calcWindowOffset', () {
     test('小屏上窗口正好铺满工作区', () {
       expect(

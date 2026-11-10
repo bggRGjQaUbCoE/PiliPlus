@@ -35,10 +35,10 @@ void toastUpdateResult(bool dismiss, bool isSuccess) {
 mixin CommonDownloadActionMixin<T extends StatefulWidget>
     on BaseDownloadActionMixin<T, BiliDownloadEntryInfo> {
   @override
-  Future<void> onUpdate(
+  Future<bool> onUpdate(
     Future<bool> Function(BiliDownloadEntryInfo e) toElement,
   ) async {
-    if (checkUpdateCount(multiSelectCtr.checkedCount)) return;
+    if (checkUpdateCount(multiSelectCtr.checkedCount)) return false;
 
     bool dismiss = false;
     SmartDialog.showLoading(
@@ -59,6 +59,8 @@ mixin CommonDownloadActionMixin<T extends StatefulWidget>
     }
 
     toastUpdateResult(dismiss, isSuccess);
+
+    return isSuccess;
   }
 }
 
@@ -91,11 +93,16 @@ mixin BaseDownloadActionMixin<
   Future<void> updatePagePlayInfo(DownloadPageInfo pageInfo) =>
       updatePage(pageInfo, downloadService.updatePlayInfo);
 
-  Future<void> updatePage(
+  Future<void> updatePageSeasonInfo(DownloadPageInfo pageInfo) => updatePage(
+    pageInfo,
+    downloadService.updateSeasonInfo,
+  ).then(downloadService.refreshIfUpdated);
+
+  Future<bool> updatePage(
     DownloadPageInfo pageInfo,
     Future<bool> Function(BiliDownloadEntryInfo e) toElement,
   ) async {
-    if (checkUpdateCount(pageInfo.entries.length)) return;
+    if (checkUpdateCount(pageInfo.entries.length)) return false;
 
     bool dismiss = false;
     SmartDialog.showLoading(onDismiss: () => dismiss = true);
@@ -111,9 +118,11 @@ mixin BaseDownloadActionMixin<
     }
 
     toastUpdateResult(dismiss, isSuccess);
+
+    return isSuccess;
   }
 
-  void onUpdate(
+  Future<bool> onUpdate(
     Future<bool> Function(BiliDownloadEntryInfo e) toElement,
   );
 
@@ -124,6 +133,10 @@ mixin BaseDownloadActionMixin<
   void _onUpdateSeg() => onUpdate(downloadService.updateSegments);
 
   void _onUpdateVolume() => onUpdate(downloadService.updateVolume);
+
+  void _onUpdateSeasonInfo() =>
+      onUpdate(downloadService.updateSeasonInfo)
+          .then(downloadService.refreshIfUpdated);
 
   void _onUpdatePlayInfo() => onUpdate(downloadService.updatePlayInfo);
 
@@ -142,6 +155,10 @@ mixin BaseDownloadActionMixin<
         PopupMenuItem(
           onTap: _onUpdateSeg,
           child: const Text('更新片段'),
+        ),
+        PopupMenuItem(
+          onTap: _onUpdateSeasonInfo,
+          child: const Text('更新合集信息'),
         ),
         PopupMenuItem(
           onTap: _onUpdateVolume,

@@ -75,6 +75,7 @@ class SegmentItemModel {
       );
 
   static List<SegmentItemModel>? fromCache(dynamic segments) {
+    if (segments == null) return null;
     try {
       return (segments as List?)
           ?.map((e) => SegmentItemModel.fromNormalizedJson(e))

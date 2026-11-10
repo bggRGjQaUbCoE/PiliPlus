@@ -56,12 +56,6 @@ abstract final class Pref {
   static UserInfoData? get userInfoCache =>
       GStorage.userInfo.get('userInfoCache');
 
-  /// 默认在每次启动时静默检查并清理已注销的本地屏蔽用户。
-  static bool get autoCleanDeletedBlacklist => _setting.get(
-    SettingBoxKey.autoCleanDeletedBlacklist,
-    defaultValue: true,
-  );
-
   static List<double> get dynamicDetailRatio => List<double>.from(
     _setting.get(
       SettingBoxKey.dynamicDetailRatio,

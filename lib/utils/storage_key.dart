@@ -257,8 +257,7 @@ abstract final class SettingBoxKey {
       liveCdnUrl = 'liveCdnUrl',
       saveReply = 'saveReply',
       appFont = 'appFont',
-      foldDepth = 'foldDepth',
-      autoCleanDeletedBlacklist = 'autoCleanDeletedBlacklist';
+      foldDepth = 'foldDepth';
 }
 
 abstract final class LocalCacheKey {

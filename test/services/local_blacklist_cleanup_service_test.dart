@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('LocalBlacklistCleanupService.isDeletedAccountResult', () {
-    test('only treats Bilibili business code -404 as a deleted account', () {
+    test('仅将 B 站业务码 -404 识别为不存在的账号', () {
       expect(
         LocalBlacklistCleanupService.isDeletedAccountResult(
           const Error('用户不存在', code: -404),

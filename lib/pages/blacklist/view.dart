@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:PiliPlus/common/skeleton/msg_feed_top.dart';
 import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
@@ -13,6 +15,7 @@ import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/blacklist/list.dart';
 import 'package:PiliPlus/pages/blacklist/controller.dart';
+import 'package:PiliPlus/services/local_blacklist_cleanup_service.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -225,6 +228,19 @@ class _BlackListPageState extends State<BlackListPage>
                 final localDanmakuHashes = GlobalData().localDanmakuMidHashes;
                 return SliverMainAxisGroup(
                   slivers: [
+                    SliverToBoxAdapter(
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                        ),
+                        leading: const Icon(Icons.person_search_outlined),
+                        title: const Text('手动检查并清理已注销用户'),
+                        subtitle: const Text(
+                          '仅检查 B 站返回 -404 的账号；启动时不会自动执行',
+                        ),
+                        onTap: () => unawaited(_cleanDeletedBlacklist()),
+                      ),
+                    ),
                     SliverList.builder(
                       itemCount: _blackListController.localBlackMids.length,
                       itemBuilder: (context, index) {
@@ -321,6 +337,28 @@ class _BlackListPageState extends State<BlackListPage>
         ],
       ),
     );
+  }
+
+  Future<void> _cleanDeletedBlacklist() async {
+    SmartDialog.showLoading(msg: '正在检查本地黑名单');
+
+    try {
+      final removedCount =
+          await LocalBlacklistCleanupService.cleanDeletedLocalMids();
+      SmartDialog.dismiss();
+
+      switch (removedCount) {
+        case null:
+          SmartDialog.showToast('正在检查，请稍后再试');
+        case 0:
+          SmartDialog.showToast('未发现 B 站判定为不存在的账号');
+        case final count:
+          SmartDialog.showToast('已清理 $count 个不存在的账号');
+      }
+    } catch (error) {
+      SmartDialog.dismiss();
+      SmartDialog.showToast('检查失败，名单未更改：$error');
+    }
   }
 
   Widget _buildBody(LoadingState<List<BlackListItem>?> loadingState) {

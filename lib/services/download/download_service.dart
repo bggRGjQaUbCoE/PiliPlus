@@ -130,7 +130,6 @@ class DownloadService extends GetxService {
   }
 
   void downloadVideo({
-    required int index,
     required Part page,
     VideoDetailData? videoDetail,
     ugc.EpisodeItem? videoArc,

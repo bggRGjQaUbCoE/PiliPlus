@@ -317,12 +317,15 @@ class VideoReplyReplyController extends ReplyController
     super.onClose();
   }
 
+  bool showReplyTree = false;
   final replyTree = Rxn<ReplyTree>();
 
   void buildTree() {
     final data = loadingState.rawValue.data!;
+    if (data.isEmpty) return;
     final seen = HashSet<Int64>();
     data.retainWhere((i) => seen.add(i.id));
+    showReplyTree = true;
     replyTree.value = ReplyTree.build(
       data: data,
       seen: seen,

@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/sliver/sliver_reverse.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
@@ -13,6 +14,7 @@ import 'package:PiliPlus/utils/grid.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:get/get.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
 class ArticleListPage extends StatefulWidget {
@@ -28,20 +30,27 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
     tag: Get.parameters['id']!,
   );
 
+  bool _reverse = false;
   late EdgeInsets padding;
+  late ColorScheme colorScheme;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    colorScheme = ColorScheme.of(context);
+    padding = MediaQuery.viewPaddingOf(context);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    padding = MediaQuery.viewPaddingOf(context);
     return Material(
-      color: theme.colorScheme.surface,
+      color: colorScheme.surface,
       child: refreshIndicator(
         onRefresh: _controller.onRefresh,
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-            Obx(() => _buildHeader(theme, _controller.list.value)),
+            Obx(() => _buildHeader(_controller.list.value)),
             SliverPadding(
               padding: EdgeInsets.only(
                 left: padding.left,
@@ -49,7 +58,7 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
                 bottom: padding.bottom + 100,
               ),
               sliver: Obx(
-                () => _buildBody(theme, _controller.loadingState.value),
+                () => _buildBody(_controller.loadingState.value),
               ),
             ),
           ],
@@ -66,19 +75,17 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
     sliver: super.gridSkeleton,
   );
 
-  Widget _buildBody(
-    ThemeData theme,
-    LoadingState<List<ArticleListItemModel>?> loadingState,
-  ) {
+  Widget _buildBody(LoadingState<List<ArticleListItemModel>?> loadingState) {
     return switch (loadingState) {
       Loading() => gridSkeleton,
       Success(:final response) =>
         response != null && response.isNotEmpty
-            ? SliverGrid.builder(
+            ? SliverGridReverse.builder(
                 gridDelegate: gridDelegate,
                 itemBuilder: (context, index) =>
                     ArticleListItem(item: response[index]),
                 itemCount: response.length,
+                reverse: _reverse,
               )
             : HttpError(onReload: _controller.onReload),
       Error(:final errMsg) => HttpError(
@@ -88,14 +95,14 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
     };
   }
 
-  Widget _buildHeader(ThemeData theme, ArticleListInfo? item) {
+  Widget _buildHeader(ArticleListInfo? item) {
     if (item == null) {
       return const SliverToBoxAdapter();
     }
-    late final style = TextStyle(color: theme.colorScheme.onSurfaceVariant);
+    late final style = TextStyle(color: colorScheme.onSurfaceVariant);
     late final divider = TextSpan(
       text: '  |  ',
-      style: TextStyle(color: theme.colorScheme.outline.withValues(alpha: 0.7)),
+      style: TextStyle(color: colorScheme.outline.withValues(alpha: 0.7)),
     );
     return SliverAppBar.medium(
       title: Text(item.name!),
@@ -191,6 +198,18 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
         ),
       ),
       actions: [
+        PopupMenuButton<bool>(
+          icon: _reverse
+              ? const Icon(MdiIcons.sortNumericDescending)
+              : const Icon(MdiIcons.sortNumericAscending),
+          initialValue: _reverse,
+          tooltip: '排序方式',
+          onSelected: (value) => setState(() => _reverse = value),
+          itemBuilder: (context) => const [
+            PopupMenuItem(value: false, child: Text('正序')),
+            PopupMenuItem(value: true, child: Text('倒序')),
+          ],
+        ),
         IconButton(
           tooltip: '浏览器打开',
           onPressed: () => PageUtils.inAppWebview(

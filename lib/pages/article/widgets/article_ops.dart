@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/models_new/article/article_view/ops.dart';
 import 'package:PiliPlus/pages/article/view.dart';
-import 'package:PiliPlus/pages/article/widgets/sliver_list_ext.dart';
+import 'package:PiliPlus/common/widgets/sliver/sliver_reverse.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/vote.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
@@ -29,7 +29,7 @@ class ArticleOpus extends StatelessWidget {
       return const SliverToBoxAdapter();
     }
 
-    return SliverListExt.separated(
+    return SliverListReverse.separated(
       reverse: reverse,
       itemCount: _ops.length,
       itemBuilder: (context, index) {

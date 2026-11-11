@@ -3,7 +3,7 @@ import 'package:PiliPlus/http/member.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 
-/// 检查本地黑名单中的账号状态，并仅移除 B 站明确标记为不存在的 UID。
+/// 手动检查本地黑名单，并仅移除 B 站明确标记为不存在的 UID。
 abstract final class LocalBlacklistCleanupService {
   static bool _isRunning = false;
 
@@ -11,50 +11,49 @@ abstract final class LocalBlacklistCleanupService {
   static bool isDeletedAccountResult(LoadingState<Object?> result) =>
       result is Error && result.code == -404;
 
-  /// 启动时静默检查；所有异常都在服务内消化，不影响应用启动。
-  static Future<void> runOnStartup() async {
-    try {
-      if (!Pref.autoCleanDeletedBlacklist) return;
-      await cleanDeletedLocalMids();
-    } catch (_) {
-      // 启动检查失败时保留名单，避免影响应用正常使用。
-    }
-  }
-
-  /// 返回移除数量；若已有检查正在运行，则返回 null。
-  static Future<int?> cleanDeletedLocalMids() async {
+  /// 手动检查 UID 并返回移除数量；重复触发时返回 null。
+  static Future<int?> cleanDeletedLocalMids({
+    void Function(int checked, int total)? onProgress,
+  }) async {
     if (_isRunning) return null;
     _isRunning = true;
 
     try {
-      final localMids = GlobalData().localBlackMids.toList();
+      final globalData = GlobalData();
+      final localMids = globalData.localBlackMids.toList();
       final deletedMids = <int>{};
+      final total = localMids.length;
+      var checked = 0;
+
+      void reportProgress(int checked, int total) {
+        try {
+          onProgress?.call(checked, total);
+        } catch (_) {
+          // 进度回调是展示用途，异常不应中断账号检查和清理。
+        }
+      }
+
+      reportProgress(checked, total);
 
       for (final mid in localMids) {
-        if (!GlobalData().localBlackMids.contains(mid)) continue;
-
-        try {
-          final result = await MemberHttp.memberInfo(mid: mid);
-          if (isDeletedAccountResult(result)) {
-            deletedMids.add(mid);
+        if (globalData.localBlackMids.contains(mid)) {
+          try {
+            final result = await MemberHttp.memberInfo(mid: mid);
+            if (isDeletedAccountResult(result)) {
+              deletedMids.add(mid);
+            }
+          } catch (_) {
+            // 网络异常、风控和解析失败均视为状态未知，不删除该 UID。
           }
-        } catch (_) {
-          // 网络异常、风控和解析失败均视为状态未知，不删除该 UID。
         }
+
+        checked++;
+        reportProgress(checked, total);
       }
-
-      if (deletedMids.isEmpty) return 0;
-
-      final globalData = GlobalData();
-      globalData.localBlackMids.removeWhere(deletedMids.contains);
-      Pref.localBlackMids = globalData.localBlackMids;
 
       for (final mid in deletedMids) {
-        if (!globalData.onlineBlackMids.contains(mid)) {
-          globalData.blackMids.remove(mid);
-        }
+        Pref.removeBlackMid(mid);
       }
-
       return deletedMids.length;
     } finally {
       _isRunning = false;

@@ -204,6 +204,10 @@ abstract final class ConfigArchive {
   static String _exportBlacklist() => jsonEncode({
     'local': Pref.localBlackMids,
     'online': Pref.blackMids.toList(),
+    // 新增元数据可选，旧版归档仍可按 local/online 字段读取。
+    'localAddedAt': Pref.localBlackMidAddedAt,
+    'danmakuHashes': Pref.localDanmakuMidHashes,
+    'danmakuHashAddedAt': Pref.localDanmakuMidHashAddedAt,
   });
 
   static String? _exportReply() {
@@ -254,6 +258,9 @@ abstract final class ConfigArchive {
   static void _importBlacklist(Object? data) {
     final globalData = GlobalData();
     late final List<int> localMids;
+    Map<String, int> localTimes = {};
+    List<String>? danmakuHashes;
+    Map<String, int> hashTimes = {};
 
     if (data is Map) {
       localMids = List<int>.from(data['local'] as List? ?? const []);
@@ -262,24 +269,67 @@ abstract final class ConfigArchive {
         ..clear()
         ..addAll(onlineMids);
       Pref.blackMids = globalData.onlineBlackMids;
+
+      localTimes = Pref.parseBlacklistTimestamps(data['localAddedAt']);
+      if (data['danmakuHashes'] is List) {
+        danmakuHashes = List<String>.from(
+          (data['danmakuHashes'] as List).map((value) => value.toString()),
+        );
+        hashTimes = Pref.parseBlacklistTimestamps(data['danmakuHashAddedAt']);
+      }
     } else if (data is List) {
-      // Legacy archives stored an untyped union; import it locally to avoid
-      // changing the account's online blacklist.
+      // 旧版归档是来源不明的 UID 并集，导入本地以免改动在线名单。
       localMids = data.cast<int>();
     } else {
       throw const FormatException('黑名单数据格式不正确');
     }
 
+    final uniqueMids = localMids.toSet();
     globalData.localBlackMids
       ..clear()
-      ..addAll(localMids.toSet());
+      ..addAll(uniqueMids);
     Pref.localBlackMids = globalData.localBlackMids;
+    Pref.localBlackMidAddedAt = _keepTimesForMids(localTimes, uniqueMids);
+
+    if (danmakuHashes case final hashes?) {
+      final uniqueHashes = hashes.toSet();
+      globalData.localDanmakuMidHashes
+        ..clear()
+        ..addAll(uniqueHashes);
+      Pref.localDanmakuMidHashes = globalData.localDanmakuMidHashes;
+      Pref.localDanmakuMidHashAddedAt = _keepTimesForHashes(
+        hashTimes,
+        uniqueHashes,
+      );
+    }
 
     globalData.blackMids
       ..clear()
       ..addAll(globalData.onlineBlackMids)
       ..addAll(globalData.localBlackMids);
   }
+
+  /// 丢弃归档中不属于当前本地 UID 列表的时间记录。
+  static Map<String, int> _keepTimesForMids(
+    Map<String, int> timestamps,
+    Set<int> mids,
+  ) {
+    final result = <String, int>{};
+    for (final entry in timestamps.entries) {
+      final mid = int.tryParse(entry.key);
+      if (mid == null || !mids.contains(mid)) continue;
+      result[mid.toString()] = entry.value;
+    }
+    return result;
+  }
+
+  /// 丢弃归档中不属于当前本地弹幕哈希列表的时间记录。
+  static Map<String, int> _keepTimesForHashes(
+    Map<String, int> timestamps,
+    Set<String> hashes,
+  ) => Map.fromEntries(
+    timestamps.entries.where((entry) => hashes.contains(entry.key)),
+  );
 
   static void _importReply(List<dynamic> list) {
     final box = GStorage.reply;

@@ -974,6 +974,15 @@ class VideoDetailController extends GetxController
         }
       }
 
+      final video = dash.video;
+      if (video == null || video.isEmpty) {
+        Utils.reportError(
+          'null or empty dash video:\n'
+          'bvid: $bvid, cid: $cid, seasonId: $seasonId, epId: $epId, '
+          'videoType: $_actualVideoType',
+        );
+        return;
+      }
       final cacheVideoQa = plPlayerController.cacheVideoQa!;
       final (
         int targetQuality,
@@ -981,7 +990,7 @@ class VideoDetailController extends GetxController
         VideoDecodeFormatType targetDecode,
         VideoItem targetVideo,
       ) = VideoUtils.findTargetVideo(
-        dash.video!,
+        video,
         cacheVideoQa,
         response.acceptQuality,
         response.supportFormats!,

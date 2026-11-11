@@ -4,6 +4,7 @@ import 'package:PiliPlus/models/dynamics/result.dart'
     show DynamicsDataModel, ItemModulesModel;
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
+import 'package:PiliPlus/utils/dyn_topic_config.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -77,6 +78,14 @@ List<SettingsModel> get dynSettings => [
     setKey: SettingBoxKey.showDynInteraction,
     defaultVal: true,
     onChanged: (val) => ItemModulesModel.showDynInteraction = val,
+  ),
+  SwitchModel(
+    title: '显示话题',
+    subtitle: '关闭后动态卡片与详情页不显示话题行',
+    leading: const Icon(CustomIcons.topic_tag),
+    setKey: SettingBoxKey.showDynTopic,
+    defaultVal: true,
+    onChanged: (val) => DynTopicConfig.show.value = val,
   ),
 ];
 

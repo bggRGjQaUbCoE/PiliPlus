@@ -55,7 +55,6 @@ mixin MedalSettingMixin<T extends StatefulWidget> on State<T> {
           ],
         );
         final theme = pageTheme;
-        print('1111111111111111111111111111111111 ${theme?.brightness}');
         if (theme != null) {
           return Theme(data: theme, child: child);
         }

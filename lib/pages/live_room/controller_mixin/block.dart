@@ -5,18 +5,15 @@ mixin _LiveBlockMixin on _LiveMedalMixin {
   late final Set<int> _shieldUids = {};
 
   Future<void> _fetchBlockRules() async {
-    if (isMainLogin) medalController = Get.putOrFind(FansMedalController.new);
+    medalController = Get.putOrFind(FansMedalController.new);
 
     final res = await LiveHttp.getLiveInfoByUser(roomId);
     if (res case Success(:final response)) {
-      if (isMainLogin) {
-        final medal = response.medal;
-        if (medal != null) {
-          _handleMedalInfo(medal, isInit: true);
-        }
+      final medal = response.medal;
+      if (medal != null) {
+        _handleMedalInfo(medal, isInit: true);
       }
 
-      if (!isHeartbeatLogin) return;
       final shieldInfo = response.shieldInfo;
       if (shieldInfo == null) return;
       if (shieldInfo.keywordList case final keywordList?) {

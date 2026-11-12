@@ -179,7 +179,7 @@ class LiveRoomController extends GetxController
           codecIndex: codecIndex,
           liveUrlIndex: liveUrlIndex,
         ),
-        if (!isLoaded.value && Accounts.heartbeat.isLogin) _fetchBlockRules(),
+        if (!isLoaded.value && isMainLogin) _fetchBlockRules(),
       ]);
       isLoaded.value = true;
     } else {

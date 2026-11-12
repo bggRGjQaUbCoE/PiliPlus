@@ -40,15 +40,17 @@ mixin _LiveMedalMixin on GetxController, _LiveDataMixin {
   Future<void> _autoWearMedal(UinfoMedal? currShow, UinfoMedal lookupV2) async {
     var id = lookupV2.id;
     if (id == null || id == 0) {
-      id = (await LiveHttp.userMedalInfo(
+      final realLookupV2 = (await LiveHttp.userMedalInfo(
         uid: mid,
         upId: ruid!,
-      )).dataOrNull?.lookupV2?.id;
+      )).dataOrNull?.lookupV2;
       if (isClosed) return;
-      if (id == null || id == 0) {
+      id = realLookupV2?.id;
+      if (realLookupV2 == null || id == null || id == 0) {
         medal.value = currShow;
         return;
       }
+      lookupV2 = realLookupV2;
     }
     final res = await LiveHttp.wearFansMedal(medalId: id);
     if (isClosed) return;

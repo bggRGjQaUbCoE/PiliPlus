@@ -70,7 +70,11 @@ mixin LiveMedalMixin<T extends StatefulWidget>
               data: ThemeUtils.darkTheme,
               child: AlertDialog(
                 contentPadding: const .symmetric(vertical: 10),
-                constraints: const BoxConstraints.tightFor(width: 380),
+                constraints: const BoxConstraints(
+                  minWidth: 380,
+                  maxWidth: 380,
+                  maxHeight: 420,
+                ),
                 title: const Text('我的粉丝勋章'),
                 content: showMedalList(context, response),
               ),

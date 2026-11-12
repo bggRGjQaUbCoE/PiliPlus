@@ -30,6 +30,15 @@ class DynamicsController
   late bool showLiveUp = Pref.expandDynLivePanel;
   late final _showAllUp = Pref.dynamicsShowAllFollowedUp;
 
+  /// 官方动态 UP 列表中标记为有更新的 UP mid
+  final Set<int> _updatedMids = <int>{};
+
+  /// 刷新时根据设置决定是否补齐全部关注 UP 的更新状态
+  bool _unreadForAllFollowedUp = false;
+
+  /// 刷新时递增，用于取消仍在进行的官方列表续页请求
+  int _unreadSyncEpoch = 0;
+
   final upPanelPosition = Pref.upPanelPosition;
 
   @override
@@ -84,6 +93,8 @@ class DynamicsController
   }
 
   Future<void> singleRefresh() {
+    _unreadSyncEpoch++;
+    _updatedMids.clear();
     if (_showAllUp) {
       _page = 1;
       _cacheUpList = null;
@@ -143,6 +154,7 @@ class DynamicsController
 
   @override
   void onClose() {
+    _unreadSyncEpoch++;
     tabController.dispose();
     super.onClose();
   }
@@ -192,6 +204,18 @@ class DynamicsController
       if (_showAllUp) {
         _offset = '';
         _cacheUpList = res.upList?.toSet();
+        _unreadForAllFollowedUp =
+            _showAllUp && Pref.dynamicsShowAllFollowedUpUnread;
+        _updatedMids.clear();
+        if (_unreadForAllFollowedUp) {
+          for (final up in res.upList ?? const <UpItem>[]) {
+            if (up.hasUpdate ?? false) {
+              _updatedMids.add(up.mid);
+            }
+          }
+          // portal 首屏只包含官方展示的部分 UP，后台继续翻页补齐
+          unawaited(_syncAllFollowedUpUnread(res));
+        }
       }
       loadingState.value = response;
     } else {
@@ -203,6 +227,9 @@ class DynamicsController
         if (_showAllUp && _cacheUpList != null) {
           upList.removeWhere(_cacheUpList!.contains);
         }
+        if (_unreadForAllFollowedUp && _updatedMids.isNotEmpty) {
+          FollowUpModel.markUpdatedUps(upList, _updatedMids);
+        }
         loadingState
           ..value.data.addAllUpList(upList)
           ..refresh();
@@ -210,5 +237,48 @@ class DynamicsController
     }
 
     return true;
+  }
+
+  /// 补齐官方动态 UP 列表其余页面的更新状态。
+  ///
+  /// 动态 UP 列表首屏（portal）只展示部分 UP，后续 UP（包括部分已更新 UP）
+  /// 需要继续翻页才能拿到 `has_update`。请求失败时保留已经拿到的状态。
+  Future<void> _syncAllFollowedUpUnread(FollowUpModel first) async {
+    final epoch = ++_unreadSyncEpoch;
+    var offset = first.offset;
+    var hasMore = first.hasMore;
+    var page = 0;
+    while (hasMore == true &&
+        offset != null &&
+        offset.isNotEmpty &&
+        page < 10 &&
+        epoch == _unreadSyncEpoch) {
+      final res = await DynamicsHttp.dynUpList(offset);
+      if (epoch != _unreadSyncEpoch) {
+        return;
+      }
+      if (res case Success(:final response)) {
+        if (response.upList case final upList?) {
+          for (final up in upList) {
+            if (up.hasUpdate ?? false) {
+              _updatedMids.add(up.mid);
+            }
+          }
+        }
+        offset = response.offset;
+        hasMore = response.hasMore;
+        page++;
+      } else {
+        return;
+      }
+    }
+
+    if (epoch != _unreadSyncEpoch) {
+      return;
+    }
+    final upList = loadingState.value.dataOrNull?.upList;
+    if (upList != null && FollowUpModel.markUpdatedUps(upList, _updatedMids)) {
+      loadingState.refresh();
+    }
   }
 }

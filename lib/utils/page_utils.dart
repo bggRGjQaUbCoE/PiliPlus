@@ -459,11 +459,13 @@ abstract final class PageUtils {
     }
   }
 
+  /// 可按面板需要自定义转场时长，默认保持原有动画时长。
   static Future<void>? showVideoBottomSheet(
     BuildContext context, {
     required Widget child,
     ValueGetter<EdgeInsets>? padding,
     double maxWidth = 500,
+    Duration transitionDuration = const Duration(milliseconds: 350),
   }) {
     if (!context.mounted) {
       return null;
@@ -485,7 +487,7 @@ abstract final class PageUtils {
             ),
           );
         },
-        transitionDuration: const Duration(milliseconds: 350),
+        transitionDuration: transitionDuration,
         transitionBuilder: (context, animation, secondaryAnimation, child) {
           final begin = context.isPortrait
               ? const Offset(0.0, 1.0)

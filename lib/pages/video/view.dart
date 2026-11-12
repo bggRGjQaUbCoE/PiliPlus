@@ -1701,7 +1701,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
           child: Material(
             type: .transparency,
             child: InkWell(
-              onTap: () => videoDetailController.showMediaListPanel(context),
+              onTap: () => videoDetailController.toggleMediaListPanel(context),
               borderRadius: const .all(.circular(14)),
               child: Container(
                 height: 54,
@@ -1724,7 +1724,22 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                         ),
                       ),
                     ),
-                    const Icon(Icons.keyboard_arrow_up_rounded, size: 26),
+                    Obx(
+                      // 图标直接读取面板状态，并在展开/收缩时平滑旋转。
+                      () => AnimatedRotation(
+                        turns: videoDetailController
+                                    .isMediaListPanelExpanded
+                                    .value
+                                ? 0.5
+                                : 0,
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeInOut,
+                        child: const Icon(
+                          Icons.keyboard_arrow_up_rounded,
+                          size: 26,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),

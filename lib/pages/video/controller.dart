@@ -113,6 +113,13 @@ class VideoDetailController extends GetxController
   late final RxList<MediaListItemModel> mediaList = <MediaListItemModel>[].obs;
   late String watchLaterTitle;
 
+  /// 播放列表面板唯一的展开状态，按钮与面板共用。
+  final RxBool isMediaListPanelExpanded = false.obs;
+  bool _isClosingMediaListPanel = false;
+  bool _isWaitingForMediaListPanel = false;
+  int _mediaListPanelRequestId = 0;
+  Future<void>? _initialMediaListRequest;
+
   /// tabs相关配置
   late TabController tabCtr;
 
@@ -428,7 +435,7 @@ class VideoDetailController extends GetxController
     } else if (isPlayAll) {
       watchLaterTitle = args['favTitle'];
       _mediaDesc = args['desc'];
-      getMediaList();
+      _loadInitialMediaList();
     }
 
     tabCtr = TabController(
@@ -440,10 +447,23 @@ class VideoDetailController extends GetxController
     );
   }
 
+  /// 合并初始化期间的重复请求，避免快速点击造成列表条目重复追加。
+  Future<void> _loadInitialMediaList() => _initialMediaListRequest ??=
+      getMediaList().whenComplete(() => _initialMediaListRequest = null);
+
   Future<void> getMediaList({
     bool isReverse = false,
     bool isLoadPrevious = false,
   }) async {
+    final initialRequest = _initialMediaListRequest;
+    if (!isReverse &&
+        !isLoadPrevious &&
+        mediaList.isEmpty &&
+        initialRequest != null) {
+      await initialRequest;
+      return;
+    }
+
     final count = args['count'];
     if (!isReverse && count != null && mediaList.length >= count) {
       return;
@@ -498,7 +518,49 @@ class VideoDetailController extends GetxController
     }
   }
 
+  /// 按当前面板状态切换展开与收缩，并防止动画关闭期间重复开关。
+  void toggleMediaListPanel(BuildContext context) {
+    if (isMediaListPanelExpanded.value) {
+      if (_isClosingMediaListPanel) return;
+      _isClosingMediaListPanel = true;
+      isMediaListPanelExpanded.value = false;
+      Get.back();
+      return;
+    }
+    if (_isClosingMediaListPanel) return;
+    if (_isWaitingForMediaListPanel) {
+      _isWaitingForMediaListPanel = false;
+      _mediaListPanelRequestId++;
+      return;
+    }
+    showMediaListPanel(context);
+  }
+
+  void _onMediaListPanelClosing() {
+    isMediaListPanelExpanded.value = false;
+    _isClosingMediaListPanel = true;
+  }
+
+  void _onMediaListPanelClosed() {
+    isMediaListPanelExpanded.value = false;
+    _isClosingMediaListPanel = false;
+  }
+
   void showMediaListPanel(BuildContext context) {
+    if (isMediaListPanelExpanded.value || _isClosingMediaListPanel) return;
+    if (mediaList.isEmpty) {
+      if (_isWaitingForMediaListPanel) return;
+      _isWaitingForMediaListPanel = true;
+      final requestId = ++_mediaListPanelRequestId;
+      _loadInitialMediaList().whenComplete(() {
+        if (requestId != _mediaListPanelRequestId) return;
+        _isWaitingForMediaListPanel = false;
+        if (context.mounted && mediaList.isNotEmpty) {
+          showMediaListPanel(context);
+        }
+      });
+      return;
+    }
     if (mediaList.isNotEmpty) {
       Widget panel() => MediaListPanel(
         mediaList: mediaList,
@@ -542,22 +604,31 @@ class VideoDetailController extends GetxController
                 }
               }
             : null,
+        onClosing: _onMediaListPanelClosing,
       );
       if (plPlayerController.isFullScreen.value || showVideoSheet) {
-        PageUtils.showVideoBottomSheet(
+        final closed = PageUtils.showVideoBottomSheet(
           context,
+          // 与列表按钮箭头动画同步。
+          transitionDuration: const Duration(milliseconds: 250),
           child: plPlayerController.darkVideoPage
               ? Theme(data: ThemeUtils.darkTheme, child: panel())
               : panel(),
         );
+        if (closed != null) {
+          isMediaListPanelExpanded.value = true;
+          closed.whenComplete(_onMediaListPanelClosed);
+        }
       } else {
-        childKey.currentState?.showBottomSheet(
+        final bottomSheet = childKey.currentState?.showBottomSheet(
           constraints: const BoxConstraints(),
           (context) => panel(),
         );
+        if (bottomSheet != null) {
+          isMediaListPanelExpanded.value = true;
+          bottomSheet.closed.then<void>((_) => _onMediaListPanelClosed());
+        }
       }
-    } else {
-      getMediaList();
     }
   }
 

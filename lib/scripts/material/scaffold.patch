@@ -1,5 +1,5 @@
 diff --git a/lib/src/bottom_sheet.dart b/lib/src/bottom_sheet.dart
-index 99f4161..e45c513 100644
+index 4cfdac2..d9668d5 100644
 --- a/lib/src/bottom_sheet.dart
 +++ b/lib/src/bottom_sheet.dart
 @@ -258,8 +258,11 @@ class BottomSheet extends StatefulWidget {
@@ -41,7 +41,7 @@ index 99f4161..e45c513 100644
      assert(
        (widget.enableDrag || (widget.showDragHandle ?? false)) && widget.animationController != null,
        "'BottomSheet.animationController' cannot be null when 'BottomSheet.enableDrag' or 'BottomSheet.showDragHandle' is true. "
-@@ -380,9 +383,9 @@ class _BottomSheetState extends State<BottomSheet> {
+@@ -381,9 +384,9 @@ class _BottomSheetState extends State<BottomSheet> {
        // no need to add it.
        if (!widget.enableDrag) {
          dragHandle = _BottomSheetGestureDetector(
@@ -54,7 +54,7 @@ index 99f4161..e45c513 100644
            child: dragHandle,
          );
        }
-@@ -424,9 +427,9 @@ class _BottomSheetState extends State<BottomSheet> {
+@@ -425,9 +428,9 @@ class _BottomSheetState extends State<BottomSheet> {
      return !widget.enableDrag
          ? bottomSheet
          : _BottomSheetGestureDetector(
@@ -81,10 +81,10 @@ index 1abf23b..119e3c1 100644
    _BottomSheetDefaultsM3(this.context)
      : super(
 diff --git a/lib/src/scaffold.dart b/lib/src/scaffold.dart
-index 168fc5b..8e53ddc 100644
+index 792817f..996123d 100644
 --- a/lib/src/scaffold.dart
 +++ b/lib/src/scaffold.dart
-@@ -3400,7 +3400,9 @@ class _DismissDrawerAction extends DismissAction {
+@@ -3474,7 +3474,9 @@ class _DismissDrawerAction extends DismissAction {
  class ScaffoldFeatureController<T extends Widget, U> {
    const ScaffoldFeatureController._(this._widget, this._completer, this.close, this.setState);
    final T _widget;
@@ -94,7 +94,7 @@ index 168fc5b..8e53ddc 100644
  
    /// Completes when the feature controlled by this object is no longer visible.
    Future<U> get closed => _completer.future;
-@@ -3412,6 +3414,9 @@ class ScaffoldFeatureController<T extends Widget, U> {
+@@ -3486,6 +3488,9 @@ class ScaffoldFeatureController<T extends Widget, U> {
    final StateSetter? setState;
  }
  
@@ -104,7 +104,7 @@ index 168fc5b..8e53ddc 100644
  class _StandardBottomSheet extends StatefulWidget {
    const _StandardBottomSheet({
      super.key,
-@@ -3449,7 +3454,7 @@ class _StandardBottomSheet extends StatefulWidget {
+@@ -3523,7 +3528,7 @@ class _StandardBottomSheet extends StatefulWidget {
    _StandardBottomSheetState createState() => _StandardBottomSheetState();
  }
  
@@ -113,7 +113,7 @@ index 168fc5b..8e53ddc 100644
    ParametricCurve<double> animationCurve = _standardBottomSheetCurve;
  
    @override
-@@ -3467,7 +3472,7 @@ class _StandardBottomSheetState extends State<_StandardBottomSheet> {
+@@ -3541,7 +3546,7 @@ class _StandardBottomSheetState extends State<_StandardBottomSheet> {
    }
  
    @override
@@ -122,7 +122,7 @@ index 168fc5b..8e53ddc 100644
      super.didUpdateWidget(oldWidget);
      assert(widget.animationController == oldWidget.animationController);
    }
-@@ -3477,12 +3482,12 @@ class _StandardBottomSheetState extends State<_StandardBottomSheet> {
+@@ -3551,12 +3556,12 @@ class _StandardBottomSheetState extends State<_StandardBottomSheet> {
      widget.onClosing?.call();
    }
  
@@ -137,7 +137,7 @@ index 168fc5b..8e53ddc 100644
      // Allow the bottom sheet to animate smoothly from its current position.
      animationCurve = Split(widget.animationController.value, endCurve: _standardBottomSheetCurve);
    }
-@@ -3535,8 +3540,8 @@ class _StandardBottomSheetState extends State<_StandardBottomSheet> {
+@@ -3617,8 +3622,8 @@ class _StandardBottomSheetState extends State<_StandardBottomSheet> {
              animationController: widget.animationController,
              enableDrag: widget.enableDrag,
              showDragHandle: widget.showDragHandle,
@@ -146,9 +146,9 @@ index 168fc5b..8e53ddc 100644
 +            onDragStart: handleDragStart,
 +            onDragEnd: handleDragEnd,
              onClosing: widget.onClosing!,
-             builder: widget.builder,
-             backgroundColor: widget.backgroundColor,
-@@ -3568,7 +3573,17 @@ class PersistentBottomSheetController
+             // Extends the Material behind the keyboard. Always present, so the
+             // content keeps its state when the keyboard shows or hides.
+@@ -3658,7 +3663,17 @@ class PersistentBottomSheetController
      this._isLocalHistoryEntry,
    ) : super._();
  
@@ -165,4 +165,4 @@ index 168fc5b..8e53ddc 100644
 +  bool get isLocalHistoryEntry => _isLocalHistoryEntry;
  }
  
- class _ScaffoldScope extends InheritedWidget {
+ enum _ScaffoldAspect { geometry, hasDrawer, drawerExpanded, endDrawerExpanded }

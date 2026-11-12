@@ -1,5 +1,5 @@
 diff --git a/lib/src/popup_menu.dart b/lib/src/popup_menu.dart
-index d441894..206626e 100644
+index 751e6c4..6eca3e4 100644
 --- a/lib/src/popup_menu.dart
 +++ b/lib/src/popup_menu.dart
 @@ -1023,6 +1023,9 @@ class _PopupMenuRoute<T> extends PopupRoute<T> {

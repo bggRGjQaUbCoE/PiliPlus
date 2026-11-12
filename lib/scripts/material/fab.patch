@@ -1,8 +1,8 @@
 diff --git a/lib/src/floating_action_button.dart b/lib/src/floating_action_button.dart
-index 3989b3d..a63e564 100644
+index 2a0a8ea..7b71e19 100644
 --- a/lib/src/floating_action_button.dart
 +++ b/lib/src/floating_action_button.dart
-@@ -621,9 +621,9 @@ class FloatingActionButton extends StatelessWidget {
+@@ -623,9 +623,9 @@ class FloatingActionButton extends StatelessWidget {
        result = Tooltip(message: tooltip, child: result);
      }
  

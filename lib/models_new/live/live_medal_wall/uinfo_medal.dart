@@ -37,4 +37,30 @@ class UinfoMedal {
     'v2_medal_color_start': v2MedalColorStart,
     'v2_medal_color_text': v2MedalColorText,
   };
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is UinfoMedal) {
+      return id == other.id &&
+          level == other.level &&
+          name == other.name &&
+          ruid == other.ruid &&
+          v2MedalColorStart == other.v2MedalColorStart &&
+          v2MedalColorText == other.v2MedalColorText;
+    }
+    return false;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    level,
+    name,
+    ruid,
+    v2MedalColorStart,
+    v2MedalColorText,
+  );
 }

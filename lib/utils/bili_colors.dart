@@ -8,4 +8,9 @@ abstract final class BiliColors {
   static const blueDark = Color(0xFF2C9CC8);
 
   static const yellow = Color(0xFFFFCC00);
+
+  static const linkCyan = Color(0xFF23E5E3);
+  static const linkPurple = Color(0xFFBD89FD);
+  static const linkOrange = Color(0xFFFF8E29);
+  static const linkBlue = Color(0xFF23ADE5);
 }

@@ -166,7 +166,8 @@ abstract final class SettingBoxKey {
       blockAtOnlyReply = 'blockAtOnlyReply',
       blockReplyAtCount = 'blockReplyAtCount',
       filterIntro = 'filterIntro',
-      showRefreshFAB = 'showRefreshFAB';
+      showRefreshFAB = 'showRefreshFAB',
+      autoWearMedal = 'autoWearMedal';
 
   static const String superChatType = 'superChatType',
       enableFullScreenSC = 'enableFullScreenSC',

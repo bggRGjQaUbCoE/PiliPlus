@@ -276,6 +276,12 @@ List<SettingsModel> get playSettings => [
     setKey: SettingBoxKey.keyboardControl,
     defaultVal: true,
   ),
+  const SwitchModel(
+    title: '自动佩戴直播间粉丝牌',
+    leading: Icon(MdiIcons.medalOutline),
+    setKey: SettingBoxKey.autoWearMedal,
+    defaultVal: false,
+  ),
   PopupModel(
     title: 'SuperChat (醒目留言) 显示类型',
     leading: const Icon(Icons.live_tv),

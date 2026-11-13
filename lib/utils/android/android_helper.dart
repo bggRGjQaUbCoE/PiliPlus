@@ -10,6 +10,7 @@ import 'package:jni/jni.dart';
 
 abstract final class PiliAndroidHelper {
   static final isPipAvailable = AndroidHelper.isPipAvailable;
+  static bool get isFoldable => Platform.isAndroid && AndroidHelper.isFoldable;
 
   static void biliSendCommAntifraud(
     int action,

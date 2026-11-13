@@ -21,9 +21,7 @@ import 'package:PiliPlus/pages/fav_panel/view.dart';
 import 'package:PiliPlus/pages/share/view.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
-import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/global_data.dart';
@@ -161,11 +159,11 @@ abstract final class PageUtils {
       useSafeArea: true,
       isScrollControlled: true,
       constraints: BoxConstraints(
-        maxWidth: min(640, context.mediaQueryShortestSide),
+        maxWidth: min(640, MediaQuery.shortestSideOf(context)),
       ),
       builder: (BuildContext context) {
         final maxChildSize =
-            PlatformUtils.isMobile && !context.mediaQuerySize.isPortrait
+            PlatformUtils.isMobile && !MediaQuery.isPortraitOf(context)
             ? 1.0
             : 0.7;
         return DraggableScrollableSheet(
@@ -471,7 +469,7 @@ abstract final class PageUtils {
     return Get.key.currentState!.push(
       PublishRoute(
         pageBuilder: (context, animation, secondaryAnimation) {
-          final isPortrait = context.isPortrait;
+          final isPortrait = MediaQuery.isPortraitOf(context);
           return SafeArea(
             child: CustomFractionallySizedBox(
               maxWidth: maxWidth,
@@ -487,7 +485,7 @@ abstract final class PageUtils {
         },
         transitionDuration: const Duration(milliseconds: 350),
         transitionBuilder: (context, animation, secondaryAnimation, child) {
-          final begin = context.isPortrait
+          final begin = MediaQuery.isPortraitOf(context)
               ? const Offset(0.0, 1.0)
               : const Offset(1.0, 0.0);
           return SlideTransition(

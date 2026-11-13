@@ -7,7 +7,6 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
 import 'package:PiliPlus/common/widgets/view_insets_safe_area.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/login/controller.dart';
-import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/extension/widget_ext.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -34,14 +33,22 @@ class _LoginPageState extends State<LoginPage> {
   // 二维码生成时间
   bool showPassword = false;
   GlobalKey globalKey = GlobalKey();
+  late bool isPortrait;
+  late ThemeData theme;
+  late EdgeInsets padding;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _loginPageCtr.didChangeDependencies(context);
+    theme = Theme.of(context);
+    isPortrait = MediaQuery.isPortraitOf(context);
+    padding =
+        MediaQuery.viewPaddingOf(context).copyWith(top: 0) +
+        const EdgeInsets.only(bottom: 25);
   }
 
-  Widget loginByQRCode(ThemeData theme) {
+  Widget loginByQRCode() {
     return Column(
       children: [
         const SizedBox(height: 20),
@@ -168,7 +175,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget loginByCookie(ThemeData theme) {
+  Widget loginByCookie() {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -212,7 +219,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget loginByPassword(ThemeData theme) {
+  Widget loginByPassword() {
     return Column(
       children: [
         const SizedBox(height: 20),
@@ -361,7 +368,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget loginBySmS(ThemeData theme) {
+  Widget loginBySmS() {
     return Column(
       children: [
         const SizedBox(height: 20),
@@ -511,15 +518,8 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  late EdgeInsets padding;
-
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    padding =
-        MediaQuery.viewPaddingOf(context).copyWith(top: 0) +
-        const EdgeInsets.only(bottom: 25);
-    final isLandscape = !MediaQuery.sizeOf(context).isPortrait;
     return SimpleScaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -530,7 +530,7 @@ class _LoginPageState extends State<LoginPage> {
         title: Row(
           children: [
             const Text('登录'),
-            if (isLandscape)
+            if (!isPortrait)
               Expanded(
                 child: Align(
                   alignment: Alignment.centerRight,
@@ -575,7 +575,7 @@ class _LoginPageState extends State<LoginPage> {
       ),
       body: Column(
         children: [
-          if (!isLandscape)
+          if (isPortrait)
             TabBar(
               tabs: const [
                 Tab(icon: Icon(Icons.password), text: '密码'),
@@ -597,10 +597,10 @@ class _LoginPageState extends State<LoginPage> {
                 child: tabBarView(
                   controller: _loginPageCtr.tabController,
                   children: [
-                    tabViewOuter(loginByPassword(theme)),
-                    tabViewOuter(loginBySmS(theme)),
-                    tabViewOuter(loginByQRCode(theme)),
-                    tabViewOuter(loginByCookie(theme)),
+                    tabViewOuter(loginByPassword()),
+                    tabViewOuter(loginBySmS()),
+                    tabViewOuter(loginByQRCode()),
+                    tabViewOuter(loginByCookie()),
                   ],
                 ),
               ),

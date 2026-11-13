@@ -37,7 +37,6 @@ import 'package:PiliPlus/pages/member_video_web/season_series/view.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
 import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/date_utils.dart';
-import 'package:PiliPlus/utils/extension/context_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -191,7 +190,7 @@ class _MemberPageState extends State<MemberPage> {
       useSafeArea: true,
       isScrollControlled: true,
       constraints: BoxConstraints(
-        maxWidth: math.min(640, context.mediaQueryShortestSide),
+        maxWidth: math.min(640, MediaQuery.shortestSideOf(context)),
       ),
       builder: (context) {
         final scheme = ColorScheme.of(context);

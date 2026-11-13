@@ -1,0 +1,55 @@
+diff --git a/packages/flutter/lib/src/widgets/media_query.dart b/packages/flutter/lib/src/widgets/media_query.dart
+index 9fe0a1aafdf..a3de208ed79 100644
+--- a/packages/flutter/lib/src/widgets/media_query.dart
++++ b/packages/flutter/lib/src/widgets/media_query.dart
+@@ -136,6 +136,8 @@ enum _MediaQueryAspect {
+ 
+   /// Specifies the aspect corresponding to [MediaQueryData.displayCornerRadii].
+   displayCornerRadii,
++
++  isPortrait, isTablet, shortestSide,
+ }
+ 
+ /// Information about a piece of media (e.g., a window).
+@@ -855,6 +857,18 @@ class MediaQueryData {
+     return size.width > size.height ? Orientation.landscape : Orientation.portrait;
+   }
+ 
++  bool get isPortrait {
++    return size.width < 600 || size.height >= size.width;
++  }
++
++  bool get isTablet {
++    return size.shortestSide >= 600;
++  }
++
++  double get shortestSide {
++    return size.shortestSide;
++  }
++
+   /// Creates a copy of this media query data but with the given fields replaced
+   /// with the new values.
+   ///
+@@ -2285,6 +2299,12 @@ class MediaQuery extends InheritedModel<_MediaQueryAspect> {
+   static BorderRadius? maybeDisplayCornerRadiiOf(BuildContext context) =>
+       _maybeOf(context, _MediaQueryAspect.displayCornerRadii)?.displayCornerRadii;
+ 
++  static bool isPortraitOf(BuildContext context) => _of(context, _MediaQueryAspect.isPortrait).isPortrait;
++
++  static bool isTabletOf(BuildContext context) => _of(context, _MediaQueryAspect.isTablet).isTablet;
++
++  static double shortestSideOf(BuildContext context) => _of(context, _MediaQueryAspect.shortestSide).shortestSide;
++
+   @override
+   bool updateShouldNotify(MediaQuery oldWidget) => data != oldWidget.data;
+ 
+@@ -2349,6 +2369,9 @@ class MediaQuery extends InheritedModel<_MediaQueryAspect> {
+               data.paragraphSpacingOverride != oldWidget.data.paragraphSpacingOverride,
+             _MediaQueryAspect.displayCornerRadii =>
+               data.displayCornerRadii != oldWidget.data.displayCornerRadii,
++            _MediaQueryAspect.isPortrait => data.isPortrait != oldWidget.data.isPortrait,
++            _MediaQueryAspect.isTablet => data.isTablet != oldWidget.data.isTablet,
++            _MediaQueryAspect.shortestSide => data.shortestSide != oldWidget.data.shortestSide,
+           },
+     );
+   }

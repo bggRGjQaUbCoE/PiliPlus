@@ -13,8 +13,6 @@ import 'package:PiliPlus/plugin/pl_player/widgets/common_btn.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart'
     show shutdownTimerService;
 import 'package:PiliPlus/utils/android/android_helper.dart';
-import 'package:PiliPlus/utils/extension/context_ext.dart';
-import 'package:PiliPlus/utils/extension/size_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/ios/pip_helper.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -305,11 +303,11 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
       useSafeArea: true,
       isScrollControlled: true,
       constraints: BoxConstraints(
-        maxWidth: math.min(640, context.mediaQueryShortestSide),
+        maxWidth: math.min(640, MediaQuery.shortestSideOf(context)),
       ),
       builder: (context) {
         final maxChildSize =
-            PlatformUtils.isMobile && !context.mediaQuerySize.isPortrait
+            PlatformUtils.isMobile && !MediaQuery.isPortraitOf(context)
             ? 1.0
             : 0.7;
         return DynDraggableScrollableSheet(

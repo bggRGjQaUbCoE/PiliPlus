@@ -18,6 +18,7 @@ import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/video_tag_filter.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -148,7 +149,7 @@ abstract class CommonIntroController extends GetxController
 
   Future<void> queryVideoTags() async {
     final result = await UserHttp.videoTags(bvid: bvid, cid: cid.value);
-    videoTags.value = result.dataOrNull;
+    videoTags.value = VideoTagFilter.apply(result.dataOrNull);
   }
 
   Future<void> viewLater() async {

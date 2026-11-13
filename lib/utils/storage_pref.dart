@@ -651,6 +651,9 @@ abstract final class Pref {
   static String get banWordForDyn =>
       _setting.get(SettingBoxKey.banWordForDyn, defaultValue: '');
 
+  static String get banWordForVideoTag =>
+      _setting.get(SettingBoxKey.banWordForVideoTag, defaultValue: '');
+
   static bool get enableLog =>
       _setting.get(SettingBoxKey.enableLog, defaultValue: true);
 

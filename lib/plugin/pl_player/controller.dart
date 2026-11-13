@@ -29,6 +29,7 @@ import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/danmaku_options.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
+import 'package:PiliPlus/plugin/pl_player/utils/system_volume.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
@@ -53,7 +54,7 @@ import 'package:PiliPlus/utils/utils.dart';
 import 'package:archive/archive.dart' show getCrc32;
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:easy_debounce/easy_throttle.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show clampDouble, kDebugMode;
 import 'package:flutter/services.dart'
     show DeviceOrientation, HapticFeedback, KeyDownEvent;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -584,17 +585,6 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   static Future<void>? seekToIfExists(Duration position) {
     return _instance?.seekTo(position);
-  }
-
-  static double? getVolumeIfExists() {
-    return _instance?.volume.value;
-  }
-
-  static Future<void>? setVolumeIfExists(
-    double volumeNew, {
-    bool showIndicator = true,
-  }) {
-    return _instance?.setVolume(volumeNew, showIndicator: showIndicator);
   }
 
   Box video = GStorage.video;
@@ -1275,32 +1265,229 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   bool volumeInterceptEventStream = false;
 
   final double maxVolume = PlatformUtils.isDesktop ? Pref.maxVolume : 1.0;
+
+  void _showVolumeIndicator({VoidCallback? onTimeout}) {
+    volumeIndicator.value = true;
+    volumeInterceptEventStream = true;
+    volumeTimer?.cancel();
+    volumeTimer = Timer(const Duration(milliseconds: 200), () {
+      volumeIndicator.value = false;
+      volumeInterceptEventStream = false;
+      onTimeout?.call();
+    });
+  }
+
+  /// 当前音量显示成多少百分比
+  ///
+  /// Android 上系统音量是整数刻度，显示值取这一级刻度的整数百分比
+  /// （15 级系统的第 10 级是 66.6…%，显示 67%），不随连续手势值变化。
+  int get volumePercent {
+    if (!Platform.isAndroid) return (volume.value * 100).round();
+    final steps = _volumeSteps;
+    return volumeStepLabel((volume.value * steps).round(), steps);
+  }
+
+  /// 系统音量的级数，从系统读取（`AudioManager.getStreamMaxVolume`）
+  late final int _volumeSteps = _queryVolumeSteps();
+
+  int _queryVolumeSteps() {
+    try {
+      final steps = PiliAndroidHelper.getStreamMaxVolume();
+      return steps > 1 ? steps : kFallbackVolumeSteps;
+    } catch (err) {
+      if (kDebugMode) debugPrint(err.toString());
+      return kFallbackVolumeSteps;
+    }
+  }
+
+  /// 滑动期间累积的连续音量，也是调音量的基准
+  ///
+  /// 每段滑动的起点由 [beginVolumeGesture] 对齐到「本级与下一级刻度的正中」
+  /// （15 级系统停在第 10 级时是 70%），此后只由手指划过的距离决定：
+  /// 连续音量到 74% 升一级、回到 67% 以下降一级。
+  /// 每段滑动起手都会补上半级松量，所以分成几段滑和一口气滑完的行程最多差半级；
+  /// 同一手势内上滑再滑回原点、松手后按同样行程滑回，都回得到原来的刻度（#2134）。
+  double? _gestureVolume;
+
+  /// 是否正在把累积值追赶成系统刻度
+  bool _volumeStepping = false;
+
+  /// 上一次从系统读到的实际音量
+  double? _lastSystemVolume;
+
+  /// 音量写入序号，用于丢弃过期的回读结果
+  int _volumeApplySeq = 0;
+
+  /// 正在写入系统音量的请求数
+  ///
+  /// 写入期间系统会广播音量变化，这些事件是自己引起的，不能拿来同步，
+  /// 否则会把滑动累积的余量抹掉（见 [isSelfAppliedVolume]）。
+  int _volumeWriteInFlight = 0;
+
+  /// 相对调节音量，滑动手势、键盘、滚轮都走这里
+  ///
+  /// 手势累积的连续音量用来判断「手指落到了系统的第几级」，差几级就调几级；
+  /// 应用内显示值则始终是系统实际刻度，两者不会脱节。
+  Future<void> adjustVolume(double delta, {bool showIndicator = true}) async {
+    if (!Platform.isAndroid) {
+      return setVolume(volume.value + delta, showIndicator: showIndicator);
+    }
+    final steps = _volumeSteps;
+    // 没有明确起点的输入（滚轮等）在第一次调节时对齐系统当前刻度
+    _gestureVolume ??= volumeAnchor(volume: volume.value, steps: steps);
+    if (showIndicator) {
+      _showVolumeIndicator();
+    }
+    // 连续音量只在「第一级的起点」和「最高一级的起点」之间浮动：
+    // 最高一级的起点会比 100% 高半级（15 级系统是 104%），
+    // 这样在 100% 处往下滑也要走完半级才降级
+    _gestureVolume = clampDouble(
+      _gestureVolume! + delta,
+      volumeAnchorForIndex(0, steps),
+      volumeAnchorForIndex(steps, steps),
+    );
+    // 上一次写入还没回读，交给它继续追赶累积值，避免同一次写入被算两遍
+    if (_volumeStepping) return;
+    _volumeStepping = true;
+    try {
+      while (true) {
+        final desired = resolveVolumeIndex(
+          percent: _gestureVolume! * 100,
+          steps: steps,
+        );
+        final current = (volume.value * steps).round();
+        if (desired == current) break;
+        // 显示值只由回读结果刷新（见 _writeSystemVolume）：界面上的数字
+        // 始终是系统已生效的刻度，不会比实际音量超前，也不会在上限处先涨后落
+        final applied = await _writeSystemVolume(
+          index: desired,
+          steps: steps,
+        );
+        if (!applied) break;
+      }
+    } finally {
+      _volumeStepping = false;
+    }
+  }
+
+  /// 开始一次音量滑动，累积值对齐系统当前刻度
+  void beginVolumeGesture() {
+    if (Platform.isAndroid) {
+      _gestureVolume = volumeAnchor(volume: volume.value, steps: _volumeSteps);
+    }
+  }
+
+  /// 结束一次音量滑动，累积值随之丢弃，下次滑动重新对齐系统刻度
+  void endVolumeGesture() {
+    if (Platform.isAndroid) {
+      _gestureVolume = null;
+    }
+  }
+
+  /// 把音量写进系统
+  ///
+  /// Android 上写完回读实际值：系统音量是整数刻度，写入会被取整，显示值必须
+  /// 以回读值为准，否则应用内刻度与系统刻度会越走越远。
   Future<void> setVolume(double volume, {bool showIndicator = true}) async {
-    if (this.volume.value != volume) {
-      this.volume.value = volume;
+    final target = clampDouble(volume, 0.0, maxVolume);
+    if (Platform.isAndroid) {
+      _gestureVolume = null;
+      // 系统已经就在这个音量上，再写一次也没有意义
+      if (_lastSystemVolume != target) {
+        await _writeSystemVolume(
+          index: (target * _volumeSteps).round(),
+          steps: _volumeSteps,
+        );
+      }
+    } else if (this.volume.value != target) {
+      this.volume.value = target;
       try {
         if (PlatformUtils.isDesktop) {
-          await setVolumeCapped(_videoPlayerController, volume);
+          await setVolumeCapped(_videoPlayerController, target);
         } else {
           FlutterVolumeController.updateShowSystemUI(false);
-          await FlutterVolumeController.setVolume(volume);
+          await FlutterVolumeController.setVolume(target);
         }
       } catch (err) {
         if (kDebugMode) debugPrint(err.toString());
       }
     }
     if (showIndicator) {
-      volumeIndicator.value = true;
+      _showVolumeIndicator(
+        onTimeout: PlatformUtils.isDesktop
+            ? () => setting.put(
+                SettingBoxKey.desktopVolume,
+                target.toPrecision(3),
+              )
+            : null,
+      );
     }
-    volumeInterceptEventStream = true;
-    volumeTimer?.cancel();
-    volumeTimer = Timer(const Duration(milliseconds: 200), () {
-      volumeIndicator.value = false;
-      volumeInterceptEventStream = false;
-      if (PlatformUtils.isDesktop) {
-        setting.put(SettingBoxKey.desktopVolume, volume.toPrecision(3));
+  }
+
+  /// 系统音量被外部改变（音量键、系统面板、切换音频设备）时同步到应用内
+  void syncSystemVolume(double value) {
+    _lastSystemVolume = value;
+    _gestureVolume = null;
+    if (volume.value != value) {
+      volume.value = value;
+    }
+  }
+
+  /// 音量变化事件是否由自己写入系统引起
+  ///
+  /// 写系统音量后系统一定会广播一次变化，自己触发的这一份要忽略，
+  /// 否则会把滑动累积的余量抹掉；而系统主动改变的音量（音量键、
+  /// 安全音量钳制、切换音频设备）必须同步回来。
+  bool isSelfAppliedVolume(double value) =>
+      _volumeWriteInFlight > 0 ||
+      (_lastSystemVolume != null && (value - _lastSystemVolume!).abs() < 1e-6);
+
+  /// 把系统音量写到第 [index] 级，并回读实际值
+  ///
+  /// 只差一级时走系统的「调高/调低一级」（`ADJUST_RAISE` / `ADJUST_LOWER`），
+  /// 级数由系统决定；差得多时直接写目标刻度，省掉逐级往返
+  /// （写之前加半级，避开原生实现的向下取整）。
+  /// 回读值没到目标刻度就说明系统拒绝了这次调整（常见于耳机安全音量上限），
+  /// 此时把手指走过的量退回到系统实际刻度，界面数值停在那一级，继续上滑还会再试。
+  Future<bool> _writeSystemVolume({
+    required int index,
+    required int steps,
+  }) async {
+    final seq = ++_volumeApplySeq;
+    final previousIndex = (volume.value * steps).round();
+    final move = index - previousIndex;
+    final double? actual;
+    _volumeWriteInFlight++;
+    try {
+      FlutterVolumeController.updateShowSystemUI(false);
+      if (move.abs() == 1) {
+        if (move > 0) {
+          await FlutterVolumeController.raiseVolume(null);
+        } else {
+          await FlutterVolumeController.lowerVolume(null);
+        }
+      } else {
+        await FlutterVolumeController.setVolume((index + 0.5) / steps);
       }
-    });
+      actual = await FlutterVolumeController.getVolume();
+    } catch (err) {
+      if (kDebugMode) debugPrint(err.toString());
+      return false;
+    } finally {
+      _volumeWriteInFlight--;
+    }
+    if (actual == null || seq != _volumeApplySeq) return false;
+    _lastSystemVolume = actual;
+    final applied = (actual - index / steps).abs() < 1e-6;
+    if (!applied && _gestureVolume != null) {
+      // 手势中系统没跟到目标刻度：手指走过的量退回系统实际刻度
+      _gestureVolume = volumeAnchor(volume: actual, steps: steps);
+    }
+    // 显示值只以回读到的系统刻度为准，不提前跳到目标刻度
+    if (volume.value != actual) {
+      volume.value = actual;
+    }
+    return applied;
   }
 
   /// Toggle Change the videofit accordingly

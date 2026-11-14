@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/selection_text.dart';
 import 'package:PiliPlus/common/widgets/text_more/text_more.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/rich_node_panel.dart';
+import 'package:PiliPlus/utils/dyn_topic_config.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
 import 'package:PiliPlus/utils/extension/selectable_region_ext.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
@@ -42,42 +43,49 @@ Widget content(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (moduleDynamic?.topic case final topic?)
-          GestureDetector(
-            onTap: () => Get.toNamed(
-              '/dynTopic',
-              parameters: {
-                'id': topic.id!.toString(),
-                'name': topic.name!,
-              },
-            ),
-            child: Text.rich(
-              TextSpan(
-                children: [
-                  WidgetSpan(
-                    alignment: PlaceholderAlignment.middle,
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 4),
-                      child: Icon(
-                        size: 18,
-                        CustomIcons.topic_tag,
-                        color: theme.colorScheme.primary,
+        Obx(() {
+          if (!DynTopicConfig.show.value) {
+            return const SizedBox.shrink();
+          }
+          if (moduleDynamic?.topic case final topic?) {
+            return GestureDetector(
+              onTap: () => Get.toNamed(
+                '/dynTopic',
+                parameters: {
+                  'id': topic.id!.toString(),
+                  'name': topic.name!,
+                },
+              ),
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 4),
+                        child: Icon(
+                          size: 18,
+                          CustomIcons.topic_tag,
+                          color: theme.colorScheme.primary,
+                        ),
                       ),
                     ),
-                  ),
-                  TextSpan(text: topic.name),
-                ],
+                    TextSpan(text: topic.name),
+                  ],
+                ),
+                style: TextStyle(
+                  fontSize: floor != 1
+                      ? 14
+                      : isDetail && !isSave
+                      ? 16
+                      : 15,
+                  color: theme.colorScheme.primary,
+                ),
               ),
-              style: TextStyle(
-                fontSize: floor != 1
-                    ? 14
-                    : isDetail && !isSave
-                    ? 16
-                    : 15,
-                color: theme.colorScheme.primary,
-              ),
-            ),
-          ),
+            );
+          }
+          return const SizedBox.shrink();
+        }),
         if (richNodes != null)
           isDetail && floor == 1
               ? SelectionText.rich(

@@ -15,6 +15,23 @@ class FollowUpModel {
     }
   }
 
+  /// 合并官方动态 UP 列表返回的更新状态。
+  ///
+  /// [updatedMids] 为官方列表中 `has_update` 为 true 的 UP mid。
+  /// 只补充普通关注列表项缺失的更新状态（`hasUpdate == null`），
+  /// 不覆盖已有状态（包括用户点开后被置为 false 的已读状态）。
+  /// 返回是否有条目状态发生变化。
+  static bool markUpdatedUps(List<UpItem> upList, Set<int> updatedMids) {
+    var changed = false;
+    for (final up in upList) {
+      if (up.hasUpdate == null && updatedMids.contains(up.mid)) {
+        up.hasUpdate = true;
+        changed = true;
+      }
+    }
+    return changed;
+  }
+
   factory FollowUpModel.fromJson(Map<String, dynamic> json) {
     final model = FollowUpModel.fromUpList(json['up_list']);
     final liveUsers = json['live_users'];

@@ -214,6 +214,14 @@ List<SettingsModel> get styleSettings => [
     defaultVal: false,
     needReboot: true,
   ),
+  if (Pref.dynamicsShowAllFollowedUp)
+    const SwitchModel(
+      title: '全部关注UP的未读提醒',
+      subtitle: '为所有已关注UP显示未读圆点；基于B站官方更新列表，可能不包含官方未返回的UP',
+      leading: Icon(Icons.notifications_active_outlined),
+      setKey: SettingBoxKey.dynamicsShowAllFollowedUpUnread,
+      defaultVal: false,
+    ),
   const SwitchModel(
     title: '动态页展开正在直播UP列表',
     leading: Icon(Icons.live_tv),

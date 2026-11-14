@@ -178,6 +178,11 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
       offset: data.paginationReply.nextOffset,
     );
 
+    final seen = <Int64>{
+      if (!isRefresh)
+        ...?loadingState.value.dataOrNull?.map((reply) => reply.id),
+    };
+    data.replies.removeWhere((reply) => !seen.add(reply.id));
     _removeIntro(data);
 
     return false;

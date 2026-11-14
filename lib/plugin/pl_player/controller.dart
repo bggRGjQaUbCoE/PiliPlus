@@ -130,6 +130,21 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   final RxBool isFullScreen = false.obs;
   bool isLive = false;
 
+  // ===== 全屏切换几何过渡状态（参照 pure_live 平板端实现） =====
+  /// 模式切换计数器：作为动画层 ValueKey，只有全屏态真正变化才重播动画。
+  int fsTransitionEpoch = 0;
+  /// probe 上报的视频容器全局矩形（稳定期有效）。
+  Rect? fsVideoRect;
+  /// 进全屏瞬间快照的非全屏容器矩形，供退全屏时缩回原位。
+  Rect? fsNormalVideoRect;
+  /// 动画窗口截止时间戳（ms）：窗口内 probe 冻结上报（此时全局坐标被
+  /// 过渡 Transform 污染），动画结束后 probe 自动补报稳定值。
+  int fsAnimatingUntilMs = 0;
+  /// build 侧上一次观察到的全屏态，用于检测全屏切换。
+  bool? fsLastObservedFullScreen;
+  /// 本次切换是否播几何动画（方向不变才播，会旋转的交给系统）。
+  bool fsAnimateNextSwitch = false;
+
   bool _isVertical = false;
 
   final Rx<VideoFitType> videoFit = Rx(.contain);

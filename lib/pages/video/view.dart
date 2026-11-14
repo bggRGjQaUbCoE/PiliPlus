@@ -77,6 +77,11 @@ import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
 
+/// 平板/桌面全屏切换几何过渡时长（参照 pure_live）。
+const Duration _fsAnimDuration = Duration(milliseconds: 260);
+/// 动画判定窗口（260ms + 缓冲）：窗口外触发的子树重建不重播动画。
+const int _fsAnimWindowMs = 320;
+
 class VideoDetailPageV extends StatefulWidget {
   const VideoDetailPageV({super.key});
 
@@ -791,7 +796,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
             height: videoHeight,
           ),
         ),
-        Offstage(
+        _FsAnimatedOffstage(
+          controller: plPlayerController,
           offstage: isFullScreen,
           child: SizedBox(
             width: introWidth,
@@ -836,7 +842,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Offstage(
+              _FsAnimatedOffstage(
+                controller: plPlayerController,
                 offstage: isFullScreen,
                 child: SizedBox(
                   width: introWidth,
@@ -855,7 +862,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                   height: videoHeight,
                 ),
               ),
-              Offstage(
+              _FsAnimatedOffstage(
+                controller: plPlayerController,
                 offstage: isFullScreen,
                 child: SizedBox(
                   width: introWidth,
@@ -922,7 +930,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
               ),
             ),
             if (!videoDetailController.isFileSource)
-              Offstage(
+              _FsAnimatedOffstage(
+                controller: plPlayerController,
                 offstage: isFullScreen,
                 child: SizedBox(
                   width: width,
@@ -937,7 +946,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
               ),
           ],
         ),
-        Offstage(
+        _FsAnimatedOffstage(
+          controller: plPlayerController,
           offstage: isFullScreen,
           child: SizedBox(
             width: maxWidth - width - padding.horizontal,
@@ -1039,7 +1049,8 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
             height: videoHeight,
           ),
         ),
-        Offstage(
+        _FsAnimatedOffstage(
+          controller: plPlayerController,
           offstage: isFullScreen,
           child: SizedBox(
             width: maxWidth - padding.horizontal,
@@ -1451,7 +1462,14 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   Widget videoPlayer({required double width, required double height}) {
     final isFullScreen = this.isFullScreen;
-    return Stack(
+    _detectFsSwitch(isFullScreen);
+    return _VideoRectProbe(
+      controller: plPlayerController,
+      child: _fsTransitionWrapper(
+        width: width,
+        height: height,
+        isFullScreen: isFullScreen,
+        child: Stack(
       clipBehavior: Clip.none,
       children: [
         const Positioned.fill(
@@ -1604,6 +1622,171 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
           },
         ),
       ],
+        ),
+      ),
+    );
+  }
+
+  /// 全屏切换检测：isFullScreen 真正变化时递增 epoch 并快照非全屏矩形。
+  /// 由 videoPlayer() 在 build 时调用（各布局 Obx 均监听 isFullScreen，
+  /// 切换必触发重建），首帧/重复 build 不触发。
+  void _detectFsSwitch(bool isFullScreen) {
+    final ctr = plPlayerController;
+    if (ctr == null) return;
+    final prev = ctr.fsLastObservedFullScreen;
+    ctr.fsLastObservedFullScreen = isFullScreen;
+    if (prev == null || prev == isFullScreen) return;
+    ctr.fsTransitionEpoch++;
+    // 方向会变的切换（手机/平板竖持进全屏旋转、退回竖屏）交给系统旋转
+    // 动画，避免与 Flutter 过渡叠成双动画；仅方向不变时做几何过渡。
+    ctr
+      ..fsAnimatingUntilMs =
+          DateTime.now().millisecondsSinceEpoch + _fsAnimWindowMs
+      ..fsAnimateNextSwitch = !isPortrait;
+    if (isFullScreen) {
+      // 进全屏：此刻 probe 上报的仍是非全屏布局容器矩形，快照供退全屏缩回。
+      ctr.fsNormalVideoRect = ctr.fsVideoRect;
+    }
+  }
+
+  /// 全屏切换过渡层。只在 epoch 变化后的窗口期内播一次：
+  /// - 几何过渡：视频按流真实比例的内容矩形从原位置放大铺满/缩回原位；
+  /// - 数据缺失（矩形/比例拿不到、videoFit 非 contain）退化为淡入。
+  Widget _fsTransitionWrapper({
+    required Widget child,
+    required double width,
+    required double height,
+    required bool isFullScreen,
+  }) {
+    final ctr = plPlayerController;
+    if (ctr == null) return child;
+    final epochKey = ValueKey('fs_switch_${ctr.fsTransitionEpoch}');
+    final withinWindow =
+        DateTime.now().millisecondsSinceEpoch < ctr.fsAnimatingUntilMs;
+    // 窗口外一律走 plain()：全屏内切清晰度等触发的子树重建不得重播动画
+    //（TweenAnimationBuilder 元素重建会重放，1→1 tween 无视觉效果）。
+    if (!ctr.fsAnimateNextSwitch || !withinWindow) {
+      return TweenAnimationBuilder<double>(
+        key: epochKey,
+        tween: Tween(begin: 1.0, end: 1.0),
+        duration: _fsAnimDuration,
+        builder: (context, t, widget) => widget!,
+        child: child,
+      );
+    }
+
+    final geom = _fsGeomParam(
+      toFullscreen: isFullScreen,
+      width: width,
+      height: height,
+    );
+    if (geom == null) {
+      return TweenAnimationBuilder<double>(
+        key: epochKey,
+        tween: Tween(begin: 0.0, end: 1.0),
+        duration: _fsAnimDuration,
+        curve: Curves.easeInOutCubic,
+        builder: (context, t, widget) => Opacity(
+          opacity: t,
+          child: Transform.scale(scale: 0.97 + 0.03 * t, child: widget),
+        ),
+        child: child,
+      );
+    }
+
+    final double a = geom.a;
+    final Offset d = geom.d;
+    return TweenAnimationBuilder<double>(
+      key: epochKey,
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: _fsAnimDuration,
+      curve: Curves.easeInOutCubic,
+      builder: (context, t, widget) {
+        final sc = a + (1.0 - a) * t;
+        return Transform(
+          transform: Matrix4.identity()
+            ..translateByDouble(
+              d.dx * (1 - t) + (1 - sc) * width / 2,
+              d.dy * (1 - t) + (1 - sc) * height / 2,
+              0,
+              1,
+            )
+            ..scaleByDouble(sc, sc, 1, 1),
+          filterQuality: FilterQuality.medium,
+          child: widget,
+        );
+      },
+      child: child,
+    );
+  }
+
+  /// 几何过渡参数：缩放比 a 与中心差量 d（对方内容中心 - 本方内容中心，
+  /// 两态 contain 内容均居中，即容器中心差量）。
+  /// 任一态矩形/比例缺失或 videoFit 非 contain 时返回 null（退化淡入）。
+  ({double a, Offset d})? _fsGeomParam({
+    required bool toFullscreen,
+    required double width,
+    required double height,
+  }) {
+    final ctr = plPlayerController;
+    if (ctr == null || width <= 0 || height <= 0) return null;
+    final fit = ctr.videoFit.value;
+    if (fit.boxFit != BoxFit.contain && fit.boxFit != BoxFit.scaleDown) {
+      return null;
+    }
+    final params = ctr.videoPlayerController?.state.videoParams;
+    final videoRatio = fit.aspectRatio ??
+        (params != null && params.dw != null && params.dh != null && params.dh != 0
+            ? params.dw! / params.dh!
+            : params != null && params.w != null && params.h != null && params.h != 0
+            ? params.w! / params.h!
+            : 0.0);
+    if (videoRatio <= 0) return null;
+
+    final normalRect = ctr.fsNormalVideoRect;
+    // 进全屏：全屏矩形按布局公式（ appBar/安全区以下）；退全屏：probe 稳定值。
+    final selfFsRect = toFullscreen ? _fsContainerRect : ctr.fsVideoRect;
+    if (normalRect == null ||
+        normalRect.width <= 0 ||
+        selfFsRect == null ||
+        selfFsRect.width <= 0) {
+      return null;
+    }
+    final f = _fsContentRect(selfFsRect, videoRatio);
+    final n = _fsContentRect(normalRect, videoRatio);
+    if (f.width <= 0 || n.width <= 0) return null;
+    final a = toFullscreen ? n.width / f.width : f.width / n.width;
+    final d = toFullscreen
+        ? normalRect.center - selfFsRect.center
+        : selfFsRect.center - normalRect.center;
+    return (a: a, d: d);
+  }
+
+  /// 全屏容器矩形（与布局同一公式）：appBar/顶部安全区以下全屏
+  /// （窗口模式横屏无 appBar，从 0 开始）。
+  Rect get _fsContainerRect {
+    final top = (isWindowMode && !isPortrait) ? 0.0 : padding.top;
+    return Offset(0, top) & Size(maxWidth, maxHeight - top);
+  }
+
+  /// 容器内按 [ratio]（宽/高）contain 出的内容矩形（与 FittedBox.contain
+  /// 语义一致，居中）。
+  static Rect _fsContentRect(Rect container, double ratio) {
+    final fitHeight = container.width / ratio;
+    if (fitHeight <= container.height) {
+      return Rect.fromLTWH(
+        container.left,
+        container.top + (container.height - fitHeight) / 2,
+        container.width,
+        fitHeight,
+      );
+    }
+    final fitWidth = container.height * ratio;
+    return Rect.fromLTWH(
+      container.left + (container.width - fitWidth) / 2,
+      container.top,
+      fitWidth,
+      container.height,
     );
   }
 
@@ -1974,4 +2157,86 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       },
     );
   }
+}
+
+/// 侧边面板容器（退全屏过渡）：全屏时 Offstage 隐藏；退全屏动画窗口内对
+/// 面板播淡入+轻微缩放，与视频几何缩回同步，让内容区（视频+简介/评论面板）
+/// 一起过渡而非突兀出现。绘制顺序上面板在视频之后，渐显过程中放大的视频
+/// 画面从面板下方透出，形成整体 crossfade。
+class _FsAnimatedOffstage extends StatelessWidget {
+  const _FsAnimatedOffstage({
+    required this.controller,
+    required this.offstage,
+    required this.child,
+  });
+
+  final PlPlayerController? controller;
+  final bool offstage;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final panel = Offstage(offstage: offstage, child: child);
+    if (offstage) return panel;
+    final ctr = controller;
+    if (ctr == null ||
+        DateTime.now().millisecondsSinceEpoch >= ctr.fsAnimatingUntilMs ||
+        !ctr.fsAnimateNextSwitch) {
+      return panel;
+    }
+    return TweenAnimationBuilder<double>(
+      key: ValueKey('fs_panel_${ctr.fsTransitionEpoch}'),
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: _fsAnimDuration,
+      curve: Curves.easeInOutCubic,
+      builder: (context, t, widget) => Opacity(
+        opacity: t,
+        child: Transform.scale(scale: 0.97 + 0.03 * t, child: widget),
+      ),
+      child: panel,
+    );
+  }
+}
+
+/// 上报视频容器（videoPlayer Stack）的全局矩形到 PlPlayerController，
+/// 供全屏切换几何过渡做锚。过渡 Transform 在 probe 子树内，动画期间的
+/// global 坐标被矩阵污染，仅稳定期读取（fsAnimatingUntilMs 之后）。
+class _VideoRectProbe extends StatefulWidget {
+  const _VideoRectProbe({required this.controller, required this.child});
+
+  final PlPlayerController? controller;
+  final Widget child;
+
+  @override
+  State<_VideoRectProbe> createState() => _VideoRectProbeState();
+}
+
+class _VideoRectProbeState extends State<_VideoRectProbe> {
+  @override
+  void initState() {
+    super.initState();
+    _tick();
+  }
+
+  /// 帧循环上报：每帧仅一次 findRenderObject + localToGlobal，开销可忽略。
+  /// - 动画窗口内跳过：过渡 Transform 是本 probe 的后代，localToGlobal 会
+  ///   含过渡矩阵，此时写入会让下一次切换的锚点累积偏移（画面从远处飞回）；
+  /// - 动画结束后的第一帧立即补报 identity 后的真实矩形。
+  void _tick() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final ctr = widget.controller;
+      if (ctr != null &&
+          DateTime.now().millisecondsSinceEpoch >= ctr.fsAnimatingUntilMs) {
+        final box = context.findRenderObject();
+        if (box is RenderBox && box.attached && box.hasSize) {
+          ctr.fsVideoRect = box.localToGlobal(Offset.zero) & box.size;
+        }
+      }
+      _tick();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

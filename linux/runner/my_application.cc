@@ -8,6 +8,13 @@
 #include "flutter/generated_plugin_registrant.h"
 
 void RegisterLinuxContextMenu(FlView* view);
+void RegisterLinuxWindow(FlView* view);
+
+static gboolean marker_exists(const gchar* name) {
+  g_autofree gchar* path = g_build_filename(
+      g_get_user_data_dir(), "com.example.piliplus", name, nullptr);
+  return g_file_test(path, G_FILE_TEST_EXISTS);
+}
 
 struct _MyApplication {
   GtkApplication parent_instance;
@@ -46,9 +53,7 @@ static void my_application_activate(GApplication *application) {
   // if future cases occur).
 
   const gboolean use_header_bar = [window]() -> gboolean {
-    if (g_file_test(g_build_filename(g_get_user_data_dir(),
-                                     "com.example.piliplus", "use_ssd", NULL),
-                    G_FILE_TEST_EXISTS))
+    if (marker_exists("use_ssd") || marker_exists("hide_title_bar"))
       return FALSE;
 
 #ifdef GDK_WINDOWING_X11
@@ -99,6 +104,7 @@ static void my_application_activate(GApplication *application) {
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
   RegisterLinuxContextMenu(view);
+  RegisterLinuxWindow(view);
 
   gtk_widget_grab_focus(GTK_WIDGET(view));
 }

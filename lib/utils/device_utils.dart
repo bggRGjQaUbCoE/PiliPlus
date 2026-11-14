@@ -38,5 +38,9 @@ abstract final class DeviceUtils {
     }
   }
 
-  static const desktopMinSize = nativeapi.Size(width: 400, height: 720);
+  // Linux 的 workArea 不含顶栏、窗口间隙与标题栏，固定 400×720 的最小
+  // 尺寸会把窗口顶出屏幕（Wayland 平铺合成器尤其明显）。其余平台维持原行为。
+  static nativeapi.Size get desktopMinSize => Platform.isLinux
+      ? const nativeapi.Size(width: 0, height: 0)
+      : const nativeapi.Size(width: 400, height: 720);
 }

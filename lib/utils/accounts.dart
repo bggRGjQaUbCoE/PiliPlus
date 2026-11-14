@@ -35,17 +35,31 @@ abstract final class Accounts {
     );
   }
 
-  static Future<void> refresh() {
+  static Future<void> refresh() async {
     for (final a in account.values) {
       for (final t in a.type) {
         accountMode[t.index] = a;
       }
     }
-    return Future.wait(
+    await _migrateSearchAccount();
+    await Future.wait(
       (accountMode.toSet()..removeWhere((i) => i.activated)).map(
         Request.buvidActive,
       ),
     );
+  }
+
+  /// 一次性迁移：升级前搜索跟随「推荐」账号，升级后沿用同一个账号，
+  /// 之后两者互不影响；只执行一次，用户之后主动改成匿名不会被覆盖。
+  static Future<void> _migrateSearchAccount() async {
+    if (Pref.searchAccountMigrated) return;
+    Pref.searchAccountMigrated = true;
+    // 已有明确设置（如导入的账号数据）时不覆盖
+    if (accountMode[AccountType.search.index] is! AnonymousAccount) return;
+    final recommend = accountMode[AccountType.recommend.index];
+    // 推荐本身是匿名，搜索保持匿名，与升级前行为一致
+    if (recommend is AnonymousAccount) return;
+    await set(AccountType.search, recommend);
   }
 
   static Future<void> clear() async {

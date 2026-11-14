@@ -51,7 +51,7 @@ List<SettingsModel> get privacySettings => [
 Widget _getAccountDetail(BuildContext context) {
   final children = <Widget>[];
   final theme = TextTheme.of(context);
-  for (final i in AccountType.values) {
+  for (final i in AccountType.displayOrder) {
     final url = ApiType.apiTypeSet[i];
     if (url == null) continue;
 

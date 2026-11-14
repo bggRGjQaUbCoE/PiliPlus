@@ -794,7 +794,7 @@ class LoginPageController extends GetxController
                     )
                   : Column(
                       crossAxisAlignment: .start,
-                      children: AccountType.values
+                      children: AccountType.displayOrder
                           .map(
                             (e) => Builder(
                               builder: (context) => RadioGroup<Account>(

@@ -56,6 +56,13 @@ abstract final class Pref {
   static UserInfoData? get userInfoCache =>
       GStorage.userInfo.get('userInfoCache');
 
+  /// 账号模式新增「搜索」后的一次性迁移标记
+  static bool get searchAccountMigrated =>
+      _setting.get(SettingBoxKey.searchAccountMigrated, defaultValue: false);
+
+  static set searchAccountMigrated(bool value) =>
+      _setting.put(SettingBoxKey.searchAccountMigrated, value);
+
   static List<double> get dynamicDetailRatio => List<double>.from(
     _setting.get(
       SettingBoxKey.dynamicDetailRatio,

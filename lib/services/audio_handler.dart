@@ -228,18 +228,32 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     required Duration position,
     required double speed,
   }) {
+    final isMobile = Platform.isIOS || Platform.isAndroid;
     playbackState.add(
       playbackState.value.copyWith(
         processingState: state,
         updatePosition: position,
         speed: speed,
         controls: [
-          if (isLive) _refresh else _rewind,
+          if (isLive)
+            _refresh
+          else if (isMobile && onSkipToPrevious != null)
+            MediaControl.skipToPrevious
+          else
+            _rewind,
           if (playing) _pause else _play,
-          if (isLive) _dm else _fastForward,
+          if (isLive)
+            _dm
+          else if (isMobile && onSkipToNext != null)
+            MediaControl.skipToNext
+          else
+            _fastForward,
         ],
         playing: playing,
-        systemActions: const {.seek},
+        // Keep iOS transport commands enabled while playback state changes.
+        systemActions: Platform.isIOS
+            ? const {.seek, .play, .pause, .playPause}
+            : const {.seek},
       ),
     );
     if (Platform.isAndroid &&

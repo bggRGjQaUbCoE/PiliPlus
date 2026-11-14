@@ -263,19 +263,43 @@ class PlayerFocus extends StatelessWidget {
       }
 
       if (!plPlayerController.isLive) {
-        final isDigit1 = key == LogicalKeyboardKey.digit1;
-        if (isDigit1 || key == LogicalKeyboardKey.digit2) {
-          if (HardwareKeyboard.instance.isShiftPressed && hasPlayer) {
-            final speed = isDigit1 ? 1.0 : 2.0;
-            if (speed != plPlayerController.playbackSpeed) {
-              plPlayerController.setPlaybackSpeed(speed);
-            }
-            SmartDialog.showToast('${speed}x播放');
-          }
-          return true;
-        }
-
         switch (key) {
+          case LogicalKeyboardKey.digit1:
+            if (HardwareKeyboard.instance.isShiftPressed && hasPlayer) {
+              const speed = 1.0;
+              if (speed != plPlayerController.playbackSpeed) {
+                plPlayerController.setPlaybackSpeed(speed);
+              }
+              SmartDialog.showToast('${speed}x播放');
+            }
+            return true;
+          case LogicalKeyboardKey.digit2:
+            if (HardwareKeyboard.instance.isShiftPressed && hasPlayer) {
+              const speed = 2.0;
+              if (speed != plPlayerController.playbackSpeed) {
+                plPlayerController.setPlaybackSpeed(speed);
+              }
+              SmartDialog.showToast('${speed}x播放');
+            }
+            return true;
+          case LogicalKeyboardKey.digit3:
+            if (HardwareKeyboard.instance.isShiftPressed && hasPlayer) {
+              const speed = 3.0;
+              if (speed != plPlayerController.playbackSpeed) {
+                plPlayerController.setPlaybackSpeed(speed);
+              }
+              SmartDialog.showToast('${speed}x播放');
+            }
+            return true;
+          case LogicalKeyboardKey.digit4:
+            if (HardwareKeyboard.instance.isShiftPressed && hasPlayer) {
+              const speed = 4.0;
+              if (speed != plPlayerController.playbackSpeed) {
+                plPlayerController.setPlaybackSpeed(speed);
+              }
+              SmartDialog.showToast('${speed}x播放');
+            }
+            return true;
           case LogicalKeyboardKey.keyW:
             if (HardwareKeyboard.instance.isMetaPressed) {
               return true;

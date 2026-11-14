@@ -1,6 +1,7 @@
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/msg.dart';
+import 'package:PiliPlus/http/member.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart';
 import 'package:PiliPlus/pages/common/common_controller.dart';
@@ -8,6 +9,7 @@ import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/pages/dynamics/controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/services/account_service.dart';
+import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/extension/scroll_controller_ext.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -46,7 +48,9 @@ class DynamicsTabController
 
   @override
   Future<LoadingState<DynamicsDataModel>> customGetData() =>
-      DynamicsHttp.followDynamic(
+      dynamicsType == .up && dynamicsController.hostMid == Accounts.main.mid
+          ? MemberHttp.memberDynamic(offset: offset, mid: Accounts.main.mid)
+          : DynamicsHttp.followDynamic(
         offset: offset,
         type: dynamicsType,
         hostMid: dynamicsController.hostMid,

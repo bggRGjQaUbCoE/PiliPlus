@@ -292,8 +292,9 @@ abstract final class PageUtils {
         try {
           String bvid = archive.bvid!;
           String cover = archive.cover!;
-          final res = await SearchHttp.ab2cWithDimension(bvid: bvid);
-          final cid = res?.cid;
+          final data = await VideoHttp.videoIntro(bvid: bvid);
+          final res = data.dataOrNull;
+          final cid = res?.cid ?? res?.pages?.firstOrNull?.cid;
           if (cid != null) {
             toVideoPage(
               bvid: bvid,

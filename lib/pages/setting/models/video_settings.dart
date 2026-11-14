@@ -189,6 +189,12 @@ List<SettingsModel> get videoSettings => [
     getSubtitle: () => '当前：${Pref.hardwareDecoding}（此项即mpv的--hwdec）',
     onTap: _showHwDecDialog,
   ),
+  NormalModel(
+    title: 'Amlogic HDMI 兼容',
+    subtitle: '部分 Amlogic 盒子播放时系统帧率自适应会导致 HDMI 短暂断联，可在此关闭自动帧率切换（需 root）',
+    leading: const Icon(Icons.high_quality_outlined),
+    onTap: (context, setState) => _showAmlogicHdmiDialog(context, setState),
+  ),
 ];
 
 Future<void> _showCDNDialog(BuildContext context, VoidCallback setState) async {
@@ -603,3 +609,85 @@ void _showLiveBufferSecDialog(BuildContext context, VoidCallback setState) =>
       title: '直播缓冲时长',
       suffix: 's',
     );
+
+/// Amlogic 平台帧率自适应会触发内核 tv_vout 的模式切换：
+/// EDID 缺少对应 VIC 映射时走 null -> disable HDMI PHY -> fallback 路径，
+/// 造成播放开始时 HDMI 短暂断联（真机 dmesg 实证）。
+/// 关闭 /sys/class/tv/policy_fr_auto 可禁用该策略，系统层根治（需 root）。
+Future<void> _showAmlogicHdmiDialog(
+  BuildContext context,
+  VoidCallback setState,
+) async {
+  const node = '/sys/class/tv/policy_fr_auto';
+  final file = File(node);
+  if (!file.existsSync()) {
+    SmartDialog.showToast('未检测到 $node，当前设备不适用');
+    return;
+  }
+  String current = '';
+  try {
+    current = file.readAsStringSync().trim();
+  } catch (e) {
+    SmartDialog.showToast('读取失败：$e');
+    return;
+  }
+
+  Future<void> apply(String value) async {
+    try {
+      final result = await Process.run('su', ['-c', 'echo $value > $node']);
+      if (result.exitCode == 0) {
+        SmartDialog.showToast('已写入 $value');
+      } else {
+        SmartDialog.showToast('写入失败：${result.stderr}');
+      }
+    } catch (e) {
+      SmartDialog.showToast('执行失败（需要 root 授权）：$e');
+    }
+    setState();
+  }
+
+  await showDialog<void>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Amlogic HDMI 兼容'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('当前 policy_fr_auto：${current.isEmpty ? "未知" : current}'),
+          const SizedBox(height: 12),
+          const Text(
+            '原理：Amlogic 系统帧率自适应在电视 EDID 不含视频帧率对应模式时，'
+            '会走 null -> 关闭 HDMI PHY -> 回退的路径，造成播放开始时 HDMI 短暂断联。\n\n'
+            '"关闭自动帧率" 将写入 policy_fr_auto=0（需 root，重启后失效，可自行配置开机脚本），'
+            '播放期间不再切换显示模式；代价是播放非 60fps 视频时可能出现轻微 judder。\n\n'
+            '"恢复自动" 写回 1。',
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Get.back();
+            apply('0');
+          },
+          child: const Text('关闭自动帧率'),
+        ),
+        TextButton(
+          onPressed: () {
+            Get.back();
+            apply('1');
+          },
+          child: const Text('恢复自动'),
+        ),
+        TextButton(
+          onPressed: Get.back,
+          child: Text(
+            '取消',
+            style: TextStyle(color: ColorScheme.of(context).outline),
+          ),
+        ),
+      ],
+    ),
+  );
+}

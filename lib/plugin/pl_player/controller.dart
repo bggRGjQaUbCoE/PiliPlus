@@ -42,6 +42,7 @@ import 'package:PiliPlus/utils/extension/native_geometry_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
+import 'package:PiliPlus/utils/ios/hwdec_recovery.dart';
 import 'package:PiliPlus/utils/ios/pip_helper.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
@@ -478,6 +479,8 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   late int cacheAudioQa = Pref.defaultAudioQa;
   bool enableHeart = true;
   late final String? hwdec = Pref.enableHA ? Pref.hardwareDecoding : null;
+  IOSHwdecRecovery? _hwdecRecovery;
+  AppLifecycleListener? _hwdecLifecycleListener;
 
   late final progressType = Pref.btmProgressBehavior;
   late final enableQuickDouble = Pref.enableQuickDouble;
@@ -1024,13 +1027,42 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
   }
 
   /// 播放事件监听
+  void _startHwdecRecovery(NativePlayer player) {
+    final hwdec = this.hwdec;
+    if (!Platform.isIOS || hwdec == null) return;
+    final recovery = _hwdecRecovery = IOSHwdecRecovery(
+      getCurrent: () => player.getProperty('hwdec-current'),
+      isPlaying: () => player.state.playing,
+      reinit: () {
+        if (kDebugMode) debugPrint('restoring hwdec after background');
+        // Changing the option reinitializes the decoder, which clears mpv's
+        // record of the failed hwdec. Setting the same value may not count.
+        player
+          ..setProperty('hwdec', 'no')
+          ..setProperty('hwdec', hwdec);
+      },
+    );
+    _hwdecLifecycleListener = AppLifecycleListener(
+      onStateChange: recovery.onLifecycleChanged,
+    );
+  }
+
+  void _stopHwdecRecovery() {
+    _hwdecLifecycleListener?.dispose();
+    _hwdecLifecycleListener = null;
+    _hwdecRecovery?.dispose();
+    _hwdecRecovery = null;
+  }
+
   void _startListeners(NativePlayer player) {
     assert(_subscriptions == null);
+    _startHwdecRecovery(player);
     final stream = player.stream;
     _subscriptions = [
       /// playing
       stream.playing.listen((bool playing) {
         if (playing) {
+          _hwdecRecovery?.onPlaying();
           playerStatus = .playing;
           _stopWakeLockTimer();
           _updatePlaybackState();
@@ -1174,6 +1206,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   /// 移除事件监听
   void _removeListeners() {
+    _stopHwdecRecovery();
     _subscriptions?.forEach((e) => e.cancel());
     _subscriptions?.clear();
     _subscriptions = null;

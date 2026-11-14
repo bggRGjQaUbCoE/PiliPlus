@@ -168,9 +168,7 @@ class VideoDetailController extends GetxController
   // 预设的解码格式
   late List<VideoDecodeFormatType> preferCodecs = Pref.preferCodecs;
 
-  bool get showReply => isFileSource
-      ? false
-      : isUgc
+  bool get showReply => isUgc
       ? plPlayerController.showVideoReply
       : plPlayerController.showBangumiReply;
 
@@ -432,7 +430,9 @@ class VideoDetailController extends GetxController
     tabCtr = TabController(
       length: 2,
       vsync: this,
-      initialIndex: Pref.defaultShowComment || args.containsKey(rootRpIdKey)
+      // 离线视频固定从列表页开始：评论区切过去才建、才联网
+      initialIndex:!isFileSource &&
+      (Pref.defaultShowComment || args.containsKey(rootRpIdKey))
           ? 1
           : 0,
     );

@@ -37,7 +37,7 @@ class VideoReplyController extends ReplyController<MainListReply>
   late final videoCtr = Get.find<VideoDetailController>(tag: heroTag);
 
   MentionItem? get mentionItem {
-    if (videoCtr.isUgc) {
+    if (videoCtr.isUgc && !videoCtr.isFileSource) {
       try {
         return videoCtr.ugcIntroCtr.videoDetail.value.owner?.mentionItem;
       } catch (_) {

@@ -26,6 +26,8 @@ Future<void> autoWrapReportDialog(
   ValueGetter<int>? mid,
   VoidCallback? onRemove,
   String? reportUrl,
+  bool showBanUid = false,
+  String Function()? successMessage,
   ReasonCheck withContent = _kReportCheck,
   ReasonCheck contentRequired = _kReportCheck,
 }) {
@@ -131,7 +133,7 @@ Future<void> autoWrapReportDialog(
               ),
             ),
           ),
-          if (mid != null)
+          if (mid != null || showBanUid)
             Padding(
               padding: const EdgeInsets.only(left: 14, top: 6),
               child: CheckBoxText(
@@ -174,7 +176,7 @@ Future<void> autoWrapReportDialog(
               SmartDialog.dismiss();
               if (res.isSuccess) {
                 Get.back();
-                SmartDialog.showToast('举报成功');
+                SmartDialog.showToast(successMessage?.call() ?? '举报成功');
               } else {
                 res.toast();
               }

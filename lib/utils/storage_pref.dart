@@ -63,26 +63,152 @@ abstract final class Pref {
     ),
   );
 
-  static Set<int> get blackMids =>
-      _localCache.get(LocalCacheKey.blackMids, defaultValue: <int>{});
+  /// Online blacklist cache. Local blocks are stored separately.
+  static Set<int> get blackMids => Set<int>.from(
+    _localCache.get(LocalCacheKey.blackMids, defaultValue: <int>{}),
+  );
 
   static set blackMids(Set<int> blackMidsSet) =>
       _localCache.put(LocalCacheKey.blackMids, blackMidsSet);
+
+  /// Local blacklist in insertion order (newest entries are appended).
+  static List<int> get localBlackMids {
+    final stored = _localCache.get(LocalCacheKey.localBlackMids);
+    if (stored is List) return List<int>.from(stored);
+
+    final legacyMids = blackMids.toList();
+    // The old cache mixed local and fetched online IDs; keep the IDs as local
+    // blocks, then clear that ambiguous cache so local removal takes effect.
+    _localCache
+      ..put(LocalCacheKey.localBlackMids, legacyMids)
+      ..put(LocalCacheKey.blackMids, <int>{});
+    return legacyMids;
+  }
+
+  static set localBlackMids(List<int> mids) =>
+      _localCache.put(LocalCacheKey.localBlackMids, List<int>.from(mids));
+
+  /// 仅依据弹幕哈希屏蔽的用户标识，无法还原为 B 站 UID。
+  static List<String> get localDanmakuMidHashes => List<String>.from(
+    _localCache.get(
+      LocalCacheKey.localDanmakuMidHashes,
+      defaultValue: <String>[],
+    ),
+  );
+
+  static set localDanmakuMidHashes(List<String> hashes) => _localCache.put(
+    LocalCacheKey.localDanmakuMidHashes,
+    List<String>.from(hashes),
+  );
+
+  /// 本地 UID 屏蔽时间，使用秒级时间戳以便兼容日期格式工具。
+  static Map<String, int> get localBlackMidAddedAt =>
+      _readBlacklistTimestamps(LocalCacheKey.localBlackMidAddedAt);
+
+  static set localBlackMidAddedAt(Map<String, int> timestamps) =>
+      _localCache.put(
+        LocalCacheKey.localBlackMidAddedAt,
+        Map<String, int>.from(timestamps),
+      );
+
+  /// 仅本地弹幕作者哈希的添加时间。
+  static Map<String, int> get localDanmakuMidHashAddedAt =>
+      _readBlacklistTimestamps(LocalCacheKey.localDanmakuMidHashAddedAt);
+
+  static set localDanmakuMidHashAddedAt(Map<String, int> timestamps) =>
+      _localCache.put(
+        LocalCacheKey.localDanmakuMidHashAddedAt,
+        Map<String, int>.from(timestamps),
+      );
+
+  static Map<String, int> _readBlacklistTimestamps(String key) =>
+      parseBlacklistTimestamps(_localCache.get(key));
+
+  /// 解析归档中的黑名单时间；忽略格式错误或无效的旧数据。
+  static Map<String, int> parseBlacklistTimestamps(Object? value) {
+    if (value is! Map) return <String, int>{};
+
+    final timestamps = <String, int>{};
+    for (final entry in value.entries) {
+      final seconds = int.tryParse(entry.value.toString());
+      if (seconds == null || seconds <= 0) continue;
+      timestamps[entry.key.toString()] = seconds;
+    }
+    return timestamps;
+  }
+
+  static int _currentTimeSeconds() =>
+      DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
   static RuleFilter get danmakuFilterRule => _localCache.get(
     LocalCacheKey.danmakuFilterRules,
     defaultValue: RuleFilter.empty(),
   );
 
-  static void setBlackMid(int mid) => _localCache.put(
-    LocalCacheKey.blackMids,
-    GlobalData().blackMids..add(mid),
-  );
+  /// 记录只在当前设备生效的弹幕作者哈希屏蔽。
+  static void addLocalDanmakuMidHash(String hash) {
+    if (hash.isEmpty) return;
 
-  static void removeBlackMid(int mid) => _localCache.put(
-    LocalCacheKey.blackMids,
-    GlobalData().blackMids..remove(mid),
-  );
+    final globalData = GlobalData();
+    if (globalData.localDanmakuMidHashes.contains(hash)) return;
+
+    globalData.localDanmakuMidHashes.add(hash);
+    localDanmakuMidHashes = globalData.localDanmakuMidHashes;
+    final timestamps = localDanmakuMidHashAddedAt
+      ..[hash] = _currentTimeSeconds();
+    localDanmakuMidHashAddedAt = timestamps;
+  }
+
+  /// 移除一条仅依据弹幕哈希保存的本地屏蔽。
+  static void removeLocalDanmakuMidHash(String hash) {
+    final globalData = GlobalData();
+    if (!globalData.localDanmakuMidHashes.remove(hash)) return;
+
+    localDanmakuMidHashes = globalData.localDanmakuMidHashes;
+    final timestamps = localDanmakuMidHashAddedAt..remove(hash);
+    localDanmakuMidHashAddedAt = timestamps;
+  }
+
+  static void setBlackMid(int mid) {
+    final globalData = GlobalData();
+    if (globalData.localBlackMids.contains(mid)) return;
+
+    globalData.localBlackMids.add(mid);
+    localBlackMids = globalData.localBlackMids;
+    globalData.blackMids.add(mid);
+    final timestamps = localBlackMidAddedAt
+      ..[mid.toString()] = _currentTimeSeconds();
+    localBlackMidAddedAt = timestamps;
+  }
+
+  static void removeBlackMid(int mid) {
+    final globalData = GlobalData();
+    globalData.localBlackMids.remove(mid);
+    localBlackMids = globalData.localBlackMids;
+
+    final timestamps = localBlackMidAddedAt..remove(mid.toString());
+    localBlackMidAddedAt = timestamps;
+
+    if (!globalData.onlineBlackMids.contains(mid)) {
+      globalData.blackMids.remove(mid);
+    }
+  }
+
+  static void addOnlineBlackMid(int mid) {
+    final globalData = GlobalData();
+    globalData.onlineBlackMids.add(mid);
+    globalData.blackMids.add(mid);
+    blackMids = globalData.onlineBlackMids;
+  }
+
+  static void removeOnlineBlackMid(int mid) {
+    final globalData = GlobalData();
+    globalData.onlineBlackMids.remove(mid);
+    if (!globalData.localBlackMids.contains(mid)) {
+      globalData.blackMids.remove(mid);
+    }
+    blackMids = globalData.onlineBlackMids;
+  }
 
   static MemberTabType get memberTab =>
       MemberTabType.values[_setting.get(

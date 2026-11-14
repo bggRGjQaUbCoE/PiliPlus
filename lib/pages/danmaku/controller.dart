@@ -7,7 +7,9 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/data_source.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/danmaku_mid_hash.dart';
 import 'package:PiliPlus/utils/danmaku_utils.dart';
+import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:path/path.dart' as path;
@@ -61,6 +63,11 @@ class PlDanmakuController {
   void handleDanmaku(List<DanmakuElem> elems) {
     if (elems.isEmpty) return;
     final uniques = HashMap<String, DanmakuElem>();
+    final globalData = GlobalData();
+    final localBlockedMidHashes = <String>{
+      ...globalData.localBlackMids.map(danmakuMidHashOf),
+      ...globalData.localDanmakuMidHashes,
+    };
 
     final filters = _plPlayerController.filters;
     final shouldFilter = filters.count != 0;
@@ -70,6 +77,9 @@ class PlDanmakuController {
       }
 
       if (!element.isSelf) {
+        // 弹幕接口只提供作者哈希，因此将本地 UID 转成同一格式后匹配。
+        if (localBlockedMidHashes.contains(element.midHash)) continue;
+
         if (_mergeDanmaku) {
           final elem = uniques[element.content];
           if (elem == null) {

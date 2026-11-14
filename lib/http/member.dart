@@ -310,11 +310,28 @@ abstract final class MemberHttp {
         },
       ),
     );
-    if (res.data['code'] == 0) {
-      return Success(MemberInfoModel.fromJson(res.data['data']));
-    } else {
-      return Error(res.data['message']);
+    final response = res.data;
+    if (response is! Map) {
+      return const Error('用户信息响应格式错误');
     }
+
+    final code = response['code'];
+    if (code is! num) {
+      return Error(response['message']?.toString() ?? '用户信息响应缺少状态码');
+    }
+
+    if (code == 0) {
+      final data = response['data'];
+      if (data is! Map) {
+        return const Error('用户信息响应缺少用户数据');
+      }
+      return Success(
+        MemberInfoModel.fromJson(Map<String, dynamic>.from(data)),
+      );
+    }
+
+    // 保留 B 站业务状态码，供注销账号清理安全地区分 -404 与其他错误。
+    return Error(response['message']?.toString(), code: code.toInt());
   }
 
   static Future<LoadingState<Map>> memberStat({int? mid}) async {

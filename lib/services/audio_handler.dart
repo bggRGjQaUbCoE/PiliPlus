@@ -250,7 +250,10 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
             _fastForward,
         ],
         playing: playing,
-        systemActions: const {.seek},
+        // Keep iOS transport commands enabled while playback state changes.
+        systemActions: Platform.isIOS
+            ? const {.seek, .play, .pause, .playPause}
+            : const {.seek},
       ),
     );
     if (Platform.isAndroid &&

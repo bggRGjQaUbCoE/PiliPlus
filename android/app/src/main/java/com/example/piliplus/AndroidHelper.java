@@ -24,6 +24,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.Icon;
+import android.media.AudioManager;
 import android.media.session.PlaybackState;
 import android.net.Uri;
 import android.os.Build;
@@ -64,6 +65,14 @@ public final class AndroidHelper {
 
     public static int sdkInt() {
         return Build.VERSION.SDK_INT;
+    }
+
+    /**
+     * Number of steps of STREAM_MUSIC, e.g. 15 or 25 on phones.
+     */
+    public static int getStreamMaxVolume() {
+        AudioManager am = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
+        return am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
     }
 
     public static void back() {

@@ -11,6 +11,9 @@ import 'package:jni/jni.dart';
 abstract final class PiliAndroidHelper {
   static final isPipAvailable = AndroidHelper.isPipAvailable;
 
+  /// 系统媒体音量的级数（`AudioManager.getStreamMaxVolume(STREAM_MUSIC)`）
+  static int getStreamMaxVolume() => AndroidHelper.streamMaxVolume;
+
   static void biliSendCommAntifraud(
     int action,
     int oid,

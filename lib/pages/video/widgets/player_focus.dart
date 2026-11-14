@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io' show exit, Platform;
-import 'dart:math' as math;
 
 import 'package:PiliPlus/pages/common/common_intro_controller.dart';
 import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
@@ -61,13 +60,7 @@ class PlayerFocus extends StatelessWidget {
   bool get hasPlayer => plPlayerController.videoPlayerController != null;
 
   void _setVolume({required bool isIncrease}) {
-    final volume = isIncrease
-        ? math.min(
-            plPlayerController.maxVolume,
-            plPlayerController.volume.value + 0.1,
-          )
-        : math.max(0.0, plPlayerController.volume.value - 0.1);
-    plPlayerController.setVolume(volume);
+    plPlayerController.adjustVolume(isIncrease ? 0.1 : -0.1);
   }
 
   void _stepPlaybackSpeed({required bool isIncrease}) {
@@ -85,6 +78,7 @@ class PlayerFocus extends StatelessWidget {
   void _updateVolume(KeyEvent event, {required bool isIncrease}) {
     if (event is KeyDownEvent) {
       if (hasPlayer) {
+        plPlayerController.beginVolumeGesture();
         _setVolume(isIncrease: isIncrease);
         plPlayerController
           ..longPressTimer?.cancel()

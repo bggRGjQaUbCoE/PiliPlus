@@ -252,6 +252,38 @@ extension type AndroidHelper._(jni$_.JObject _$this) implements jni$_.JObject {
     return _sdkInt(_$$classRef.pointer, _id_sdkInt.pointer).integer;
   }
 
+  static final _id_get$streamMaxVolume = _class.staticMethodId(
+    r'getStreamMaxVolume',
+    r'()I',
+  );
+
+  static final _get$streamMaxVolume =
+      jni$_.ProtectedJniExtensions.lookup<
+            jni$_.NativeFunction<
+              jni$_.JniResult Function(
+                jni$_.Pointer<jni$_.Void>,
+                jni$_.JMethodIDPtr,
+              )
+            >
+          >('globalEnv_CallStaticIntMethod')
+          .asFunction<
+            jni$_.JniResult Function(
+              jni$_.Pointer<jni$_.Void>,
+              jni$_.JMethodIDPtr,
+            )
+          >();
+
+  /// from: `static public int getStreamMaxVolume()`
+  ///
+  /// Number of steps of STREAM_MUSIC, e.g. 15 or 25 on phones.
+  static core$_.int get streamMaxVolume {
+    final _$$classRef = _class.reference;
+    return _get$streamMaxVolume(
+      _$$classRef.pointer,
+      _id_get$streamMaxVolume.pointer,
+    ).integer;
+  }
+
   static final _id_back = _class.staticMethodId(
     r'back',
     r'()V',

@@ -33,6 +33,7 @@ class MediaListPanel extends CommonSlidePage {
     required this.onReverse,
     required this.loadPrevious,
     this.onDelete,
+    this.onClosing,
   });
 
   final RxList<MediaListItemModel> mediaList;
@@ -45,6 +46,7 @@ class MediaListPanel extends CommonSlidePage {
   final VoidCallback onReverse;
   final RefreshCallback? loadPrevious;
   final void Function(MediaListItemModel item, int index)? onDelete;
+  final VoidCallback? onClosing;
 
   @override
   State<MediaListPanel> createState() => _MediaListPanelState();
@@ -78,53 +80,65 @@ class _MediaListPanelState extends State<MediaListPanel>
     super.dispose();
   }
 
+  void _closePanel() {
+    widget.onClosing?.call();
+    Get.back();
+  }
+
   @override
   Widget buildPage() {
-    return Material(
-      color: theme.colorScheme.surface,
-      child: Column(
-        children: [
-          Container(
-            height: 45,
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: theme.colorScheme.outline.withValues(alpha: 0.1),
-                ),
-              ),
-            ),
-            child: Row(
-              children: [
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    widget.panelTitle ?? '稍后再看',
-                    style: const TextStyle(fontSize: 16),
+    return PopScope<void>(
+      onPopInvokedWithResult: (didPop, _) {
+        // 同步处理系统返回等非按钮触发的关闭。
+        if (!didPop) return;
+        widget.onClosing?.call();
+      },
+      child: Material(
+        color: theme.colorScheme.surface,
+        child: Column(
+          children: [
+            Container(
+              height: 45,
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: theme.colorScheme.outline.withValues(alpha: 0.1),
                   ),
                 ),
-                iconButton(
-                  iconSize: 20,
-                  tooltip: widget.desc ? '顺序播放' : '倒序播放',
-                  icon: widget.desc
-                      ? const Icon(MdiIcons.sortAscending)
-                      : const Icon(MdiIcons.sortDescending),
-                  onPressed: () {
-                    Get.back();
-                    widget.onReverse();
-                  },
-                ),
-                iconButton(
-                  iconSize: 20,
-                  tooltip: '关闭',
-                  icon: const Icon(Icons.close),
-                  onPressed: Get.back,
-                ),
-                const SizedBox(width: 14),
-              ],
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      widget.panelTitle ?? '稍后再看',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                  iconButton(
+                    iconSize: 20,
+                    tooltip: widget.desc ? '顺序播放' : '倒序播放',
+                    icon: widget.desc
+                        ? const Icon(MdiIcons.sortAscending)
+                        : const Icon(MdiIcons.sortDescending),
+                    onPressed: () {
+                      _closePanel();
+                      widget.onReverse();
+                    },
+                  ),
+                  iconButton(
+                    iconSize: 20,
+                    tooltip: '关闭',
+                    icon: const Icon(Icons.close),
+                    onPressed: _closePanel,
+                  ),
+                  const SizedBox(width: 14),
+                ],
+              ),
             ),
-          ),
-          Expanded(child: enableSlide ? slideList() : buildList()),
-        ],
+            Expanded(child: enableSlide ? slideList() : buildList()),
+          ],
+        ),
       ),
     );
   }
@@ -195,7 +209,7 @@ class _MediaListPanelState extends State<MediaListPanel>
                 SmartDialog.showToast('不支持播放该类型视频');
                 return;
               }
-              Get.back();
+              _closePanel();
               widget.onChangeEpisode(item);
             },
             onLongPress: onLongPress,

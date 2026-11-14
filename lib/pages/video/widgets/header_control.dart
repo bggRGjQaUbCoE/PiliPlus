@@ -14,6 +14,7 @@ import 'package:PiliPlus/http/danmaku_block.dart';
 import 'package:PiliPlus/http/live.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/models/common/audio_normalization.dart';
 import 'package:PiliPlus/models/common/super_resolution_type.dart';
 import 'package:PiliPlus/models/common/video/base_quality.dart';
 import 'package:PiliPlus/models/common/video/cdn_type.dart';
@@ -500,10 +501,33 @@ class HeaderControlState extends State<HeaderControl>
                         onTap: () => showPlayerVolumeDialog(
                           context,
                           () => (context as Element).markNeedsBuild(),
-                          onChanged: player.setVolume,
+                          onChanged: (v) => plPlayerController.setVolumeCapped(
+                            player,
+                            v / 100,
+                            reapplyFilters:
+                                plPlayerController.applyAudioNormalization,
+                          ),
                         ),
                       ),
                     ),
+                if (AudioNormalization.isPlatformSupported &&
+                    plPlayerController.videoPlayerController != null)
+                  Obx(() {
+                    final summary = plPlayerController.loudnessActiveSummary;
+                    return ListTile(
+                      dense: true,
+                      leading: const Icon(Icons.graphic_eq, size: 20),
+                      title: const Text('音量均衡', style: titleStyle),
+                      subtitle: Text(
+                        summary.shortStatusText,
+                        style: subTitleStyle,
+                      ),
+                      onTap: () {
+                        Get.back();
+                        showLoudnessBalanceSheet();
+                      },
+                    );
+                  }),
                 if (!isFileSource)
                   ListTile(
                     dense: true,
@@ -606,6 +630,16 @@ class HeaderControlState extends State<HeaderControl>
                             selectStatus: plPlayerController
                                 .continuePlayInBackground
                                 .value,
+                          ),
+                        ),
+                      if (AudioNormalization.isPlatformSupported)
+                        Obx(
+                          () => ActionRowLineItem(
+                            iconData: Icons.graphic_eq,
+                            onTap: plPlayerController.toggleLoudnessBalance,
+                            text: " 音量均衡 ",
+                            selectStatus:
+                                plPlayerController.enableAudioNormalization,
                           ),
                         ),
                     ],
@@ -775,6 +809,7 @@ class HeaderControlState extends State<HeaderControl>
     required NativePlayer player,
   }) {
     final hwdec = player.getProperty('hwdec-current');
+    final af = player.getProperty('af');
     final volume = player.getProperty('volume');
     showDialog(
       context: context,
@@ -844,6 +879,12 @@ class HeaderControlState extends State<HeaderControl>
                       title: const Text("Volume"),
                       subtitle: Text(volume),
                       onTap: () => Utils.copyText('Volume\n$volume'),
+                    ),
+                    ListTile(
+                      dense: true,
+                      title: const Text("AF"),
+                      subtitle: Text(af.isEmpty ? 'none' : af),
+                      onTap: () => Utils.copyText('AF\n$af'),
                     ),
                     ListTile(
                       dense: true,
@@ -1866,6 +1907,28 @@ class HeaderControlState extends State<HeaderControl>
                     ),
                   ),
                 ],
+                if (AudioNormalization.isPlatformSupported)
+                  Obx(() {
+                    if (!plPlayerController.showPlayerLoudnessBtn.value) {
+                      return const SizedBox.shrink();
+                    }
+                    final enabled =
+                        plPlayerController.enableAudioNormalization;
+                    return SizedBox(
+                      width: btnWidth,
+                      height: btnHeight,
+                      child: IconButton(
+                        tooltip: '音量均衡',
+                        style: btnStyle,
+                        onPressed: showLoudnessBalanceSheet,
+                        icon: Icon(
+                          Icons.graphic_eq,
+                          size: 19,
+                          color: enabled ? Colors.white : Colors.white54,
+                        ),
+                      ),
+                    );
+                  }),
                 SizedBox(
                   width: btnWidth,
                   height: btnHeight,

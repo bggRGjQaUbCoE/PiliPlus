@@ -482,8 +482,29 @@ abstract final class Pref {
   static String get audioNormalization =>
       _setting.get(SettingBoxKey.audioNormalization, defaultValue: '0');
 
+  static String get lastEnabledAudioNormalization {
+    final val = _setting.get(
+      SettingBoxKey.lastEnabledAudioNormalization,
+      defaultValue: 'bewly',
+    );
+    return (val is String && val.isNotEmpty && val != '0') ? val : 'bewly';
+  }
+
   static String get fallbackNormalization =>
       _setting.get(SettingBoxKey.fallbackNormalization, defaultValue: '0');
+
+  static int get loudnessTarget =>
+      (_setting.get(SettingBoxKey.loudnessTarget, defaultValue: -18) as num)
+          .round()
+          .clamp(-24, -14);
+
+  static int get loudnessStrength =>
+      (_setting.get(SettingBoxKey.loudnessStrength, defaultValue: 75) as num)
+          .round()
+          .clamp(0, 100);
+
+  static bool get showPlayerLoudnessBtn =>
+      _setting.get(SettingBoxKey.showPlayerLoudnessBtn, defaultValue: false);
 
   static SuperResolutionType get superResolutionType {
     SuperResolutionType? superResolutionType;

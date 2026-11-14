@@ -42,24 +42,21 @@ List<SettingsModel> get playSettings => [
       title: '倾斜角度阈值',
       getSubtitle: () => '当前:「${Pref.angleDegrees}°」',
     ),
-  if (kDebugMode || Platform.isAndroid)
+  if (AudioNormalization.isPlatformSupported)
     NormalModel(
       title: '音量均衡',
-      leading: const Icon(Icons.multitrack_audio),
+      leading: const Icon(Icons.graphic_eq),
       getSubtitle: () {
-        final audioNormalization = AudioNormalization.getTitleFromConfig(
-          Pref.audioNormalization,
+        final summary = AudioNormalization.getSettingSummary(
+          config: Pref.audioNormalization,
+          targetLufs: Pref.loudnessTarget,
+          strength: Pref.loudnessStrength,
+          fallback: Pref.fallbackNormalization,
         );
-        String fallback = Pref.fallbackNormalization;
-        if (fallback == '0') {
-          fallback = '';
-        } else {
-          fallback =
-              '，无参数时:「${AudioNormalization.getTitleFromConfig(fallback)}」';
-        }
-        return '当前:「$audioNormalization」$fallback';
+        return '$summary\n自动拉齐不同视频音量，平滑单视频内音量起伏';
       },
-      onTap: audioNormalization,
+      onTap: (context, setState) =>
+          Get.toNamed('/loudnessSetting')?.whenComplete(setState),
     ),
   NormalModel(
     title: '超分辨率',
@@ -564,98 +561,5 @@ Future<void> _showSuperResolutionDialog(
       res.index,
     );
     setState();
-  }
-}
-
-Future<void> audioNormalization(
-  BuildContext context,
-  VoidCallback setState, {
-  bool fallback = false,
-}) async {
-  final key = fallback
-      ? SettingBoxKey.fallbackNormalization
-      : SettingBoxKey.audioNormalization;
-  final res = await showDialog<String>(
-    context: context,
-    builder: (context) {
-      String audioNormalization = fallback
-          ? Pref.fallbackNormalization
-          : Pref.audioNormalization;
-      Set<String> values = {
-        '0',
-        '1',
-        if (!fallback) '2',
-        audioNormalization,
-        '3',
-      };
-      return SelectDialog<String>(
-        title: fallback ? '服务器无loudnorm配置时使用' : '音量均衡',
-        toggleable: true,
-        value: audioNormalization,
-        values: values
-            .map(
-              (e) => (
-                e,
-                switch (e) {
-                  '0' => AudioNormalization.disable.title,
-                  '1' => AudioNormalization.dynaudnorm.title,
-                  '2' => AudioNormalization.loudnorm.title,
-                  '3' => AudioNormalization.custom.title,
-                  _ => e,
-                },
-              ),
-            )
-            .toList(),
-      );
-    },
-  );
-  if (res != null && context.mounted) {
-    if (res == '3') {
-      String param = '';
-      await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('自定义参数'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            spacing: 16,
-            children: [
-              const Text('等同于 --lavfi-complex="[aid1] 参数 [ao]"'),
-              TextField(
-                autofocus: true,
-                onChanged: (value) => param = value,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: Get.back,
-              child: Text(
-                '取消',
-                style: TextStyle(color: ColorScheme.of(context).outline),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Get.back();
-                GStorage.setting.put(key, param);
-                if (!fallback &&
-                    AudioNormalization.loudnormRegExp.hasMatch(param)) {
-                  audioNormalization(context, setState, fallback: true);
-                }
-                setState();
-              },
-              child: const Text('确定'),
-            ),
-          ],
-        ),
-      );
-    } else {
-      GStorage.setting.put(key, res);
-      if (res == '2') {
-        audioNormalization(context, setState, fallback: true);
-      }
-      setState();
-    }
   }
 }

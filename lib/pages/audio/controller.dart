@@ -60,6 +60,38 @@ class AudioController extends GetxController
         BlockConfigMixin,
         BlockMixin,
         AudioNormalizationMixin {
+  static final Set<AudioController> _activeInstances = <AudioController>{};
+
+  static void syncAllAudioNormalization() {
+    for (final controller in _activeInstances) {
+      controller.applyAudioNormalization();
+    }
+  }
+
+  http_model.Volume? _currentVolume;
+
+  void applyAudioNormalization() {
+    final activePlayer = player;
+    if (activePlayer == null || isClosed) return;
+    applyCombinedAudioFilters(
+      activePlayer,
+      config: Pref.audioNormalization,
+      targetLufs: Pref.loudnessTarget,
+      strength: Pref.loudnessStrength,
+      volume: _currentVolume,
+      fallbackConfig: Pref.fallbackNormalization,
+      isLive: false,
+    );
+  }
+
+  void applyVolumeCapped(double factor) {
+    setVolumeCapped(
+      player,
+      factor,
+      reapplyFilters: applyAudioNormalization,
+    );
+  }
+
   late Int64 id;
   late Int64 oid;
   late List<Int64> subId;
@@ -143,20 +175,31 @@ class AudioController extends GetxController
       _lastVolume = null;
     }
     desktopVolume.value = volume;
-    setVolumeCapped(player, volume);
+    setVolumeCapped(
+      player,
+      volume,
+      reapplyFilters: applyAudioNormalization,
+    );
   }
 
   void syncVolume([_]) {
     final volume = desktopVolume.value;
-    PlPlayerController.instance
-      ?..volume.value = volume
-      ..setVolumeCapped(player, volume);
+    final videoController = PlPlayerController.instance;
+    if (videoController != null) {
+      videoController.volume.value = volume;
+      videoController.setVolumeCapped(
+        videoController.videoPlayerController,
+        volume,
+        reapplyFilters: videoController.applyAudioNormalization,
+      );
+    }
     GStorage.setting.put(SettingBoxKey.desktopVolume, volume.toPrecision(3));
   }
 
   @override
   void onInit() {
     super.onInit();
+    _activeInstances.add(this);
     final args = Get.arguments;
     oid = Int64(args['oid']);
     final id = args['id'];
@@ -374,17 +417,20 @@ class AudioController extends GetxController
     String? referer,
     http_model.Volume? volume,
   }) async {
+    _currentVolume = volume;
     await _initPlayerIfNeeded();
-    if (player == null) return;
-    player!.setMediaHeader(
+    final activePlayer = player;
+    if (activePlayer == null) return;
+    activePlayer.setMediaHeader(
       userAgent: ua,
       // mpv cannot clear referer option
       headers: {'Referer': ?referer},
     );
-    await player!.open(
+    await activePlayer.open(
       Media(url, start: _start, extras: audioFilterExtras(volume)),
       play: false,
     );
+    applyAudioNormalization();
     await onPlay();
     _start = null;
   }
@@ -422,6 +468,7 @@ class AudioController extends GetxController
     await setVolumeCapped(
       player,
       PlatformUtils.isDesktop ? desktopVolume.value : Pref.playerVolume / 100,
+      reapplyFilters: applyAudioNormalization,
     );
     final stream = player!.stream;
     _subscriptions = [
@@ -832,6 +879,7 @@ class AudioController extends GetxController
 
   @override
   void onClose() {
+    _activeInstances.remove(this);
     _stopStatusTimer();
     shutdownTimerService
       ..onPause = null

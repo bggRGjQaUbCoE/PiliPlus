@@ -4,10 +4,12 @@ import 'dart:math' as math;
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/draggable_sheet/dyn.dart';
 import 'package:PiliPlus/common/widgets/marquee.dart';
+import 'package:PiliPlus/models/common/audio_normalization.dart';
 import 'package:PiliPlus/pages/live_room/controller.dart';
 import 'package:PiliPlus/pages/setting/models/play_settings.dart'
     show showPlayerVolumeDialog;
 import 'package:PiliPlus/pages/video/widgets/header_control.dart';
+import 'package:PiliPlus/pages/video/widgets/header_mixin.dart';
 import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/widgets/common_btn.dart';
 import 'package:PiliPlus/services/shutdown_timer_service.dart'
@@ -51,7 +53,7 @@ class LiveHeaderControl extends StatefulWidget {
 }
 
 class _LiveHeaderControlState extends State<LiveHeaderControl>
-    with TimeBatteryMixin {
+    with HeaderMixin, TimeBatteryMixin {
   @override
   late final plPlayerController = widget.plPlayerController;
 
@@ -269,6 +271,18 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
                       player: player,
                     ),
                   ),
+                  if (AudioNormalization.isPlatformSupported)
+                    PopupMenuItem(
+                      height: 35,
+                      onTap: showLoudnessBalanceSheet,
+                      child: const Row(
+                        spacing: 8,
+                        children: [
+                          Icon(Icons.graphic_eq, size: 17),
+                          Text('音量均衡', style: TextStyle(fontSize: 14)),
+                        ],
+                      ),
+                    ),
                   if (PlatformUtils.isMobile)
                     PopupMenuItem(
                       height: 35,
@@ -285,7 +299,12 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
                       onTap: () => showPlayerVolumeDialog(
                         context,
                         () {},
-                        onChanged: player.setVolume,
+                        onChanged: (v) => plPlayerController.setVolumeCapped(
+                          player,
+                          v / 100,
+                          reapplyFilters:
+                              plPlayerController.applyAudioNormalization,
+                        ),
                       ),
                     ),
                 ],

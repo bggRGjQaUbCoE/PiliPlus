@@ -1,18 +1,55 @@
 import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart';
+import 'package:PiliPlus/models/common/dynamic/dyn_swipe_sensitivity.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:material_ui/material_ui.dart';
+
+/// 动态页横向滑动用的手势识别器工厂
+///
+/// 官方 bilibili 的左右滑动比 PiliPlus 默认更「跟手」：抬指位移很小就能拖动，
+/// 且对斜向手势更宽容。这里通过 [sensitivity] 控制这两个维度。
+HorizontalDragGestureRecognizer dynamicHorizontalDragRecognizer(
+  DynSwipeSensitivity sensitivity,
+) {
+  return CustomHorizontalDragGestureRecognizer(
+    touchSlop: deviceTouchSlop + sensitivity.extraSlop,
+    angleRatio: sensitivity.angleRatio,
+  );
+}
 
 Widget tabBarView({
   required List<Widget> children,
   TabController? controller,
   HitTestBehavior hitTestBehavior = .opaque,
+  HorizontalDragGestureRecognizer Function()? recognizer,
+  ScrollPhysics? physics,
 }) => TabBarView(
   controller: controller,
-  physics: tabBarScrollPhysics,
+  physics: physics ?? tabBarScrollPhysics,
   hitTestBehavior: hitTestBehavior,
-  horizontalDragGestureRecognizer: CustomHorizontalDragGestureRecognizer.new,
+  horizontalDragGestureRecognizer:
+      recognizer ?? CustomHorizontalDragGestureRecognizer.new,
   children: children,
+);
+
+/// 与 [tabBarView] 一致的横向分页容器，用于逐 UP 浏览
+///
+/// 用 builder 懒加载：只有可见页会创建，避免一次发起几十个请求。
+Widget dynPageView({
+  required PageController controller,
+  required int itemCount,
+  required IndexedWidgetBuilder itemBuilder,
+  required DynSwipeSensitivity sensitivity,
+  ValueChanged<int>? onPageChanged,
+  ScrollPhysics physics = tabBarScrollPhysics,
+}) => PageView.builder(
+  controller: controller,
+  physics: PageScrollPhysics().applyTo(physics),
+  onPageChanged: onPageChanged,
+  horizontalDragGestureRecognizer: () =>
+      dynamicHorizontalDragRecognizer(sensitivity),
+  itemCount: itemCount,
+  itemBuilder: itemBuilder,
 );
 
 SpringDescription kSpringDescription = _customSpringDescription();

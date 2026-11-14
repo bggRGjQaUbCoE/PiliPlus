@@ -1,5 +1,5 @@
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart'
-    show displacement, kIndicatorSize;
+    as refresh show displacement, kIndicatorSize;
 import 'package:PiliPlus/common/widgets/slotted_layout_helper.dart';
 import 'package:flutter/rendering.dart' show BoxHitTestResult, ClipRectLayer;
 import 'package:material_ui/material_ui.dart' hide RefreshIndicatorStatus;
@@ -14,12 +14,16 @@ class RefreshLayout
     required this.position,
     required this.indicator,
     required this.body,
+    this.displacement,
   });
 
   final Animation<double> scale;
   final Animation<double> position;
   final Widget? indicator;
   final Widget body;
+
+  /// 单个页面的下拉位移，null 时沿用全局设置
+  final double? displacement;
 
   @override
   Iterable<RefreshType> get slots => RefreshType.values;
@@ -32,23 +36,66 @@ class RefreshLayout
 
   @override
   RenderRefreshLayout createRenderObject(BuildContext context) {
-    return RenderRefreshLayout(scale: scale, position: position);
+    return RenderRefreshLayout(
+      scale: scale,
+      position: position,
+      displacement: displacement,
+    );
+  }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    RenderRefreshLayout renderObject,
+  ) {
+    renderObject
+      ..scale = scale
+      ..position = position
+      ..displacement = displacement;
   }
 }
 
 class RenderRefreshLayout extends RenderBox
     with SlottedContainerRenderObjectMixin<RefreshType, RenderBox> {
   RenderRefreshLayout({
-    required this.scale,
-    required this.position,
-  }) {
-    scale.addListener(_scaleListener);
-    position.addListener(_positionListener);
+    required Animation<double> scale,
+    required Animation<double> position,
+    double? displacement,
+  }) : _scale = scale,
+       _position = position,
+       _displacement = displacement {
+    _scale.addListener(_scaleListener);
+    _position.addListener(_positionListener);
   }
 
-  final Animation<double> scale;
+  Animation<double> _scale;
+  Animation<double> get scale => _scale;
+  set scale(Animation<double> value) {
+    if (_scale == value) return;
+    _scale.removeListener(_scaleListener);
+    _scale = value..addListener(_scaleListener);
+    scaleFactor = value.value;
+  }
 
-  final Animation<double> position;
+  Animation<double> _position;
+  Animation<double> get position => _position;
+  set position(Animation<double> value) {
+    if (_position == value) return;
+    _position.removeListener(_positionListener);
+    _position = value..addListener(_positionListener);
+    heightFactor = value.value;
+  }
+
+  double? _displacement;
+
+  /// 本实例生效的下拉位移，未指定时取全局值
+  double get displacement => _displacement ?? refresh.displacement;
+  set displacement(double? value) {
+    if (_displacement == value) return;
+    _displacement = value;
+    _layoutIndicator();
+    markNeedsPaint();
+  }
 
   double _heightFactor = 0;
   double get heightFactor => _heightFactor;
@@ -73,21 +120,21 @@ class RenderRefreshLayout extends RenderBox
   }
 
   void _scaleListener() {
-    scaleFactor = scale.value;
+    scaleFactor = _scale.value;
   }
 
   void _positionListener() {
-    heightFactor = position.value;
+    heightFactor = _position.value;
   }
 
   @override
   void dispose() {
-    scale.removeListener(_scaleListener);
-    position.removeListener(_positionListener);
+    _scale.removeListener(_scaleListener);
+    _position.removeListener(_positionListener);
     super.dispose();
   }
 
-  RenderBox? get indicator => childForSlot(.indicator);
+  RenderBox? get indicatorChild => childForSlot(.indicator);
   RenderBox get body => childForSlot(.body)!;
 
   @override
@@ -102,19 +149,17 @@ class RenderRefreshLayout extends RenderBox
   }
 
   void _layoutIndicator() {
-    final indicator = this.indicator;
-    if (indicator == null) return;
-    final scaleSize = kIndicatorSize * scaleFactor;
-    indicator.layout(
-      BoxConstraints.tightFor(width: scaleSize, height: scaleSize),
-    );
+    final box = indicatorChild;
+    if (box == null) return;
+    final scaleSize = refresh.kIndicatorSize * scaleFactor;
+    box.layout(BoxConstraints.tightFor(width: scaleSize, height: scaleSize));
     setOffset(
-      indicator,
+      box,
       Offset(
         (constraints.maxWidth - scaleSize) / 2,
-        (kIndicatorSize + displacement) * heightFactor -
-            kIndicatorSize +
-            (kIndicatorSize - scaleSize) / 2,
+        (refresh.kIndicatorSize + displacement) * heightFactor -
+            refresh.kIndicatorSize +
+            (refresh.kIndicatorSize - scaleSize) / 2,
       ),
     );
   }
@@ -126,11 +171,11 @@ class RenderRefreshLayout extends RenderBox
     }
 
     doPaint(body);
-    final indicator = this.indicator;
-    if (indicator != null && heightFactor > 0 && scaleFactor > 0) {
-      final indicatorOffset = getOffset(indicator);
+    final box = indicatorChild;
+    if (box != null && heightFactor > 0 && scaleFactor > 0) {
+      final indicatorOffset = getOffset(box);
       if (indicatorOffset.dy > 0) {
-        context.paintChild(indicator, indicatorOffset + offset);
+        context.paintChild(box, indicatorOffset + offset);
         layer = null;
       } else {
         layer = context.pushClipRect(
@@ -138,7 +183,7 @@ class RenderRefreshLayout extends RenderBox
           offset,
           Offset.zero & size,
           (context, offset) {
-            context.paintChild(indicator, indicatorOffset + offset);
+            context.paintChild(box, indicatorOffset + offset);
           },
           clipBehavior: .hardEdge,
           oldLayer: layer as ClipRectLayer?,

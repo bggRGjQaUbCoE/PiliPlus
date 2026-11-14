@@ -10,6 +10,7 @@ import 'package:PiliPlus/pages/dynamics/widgets/dynamic_panel.dart';
 import 'package:PiliPlus/pages/dynamics_tab/controller.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/waterfall.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
@@ -52,6 +53,8 @@ class _DynamicsTabPageState extends State<DynamicsTabPage>
     return refreshIndicator(
       key: controller.refreshKey,
       onRefresh: onRefresh,
+      // 官方风格：指示器贴近顶部，下拉很短就会触发刷新
+      displacement: Pref.dynRefreshStyle == .official ? 12.0 : null,
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         controller: controller.scrollController,

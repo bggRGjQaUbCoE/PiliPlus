@@ -36,11 +36,21 @@ class CustomHorizontalDragGestureRecognizer
     super.debugOwner,
     super.supportedDevices,
     super.allowedButtonsFilter,
-  });
+    double? touchSlop,
+    this.angleRatio = kDefaultAngleRatio,
+  }) : _touchSlop = touchSlop;
+
+  /// 单个识别器可覆盖全局「横向滑动阈值」
+  final double? _touchSlop;
+
+  /// 判定横向的角度比：|dx| > |dy| * angleRatio
+  final double angleRatio;
 
   @override
   DeviceGestureSettings get gestureSettings => _gestureSettings;
-  final _gestureSettings = DeviceGestureSettings(touchSlop: touchSlopH);
+  late final _gestureSettings = DeviceGestureSettings(
+    touchSlop: _touchSlop ?? touchSlopH,
+  );
 
   @override
   bool hasSufficientGlobalDistanceToAccept(
@@ -53,6 +63,7 @@ class CustomHorizontalDragGestureRecognizer
       pointerDeviceKind,
       _initialPosition,
       lastPosition.global,
+      angleRatio,
     );
   }
 
@@ -62,12 +73,15 @@ class CustomHorizontalDragGestureRecognizer
 
 double touchSlopH = Pref.touchSlopH;
 
+const double kDefaultAngleRatio = 3;
+
 bool _computeHitSlop(
   double globalDistanceMoved,
   DeviceGestureSettings settings,
   PointerDeviceKind kind,
   Offset? initialPosition,
   Offset lastPosition,
+  double angleRatio,
 ) {
   switch (kind) {
     case .mouse:
@@ -77,16 +91,20 @@ bool _computeHitSlop(
     case .unknown:
     case .touch:
       return globalDistanceMoved > settings.touchSlop! &&
-          _calcAngle(initialPosition!, lastPosition);
+          _calcAngle(initialPosition!, lastPosition, angleRatio);
     case .trackpad:
       return globalDistanceMoved > settings.touchSlop! &&
-          _calcAngle(initialPosition!, lastPosition);
+          _calcAngle(initialPosition!, lastPosition, angleRatio);
   }
 }
 
-bool _calcAngle(Offset initialPosition, Offset lastPosition) {
+bool _calcAngle(
+  Offset initialPosition,
+  Offset lastPosition,
+  double angleRatio,
+) {
   final offset = lastPosition - initialPosition;
-  return offset.dx.abs() > offset.dy.abs() * 3;
+  return offset.dx.abs() > offset.dy.abs() * angleRatio;
 }
 
 final deviceTouchSlop = _calcDeviceTouchSlop();

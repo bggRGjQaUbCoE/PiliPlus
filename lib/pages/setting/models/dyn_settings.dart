@@ -1,4 +1,7 @@
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
+import 'package:PiliPlus/models/common/dynamic/dyn_refresh_style.dart';
+import 'package:PiliPlus/models/common/dynamic/dyn_swipe_sensitivity.dart';
+import 'package:PiliPlus/models/common/dynamic/dyn_swipe_target.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
 import 'package:PiliPlus/models/dynamics/result.dart'
     show DynamicsDataModel, ItemModulesModel;
@@ -13,6 +16,50 @@ import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart' hide RefreshIndicator;
 
 List<SettingsModel> get dynSettings => [
+  const SwitchModel(
+    title: '动态页只保留 UP 主栏',
+    subtitle: '顶部只留 UP 头像横栏（可滚动、上滑收起），去掉全部/投稿/番剧/专栏分类',
+    leading: Icon(Icons.view_sidebar_outlined),
+    setKey: SettingBoxKey.dynUpOnlyMode,
+    defaultVal: true,
+    needReboot: true,
+  ),
+  PopupModel(
+    title: '左右滑动的作用（分类 / 逐个UP）',
+    leading: const Icon(Icons.swipe_outlined),
+    value: () => Pref.dynSwipeTarget,
+    items: DynSwipeTarget.values,
+    onSelected: (value, setState) {
+      GStorage.setting
+          .put(SettingBoxKey.dynSwipeTarget, value.index)
+          .whenComplete(setState);
+      SmartDialog.showToast('重启生效');
+    },
+  ),
+  PopupModel(
+    title: '左右滑动灵敏度',
+    leading: const Icon(Icons.swipe_right_alt_outlined),
+    value: () => Pref.dynSwipeSensitivity,
+    items: DynSwipeSensitivity.values,
+    onSelected: (value, setState) {
+      GStorage.setting
+          .put(SettingBoxKey.dynSwipeSensitivity, value.index)
+          .whenComplete(setState);
+      SmartDialog.showToast('重启生效');
+    },
+  ),
+  PopupModel(
+    title: '下拉刷新样式（默认 / 官方）',
+    leading: const Icon(Icons.refresh),
+    value: () => Pref.dynRefreshStyle,
+    items: DynRefreshStyle.values,
+    onSelected: (value, setState) {
+      GStorage.setting
+          .put(SettingBoxKey.dynRefreshStyle, value.index)
+          .whenComplete(setState);
+      SmartDialog.showToast('重启生效');
+    },
+  ),
   SplitModel(
     normalModel: const NormalModel.split(
       title: '检查未读动态',

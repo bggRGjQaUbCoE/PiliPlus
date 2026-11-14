@@ -102,7 +102,12 @@ class _UpPanelState extends State<UpPanel> {
             },
           ),
         SliverToBoxAdapter(
-          child: upItemBuild(theme, UpItem(face: '', uname: '全部动态', mid: -1)),
+          child: Obx(
+            () => upItemBuild(
+              theme,
+              UpItem(face: '', uname: '全部动态', mid: -1),
+            ),
+          ),
         ),
         SliverToBoxAdapter(
           child: Obx(
@@ -120,7 +125,8 @@ class _UpPanelState extends State<UpPanel> {
           SliverList.builder(
             itemCount: upList.length,
             itemBuilder: (context, index) {
-              return upItemBuild(theme, upList[index]);
+              // 逐 UP 横向分页滑动时，高亮跟随当前 UP
+              return Obx(() => upItemBuild(theme, upList[index]));
             },
           ),
         if (!isTop) const SliverToBoxAdapter(child: SizedBox(height: 200)),

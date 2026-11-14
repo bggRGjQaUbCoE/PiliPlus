@@ -5,6 +5,9 @@ import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recogniz
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/models/common/bar_hide_type.dart';
+import 'package:PiliPlus/models/common/dynamic/dyn_refresh_style.dart';
+import 'package:PiliPlus/models/common/dynamic/dyn_swipe_sensitivity.dart';
+import 'package:PiliPlus/models/common/dynamic/dyn_swipe_target.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
@@ -195,6 +198,28 @@ abstract final class Pref {
       UpPanelPosition.values[_setting.get(
         SettingBoxKey.upPanelPosition,
         defaultValue: UpPanelPosition.leftFixed.index,
+      )];
+
+  static DynSwipeTarget get dynSwipeTarget =>
+      DynSwipeTarget.values[_setting.get(
+        SettingBoxKey.dynSwipeTarget,
+        defaultValue: DynSwipeTarget.tab.index,
+      )];
+
+  static DynSwipeSensitivity get dynSwipeSensitivity =>
+      DynSwipeSensitivity.values[_setting.get(
+        SettingBoxKey.dynSwipeSensitivity,
+        defaultValue: DynSwipeSensitivity.standard.index,
+      )];
+
+  /// 动态页只保留 UP 主栏（去掉 全部/投稿/番剧/专栏 分类）
+  static bool get dynUpOnlyMode =>
+      _setting.get(SettingBoxKey.dynUpOnlyMode, defaultValue: true);
+
+  static DynRefreshStyle get dynRefreshStyle =>
+      DynRefreshStyle.values[_setting.get(
+        SettingBoxKey.dynRefreshStyle,
+        defaultValue: DynRefreshStyle.official.index,
       )];
 
   static FullScreenMode get fullScreenMode {

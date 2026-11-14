@@ -1,4 +1,5 @@
-import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
+import 'package:PiliPlus/common/widgets/scroll_physics.dart'
+    show dynamicHorizontalDragRecognizer, tabBarView;
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
@@ -8,8 +9,10 @@ import 'package:PiliPlus/pages/dynamics/controller.dart';
 import 'package:PiliPlus/pages/dynamics/widgets/up_panel.dart';
 import 'package:PiliPlus/pages/dynamics_create/view.dart';
 import 'package:PiliPlus/pages/dynamics_tab/view.dart';
+import 'package:PiliPlus/pages/dynamics_up/up_page_view.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart' hide DraggableScrollableSheet;
 
@@ -25,6 +28,10 @@ class _DynamicsPageState extends CommonPageState<DynamicsPage>
   final _dynamicsController = Get.putOrFind(DynamicsController.new);
   UpPanelPosition get upPanelPosition => _dynamicsController.upPanelPosition;
   late final MainController _mainController = Get.find<MainController>();
+
+  /// UP 头像栏的收起偏移：0 = 完全展开，_upBarHeight = 完全收起
+  final _upBarOffset = 0.0.obs;
+  static const double _upBarHeight = 76;
 
   @override
   bool get wantKeepAlive => true;
@@ -92,6 +99,101 @@ class _DynamicsPageState extends CommonPageState<DynamicsPage>
     };
   }
 
+  /// 吸顶的 UP 头像栏：右侧固定发布按钮，其余横向滚动
+  Widget _upBar(ColorScheme colorScheme) {
+    return Row(
+      children: [
+        Expanded(
+          child: NotificationListener<ScrollEndNotification>(
+            onNotification: (notification) {
+              final metrics = notification.metrics;
+              if (metrics.pixels >= metrics.maxScrollExtent - 300) {
+                _dynamicsController.onLoadMore();
+              }
+              return false;
+            },
+            child: Obx(
+              () => _buildUpPanel(_dynamicsController.loadingState.value),
+            ),
+          ),
+        ),
+        _createDynamicBtn(colorScheme),
+      ],
+    );
+  }
+
+  /// 内容上滑时收起头像栏，下滑或回到顶部时展开
+  bool _onUpBarScroll(ScrollNotification notification) {
+    // 横向分页自己滚动，不参与收起
+    if (notification.metrics.axis != .vertical) return false;
+    if (notification is ScrollUpdateNotification) {
+      final delta = notification.scrollDelta;
+      if (delta != null && delta != 0 && notification.dragDetails != null) {
+        _upBarOffset.value = (_upBarOffset.value + delta).clamp(
+          0.0,
+          _upBarHeight,
+        );
+      }
+    } else if (notification is OverscrollNotification) {
+      _upBarOffset.value = (_upBarOffset.value + notification.overscroll)
+          .clamp(0.0, _upBarHeight);
+    } else if (notification is ScrollEndNotification ||
+        notification is ScrollStartNotification) {
+      // 到顶一定展开
+      if (notification.metrics.extentBefore == 0) {
+        _upBarOffset.value = 0;
+      }
+    }
+    return false;
+  }
+
+  Widget _collapsibleUpBar(ColorScheme colorScheme) {
+    return Obx(() {
+      final progress = (_upBarOffset.value / _upBarHeight).clamp(0.0, 1.0);
+      if (progress >= 1) return const SizedBox.shrink();
+      final material = Material(
+        type: .canvas,
+        color: colorScheme.surface,
+        child: SizedBox(
+          width: double.infinity,
+          height: _upBarHeight,
+          child: _upBar(colorScheme),
+        ),
+      );
+      return ClipRect(
+        child: SizedBox(
+          height: _upBarHeight * (1 - progress),
+          child: OverflowBox(
+            alignment: Alignment.topCenter,
+            minHeight: _upBarHeight,
+            maxHeight: _upBarHeight,
+            child: material,
+          ),
+        ),
+      );
+    });
+  }
+
+  /// 「只保留 UP 主栏」布局：头像栏吸顶 + 当前 UP 的动态流
+  Widget _buildUpOnly(BuildContext context, ColorScheme colorScheme) {
+    return Scaffold(
+      primary: false,
+      resizeToAvoidBottomInset: false,
+      backgroundColor: Colors.transparent,
+      body: NotificationListener<ScrollNotification>(
+        onNotification: _onUpBarScroll,
+        child: onBuild(
+          Column(
+            children: [
+              _collapsibleUpBar(colorScheme),
+              const Expanded(child: DynUpPageView()),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   bool get checkPage =>
       _mainController.navigationBars[0] != .dynamics &&
       _mainController.selectedIndex.value == 0;
@@ -112,10 +214,78 @@ class _DynamicsPageState extends CommonPageState<DynamicsPage>
     return super.onNotificationType2(notification);
   }
 
+  /// 顶部分类指示器：一排跟随手势的小圆点（不含文字）
+  ///
+  /// 取代原来的 [TabBar]：横向滑动切换分类时圆点连续跟随，
+  /// 当前分类显示为稍长的胶囊，点圆点可直达对应分类。
+  Widget _dynTabIndicator(ColorScheme colorScheme) {
+    final tabController = _dynamicsController.tabController;
+    final animation = tabController.animation;
+    const tabTypes = DynamicsTabType.values;
+
+    Widget buildIndicator(double position) {
+      return Row(
+        mainAxisSize: .min,
+        children: [
+          for (int i = 0; i < tabTypes.length; i++)
+            GestureDetector(
+              behavior: .opaque,
+              onTap: () => _toDynTab(i),
+              child: SizedBox(
+                height: 28,
+                child: Center(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 120),
+                    width:
+                        4 + 8 * (1 - (position - i).abs()).clamp(0.0, 1.0),
+                    height: 4.5,
+                    margin: const .symmetric(horizontal: 2),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary.withValues(
+                        alpha:
+                            .22 +
+                            .78 * (1 - (position - i).abs()).clamp(0.0, 1.0),
+                      ),
+                      borderRadius: const .all(.circular(2.25)),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      );
+    }
+
+    final Widget child;
+    if (animation == null) {
+      child = buildIndicator(tabController.index.toDouble());
+    } else {
+      child = AnimatedBuilder(
+        animation: animation,
+        builder: (context, _) => buildIndicator(animation.value),
+      );
+    }
+    return Center(child: child);
+  }
+
+  void _toDynTab(int index) {
+    final tabController = _dynamicsController.tabController;
+    if (tabController.index != index) {
+      tabController.animateTo(index);
+      _dynamicsController.animateToTop();
+    } else {
+      _dynamicsController.animateToTop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
     final colorScheme = ColorScheme.of(context);
+
+    if (_dynamicsController.upOnlyMode) {
+      return _buildUpOnly(context, colorScheme);
+    }
 
     Widget? drawer;
     Widget? endDrawer;
@@ -123,10 +293,19 @@ class _DynamicsPageState extends CommonPageState<DynamicsPage>
     Widget? leading;
     Widget actions;
 
+    final swipeSensitivity = Pref.dynSwipeSensitivity;
+    final useUpPageView = _dynamicsController.useUpPageView;
+
     Widget child = tabBarView(
       controller: _dynamicsController.tabController,
+      recognizer: () =>
+          dynamicHorizontalDragRecognizer(swipeSensitivity),
       children: DynamicsTabType.values
-          .map((e) => DynamicsTabPage(dynamicsType: e))
+          .map(
+            (e) => e == .up && useUpPageView
+                ? const DynUpPageView()
+                : DynamicsTabPage(dynamicsType: e),
+          )
           .toList(),
     );
 
@@ -170,34 +349,11 @@ class _DynamicsPageState extends CommonPageState<DynamicsPage>
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.transparent,
       appBar: PreferredSize(
-        preferredSize: const .fromHeight(50),
+        preferredSize: const .fromHeight(40),
         child: Row(
           children: [
             ?leading,
-            Expanded(
-              child: TabBar(
-                dividerHeight: 0,
-                isScrollable: true,
-                tabAlignment: .start,
-                dividerColor: Colors.transparent,
-                labelColor: colorScheme.primary,
-                indicatorColor: colorScheme.primary,
-                controller: _dynamicsController.tabController,
-                unselectedLabelColor: colorScheme.onSurface,
-                labelStyle:
-                    TabBarTheme.of(context).labelStyle
-                        ?.copyWith(fontSize: 13) ??
-                    const TextStyle(fontSize: 13),
-                tabs: DynamicsTabType.values
-                    .map((e) => Tab(text: e.label))
-                    .toList(),
-                onTap: (index) {
-                  if (!_dynamicsController.tabController.indexIsChanging) {
-                    _dynamicsController.animateToTop();
-                  }
-                },
-              ),
-            ),
+            Expanded(child: _dynTabIndicator(colorScheme)),
             actions,
           ],
         ),

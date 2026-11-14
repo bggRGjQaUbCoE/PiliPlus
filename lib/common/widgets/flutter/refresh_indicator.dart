@@ -152,8 +152,13 @@ class RefreshIndicator extends StatefulWidget {
     this.strokeWidth = RefreshProgressIndicator.defaultStrokeWidth,
     this.elevation = 2.0,
     this.isClampingScrollPhysics = false,
+    this.displacement,
     required this.child,
   }) : assert(elevation >= 0.0);
+
+  /// 覆盖全局 [displacement]，用于单个页面自定义下拉手感
+  final double? displacement;
+
 
   /// The widget below this widget in the tree.
   ///
@@ -392,9 +397,15 @@ class RefreshIndicatorState extends State<RefreshIndicator>
     return true;
   }
 
+  /// 当前实例生效的下拉位移：优先用 widget 覆盖值
+  double get _effectiveDisplacement => widget.displacement ?? displacement;
+
+  double get _effectiveDragExtent =>
+      (_effectiveDisplacement + kIndicatorSize) * _kDragSizeFactorLimit;
+
   void _checkDragOffset() {
     assert(_status == RefreshIndicatorStatus.drag);
-    double newValue = _dragOffset! / _refreshDragExtent;
+    double newValue = _dragOffset! / _effectiveDragExtent;
     _positionController.value = clampDouble(
       newValue,
       0.0,
@@ -520,6 +531,7 @@ class RefreshIndicatorState extends State<RefreshIndicator>
 
     child = RefreshLayout(
       body: child,
+      displacement: _effectiveDisplacement,
       scale: _scaleFactor,
       position: _positionFactor,
       indicator: _status == null

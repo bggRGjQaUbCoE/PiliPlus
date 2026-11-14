@@ -2,6 +2,7 @@ import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recogniz
 import 'package:PiliPlus/models/common/dynamic/dyn_swipe_sensitivity.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:flutter/gestures.dart' show HorizontalDragGestureRecognizer;
 import 'package:material_ui/material_ui.dart';
 
 /// 动态页横向滑动用的手势识别器工厂

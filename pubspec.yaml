@@ -120,7 +120,7 @@ dependencies:
   hive_ce: ^2.19.3
   html: ^0.15.4
   http2: ^2.3.1
-  image_cropper: ^12.0.0
+  image_cropper: ^13.0.0
   image_picker: ^1.1.2
   intl: ^0.20.2
   jni: ^1.0.0

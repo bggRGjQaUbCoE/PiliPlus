@@ -1336,12 +1336,12 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
               return;
             }
             String text = tabs[value];
-            if (videoDetailController.isFileSource ||
+            if (text.startsWith('评论')) {
+              _videoReplyController.animateToTop();
+            } else if (videoDetailController.isFileSource ||
                 text == '简介' ||
                 text == '相关视频') {
               videoDetailController.introScrollCtr?.animToTop();
-            } else if (text.startsWith('评论')) {
-              _videoReplyController.animateToTop();
             }
           }
 

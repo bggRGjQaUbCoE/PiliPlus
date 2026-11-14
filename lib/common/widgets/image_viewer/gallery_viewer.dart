@@ -621,6 +621,12 @@ class _GalleryViewerState extends State<GalleryViewer>
           onTap: () => ImageUtils.downloadImg([item.url]),
           child: const Text('保存图片', style: TextStyle(fontSize: 14)),
         ),
+        if (Platform.isWindows)
+          PopupMenuItem(
+            height: 42,
+            onTap: () => ImageUtils.copyImage(item.url),
+            child: const Text('复制图片', style: TextStyle(fontSize: 14)),
+          ),
         PopupMenuItem(
           height: 42,
           onTap: () => Utils.copyText(item.url),

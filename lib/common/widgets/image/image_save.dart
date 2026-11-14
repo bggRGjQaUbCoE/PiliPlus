@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -98,6 +100,16 @@ void imageSaveDialog({
                           icon: const Icon(Icons.watch_later_outlined),
                         ),
                       if (cover != null && cover.isNotEmpty) ...[
+                        if (Platform.isWindows)
+                          iconButton(
+                            iconSize: _iconSize,
+                            tooltip: '复制图片',
+                            onPressed: () {
+                              Get.back();
+                              ImageUtils.copyImage(cover);
+                            },
+                            icon: const Icon(Icons.image_outlined),
+                          ),
                         if (PlatformUtils.isMobile)
                           iconButton(
                             iconSize: _iconSize,

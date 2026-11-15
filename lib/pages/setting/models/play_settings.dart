@@ -12,6 +12,7 @@ import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliPlus/pages/setting/widgets/slider_dialog.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
+import 'package:PiliPlus/plugin/pl_player/models/ios_landscape_direction.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/android/android_helper.dart';
@@ -384,6 +385,15 @@ List<SettingsModel> get playSettings => [
     getSubtitle: () => '当前全屏方向：${Pref.fullScreenMode.desc}',
     onTap: _showFullScreenModeDialog,
   ),
+  if (Platform.isIOS)
+    NormalModel(
+      title: '默认横屏旋转方向',
+      leading: const Icon(Icons.screen_rotation_outlined),
+      getSubtitle: () =>
+          '点击全屏时的横屏方向：${Pref.iosLandscapeDirection.desc}\n'
+          '17 Pro 起的 Pro 机型扬声器在底边左侧，自动模式下顺时针旋转以免手挡住扬声器',
+      onTap: _showIosLandscapeDirectionDialog,
+    ),
   PopupModel(
     title: '底部进度条展示',
     leading: const Icon(Icons.border_bottom_outlined),
@@ -456,6 +466,24 @@ Future<void> _showFullScreenModeDialog(
   );
   if (res != null) {
     await GStorage.setting.put(SettingBoxKey.fullScreenMode, res.index);
+    setState();
+  }
+}
+
+Future<void> _showIosLandscapeDirectionDialog(
+  BuildContext context,
+  VoidCallback setState,
+) async {
+  final res = await showDialog<IosLandscapeDirection>(
+    context: context,
+    builder: (context) => SelectDialog<IosLandscapeDirection>(
+      title: '默认横屏旋转方向',
+      value: Pref.iosLandscapeDirection,
+      values: IosLandscapeDirection.values.map((e) => (e, e.desc)).toList(),
+    ),
+  );
+  if (res != null) {
+    await GStorage.setting.put(SettingBoxKey.iosLandscapeDirection, res.index);
     setState();
   }
 }

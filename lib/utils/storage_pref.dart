@@ -32,6 +32,7 @@ import 'package:PiliPlus/plugin/pl_player/models/audio_output_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/hwdec_type.dart';
+import 'package:PiliPlus/plugin/pl_player/models/ios_landscape_direction.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/extension/iterable_ext.dart';
@@ -208,6 +209,12 @@ abstract final class Pref {
     }
     return FullScreenMode.values[index];
   }
+
+  static IosLandscapeDirection get iosLandscapeDirection =>
+      IosLandscapeDirection.values[_setting.get(
+        SettingBoxKey.iosLandscapeDirection,
+        defaultValue: IosLandscapeDirection.auto.index,
+      )];
 
   static BtmProgressBehavior get btmProgressBehavior =>
       BtmProgressBehavior.values[_setting.get(

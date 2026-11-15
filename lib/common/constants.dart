@@ -5,9 +5,9 @@ abstract final class Constants {
   // 27eb53fc9058f8c3  移动端 Android
   // 4409e2ce8ffd12b8  HD版
   // 59b43e04ad6965f34319062b478f83dd TV端
-  // 1d8b6e7d45233436  官方 Android 客户端（BiliDroid 9.19.0，首页推荐流使用）
-  static const String appKey = '1d8b6e7d45233436';
-  static const String appSec = '560c52ccd288fed045859ed18bffd973';
+  // 1d8b6e7d45233436  官方 Android 客户端，但换用它会让 passport 登录接口返回 -403，勿整体替换
+  static const String appKey = 'dfca71928277209b';
+  static const String appSec = 'b5475a8825547a4fc26c7d518eaaa02e';
   // static const String thirdSign = '04224646d1fea004e79606d3b038c84a';
   // static const String thirdApi =
   //     'https://www.mcbbs.net/template/mcbbs/image/special_photo_bg.png';

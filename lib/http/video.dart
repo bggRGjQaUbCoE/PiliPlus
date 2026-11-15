@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io' show Platform;
+import 'dart:math' show Random;
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
@@ -29,6 +31,7 @@ import 'package:PiliPlus/models_new/video/video_relation/data.dart';
 import 'package:PiliPlus/models_new/video/video_shot/data.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/app_sign.dart';
+import 'package:PiliPlus/utils/device_utils.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:PiliPlus/utils/global_data.dart';
 import 'package:PiliPlus/utils/id_utils.dart';
@@ -39,6 +42,7 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/subtitle_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show compute;
 import 'package:protobuf/protobuf.dart';
@@ -133,38 +137,92 @@ abstract final class VideoHttp {
     return false;
   }
 
+  // 首页推荐（app 源）对齐哔哩哔哩官方 Android 客户端 9.19.0 的公开请求行为
+  static String? _appDeviceNameCache;
+
+  /// 官方 `device_name` 传的是本机型号（Android Build.MODEL / iOS utsname.machine）
+  static Future<String> _appDeviceName() async {
+    if (_appDeviceNameCache != null) return _appDeviceNameCache!;
+    try {
+      if (Platform.isAndroid) {
+        _appDeviceNameCache = (await DeviceInfoPlugin().androidInfo).model;
+      } else if (Platform.isIOS) {
+        _appDeviceNameCache =
+            (await DeviceInfoPlugin().iosInfo).utsname.machine;
+      }
+    } catch (_) {}
+    return _appDeviceNameCache ??= 'android';
+  }
+
+  static final _random = Random();
+
+  /// 官方 `session_id` 是 8 位十六进制串
+  static String _randomSessionId() =>
+      _random.nextInt(0xFFFFFFFF).toRadixString(16).padLeft(8, '0');
+
   // 添加额外的loginState变量模拟未登录状态
   static Future<LoadingState<List<RcmdVideoItemAppModel>>> rcmdVideoListApp({
     required int freshIdx,
   }) async {
-    final params = {
-      'build': 8430300,
-      'c_locale': 'zh_CN',
-      'channel': 'master',
+    final deviceName = await _appDeviceName();
+    // 官方登录态 login_event=2、游客态=1；access_key 由 AccountManager 注入
+    final loginEvent = Accounts.get(.recommend).isLogin ? 2 : 1;
+    var shortEdge = 1080;
+    var longEdge = 2400;
+    try {
+      final size = DeviceUtils.size;
+      shortEdge = size.shortestSide.round();
+      longEdge = size.longestSide.round();
+    } catch (_) {}
+    final params = <String, dynamic>{
+      // 与官方同名的 25 项
+      'build': 9190400,
+      'c_locale': 'zh-Hans_CN',
+      'channel': 'bili',
       'column': 2,
-      'device': 'phone',
-      'device_name': 'android',
+      'device_name': deviceName,
       'device_type': 0,
       'disable_rcmd': 0,
-      'flush': 8,
-      'fnval': 976,
+      'flush': 0,
+      'fnval': 272,
       'fnver': 0,
-      'force_host': 2, //使用https
-      'fourk': 1,
-      'guidance': 1,
-      'https_url_req': 1,
+      'force_host': 0,
+      'fourk': 0,
+      'guidance': 0,
+      'https_url_req': 0,
       'idx': freshIdx,
-      'mobi_app': 'android_i',
-      'network': 'wifi',
+      'mobi_app': 'android',
+      'network': 'mobile',
       'platform': 'android',
-      'player_net': 1,
+      'player_net': 2,
       'pull': freshIdx == 0 ? 'true' : 'false',
       'qn': 32,
       'recsys_mode': 0,
-      's_locale': 'zh_CN',
-      'splash_id': '',
+      's_locale': 'zh-Hans_CN',
       'statistics': Constants.statisticsApp,
-      'voice_balance': 0,
+      'voice_balance': 1,
+      // 官方有、旧实现缺失的 20 项（ad_extra 为动态串，未实现）
+      'auto_refresh_state': 1,
+      'autoplay_card': 11,
+      'autoplay_timestamp': 0,
+      'client_attr': 0,
+      'cny_info': '{"cny_active":0,"ab_test_vars":{},"cny_interest_attach":""}',
+      'column_timestamp': 0,
+      'inline_danmu': 2,
+      'inline_sound': 1,
+      'inline_sound_cold_state': 2,
+      'interest_id': 0,
+      'login_event': loginEvent,
+      'open_event': 'cold',
+      'player_extra_content':
+          '{"short_edge":"$shortEdge","long_edge":"$longEdge","cur_language":""}',
+      'qn_policy': 1,
+      'raw_window_size_type': 1,
+      'soft_fnval': 0,
+      'splash_creative_id': 0,
+      'video_mode': 1,
+      'volume_balance': 1,
+      'window_size_type': 1,
     };
     final res = await Request().get(
       Api.recommendListApp,
@@ -174,10 +232,10 @@ abstract final class VideoHttp {
           'buvid': Accounts.get(.recommend).buvid,
           'fp_local': '1111111111111111111111111111111111111111111111111111111111111111',
           'fp_remote': '1111111111111111111111111111111111111111111111111111111111111111',
-          'session_id': '11111111',
+          'session_id': _randomSessionId(),
           'env': 'prod',
-          'app-key': 'android_hd',
-          'User-Agent': Constants.userAgent,
+          'app-key': 'android64',
+          'User-Agent': Constants.userAgentApp,
           'x-bili-trace-id': Constants.traceId,
           'x-bili-aurora-eid': '',
           'x-bili-aurora-zone': '',

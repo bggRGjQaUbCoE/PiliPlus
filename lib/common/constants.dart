@@ -4,8 +4,9 @@ abstract final class Constants {
 
   // 27eb53fc9058f8c3  移动端 Android
   // 4409e2ce8ffd12b8  HD版
-  static const String appKey = 'dfca71928277209b';
   // 59b43e04ad6965f34319062b478f83dd TV端
+  // 1d8b6e7d45233436  官方 Android 客户端，但换用它会让 passport 登录接口返回 -403，勿整体替换
+  static const String appKey = 'dfca71928277209b';
   static const String appSec = 'b5475a8825547a4fc26c7d518eaaa02e';
   // static const String thirdSign = '04224646d1fea004e79606d3b038c84a';
   // static const String thirdApi =
@@ -21,10 +22,10 @@ abstract final class Constants {
 
   // app
   static const String userAgentApp =
-      'Mozilla/5.0 BiliDroid/8.43.0 (bbcallen@gmail.com) os/android model/android mobi_app/android build/8430300 channel/master innerVer/8430300 osVer/15 network/2';
+      'Mozilla/5.0 BiliDroid/9.19.0 (bbcallen@gmail.com) os/android model/android mobi_app/android build/9190400 channel/bili innerVer/9190410 osVer/15 network/1';
 
   static const String statisticsApp =
-      '{"appId":1,"platform":3,"version":"8.43.0","abtest":""}';
+      '{"appId":1,"platform":3,"version":"9.19.0","abtest":""}';
 
   static const baseHeaders = {
     // 'referer': HttpString.baseUrl,

@@ -38,7 +38,7 @@ class _FullScreenScState extends State<FullScreenSc> {
     if (Platform.isAndroid) {
       landscapeLeftMode();
     } else if (Platform.isIOS) {
-      landscapeRightMode();
+      iosDefaultLandscapeMode();
     }
   }
 

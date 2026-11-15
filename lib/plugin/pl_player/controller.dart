@@ -1483,11 +1483,11 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
           return landscapeLeftMode();
         }
       } else {
-        if (orientation == .landscapeLeft) {
-          return landscapeLeftMode();
-        } else {
-          return landscapeRightMode();
-        }
+        return switch (orientation) {
+          .landscapeLeft => landscapeLeftMode(),
+          .landscapeRight => landscapeRightMode(),
+          _ => iosDefaultLandscapeMode(),
+        };
       }
     }
   }

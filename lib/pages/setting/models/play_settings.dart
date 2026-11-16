@@ -487,6 +487,9 @@ Future<void> showPlayerVolumeDialog(
   VoidCallback setState, {
   ValueChanged<double>? onChanged,
 }) {
+  // 打开弹窗即预取：用户调整到 >100% 前探测结果大概率已就绪（幂等、
+  // 异步；最坏也只是白跑一次几十 ms 的无声探测）
+  AudioNormalizationMixin.prefetchBoostSupport();
   return showVolumeDialog(
     context,
     title: const Text('播放器音量'),

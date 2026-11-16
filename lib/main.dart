@@ -8,6 +8,7 @@ import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/common/widgets/scale_app.dart';
 import 'package:PiliPlus/common/widgets/scroll_behavior.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/models/common/audio_normalization.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/router/app_pages.dart';
@@ -103,6 +104,12 @@ void main() async {
     DeviceUtils.exitApp();
   }
   ScaledWidgetsFlutterBinding.instance.scaleFactor = Pref.uiScale;
+  // 偏好音量 >100% 时预探测 alimiter 可用性（FFI / 静音探测，后台）
+  if (PlatformUtils.isMobile
+      ? Pref.playerVolume > 100
+      : Pref.desktopVolume > 1) {
+    AudioNormalizationMixin.prefetchBoostSupport();
+  }
   await Future.wait([
     _initDownPath(),
     _initTmpPath(),

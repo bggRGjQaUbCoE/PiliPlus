@@ -500,7 +500,11 @@ class HeaderControlState extends State<HeaderControl>
                         onTap: () => showPlayerVolumeDialog(
                           context,
                           () => (context as Element).markNeedsBuild(),
-                          onChanged: player.setVolume,
+                          // 即时生效必须走 setVolumeCapped：直接绑原生
+                          // player.setVolume 会绕开防削波的 af 增益层，
+                          // 与播放器实例重建后的实际行为不一致
+                          onChanged: (value) => plPlayerController
+                              .setVolumeCapped(player, value / 100),
                         ),
                       ),
                     ),

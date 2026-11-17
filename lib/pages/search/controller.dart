@@ -75,7 +75,8 @@ class BaseSearchController extends GetxController {
 
   // 获取热搜关键词
   Future<void> queryTrendingList() async {
-    trendingState.value = await SearchHttp.searchTrending(limit: 10);
+    final result = await SearchHttp.searchTrending(limit: 10);
+    if (!isClosed) trendingState.value = result;
   }
 }
 
@@ -86,6 +87,7 @@ class SSearchController extends GetxController
 
   final searchFocusNode = FocusNode();
   final controller = TextEditingController();
+  int _suggestionRequest = 0;
   final _baseCtr = Get.putOrFind(BaseSearchController.new);
 
   String? hintText;
@@ -141,6 +143,7 @@ class SSearchController extends GetxController
   }
 
   void onChange(String value) {
+    _suggestionRequest++;
     validateUid();
     if (searchSuggestion) {
       if (value.isEmpty) {
@@ -152,6 +155,7 @@ class SSearchController extends GetxController
   }
 
   void onClear() {
+    _suggestionRequest++;
     if (controller.value.text != '') {
       controller.clear();
       if (searchSuggestion) searchSuggestList.clear();
@@ -175,6 +179,7 @@ class SSearchController extends GetxController
     if (await PiliScheme.routePushFromUrl(text, selfHandle: true)) {
       return;
     }
+    if (isClosed) return;
 
     if (recordSearchHistory.value) {
       final index = historyList.indexOf(text);
@@ -191,6 +196,7 @@ class SSearchController extends GetxController
       parameters: {'tag': tag, 'keyword': text},
       arguments: {'initIndex': initIndex, 'fromSearch': true},
     )?.then((val) {
+      if (isClosed || Get.currentRoute.split('?').first != '/search') return;
       searchFocusNode.requestFocus();
       if (val is bool && val) {
         onValueChanged(text);
@@ -199,7 +205,8 @@ class SSearchController extends GetxController
   }
 
   Future<void> queryRecommendList() async {
-    recommendData.value = await SearchHttp.searchRecommend();
+    final result = await SearchHttp.searchRecommend();
+    if (!isClosed) recommendData.value = result;
   }
 
   void onClickKeyword(String keyword, {bool clearSuggest = true}) {
@@ -212,11 +219,13 @@ class SSearchController extends GetxController
 
   @override
   Future<void> onValueChanged(String value) async {
+    final request = ++_suggestionRequest;
     final res = await SearchHttp.searchSuggest(term: value);
+    if (isClosed || request != _suggestionRequest || controller.text != value) {
+      return;
+    }
     if (res case Success(:final response)) {
-      if (response.tag?.isNotEmpty == true) {
-        searchSuggestList.value = response.tag!;
-      }
+      searchSuggestList.value = response.tag ?? const [];
     }
   }
 

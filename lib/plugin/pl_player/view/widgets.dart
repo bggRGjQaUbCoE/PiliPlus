@@ -429,6 +429,7 @@ class _VideoTime extends LeafRenderObjectWidget {
     covariant _RenderVideoTime renderObject,
   ) {
     renderObject
+      ..fontSize = MediaQuery.textScalerOf(context).scale(10)
       ..position = position
       ..duration = duration;
   }
@@ -441,7 +442,14 @@ class _RenderVideoTime extends RenderBox {
     required this._duration,
   });
 
-  final double _fontSize;
+  double _fontSize;
+  set fontSize(double value) {
+    if (_fontSize == value) return;
+    _fontSize = value;
+    _cache?.dispose();
+    _cache = null;
+    markNeedsLayout();
+  }
 
   String _duration;
   set duration(String value) {

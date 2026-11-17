@@ -8,6 +8,7 @@ import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/common/widgets/scale_app.dart';
 import 'package:PiliPlus/common/widgets/scroll_behavior.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/common/widgets/motion/cover_motion.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/router/app_pages.dart';
@@ -92,6 +93,7 @@ Future<void> _initAppPath() async {
 }
 
 void main() async {
+  VideoCoverTransition.install();
   ScaledWidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
   await _initAppPath();
@@ -255,6 +257,8 @@ void _onBack() {
 }
 
 class MyApp extends StatelessWidget {
+  static final _coverHeroController =
+      MaterialApp.createMaterialHeroController();
   const MyApp({super.key});
 
   static ColorScheme? _light, _dark;
@@ -314,6 +318,7 @@ class MyApp extends StatelessWidget {
         builder: _builder,
       ),
       navigatorObservers: [
+        _coverHeroController,
         routeObserver,
         FlutterSmartDialog.observer,
       ],

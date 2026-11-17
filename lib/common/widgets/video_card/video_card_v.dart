@@ -1,4 +1,8 @@
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/motion/cover_motion.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/plugin/pl_player/controller.dart';
+import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -20,15 +24,80 @@ import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 
 // 视频卡片 - 垂直布局
-class VideoCardV extends StatelessWidget {
+class VideoCardV extends StatefulWidget {
   final BaseRcmdVideoItemModel videoItem;
   final VoidCallback? onRemove;
+  final bool coverMotion;
 
   const VideoCardV({
     super.key,
     required this.videoItem,
     this.onRemove,
+    this.coverMotion = false,
   });
+
+  static final shortFormat = DateFormat('M-d');
+  static final longFormat = DateFormat('yy-M-d');
+
+  @override
+  State<VideoCardV> createState() => _VideoCardVState();
+}
+
+class _VideoCardVState extends State<VideoCardV> {
+  BaseRcmdVideoItemModel get videoItem => widget.videoItem;
+  VoidCallback? get onRemove => widget.onRemove;
+  Object _coverTag = Object();
+  ImageProvider? _coverImage;
+  bool _opening = false;
+  double? get _videoAspectRatio {
+    if (videoItem.uri case final uri?) {
+      final params = Uri.tryParse(uri)?.queryParameters;
+      final width = int.tryParse(params?['player_width'] ?? '');
+      final height = int.tryParse(params?['player_height'] ?? '');
+      final rotate = int.tryParse(params?['player_rotate'] ?? '');
+      if (width == null ||
+          height == null ||
+          width <= 0 ||
+          height <= 0 ||
+          rotate == null ||
+          rotate < 0 ||
+          rotate > 1) {
+        return null;
+      }
+      return rotate == 1 ? height / width : width / height;
+    }
+    return null;
+  }
+
+  bool get _candidate {
+    if (!widget.coverMotion ||
+        !Pref.coverPageTransition ||
+        videoItem.goto != 'av' ||
+        videoItem.cid == null ||
+        videoItem is! RcmdVideoItemAppModel ||
+        videoItem.uri == null) {
+      return false;
+    }
+    final aspectRatio = _videoAspectRatio;
+    if (aspectRatio == null || aspectRatio == 1) return false;
+    if (aspectRatio > 1) return true;
+    final fit = VideoFitType.values[Pref.cacheVideoFit];
+    return fit == VideoFitType.fill || fit == VideoFitType.contain;
+  }
+
+  @override
+  void didUpdateWidget(VideoCardV oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.videoItem != videoItem) {
+      _coverTag = Object();
+      _coverImage = null;
+    }
+  }
+
+  void _onCoverImageReady(ImageProvider image) {
+    if (_coverImage == image) return;
+    setState(() => _coverImage = image);
+  }
 
   Future<void> onPushDetail() async {
     switch (videoItem.goto) {
@@ -36,6 +105,11 @@ class VideoCardV extends StatelessWidget {
         PageUtils.viewPgc(epId: videoItem.param!);
         break;
       case 'av':
+        if ((widget.coverMotion ? Scrollable.maybeOf(context)?.position : null)
+            case final ScrollPositionWithSingleContext position
+            when position.isScrollingNotifier.value && !position.outOfRange) {
+          position.goIdle();
+        }
         var bvid = videoItem.bvid ?? IdUtils.av2bv(videoItem.aid!);
         var cid = videoItem.cid;
         bool isVertical = false;
@@ -52,16 +126,56 @@ class VideoCardV extends StatelessWidget {
             dimension = res.dimension;
           }
         }
+        if (dimension == null && videoItem is RcmdVideoItemAppModel) {
+          final params = Uri.tryParse(videoItem.uri ?? '')?.queryParameters;
+          final width = int.tryParse(params?['player_width'] ?? '');
+          final height = int.tryParse(params?['player_height'] ?? '');
+          final rotate = int.tryParse(params?['player_rotate'] ?? '');
+          if (params != null &&
+              width != null &&
+              height != null &&
+              width > 0 &&
+              height > 0 &&
+              (rotate == 0 || rotate == 1)) {
+            dimension = Dimension.fromJson({
+              'width': width,
+              'height': height,
+              'rotate': rotate,
+            });
+          }
+        }
+        if (!mounted) return;
         if (cid != null) {
-          PageUtils.toVideoPage(
-            aid: videoItem.aid,
-            bvid: bvid,
-            cid: cid,
-            cover: videoItem.cover,
-            title: videoItem.title,
-            isVertical: isVertical,
-            dimension: dimension,
-          );
+          final motion =
+              _candidate &&
+                  _coverImage != null &&
+                  !MediaQuery.disableAnimationsOf(context) &&
+                  PlPlayerController.instance?.videoController == null
+              ? CoverTransitionData(
+                  tag: _coverTag,
+                  image: _coverImage!,
+                  radius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  contentAspectRatio: _videoAspectRatio! < 1
+                      ? _videoAspectRatio
+                      : null,
+                )
+              : null;
+          if (motion != null && _opening) return;
+          if (motion != null) _opening = true;
+          try {
+            await PageUtils.toVideoPage(
+              coverTransition: motion,
+              aid: videoItem.aid,
+              bvid: bvid,
+              cid: cid,
+              cover: videoItem.cover,
+              title: videoItem.title,
+              isVertical: isVertical,
+              dimension: dimension,
+            );
+          } finally {
+            _opening = false;
+          }
         }
         break;
       // 动态
@@ -81,6 +195,7 @@ class VideoCardV extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final coverImage = _coverImage;
     void onLongPress() => imageSaveDialog(
       title: videoItem.title,
       cover: videoItem.cover,
@@ -107,11 +222,44 @@ class VideoCardV extends StatelessWidget {
                       return Stack(
                         clipBehavior: Clip.none,
                         children: [
-                          NetworkImgLayer(
-                            src: videoItem.cover,
-                            width: maxWidth,
-                            height: maxHeight,
-                            borderRadius: const .vertical(top: .circular(12)),
+                          HeroMode(
+                            enabled:
+                                _candidate &&
+                                !MediaQuery.disableAnimationsOf(context),
+                            child: Hero(
+                              tag: _coverTag,
+                              curve: CoverTransitionData.motionCurve,
+                              reverseCurve: CoverTransitionData.motionCurve,
+                              flightShuttleBuilder: CoverTransitionData.flight,
+                              child: NetworkImgLayer(
+                                onImageReady: widget.coverMotion
+                                    ? _onCoverImageReady
+                                    : null,
+                                getPlaceHolder: coverImage == null
+                                    ? null
+                                    : () => Image(
+                                        image: coverImage,
+                                        width: maxWidth,
+                                        height: maxHeight,
+                                        fit: BoxFit.cover,
+                                        alignment: Alignment.center,
+                                        gaplessPlayback: true,
+                                        filterQuality: FilterQuality.low,
+                                        colorBlendMode: NetworkImgLayer.reduce
+                                            ? BlendMode.modulate
+                                            : null,
+                                        color: NetworkImgLayer.reduce
+                                            ? NetworkImgLayer.reduceLuxColor
+                                            : null,
+                                      ),
+                                src: videoItem.cover,
+                                width: maxWidth,
+                                height: maxHeight,
+                                borderRadius: const .vertical(
+                                  top: .circular(12),
+                                ),
+                              ),
+                            ),
                           ),
                           if (videoItem.duration > 0)
                             PBadge(
@@ -222,9 +370,6 @@ class VideoCardV extends StatelessWidget {
     );
   }
 
-  static final shortFormat = DateFormat('M-d');
-  static final longFormat = DateFormat('yy-M-d');
-
   Widget videoStat(ThemeData theme) {
     return Row(
       children: [
@@ -250,8 +395,8 @@ class VideoCardV extends StatelessWidget {
               ),
               text: DateFormatUtils.dateFormat(
                 videoItem.pubdate,
-                short: shortFormat,
-                long: longFormat,
+                short: VideoCardV.shortFormat,
+                long: VideoCardV.longFormat,
               ),
             ),
           ),

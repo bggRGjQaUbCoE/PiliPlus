@@ -9,6 +9,7 @@ class AppBarAni extends StatelessWidget {
     required this.isTop,
     required this.isFullScreen,
     required this.removeSafeArea,
+    this.safeBottom = false,
   });
 
   final Widget child;
@@ -16,6 +17,7 @@ class AppBarAni extends StatelessWidget {
   final bool isTop;
   final bool isFullScreen;
   final bool removeSafeArea;
+  final bool safeBottom;
 
   static final _topPos = Tween<Offset>(
     begin: const Offset(0.0, -1.0),
@@ -49,7 +51,7 @@ class AppBarAni extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SlideTransition(
+    final bar = SlideTransition(
       position: controller.drive(isTop ? _topPos : _bottomPos),
       child: DecoratedBox(
         decoration: BoxDecoration(
@@ -58,10 +60,22 @@ class AppBarAni extends StatelessWidget {
         child: removeSafeArea
             ? child
             : ViewSafeArea(
+                bottom: safeBottom,
                 left: isFullScreen,
                 right: isFullScreen,
                 child: child,
               ),
+      ),
+    );
+    return AnimatedBuilder(
+      animation: controller,
+      child: bar,
+      builder: (context, child) => IgnorePointer(
+        ignoring: controller.isDismissed,
+        child: ExcludeSemantics(
+          excluding: controller.isDismissed,
+          child: child,
+        ),
       ),
     );
   }

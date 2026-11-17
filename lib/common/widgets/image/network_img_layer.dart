@@ -22,6 +22,7 @@ class NetworkImgLayer extends StatelessWidget {
     this.fit = .cover,
     this.alignment = .center,
     this.cacheWidth,
+    this.onImageReady,
   });
 
   final String? src;
@@ -36,6 +37,7 @@ class NetworkImgLayer extends StatelessWidget {
   final BoxFit fit;
   final Alignment alignment;
   final bool? cacheWidth;
+  final ValueChanged<ImageProvider>? onImageReady;
 
   static Color? reduceLuxColor = Pref.reduceLuxColor;
   static bool reduce = false;
@@ -54,8 +56,13 @@ class NetworkImgLayer extends StatelessWidget {
         return ClipRRect(borderRadius: borderRadius, child: child);
       }
     } else {
-      return getPlaceHolder?.call() ??
-          _placeholder(context, isEmote: isEmote, isAvatar: isAvatar);
+      return SizedBox(
+        width: width,
+        height: height,
+        child:
+            getPlaceHolder?.call() ??
+            _placeholder(context, isEmote: isEmote, isAvatar: isAvatar),
+      );
     }
   }
 
@@ -71,6 +78,22 @@ class NetworkImgLayer extends StatelessWidget {
       memCacheHeight = height.cacheSize(context);
     }
     return CachedNetworkImage(
+      imageBuilder: onImageReady == null
+          ? null
+          : (context, provider) {
+              onImageReady!(provider);
+              return Image(
+                image: provider,
+                width: width,
+                height: height,
+                fit: fit,
+                alignment: alignment,
+                gaplessPlayback: true,
+                filterQuality: FilterQuality.low,
+                colorBlendMode: reduce ? BlendMode.modulate : null,
+                color: reduce ? reduceLuxColor : null,
+              );
+            },
       gaplessPlayback: true,
       imageUrl: ImageUtils.thumbnailUrl(src, quality),
       width: width,

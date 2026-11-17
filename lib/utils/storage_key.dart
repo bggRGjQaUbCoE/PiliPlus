@@ -44,6 +44,7 @@ abstract final class SettingBoxKey {
       useRelativeSlide = 'useRelativeSlide',
       sliderDuration = 'sliderOffset',
       enableQuickDouble = 'enableQuickDouble',
+      enableTwoFingerDoubleTap = 'enableTwoFingerDoubleTap',
       fullScreenGestureReverse = 'fullScreenGestureReverse',
       enableBackgroundPlay = 'enableBackgroundPlay',
       continuePlayInBackground = 'continuePlayInBackground',

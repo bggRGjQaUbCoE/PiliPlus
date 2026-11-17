@@ -133,6 +133,12 @@ List<SettingsModel> get styleSettings => [
     needReboot: true,
   ),
   const SwitchModel(
+    title: '封面连续',
+    leading: Icon(Icons.animation),
+    setKey: SettingBoxKey.coverPageTransition,
+    defaultVal: false,
+  ),
+  const SwitchModel(
     title: 'MD3样式底栏',
     subtitle: 'Material You设计规范底栏，关闭可变窄',
     leading: Icon(Icons.design_services_outlined),

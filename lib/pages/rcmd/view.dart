@@ -120,6 +120,7 @@ class _RcmdPageState extends State<RcmdPage>
                         ? index - 1
                         : index;
                     return VideoCardV(
+                      coverMotion: true,
                       videoItem: response[actualIndex],
                       onRemove: () {
                         if (controller.lastRefreshAt != null &&
@@ -134,6 +135,7 @@ class _RcmdPageState extends State<RcmdPage>
                     );
                   } else {
                     return VideoCardV(
+                      coverMotion: true,
                       videoItem: response[index],
                       onRemove: () => controller.loadingState
                         ..value.data!.removeAt(index)

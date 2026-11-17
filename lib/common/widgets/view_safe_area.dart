@@ -4,12 +4,14 @@ class ViewSafeArea extends StatelessWidget {
   const ViewSafeArea({
     super.key,
     this.top = false,
+    this.bottom = false,
     this.left = true,
     this.right = true,
     required this.child,
   });
 
   final bool top;
+  final bool bottom;
   final bool left;
   final bool right;
   final Widget child;
@@ -20,6 +22,7 @@ class ViewSafeArea extends StatelessWidget {
     return Padding(
       padding: .only(
         top: top ? padding.top : 0.0,
+        bottom: bottom ? padding.bottom : 0.0,
         left: left ? padding.left : 0.0,
         right: right ? padding.right : 0.0,
       ),

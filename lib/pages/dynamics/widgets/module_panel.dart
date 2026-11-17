@@ -68,8 +68,7 @@ Widget module(
     case 'DYNAMIC_TYPE_PGC':
     case 'DYNAMIC_TYPE_PGC_UNION':
     case 'DYNAMIC_TYPE_COURSES_SEASON':
-      return videoSeasonWidget(
-        context,
+      return VideoSeasonPanel(
         theme: theme,
         item: item,
         floor: floor,

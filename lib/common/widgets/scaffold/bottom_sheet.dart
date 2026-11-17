@@ -63,7 +63,14 @@ class _MiniBottomSheetState extends BottomSheetState<BottomSheet_> {
 
     Widget bottomSheet = KeyedSubtree(
       key: childKey,
-      child: widget.builder(context),
+      child: SurfaceMaterial(
+        kind: SurfaceMaterialKind.bottomSheet,
+        material: Material(
+          color: bottomSheetTheme.backgroundColor ?? defaults.backgroundColor,
+          shape: bottomSheetTheme.shape ?? defaults.shape,
+          child: widget.builder(context),
+        ),
+      ),
     );
 
     if (constraints != null && constraints != const BoxConstraints()) {

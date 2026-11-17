@@ -149,29 +149,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
         body: widget.isVideoDetail
             ? Column(
                 children: [
-                  Container(
-                    height: 45,
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          width: 1,
-                          color: theme.dividerColor.withValues(alpha: 0.1),
-                        ),
-                      ),
-                    ),
-                    padding: const EdgeInsets.only(left: 12, right: 2),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text(isDialogue ? '对话列表' : '评论详情'),
-                        IconButton(
-                          tooltip: '关闭',
-                          icon: const Icon(Icons.close, size: 20),
-                          onPressed: Get.back,
-                        ),
-                      ],
-                    ),
-                  ),
+                  _sheetTitle(),
                   Expanded(child: child()),
                 ],
               )
@@ -179,6 +157,41 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
       ),
     );
   }
+
+  Widget _headerSurface(Widget child) => SurfaceMaterial(
+    kind: SurfaceMaterialKind.appBar,
+    material: Material(
+      color: theme.colorScheme.surface,
+      shape: const RoundedRectangleBorder(),
+      child: child,
+    ),
+  );
+
+  Widget _sheetTitle() => _headerSurface(
+    Container(
+      height: 45,
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            width: 1,
+            color: theme.dividerColor.withValues(alpha: 0.1),
+          ),
+        ),
+      ),
+      padding: const EdgeInsets.only(left: 12, right: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Text(isDialogue ? '对话列表' : '评论详情'),
+          IconButton(
+            tooltip: '关闭',
+            icon: const Icon(Icons.close, size: 20),
+            onPressed: Get.back,
+          ),
+        ],
+      ),
+    ),
+  );
 
   ReplyInfo? get firstFloor => widget.firstFloor ?? controller.firstFloor.value;
 
@@ -243,89 +256,93 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
 
   Widget _sortWidget(ColorScheme colorScheme) {
     return SliverPinnedHeader(
-      backgroundColor: colorScheme.surface,
-      child: Padding(
-        padding: const .fromLTRB(12, 2.5, 6, 2.5),
-        child: Row(
-          spacing: 6,
-          children: [
-            Obx(
-              () {
-                final count = controller.count.value;
-                return count != -1
-                    ? Text(
-                        '相关回复共${NumUtils.numFormat(count)}条',
-                        style: const TextStyle(fontSize: 13),
-                      )
-                    : const SizedBox.shrink();
-              },
-            ),
-            IconButton(
-              visualDensity: .compact,
-              onPressed: () {
-                if (controller.replyTree.rawValue != null) {
-                  controller
-                    ..showReplyTree = !controller.showReplyTree
-                    ..replyTree.refresh();
-                  return;
-                }
-
-                if (controller.isEnd && controller.foldCard == null) {
-                  controller.buildTree();
-                } else if (controller.inFetchReply) {
-                  SmartDialog.showToast('正在拉取评论，请稍后');
-                } else {
-                  if (controller.foldCard != null) {
-                    controller.nextReplyRound();
+      child: _headerSurface(
+        Padding(
+          padding: const .fromLTRB(12, 2.5, 6, 2.5),
+          child: Row(
+            spacing: 6,
+            children: [
+              Obx(
+                () {
+                  final count = controller.count.value;
+                  return count != -1
+                      ? Text(
+                          '相关回复共${NumUtils.numFormat(count)}条',
+                          style: const TextStyle(fontSize: 13),
+                        )
+                      : const SizedBox.shrink();
+                },
+              ),
+              IconButton(
+                visualDensity: .compact,
+                onPressed: () {
+                  if (controller.replyTree.rawValue != null) {
+                    controller
+                      ..showReplyTree = !controller.showReplyTree
+                      ..replyTree.refresh();
                     return;
                   }
-                  final count = controller.count.rawValue;
-                  if (count != -1) {
-                    final total = (count / 20).ceil();
-                    final remain = total - (controller.page - 1);
-                    if (remain < 5) {
+
+                  if (controller.isEnd && controller.foldCard == null) {
+                    controller.buildTree();
+                  } else if (controller.inFetchReply) {
+                    SmartDialog.showToast('正在拉取评论，请稍后');
+                  } else {
+                    if (controller.foldCard != null) {
                       controller.nextReplyRound();
                       return;
                     }
+                    final count = controller.count.rawValue;
+                    if (count != -1) {
+                      final total = (count / 20).ceil();
+                      final remain = total - (controller.page - 1);
+                      if (remain < 5) {
+                        controller.nextReplyRound();
+                        return;
+                      }
+                    }
+                    showConfirmDialog(
+                      context: context,
+                      title: const Text('是否加载全部评论以显示线程化评论？'),
+                      content: const Text('这将消耗一定流量\n且可能导致IP或账号风控'),
+                      onConfirm: controller.nextReplyRound,
+                    );
                   }
-                  showConfirmDialog(
-                    context: context,
-                    title: const Text('是否加载全部评论以显示线程化评论？'),
-                    content: const Text('这将消耗一定流量\n且可能导致IP或账号风控'),
-                    onConfirm: controller.nextReplyRound,
-                  );
-                }
-              },
-              icon: const Icon(
-                Icons.view_comfortable_outlined,
-                size: 22,
+                },
+                icon: const Icon(
+                  Icons.view_comfortable_outlined,
+                  size: 22,
+                ),
+                color: colorScheme.outline,
+                tooltip: '线程化展示',
               ),
-              color: colorScheme.outline,
-              tooltip: '线程化展示',
-            ),
-            Expanded(
-              child: Obx(
-                () => LinearProgressIndicator(
-                  // ignore: deprecated_member_use
-                  year2023: true,
-                  borderRadius: const .all(.circular(4)),
-                  value: controller.progress.value,
-                  stopIndicatorColor: Colors.transparent,
+              Expanded(
+                child: Obx(
+                  () => LinearProgressIndicator(
+                    // ignore: deprecated_member_use
+                    year2023: true,
+                    borderRadius: const .all(.circular(4)),
+                    value: controller.progress.value,
+                    stopIndicatorColor: Colors.transparent,
+                  ),
                 ),
               ),
-            ),
-            TextButton.icon(
-              style: Style.buttonStyle,
-              onPressed: controller.queryBySort,
-              icon: Icon(Icons.sort, size: 16, color: colorScheme.secondary),
-              label: Obx(
-                () => Text(
-                  controller.sortType.value.label,
-                  style: TextStyle(fontSize: 13, color: colorScheme.secondary),
+              TextButton.icon(
+                style: Style.buttonStyle,
+                onPressed: controller.queryBySort,
+                icon: Icon(Icons.sort, size: 16, color: colorScheme.secondary),
+                label: Obx(
+                  () => Text(
+                    controller.sortType.value.label,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: colorScheme.secondary,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

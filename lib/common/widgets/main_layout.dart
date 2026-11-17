@@ -11,11 +11,13 @@ class MainLayout
     required this.sideBar,
     required this.bottomNav,
     required this.body,
+    this.onBottomNavHeightChanged,
   });
 
   final Widget? sideBar;
   final Widget? bottomNav;
   final Widget body;
+  final ValueChanged<double>? onBottomNavHeightChanged;
 
   @override
   Iterable<MainType> get slots => MainType.values;
@@ -31,7 +33,17 @@ class MainLayout
   SlottedContainerRenderObjectMixin<MainType, RenderBox> createRenderObject(
     BuildContext context,
   ) {
-    return _RenderMainLayout();
+    return _RenderMainLayout(onBottomNavHeightChanged);
+  }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    covariant SlottedContainerRenderObjectMixin<MainType, RenderBox>
+    renderObject,
+  ) {
+    (renderObject as _RenderMainLayout).onBottomNavHeightChanged =
+        onBottomNavHeightChanged;
   }
 }
 
@@ -39,6 +51,9 @@ class _RenderMainLayout extends RenderBox
     with
         SlottedContainerRenderObjectMixin<MainType, RenderBox>,
         SlottedLayoutMixin {
+  _RenderMainLayout(this.onBottomNavHeightChanged);
+  ValueChanged<double>? onBottomNavHeightChanged;
+  double? _reportedBottomHeight;
   RenderBox? get sideBar => childForSlot(.sideBar);
   RenderBox? get bottomNav => childForSlot(.bottomNav);
   RenderBox get body => childForSlot(.body)!;
@@ -92,6 +107,13 @@ class _RenderMainLayout extends RenderBox
 
     final body = this.body..layout(bodyConstraints);
     setOffset(body, bodyOffset);
+    final height = sideBar == null ? (bottomNav?.size.height ?? 0.0) : 0.0;
+    if (height != _reportedBottomHeight) {
+      _reportedBottomHeight = height;
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => onBottomNavHeightChanged?.call(height),
+      );
+    }
   }
 
   @override

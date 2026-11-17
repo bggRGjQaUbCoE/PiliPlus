@@ -1,0 +1,16 @@
+/* Recognized product detail only. Keep pictures, prices and actions intact. */
+html[data-pp-page="detail"] .detail-module {
+  margin-block: calc(var(--pp-unit) * var(--pp-space));
+  border: 1px solid var(--pp-outline);
+  overflow: hidden;
+}
+html[data-pp-page="detail"] .new-detail-header-wrap.detail-header-bg {
+  background-color: var(--pp-glass) !important;
+  -webkit-backdrop-filter: var(--pp-glass-filter, none);
+  backdrop-filter: var(--pp-glass-filter, none);
+}
+/* Confirmed official back-arrow asset; the native shell already provides back.
+   Keep search/cart/share, including all business badges, in the web toolbar. */
+html[data-pp-page="detail"] .detail-header > .detail-header-icon:first-child:has(> img[src*="/a9081bfed8a5fe19627efdf9b5d701520d14e2b7.png"]) {
+  display: none !important;
+}

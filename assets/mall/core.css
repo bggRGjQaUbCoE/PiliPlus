@@ -1,0 +1,379 @@
+/* Core-page additions to the existing home stylesheet. Every rule requires a
+   route AND component signature selected by the one adapter in adapter.js. */
+html[data-pp-page] {
+  color-scheme: var(--pp-color-scheme, light);
+}
+html:is([data-pp-page="search"], [data-pp-page="list"], [data-pp-page="detail"], [data-pp-page="cart"]),
+html:is([data-pp-page="search"], [data-pp-page="list"], [data-pp-page="detail"], [data-pp-page="cart"]) body,
+html:is([data-pp-page="search"], [data-pp-page="list"], [data-pp-page="detail"], [data-pp-page="cart"]) #app {
+  background-color: var(--pp-surface) !important;
+}
+html:is([data-pp-page="search"], [data-pp-page="list"], [data-pp-page="detail"], [data-pp-page="cart"]) body {
+  font-family: var(--pp-font-family);
+}
+html:is([data-pp-page^="ticket-"], [data-pp-page="order-detail"], [data-pp-page="account"], [data-pp-page="address"], [data-pp-page="coupon"], [data-pp-page="aftersale"]),
+html:is([data-pp-page^="ticket-"], [data-pp-page="order-detail"], [data-pp-page="account"], [data-pp-page="address"], [data-pp-page="coupon"], [data-pp-page="aftersale"]) :is(body, #app) {
+  background-color: var(--pp-surface) !important;
+}
+html:is([data-pp-page^="ticket-"], [data-pp-page="order-detail"], [data-pp-page="account"], [data-pp-page="address"], [data-pp-page="coupon"], [data-pp-page="aftersale"]) body {
+  font-family: var(--pp-font-family);
+}
+/* Site headers and cards identified on the account, order and ticket pages.
+   Keep the website's price, badge, rich content and transaction colors. */
+html[data-pp-page="aftersale"] .result,
+html[data-pp-page="aftersale"] .result :is(.tab-content, .scroll-view-container, .scroll-view-content, .empty) {
+  background-color: var(--pp-surface) !important;
+  color: var(--pp-on-surface) !important;
+}
+html[data-pp-page="account"] .me-page :is(.bili-header, .order-wrapper, .func-wrapper),
+html[data-pp-page="ticket-order"] .header.is-browser,
+html[data-pp-page="address"] .head:has(.icon-back),
+html[data-pp-page="aftersale"] .result :is(.bili-header, .result_top, .tab-title-flex),
+html[data-pp-page="ticket-detail"] :is(.main-info-container, .sticky-info-bar, .sticky-tabs, .base-info-box-container, .purchase-notice-floor) {
+  background-color: var(--pp-card) !important;
+  color: var(--pp-on-surface) !important;
+  border-color: var(--pp-outline) !important;
+}
+html[data-pp-page="account"] .me-page :is(.bili-header .title, .order-wrapper .top, .entry-item .text, .func-item .text),
+html[data-pp-page="account"] .me-page :is(.order-wrapper .top > .title, .func-wrapper > .title),
+html[data-pp-page="ticket-order"] .header.is-browser .header-content .content,
+html[data-pp-page="address"] .head:has(.icon-back) .title,
+html[data-pp-page="aftersale"] .result :is(.bili-header .title, .tab-tilte_creat:not(.active)),
+html[data-pp-page="ticket-detail"] :is(.main-info-container .title-text, .main-info-container .venue-name, .base-info-box-container .content-cell, .purchase-notice-floor .notice-item, .purchase-notice-floor .notice-label) {
+  color: var(--pp-on-surface) !important;
+}
+html[data-pp-page="account"] .me-page .view-all-order-button,
+html[data-pp-page="ticket-detail"] .main-info-container :is(.date-label, .venue-addr) {
+  color: var(--pp-on-surface-variant) !important;
+}
+/* Audited account shortcut PNGs: use their alpha as theme-colored line art.
+   Exact resource matches keep product images and colored logos untouched.
+   CSS selectors also cover asynchronous insertion and resource replacement. */
+html[data-pp-page="account"] .me-page .func-item > .icon[style*="/9a3e2fc5d53fbd54069fe324d1fb0d3353ba1197.png"] {
+  --pp-account-icon: url("https://i0.hdslb.com/bfs/marketing-config/20261012/pic/9a3e2fc5d53fbd54069fe324d1fb0d3353ba1197.png");
+}
+html[data-pp-page="account"] .me-page .func-item > .icon[style*="/466c3cad8d68eef36034c5aeb4e24fc7326fff78.png"] {
+  --pp-account-icon: url("https://i0.hdslb.com/bfs/marketing-config/20251022/pic/466c3cad8d68eef36034c5aeb4e24fc7326fff78.png");
+}
+html[data-pp-page="account"] .me-page .func-item > .icon[style*="/ac69c5c918bb19d0d7e62519005628db2ce8cfc6.png"] {
+  --pp-account-icon: url("https://i0.hdslb.com/bfs/marketing-config/20251022/pic/ac69c5c918bb19d0d7e62519005628db2ce8cfc6.png");
+}
+html[data-pp-page="account"] .me-page .func-item > .icon[style*="/7c34a6d0dfbaa3475433f6409f590c3d66c61d50.png"] {
+  --pp-account-icon: url("https://i0.hdslb.com/bfs/marketing-config/20251022/pic/7c34a6d0dfbaa3475433f6409f590c3d66c61d50.png");
+}
+html[data-pp-page="account"] .me-page .func-item > .icon[style*="/5afdb583809401ee59fc2edada8dbee3fb4fdd78.png"] {
+  --pp-account-icon: url("https://i0.hdslb.com/bfs/marketing-config/20251022/pic/5afdb583809401ee59fc2edada8dbee3fb4fdd78.png");
+}
+html[data-pp-page="account"] .me-page .func-item > .icon[style*="/bdfbbdbd1f926317d27c65428277aaba609d0ce4.png"] {
+  --pp-account-icon: url("https://i0.hdslb.com/bfs/marketing-config/20251022/pic/bdfbbdbd1f926317d27c65428277aaba609d0ce4.png");
+}
+html[data-pp-page="account"] .me-page .func-item > .icon[style*="/dbd0cfc9fe642260294711d870e0e49631f1ffb5.png"] {
+  --pp-account-icon: url("https://i0.hdslb.com/bfs/marketing-config/20251022/pic/dbd0cfc9fe642260294711d870e0e49631f1ffb5.png");
+}
+html[data-pp-page="account"] .me-page .func-item > .icon[style*="/0a6e62200f7f6a5b302bd7cdf3a8b421ef2c466a.png"] {
+  --pp-account-icon: url("https://i0.hdslb.com/bfs/marketing-config/20251022/pic/0a6e62200f7f6a5b302bd7cdf3a8b421ef2c466a.png");
+}
+html[data-pp-page="account"] .me-page .func-item > .icon[style*="/53b7a19af911a39063ad376ba8f367f03540d1f2.png"] {
+  --pp-account-icon: url("https://i0.hdslb.com/bfs/marketing-config/20251022/pic/53b7a19af911a39063ad376ba8f367f03540d1f2.png");
+}
+html[data-pp-page="account"] .me-page .func-item > .icon[style*="/7497c492dd78d6cb8f1b6edbf81a75b47f4aaccd.png"] {
+  --pp-account-icon: url("https://i0.hdslb.com/bfs/marketing-config/20251028/pic/7497c492dd78d6cb8f1b6edbf81a75b47f4aaccd.png");
+}
+html[data-pp-page="account"] .me-page .func-item > .icon:is(
+  [style*="/9a3e2fc5d53fbd54069fe324d1fb0d3353ba1197.png"],
+  [style*="/466c3cad8d68eef36034c5aeb4e24fc7326fff78.png"],
+  [style*="/ac69c5c918bb19d0d7e62519005628db2ce8cfc6.png"],
+  [style*="/7c34a6d0dfbaa3475433f6409f590c3d66c61d50.png"],
+  [style*="/5afdb583809401ee59fc2edada8dbee3fb4fdd78.png"],
+  [style*="/bdfbbdbd1f926317d27c65428277aaba609d0ce4.png"],
+  [style*="/dbd0cfc9fe642260294711d870e0e49631f1ffb5.png"],
+  [style*="/0a6e62200f7f6a5b302bd7cdf3a8b421ef2c466a.png"],
+  [style*="/53b7a19af911a39063ad376ba8f367f03540d1f2.png"],
+  [style*="/7497c492dd78d6cb8f1b6edbf81a75b47f4aaccd.png"]
+) {
+  background-image: none !important;
+  background-color: var(--pp-on-surface-variant) !important;
+  -webkit-mask: var(--pp-account-icon) center / contain no-repeat;
+  mask: var(--pp-account-icon) center / contain no-repeat;
+}
+/* These three colored logos contain black outlines. A small light backing
+   preserves the official pixels and contrast without inverting their colors. */
+html[data-pp-page="account"] .me-page .func-item > .icon:is(
+  [style*="/vaneb62b0a4a656d4be79789c0987ebce7ab.png"],
+  [style*="/4x0Lb4GV1608194219914.png"],
+  [style*="/vanefe28b90146bb42b58804c5c3a6cf1b59.png"]
+) {
+  background-color: #f4f6f5 !important;
+  border-radius: 20%;
+}
+html[data-pp-page="ticket-detail"] .footer-container :is(.footer-menu, .footer-menu-wrapper):has(.action-container) {
+  background-color: var(--pp-card) !important;
+  border-color: var(--pp-outline) !important;
+}
+/* These pages have a real inner content pad; retain the body's inset on the
+   legacy document-scrolling list instead of applying the same inset twice. */
+html[data-pp-inner-scroll]:is([data-pp-page="search"], [data-pp-page="cart"]) body[data-pp-scroll] {
+  padding-bottom: 0 !important;
+}
+
+/* Search/list: retain official waterfall positioning, sorting and prices. */
+html[data-pp-page="search"] .search-result-wrap,
+html[data-pp-page="list"] #app .main-goods-container {
+  color: var(--pp-on-surface);
+  background-color: var(--pp-surface) !important;
+}
+html[data-pp-page="search"] .header-container-default,
+html[data-pp-page="search"] .tab-container,
+html[data-pp-page="search"] .filter-static,
+html[data-pp-page="search"] .filter-fixed,
+html[data-pp-page="search"] .filter-wrap,
+html[data-pp-page="search"] .filter-bar,
+html[data-pp-page="search"] .front-filter-container,
+html[data-pp-page="search"] .front-filter,
+html[data-pp-page="list"] #app > .header,
+html[data-pp-page="list"] .main-filter-bar {
+  background-color: var(--pp-card) !important;
+  color: var(--pp-on-surface) !important;
+}
+html[data-pp-page="search"] .header .search,
+html[data-pp-page="search"] .front-filter-item,
+html[data-pp-page="list"] .filter-item-options .option-list {
+  background-color: var(--pp-search) !important;
+  border-radius: calc(var(--pp-unit) * var(--pp-radius));
+  color: var(--pp-on-surface-variant) !important;
+}
+html[data-pp-page="search"] .header .search-input,
+html[data-pp-page="search"] .tab .tab-name,
+html[data-pp-page="search"] .filter-bar-item,
+html[data-pp-page="search"] .front-filter-item-name,
+html[data-pp-page="list"] #app > .header .content,
+html[data-pp-page="list"] .main-filter-bar {
+  color: var(--pp-on-surface) !important;
+  font-family: var(--pp-font-family);
+}
+html[data-pp-page="search"] .header .search-input {
+  background-color: transparent !important;
+}
+/* The native shell has already consumed the Android status-bar safe area. */
+html[data-pp-page="search"] .header-empty-safe {
+  display: none !important;
+}
+html[data-pp-page="search"] .header-placeholder-bottom-line {
+  background-color: var(--pp-outline) !important;
+}
+html[data-pp-page="search"] .search-result-wrap .header-sticky + .header-placeholder {
+  margin-top: var(--pp-search-header-height) !important;
+}
+html[data-pp-page="search"] .filter-fixed {
+  top: var(--pp-search-header-height) !important;
+}
+html[data-pp-page="search"] .tab .item.active .tab-name,
+html[data-pp-page="search"] .filter-bar-item.active,
+html[data-pp-page="list"] .main-filter-bar .active {
+  color: var(--pp-primary) !important;
+}
+html:is([data-pp-page="search"], [data-pp-page="list"]) .goods-list .goods-item {
+  background-color: var(--pp-card) !important;
+  border: 1px solid var(--pp-outline);
+  border-radius: calc(var(--pp-unit) * var(--pp-radius));
+  box-sizing: border-box;
+  overflow: hidden;
+  box-shadow: none;
+}
+html:is([data-pp-page="search"], [data-pp-page="list"]) .goods-item .info-container {
+  background-color: var(--pp-card) !important;
+}
+html:is([data-pp-page="search"], [data-pp-page="list"]) .goods-item .name {
+  color: var(--pp-on-surface) !important;
+  font-family: var(--pp-font-family);
+  font-size: calc(var(--pp-unit) * var(--pp-font-size));
+  line-height: var(--pp-line-height);
+}
+html:is([data-pp-page="search"], [data-pp-page="list"]) .goods-item .like,
+html:is([data-pp-page="search"], [data-pp-page="list"]) .no-more {
+  color: var(--pp-on-surface-variant) !important;
+}
+/* Text-only official title tags assume their original white surface. Preserve
+   their authored colors, including presale/member cues, on that same backing. */
+html:is([data-pp-page="search"], [data-pp-page="list"]) .goods-item .tag-container-title .text-tag {
+  background-color: #fff;
+  border-radius: calc(var(--pp-unit) * 2);
+}
+html[data-pp-page="search"] .tab .icon-bar {
+  background-color: var(--pp-primary) !important;
+}
+html[data-pp-page="search"] .filter-board,
+html[data-pp-page="search"] .filter-board .board-wrapper,
+html[data-pp-page="search"] .filter-board .main-container,
+html[data-pp-page="search"] .filter-board .bottom-btn-group {
+  background-color: var(--pp-card) !important;
+  color: var(--pp-on-surface);
+}
+html[data-pp-page="search"] .filter-list-header .header-content,
+html[data-pp-page="search"] .category-container > .title {
+  color: var(--pp-on-surface) !important;
+}
+html[data-pp-page="search"] .filter-board .item:not(.active):not(.selected),
+html[data-pp-page="search"] .filter-board .reset {
+  background-color: var(--pp-search) !important;
+  color: var(--pp-on-surface) !important;
+  border-color: var(--pp-outline) !important;
+}
+html[data-pp-page="search"] .filter-board .confirm {
+  background-color: var(--pp-primary) !important;
+  color: var(--pp-on-primary) !important;
+}
+
+/* Detail: theme neutral backings/text; keep branded price text, product
+   images, sale/member tags and transaction notifications authored by the site. */
+html[data-pp-page="detail"] .detail-container-wrap,
+html[data-pp-page="detail"] .detail-container {
+  background-color: var(--pp-surface) !important;
+}
+html[data-pp-page="detail"] .detail-module,
+html[data-pp-page="detail"] .bottom-bar-module {
+  background-color: var(--pp-card) !important;
+}
+html[data-pp-page="detail"] .detail-module {
+  border-radius: calc(var(--pp-unit) * var(--pp-radius));
+  border-color: var(--pp-outline) !important;
+}
+html[data-pp-page="detail"] .new-detail-header-wrap.detail-header-bg,
+html[data-pp-page="detail"] .tab-bar-outside,
+html[data-pp-page="detail"] .tab-bar-outside .bili-tab-bar,
+html[data-pp-page="detail"] .swiper-comment-item.detail-comment-merchant,
+html[data-pp-page="detail"] .detail-up-measure-module .contribute,
+html[data-pp-page="detail"] .goods-info-price.night-theme,
+html[data-pp-page="detail"] .bili-callapp-btn-wrap.bili-callapp-btn-picture {
+  background-color: var(--pp-card) !important;
+}
+html[data-pp-page="detail"] .new-detail-header-wrap {
+  height: auto !important;
+}
+html[data-pp-page="detail"] .new-detail-header-wrap > .header-empty-safe {
+  display: none !important;
+}
+html[data-pp-page="detail"] .ip-brand-item,
+html[data-pp-page="detail"] .comment-entry__right__tip {
+  background-color: var(--pp-search) !important;
+}
+html[data-pp-page="detail"] .comment-entry__right__tip,
+html[data-pp-page="detail"] .comment-banner-title .comment-count,
+html[data-pp-page="detail"] .contribute .good-things-evaluation-contribute,
+html[data-pp-page="detail"] .detail-header-bg .carousel-word,
+html[data-pp-page="detail"] .tab-bar-outside .bili-tab-bar-span {
+  color: var(--pp-on-surface-variant) !important;
+}
+html[data-pp-page="detail"] .tab-bar-outside .active .bili-tab-bar-span {
+  color: var(--pp-primary) !important;
+}
+html[data-pp-page="detail"] .product-sale-service .scroll-tip {
+  background-image: linear-gradient(270deg, var(--pp-card), transparent) !important;
+}
+html[data-pp-page="detail"] .clamp-real-text,
+html[data-pp-page="detail"] .comment-banner-title,
+html[data-pp-page="detail"] .comment-text,
+html[data-pp-page="detail"] .detail-comment-merchant-title__left__title,
+html[data-pp-page="detail"] .detail-comment-merchant-title__left__title__num,
+html[data-pp-page="detail"] .panel-inner-title,
+html[data-pp-page="detail"] .sku-title,
+html[data-pp-page="detail"] .params-title,
+html[data-pp-page="detail"] .item-new-name,
+html[data-pp-page="detail"] .item-new-value,
+html[data-pp-page="detail"] .ip-brand-item__title,
+html[data-pp-page="detail"] .service-introduction-merchant-header,
+html[data-pp-page="detail"] .bottom-icon-text {
+  color: var(--pp-on-surface) !important;
+  font-family: var(--pp-font-family);
+}
+html[data-pp-page="detail"] .clamp-real-text {
+  font-size: calc(var(--pp-unit) * var(--pp-font-size));
+  line-height: var(--pp-line-height);
+}
+html[data-pp-page="detail"] [data-pp-sku-popup],
+html[data-pp-page="detail"] [data-pp-sku-popup] > .popup-container,
+html[data-pp-page="detail"] [data-pp-sku-popup] .popup-body {
+  max-height: calc(100vh - var(--pp-overlay)) !important;
+}
+html[data-pp-page="detail"] [data-pp-sku-popup] > .popup-container {
+  background-color: var(--pp-card) !important;
+  color: var(--pp-on-surface);
+  border-radius: calc(var(--pp-unit) * 32) calc(var(--pp-unit) * 32) 0 0;
+}
+html[data-pp-page="detail"] [data-pp-sku-popup] {
+  background-color: transparent !important;
+}
+html[data-pp-page="detail"] [data-pp-sku-popup] .popup-body {
+  background-color: var(--pp-card) !important;
+}
+html[data-pp-page="detail"] [data-pp-sku-popup] .sku-container {
+  min-height: 0;
+}
+html[data-pp-page="detail"] [data-pp-sku-popup] h4 {
+  color: var(--pp-on-surface) !important;
+  font-family: var(--pp-font-family);
+}
+html[data-pp-page="detail"] [data-pp-sku-popup] .spec-normal:not(.spec-disable) {
+  background-color: var(--pp-search) !important;
+  color: var(--pp-on-surface) !important;
+  border-color: var(--pp-outline) !important;
+}
+html[data-pp-page="detail"] [data-pp-sku-popup] .spec-active:not(.spec-disable) {
+  background-color: var(--pp-primary-container) !important;
+  color: var(--pp-on-primary-container) !important;
+  border-color: var(--pp-primary) !important;
+}
+
+/* Cart: keep the header's manage action, all selection/quantity controls,
+   disabled/out-of-stock signals, totals and checkout handled by the website. */
+html[data-pp-page="cart"] .bil-cart {
+  background-color: var(--pp-surface) !important;
+  color: var(--pp-on-surface);
+}
+html[data-pp-page="cart"] #cartHeader,
+html[data-pp-page="cart"] #cartHeader .bili-header,
+html[data-pp-page="cart"] .warehouse-item,
+html[data-pp-page="cart"] .warehouse-item-header,
+html[data-pp-page="cart"] .group-item,
+html[data-pp-page="cart"] .bili-sku-item,
+html[data-pp-page="cart"] #cartFooter {
+  background-color: var(--pp-card) !important;
+}
+/* Only bars already identified as positioned business controls. Keep the
+   opaque card backing when advanced materials or backdrop filtering is off. */
+@supports (backdrop-filter: blur(1px)) {
+  html[data-pp-page="detail"] .detail-container-wrap .bottom-bar-module[data-pp-raised]:has(.buy-cart-button),
+  html[data-pp-page="cart"] .bil-cart #cartFooter.bil-cart-footer.bottom-fixed[data-pp-raised]:has(.footer-content) {
+    background-color: var(--pp-business-glass, var(--pp-card)) !important;
+    backdrop-filter: var(--pp-glass-filter, none);
+  }
+}
+html[data-pp-page="cart"] #cartHeader .bili-header-main,
+html[data-pp-page="cart"] .warehouse-name,
+html[data-pp-page="cart"] .bili-sku-item:not(.failure) .sku-name,
+html[data-pp-page="cart"] #cartFooter .footer-content {
+  color: var(--pp-on-surface) !important;
+  font-family: var(--pp-font-family);
+}
+html[data-pp-page="cart"] .bili-spec-label,
+html[data-pp-page="cart"] .empty-msg {
+  color: var(--pp-on-surface-variant) !important;
+}
+html[data-pp-page="cart"] .bili-spec-label,
+html[data-pp-page="cart"] .bili-quantity .minus,
+html[data-pp-page="cart"] .bili-quantity .plus {
+  background-color: var(--pp-search) !important;
+  border-color: var(--pp-outline) !important;
+}
+html[data-pp-page="cart"] .warehouse-item {
+  border-radius: calc(var(--pp-unit) * var(--pp-radius));
+}
+html[data-pp-page="cart"] .group-item-line {
+  background-color: var(--pp-outline) !important;
+}
+
+/* The fixed-filter clone contains an empty header reservation. Its top is
+   already aligned to the measured sticky header above; reserve it only once. */
+html[data-pp-page="search"] .filter-fixed > .header-placeholder:empty {
+  display: none !important;
+}

@@ -1,3 +1,8 @@
+import 'dart:io' show Platform;
+
+import 'package:PiliPlus/common/widgets/motion/cover_motion.dart';
+import 'package:PiliPlus/plugin/pl_player/controller.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
@@ -16,18 +21,120 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
 // 视频卡片 - 水平布局
-class VideoCardHMemberVideo extends StatelessWidget {
+class VideoCardHMemberVideo extends StatefulWidget {
   const VideoCardHMemberVideo({
     super.key,
     required this.videoItem,
     this.onTap,
     this.bvid,
     this.fromViewAid,
+    this.coverMotion = false,
   });
   final SpaceArchiveItem videoItem;
   final VoidCallback? onTap;
   final dynamic bvid;
   final String? fromViewAid;
+  final bool coverMotion;
+
+  @override
+  State<VideoCardHMemberVideo> createState() => _VideoCardHMemberVideoState();
+}
+
+class _VideoCardHMemberVideoState extends State<VideoCardHMemberVideo> {
+  SpaceArchiveItem get videoItem => widget.videoItem;
+  VoidCallback? get onTap => widget.onTap;
+  dynamic get bvid => widget.bvid;
+  String? get fromViewAid => widget.fromViewAid;
+  Object _coverTag = Object();
+  ImageProvider? _coverImage;
+  bool _opening = false;
+  ({int width, int height})? get _orientedSize {
+    final params = videoItem.uri == null
+        ? null
+        : Uri.tryParse(videoItem.uri!)?.queryParameters;
+    final width = int.tryParse(params?['player_width'] ?? '');
+    final height = int.tryParse(params?['player_height'] ?? '');
+    if (width == null || height == null || width <= 0 || height <= 0) {
+      return null;
+    }
+    return switch (params?['player_rotate']) {
+      '0' => (width: width, height: height),
+      '1' => (width: height, height: width),
+      // Preserve the existing landscape path when rotation metadata is absent.
+      _ when width > height => (width: width, height: height),
+      _ => null,
+    };
+  }
+
+  double? get _portraitAspectRatio {
+    final size = _orientedSize;
+    return CoverTransitionData.portraitAspectRatio(size?.width, size?.height);
+  }
+
+  bool get _candidate {
+    if (!widget.coverMotion ||
+        !Pref.coverPageTransition ||
+        onTap != null ||
+        videoItem.goto != 'av' ||
+        videoItem.isPgc == true ||
+        videoItem.isPugv == true ||
+        videoItem.cid == null ||
+        videoItem.bvid == null ||
+        videoItem.uri == null) {
+      return false;
+    }
+    final size = _orientedSize;
+    return size != null &&
+        (size.width > size.height || _portraitAspectRatio != null);
+  }
+
+  @override
+  void didUpdateWidget(VideoCardHMemberVideo oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.videoItem != videoItem) {
+      _coverTag = Object();
+      _coverImage = null;
+    }
+  }
+
+  Future<void> _open() async {
+    final isPgc = videoItem.isPgc == true, isPugv = videoItem.isPugv == true;
+    if ((isPgc || isPugv) &&
+        videoItem.uri?.isNotEmpty == true &&
+        PageUtils.viewPgcFromUri(videoItem.uri!, isPgc: isPgc)) {
+      return;
+    }
+    if (videoItem.bvid == null || videoItem.cid == null) return;
+    var isVertical = false;
+    if (videoItem.uri case final uri?) isVertical = uri.isVerticalFromUri;
+    final motion =
+        _candidate &&
+            _coverImage != null &&
+            !MediaQuery.disableAnimationsOf(context) &&
+            (PlPlayerController.instance?.videoController == null ||
+                Platform.isAndroid)
+        ? CoverTransitionData(
+            tag: _coverTag,
+            image: _coverImage!,
+            radius: Style.mdRadius,
+            contentAspectRatio: _portraitAspectRatio,
+          )
+        : null;
+    if (motion != null && _opening) return;
+    if (motion != null) _opening = true;
+    try {
+      await PageUtils.toVideoPage(
+        bvid: videoItem.bvid,
+        cid: videoItem.cid!,
+        cover: videoItem.cover,
+        title: videoItem.title,
+        isVertical: isVertical,
+        coverTransition: motion,
+      );
+    } finally {
+      _opening = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,34 +152,7 @@ class VideoCardHMemberVideo extends StatelessWidget {
           InkWell(
             onLongPress: onLongPress,
             onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-            onTap:
-                onTap ??
-                () {
-                  final isPgc = videoItem.isPgc == true;
-                  final isPugv = videoItem.isPugv == true;
-                  if ((isPgc || isPugv) && videoItem.uri?.isNotEmpty == true) {
-                    if (PageUtils.viewPgcFromUri(
-                      videoItem.uri!,
-                      isPgc: isPgc,
-                    )) {
-                      return;
-                    }
-                  }
-                  if (videoItem.bvid == null || videoItem.cid == null) {
-                    return;
-                  }
-                  bool isVertical = false;
-                  if (videoItem.uri case final uri?) {
-                    isVertical = uri.isVerticalFromUri;
-                  }
-                  PageUtils.toVideoPage(
-                    bvid: videoItem.bvid,
-                    cid: videoItem.cid!,
-                    cover: videoItem.cover,
-                    title: videoItem.title,
-                    isVertical: isVertical,
-                  );
-                },
+            onTap: onTap ?? _open,
             child: Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: Style.safeSpace,
@@ -90,10 +170,25 @@ class VideoCardHMemberVideo extends StatelessWidget {
                         return Stack(
                           clipBehavior: Clip.none,
                           children: [
-                            NetworkImgLayer(
-                              src: videoItem.cover,
-                              width: maxWidth,
-                              height: maxHeight,
+                            HeroMode(
+                              enabled:
+                                  _candidate &&
+                                  !MediaQuery.disableAnimationsOf(context),
+                              child: Hero(
+                                tag: _coverTag,
+                                curve: CoverTransitionData.motionCurve,
+                                reverseCurve: CoverTransitionData.motionCurve,
+                                flightShuttleBuilder:
+                                    CoverTransitionData.flight,
+                                child: NetworkImgLayer(
+                                  src: videoItem.cover,
+                                  width: maxWidth,
+                                  height: maxHeight,
+                                  onImageReady: _candidate
+                                      ? (image) => _coverImage = image
+                                      : null,
+                                ),
+                              ),
                             ),
                             if (fromViewAid == videoItem.param)
                               const Positioned.fill(

@@ -153,58 +153,77 @@ void importFromInput<T>(
   late T json;
   String? forceErrorText;
 
+  bool submitting = false;
   showDialog(
     context: context,
-    builder: (context) => AlertDialog(
-      title: Text('输入$title'),
-      constraints: Style.dialogFixedConstraints,
-      content: TextFormField(
-        key: key,
-        minLines: 4,
-        maxLines: 12,
-        autofocus: true,
-        decoration: const InputDecoration(
-          border: OutlineInputBorder(),
-          errorMaxLines: 3,
-        ),
-        validator: (value) {
-          if (forceErrorText != null) return forceErrorText;
-          try {
-            json = jsonDecode(value!) as T;
-            return null;
-          } catch (e) {
-            return '解析json失败：$e';
-          }
-        },
-      ),
-      actions: [
-        TextButton(
-          onPressed: Get.back,
-          child: Text(
-            '取消',
-            style: TextStyle(
-              color: ColorScheme.of(context).outline,
-            ),
+    builder: (context) => StatefulBuilder(
+      builder: (context, setState) => AlertDialog(
+        title: Text('输入$title'),
+        constraints: Style.dialogFixedConstraints,
+        content: TextFormField(
+          key: key,
+          minLines: 4,
+          maxLines: 12,
+          autofocus: true,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            errorMaxLines: 3,
           ),
-        ),
-        TextButton(
-          onPressed: () async {
-            if (key.currentState?.validate() == true) {
-              try {
-                await onImport(json);
-                Get.back();
-                SmartDialog.showToast('导入成功');
-                return;
-              } catch (e) {
-                forceErrorText = '导入失败：$e';
-              }
-              key.currentState?.validate();
-              forceErrorText = null;
+          validator: (value) {
+            if (forceErrorText != null) return forceErrorText;
+            try {
+              json = jsonDecode(value!) as T;
+              return null;
+            } catch (e) {
+              return '解析json失败：$e';
             }
           },
-          child: const Text('确定'),
         ),
-      ],
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              '取消',
+              style: TextStyle(color: ColorScheme.of(context).outline),
+            ),
+          ),
+          TextButton(
+            onPressed: submitting
+                ? null
+                : () async {
+                    if (submitting || !key.currentState!.validate()) return;
+                    setState(() => submitting = true);
+                    try {
+                      await onImport(json);
+                      if (!context.mounted ||
+                          !ModalRoute.of(context)!.isCurrent) {
+                        return;
+                      }
+                      Navigator.of(context).pop();
+                      SmartDialog.showToast('导入成功');
+                    } catch (e) {
+                      if (!context.mounted ||
+                          !ModalRoute.of(context)!.isCurrent) {
+                        rethrow;
+                      }
+                      forceErrorText = '导入失败：$e';
+                      key.currentState!.validate();
+                      forceErrorText = null;
+                    } finally {
+                      if (context.mounted) setState(() => submitting = false);
+                    }
+                  },
+            child: submitting
+                ? SizedBox.square(
+                    dimension: 18,
+                    child: MediaQuery.disableAnimationsOf(context)
+                        ? const Icon(Icons.hourglass_empty, size: 18)
+                        : const CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text('确定'),
+          ),
+        ],
+      ),
     ),
   );
 }

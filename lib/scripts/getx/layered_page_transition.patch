@@ -1,0 +1,73 @@
+--- a/lib/get_navigation/src/routes/get_transition_mixin.dart
++++ b/lib/get_navigation/src/routes/get_transition_mixin.dart
+@@ -13,8 +13,39 @@
+   @protected
+   Widget buildContent(BuildContext context);
+ 
+-  @override
+-  Duration get transitionDuration => const Duration(milliseconds: 300);
++  /// Optional app-owned transition, selected once when each route is installed.
++  static PageTransitionsBuilder? Function(PageRoute<dynamic>)?
++      pageTransitionsBuilder;
++  static bool Function(PageRoute<dynamic>)? underlayTransitionAllowed;
++
++  late final PageTransitionsBuilder? _pageTransition =
++      pageTransitionsBuilder?.call(this);
++  PageTransitionsBuilder? _nextPageTransition;
++
++  @override
++  Duration get transitionDuration =>
++      _pageTransition?.transitionDuration ?? const Duration(milliseconds: 300);
++
++  @override
++  Duration get reverseTransitionDuration =>
++      _pageTransition?.reverseTransitionDuration ?? transitionDuration;
++
++  @override
++  void didChangeNext(Route<dynamic>? nextRoute) {
++    _nextPageTransition = nextRoute is GetPageRouteTransitionMixin && canTransitionTo(nextRoute)
++        ? nextRoute._pageTransition : null;
++    super.didChangeNext(nextRoute);
++    changedInternalState();
++  }
++
++  @override
++  void didPopNext(Route<dynamic> nextRoute) {
++    // Retain the outgoing builder until the popped route finishes reversing.
++    _nextPageTransition = nextRoute is GetPageRouteTransitionMixin && canTransitionTo(nextRoute)
++        ? nextRoute._pageTransition : null;
++    super.didPopNext(nextRoute);
++    changedInternalState();
++  }
+ 
+   // The transitionDuration is used to create the AnimationController which is only
+   // built once, so when page transition builder is updated and transitionDuration
+@@ -63,6 +94,10 @@
+ 
+   @override
+   bool canTransitionTo(TransitionRoute<dynamic> nextRoute) {
++    if (nextRoute is GetPageRouteTransitionMixin &&
++        nextRoute._pageTransition != null) {
++      return underlayTransitionAllowed?.call(this) ?? true;
++    }
+     // Don't perform outgoing animation if the next route is a fullscreen dialog,
+     // or there is no matching transition to use.
+     // Don't perform outgoing animation if the next route is a fullscreen dialog.
+@@ -106,6 +141,17 @@
+     Animation<double> secondaryAnimation,
+     Widget child,
+   ) {
++    final builder = _nextPageTransition ?? _pageTransition;
++    if (builder != null) {
++      return builder.buildTransitions<T>(
++        this,
++        context,
++        _pageTransition == null ? kAlwaysCompleteAnimation : animation,
++        _nextPageTransition == null
++            ? kAlwaysDismissedAnimation : secondaryAnimation,
++        child,
++      );
++    }
+     return buildPageTransitions<T>(
+         this, context, animation, secondaryAnimation, child);
+   }

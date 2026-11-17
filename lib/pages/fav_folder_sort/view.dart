@@ -21,6 +21,8 @@ class FavFolderSortPage extends StatefulWidget {
 class _FavFolderSortPageState extends State<FavFolderSortPage>
     with ReorderMixin {
   FavController get _favController => widget.favController;
+  bool _saving = false;
+  bool _dragging = false;
 
   late List<FavFolderInfo> sortList = List<FavFolderInfo>.from(
     _favController.loadingState.value.data!,
@@ -33,27 +35,36 @@ class _FavFolderSortPageState extends State<FavFolderSortPage>
         title: const Text('收藏夹排序'),
         actions: [
           TextButton(
-            onPressed: () async {
-              final res = await FavHttp.sortFavFolder(
-                sort: sortList.map((item) => item.id).join(','),
-              );
-              if (res.isSuccess) {
-                SmartDialog.showToast('排序完成');
-                _favController.loadingState.value = Success(sortList);
-                if (mounted) {
-                  Get.back();
-                }
-              } else {
-                res.toast();
-              }
-            },
-            child: const Text('完成'),
+            onPressed: _saving || _dragging ? null : _save,
+            child: Text(_saving ? '保存中…' : '完成'),
           ),
           const SizedBox(width: 16),
         ],
       ),
       body: _buildBody,
     );
+  }
+
+  Future<void> _save() async {
+    if (_saving || _dragging) return;
+    setState(() => _saving = true);
+    final order = List<FavFolderInfo>.of(sortList);
+    try {
+      final result = await FavHttp.sortFavFolder(
+        sort: order.map((item) => item.id).join(','),
+      );
+      if (result.isSuccess) {
+        if (!_favController.isClosed) {
+          _favController.loadingState.value = Success(order);
+        }
+        SmartDialog.showToast('排序完成');
+        if (mounted && ModalRoute.of(context)?.isCurrent == true) Get.back();
+      } else {
+        result.toast();
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   void onReorderItem(int oldIndex, int newIndex) {
@@ -69,6 +80,9 @@ class _FavFolderSortPageState extends State<FavFolderSortPage>
 
   Widget get _buildBody {
     return ReorderableListView.builder(
+      buildDefaultDragHandles: false,
+      onReorderStart: (_) => setState(() => _dragging = true),
+      onReorderEnd: (_) => setState(() => _dragging = false),
       onReorderItem: onReorderItem,
       proxyDecorator: proxyDecorator,
       physics: const AlwaysScrollableScrollPhysics(),
@@ -79,8 +93,7 @@ class _FavFolderSortPageState extends State<FavFolderSortPage>
       itemBuilder: (context, index) {
         final item = sortList[index];
         final key = item.id.toString();
-        return SizedBox(
-          key: Key(key),
+        final child = SizedBox(
           height: 110,
           child: FavVideoItem(
             heroTag: key,
@@ -90,6 +103,13 @@ class _FavFolderSortPageState extends State<FavFolderSortPage>
                 : null,
           ),
         );
+        return index == 0 || _saving
+            ? KeyedSubtree(key: ValueKey(item.id), child: child)
+            : ReorderableDelayedDragStartListener(
+                key: ValueKey(item.id),
+                index: index,
+                child: child,
+              );
       },
     );
   }

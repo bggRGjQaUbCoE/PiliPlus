@@ -205,8 +205,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
     if (!controller.showDynActionBar) {
       return Padding(
         padding: const .only(right: kFloatingActionButtonMargin),
-        child: SlideTransition(
-          position: fabAnimation,
+        child: fabTransition(
           child: fabButton,
         ),
       );
@@ -244,8 +243,7 @@ class _MusicDetailPageState extends CommonDynPageState<MusicDetailPage> {
       );
     }
 
-    return SlideTransition(
-      position: fabAnimation,
+    return fabTransition(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,

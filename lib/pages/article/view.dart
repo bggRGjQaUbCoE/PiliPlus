@@ -106,8 +106,7 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage>
           padding: .only(left: padding.left, right: padding.right),
           child: _buildPage(),
         ),
-        fab: SlideTransition(
-          position: fabAnimation,
+        fab: fabTransition(
           child: _buildBottom(),
         ),
       ),

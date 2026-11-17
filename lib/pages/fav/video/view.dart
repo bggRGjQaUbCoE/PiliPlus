@@ -1,5 +1,5 @@
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/loading_widget/list_body.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
 import 'package:PiliPlus/pages/fav/video/controller.dart';
@@ -47,45 +47,41 @@ class _FavVideoPageState extends State<FavVideoPage>
   }
 
   Widget _buildBody(LoadingState<List<FavFolderInfo>?> loadingState) {
-    return switch (loadingState) {
-      Loading() => gridSkeleton,
-      Success(:final response) =>
-        response != null && response.isNotEmpty
-            ? SliverGrid.builder(
-                gridDelegate: gridDelegate,
-                itemBuilder: (BuildContext context, int index) {
-                  if (index == response.length - 1) {
-                    _favController.onLoadMore();
-                  }
-                  final item = response[index];
-                  String heroTag = Utils.makeHeroTag(item.fid);
-                  return FavVideoItem(
-                    heroTag: heroTag,
-                    item: item,
-                    onTap: () async {
-                      final res = await Get.toNamed(
-                        '/favDetail',
-                        arguments: item,
-                        parameters: {
-                          'heroTag': heroTag,
-                          'mediaId': item.id.toString(),
-                        },
-                      );
-                      if (res == true) {
-                        _favController.loadingState
-                          ..value.data!.removeAt(index)
-                          ..refresh();
-                      }
-                    },
-                  );
+    return SliverListBody(
+      controller: _favController,
+      state: loadingState,
+      loading: gridSkeleton,
+      emptyMessage: '还没有收藏夹',
+      builder: (response) => SliverGrid.builder(
+        gridDelegate: gridDelegate,
+        itemBuilder: (BuildContext context, int index) {
+          if (index == response.length - 1) {
+            _favController.onLoadMore();
+          }
+          final item = response[index];
+          String heroTag = Utils.makeHeroTag(item.fid);
+          return FavVideoItem(
+            heroTag: heroTag,
+            item: item,
+            onTap: () async {
+              final res = await Get.toNamed(
+                '/favDetail',
+                arguments: item,
+                parameters: {
+                  'heroTag': heroTag,
+                  'mediaId': item.id.toString(),
                 },
-                itemCount: response.length,
-              )
-            : HttpError(onReload: _favController.onReload),
-      Error(:final errMsg) => HttpError(
-        errMsg: errMsg,
-        onReload: _favController.onReload,
+              );
+              if (res == true) {
+                _favController.loadingState
+                  ..value.data!.removeAt(index)
+                  ..refresh();
+              }
+            },
+          );
+        },
+        itemCount: response.length,
       ),
-    };
+    );
   }
 }

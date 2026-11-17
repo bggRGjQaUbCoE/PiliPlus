@@ -86,52 +86,50 @@ class _MemberOpusState extends State<MemberOpus>
         ),
       ),
       fab: _controller.filter?.isNotEmpty == true
-          ? SlideTransition(
-              position: fabAnimation,
+          ? fabTransition(
               child: Padding(
                 padding: .only(
                   right: kFloatingActionButtonMargin,
                   bottom: kFloatingActionButtonMargin + bottom,
                 ),
-                child: FloatingActionButton.extended(
-                  onPressed: () => showDialog(
-                    context: context,
-                    builder: (context) => SimpleDialog(
-                      clipBehavior: Clip.hardEdge,
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 12,
-                      ),
-                      children: _controller.filter!
-                          .map(
-                            (e) => ListTile(
-                              dense: true,
-                              onTap: () {
-                                if (e == _controller.type.value) {
-                                  return;
-                                }
-                                Get.back();
-                                _controller
-                                  ..type.value = e
-                                  ..onReload();
-                              },
-                              tileColor: e == _controller.type.value
-                                  ? ColorScheme.of(context).onInverseSurface
-                                  : null,
-                              title: Text(
-                                e.text ?? e.tabName!,
-                                style: const TextStyle(fontSize: 14),
+                child: Obx(
+                  () => FloatingActionButton(
+                    onPressed: () => showDialog(
+                      context: context,
+                      builder: (context) => SimpleDialog(
+                        clipBehavior: Clip.hardEdge,
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                        ),
+                        children: _controller.filter!
+                            .map(
+                              (e) => ListTile(
+                                dense: true,
+                                onTap: () {
+                                  if (e == _controller.type.value) {
+                                    return;
+                                  }
+                                  Get.back();
+                                  _controller
+                                    ..type.value = e
+                                    ..onReload();
+                                },
+                                tileColor: e == _controller.type.value
+                                    ? ColorScheme.of(context).onInverseSurface
+                                    : null,
+                                title: Text(
+                                  e.text ?? e.tabName!,
+                                  style: const TextStyle(fontSize: 14),
+                                ),
                               ),
-                            ),
-                          )
-                          .toList(),
+                            )
+                            .toList(),
+                      ),
                     ),
-                  ),
-                  icon: const Icon(size: 20, Icons.sort),
-                  label: Obx(
-                    () {
-                      final type = _controller.type.value;
-                      return Text(type.text ?? type.tabName!);
-                    },
+                    tooltip:
+                        _controller.type.value.text ??
+                        _controller.type.value.tabName!,
+                    child: const Icon(size: 20, Icons.sort),
                   ),
                 ),
               ),

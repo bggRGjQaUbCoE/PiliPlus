@@ -118,3 +118,33 @@ class MaterialLegacyDynamicColors {
     isBackground: true,
   );
 }
+
+extension SystemDynamicColorScheme on ColorScheme {
+  ColorScheme withSystemRoles(Map<String, int> roles) => copyWith(
+    primary: Color(roles['primary']!),
+    onPrimary: Color(roles['on_primary']!),
+    primaryContainer: Color(roles['primary_container']!),
+    onPrimaryContainer: Color(roles['on_primary_container']!),
+    secondary: Color(roles['secondary']!),
+    onSecondary: Color(roles['on_secondary']!),
+    secondaryContainer: Color(roles['secondary_container']!),
+    onSecondaryContainer: Color(roles['on_secondary_container']!),
+    tertiary: Color(roles['tertiary']!),
+    onTertiary: Color(roles['on_tertiary']!),
+    tertiaryContainer: Color(roles['tertiary_container']!),
+    onTertiaryContainer: Color(roles['on_tertiary_container']!),
+    surface: Color(roles['surface']!),
+    surfaceDim: Color(roles['surface_dim']!),
+    surfaceBright: Color(roles['surface_bright']!),
+    surfaceContainerLowest: Color(roles['surface_container_lowest']!),
+    surfaceContainerLow: Color(roles['surface_container_low']!),
+    surfaceContainer: Color(roles['surface_container']!),
+    surfaceContainerHigh: Color(roles['surface_container_high']!),
+    surfaceContainerHighest: Color(roles['surface_container_highest']!),
+    onSurface: Color(roles['on_surface']!),
+    onSurfaceVariant: Color(roles['on_surface_variant']!),
+    outline: Color(roles['outline']!),
+    outlineVariant: Color(roles['outline_variant']!),
+    surfaceTint: Color(roles['primary']!),
+  );
+}

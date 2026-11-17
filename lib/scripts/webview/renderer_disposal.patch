@@ -1,0 +1,17 @@
+diff --git a/android/src/main/java/com/pichillilorenzo/flutter_inappwebview_android/webview/in_app_webview/InAppWebView.java b/android/src/main/java/com/pichillilorenzo/flutter_inappwebview_android/webview/in_app_webview/InAppWebView.java
+--- a/android/src/main/java/com/pichillilorenzo/flutter_inappwebview_android/webview/in_app_webview/InAppWebView.java
++++ b/android/src/main/java/com/pichillilorenzo/flutter_inappwebview_android/webview/in_app_webview/InAppWebView.java
+@@ -2041,6 +2041,13 @@ public class InAppWebView extends InputAwareWebView implements InAppWebViewInterfa
+     }
+     setWebChromeClient(new WebChromeClient());
+     setWebViewClient(new WebViewClient() {
++      // A renderer may exit while the blank-page disposal is still pending.
++      // This detached view must also acknowledge the shared renderer exit.
++      @Override
++      public boolean onRenderProcessGone(WebView view, android.webkit.RenderProcessGoneDetail detail) {
++        destroy();
++        return true;
++      }
+       public void onPageFinished(WebView view, String url) {
+         destroy();
+       }

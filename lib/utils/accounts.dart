@@ -1,3 +1,5 @@
+import 'package:PiliPlus/services/account_service.dart';
+import 'package:get/get.dart';
 import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/models/common/account_type.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
@@ -87,6 +89,7 @@ abstract final class Accounts {
       default:
         break;
     }
+    Get.find<AccountService>().accountRevision.value++;
   }
 
   @pragma("vm:prefer-inline")

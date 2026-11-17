@@ -3,7 +3,7 @@ import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/loading_widget/list_body.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show tabBarScrollPhysics;
@@ -205,32 +205,27 @@ class _HistoryPageState extends State<HistoryPage>
   );
 
   Widget _buildBody(LoadingState<List<HistoryItemModel>?> loadingState) {
-    return switch (loadingState) {
-      Loading() => gridSkeleton,
-      Success(:final response) =>
-        response != null && response.isNotEmpty
-            ? SliverGrid.builder(
-                gridDelegate: gridDelegate,
-                itemBuilder: (context, index) {
-                  if (index == response.length - 1) {
-                    _historyController.onLoadMore();
-                  }
-                  final item = response[index];
-                  return HistoryItem(
-                    item: item,
-                    ctr: _historyController,
-                    onDelete: (kid, business) =>
-                        _historyController.delHistory(item),
-                  );
-                },
-                itemCount: response.length,
-              )
-            : HttpError(onReload: _historyController.onReload),
-      Error(:final errMsg) => HttpError(
-        errMsg: errMsg,
-        onReload: _historyController.onReload,
+    return SliverListBody(
+      controller: _historyController,
+      state: loadingState,
+      loading: gridSkeleton,
+      emptyMessage: '暂无观看记录',
+      builder: (response) => SliverGrid.builder(
+        gridDelegate: gridDelegate,
+        itemBuilder: (context, index) {
+          if (index == response.length - 1) {
+            _historyController.onLoadMore();
+          }
+          final item = response[index];
+          return HistoryItem(
+            item: item,
+            ctr: _historyController,
+            onDelete: (kid, business) => _historyController.delHistory(item),
+          );
+        },
+        itemCount: response.length,
       ),
-    };
+    );
   }
 
   PreferredSizeWidget? get _buildPauseTip {

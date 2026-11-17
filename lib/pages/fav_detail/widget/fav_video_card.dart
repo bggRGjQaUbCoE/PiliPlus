@@ -1,3 +1,8 @@
+import 'package:PiliPlus/common/widgets/motion/cover_motion.dart';
+import 'package:PiliPlus/http/search.dart';
+import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
+import 'package:PiliPlus/plugin/pl_player/controller.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
@@ -20,7 +25,7 @@ import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 // 收藏视频卡片 - 水平布局
-class FavVideoCardH extends StatelessWidget {
+class FavVideoCardH extends StatefulWidget {
   final FavDetailItemModel item;
   final int? index;
   final BaseFavController? ctr;
@@ -32,7 +37,89 @@ class FavVideoCardH extends StatelessWidget {
     this.ctr,
   }) : assert(ctr == null || index != null);
 
+  @override
+  State<FavVideoCardH> createState() => _FavVideoCardHState();
+}
+
+class _FavVideoCardHState extends State<FavVideoCardH> {
+  FavDetailItemModel get item => widget.item;
+  int? get index => widget.index;
+  BaseFavController? get ctr => widget.ctr;
+  Object _coverTag = Object();
+  ImageProvider? _coverImage;
+  Dimension? _dimension;
+  bool _opening = false;
   bool get isSort => ctr == null;
+  bool get _candidate =>
+      Pref.coverPageTransition &&
+      !isSort &&
+      item.type == 2 &&
+      !const [1, 9].contains(item.attr) &&
+      item.ugc?.firstCid != null;
+
+  @override
+  void didUpdateWidget(FavVideoCardH oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.item != item) {
+      _coverTag = Object();
+      _coverImage = null;
+      _dimension = null;
+    }
+  }
+
+  Future<void> _openUgc() async {
+    if (!_candidate ||
+        _coverImage == null ||
+        MediaQuery.disableAnimationsOf(context) ||
+        PlPlayerController.instance?.videoController != null) {
+      ctr!.onViewFav(item, index, dimension: _dimension);
+      return;
+    }
+    if (_opening) return;
+    _opening = true;
+    final current = item;
+    try {
+      if (_dimension == null) {
+        final page = await SearchHttp.ab2cWithDimension(
+          aid: current.id,
+          bvid: current.bvid,
+        );
+        if (!mounted ||
+            !identical(current, item) ||
+            ctr!.enableMultiSelect.value ||
+            !ModalRoute.of(context)!.isCurrent) {
+          return;
+        }
+        if (page?.cid == current.ugc!.firstCid) _dimension = page?.dimension;
+      }
+      final w = _dimension?.width, h = _dimension?.height;
+      final portraitAspectRatio = CoverTransitionData.portraitAspectRatio(w, h);
+      final motion =
+          _candidate &&
+              w != null &&
+              h != null &&
+              w > 0 &&
+              h > 0 &&
+              (w > h || portraitAspectRatio != null) &&
+              !MediaQuery.disableAnimationsOf(context) &&
+              PlPlayerController.instance?.videoController == null
+          ? CoverTransitionData(
+              tag: _coverTag,
+              image: _coverImage!,
+              radius: Style.mdRadius,
+              contentAspectRatio: portraitAspectRatio,
+            )
+          : null;
+      await ctr!.onViewFav(
+        current,
+        index,
+        dimension: _dimension,
+        coverTransition: motion,
+      );
+    } finally {
+      _opening = false;
+    }
+  }
 
   void _onTap() {
     // 0/4/16/...: 正常；9: up自己删除；1: 其他原因删除
@@ -56,7 +143,7 @@ class FavVideoCardH extends StatelessWidget {
         );
         break;
       default:
-        ctr!.onViewFav(item, index);
+        _openUgc();
         break;
     }
   }
@@ -108,10 +195,25 @@ class FavVideoCardH extends StatelessWidget {
                     return Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        NetworkImgLayer(
-                          src: item.cover,
-                          width: maxWidth,
-                          height: maxHeight,
+                        HeroMode(
+                          enabled:
+                              _candidate &&
+                              !enableMultiSelect &&
+                              !MediaQuery.disableAnimationsOf(context),
+                          child: Hero(
+                            tag: _coverTag,
+                            curve: CoverTransitionData.motionCurve,
+                            reverseCurve: CoverTransitionData.motionCurve,
+                            flightShuttleBuilder: CoverTransitionData.flight,
+                            child: NetworkImgLayer(
+                              src: item.cover,
+                              width: maxWidth,
+                              height: maxHeight,
+                              onImageReady: _candidate
+                                  ? (image) => _coverImage = image
+                                  : null,
+                            ),
+                          ),
                         ),
                         PBadge(
                           text: DurationUtils.formatDuration(item.duration),

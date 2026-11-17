@@ -10,6 +10,7 @@ import 'package:PiliPlus/common/widgets/refresh_layout.dart';
 import 'package:PiliPlus/common/widgets/scroll_behavior.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart'
     show BouncingScrollPhysicsExt;
+import 'package:PiliPlus/common/widgets/scroll_under_toolbar.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:extended_nested_scroll_view/refresh.dart';
@@ -520,6 +521,7 @@ class RefreshIndicatorState extends State<RefreshIndicator>
 
     child = RefreshLayout(
       body: child,
+      topInset: ToolbarScrollInset.of(context)?.extent ?? 0,
       scale: _scaleFactor,
       position: _positionFactor,
       indicator: _status == null

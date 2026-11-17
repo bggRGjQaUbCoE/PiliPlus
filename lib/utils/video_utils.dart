@@ -165,11 +165,13 @@ abstract final class VideoUtils {
   ) {
     assert(videoList.isNotEmpty);
 
-    final targetQuality = _findAvailableVideoQuality(
-      videoList,
-      acceptQuality,
-      preferQuality,
-    );
+    // accept_quality may advertise a tier absent from the returned DASH streams.
+    final targetQuality = videoList
+        .findTargetMedia(
+          (e) => e.id,
+          _findAvailableVideoQuality(videoList, acceptQuality, preferQuality),
+        )
+        .id;
 
     final targetFormat = supportFormats.firstWhere(
       (e) => e.quality == targetQuality,

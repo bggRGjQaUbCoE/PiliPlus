@@ -22,6 +22,8 @@ class HistoryController
   late final baseCtr = Get.put(HistoryBaseController());
 
   Account get account => baseCtr.account;
+  @override
+  Object get dataScope => account;
 
   final String? type;
   TabController? tabController;
@@ -45,6 +47,7 @@ class HistoryController
 
   @override
   Future<void> onRefresh() {
+    if (isClosed || isLoading) return Future.value();
     max = null;
     viewAt = null;
     return super.onRefresh();

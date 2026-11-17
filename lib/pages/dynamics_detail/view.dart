@@ -116,10 +116,9 @@ class _DynamicDetailPageState extends CommonDynPageMultiState<DynamicDetailPage>
           padding: EdgeInsets.only(left: padding.left, right: padding.right),
           child: _buildBody(),
         ),
-        fab: SlideTransition(
-          position: fabAnimation,
-          child: _buildBottom(),
-        ),
+        fab: MediaQuery.viewInsetsOf(context).bottom == 0
+            ? fabTransition(child: _buildBottom())
+            : null,
       ),
     );
   }

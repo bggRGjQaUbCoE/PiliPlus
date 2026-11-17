@@ -11,13 +11,49 @@ class HttpError extends StatelessWidget {
     this.onReload,
     this.btnText,
     this.safeArea = true,
+    this.icon,
+    this.fallbackMessage = '没有数据',
   });
+
+  const HttpError.failure({
+    Key? key,
+    bool isSliver = true,
+    String? errMsg,
+    VoidCallback? onRetry,
+    bool safeArea = true,
+  }) : this(
+         key: key,
+         isSliver: isSliver,
+         errMsg: errMsg,
+         onReload: onRetry,
+         safeArea: safeArea,
+         fallbackMessage: '请求失败，请重试',
+       );
+
+  const HttpError.empty({
+    Key? key,
+    bool isSliver = true,
+    String message = '暂无内容',
+    VoidCallback? onRefresh,
+    IconData icon = Icons.inbox_outlined,
+    bool safeArea = true,
+  }) : this(
+         key: key,
+         isSliver: isSliver,
+         errMsg: message,
+         onReload: onRefresh,
+         btnText: '刷新',
+         icon: icon,
+         safeArea: safeArea,
+       );
 
   final bool isSliver;
   final String? errMsg;
   final VoidCallback? onReload;
   final String? btnText;
   final bool safeArea;
+  final IconData? icon;
+  final String fallbackMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -28,12 +64,15 @@ class HttpError extends StatelessWidget {
       crossAxisAlignment: .center,
       children: [
         const SizedBox(height: 40),
-        SvgPicture.asset(Assets.error, height: 200),
+        if (icon != null)
+          Icon(icon, size: 72, color: theme.colorScheme.onSurfaceVariant)
+        else
+          SvgPicture.asset(Assets.error, height: 200),
         const SizedBox(height: 30),
         Padding(
           padding: const .symmetric(horizontal: 16, vertical: 5),
           child: SelectionText(
-            errMsg ?? '没有数据',
+            errMsg ?? fallbackMessage,
             textAlign: .center,
             style: theme.textTheme.titleSmall,
           ),

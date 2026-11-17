@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:PiliPlus/common/widgets/motion/cover_motion.dart';
+
 import 'package:PiliPlus/common/widgets/fractionally_sized_box.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/gallery_viewer.dart';
 import 'package:PiliPlus/common/widgets/image_viewer/hero_dialog_route.dart';
@@ -49,15 +51,22 @@ abstract final class PageUtils {
     int? quality,
     ValueChanged<int>? onPageChanged,
     String tag = '',
+    bool? fade,
+    bool indexedHeroTags = false,
+    Duration? transitionDuration,
   }) {
+    final item = imgList[initialPage];
     return Get.key.currentState!.push<void>(
       HeroDialogRoute(
+        fade: fade ?? (tag.isEmpty || item.isLongPic),
+        transitionDurationOverride: transitionDuration,
         pageBuilder: (context, animation, secondaryAnimation) => GalleryViewer(
           sources: imgList,
           initIndex: initialPage,
           quality: quality ?? GlobalData().imgQuality,
           onPageChanged: onPageChanged,
           tag: tag,
+          indexedHeroTags: indexedHeroTags,
         ),
       ),
     );
@@ -229,6 +238,7 @@ abstract final class PageUtils {
     DynamicItemModel item, {
     bool isPush = false,
     bool viewComment = false,
+    Future<void> Function(int cid, Dimension? dimension)? openVideo,
   }) async {
     feedBack();
 
@@ -295,6 +305,7 @@ abstract final class PageUtils {
           final res = await SearchHttp.ab2cWithDimension(bvid: bvid);
           final cid = res?.cid;
           if (cid != null) {
+            if (openVideo != null) return await openVideo(cid, res!.dimension);
             toVideoPage(
               bvid: bvid,
               cid: cid,
@@ -519,6 +530,7 @@ abstract final class PageUtils {
   }
 
   static Future<void>? toVideoPage({
+    CoverTransitionData? coverTransition,
     VideoType videoType = VideoType.ugc,
     int? aid,
     String? bvid,
@@ -548,7 +560,9 @@ abstract final class PageUtils {
       'progress': ?progress,
       'videoType': videoType,
       'isVertical': dimension?.isVertical ?? isVertical,
+      'dimension': ?dimension,
       'heroTag': Utils.makeHeroTag(cid),
+      'coverTransition': ?coverTransition,
       rootRpIdKey: ?rootRpId,
       secondRpIdKey: ?secondRpId,
       ...?extraArguments,

@@ -48,6 +48,7 @@ class _SearchUserPanelState
   @override
   Widget buildHeader() {
     return SliverFloatingHeaderWidget(
+      glassOnOverlap: true,
       backgroundColor: colorScheme.surface,
       child: Padding(
         padding: const .fromLTRB(25, 0, 12, 4),

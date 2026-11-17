@@ -10,6 +10,7 @@ import 'package:PiliPlus/common/widgets/dialog/export_import.dart';
 import 'package:PiliPlus/common/widgets/dialog/simple_dialog_option.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
+import 'package:PiliPlus/pages/mall/cache_storage.dart';
 import 'package:PiliPlus/services/logger.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
@@ -57,11 +58,7 @@ class _AboutPageState extends State<AboutPage> {
   }
 
   void getCacheSize() {
-    CacheManager.loadApplicationCache().then((res) {
-      if (mounted) {
-        cacheSize.value = res.formatSize;
-      }
-    });
+    cacheSize.value = CacheManager.loadApplicationCache().formatSize;
   }
 
   void _showDialog() => showDialog(
@@ -206,7 +203,7 @@ Commit Hash: ${BuildConfig.commitHash}''',
                 showConfirmDialog(
                   context: context,
                   title: const Text('提示'),
-                  content: const Text('该操作将清除图片及网络请求缓存数据，确认清除？'),
+                  content: const Text('将清理图片缓存，近期使用中的图片会暂时保留。确认清理？'),
                   onConfirm: () async {
                     SmartDialog.showLoading(msg: '正在清除...');
                     try {
@@ -226,11 +223,33 @@ Commit Hash: ${BuildConfig.commitHash}''',
             title: const Text('清除缓存'),
             subtitle: Obx(
               () => Text(
-                '图片及网络缓存 ${cacheSize.value}',
+                '图片缓存 ${cacheSize.value}',
                 style: subTitleStyle,
               ),
             ),
           ),
+          if (Platform.isAndroid)
+            ListTile(
+              onTap: () => showConfirmDialog(
+                context: context,
+                title: const Text('清理旧商城静态缓存'),
+                content: const Text('清理旧商城域的公开脚本、样式和字体缓存。'),
+                onConfirm: () async {
+                  SmartDialog.showLoading(msg: '正在清理...');
+                  try {
+                    final removed = await clearLegacyMallStaticCache();
+                    SmartDialog.showToast('已清理 $removed 项静态资源');
+                  } catch (error) {
+                    SmartDialog.showToast(error.toString());
+                  } finally {
+                    SmartDialog.dismiss();
+                  }
+                },
+              ),
+              leading: const Icon(Icons.cleaning_services_outlined),
+              title: const Text('清理旧商城静态缓存'),
+              trailing: Icon(Icons.arrow_forward, size: 16, color: outline),
+            ),
           ListTile(
             title: const Text('导入/导出登录信息'),
             leading: const Icon(Icons.import_export_outlined),

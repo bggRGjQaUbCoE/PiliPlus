@@ -9,9 +9,13 @@ import 'package:material_ui/material_ui.dart';
 class HeroDialogRoute<T> extends PageRoute<T> {
   HeroDialogRoute({
     required this.pageBuilder,
+    this.fade = true,
+    this.transitionDurationOverride,
   });
 
   final RoutePageBuilder pageBuilder;
+  final bool fade;
+  final Duration? transitionDurationOverride;
 
   @override
   bool get opaque => false;
@@ -23,7 +27,8 @@ class HeroDialogRoute<T> extends PageRoute<T> {
   String? get barrierLabel => null;
 
   @override
-  Duration get transitionDuration => const Duration(milliseconds: 300);
+  Duration get transitionDuration =>
+      transitionDurationOverride ?? const Duration(milliseconds: 300);
 
   @override
   bool get maintainState => true;
@@ -38,6 +43,7 @@ class HeroDialogRoute<T> extends PageRoute<T> {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
+    if (!fade) return child;
     return FadeTransition(
       opacity: animation.drive(CurveTween(curve: Curves.easeOut)),
       child: child,

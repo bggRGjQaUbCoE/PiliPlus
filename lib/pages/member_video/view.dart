@@ -116,8 +116,10 @@ class _MemberVideoState extends State<MemberVideo>
 
   @override
   bool onNotification(ScrollNotification notification) {
-    if (notification is UserScrollNotification) {
-      return super.onNotification(notification);
+    super.onNotification(notification);
+    if (notification.metrics.axis != Axis.vertical ||
+        notification is UserScrollNotification) {
+      return false;
     }
     if (_controller.isLocating) {
       if (notification is ScrollEndNotification &&
@@ -154,14 +156,13 @@ class _MemberVideoState extends State<MemberVideo>
         body: fabAnimWrapper(child: child),
         fab: Obx(
           () => !_controller.isLocating
-              ? SlideTransition(
-                  position: fabAnimation,
+              ? fabTransition(
                   child: Padding(
                     padding: .only(
                       right: kFloatingActionButtonMargin,
                       bottom: kFloatingActionButtonMargin + padding.bottom,
                     ),
-                    child: FloatingActionButton.extended(
+                    child: FloatingActionButton(
                       onPressed: () {
                         final fromViewAid = _controller.fromViewAid;
                         final locatedIndex =
@@ -186,7 +187,8 @@ class _MemberVideoState extends State<MemberVideo>
                           _jumpToIndex(locatedIndex);
                         }
                       },
-                      label: const Text('定位至上次观看'),
+                      tooltip: '定位至上次观看',
+                      child: const Icon(Icons.my_location),
                     ),
                   ),
                 )
@@ -227,6 +229,7 @@ class _MemberVideoState extends State<MemberVideo>
                         _controller.onLoadMore();
                       }
                       return VideoCardHMemberVideo(
+                        coverMotion: widget.type == .video,
                         videoItem: response[index],
                         fromViewAid: _controller.fromViewAid,
                       );

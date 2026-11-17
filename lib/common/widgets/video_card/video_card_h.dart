@@ -1,3 +1,8 @@
+import 'dart:io' show Platform;
+
+import 'package:PiliPlus/common/widgets/motion/cover_motion.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/image/image_save.dart';
@@ -15,18 +20,101 @@ import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
 // 视频卡片 - 水平布局
-class VideoCardH extends StatelessWidget {
+class VideoCardH extends StatefulWidget {
   const VideoCardH({
     super.key,
     required this.videoItem,
     this.onTap,
     this.onViewLater,
     this.onRemove,
+    this.coverMotion = false,
   });
   final HorizontalVideoModel videoItem;
   final VoidCallback? onTap;
   final ValueChanged<int>? onViewLater;
   final VoidCallback? onRemove;
+  final bool coverMotion;
+
+  @override
+  State<VideoCardH> createState() => _VideoCardHState();
+}
+
+class _VideoCardHState extends State<VideoCardH> {
+  HorizontalVideoModel get videoItem => widget.videoItem;
+  VoidCallback? get onTap => widget.onTap;
+  VoidCallback? get onRemove => widget.onRemove;
+  Object _coverTag = Object();
+  ImageProvider? _coverImage;
+  bool _opening = false;
+  bool get _candidate =>
+      widget.coverMotion &&
+      Pref.coverPageTransition &&
+      onTap == null &&
+      videoItem.isLive != true &&
+      videoItem.isPugv != true &&
+      videoItem.redirectUrl?.isNotEmpty != true;
+
+  @override
+  void didUpdateWidget(VideoCardH oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.videoItem != videoItem) {
+      _coverTag = Object();
+      _coverImage = null;
+    }
+  }
+
+  Future<void> _open() async {
+    if (!_candidate) return pushVideoH(videoItem);
+    if (_opening) return;
+    _opening = true;
+    final item = videoItem;
+    try {
+      await pushVideoH(
+        item,
+        openVideo: (cid, dimension) async {
+          if (!mounted ||
+              !identical(item, videoItem) ||
+              !ModalRoute.of(context)!.isCurrent) {
+            return;
+          }
+          final width = dimension?.width;
+          final height = dimension?.height;
+          final portraitAspectRatio = CoverTransitionData.portraitAspectRatio(
+            width,
+            height,
+          );
+          final motion =
+              _candidate &&
+                  width != null &&
+                  height != null &&
+                  width > 0 &&
+                  height > 0 &&
+                  (width > height || portraitAspectRatio != null) &&
+                  _coverImage != null &&
+                  !MediaQuery.disableAnimationsOf(context) &&
+                  (PlPlayerController.instance?.videoController == null ||
+                      Platform.isAndroid)
+              ? CoverTransitionData(
+                  tag: _coverTag,
+                  image: _coverImage!,
+                  radius: Style.mdRadius,
+                  contentAspectRatio: portraitAspectRatio,
+                )
+              : null;
+          await PageUtils.toVideoPage(
+            bvid: item.bvid,
+            cid: cid,
+            cover: item.cover,
+            title: item.title,
+            dimension: dimension,
+            coverTransition: motion,
+          );
+        },
+      );
+    } finally {
+      _opening = false;
+    }
+  }
 
   void onLongPress() => imageSaveDialog(
     bvid: videoItem.bvid,
@@ -45,7 +133,7 @@ class VideoCardH extends StatelessWidget {
           InkWell(
             onLongPress: onLongPress,
             onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
-            onTap: onTap ?? () => pushVideoH(videoItem),
+            onTap: onTap ?? _open,
             child: Padding(
               padding: const .symmetric(
                 horizontal: Style.safeSpace,
@@ -66,10 +154,25 @@ class VideoCardH extends StatelessWidget {
                         return Stack(
                           clipBehavior: .none,
                           children: [
-                            NetworkImgLayer(
-                              src: videoItem.cover,
-                              width: maxWidth,
-                              height: maxHeight,
+                            HeroMode(
+                              enabled:
+                                  _candidate &&
+                                  !MediaQuery.disableAnimationsOf(context),
+                              child: Hero(
+                                tag: _coverTag,
+                                curve: CoverTransitionData.motionCurve,
+                                reverseCurve: CoverTransitionData.motionCurve,
+                                flightShuttleBuilder:
+                                    CoverTransitionData.flight,
+                                child: NetworkImgLayer(
+                                  src: videoItem.cover,
+                                  width: maxWidth,
+                                  height: maxHeight,
+                                  onImageReady: _candidate
+                                      ? (image) => _coverImage = image
+                                      : null,
+                                ),
+                              ),
                             ),
                             if (videoItem.badge case final badge?)
                               PBadge(
@@ -216,7 +319,10 @@ class VideoCardH extends StatelessWidget {
   }
 }
 
-Future<void> pushVideoH(HorizontalVideoModel videoItem) async {
+Future<void> pushVideoH(
+  HorizontalVideoModel videoItem, {
+  Future<void> Function(int cid, Dimension? dimension)? openVideo,
+}) async {
   if (videoItem.isPugv ?? false) {
     PageUtils.viewPugv(seasonId: videoItem.seasonId);
     return;
@@ -247,6 +353,7 @@ Future<void> pushVideoH(HorizontalVideoModel videoItem) async {
     }
   }
   if (cid != null) {
+    if (openVideo != null) return openVideo(cid, dimension);
     PageUtils.toVideoPage(
       bvid: videoItem.bvid,
       cid: cid,

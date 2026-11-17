@@ -1,0 +1,16 @@
+--- a/media_kit_video/android/src/main/java/com/alexmercerind/media_kit_video/VideoOutput.java
++++ b/media_kit_video/android/src/main/java/com/alexmercerind/media_kit_video/VideoOutput.java
+@@ -131,10 +131,9 @@
+             if (!waitUntilFirstFrameRenderedNotify) {
+                 waitUntilFirstFrameRenderedNotify = true;
+                 final HashMap<String, Object> data = new HashMap<>();
+-                data.put("id", id);
+-                data.put("wid", wid);
+-                data.put("handle", handle);
+-                channelReference.invokeMethod("VideoOutput.WaitUntilFirstFrameRenderedNotify", data);
++                // Texture allocation is not a rendered video frame. Leave the
++                // first-frame future pending when frame callbacks are unavailable.
++                Log.w("media_kit", "First frame callback unavailable; not reporting texture allocation as a frame");
+             }
+         }
+ 

@@ -19,10 +19,12 @@ const _kNavigationShape = RoundedSuperellipseBorder(
 
 /// ref [NavigationBar]
 class FloatingNavigationBar extends StatelessWidget {
+  static const surfaceShape = _kNavigationShape;
+
   // ignore: prefer_const_constructors_in_immutables
   FloatingNavigationBar({
     super.key,
-    this.animationDuration = const Duration(milliseconds: 500),
+    this.animationDuration = const Duration(milliseconds: 280),
     this.selectedIndex = 0,
     required this.destinations,
     this.onDestinationSelected,
@@ -84,8 +86,9 @@ class FloatingNavigationBar extends StatelessWidget {
       child: SizedBox(
         height: _kNavigationHeight,
         width: destinations.length * _kIndicatorWidth,
-        child: DecoratedBox(
-          decoration: ShapeDecoration(
+        child: SurfaceMaterial(
+          kind: SurfaceMaterialKind.navigationBar,
+          material: Material(
             color: ElevationOverlay.applySurfaceTint(
               backgroundColor ??
                   navigationBarTheme.backgroundColor ??
@@ -99,36 +102,88 @@ class FloatingNavigationBar extends StatelessWidget {
               side: defaults.borderSide,
               borderRadius: _kBorderRadius,
             ),
-          ),
-          child: Padding(
-            padding: _kIndicatorPadding,
-            child: Row(
-              crossAxisAlignment: .stretch,
-              children: <Widget>[
-                for (int i = 0; i < destinations.length; i++)
-                  Expanded(
-                    child: _SelectableAnimatedBuilder(
-                      duration: animationDuration,
-                      isSelected: i == selectedIndex,
-                      builder: (context, animation) {
-                        return _NavigationDestinationInfo(
-                          index: i,
-                          selectedIndex: selectedIndex,
-                          totalNumberOfDestinations: destinations.length,
-                          selectedAnimation: animation,
-                          labelBehavior: effectiveLabelBehavior,
-                          indicatorColor: indicatorColor,
-                          indicatorShape: indicatorShape,
-                          overlayColor: overlayColor,
-                          onTap: _handleTap(i),
-                          labelTextStyle: labelTextStyle,
-                          labelPadding: labelPadding,
-                          child: destinations[i],
-                        );
-                      },
-                    ),
-                  ),
-              ],
+            child: Padding(
+              padding: _kIndicatorPadding,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final count = destinations.length;
+                  final direction = Directionality.of(context);
+                  final reduceMotion = MediaQuery.disableAnimationsOf(context);
+                  final itemWidth = constraints.maxWidth / count;
+                  final indicatorWidth = itemWidth < _kIndicatorWidth
+                      ? itemWidth
+                      : _kIndicatorWidth;
+                  final physicalIndex = direction == TextDirection.ltr
+                      ? selectedIndex
+                      : count - 1 - selectedIndex;
+                  final target =
+                      physicalIndex * itemWidth +
+                      (itemWidth - indicatorWidth) / 2;
+                  return Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Positioned(
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        child: IgnorePointer(
+                          child: TweenAnimationBuilder<double>(
+                            // Layout changes start at the new correct position;
+                            // selection changes retarget from the visible value.
+                            key: ValueKey((
+                              constraints.maxWidth,
+                              count,
+                              direction,
+                              reduceMotion,
+                            )),
+                            tween: Tween(begin: target, end: target),
+                            duration: reduceMotion
+                                ? Duration.zero
+                                : animationDuration,
+                            curve: Curves.decelerate,
+                            builder: (context, offset, child) =>
+                                Transform.translate(
+                                  offset: Offset(offset, 0),
+                                  child: child,
+                                ),
+                            child: NavigationIndicator(
+                              color:
+                                  indicatorColor ??
+                                  navigationBarTheme.indicatorColor ??
+                                  defaults.indicatorColor!,
+                              width: indicatorWidth,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Row(
+                        crossAxisAlignment: .stretch,
+                        children: <Widget>[
+                          for (int i = 0; i < count; i++)
+                            Expanded(
+                              child: _NavigationDestinationInfo(
+                                index: i,
+                                selectedIndex: selectedIndex,
+                                totalNumberOfDestinations: destinations.length,
+                                selectedAnimation: i == selectedIndex
+                                    ? kAlwaysCompleteAnimation
+                                    : kAlwaysDismissedAnimation,
+                                labelBehavior: effectiveLabelBehavior,
+                                indicatorColor: indicatorColor,
+                                indicatorShape: indicatorShape,
+                                overlayColor: overlayColor,
+                                onTap: _handleTap(i),
+                                labelTextStyle: labelTextStyle,
+                                labelPadding: labelPadding,
+                                child: destinations[i],
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
         ),
@@ -172,13 +227,6 @@ class FloatingNavigationDestination extends StatelessWidget {
       alignment: .center,
       clipBehavior: .none,
       children: [
-        NavigationIndicator(
-          animation: animation,
-          color:
-              info.indicatorColor ??
-              navigationBarTheme.indicatorColor ??
-              defaults.indicatorColor!,
-        ),
         _NavigationDestinationBuilder(
           label: label,
           tooltip: tooltip,
@@ -362,68 +410,23 @@ class _NavigationDestinationInfo extends InheritedWidget {
 class NavigationIndicator extends StatelessWidget {
   const NavigationIndicator({
     super.key,
-    required this.animation,
     this.color,
     this.width = _kIndicatorWidth,
     this.height = _kIndicatorHeight,
   });
 
-  final Animation<double> animation;
-
   final Color? color;
-
   final double width;
-
   final double height;
 
-  static final _anim = Tween<double>(
-    begin: .5,
-    end: 1.0,
-  ).chain(CurveTween(curve: Curves.easeInOutCubicEmphasized));
-
   @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (context, child) {
-        final double scale = animation.isDismissed
-            ? 0.0
-            : _anim.evaluate(animation);
-
-        return Transform(
-          alignment: Alignment.center,
-          transform: Matrix4.diagonal3Values(scale, 1.0, 1.0),
-          child: child,
-        );
-      },
-
-      child: _StatusTransitionWidgetBuilder(
-        animation: animation,
-        builder: (context, child) {
-          return _SelectableAnimatedBuilder(
-            isSelected: animation.isForwardOrCompleted,
-            duration: const Duration(milliseconds: 100),
-            alwaysDoFullAnimation: true,
-            builder: (context, fadeAnimation) {
-              return FadeTransition(
-                opacity: fadeAnimation,
-                child: DecoratedBox(
-                  decoration: ShapeDecoration(
-                    shape: _kNavigationShape,
-                    color: color ?? Theme.of(context).colorScheme.secondary,
-                  ),
-                  child: const SizedBox(
-                    width: _kIndicatorWidth,
-                    height: _kIndicatorHeight,
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: ShapeDecoration(
+      shape: _kNavigationShape,
+      color: color ?? Theme.of(context).colorScheme.secondary,
+    ),
+    child: SizedBox(width: width, height: height),
+  );
 }
 
 class _NavigationBarDestinationLayout extends StatelessWidget {
@@ -574,66 +577,6 @@ class _StatusTransitionWidgetBuilder extends StatusTransitionWidget {
 
   @override
   Widget build(BuildContext context) => builder(context, child);
-}
-
-class _SelectableAnimatedBuilder extends StatefulWidget {
-  const _SelectableAnimatedBuilder({
-    required this.isSelected,
-    this.duration = const Duration(milliseconds: 200),
-    this.alwaysDoFullAnimation = false,
-    required this.builder,
-  });
-
-  final bool isSelected;
-
-  final Duration duration;
-
-  final bool alwaysDoFullAnimation;
-
-  final Widget Function(BuildContext, Animation<double>) builder;
-
-  @override
-  _SelectableAnimatedBuilderState createState() =>
-      _SelectableAnimatedBuilderState();
-}
-
-class _SelectableAnimatedBuilderState extends State<_SelectableAnimatedBuilder>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(vsync: this);
-    _controller.duration = widget.duration;
-    _controller.value = widget.isSelected ? 1.0 : 0.0;
-  }
-
-  @override
-  void didUpdateWidget(_SelectableAnimatedBuilder oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.duration != widget.duration) {
-      _controller.duration = widget.duration;
-    }
-    if (oldWidget.isSelected != widget.isSelected) {
-      if (widget.isSelected) {
-        _controller.forward(from: widget.alwaysDoFullAnimation ? 0 : null);
-      } else {
-        _controller.reverse(from: widget.alwaysDoFullAnimation ? 1 : null);
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return widget.builder(context, _controller);
-  }
 }
 
 class _CurvedAnimationBuilder extends StatefulWidget {

@@ -1,5 +1,6 @@
 import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliPlus/utils/accounts/account.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -12,7 +13,7 @@ class HistoryBaseController extends GetxController {
   RxBool enableMultiSelect = false.obs;
   RxInt checkedCount = 0.obs;
 
-  final account = Accounts.history;
+  Account get account => Accounts.history;
 
   // 清空观看历史
   void onClearHistory(BuildContext context, VoidCallback onSuccess) {

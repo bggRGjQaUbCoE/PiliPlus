@@ -6,6 +6,7 @@ import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/main_layout.dart';
 import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
+import 'package:PiliPlus/common/widgets/scroll_intent.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/pages/home/view.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
@@ -79,6 +80,10 @@ class _MainAppState extends PopScopeState<MainApp>
   @override
   void didPopNext() {
     addObserverMobile(this);
+    if (_mainController.navigationBars[_mainController.selectedIndex.value] !=
+        NavigationBarType.home) {
+      _mainController.restoreBars();
+    }
     _mainController
       ..checkUnreadDynamic()
       ..checkDefaultSearch(true)
@@ -96,6 +101,7 @@ class _MainAppState extends PopScopeState<MainApp>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _mainController
+        ..restoreBars()
         ..checkUnreadDynamic()
         ..checkDefaultSearch(true)
         ..checkUnread(_mainController.useBottomNav);
@@ -133,6 +139,12 @@ class _MainAppState extends PopScopeState<MainApp>
 
   @override
   void onPopInvokedWithResult(bool didPop, Object? result) {
+    if (didPop) return;
+    if (_mainController.navigationBars[_mainController.selectedIndex.value] ==
+        NavigationBarType.mall) {
+      _mainController.onMallBack();
+      return;
+    }
     if (_mainController.directExitOnBack) {
       _onBack();
     } else {
@@ -209,22 +221,22 @@ class _MainAppState extends PopScopeState<MainApp>
       if (_mainController.hideBottomBar) {
         if (_mainController.barOffset case final barOffset?) {
           return Obx(
-            () => FractionalTranslation(
-              translation: Offset(
-                0.0,
-                barOffset.value / Style.topBarHeight,
-              ),
-              child: bottomNav,
+            () => ScrollLinkedNavigation(
+              offset: barOffset.value / Style.topBarHeight,
+              animate: _mainController.bottomBarSettling.value,
+              onVisibilityChanged: (value) =>
+                  _mainController.bottomNavVisibility.value = value,
+              child: bottomNav!,
             ),
           );
         }
         if (_mainController.showBottomBar case final showBottomBar?) {
           return Obx(
-            () => AnimatedSlide(
-              curve: Curves.easeInOutCubicEmphasized,
-              duration: const Duration(milliseconds: 500),
-              offset: Offset(0, showBottomBar.value ? 0 : 1),
-              child: bottomNav,
+            () => ScrollLinkedNavigation(
+              offset: showBottomBar.value ? 0 : 1,
+              onVisibilityChanged: (value) =>
+                  _mainController.bottomNavVisibility.value = value,
+              child: bottomNav!,
             ),
           );
         }
@@ -289,6 +301,7 @@ class _MainAppState extends PopScopeState<MainApp>
       }
       return Obx(
         () => NavigationRail(
+          scrollable: true,
           groupAlignment: 0.5,
           labelType: _mainController.hideSideBarLabel ? .none : .selected,
           leading: userAndSearchVertical(),
@@ -315,10 +328,15 @@ class _MainAppState extends PopScopeState<MainApp>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => Obx(
+    () => _buildShell(context, _mainController.navRevision.value),
+  );
+
+  Widget _buildShell(BuildContext context, int revision) {
     Widget child;
     if (_mainController.mainTabBarView) {
       child = TabBarView(
+        key: ValueKey(revision),
         controller: _mainController.controller,
         physics: const NeverScrollableScrollPhysics(),
         scrollDirection: _mainController.useBottomNav ? .horizontal : .vertical,
@@ -326,6 +344,7 @@ class _MainAppState extends PopScopeState<MainApp>
       );
     } else {
       child = PageView(
+        key: ValueKey(revision),
         controller: _mainController.controller,
         physics: const NeverScrollableScrollPhysics(),
         children: _mainController.navigationBars.map((i) => i.page).toList(),
@@ -336,7 +355,11 @@ class _MainAppState extends PopScopeState<MainApp>
     Widget? bottomNav;
     final EdgeInsets padding;
     if (_mainController.useBottomNav) {
-      bottomNav = _bottomNav;
+      final mallKeyboard =
+          MediaQuery.viewInsetsOf(context).bottom > 0 &&
+          _mainController.navigationBars[_mainController.selectedIndex.value] ==
+              NavigationBarType.mall;
+      bottomNav = mallKeyboard ? null : _bottomNav;
       if (bottomNav != null) {
         bottomNav = MediaQuery.removePadding(
           context: context,
@@ -364,6 +387,9 @@ class _MainAppState extends PopScopeState<MainApp>
         sideBar: sideBar,
         bottomNav: bottomNav,
         body: Padding(padding: padding, child: child),
+        onBottomNavHeightChanged: (height) {
+          if (mounted) _mainController.bottomNavHeight.value = height;
+        },
       ),
     );
 

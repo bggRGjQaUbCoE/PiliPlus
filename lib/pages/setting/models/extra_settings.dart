@@ -261,7 +261,7 @@ List<SettingsModel> get extraSettings => [
   ),
   NormalModel(
     title: '最大缓存大小',
-    getSubtitle: () => '当前最大缓存大小: 「${Pref.maxCacheSize.formatSize}」',
+    getSubtitle: () => '图片缓存上限（重启后生效）: 「${Pref.maxCacheSize.formatSize}」',
     leading: const Icon(Icons.delete_outlined),
     onTap: _showCacheDialog,
   ),

@@ -1,3 +1,5 @@
+import 'package:PiliPlus/utils/accounts.dart';
+
 import 'dart:async' show StreamSubscription, Timer;
 
 import 'package:PiliPlus/http/loading_state.dart';
@@ -20,6 +22,9 @@ class SearchPanelController<R extends SearchNumData<T>, T>
     required this.searchType,
     required this.tag,
   });
+  @override
+  Object get dataScope => Accounts.main;
+
   final String tag;
   final String keyword;
   final SearchType searchType;
@@ -119,6 +124,7 @@ class SearchPanelController<R extends SearchNumData<T>, T>
   );
 
   void _onSuccess(String gaiaVtoken) {
+    if (isClosed) return;
     this.gaiaVtoken = gaiaVtoken;
     SmartDialog.showLoading(onDismiss: _stopTimer);
     _timer = Timer(const Duration(milliseconds: 500), _onRequery);

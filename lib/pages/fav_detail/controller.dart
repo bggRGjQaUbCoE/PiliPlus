@@ -1,3 +1,5 @@
+import 'package:PiliPlus/common/widgets/motion/cover_motion.dart';
+
 import 'dart:async';
 
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
@@ -8,6 +10,7 @@ import 'package:PiliPlus/models/common/video/source_type.dart';
 import 'package:PiliPlus/models_new/fav/fav_detail/data.dart';
 import 'package:PiliPlus/models_new/fav/fav_detail/media.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
+import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/pages/common/common_list_controller.dart';
 import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/pages/common/multi_select/multi_select_controller.dart';
@@ -32,7 +35,12 @@ mixin BaseFavController
 
   ValueChanged<int>? updateCount;
 
-  void onViewFav(FavDetailItemModel item, int? index);
+  Future<void>? onViewFav(
+    FavDetailItemModel item,
+    int? index, {
+    Dimension? dimension,
+    CoverTransitionData? coverTransition,
+  });
 
   Future<void> onCancelFav(int index, int id, int type) async {
     final res = await FavHttp.favVideo(
@@ -229,10 +237,16 @@ class FavDetailController
   }
 
   @override
-  void onViewFav(FavDetailItemModel item, int? index) {
+  Future<void>? onViewFav(
+    FavDetailItemModel item,
+    int? index, {
+    Dimension? dimension,
+    CoverTransitionData? coverTransition,
+  }) {
     final folder = folderInfo.value;
-    // TODO: dimension
-    PageUtils.toVideoPage(
+    return PageUtils.toVideoPage(
+      coverTransition: coverTransition,
+      dimension: dimension,
       bvid: item.bvid,
       cid: item.ugc!.firstCid!,
       cover: item.cover,

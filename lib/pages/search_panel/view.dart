@@ -1,5 +1,6 @@
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/loading_widget/list_body.dart';
+import 'package:PiliPlus/common/widgets/scroll_under_toolbar.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/search/search_type.dart';
 import 'package:PiliPlus/models/search/result.dart';
@@ -49,13 +50,18 @@ abstract class CommonSearchPanelState<
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final toolbar = ToolbarScrollInset.of(context);
+    final header = buildHeader();
     return refreshIndicator(
       onRefresh: controller.onRefresh,
       child: CustomScrollView(
         controller: controller.scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
-          ?buildHeader(),
+          if (header != null)
+            header
+          else if (toolbar != null)
+            SliverPadding(padding: EdgeInsets.only(top: toolbar.extent)),
           SliverPadding(
             padding: EdgeInsets.only(
               bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
@@ -70,17 +76,14 @@ abstract class CommonSearchPanelState<
   Widget get buildLoading;
 
   Widget _buildBody(LoadingState<List<T>?> loadingState) {
-    return switch (loadingState) {
-      Loading() => buildLoading,
-      Success(:final response) =>
-        response != null && response.isNotEmpty
-            ? buildList(response)
-            : HttpError(onReload: controller.onReload),
-      Error(:final errMsg) => HttpError(
-        errMsg: errMsg,
-        onReload: controller.onReload,
-      ),
-    };
+    return SliverListBody(
+      controller: controller,
+      state: loadingState,
+      loading: buildLoading,
+      emptyIcon: Icons.search_off,
+      emptyMessage: '无搜索结果，试试其他关键词',
+      builder: buildList,
+    );
   }
 
   Widget? buildHeader() => null;

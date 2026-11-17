@@ -25,9 +25,11 @@ class ToolbarIconButton extends StatelessWidget {
         onPressed: onPressed,
         icon: icon,
         highlightColor: colorScheme.secondaryContainer,
-        color: selected
-            ? colorScheme.onSecondaryContainer
-            : colorScheme.outline,
+        color: onPressed == null
+            ? colorScheme.onSurface.withValues(alpha: .38)
+            : selected
+            ? colorScheme.primary
+            : colorScheme.onSurfaceVariant,
         style: ButtonStyle(
           padding: const WidgetStatePropertyAll(EdgeInsets.zero),
           backgroundColor: WidgetStatePropertyAll(

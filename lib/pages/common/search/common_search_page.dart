@@ -1,6 +1,6 @@
 import 'package:PiliPlus/common/widgets/appbar/appbar.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/common/widgets/loading_widget/list_body.dart';
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
 import 'package:PiliPlus/common/widgets/view_insets_safe_area.dart';
 import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
@@ -59,7 +59,10 @@ abstract class CommonSearchPageState<S extends StatefulWidget, R, T>
       actions: [
         IconButton(
           tooltip: '搜索',
-          onPressed: controller.onRefresh,
+          onPressed: () {
+            controller.focusNode.unfocus();
+            controller.onRefresh();
+          },
           icon: const Icon(Icons.search_outlined, size: 22),
         ),
         ...?extraActions,
@@ -78,13 +81,15 @@ abstract class CommonSearchPageState<S extends StatefulWidget, R, T>
           suffixIcon: IconButton(
             tooltip: '清空',
             icon: const Icon(Icons.clear, size: 22),
-            onPressed: () => controller
-              ..loadingState.value = LoadingState.loading()
-              ..onClear()
-              ..focusNode.requestFocus(),
+            onPressed: () {
+              if (controller.onClear()) controller.focusNode.requestFocus();
+            },
           ),
         ),
-        onSubmitted: (value) => controller.onRefresh(),
+        onSubmitted: (value) {
+          controller.focusNode.unfocus();
+          controller.onRefresh();
+        },
       ),
     );
     if (multiSelect) {
@@ -98,17 +103,19 @@ abstract class CommonSearchPageState<S extends StatefulWidget, R, T>
   }
 
   Widget _buildBody(LoadingState<List<T>?> loadingState) {
-    return switch (loadingState) {
-      Loading() => const HttpError(),
-      Success(:final response) =>
-        response != null && response.isNotEmpty
-            ? buildList(response)
-            : HttpError(onReload: controller.onReload),
-      Error(:final errMsg) => HttpError(
-        errMsg: errMsg,
-        onReload: controller.onReload,
-      ),
-    };
+    return SliverListBody(
+      controller: controller,
+      state: loadingState,
+      loading: null,
+      emptyIcon: controller.editController.text.isEmpty
+          ? Icons.search
+          : Icons.search_off,
+      showEmptyRefresh: controller.editController.text.isNotEmpty,
+      emptyMessage: controller.editController.text.isEmpty
+          ? '输入关键词开始搜索'
+          : '无搜索结果，试试其他关键词',
+      builder: buildList,
+    );
   }
 
   Widget buildList(List<T> list);

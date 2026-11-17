@@ -85,8 +85,7 @@ class _MainReplyPageState extends State<MainReplyPage>
           ),
         ).constraintWidth(),
       ),
-      fab: SlideTransition(
-        position: fabAnimation,
+      fab: fabTransition(
         child: Padding(
           padding: .only(
             right: kFloatingActionButtonMargin + padding.right,

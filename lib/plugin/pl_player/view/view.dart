@@ -12,6 +12,7 @@ import 'package:PiliPlus/common/widgets/disabled_icon.dart';
 import 'package:PiliPlus/common/widgets/gesture/immediate_tap_gesture_recognizer.dart';
 import 'package:PiliPlus/common/widgets/gesture/mouse_interactive_viewer.dart';
 import 'package:PiliPlus/common/widgets/gesture/player_gesture_recognizer.dart';
+import 'package:PiliPlus/common/widgets/gesture/two_finger_double_tap_detector.dart';
 import 'package:PiliPlus/common/widgets/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/common/widgets/player_bar.dart';
@@ -320,6 +321,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     _doubleTapGestureRecognizer = DoubleTapGestureRecognizer()
       ..onDoubleTapDown = _onDoubleTapDown;
 
+    _twoFingerDoubleTapDetector = TwoFingerDoubleTapDetector(
+      onDoubleTap: _onTwoFingerDoubleTap,
+    );
+
     _scaleGestureRecognizer = PlayerScaleGestureRecognizer(
       debugOwner: this,
       dragStartBehavior: .start,
@@ -382,6 +387,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     _tapGestureRecognizer.dispose();
     _longPressRecognizer?.dispose();
     _doubleTapGestureRecognizer.dispose();
+    _twoFingerDoubleTapDetector.dispose();
+    _activePointers.clear();
     _scaleGestureRecognizer.dispose();
     _brightnessListener?.cancel();
     _resetSubPaddingIfNeeded();
@@ -1168,6 +1175,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     }
   }
 
+  /// 双指双击：切换弹幕开关。
+  void _onTwoFingerDoubleTap() {
+    if (plPlayerController.controlsLock.value) return;
+    plPlayerController.toggleDanmaku();
+  }
+
   LongPressGestureRecognizer? _longPressRecognizer;
   LongPressGestureRecognizer get longPressRecognizer => _longPressRecognizer ??=
       LongPressGestureRecognizer(
@@ -1182,7 +1195,11 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
             plPlayerController.setLongPressStatus(false));
   late final ImmediateTapGestureRecognizer _tapGestureRecognizer;
   late final DoubleTapGestureRecognizer _doubleTapGestureRecognizer;
+  late final TwoFingerDoubleTapDetector _twoFingerDoubleTapDetector;
   late final PlayerScaleGestureRecognizer _scaleGestureRecognizer;
+
+  /// 当前按下的指针，用于区分单指/双指手势。
+  final Set<int> _activePointers = <int>{};
 
   StreamSubscription<bool>? _danmakuListener;
 
@@ -1214,15 +1231,27 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
     final controlsUnlock = !plPlayerController.controlsLock.value;
     if (PlatformUtils.isMobile) {
+      final isFirstPointer = _activePointers.isEmpty;
+      _activePointers.add(event.pointer);
       _tapGestureRecognizer.addPointer(event);
       if (controlsUnlock) {
         if (!plPlayerController.isLive) {
-          _doubleTapGestureRecognizer.addPointer(event);
-          longPressRecognizer.addPointer(event);
+          // 双指手势由 TwoFingerDoubleTapDetector 处理，单指双击
+          // 只跟踪第一根手指，避免双指点击被误判成单指双击。
+          if (isFirstPointer) {
+            _doubleTapGestureRecognizer.addPointer(event);
+            longPressRecognizer.addPointer(event);
+          }
+          if (plPlayerController.enableTwoFingerDoubleTap) {
+            _twoFingerDoubleTapDetector.onPointerDown(event);
+          }
         }
         _scaleGestureRecognizer
           ..isPosAllowed = _isPositionAllowed(event.localPosition)
           ..addPointer(event);
+      }
+      if (_activePointers.length == 2 && !plPlayerController.isLive) {
+        _doubleTapGestureRecognizer.rejectGesture(_activePointers.first);
       }
     } else if (controlsUnlock) {
       if (plPlayerController.isLive) {
@@ -1237,6 +1266,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   }
 
   void _onPointerUp(PointerUpEvent event) {
+    _activePointers.remove(event.pointer);
+    _twoFingerDoubleTapDetector.onPointerUp(event);
     final pending = _pendingFullScreenToggle;
     if (pending == null || event.buttons != 0) {
       return;
@@ -1254,6 +1285,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   }
 
   void _onPointerCancel(PointerCancelEvent event) {
+    _activePointers.remove(event.pointer);
+    _twoFingerDoubleTapDetector.onPointerCancel(event);
     _pendingFullScreenToggle = null;
   }
 

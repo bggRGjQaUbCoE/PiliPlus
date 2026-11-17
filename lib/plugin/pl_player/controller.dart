@@ -481,6 +481,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   late final progressType = Pref.btmProgressBehavior;
   late final enableQuickDouble = Pref.enableQuickDouble;
+  late final enableTwoFingerDoubleTap = Pref.enableTwoFingerDoubleTap;
   late final fullScreenGestureReverse = Pref.fullScreenGestureReverse;
 
   late final isRelative = Pref.useRelativeSlide;
@@ -1438,6 +1439,21 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
         onDoubleTapSeekForward();
         break;
     }
+  }
+
+  /// 双指双击切换弹幕（B 站客户端手势）。
+  void toggleDanmaku() {
+    final newVal = !enableShowDanmakuAdaptive.value;
+    enableShowDanmakuAdaptive.value = newVal;
+    if (!tempPlayerConf) {
+      GStorage.setting.put(
+        isLive
+            ? SettingBoxKey.enableShowLiveDanmaku
+            : SettingBoxKey.enableShowDanmaku,
+        newVal,
+      );
+    }
+    SmartDialog.showToast(newVal ? '弹幕已开启' : '弹幕已关闭');
   }
 
   /// 关闭控制栏

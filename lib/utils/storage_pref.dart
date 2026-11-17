@@ -791,6 +791,11 @@ abstract final class Pref {
   static bool get enableQuickDouble =>
       _setting.get(SettingBoxKey.enableQuickDouble, defaultValue: true);
 
+  static bool get enableTwoFingerDoubleTap => _setting.get(
+    SettingBoxKey.enableTwoFingerDoubleTap,
+    defaultValue: true,
+  );
+
   static bool get fullScreenGestureReverse =>
       _setting.get(SettingBoxKey.fullScreenGestureReverse, defaultValue: false);
 

@@ -100,6 +100,14 @@ List<SettingsModel> get playSettings => [
     setKey: SettingBoxKey.enableQuickDouble,
     defaultVal: true,
   ),
+  if (PlatformUtils.isMobile)
+    const SwitchModel(
+      title: '双指双击切换弹幕',
+      subtitle: '双指双击视频区域，快速开关弹幕',
+      leading: Icon(Icons.pan_tool_alt_outlined),
+      setKey: SettingBoxKey.enableTwoFingerDoubleTap,
+      defaultVal: true,
+    ),
   const SwitchModel(
     title: '左右侧滑动调节亮度/音量',
     leading: Icon(MdiIcons.tuneVerticalVariant),

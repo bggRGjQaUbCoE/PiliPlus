@@ -50,7 +50,7 @@ class _FollowPageState extends State<FollowPage>
   }
 
   @override
-  bool onNotification(UserScrollNotification notification) {
+  bool onNotification(ScrollNotification notification) {
     if (notification.metrics.axisDirection == .down) {
       return super.onNotification(notification);
     }

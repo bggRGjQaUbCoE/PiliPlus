@@ -47,25 +47,10 @@ class _MediaPageState extends CommonPageState<MinePage>
   @override
   bool get wantKeepAlive => true;
 
-  bool get checkPage =>
-      _mainController.navigationBars[0] != NavigationBarType.mine &&
-      _mainController.selectedIndex.value == 0;
-
   @override
-  bool onNotificationType1(UserScrollNotification notification) {
-    if (checkPage) {
-      return false;
-    }
-    return super.onNotificationType1(notification);
-  }
-
-  @override
-  bool onNotificationType2(ScrollNotification notification) {
-    if (checkPage) {
-      return false;
-    }
-    return super.onNotificationType2(notification);
-  }
+  bool get isScrollPageActive =>
+      _mainController.navigationBars[_mainController.selectedIndex.value] ==
+      NavigationBarType.mine;
 
   @override
   void didChangeDependencies() {

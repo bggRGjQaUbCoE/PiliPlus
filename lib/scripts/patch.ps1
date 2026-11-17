@@ -249,6 +249,8 @@ try {
 
 flutter pub get
 
+& "$PSScriptRoot/apply_layered_transition.ps1"
+
 $MaterialUiDir = Get-ChildItem "$PubCacheDir/hosted/pub.dev" -Directory |
     Where-Object { $_.Name -like "material_ui-*" } |
     Select-Object -Last 1

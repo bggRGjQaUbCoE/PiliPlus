@@ -159,6 +159,7 @@ class ItemModulesModel {
   ModuleAuthorModel? moduleAuthor;
   ModuleStatModel? moduleStat;
   ModuleTag? moduleTag; // 也做opus的title用
+  String? opusTitle;
 
   // 动态
   ModuleDynamicModel? moduleDynamic;
@@ -218,6 +219,7 @@ class ItemModulesModel {
           moduleTag = i['module_title'] == null
               ? null
               : ModuleTag.fromJson(i['module_title']);
+          opusTitle = moduleTag?.text;
           break;
         case 'MODULE_TYPE_COLLECTION':
           moduleCollection = i['module_collection'] == null

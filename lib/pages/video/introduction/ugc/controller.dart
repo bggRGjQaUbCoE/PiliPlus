@@ -337,6 +337,9 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
     final playedTimePos = videoDetailCtr.playedTimePos(addIndex);
     final videoUrl =
         '${HttpString.baseUrl}/video/$bvid/${addIndex ? '?p=${partIndex + 1}' : ''}';
+    final titlePrefix = videoDetail.title?.isNotEmpty == true
+        ? '${videoDetail.title} '
+        : '';
     showDialog(
       context: context,
       builder: (_) => SimpleDialog(
@@ -351,7 +354,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
             ),
             onTap: () {
               Get.back();
-              Utils.copyText(videoUrl);
+              Utils.copyText('$titlePrefix$videoUrl');
             },
             trailing: playedTimePos.isNotEmpty
                 ? iconButton(

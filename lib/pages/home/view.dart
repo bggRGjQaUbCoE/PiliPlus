@@ -1,3 +1,5 @@
+import 'package:PiliPlus/router/search_expansion.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/custom_height_widget.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
@@ -8,6 +10,7 @@ import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/utils/extension/get_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
+import 'package:flutter/rendering.dart' show RenderParagraph;
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:material_ui/material_ui.dart';
@@ -21,6 +24,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends CommonPageState<HomePage>
     with AutomaticKeepAliveClientMixin {
+  final _searchIconKey = GlobalKey();
+  final _searchPromptKey = GlobalKey();
   late ColorScheme _colorScheme;
   final _homeController = Get.putOrFind(HomeController.new);
   final _mainController = Get.find<MainController>();
@@ -143,49 +148,114 @@ class _HomePageState extends CommonPageState<HomePage>
   }
 
   Widget searchBar() {
-    const borderRadius = BorderRadius.all(Radius.circular(25));
+    const borderRadius = BorderRadius.all(Radius.circular(22));
+    final color = Color.alphaBlend(
+      _colorScheme.onSecondaryContainer.withValues(alpha: 0.10),
+      _colorScheme.surface,
+    );
     return Expanded(
       child: SizedBox(
         height: 44,
         child: Material(
           borderRadius: borderRadius,
-          color: _colorScheme.onSecondaryContainer.withValues(alpha: 0.05),
-          child: InkWell(
-            borderRadius: borderRadius,
-            splashColor: _colorScheme.primaryContainer.withValues(
-              alpha: 0.3,
-            ),
-            onTap: () => Get.toNamed(
-              '/search',
-              parameters: _homeController.enableSearchWord
-                  ? {'hintText': _homeController.defaultSearch.value}
-                  : null,
-            ),
-            child: Row(
-              children: [
-                const SizedBox(width: 14),
-                Icon(
-                  Icons.search_outlined,
-                  color: _colorScheme.onSecondaryContainer,
-                  semanticLabel: '搜索',
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Obx(
-                    () => Text(
-                      _homeController.defaultSearch.value,
+          color: color,
+          child: Builder(
+            builder: (sourceContext) => InkWell(
+              borderRadius: borderRadius,
+              splashColor: _colorScheme.primaryContainer.withValues(
+                alpha: 0.3,
+              ),
+              onTap: () => _openSearch(sourceContext, borderRadius, color),
+              child: Row(
+                children: [
+                  const SizedBox(width: 14),
+                  Icon(
+                    Icons.search_outlined,
+                    key: _searchIconKey,
+                    color: _colorScheme.onSecondaryContainer,
+                    semanticLabel: '搜索',
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      '搜索视频、UP主',
+                      key: _searchPromptKey,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: _colorScheme.outline),
+                      style: TextStyle(color: _colorScheme.onSurfaceVariant),
                     ),
                   ),
-                ),
-                const SizedBox(width: 5),
-              ],
+                  const SizedBox(width: 12),
+                ],
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  void _openSearch(BuildContext source, BorderRadius radius, Color color) {
+    if (ModalRoute.of(source)?.isCurrent != true) return;
+    SearchExpansion? expansion;
+    final bar = source.findRenderObject();
+    final immediate =
+        MediaQuery.disableAnimationsOf(source) ||
+        Pref.pageTransition == Transition.noTransition;
+    if (bar is RenderBox && !immediate) {
+      final overlay = Navigator.of(source).overlay!.context.findRenderObject();
+      final icon = _searchIconKey.currentContext?.findRenderObject();
+      final prompt = _searchPromptKey.currentContext?.findRenderObject();
+      if (overlay is RenderBox &&
+          overlay.hasSize &&
+          bar.hasSize &&
+          icon is RenderBox &&
+          icon.hasSize &&
+          prompt is RenderParagraph &&
+          prompt.hasSize) {
+        final rect = MatrixUtils.transformRect(
+          bar.getTransformTo(overlay),
+          Offset.zero & bar.size,
+        );
+        final viewport = Offset.zero & overlay.size;
+        if (rect.isFinite &&
+            !rect.isEmpty &&
+            rect.left >= 0 &&
+            rect.top >= 0 &&
+            rect.right <= viewport.right &&
+            rect.bottom <= viewport.bottom) {
+          expansion = SearchExpansion(
+            source: radius.toRRect(rect),
+            viewport: overlay.size,
+            color: Color.alphaBlend(color, Theme.of(source).canvasColor),
+            icon:
+                icon.localToGlobal(Offset.zero, ancestor: overlay) & icon.size,
+            iconColor: _colorScheme.onSecondaryContainer,
+            prompt: (
+              span: prompt.text,
+              baseline: prompt.localToGlobal(
+                Offset(
+                  0,
+                  prompt.getDryBaseline(
+                    prompt.constraints,
+                    TextBaseline.alphabetic,
+                  )!,
+                ),
+                ancestor: overlay,
+              ),
+              width: prompt.size.width,
+              scaler: prompt.textScaler,
+            ),
+          );
+        }
+      }
+    }
+    Get.toNamed(
+      '/search',
+      arguments: immediate ? SearchOpening.immediate : expansion,
+      parameters: _homeController.enableSearchWord
+          ? {'hintText': _homeController.defaultSearch.value}
+          : null,
     );
   }
 }

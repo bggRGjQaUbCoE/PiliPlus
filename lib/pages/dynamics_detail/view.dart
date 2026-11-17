@@ -18,7 +18,6 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart'
 import 'package:PiliPlus/common/widgets/sliver/sliver_floating_header.dart';
 import 'package:PiliPlus/common/widgets/sliver/sliver_to_box_adapter.dart';
 import 'package:PiliPlus/common/widgets/tap_region_surface.dart';
-import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/dynamics.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/reply/reply_option_type.dart';
@@ -593,7 +592,7 @@ class _DynamicDetailPageState extends CommonDynPageMultiState<DynamicDetailPage>
                     text: '分享',
                     stat: null,
                     onPressed: (_) => ShareUtils.shareText(
-                      '${HttpString.opusBaseUrl}/${controller.dynItem.idStr}',
+                      ShareUtils.dynamicText(controller.dynItem),
                     ),
                   ),
                 ),

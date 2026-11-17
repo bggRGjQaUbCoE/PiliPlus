@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:PiliPlus/common/widgets/scroll_intent.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/floating_navigation_bar.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
@@ -209,22 +210,22 @@ class _MainAppState extends PopScopeState<MainApp>
       if (_mainController.hideBottomBar) {
         if (_mainController.barOffset case final barOffset?) {
           return Obx(
-            () => FractionalTranslation(
-              translation: Offset(
-                0.0,
-                barOffset.value / Style.topBarHeight,
-              ),
-              child: bottomNav,
+            () => ScrollLinkedNavigation(
+              offset: barOffset.value / Style.topBarHeight,
+              animate: _mainController.bottomBarSettling.value,
+              onVisibilityChanged: (value) =>
+                  _mainController.bottomNavVisibility.value = value,
+              child: bottomNav!,
             ),
           );
         }
         if (_mainController.showBottomBar case final showBottomBar?) {
           return Obx(
-            () => AnimatedSlide(
-              curve: Curves.easeInOutCubicEmphasized,
-              duration: const Duration(milliseconds: 500),
-              offset: Offset(0, showBottomBar.value ? 0 : 1),
-              child: bottomNav,
+            () => ScrollLinkedNavigation(
+              offset: showBottomBar.value ? 0 : 1,
+              onVisibilityChanged: (value) =>
+                  _mainController.bottomNavVisibility.value = value,
+              child: bottomNav!,
             ),
           );
         }

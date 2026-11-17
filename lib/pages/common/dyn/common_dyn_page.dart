@@ -138,7 +138,7 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
   }
 
   @override
-  bool onNotification(UserScrollNotification notification) {
+  bool onNotification(ScrollNotification notification) {
     if (notification.metrics.axisDirection == .down) {
       return super.onNotification(notification);
     }

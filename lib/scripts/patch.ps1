@@ -215,7 +215,7 @@ $TabsPatchMaterial = "lib/scripts/material/tabs.patch"
 
 $patches_material = @($ModalBarrierPatchMaterial, $NavigationDrawerPatchMaterial, $PopupMenuPatchMaterial,
                     $FABPatchMaterial, $TextFieldPatchMaterial, $ScaffoldPatchMaterial, $RefreshIndicatorPatchMaterial,
-                    $TabsPatchMaterial)
+                    $TabsPatchMaterial, "lib/scripts/material/advanced_materials.patch")
 
 $PubCacheDir = "~/.pub-cache"
 

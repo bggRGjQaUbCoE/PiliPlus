@@ -1,0 +1,351 @@
+--- a/lib/material_ui.dart
++++ b/lib/material_ui.dart
+@@ -118,6 +118,7 @@
+ export 'src/list_tile_theme.dart';
+ export 'src/magnifier.dart';
+ export 'src/material.dart';
++export 'src/surface_material.dart';
+ export 'src/material_button.dart';
+ export 'src/material_localizations.dart';
+ export 'src/material_shape_border.dart' show MaterialShapeBorder;
+--- /dev/null
++++ b/lib/src/surface_material.dart
+@@ -0,0 +1,43 @@
++import 'package:flutter/widgets.dart';
++
++import 'material.dart';
++import 'theme.dart';
++import 'theme_data.dart';
++
++enum SurfaceMaterialKind { dialog, menu, bottomSheet, navigationBar, floatingActionButton, appBar }
++
++typedef SurfaceMaterialBuilder = Widget Function(
++  BuildContext context,
++  SurfaceMaterialKind kind,
++  Material material,
++);
++
++/// Application-owned treatment for shared floating surfaces.
++class SurfaceMaterialTheme extends ThemeExtension<SurfaceMaterialTheme> {
++  const SurfaceMaterialTheme({required this.builder, this.enabled = false});
++
++  final bool enabled;
++
++  final SurfaceMaterialBuilder builder;
++
++  @override
++  SurfaceMaterialTheme copyWith({SurfaceMaterialBuilder? builder, bool? enabled}) =>
++      SurfaceMaterialTheme(builder: builder ?? this.builder, enabled: enabled ?? this.enabled);
++
++  @override
++  SurfaceMaterialTheme lerp(SurfaceMaterialTheme? other, double t) =>
++      other == null || t < .5 ? this : other;
++}
++
++class SurfaceMaterial extends StatelessWidget {
++  const SurfaceMaterial({super.key, required this.kind, required this.material});
++
++  final SurfaceMaterialKind kind;
++  final Material material;
++
++  @override
++  Widget build(BuildContext context) {
++    final builder = Theme.of(context).extension<SurfaceMaterialTheme>()?.builder;
++    return builder == null ? material : builder(context, kind, material);
++  }
++}
+--- a/lib/src/dialog.dart
++++ b/lib/src/dialog.dart
+@@ -21,6 +21,7 @@
+ import 'dialog_theme.dart';
+ import 'ink_well.dart';
+ import 'material.dart';
++import 'surface_material.dart';
+ import 'material_localizations.dart';
+ import 'text_theme.dart';
+ import 'theme.dart';
+@@ -303,7 +304,7 @@
+           alignment: alignment ?? dialogTheme.alignment ?? defaults.alignment!,
+           child: ConstrainedBox(
+             constraints: boxConstraints,
+-            child: Material(
++            child: SurfaceMaterial(kind: SurfaceMaterialKind.dialog, material: Material(
+               color: backgroundColor ?? dialogTheme.backgroundColor ?? defaults.backgroundColor,
+               elevation: elevation ?? dialogTheme.elevation ?? defaults.elevation!,
+               shadowColor: shadowColor ?? dialogTheme.shadowColor ?? defaults.shadowColor,
+@@ -313,7 +314,7 @@
+               type: MaterialType.card,
+               clipBehavior: clipBehavior ?? dialogTheme.clipBehavior ?? defaults.clipBehavior!,
+               child: child,
+-            ),
++            )),
+           ),
+         ),
+       );
+--- a/lib/src/popup_menu.dart
++++ b/lib/src/popup_menu.dart
+@@ -25,6 +25,7 @@
+ import 'list_tile.dart';
+ import 'list_tile_theme.dart';
+ import 'material.dart';
++import 'surface_material.dart';
+ import 'material_localizations.dart';
+ import 'popup_menu_theme.dart';
+ import 'text_theme.dart';
+@@ -797,7 +798,7 @@
+       builder: (BuildContext context, Widget? child) {
+         return FadeTransition(
+           opacity: opacity.animate(widget.route.animation!),
+-          child: Material(
++          child: SurfaceMaterial(kind: SurfaceMaterialKind.menu, material: Material(
+             shape: widget.route.shape ?? popupMenuTheme.shape ?? defaults.shape,
+             color: widget.route.color ?? popupMenuTheme.color ?? defaults.color,
+             clipBehavior: widget.clipBehavior,
+@@ -815,7 +816,7 @@
+               heightFactor: height.evaluate(widget.route.animation!),
+               child: child,
+             ),
+-          ),
++          )),
+         );
+       },
+       child: child,
+--- a/lib/src/bottom_sheet.dart
++++ b/lib/src/bottom_sheet.dart
+@@ -19,6 +19,7 @@
+ import 'constants.dart';
+ import 'debug.dart';
+ import 'material.dart';
++import 'surface_material.dart';
+ import 'material_localizations.dart';
+ import 'motion.dart';
+ import 'scaffold.dart';
+@@ -391,7 +392,7 @@
+       }
+     }
+ 
+-    Widget bottomSheet = Material(
++    Widget bottomSheet = SurfaceMaterial(kind: SurfaceMaterialKind.bottomSheet, material: Material(
+       key: _childKey,
+       color: color,
+       elevation: elevation,
+@@ -414,7 +415,7 @@
+                 ],
+               ),
+       ),
+-    );
++    ));
+ 
+     if (constraints != null) {
+       bottomSheet = Align(
+@@ -1166,9 +1167,25 @@
+       ),
+     );
+ 
++    final Widget insetContent = Builder(
++      builder: (BuildContext context) => MediaQuery.removeViewInsets(
++        context: context,
++        removeBottom: true,
++        child: content,
++      ),
++    );
+     Widget bottomSheet = useSafeArea
+-        ? SafeArea(bottom: false, child: content)
+-        : MediaQuery.removePadding(context: context, removeTop: true, child: content);
++        ? SafeArea(bottom: false, child: insetContent)
++        : MediaQuery.removePadding(context: context, removeTop: true, child: insetContent);
++
++    bottomSheet = AnimatedPadding(
++      duration: MediaQuery.disableAnimationsOf(context)
++          ? Duration.zero
++          : const Duration(milliseconds: 180),
++      curve: Curves.easeOutCubic,
++      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
++      child: bottomSheet,
++    );
+ 
+     // Prevent clicks inside the bottom sheet from passing through to the barrier
+     bottomSheet = Semantics(hitTestBehavior: SemanticsHitTestBehavior.opaque, child: bottomSheet);
+--- a/lib/src/button.dart
++++ b/lib/src/button.dart
+@@ -20,6 +20,7 @@
+ import 'constants.dart';
+ import 'ink_well.dart';
+ import 'material.dart';
++import 'surface_material.dart';
+ import 'material_state_mixin.dart';
+ import 'theme.dart';
+ import 'theme_data.dart';
+@@ -57,6 +58,7 @@
+     this.mouseCursor,
+     this.textStyle,
+     this.fillColor,
++    this.surfaceMaterialKind,
+     this.focusColor,
+     this.hoverColor,
+     this.highlightColor,
+@@ -141,6 +143,9 @@
+   /// The color of the button's [Material].
+   final Color? fillColor;
+ 
++  /// Optional app-owned treatment for floating controls.
++  final SurfaceMaterialKind? surfaceMaterialKind;
++
+   /// The color for the button's [Material] when it has the input focus.
+   final Color? focusColor;
+ 
+@@ -376,9 +381,7 @@
+         )
+         .clamp(EdgeInsets.zero, EdgeInsetsGeometry.infinity);
+ 
+-    final Widget result = ConstrainedBox(
+-      constraints: effectiveConstraints,
+-      child: Material(
++    final material = Material(
+         elevation: _effectiveElevation,
+         textStyle: widget.textStyle?.copyWith(color: effectiveTextColor),
+         shape: effectiveShape,
+@@ -415,7 +418,12 @@
+             ),
+           ),
+         ),
+-      ),
++    );
++    final Widget result = ConstrainedBox(
++      constraints: effectiveConstraints,
++      child: widget.surfaceMaterialKind == null
++          ? material
++          : SurfaceMaterial(kind: widget.surfaceMaterialKind!, material: material),
+     );
+     final Size minSize;
+     switch (widget.materialTapTargetSize) {
+--- a/lib/src/floating_action_button.dart
++++ b/lib/src/floating_action_button.dart
+@@ -14,6 +14,7 @@
+ import 'package:flutter/widgets.dart';
+ 
+ import 'button.dart';
++import 'surface_material.dart';
+ import 'color_scheme.dart';
+ import 'floating_action_button_theme.dart';
+ import 'scaffold.dart';
+@@ -557,12 +558,7 @@
+     final ShapeBorder shape = this.shape ?? floatingActionButtonTheme.shape ?? defaults.shape!;
+ 
+     BoxConstraints sizeConstraints;
+-    Widget? resolvedChild = child != null
+-        ? IconTheme.merge(
+-            data: IconThemeData(size: iconSize),
+-            child: child!,
+-          )
+-        : child;
++    Widget? resolvedChild = child;
+     switch (_floatingActionButtonType) {
+       case _FloatingActionButtonType.regular:
+         sizeConstraints = floatingActionButtonTheme.sizeConstraints ?? defaults.sizeConstraints!;
+@@ -596,7 +592,20 @@
+         );
+     }
+ 
++    if (resolvedChild != null) {
++      resolvedChild = IconTheme.merge(
++        data: IconThemeData(
++          size: iconSize,
++          color: onPressed == null
++              ? theme.disabledColor
++              : this.foregroundColor ?? floatingActionButtonTheme.foregroundColor ?? theme.iconTheme.color,
++        ),
++        child: resolvedChild,
++      );
++    }
++
+     Widget result = RawMaterialButton(
++      surfaceMaterialKind: SurfaceMaterialKind.floatingActionButton,
+       onPressed: onPressed,
+       mouseCursor: _EffectiveMouseCursor(mouseCursor, floatingActionButtonTheme.mouseCursor),
+       elevation: elevation,
+--- a/lib/src/app_bar.dart
++++ b/lib/src/app_bar.dart
+@@ -30,6 +30,7 @@
+ import 'icons.dart';
+ import 'material.dart';
+ import 'scaffold.dart';
++import 'surface_material.dart';
+ import 'tabs.dart';
+ import 'text_theme.dart';
+ import 'theme.dart';
+@@ -1195,6 +1196,8 @@
+ 
+     appBar = Align(alignment: Alignment.topCenter, child: appBar);
+ 
++    final glassAppBar = !widget.forceMaterialTransparency &&
++        (theme.extension<SurfaceMaterialTheme>()?.enabled ?? false);
+     if (widget.flexibleSpace != null) {
+       appBar = Stack(
+         fit: StackFit.passthrough,
+@@ -1204,6 +1207,21 @@
+             explicitChildNodes: true,
+             child: widget.flexibleSpace,
+           ),
++          if (glassAppBar)
++            Positioned(
++              top: 0,
++              left: 0,
++              right: 0,
++              height: toolbarHeight + (widget.primary ? MediaQuery.paddingOf(context).top : 0),
++              child: SurfaceMaterial(
++                kind: SurfaceMaterialKind.appBar,
++                material: Material(
++                  color: backgroundColor,
++                  shape: const RoundedRectangleBorder(),
++                  child: const SizedBox.expand(),
++                ),
++              ),
++            ),
+           Semantics(
+             sortKey: widget.useDefaultSemanticsOrder ? const OrdinalSortKey(0.0) : null,
+             explicitChildNodes: true,
+@@ -1230,22 +1248,27 @@
+       container: true,
+       child: AnnotatedRegion<SystemUiOverlayStyle>(
+         value: overlayStyle,
+-        child: Material(
+-          color: theme.useMaterial3 ? effectiveBackgroundColor : backgroundColor,
+-          elevation: effectiveElevation,
+-          type: widget.forceMaterialTransparency ? MaterialType.transparency : MaterialType.canvas,
+-          shadowColor: widget.shadowColor ?? appBarTheme.shadowColor ?? defaults.shadowColor,
+-          surfaceTintColor:
+-              widget.surfaceTintColor ??
+-              appBarTheme.surfaceTintColor
+-              // M3 `defaults.surfaceTint` is Colors.transparent now. It is not used
+-              // here because otherwise, it will cause breaking change for
+-              // `scrolledUnderElevation`.
+-              ??
+-              (theme.useMaterial3 ? theme.colorScheme.surfaceTint : null),
+-          shape: widget.shape ?? appBarTheme.shape ?? defaults.shape,
+-          animateColor: widget.animateColor,
+-          child: Semantics(explicitChildNodes: true, child: appBar),
++        child: SurfaceMaterial(
++          kind: SurfaceMaterialKind.appBar,
++          material: Material(
++            color: glassAppBar && widget.flexibleSpace != null
++                ? Colors.transparent
++                : theme.useMaterial3 ? effectiveBackgroundColor : backgroundColor,
++            elevation: effectiveElevation,
++            type: widget.forceMaterialTransparency ? MaterialType.transparency : MaterialType.canvas,
++            shadowColor: widget.shadowColor ?? appBarTheme.shadowColor ?? defaults.shadowColor,
++            surfaceTintColor:
++                glassAppBar && widget.flexibleSpace != null ? Colors.transparent : widget.surfaceTintColor ??
++                appBarTheme.surfaceTintColor
++                // M3 `defaults.surfaceTint` is Colors.transparent now. It is not used
++                // here because otherwise, it will cause breaking change for
++                // `scrolledUnderElevation`.
++                ??
++                (theme.useMaterial3 ? theme.colorScheme.surfaceTint : null),
++            shape: widget.shape ?? appBarTheme.shape ?? defaults.shape ?? const RoundedRectangleBorder(),
++            animateColor: widget.animateColor,
++            child: Semantics(explicitChildNodes: true, child: appBar),
++          ),
+         ),
+       ),
+     );

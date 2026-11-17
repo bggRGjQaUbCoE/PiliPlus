@@ -1,6 +1,8 @@
-import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/advanced_materials.dart';
+import 'package:PiliPlus/common/widgets/g2_shape_border.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/font_utils.dart';
+import 'package:PiliPlus/utils/soft_dynamic_colors.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoThemeData;
 import 'package:flutter/foundation.dart' show PlatformDispatcher;
@@ -32,6 +34,9 @@ abstract final class ThemeUtils {
     required bool isDynamic,
     bool isDark = false,
   }) {
+    if (Pref.softDynamicColors) {
+      colorScheme = SoftDynamicColors.apply(colorScheme);
+    }
     final fontWeight = Pref.appFontWeight;
     final fontFamily = FontUtils.fontFamily;
 
@@ -90,6 +95,7 @@ abstract final class ThemeUtils {
         ),
       ),
       popupMenuTheme: PopupMenuThemeData(
+        shape: const G2ShapeBorder(radius: 20),
         surfaceTintColor: isDark ? colorScheme.surfaceContainerHighest : null,
       ),
       cardTheme: CardThemeData(
@@ -107,6 +113,8 @@ abstract final class ThemeUtils {
           // ignore: deprecated_member_use
           : const ProgressIndicatorThemeData(year2023: false),
       dialogTheme: DialogThemeData(
+        shape: const G2ShapeBorder(radius: 24),
+        clipBehavior: Clip.antiAlias,
         titleTextStyle: TextStyle(
           fontSize: 18,
           fontWeight: fontWeight,
@@ -118,9 +126,8 @@ abstract final class ThemeUtils {
       ),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: colorScheme.surface,
-        shape: const RoundedRectangleBorder(
-          borderRadius: Style.bottomSheetRadius,
-        ),
+        shape: const G2ShapeBorder(radius: 32, topOnly: true),
+        clipBehavior: Clip.antiAlias,
       ),
       // ignore: deprecated_member_use
       sliderTheme: const SliderThemeData(year2023: false),
@@ -165,10 +172,51 @@ abstract final class ThemeUtils {
         },
       ),
     );
-    if (isDark && Pref.isPureBlackTheme) {
-      return darkenTheme(theme);
-    }
-    return theme;
+    final result = isDark && Pref.isPureBlackTheme ? darkenTheme(theme) : theme;
+    final scheme = result.colorScheme;
+    final softIcons = Pref.softDynamicColors;
+    return result.copyWith(
+      iconTheme: softIcons
+          ? result.iconTheme.copyWith(color: scheme.primary)
+          : result.iconTheme,
+      appBarTheme: softIcons
+          ? result.appBarTheme.copyWith(
+              iconTheme: IconThemeData(color: scheme.primary),
+              actionsIconTheme: IconThemeData(color: scheme.primary),
+            )
+          : result.appBarTheme,
+      iconButtonTheme: softIcons
+          ? IconButtonThemeData(
+              style: ButtonStyle(
+                foregroundColor: WidgetStateProperty.resolveWith(
+                  (states) => states.contains(WidgetState.disabled)
+                      ? scheme.onSurface.withValues(alpha: .38)
+                      : scheme.primary,
+                ),
+              ),
+            )
+          : result.iconButtonTheme,
+      navigationBarTheme: softIcons
+          ? result.navigationBarTheme.copyWith(
+              iconTheme: WidgetStateProperty.resolveWith(
+                (states) => IconThemeData(
+                  size: 24,
+                  color: states.contains(WidgetState.disabled)
+                      ? scheme.onSurfaceVariant.withValues(alpha: .38)
+                      : states.contains(WidgetState.selected)
+                      ? scheme.primary
+                      : scheme.onSurfaceVariant,
+                ),
+              ),
+            )
+          : result.navigationBarTheme,
+      navigationRailTheme: softIcons
+          ? result.navigationRailTheme.copyWith(
+              selectedIconTheme: IconThemeData(color: scheme.primary),
+            )
+          : result.navigationRailTheme,
+      extensions: [AdvancedMaterials.theme(scheme)],
+    );
   }
 
   static ThemeData darkenTheme(ThemeData theme) {

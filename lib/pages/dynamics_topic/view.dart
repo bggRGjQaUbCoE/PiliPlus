@@ -140,14 +140,13 @@ class _DynTopicPageState extends State<DynTopicPage>
           ),
         ),
       ),
-      fab: SlideTransition(
-        position: fabAnimation,
+      fab: fabTransition(
         child: Padding(
           padding: .only(
             right: kFloatingActionButtonMargin + padding.right,
             bottom: kFloatingActionButtonMargin + padding.bottom,
           ),
-          child: FloatingActionButton.extended(
+          child: FloatingActionButton(
             onPressed: () {
               if (_controller.isLogin) {
                 CreateDynPanel.onCreateDyn(
@@ -161,8 +160,8 @@ class _DynTopicPageState extends State<DynTopicPage>
                 SmartDialog.showToast('账号未登录');
               }
             },
-            icon: const Icon(CustomIcons.topic_tag, size: 20),
-            label: const Text('参与话题'),
+            tooltip: '参与话题',
+            child: const Icon(CustomIcons.topic_tag, size: 20),
           ),
         ),
       ),

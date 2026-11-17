@@ -1,14 +1,44 @@
+import 'package:PiliPlus/common/widgets/scroll_intent.dart';
 import 'package:material_ui/material_ui.dart';
 
 mixin BaseFabMixin<T extends StatefulWidget> on State<T>, TickerProvider {
   late bool _isFabVisible = true;
+  final _scrollIntent = ScrollVisibility();
+  late final AppLifecycleListener _lifecycle;
+  bool _tickerEnabled = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle = AppLifecycleListener(onResume: _restoreFab);
+  }
+
+  void _restoreFab() {
+    _scrollIntent.reset();
+    showFab();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final enabled = TickerMode.valuesOf(context).enabled;
+    if (enabled && !_tickerEnabled) _restoreFab();
+    _tickerEnabled = enabled;
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
   AnimationController get fabAnimationCtr;
   Animation<Offset> get fabAnimation;
 
   AnimationController _initController() {
     return AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 100),
+      duration: ScrollVisibility.duration,
     );
   }
 
@@ -17,41 +47,68 @@ mixin BaseFabMixin<T extends StatefulWidget> on State<T>, TickerProvider {
       Tween<Offset>(
         begin: Offset.zero,
         end: const Offset(0.0, 1.0),
-      ).chain(CurveTween(curve: Curves.easeInOut)),
+      ).chain(CurveTween(curve: ScrollVisibility.curve)),
     );
   }
 
   void showFab() {
     if (!_isFabVisible) {
       _isFabVisible = true;
-      fabAnimationCtr.reverse();
+      if (MediaQuery.disableAnimationsOf(context)) {
+        fabAnimationCtr.value = 0;
+      } else {
+        fabAnimationCtr.reverse();
+      }
     }
   }
 
   void hideFab() {
     if (_isFabVisible) {
       _isFabVisible = false;
-      fabAnimationCtr.forward();
+      if (MediaQuery.disableAnimationsOf(context)) {
+        fabAnimationCtr.value = 1;
+      } else {
+        fabAnimationCtr.forward();
+      }
     }
   }
 
   Widget fabAnimWrapper({required Widget child}) {
-    return NotificationListener<UserScrollNotification>(
+    return NotificationListener<ScrollNotification>(
       onNotification: onNotification,
       child: child,
     );
   }
 
-  bool onNotification(UserScrollNotification notification) {
-    switch (notification.direction) {
+  bool onNotification(ScrollNotification notification) {
+    switch (_scrollIntent.update(notification)) {
       case .forward:
         showFab();
       case .reverse:
         hideFab();
-      default:
+      case .idle || null:
+        break;
     }
     return false;
   }
+
+  Widget fabTransition({required Widget child}) => AnimatedBuilder(
+    animation: fabAnimationCtr,
+    child: child,
+    builder: (context, child) {
+      final hidden = fabAnimationCtr.isForwardOrCompleted;
+      return IgnorePointer(
+        ignoring: hidden,
+        child: ExcludeSemantics(
+          excluding: hidden,
+          child: FractionalTranslation(
+            translation: fabAnimation.value,
+            child: child,
+          ),
+        ),
+      );
+    },
+  );
 }
 
 mixin FabMixin<T extends StatefulWidget> on BaseFabMixin<T> {

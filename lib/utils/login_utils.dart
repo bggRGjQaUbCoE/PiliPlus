@@ -1,4 +1,4 @@
-import 'dart:async' show FutureOr;
+import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:PiliPlus/http/loading_state.dart';
@@ -19,6 +19,51 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 abstract final class LoginUtils {
+  static Future<void> _webCookieTurn = Future.value();
+
+  static Future<void> syncMallWebCookie([Account? account]) async {
+    final cookies = (account ?? Accounts.main).cookieJar.toList();
+    final previous = _webCookieTurn;
+    final released = Completer<void>();
+    _webCookieTurn = released.future;
+    await previous;
+    try {
+      final webManager = web.CookieManager.instance(
+        webViewEnvironment: webViewEnvironment,
+      );
+      await webManager.deleteCookies(
+        url: web.WebUri('https://bilibili.com'),
+        domain: '.bilibili.com',
+      );
+      for (final host in [
+        'bilibili.com',
+        'mall.bilibili.com',
+        'passport.bilibili.com',
+        'show.bilibili.com',
+      ]) {
+        await webManager.deleteCookies(url: web.WebUri('https://$host'));
+      }
+      final written = await Future.wait(
+        cookies.map(
+          (cookie) => webManager.setCookie(
+            url: web.WebUri('https://bilibili.com'),
+            name: cookie.name,
+            value: cookie.value,
+            path: cookie.path ?? '/',
+            domain: '.bilibili.com',
+            isSecure: cookie.secure,
+            isHttpOnly: cookie.httpOnly,
+          ),
+        ),
+      );
+      if (written.contains(false)) {
+        throw StateError('无法同步 B 站网页 Cookie');
+      }
+    } finally {
+      released.complete();
+    }
+  }
+
   static FutureOr setWebCookie([Account? account]) {
     if (Platform.isLinux) return null;
     final cookies = (account ?? Accounts.main).cookieJar.toList();
@@ -46,7 +91,16 @@ abstract final class LoginUtils {
     final account = Accounts.main;
     final res = await UserHttp.userInfo();
     if (res case Success(:final response)) {
-      setWebCookie(account);
+      if (Pref.enableMall) {
+        if (!identical(account, Accounts.main)) return;
+        final ready = syncMallWebCookie(account);
+        Get.find<AccountService>().webSession.value = ready;
+        await ready;
+        if (!identical(account, Accounts.main)) return;
+      } else {
+        Get.find<AccountService>().webSession.value = null;
+        setWebCookie(account);
+      }
       RequestUtils.syncHistoryStatus();
       if (response.isLogin == true) {
         final accountService = Get.find<AccountService>()
@@ -83,8 +137,18 @@ abstract final class LoginUtils {
       ..face.value = ''
       ..isLogin.value = false;
 
+    final Future<void>? mallSession;
+    if (Pref.enableMall) {
+      mallSession = syncMallWebCookie(AnonymousAccount());
+      Get.find<AccountService>().webSession.value = mallSession;
+    } else {
+      Get.find<AccountService>().webSession.value = null;
+      mallSession = null;
+    }
     return Future.wait([
-      if (Platform.isLinux)
+      if (mallSession != null)
+        mallSession
+      else if (Platform.isLinux)
         LinuxCookieManager.deleteAllCookies()
       else
         web.CookieManager.instance(

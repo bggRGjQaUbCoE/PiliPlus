@@ -17,9 +17,18 @@
 
 import 'dart:math' as math;
 
+import 'package:PiliPlus/common/widgets/advanced_materials.dart';
+import 'package:PiliPlus/common/widgets/scroll_intent.dart';
+import 'package:PiliPlus/common/widgets/scroll_under_toolbar.dart';
+
 import 'package:flutter/foundation.dart' show clampDouble;
 import 'package:flutter/rendering.dart'
-    show RenderSliverSingleBoxAdapter, SliverGeometry, ScrollDirection;
+    show
+        BackdropFilterLayer,
+        ClipRectLayer,
+        LayerHandle,
+        RenderSliverSingleBoxAdapter,
+        SliverGeometry;
 import 'package:material_ui/material_ui.dart';
 
 /// ref [SliverFloatingHeader]
@@ -29,16 +38,41 @@ class SliverFloatingHeaderWidget extends StatelessWidget {
     super.key,
     required this.child,
     required this.backgroundColor,
+    this.glassOnOverlap = false,
   });
 
   final Widget child;
   final Color backgroundColor;
+  final bool glassOnOverlap;
 
   @override
   Widget build(BuildContext context) {
+    final glass =
+        Theme.of(context).extension<SurfaceMaterialTheme>()?.enabled ?? false;
+    final scheme = ColorScheme.of(context);
+    final toolbar = glassOnOverlap ? ToolbarScrollInset.of(context) : null;
     return _SliverFloatingHeaderWidget(
-      backgroundColor: backgroundColor,
-      child: _SliverFloatingHeaderScroll(child: child),
+      toolbar: toolbar,
+      backgroundColor: glass && !glassOnOverlap
+          ? Colors.transparent
+          : backgroundColor,
+      glassTint: glass && glassOnOverlap
+          ? AdvancedMaterials.tint(scheme).withValues(
+              alpha: AdvancedMaterials.toolbarOpacity(scheme.brightness),
+            )
+          : null,
+      child: _SliverFloatingHeaderScroll(
+        child: glassOnOverlap
+            ? Material(type: MaterialType.transparency, child: child)
+            : SurfaceMaterial(
+                kind: SurfaceMaterialKind.appBar,
+                material: Material(
+                  color: backgroundColor,
+                  shape: const RoundedRectangleBorder(),
+                  child: child,
+                ),
+              ),
+      ),
     );
   }
 }
@@ -82,7 +116,7 @@ class _SliverFloatingHeaderScrollState
     if (_position!.isScrollingNotifier.value) {
       final RenderSliverFloatingHeader? renderer = context
           .findAncestorRenderObjectOfType<RenderSliverFloatingHeader>();
-      renderer?.updateScrollStartDirection(_position!.userScrollDirection);
+      renderer?.resetScrollIntent();
     }
   }
 
@@ -94,27 +128,71 @@ class _SliverFloatingHeaderWidget extends SingleChildRenderObjectWidget {
   const _SliverFloatingHeaderWidget({
     required Widget super.child,
     required this.backgroundColor,
+    required this.glassTint,
+    required this.toolbar,
   });
 
   final Color backgroundColor;
+  final Color? glassTint;
+  final ToolbarScrollInset? toolbar;
 
   @override
   RenderObject createRenderObject(BuildContext context) =>
-      RenderSliverFloatingHeader(backgroundColor: backgroundColor);
+      RenderSliverFloatingHeader(
+        backgroundColor: backgroundColor,
+        glassTint: glassTint,
+        toolbar: toolbar,
+      );
 
   @override
   void updateRenderObject(
     BuildContext context,
     RenderSliverFloatingHeader renderObject,
   ) {
-    renderObject.backgroundColor = backgroundColor;
+    renderObject
+      ..backgroundColor = backgroundColor
+      ..glassTint = glassTint
+      ..toolbar = toolbar;
   }
 }
 
 class RenderSliverFloatingHeader extends RenderSliverSingleBoxAdapter {
   RenderSliverFloatingHeader({
     required this._backgroundColor,
+    this._glassTint,
+    this._toolbar,
   });
+
+  Color? _glassTint;
+  ToolbarScrollInset? _toolbar;
+  double _visibleExtent = 0;
+  double _overlap = 0;
+  final _blurLayer = LayerHandle<BackdropFilterLayer>();
+
+  set toolbar(ToolbarScrollInset? value) {
+    if (_toolbar?.extent == value?.extent &&
+        _toolbar?.onLeadingExtent == value?.onLeadingExtent) {
+      return;
+    }
+    _toolbar = value;
+    markNeedsLayout();
+  }
+
+  set glassTint(Color? value) {
+    if (_glassTint == value) return;
+    _glassTint = value;
+    markNeedsCompositingBitsUpdate();
+    markNeedsPaint();
+  }
+
+  @override
+  bool get alwaysNeedsCompositing => _glassTint != null;
+
+  @override
+  void dispose() {
+    _blurLayer.layer = null;
+    super.dispose();
+  }
 
   Color _backgroundColor;
   set backgroundColor(Color value) {
@@ -129,66 +207,69 @@ class RenderSliverFloatingHeader extends RenderSliverSingleBoxAdapter {
 
   late double effectiveScrollOffset;
 
-  bool get floatingHeaderNeedsToBeUpdated {
-    return lastScrollOffset != null &&
-        (constraints.scrollOffset < lastScrollOffset! ||
-            effectiveScrollOffset < child!.size.height);
-  }
+  final _scrollIntent = ScrollVisibility();
 
-  ScrollDirection? _lastStartedScrollDirection;
-
-  void updateScrollStartDirection(ScrollDirection direction) {
-    _lastStartedScrollDirection = direction;
-  }
+  void resetScrollIntent() => _scrollIntent.reset();
 
   @override
   void performLayout() {
-    if (!floatingHeaderNeedsToBeUpdated) {
-      effectiveScrollOffset = constraints.scrollOffset;
+    final scrollOffset = constraints.scrollOffset;
+    if (lastScrollOffset == null ||
+        (scrollOffset >= lastScrollOffset! &&
+            effectiveScrollOffset >= child!.size.height)) {
+      effectiveScrollOffset = scrollOffset;
+      _scrollIntent.reset();
     } else {
       double delta =
-          lastScrollOffset! -
-          constraints.scrollOffset; // > 0 when the header is growing
-      if (constraints.userScrollDirection == .forward ||
-          _lastStartedScrollDirection == .forward) {
+          lastScrollOffset! - scrollOffset; // > 0 when the header is growing
+      final intent = _scrollIntent.updateDelta(-delta);
+      if (intent == .forward) {
         final childExtent = child!.size.height;
         if (effectiveScrollOffset > childExtent) {
           effectiveScrollOffset = childExtent; // The header is now just above the start edge of viewport.
         }
       } else {
         // delta > 0 and scrolling forward is a contradiction. Assume that it's noise (set delta to 0).
-        delta = clampDouble(delta, -double.infinity, 0);
+        delta = intent == .reverse ? math.min(delta, 0) : 0;
       }
       effectiveScrollOffset = clampDouble(
         effectiveScrollOffset - delta,
         0.0,
-        constraints.scrollOffset,
+        scrollOffset,
       );
     }
 
     child?.layout(constraints.asBoxConstraints(), parentUsesSize: true);
     final childExtent = child!.size.height;
-    final double paintExtent = childExtent - effectiveScrollOffset;
-    final double layoutExtent = childExtent - constraints.scrollOffset;
+    final toolbar = _toolbar;
+    final inset = toolbar?.extent ?? 0.0;
+    toolbar?.onLeadingExtent(childExtent);
+    final remaining = constraints.remainingPaintExtent;
+    final available = math.max(0.0, remaining - inset);
+    final visible = childExtent - effectiveScrollOffset;
+    _visibleExtent = clampDouble(visible, 0.0, available);
+    _overlap =
+        _visibleExtent -
+        clampDouble(childExtent - scrollOffset, 0.0, available);
+    final layoutExtent = clampDouble(
+      inset + childExtent - scrollOffset,
+      0.0,
+      remaining,
+    );
     geometry = SliverGeometry(
       paintOrigin: math.min(constraints.overlap, 0.0),
-      scrollExtent: childExtent,
-      paintExtent: clampDouble(
-        paintExtent,
-        0.0,
-        constraints.remainingPaintExtent,
-      ),
-      layoutExtent: clampDouble(
+      scrollExtent: inset + childExtent,
+      paintExtent: math.max(
         layoutExtent,
-        0.0,
-        constraints.remainingPaintExtent,
+        _visibleExtent > 0 ? inset + _visibleExtent : 0.0,
       ),
-      maxPaintExtent: childExtent,
+      layoutExtent: layoutExtent,
+      maxPaintExtent: inset + childExtent,
       hasVisualOverflow: false,
     );
 
-    _childPosition = math.min(0.0, paintExtent - childExtent);
-    lastScrollOffset = constraints.scrollOffset;
+    _childPosition = inset + math.min(0.0, visible - childExtent);
+    lastScrollOffset = scrollOffset;
   }
 
   @override
@@ -204,19 +285,59 @@ class RenderSliverFloatingHeader extends RenderSliverSingleBoxAdapter {
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    if (child != null && geometry!.visible) {
+    if (child != null && _visibleExtent > 0) {
       offset += Offset(0.0, childMainAxisPosition(child!));
       final size = child!.size;
-      context.canvas.drawRect(
-        Rect.fromLTWH(
-          offset.dx,
-          offset.dy - 2,
-          size.width,
-          size.height + 2,
-        ),
-        Paint()..color = _backgroundColor,
+      final tint = _glassTint;
+      final rect = Rect.fromLTWH(
+        0,
+        (_toolbar?.extent ?? 0.0) - _childPosition!,
+        size.width,
+        _visibleExtent,
       );
-      context.paintChild(child!, offset);
+      final progress = tint == null
+          ? 0.0
+          : (_overlap / size.height).clamp(0.0, 1.0);
+      void paintHeader(PaintingContext context, Offset offset) {
+        if (progress > 0) {
+          final backdrop = (_blurLayer.layer ??= BackdropFilterLayer())
+            ..filter = AdvancedMaterials.blurAt(progress);
+          context.pushLayer(backdrop, (context, offset) {
+            context.canvas.drawRect(
+              rect.shift(offset),
+              Paint()..color = Color.lerp(_backgroundColor, tint, progress)!,
+            );
+          }, offset);
+        } else {
+          _blurLayer.layer = null;
+          context.canvas.drawRect(
+            Rect.fromLTWH(
+              offset.dx,
+              offset.dy - 2,
+              size.width,
+              size.height + 2,
+            ),
+            Paint()..color = _backgroundColor,
+          );
+        }
+        context.paintChild(child!, offset);
+      }
+
+      if (progress > 0 || (_toolbar?.extent ?? 0) > 0) {
+        layer = context.pushClipRect(
+          needsCompositing,
+          offset,
+          rect,
+          paintHeader,
+          oldLayer: layer as ClipRectLayer?,
+        );
+      } else {
+        layer = null;
+        paintHeader(context, offset);
+      }
+    } else {
+      layer = null;
+      _blurLayer.layer = null;
     }
   }
 
@@ -224,5 +345,5 @@ class RenderSliverFloatingHeader extends RenderSliverSingleBoxAdapter {
   bool hitTestSelf({
     required double mainAxisPosition,
     required double crossAxisPosition,
-  }) => true;
+  }) => _visibleExtent > 0 && mainAxisPosition >= (_toolbar?.extent ?? 0);
 }

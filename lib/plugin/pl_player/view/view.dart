@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/advanced_materials.dart';
 import 'package:PiliPlus/common/widgets/cropped_image.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/disabled_icon.dart';
@@ -64,6 +65,7 @@ import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:collection/collection.dart';
@@ -85,10 +87,53 @@ import 'package:screen_brightness_platform_interface/screen_brightness_platform_
 
 part 'widgets.dart';
 
+class _PlayerHintSurface extends StatelessWidget {
+  const _PlayerHintSurface({
+    required this.padding,
+    required this.child,
+    this.radius = 64,
+  });
+
+  final EdgeInsetsGeometry padding;
+  final Widget child;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final glass = theme.extension<SurfaceMaterialTheme>()?.enabled == true;
+    final borderRadius = BorderRadius.circular(radius);
+    final surface = Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: glass
+            ? AdvancedMaterials.tint(
+                theme.brightness == Brightness.dark
+                    ? theme.colorScheme
+                    : ThemeUtils.darkTheme.colorScheme,
+              ).withValues(alpha: .75)
+            : const Color(0x88000000),
+        borderRadius: borderRadius,
+      ),
+      child: child,
+    );
+    if (!glass) return surface;
+    return ClipRRect(
+      borderRadius: borderRadius,
+      child: BackdropFilter(
+        filter: AdvancedMaterials.blurAt(.5),
+        blendMode: BlendMode.src,
+        child: surface,
+      ),
+    );
+  }
+}
+
 class PLVideoPlayer extends StatefulWidget {
   const PLVideoPlayer({
     required this.maxWidth,
     required this.maxHeight,
+    this.videoHeight,
     required this.plPlayerController,
     this.videoDetailController,
     this.introController,
@@ -104,6 +149,7 @@ class PLVideoPlayer extends StatefulWidget {
 
   final double maxWidth;
   final double maxHeight;
+  final double? videoHeight;
   final PlPlayerController plPlayerController;
   final VideoDetailController? videoDetailController;
   final CommonIntroController? introController;
@@ -137,7 +183,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   late FullScreenMode mode;
 
-  late final RxBool showRestoreScaleBtn = false.obs;
+  late final RxBool _localShowRestoreScaleBtn = false.obs;
+  RxBool get showRestoreScaleBtn =>
+      widget.videoDetailController?.showRestoreScaleBtn ??
+      _localShowRestoreScaleBtn;
 
   GestureType? _gestureType;
   Offset? _initialFocalPoint;
@@ -213,39 +262,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       }
     }
 
-    if (visible) {
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _animationController.value = visible ? 1 : 0;
+    } else if (visible) {
       _animationController.forward();
     } else {
       _animationController.reverse();
-    }
-
-    if (widget.videoDetailController case final controller?) {
-      if (controller.vttSubtitlesIndex.value != 0) {
-        if (visible) {
-          _adjustSubPaddingIfNeeded();
-        } else {
-          _resetSubPaddingIfNeeded();
-        }
-      }
-    }
-  }
-
-  void _adjustSubPaddingIfNeeded() {
-    const int minPadding = 70;
-    if (plPlayerController.subtitlePaddingB < minPadding) {
-      plPlayerController
-        ..tmpSubtitlePaddingB = plPlayerController.subtitlePaddingB
-        ..subtitlePaddingB = minPadding
-        ..updateSubtitleStyle();
-    }
-  }
-
-  void _resetSubPaddingIfNeeded() {
-    if (plPlayerController.tmpSubtitlePaddingB != null) {
-      plPlayerController
-        ..subtitlePaddingB = plPlayerController.tmpSubtitlePaddingB!
-        ..updateSubtitleStyle()
-        ..tmpSubtitlePaddingB = null;
     }
   }
 
@@ -254,15 +276,19 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     super.initState();
     addObserverMobile(this);
 
-    _controlsListener = plPlayerController.showControls.listen(
-      _onControlChanged,
-    );
-
-    _transformationController = TransformationController();
+    _localTransformationController = TransformationController();
 
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 100),
+      value:
+          plPlayerController.showControls.value &&
+              !plPlayerController.controlsLock.value
+          ? 1
+          : 0,
+    );
+    _controlsListener = plPlayerController.showControls.listen(
+      _onControlChanged,
     );
     videoController = plPlayerController.videoController!;
 
@@ -384,10 +410,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     _doubleTapGestureRecognizer.dispose();
     _scaleGestureRecognizer.dispose();
     _brightnessListener?.cancel();
-    _resetSubPaddingIfNeeded();
     _controlsListener?.cancel();
     _animationController.dispose();
-    _transformationController.dispose();
+    _localTransformationController.dispose();
     _removeDmAction();
     if (PlatformUtils.isMobile) {
       FlutterVolumeController.removeListener();
@@ -897,7 +922,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   bool get isFullScreen => plPlayerController.isFullScreen.value;
 
-  late final TransformationController _transformationController;
+  late final TransformationController _localTransformationController;
+  TransformationController get _transformationController =>
+      widget.videoDetailController?.videoTransformController ??
+      _localTransformationController;
 
   late ColorScheme colorScheme;
   late double maxWidth;
@@ -1319,7 +1347,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   @override
   Widget build(BuildContext context) {
     maxWidth = widget.maxWidth;
-    maxHeight = widget.maxHeight;
+    maxHeight = widget.videoHeight ?? widget.maxHeight;
     final isFullScreen = this.isFullScreen;
     final primary = isFullScreen && colorScheme.isLight
         ? colorScheme.inversePrimary
@@ -1345,14 +1373,35 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           Positioned.fill(
             child: IgnorePointer(
               ignoring: !plPlayerController.enableDragSubtitle,
-              child: Obx(
-                () => SubtitleView(
+              child: Obx(() {
+                final config = plPlayerController.subtitleConfig.value;
+                final draggable = plPlayerController.enableDragSubtitle;
+                final subtitles = SubtitleView(
                   controller: videoController,
-                  configuration: plPlayerController.subtitleConfig.value,
-                  enableDragSubtitle: plPlayerController.enableDragSubtitle,
+                  configuration: config,
+                  enableDragSubtitle: draggable,
                   onUpdatePadding: plPlayerController.onUpdatePadding,
-                ),
-              ),
+                );
+                final hasVtt =
+                    (widget.videoDetailController?.vttSubtitlesIndex.value ??
+                        0) !=
+                    0;
+                final lift = !draggable && hasVtt && config.padding.bottom < 70
+                    ? 70 - config.padding.bottom
+                    : 0.0;
+                // Move just the subtitle layer using the same progress as the
+                // controls, leaving the saved padding and text layout intact.
+                return AnimatedBuilder(
+                  animation: lift > 0
+                      ? _animationController
+                      : kAlwaysDismissedAnimation,
+                  child: subtitles,
+                  builder: (_, child) => Transform.translate(
+                    offset: Offset(0, -lift * _animationController.value),
+                    child: child,
+                  ),
+                );
+              }),
             ),
           ),
 
@@ -1387,12 +1436,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                         ? 1.0
                         : 0.0,
                     duration: const Duration(milliseconds: 150),
-                    child: Container(
+                    child: _PlayerHintSurface(
                       padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(
-                        color: Color(0x88000000),
-                        borderRadius: BorderRadius.all(Radius.circular(16)),
-                      ),
+                      radius: 16,
                       child: Obx(
                         () => Text(
                           '${plPlayerController.enableAutoLongPressSpeed ? (plPlayerController.longPressStatus.value ? plPlayerController.lastPlaybackSpeed : plPlayerController.playbackSpeed) * 2 : plPlayerController.longPressSpeed}倍速中',
@@ -1480,14 +1526,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   curve: Curves.easeInOut,
                   opacity: plPlayerController.volumeIndicator.value ? 1.0 : 0.0,
                   duration: const Duration(milliseconds: 150),
-                  child: Container(
+                  child: _PlayerHintSurface(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
                       vertical: 5,
-                    ),
-                    decoration: const BoxDecoration(
-                      color: Color(0x88000000),
-                      borderRadius: BorderRadius.all(Radius.circular(64)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -1529,14 +1571,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                 curve: Curves.easeInOut,
                 opacity: _brightnessIndicator.value ? 1.0 : 0.0,
                 duration: const Duration(milliseconds: 150),
-                child: Container(
+                child: _PlayerHintSurface(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,
                     vertical: 5,
-                  ),
-                  decoration: const BoxDecoration(
-                    color: Color(0x88000000),
-                    borderRadius: BorderRadius.all(Radius.circular(64)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -1592,6 +1630,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   ),
                   AppBarAni(
                     isTop: false,
+                    safeBottom: widget.videoHeight != null,
                     controller: _animationController,
                     isFullScreen: isFullScreen,
                     removeSafeArea: plPlayerController.removeSafeArea,
@@ -1808,8 +1847,9 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                                     size: 15,
                                     color: Colors.white,
                                   ),
-                            onTap: () =>
-                                plPlayerController.onLockControl(!controlsLock),
+                            onTap: () => plPlayerController.onLockControl(
+                              !controlsLock,
+                            ),
                           );
                         }),
                       ),
@@ -1992,7 +2032,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     return Container(
       clipBehavior: .none,
       width: maxWidth,
-      height: maxHeight,
+      height: widget.maxHeight,
       color: widget.fill,
       child: Obx(
         () => MouseInteractiveViewer(
@@ -2021,23 +2061,28 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
           childKey: _videoKey,
           child: RepaintBoundary(
             key: _videoKey,
-            child: Obx(
-              () {
-                final videoFit = plPlayerController.videoFit.value;
-                return Transform.flip(
-                  flipX: plPlayerController.flipX.value,
-                  flipY: plPlayerController.flipY.value,
-                  child: FittedBox(
-                    fit: videoFit.boxFit,
-                    alignment: widget.alignment,
-                    child: SimpleVideo(
-                      controller: plPlayerController.videoController!,
-                      fill: widget.fill,
-                      aspectRatio: videoFit.aspectRatio,
-                    ),
-                  ),
-                );
-              },
+            child: Center(
+              child: SizedBox(
+                height: maxHeight,
+                child: Obx(
+                  () {
+                    final videoFit = plPlayerController.videoFit.value;
+                    return Transform.flip(
+                      flipX: plPlayerController.flipX.value,
+                      flipY: plPlayerController.flipY.value,
+                      child: FittedBox(
+                        fit: videoFit.boxFit,
+                        alignment: widget.alignment,
+                        child: SimpleVideo(
+                          controller: plPlayerController.videoController!,
+                          fill: widget.fill,
+                          aspectRatio: videoFit.aspectRatio,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ),
           ),
         ),

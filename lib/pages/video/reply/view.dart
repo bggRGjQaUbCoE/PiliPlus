@@ -116,8 +116,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
               Obx(() => _buildBody(controller.loadingState.value)),
             ],
           ),
-          fab: SlideTransition(
-            position: fabAnimation,
+          fab: fabTransition(
             child: Padding(
               padding: .only(
                 right: kFloatingActionButtonMargin,

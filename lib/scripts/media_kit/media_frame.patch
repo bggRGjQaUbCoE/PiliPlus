@@ -1,0 +1,82 @@
+--- a/media_kit_video/lib/src/video_controller/platform_video_controller.dart
++++ b/media_kit_video/lib/src/video_controller/platform_video_controller.dart
+@@ -53,7 +53,7 @@
+   /// [Completer] used to signal the decoding & rendering of the first video frame.
+   /// Use [waitUntilFirstFrameRendered] to wait for the first frame to be rendered.
+   @protected
+-  final waitUntilFirstFrameRenderedCompleter = Completer<void>();
++  var waitUntilFirstFrameRenderedCompleter = Completer<void>();
+ 
+   static Future<PlatformVideoController> create(
+     Player player, {
+--- a/media_kit_video/lib/src/video_controller/android_video_controller/real.dart
++++ b/media_kit_video/lib/src/video_controller/android_video_controller/real.dart
+@@ -65,6 +65,13 @@
+   // ----------------------------------------------
+ 
+   String? _current;
++  bool _freshOutput = false;
++
++  /// Request a distinct texture for the next media, without replacing Player.
++  void prepareForNextMedia() {
++    _freshOutput = true;
++    waitUntilFirstFrameRenderedCompleter = Completer<void>();
++  }
+ 
+   /// {@macro android_video_controller}
+   AndroidVideoController._(super.player, super.configuration) {
+@@ -80,6 +87,18 @@
+         calloc.free(name.cast());
+         mpv.mpv_free(path.cast());
+ 
++        if (_freshOutput) {
++          // on_load runs after the previous VO was detached by on_unload.
++          // A fresh texture cannot contain a queued frame from the old media.
++          await _channel.invokeMethod('VideoOutputManager.Dispose', {
++            'handle': ctx.address.toString(),
++          });
++          final output = await _channel.invokeMethod('VideoOutputManager.Create', {
++            'handle': ctx.address.toString(),
++          });
++          id.value = output['id'];
++          _current = null;
++        }
+         if (_current != current) {
+           _current = current;
+           // It is important to use a new android.view.Surface each time a new video-output is created because: https://stackoverflow.com/a/21564236
+@@ -95,6 +114,7 @@
+           debugPrint(data.toString());
+           // Save the android.view.Surface object reference for usage inside player.stream.videoParams.listen.
+           _wid = data['wid'];
++          _freshOutput = false;
+         }
+ 
+         // By default, android.view.Surface has a size of 1x1. If we assign --wid here, libmpv will internally start rendering & the first frame will be drawn as a solid color: https://github.com/media-kit/media-kit/issues/339
+@@ -297,6 +317,9 @@
+                 // Notify about updated texture ID & [Rect].
+                 final int handle = call.arguments['handle'];
+                 debugPrint(handle.toString());
++                final controller = _controllers[handle];
++                if (controller == null || controller._freshOutput ||
++                    call.arguments['id'] != controller.id.value) break;
+                 // Notify about the first frame being rendered.
+                 final completer =
+                     _controllers[handle]?.waitUntilFirstFrameRenderedCompleter;
+--- a/media_kit_video/android/src/main/java/com/alexmercerind/media_kit_video/VideoOutput.java
++++ b/media_kit_video/android/src/main/java/com/alexmercerind/media_kit_video/VideoOutput.java
+@@ -90,6 +90,7 @@
+                                 waitUntilFirstFrameRenderedNotify = true;
+                                 final HashMap<String, Object> data = new HashMap<>();
+                                 data.put("handle", handle);
++                                data.put("id", id);
+                                 channelReference.invokeMethod("VideoOutput.WaitUntilFirstFrameRenderedNotify", data);
+                                 Log.i("media_kit", String.format(Locale.ENGLISH, "VideoOutput.WaitUntilFirstFrameRenderedNotify = %d", handle));
+                             }
+@@ -112,6 +113,7 @@
+                                 waitUntilFirstFrameRenderedNotify = true;
+                                 final HashMap<String, Object> data = new HashMap<>();
+                                 data.put("handle", handle);
++                                data.put("id", id);
+                                 channelReference.invokeMethod("VideoOutput.WaitUntilFirstFrameRenderedNotify", data);
+                                 Log.i("media_kit", String.format(Locale.ENGLISH, "VideoOutput.WaitUntilFirstFrameRenderedNotify = %d", handle));
+                             }

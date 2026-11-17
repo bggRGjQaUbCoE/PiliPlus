@@ -62,7 +62,7 @@ class ImageModel {
   static bool enableLivePhoto = Pref.enableLivePhoto;
 }
 
-class ImageGridView extends StatelessWidget {
+class ImageGridView extends StatefulWidget {
   const ImageGridView({
     super.key,
     required this.picArr,
@@ -76,46 +76,7 @@ class ImageGridView extends StatelessWidget {
 
   static bool horizontalPreview = Pref.horizontalPreview;
   static final _regex = RegExp(r'/videoV|/dynamicDetail$|/articlePage');
-
-  void _onTap(BuildContext context, int index) {
-    final imgList = picArr.map(
-      (item) {
-        bool isLive = item.isLivePhoto;
-        return SourceModel(
-          sourceType: isLive ? .livePhoto : .networkImage,
-          url: item.url,
-          liveUrl: isLive ? item.liveUrl : null,
-          width: isLive ? item.width.toInt() : null,
-          height: isLive ? item.height.toInt() : null,
-          isLongPic: item.isLongPic,
-        );
-      },
-    ).toList();
-    if (horizontalPreview &&
-        !fullScreen &&
-        Get.currentRoute.startsWith(_regex) &&
-        !MediaQuery.isPortraitOf(context)) {
-      final scaffoldState = MiniScaffold.maybeOf(context);
-      if (scaffoldState != null) {
-        onViewImage?.call();
-        scaffoldState.showBottomSheet(
-          constraints: const BoxConstraints(),
-          (context) => GalleryViewer(
-            sources: imgList,
-            initIndex: index,
-            quality: GlobalData().imgQuality,
-          ),
-          enableDrag: false,
-        );
-        return;
-      }
-    }
-    PageUtils.imageView(
-      initialPage: index,
-      imgList: imgList,
-      tag: hashCode.toString(),
-    );
-  }
+  static bool enableImgMenu = Pref.enableImgMenu;
 
   static BorderRadius _borderRadius(
     int col,
@@ -139,11 +100,113 @@ class ImageGridView extends StatelessWidget {
     );
   }
 
-  static bool enableImgMenu = Pref.enableImgMenu;
+  @override
+  State<ImageGridView> createState() => _ImageGridViewState();
+}
+
+class _ImageGridViewState extends State<ImageGridView> {
+  late final String _heroTag = UniqueKey().toString();
+  final Map<int, ({String url, ImageProvider provider})> _loadedImages = {};
+  final Set<(int, String)> _pendingImageReady = {};
+  int _column = 3;
+
+  String _tagFor(int index, ImageModel item) => '${item.url}$_heroTag$index';
+
+  void _onImageReady(int index, String url, ImageProvider provider) {
+    final loaded = _loadedImages[index];
+    if (loaded?.url == url && loaded?.provider == provider) return;
+    final pending = (index, url);
+    if (!_pendingImageReady.add(pending)) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _pendingImageReady.remove(pending);
+      if (!mounted ||
+          index >= widget.picArr.length ||
+          widget.picArr[index].url != url) {
+        return;
+      }
+      if (_loadedImages[index]?.provider == provider) return;
+      setState(() => _loadedImages[index] = (url: url, provider: provider));
+    });
+  }
+
+  void _onTap(BuildContext context, int index) {
+    final imgList = List<SourceModel>.generate(widget.picArr.length, (i) {
+      final item = widget.picArr[i];
+      final isLive = item.isLivePhoto;
+      return SourceModel(
+        sourceType: isLive ? .livePhoto : .networkImage,
+        url: item.url,
+        liveUrl: isLive ? item.liveUrl : null,
+        width: item.width.toInt(),
+        height: item.height.toInt(),
+        isLongPic: item.isLongPic,
+        previewImageProvider: _loadedImages[i]?.provider,
+        heroBorderRadius: ImageGridView._borderRadius(
+          _column,
+          widget.picArr.length,
+          i,
+        ),
+      );
+    });
+    final item = widget.picArr[index];
+    final reduceImageMotion =
+        !item.isLivePhoto && MediaQuery.disableAnimationsOf(context);
+    final canFly =
+        !item.isLongPic &&
+        (item.isLivePhoto ||
+            (!reduceImageMotion &&
+                (_loadedImages[index]?.url == item.url &&
+                    item.width > 1 &&
+                    item.height > 1)));
+    if (ImageGridView.horizontalPreview &&
+        !widget.fullScreen &&
+        Get.currentRoute.startsWith(ImageGridView._regex) &&
+        !MediaQuery.isPortraitOf(context)) {
+      final scaffoldState = MiniScaffold.maybeOf(context);
+      if (scaffoldState != null) {
+        widget.onViewImage?.call();
+        scaffoldState.showBottomSheet(
+          constraints: const BoxConstraints(),
+          (context) => GalleryViewer(
+            sources: imgList,
+            initIndex: index,
+            quality: GlobalData().imgQuality,
+          ),
+          enableDrag: false,
+        );
+        return;
+      }
+    }
+    PageUtils.imageView(
+      initialPage: index,
+      imgList: imgList,
+      tag: canFly ? _heroTag : '',
+      fade: item.isLivePhoto ? null : !reduceImageMotion,
+      indexedHeroTags: true,
+      transitionDuration: reduceImageMotion ? Duration.zero : null,
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant ImageGridView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.picArr.length != widget.picArr.length ||
+        List.generate(
+              oldWidget.picArr.length,
+              (index) => oldWidget.picArr[index].url,
+            ).join('\n') !=
+            List.generate(
+              widget.picArr.length,
+              (index) => widget.picArr[index].url,
+            ).join('\n')) {
+      _loadedImages.clear();
+      _pendingImageReady.clear();
+    }
+  }
 
   void _showMenu(BuildContext context, int index, Offset offset) {
     HapticFeedback.mediumImpact();
-    final item = picArr[index];
+    final item = widget.picArr[index];
     showMenu(
       context: context,
       position: PageUtils.menuPosition(offset),
@@ -165,11 +228,12 @@ class ImageGridView extends StatelessWidget {
             onTap: () => PageUtils.launchURL(item.url),
             child: const Text('网页打开', style: TextStyle(fontSize: 14)),
           ),
-        if (picArr.length > 1)
+        if (widget.picArr.length > 1)
           PopupMenuItem(
             height: 42,
-            onTap: () =>
-                ImageUtils.downloadImg(picArr.map((item) => item.url).toList()),
+            onTap: () => ImageUtils.downloadImg(
+              widget.picArr.map((item) => item.url).toList(),
+            ),
             child: const Text('保存全部', style: TextStyle(fontSize: 14)),
           ),
         if (item.isLivePhoto)
@@ -195,17 +259,18 @@ class ImageGridView extends StatelessWidget {
     return Padding(
       padding: const .only(top: 6),
       child: ImageGridBuilder(
-        picArr: picArr,
+        picArr: widget.picArr,
         onTap: (index) => _onTap(context, index),
-        onSecondaryTapUp: enableImgMenu && PlatformUtils.isDesktop
+        onSecondaryTapUp: ImageGridView.enableImgMenu && PlatformUtils.isDesktop
             ? (index, offset) => _showMenu(context, index, offset)
             : null,
-        onLongPressStart: enableImgMenu && PlatformUtils.isMobile
+        onLongPressStart: ImageGridView.enableImgMenu && PlatformUtils.isMobile
             ? (index, offset) => _showMenu(context, index, offset)
             : null,
         builder: (BuildContext context, ImageGridInfo info) {
           final width = info.size.width;
           final height = info.size.height;
+          _column = info.column;
           late final placeHolder = Container(
             width: width,
             height: height,
@@ -221,12 +286,12 @@ class ImageGridView extends StatelessWidget {
               cacheWidth: width.cacheSize(context),
             ),
           );
-          return List.generate(picArr.length, (index) {
+          return List.generate(widget.picArr.length, (index) {
             void onTap() => _onTap(context, index);
-            final item = picArr[index];
-            final borderRadius = _borderRadius(
+            final item = widget.picArr[index];
+            final borderRadius = ImageGridView._borderRadius(
               info.column,
-              picArr.length,
+              widget.picArr.length,
               index,
             );
             Widget child = Stack(
@@ -237,10 +302,14 @@ class ImageGridView extends StatelessWidget {
                   src: item.url,
                   width: width,
                   height: height,
-                  borderRadius: borderRadius,
+                  borderRadius: item.isLivePhoto
+                      ? borderRadius
+                      : BorderRadius.zero,
                   alignment: item.isLongPic ? .topCenter : .center,
                   cacheWidth: item.width <= item.height,
                   getPlaceHolder: () => placeHolder,
+                  onImageReady: (provider) =>
+                      _onImageReady(index, item.url, provider),
                 ),
                 if (item.isLivePhoto)
                   const PBadge(text: 'Live', right: 8, bottom: 8, type: .gray)
@@ -249,10 +318,16 @@ class ImageGridView extends StatelessWidget {
               ],
             );
             if (!item.isLongPic) {
-              child = Hero(tag: '${item.url}$hashCode', child: child);
+              child = Hero(
+                tag: _tagFor(index, item),
+                child: child,
+              );
+              if (!item.isLivePhoto) {
+                child = ClipRRect(borderRadius: borderRadius, child: child);
+              }
             }
             child = Semantics(
-              label: '图片，第 ${index + 1} 张，共 ${picArr.length} 张',
+              label: '图片，第 ${index + 1} 张，共 ${widget.picArr.length} 张',
               button: true,
               onTap: onTap,
               child: child,

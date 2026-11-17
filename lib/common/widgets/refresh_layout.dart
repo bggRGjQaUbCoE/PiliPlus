@@ -14,12 +14,14 @@ class RefreshLayout
     required this.position,
     required this.indicator,
     required this.body,
+    this.topInset = 0,
   });
 
   final Animation<double> scale;
   final Animation<double> position;
   final Widget? indicator;
   final Widget body;
+  final double topInset;
 
   @override
   Iterable<RefreshType> get slots => RefreshType.values;
@@ -32,7 +34,19 @@ class RefreshLayout
 
   @override
   RenderRefreshLayout createRenderObject(BuildContext context) {
-    return RenderRefreshLayout(scale: scale, position: position);
+    return RenderRefreshLayout(
+      scale: scale,
+      position: position,
+      topInset: topInset,
+    );
+  }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    RenderRefreshLayout renderObject,
+  ) {
+    renderObject.topInset = topInset;
   }
 }
 
@@ -41,6 +55,7 @@ class RenderRefreshLayout extends RenderBox
   RenderRefreshLayout({
     required this.scale,
     required this.position,
+    required this._topInset,
   }) {
     scale.addListener(_scaleListener);
     position.addListener(_positionListener);
@@ -49,6 +64,12 @@ class RenderRefreshLayout extends RenderBox
   final Animation<double> scale;
 
   final Animation<double> position;
+  double _topInset;
+  set topInset(double value) {
+    if (value == _topInset) return;
+    _topInset = value;
+    markNeedsLayout();
+  }
 
   double _heightFactor = 0;
   double get heightFactor => _heightFactor;
@@ -112,7 +133,8 @@ class RenderRefreshLayout extends RenderBox
       indicator,
       Offset(
         (constraints.maxWidth - scaleSize) / 2,
-        (kIndicatorSize + displacement) * heightFactor -
+        _topInset +
+            (kIndicatorSize + displacement) * heightFactor -
             kIndicatorSize +
             (kIndicatorSize - scaleSize) / 2,
       ),
@@ -129,14 +151,14 @@ class RenderRefreshLayout extends RenderBox
     final indicator = this.indicator;
     if (indicator != null && heightFactor > 0 && scaleFactor > 0) {
       final indicatorOffset = getOffset(indicator);
-      if (indicatorOffset.dy > 0) {
+      if (indicatorOffset.dy >= _topInset) {
         context.paintChild(indicator, indicatorOffset + offset);
         layer = null;
       } else {
         layer = context.pushClipRect(
           needsCompositing,
           offset,
-          Offset.zero & size,
+          Rect.fromLTRB(0, _topInset, size.width, size.height),
           (context, offset) {
             context.paintChild(indicator, indicatorOffset + offset);
           },

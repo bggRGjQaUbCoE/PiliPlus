@@ -1,3 +1,5 @@
+import 'package:PiliPlus/common/widgets/motion/cover_motion.dart';
+
 import 'dart:io' show Platform;
 import 'dart:math';
 
@@ -51,6 +53,7 @@ import 'package:PiliPlus/plugin/pl_player/controller.dart';
 import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
+import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/plugin/pl_player/view/view.dart';
 import 'package:PiliPlus/services/service_locator.dart';
@@ -68,6 +71,7 @@ import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/theme_utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, clampDouble;
@@ -87,6 +91,9 @@ class VideoDetailPageV extends StatefulWidget {
 class _VideoDetailPageVState extends State<VideoDetailPageV>
     with RouteAware, RouteAwareMixin, WidgetsBindingObserver {
   final heroTag = Get.arguments['heroTag'];
+  final CoverTransitionData? _coverTransition =
+      Get.arguments['coverTransition'];
+  late final bool _openedFromHome;
 
   late final VideoDetailController videoDetailController;
   late final VideoReplyController _videoReplyController;
@@ -123,6 +130,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
       videoDetailController.plPlayerController.pipNoDanmaku;
 
   bool isShowing = true;
+  bool _skipAutoExpandOnRouteResume = false;
+  double? _scrollOffsetBeforeRoute;
+  double? _introScrollOffsetBeforeRoute;
 
   bool get isFullScreen =>
       videoDetailController.plPlayerController.isFullScreen.value;
@@ -146,6 +156,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   @override
   void initState() {
     super.initState();
+    _openedFromHome = Get.previousRoute == '/' || Get.previousRoute == '/home';
 
     videoDetailController = Get.put(VideoDetailController(), tag: heroTag);
 
@@ -221,7 +232,10 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     try {
       if (videoDetailController.scrollCtr.hasClients) {
         if (isPlaying) {
-          if (!videoDetailController.isExpanding &&
+          if (_skipAutoExpandOnRouteResume) {
+            _skipAutoExpandOnRouteResume = false;
+            videoDetailController.refreshPage();
+          } else if (!videoDetailController.isExpanding &&
               videoDetailController.scrollCtr.offset != 0 &&
               !videoDetailController.animationController.isAnimating) {
             videoDetailController.isExpanding = true;
@@ -375,6 +389,15 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     super.didPushNext();
     isShowing = false;
 
+    final scrollController = videoDetailController.scrollCtr;
+    _scrollOffsetBeforeRoute = scrollController.hasClients
+        ? scrollController.offset
+        : null;
+    final introScrollController = videoDetailController.introScrollCtr;
+    _introScrollOffsetBeforeRoute = introScrollController?.hasClients == true
+        ? introScrollController!.offset
+        : null;
+
     removeObserverMobile(this);
 
     if (Platform.isAndroid && !videoDetailController.setSystemBrightness) {
@@ -401,6 +424,37 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   // 返回当前页面时
   void didPopNext() {
     super.didPopNext();
+
+    final scrollOffset = _scrollOffsetBeforeRoute;
+    final introScrollOffset = _introScrollOffsetBeforeRoute;
+    _scrollOffsetBeforeRoute = null;
+    _introScrollOffsetBeforeRoute = null;
+    if (scrollOffset != null || introScrollOffset != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (scrollOffset != null) {
+          final scrollController = videoDetailController.scrollCtr;
+          if (scrollController.hasClients) {
+            final position = scrollController.position;
+            scrollController.jumpTo(
+              scrollOffset
+                  .clamp(position.minScrollExtent, position.maxScrollExtent)
+                  .toDouble(),
+            );
+          }
+        }
+        final introScrollController = videoDetailController.introScrollCtr;
+        if (introScrollOffset != null &&
+            introScrollController?.hasClients == true) {
+          final position = introScrollController!.position;
+          introScrollController.jumpTo(
+            introScrollOffset
+                .clamp(position.minScrollExtent, position.maxScrollExtent)
+                .toDouble(),
+          );
+        }
+      });
+    }
 
     if (videoDetailController.plPlayerController.isCloseAll) {
       return;
@@ -441,6 +495,11 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     plPlayerController
       ?..addStatusLister(playerListener)
       ..addPositionListener(positionListener);
+    _skipAutoExpandOnRouteResume =
+        videoDetailController.autoPlay &&
+        videoDetailController.playerStatus?.isPlaying == true &&
+        videoDetailController.scrollCtr.hasClients &&
+        videoDetailController.scrollCtr.offset != 0;
     if (videoDetailController.autoPlay) {
       videoDetailController.playerInit(
         autoplay: videoDetailController.playerStatus?.isPlaying ?? false,
@@ -464,6 +523,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     final size = MediaQuery.sizeOf(context);
     maxWidth = size.width;
     maxHeight = size.height;
+    final pageIsPortrait = maxHeight >= maxWidth;
     isWindowMode = MaxScreenSize.isWindowMode(
       width: maxWidth * videoDetailController.uiScale,
       height: maxHeight * videoDetailController.uiScale,
@@ -472,13 +532,35 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
     final shortestSide = size.shortestSide;
     final minVideoHeight = shortestSide / Style.aspectRatio16x9;
-    final maxVideoHeight = max(size.longestSide * 0.65, shortestSide);
+    final baseMaxVideoHeight = max(size.longestSide * 0.65, shortestSide);
+    final dimension = videoDetailController.routeDimension;
+    final sourceWidth = dimension?.width;
+    final sourceHeight = dimension?.height;
+    final portraitVideoHeight =
+        pageIsPortrait &&
+            (VideoFitType.values[Pref.cacheVideoFit] == VideoFitType.contain ||
+                VideoFitType.values[Pref.cacheVideoFit] == VideoFitType.fill) &&
+            sourceWidth != null &&
+            sourceHeight != null &&
+            sourceWidth > 0 &&
+            sourceHeight > sourceWidth
+        ? maxWidth * sourceHeight / sourceWidth
+        : null;
+    final maxVideoHeight = portraitVideoHeight == null
+        ? baseMaxVideoHeight
+        : min(
+            maxHeight - padding.vertical,
+            max(baseMaxVideoHeight, portraitVideoHeight),
+          );
+    final boundedVideoHeight = videoDetailController.isVertical.value
+        ? min(maxVideoHeight, (maxHeight - padding.vertical) * 0.85)
+        : maxVideoHeight;
     videoDetailController
-      ..isPortrait = isPortrait = maxHeight >= maxWidth
+      ..isPortrait = isPortrait = pageIsPortrait
       ..minVideoHeight = minVideoHeight
-      ..maxVideoHeight = maxVideoHeight
+      ..maxVideoHeight = boundedVideoHeight
       ..videoHeight = videoDetailController.isVertical.value
-          ? maxVideoHeight
+          ? boundedVideoHeight
           : minVideoHeight;
 
     theme = videoDetailController.plPlayerController.darkVideoPage
@@ -495,7 +577,12 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     return Obx(
       () {
         final isFullScreen = this.isFullScreen;
+        final continuous =
+            _coverTransition != null &&
+            !isFullScreen &&
+            !MediaQuery.disableAnimationsOf(context);
         return SimpleScaffold(
+          backgroundColor: continuous ? Colors.transparent : null,
           appBar: removeAppBar(isFullScreen)
               ? null
               : Obx(
@@ -518,12 +605,66 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                       statusBarBrightness = .dark;
                       statusBarIconBrightness = .light;
                     }
-                    return SimpleAppBar(
+                    Widget buildStatusBar(
+                      Color color,
+                      Brightness barBrightness,
+                      Brightness iconBrightness,
+                    ) => SimpleAppBar(
                       height: padding.top,
-                      backgroundColor: backgroundColor,
+                      backgroundColor: color,
                       brightness: brightness,
-                      statusBarBrightness: statusBarBrightness,
-                      statusBarIconBrightness: statusBarIconBrightness,
+                      statusBarBrightness: barBrightness,
+                      statusBarIconBrightness: iconBrightness,
+                    );
+                    final sourceTheme = Theme.of(context).colorScheme;
+                    final animation = ModalRoute.of(context)?.animation;
+                    if (!_openedFromHome ||
+                        !isPortrait ||
+                        isFullScreen ||
+                        sourceTheme.brightness != Brightness.light ||
+                        animation == null ||
+                        MediaQuery.disableAnimationsOf(context)) {
+                      return buildStatusBar(
+                        backgroundColor,
+                        statusBarBrightness,
+                        statusBarIconBrightness,
+                      );
+                    }
+                    return AnimatedBuilder(
+                      animation: animation,
+                      builder: (context, _) => TweenAnimationBuilder<double>(
+                        tween: Tween<double>(
+                          begin: animation.isCompleted ? 1.0 : 0.0,
+                          end: continuous
+                              ? (animation.value >= 0.78 ? 1.0 : 0.0)
+                              : animation.value,
+                        ),
+                        duration: continuous
+                            ? const Duration(milliseconds: 200)
+                            : Duration.zero,
+                        curve: Curves.easeInOut,
+                        builder: (context, value, _) {
+                          if (value == 1) {
+                            return buildStatusBar(
+                              backgroundColor,
+                              statusBarBrightness,
+                              statusBarIconBrightness,
+                            );
+                          }
+                          final color = Color.lerp(
+                            sourceTheme.surface,
+                            backgroundColor,
+                            value,
+                          )!;
+                          final barBrightness =
+                              ThemeData.estimateBrightnessForColor(color);
+                          return buildStatusBar(
+                            color,
+                            barBrightness,
+                            barBrightness.reverse,
+                          );
+                        },
+                      ),
                     );
                   },
                 ),
@@ -586,24 +727,29 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                 ),
               ];
             },
-            body: MiniScaffold(
-              key: videoDetailController.childKey,
-              body: Column(
-                children: [
-                  buildTabBar(onTap: videoDetailController.animToTop),
-                  Expanded(
-                    child: tabBarView(
-                      hitTestBehavior: .translucent,
-                      controller: videoDetailController.tabCtr,
-                      children: [
-                        videoIntro(isHorizontal: false, needCtr: false),
-                        if (videoDetailController.showReply)
-                          videoReplyPanel(isNested: true),
-                        if (_shouldShowSeasonPanel) seasonPanel,
-                      ],
+            body: FadeTransition(
+              opacity: continuous
+                  ? ModalRoute.of(context)!.animation!
+                  : kAlwaysCompleteAnimation,
+              child: MiniScaffold(
+                key: videoDetailController.childKey,
+                body: Column(
+                  children: [
+                    buildTabBar(onTap: videoDetailController.animToTop),
+                    Expanded(
+                      child: tabBarView(
+                        hitTestBehavior: .translucent,
+                        controller: videoDetailController.tabCtr,
+                        children: [
+                          videoIntro(isHorizontal: false, needCtr: false),
+                          if (videoDetailController.showReply)
+                            videoReplyPanel(isNested: true),
+                          if (_shouldShowSeasonPanel) seasonPanel,
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -1203,6 +1349,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
   Widget plPlayer({
     required double width,
     required double height,
+    double? videoHeight,
     bool isPipMode = false,
   }) => popScope(
     key: videoDetailController.videoPlayerKey,
@@ -1221,6 +1368,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
           : PLVideoPlayer(
               maxWidth: width,
               maxHeight: height,
+              videoHeight: videoHeight,
               plPlayerController: plPlayerController!,
               videoDetailController: videoDetailController,
               introController: introController,
@@ -1451,7 +1599,13 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
 
   Widget videoPlayer({required double width, required double height}) {
     final isFullScreen = this.isFullScreen;
-    return Stack(
+    final playerHeight = videoDetailController.isVertical.value
+        ? min(height, (maxHeight - padding.vertical) * 0.85)
+        : height;
+    final fullscreenPortrait =
+        isFullScreen && videoDetailController.isVertical.value;
+    final viewportHeight = fullscreenPortrait ? height : playerHeight;
+    final player = Stack(
       clipBehavior: Clip.none,
       children: [
         const Positioned.fill(
@@ -1461,7 +1615,11 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
           ),
         ),
 
-        plPlayer(width: width, height: height),
+        plPlayer(
+          width: width,
+          height: viewportHeight,
+          videoHeight: fullscreenPortrait ? playerHeight : null,
+        ),
 
         Obx(() {
           if (!videoDetailController.autoPlay) {
@@ -1475,7 +1633,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                     quality: 60,
                     src: videoDetailController.cover.value,
                     width: width,
-                    height: height,
+                    height: playerHeight,
                     cacheWidth: true,
                     getPlaceHolder: () => Center(
                       child: Image.asset(Assets.loading),
@@ -1487,7 +1645,29 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
           }
           return const SizedBox.shrink();
         }),
-        manualPlayerWidget(height),
+      ],
+    );
+    final surface = isFullScreen || _coverTransition == null
+        ? player
+        : Obx(
+            () => CoverHandoff(
+              data: _coverTransition,
+              viewport: Size(width, playerHeight),
+              transform: videoDetailController.videoTransformController,
+              firstFrame: videoDetailController.videoState.value
+                  ? plPlayerController
+                        ?.videoController
+                        ?.waitUntilFirstFrameRendered
+                  : null,
+              child: player,
+            ),
+          );
+    final content = Stack(
+      fit: StackFit.expand,
+      clipBehavior: Clip.none,
+      children: [
+        Positioned.fill(child: surface),
+        manualPlayerWidget(viewportHeight),
 
         if (videoDetailController.plPlayerController.enableBlock ||
             videoDetailController.continuePlayingPart)
@@ -1602,6 +1782,32 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
             }
             return const SizedBox.shrink();
           },
+        ),
+      ],
+    );
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        if (!isFullScreen && _coverTransition != null)
+          AnimatedBuilder(
+            animation: ModalRoute.of(context)!.animation!,
+            builder: (context, _) => Offstage(
+              offstage:
+                  !MediaQuery.disableAnimationsOf(context) &&
+                  ModalRoute.of(context)!.animation!.status !=
+                      AnimationStatus.completed,
+              child: const ColoredBox(color: Colors.black),
+            ),
+          )
+        else
+          const ColoredBox(color: Colors.black),
+        Align(
+          alignment: Alignment.center,
+          child: SizedBox(
+            width: width,
+            height: viewportHeight,
+            child: content,
+          ),
         ),
       ],
     );

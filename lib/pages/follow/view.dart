@@ -50,7 +50,7 @@ class _FollowPageState extends State<FollowPage>
   }
 
   @override
-  bool onNotification(UserScrollNotification notification) {
+  bool onNotification(ScrollNotification notification) {
     if (notification.metrics.axisDirection == .down) {
       return super.onNotification(notification);
     }
@@ -68,18 +68,17 @@ class _FollowPageState extends State<FollowPage>
             )
           : _childPage(),
       fab: _followController.isOwner
-          ? SlideTransition(
-              position: fabAnimation,
+          ? fabTransition(
               child: Padding(
                 padding: .only(
                   right: kFloatingActionButtonMargin + padding.right,
                   bottom: kFloatingActionButtonMargin + padding.bottom,
                 ),
-                child: FloatingActionButton.extended(
-                  onPressed: _followController.toggleOrderType,
-                  icon: const Icon(Icons.format_list_bulleted, size: 20),
-                  label: Obx(
-                    () => Text(_followController.orderType.value.title),
+                child: Obx(
+                  () => FloatingActionButton(
+                    onPressed: _followController.toggleOrderType,
+                    tooltip: _followController.orderType.value.title,
+                    child: const Icon(Icons.format_list_bulleted, size: 20),
                   ),
                 ),
               ),

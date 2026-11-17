@@ -1,5 +1,5 @@
 import 'package:PiliPlus/common/widgets/scaffold/simple_scaffold.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart' show tabBarView;
+import 'package:PiliPlus/common/widgets/scroll_under_toolbar.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/models/common/search/search_type.dart';
 import 'package:PiliPlus/pages/search/controller.dart';
@@ -10,6 +10,7 @@ import 'package:PiliPlus/pages/search_panel/pgc/view.dart';
 import 'package:PiliPlus/pages/search_panel/user/view.dart';
 import 'package:PiliPlus/pages/search_panel/video/view.dart';
 import 'package:PiliPlus/pages/search_result/controller.dart';
+import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -67,130 +68,142 @@ class _SearchResultPageState extends State<SearchResultPage>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return SimpleScaffold(
-      appBar: AppBar(
-        shape: Border(
-          bottom: BorderSide(
-            color: theme.dividerColor.withValues(alpha: 0.08),
-            width: 1,
-          ),
+    final appBar = AppBar(
+      backgroundColor: Colors.transparent,
+      systemOverlayStyle:
+          theme.appBarTheme.systemOverlayStyle ??
+          (theme.brightness == Brightness.dark
+              ? SystemUiOverlayStyle.light
+              : SystemUiOverlayStyle.dark),
+      shape: Border(
+        bottom: BorderSide(
+          color: theme.dividerColor.withValues(alpha: 0.08),
+          width: 1,
         ),
-        title: GestureDetector(
-          onTap: () {
-            if (_isFromSearch) {
-              Get.back(result: true);
-            } else {
-              Get.offNamed(
-                '/search',
-                parameters: {'text': _searchResultController.keyword},
-              );
-            }
-          },
-          behavior: HitTestBehavior.opaque,
-          child: SizedBox(
-            width: double.infinity,
-            child: Text(
-              _searchResultController.keyword,
-              style: theme.textTheme.titleMedium,
-              maxLines: 1,
-            ),
+      ),
+      title: GestureDetector(
+        onTap: () {
+          if (_isFromSearch) {
+            Get.back(result: true);
+          } else {
+            Get.offNamed(
+              '/search',
+              parameters: {'text': _searchResultController.keyword},
+            );
+          }
+        },
+        behavior: HitTestBehavior.opaque,
+        child: SizedBox(
+          width: double.infinity,
+          child: Text(
+            _searchResultController.keyword,
+            style: theme.textTheme.titleMedium,
+            maxLines: 1,
           ),
         ),
       ),
-      body: ViewSafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TabBar(
-              overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-              splashFactory: NoSplash.splashFactory,
-              padding: const EdgeInsets.only(top: 4, left: 8, right: 8),
-              controller: _tabController,
-              tabs: SearchType.actives
-                  .map(
-                    (item) => Obx(
-                      () {
-                        int count = _searchResultController.count[item.index];
-                        return Tab(
-                          text:
-                              '${item.label}${count != -1 ? ' ${count > 99 ? '99+' : count}' : ''}',
-                        );
-                      },
-                    ),
-                  )
-                  .toList(),
-              isScrollable: true,
-              indicatorWeight: 0,
-              indicatorPadding: const EdgeInsets.symmetric(
-                horizontal: 3,
-                vertical: 8,
-              ),
-              indicator: BoxDecoration(
-                color: theme.colorScheme.secondaryContainer,
-                borderRadius: const BorderRadius.all(Radius.circular(20)),
-              ),
-              indicatorSize: TabBarIndicatorSize.tab,
-              labelColor: theme.colorScheme.onSecondaryContainer,
-              labelStyle:
-                  TabBarTheme.of(
-                    context,
-                  ).labelStyle?.copyWith(fontSize: 13) ??
-                  const TextStyle(fontSize: 13),
-              dividerColor: Colors.transparent,
-              dividerHeight: 0,
-              unselectedLabelColor: theme.colorScheme.outline,
-              tabAlignment: TabAlignment.start,
-              onTap: (index) {
-                if (!_tabController.indexIsChanging) {
-                  if (_searchResultController.toTopIndex.value == index) {
-                    _searchResultController.toTopIndex.refresh();
-                  } else {
-                    _searchResultController.toTopIndex.value = index;
-                  }
-                }
+    );
+    const tabPadding = EdgeInsets.only(top: 4, left: 8, right: 8);
+    final tabs = TabBar(
+      overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+      splashFactory: NoSplash.splashFactory,
+      padding: tabPadding,
+      controller: _tabController,
+      tabs: SearchType.actives
+          .map(
+            (item) => Obx(
+              () {
+                int count = _searchResultController.count[item.index];
+                return Tab(
+                  text:
+                      '${item.label}${count != -1 ? ' ${count > 99 ? '99+' : count}' : ''}',
+                );
               },
             ),
-            Expanded(
-              child: tabBarView(
-                controller: _tabController,
-                children: SearchType.actives
-                    .map(
-                      (item) => switch (item) {
-                        .all => SearchAllPanel(
-                          tag: _tag,
-                          searchType: item,
-                          keyword: _searchResultController.keyword,
-                        ),
-                        .video => SearchVideoPanel(
-                          tag: _tag,
-                          searchType: item,
-                          keyword: _searchResultController.keyword,
-                        ),
-                        .media_bangumi || .media_ft => SearchPgcPanel(
-                          tag: _tag,
-                          searchType: item,
-                          keyword: _searchResultController.keyword,
-                        ),
-                        .live_room => SearchLivePanel(
-                          tag: _tag,
-                          searchType: item,
-                          keyword: _searchResultController.keyword,
-                        ),
-                        .bili_user => SearchUserPanel(
-                          tag: _tag,
-                          searchType: item,
-                          keyword: _searchResultController.keyword,
-                        ),
-                        .article => SearchArticlePanel(
-                          tag: _tag,
-                          searchType: item,
-                          keyword: _searchResultController.keyword,
-                        ),
-                      },
-                    )
-                    .toList(),
-              ),
+          )
+          .toList(),
+      isScrollable: true,
+      indicatorWeight: 0,
+      indicatorPadding: const EdgeInsets.symmetric(
+        horizontal: 3,
+        vertical: 8,
+      ),
+      indicator: BoxDecoration(
+        color: theme.colorScheme.secondaryContainer,
+        borderRadius: const BorderRadius.all(Radius.circular(20)),
+      ),
+      indicatorSize: TabBarIndicatorSize.tab,
+      labelColor: theme.colorScheme.onSecondaryContainer,
+      labelStyle:
+          TabBarTheme.of(
+            context,
+          ).labelStyle?.copyWith(fontSize: 13) ??
+          const TextStyle(fontSize: 13),
+      dividerColor: Colors.transparent,
+      dividerHeight: 0,
+      unselectedLabelColor: theme.colorScheme.outline,
+      tabAlignment: TabAlignment.start,
+      onTap: (index) {
+        if (!_tabController.indexIsChanging) {
+          if (_searchResultController.toTopIndex.value == index) {
+            _searchResultController.toTopIndex.refresh();
+          } else {
+            _searchResultController.toTopIndex.value = index;
+          }
+        }
+      },
+    );
+    final pages = SearchType.actives
+        .map(
+          (item) => switch (item) {
+            .all => SearchAllPanel(
+              tag: _tag,
+              searchType: item,
+              keyword: _searchResultController.keyword,
             ),
+            .video => SearchVideoPanel(
+              tag: _tag,
+              searchType: item,
+              keyword: _searchResultController.keyword,
+            ),
+            .media_bangumi || .media_ft => SearchPgcPanel(
+              tag: _tag,
+              searchType: item,
+              keyword: _searchResultController.keyword,
+            ),
+            .live_room => SearchLivePanel(
+              tag: _tag,
+              searchType: item,
+              keyword: _searchResultController.keyword,
+            ),
+            .bili_user => SearchUserPanel(
+              tag: _tag,
+              searchType: item,
+              keyword: _searchResultController.keyword,
+            ),
+            .article => SearchArticlePanel(
+              tag: _tag,
+              searchType: item,
+              keyword: _searchResultController.keyword,
+            ),
+          },
+        )
+        .toList();
+    return SimpleScaffold(
+      body: ScrollUnderToolbar(
+        extent:
+            AppBar.preferredHeightFor(context, appBar.preferredSize) +
+            MediaQuery.paddingOf(context).top +
+            tabs.preferredSize.height +
+            tabPadding.top,
+        controller: _tabController,
+        pages: pages.map((page) => ViewSafeArea(child: page)).toList(),
+        underlaps: {for (var index = 0; index < pages.length; index++) index},
+        leadingSpaces: const {},
+        toolbar: Column(
+          children: [
+            appBar,
+            ViewSafeArea(child: tabs),
           ],
         ),
       ),

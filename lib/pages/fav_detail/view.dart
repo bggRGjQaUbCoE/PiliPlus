@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/loading_widget/list_body.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
@@ -85,7 +86,7 @@ class _FavDetailPageState extends State<FavDetailPage>
                               controller.setIsPlayAll(
                                 details.localPosition.dx < controller.dx,
                               ),
-                          child: FloatingActionButton.extended(
+                          child: FloatingActionButton(
                             onPressed: () {
                               if (controller.isPlayAll.value) {
                                 controller.toViewPlayAll();
@@ -93,8 +94,8 @@ class _FavDetailPageState extends State<FavDetailPage>
                                 controller.setIsPlayAll(true);
                               }
                             },
-                            label: const Text('播放全部'),
-                            icon: const Icon(Icons.playlist_play),
+                            tooltip: '播放全部',
+                            child: const Icon(Icons.playlist_play),
                           ),
                         ),
                       )
@@ -484,17 +485,7 @@ class _FavDetailPageState extends State<FavDetailPage>
                 itemBuilder: (context, index) {
                   if (index == response.length) {
                     controller.onLoadMore();
-                    return Container(
-                      height: 60,
-                      alignment: Alignment.center,
-                      child: Text(
-                        controller.isEnd ? '没有更多了' : '加载中...',
-                        style: TextStyle(
-                          color: theme.colorScheme.outline,
-                          fontSize: 13,
-                        ),
-                      ),
-                    );
+                    return ListRequestFooter(controller: controller);
                   }
                   FavDetailItemModel item = response[index];
                   return FavVideoCardH(

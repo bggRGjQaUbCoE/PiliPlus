@@ -2,6 +2,7 @@
     package="com.example.piliplus">
 
     <queries>
+        <package android:name="tv.danmaku.bili" />
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <category android:name="android.intent.category.BROWSABLE" />

@@ -1,0 +1,13 @@
+--- a/pubspec.yaml
++++ b/pubspec.yaml
+@@ -24,10 +24,6 @@
+ 
+ flutter:
+   fonts:
+-    - family: FontAwesomeBrands
+-      fonts:
+-        - asset: lib/fonts/fa-brands-400.ttf
+-          weight: 400
+     - family: FontAwesomeRegular
+       fonts:
+         - asset: lib/fonts/fa-regular-400.ttf

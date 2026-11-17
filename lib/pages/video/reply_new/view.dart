@@ -4,6 +4,7 @@ import 'dart:math' show max;
 
 import 'package:PiliPlus/common/widgets/button/toolbar_icon_button.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
+import 'package:PiliPlus/common/widgets/g2_shape_border.dart';
 import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart'
     show RichTextType, RichTextEditingDeltaReplacement;
 import 'package:PiliPlus/common/widgets/flutter/text_field/text_field.dart';
@@ -90,20 +91,24 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
     Widget child = ViewSafeArea(
       child: Align(
         alignment: Alignment.bottomCenter,
-        child: Container(
+        child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 640),
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            color: theme.colorScheme.surface,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ...buildInputView(),
-              buildImagePreview(),
-              Flexible(child: buildPanelContainer(Colors.transparent)),
-            ],
+          child: SurfaceMaterial(
+            kind: SurfaceMaterialKind.bottomSheet,
+            material: Material(
+              shape: const G2ShapeBorder(radius: 24, topOnly: true),
+              clipBehavior: Clip.antiAlias,
+              color: theme.colorScheme.surface,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ...buildInputView(),
+                  buildImagePreview(),
+                  Flexible(child: buildPanelContainer(Colors.transparent)),
+                ],
+              ),
+            ),
           ),
         ),
       ),

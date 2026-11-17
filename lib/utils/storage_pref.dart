@@ -174,8 +174,17 @@ abstract final class Pref {
           .toSet() ??
       MsgUnReadType.values.toSet();
 
-  static NavigationBarType get defaultHomePage =>
-      NavigationBarType.values[defaultHomePageIndex];
+  static bool get enableMall =>
+      Platform.isAndroid &&
+      _setting.get(SettingBoxKey.enableMall, defaultValue: false);
+
+  static NavigationBarType get defaultHomePage {
+    final index = defaultHomePageIndex;
+    if (index < 0 || index >= NavigationBarType.values.length) {
+      return NavigationBarType.home;
+    }
+    return NavigationBarType.values[index];
+  }
 
   static int get defaultHomePageIndex => _setting.get(
     SettingBoxKey.defaultHomePage,
@@ -755,6 +764,12 @@ abstract final class Pref {
       !Platform.isIOS &&
       _setting.get(SettingBoxKey.dynamicColor, defaultValue: true);
 
+  static bool get softDynamicColors =>
+      _setting.get(SettingBoxKey.softDynamicColors, defaultValue: false);
+
+  static bool get advancedMaterials =>
+      _setting.get(SettingBoxKey.advancedMaterials, defaultValue: false);
+
   static bool get enableSystemProxy =>
       _setting.get(SettingBoxKey.enableSystemProxy, defaultValue: false);
 
@@ -781,6 +796,12 @@ abstract final class Pref {
 
   static bool get enableMYBar =>
       _setting.get(SettingBoxKey.enableMYBar, defaultValue: true);
+
+  static bool get coverPageTransition =>
+      _setting.get(SettingBoxKey.coverPageTransition, defaultValue: false);
+
+  static bool get layeredPageTransition =>
+      _setting.get(SettingBoxKey.layeredPageTransition, defaultValue: false);
 
   static Transition get pageTransition =>
       Transition.values[_setting.get(

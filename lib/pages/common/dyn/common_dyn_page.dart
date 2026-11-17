@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/loading_widget/list_body.dart';
 import 'package:PiliPlus/common/skeleton/video_reply.dart';
 import 'package:PiliPlus/common/sliver_single_child_delegate.dart';
 import 'package:PiliPlus/common/style.dart';
@@ -138,7 +139,7 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
   }
 
   @override
-  bool onNotification(UserScrollNotification notification) {
+  bool onNotification(ScrollNotification notification) {
     if (notification.metrics.axisDirection == .down) {
       return super.onNotification(notification);
     }
@@ -209,7 +210,9 @@ mixin CommonDynPageMixin<T extends StatefulWidget>
                 }
               }
               if (index == response.length) {
-                return buildFooter();
+                if (controller.foldCard != null) return buildFooter();
+                controller.onLoadMore();
+                return ListRequestFooter(controller: controller);
               } else {
                 return buildReply(context, index, response[index]);
               }

@@ -54,7 +54,6 @@ abstract final class ApiType {
       // Api.spaceSeason,
       // Api.spaceSeries,
       // Api.spaceBangumi,
-      // Api.spaceOpus,
       // Api.spaceFav,
       // Api.seasonSeries,
       // Api.matchInfo,

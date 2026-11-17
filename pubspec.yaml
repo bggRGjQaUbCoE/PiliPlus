@@ -262,6 +262,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - path: assets/mall/
     - path: assets/images/
     - path: assets/images/logo/
     - path: assets/images/logo/ico/

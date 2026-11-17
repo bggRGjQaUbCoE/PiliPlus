@@ -1,3 +1,6 @@
+import 'package:PiliPlus/common/widgets/motion/cover_motion.dart';
+import 'package:PiliPlus/plugin/pl_player/controller.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/select_mask.dart';
@@ -16,7 +19,7 @@ import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
-class HistoryItem extends StatelessWidget {
+class HistoryItem extends StatefulWidget {
   final HistoryItemModel item;
   final MultiSelectBase ctr;
   final void Function(int kid, String business) onDelete;
@@ -27,6 +30,92 @@ class HistoryItem extends StatelessWidget {
     required this.ctr,
     required this.onDelete,
   });
+
+  @override
+  State<HistoryItem> createState() => _HistoryItemState();
+}
+
+class _HistoryItemState extends State<HistoryItem> {
+  HistoryItemModel get item => widget.item;
+  MultiSelectBase get ctr => widget.ctr;
+  void Function(int, String) get onDelete => widget.onDelete;
+  Object _coverTag = Object();
+  ImageProvider? _coverImage;
+  Dimension? _dimension;
+  bool _opening = false;
+  bool get _candidate =>
+      Pref.coverPageTransition && item.history.business == 'archive';
+
+  @override
+  void didUpdateWidget(HistoryItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.item != item) {
+      _coverTag = Object();
+      _coverImage = null;
+      _dimension = null;
+    }
+  }
+
+  Future<void> _open() async {
+    if (!_candidate ||
+        _coverImage == null ||
+        MediaQuery.disableAnimationsOf(context) ||
+        PlPlayerController.instance?.videoController != null) {
+      return onPushHistory(item);
+    }
+    if (_opening) return;
+    _opening = true;
+    final current = item;
+    try {
+      await onPushHistory(
+        current,
+        resolveDimension: true,
+        knownDimension: _dimension,
+        openVideo: (cid, dimension) async {
+          if (!mounted ||
+              !identical(current, item) ||
+              ctr.enableMultiSelect.value ||
+              !ModalRoute.of(context)!.isCurrent) {
+            return;
+          }
+          _dimension = dimension;
+          final w = dimension?.width, h = dimension?.height;
+          final portraitAspectRatio = CoverTransitionData.portraitAspectRatio(
+            w,
+            h,
+          );
+          final motion =
+              _candidate &&
+                  w != null &&
+                  h != null &&
+                  w > 0 &&
+                  h > 0 &&
+                  (w > h || portraitAspectRatio != null) &&
+                  !MediaQuery.disableAnimationsOf(context) &&
+                  PlPlayerController.instance?.videoController == null
+              ? CoverTransitionData(
+                  tag: _coverTag,
+                  image: _coverImage!,
+                  radius: Style.mdRadius,
+                  contentAspectRatio: portraitAspectRatio,
+                )
+              : null;
+          await PageUtils.toVideoPage(
+            aid: current.history.oid,
+            bvid: current.history.bvid,
+            cid: cid,
+            cover: current.cover,
+            title: current.title,
+            dimension: dimension,
+            progress: current.playbackProgress,
+            coverTransition: motion,
+          );
+        },
+      );
+    } finally {
+      _opening = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,9 +133,7 @@ class HistoryItem extends StatelessWidget {
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
-        onTap: enableMultiSelect
-            ? () => ctr.onSelect(item)
-            : () => onPushHistory(item),
+        onTap: enableMultiSelect ? () => ctr.onSelect(item) : _open,
         onLongPress: onLongPress,
         onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         child: Stack(
@@ -69,12 +156,28 @@ class HistoryItem extends StatelessWidget {
                         return Stack(
                           clipBehavior: Clip.none,
                           children: [
-                            NetworkImgLayer(
-                              src: item.cover?.isNotEmpty == true
-                                  ? item.cover
-                                  : item.covers?.firstOrNull ?? '',
-                              width: maxWidth,
-                              height: maxHeight,
+                            HeroMode(
+                              enabled:
+                                  _candidate &&
+                                  !enableMultiSelect &&
+                                  !MediaQuery.disableAnimationsOf(context),
+                              child: Hero(
+                                tag: _coverTag,
+                                curve: CoverTransitionData.motionCurve,
+                                reverseCurve: CoverTransitionData.motionCurve,
+                                flightShuttleBuilder:
+                                    CoverTransitionData.flight,
+                                child: NetworkImgLayer(
+                                  src: item.cover?.isNotEmpty == true
+                                      ? item.cover
+                                      : item.covers?.firstOrNull ?? '',
+                                  width: maxWidth,
+                                  height: maxHeight,
+                                  onImageReady: _candidate
+                                      ? (image) => _coverImage = image
+                                      : null,
+                                ),
+                              ),
                             ),
                             ?item.label,
                             if (hasDuration)
@@ -217,7 +320,12 @@ class HistoryItem extends StatelessWidget {
   }
 }
 
-Future<void> onPushHistory(HistoryItemModel item) async {
+Future<void> onPushHistory(
+  HistoryItemModel item, {
+  bool resolveDimension = false,
+  Dimension? knownDimension,
+  Future<void> Function(int cid, Dimension? dimension)? openVideo,
+}) async {
   final business = item.history.business;
   if (business?.contains('article') == true) {
     ArticlePage.toArticlePage(
@@ -249,20 +357,20 @@ Future<void> onPushHistory(HistoryItemModel item) async {
     final aid = item.history.oid!;
     final bvid = item.history.bvid ?? IdUtils.av2bv(aid);
     int? cid = item.history.cid;
-    Dimension? dimension;
-    if (cid == null) {
+    Dimension? dimension = knownDimension;
+    if (cid == null || (resolveDimension && dimension == null)) {
       if (await SearchHttp.ab2cWithDimension(
             aid: aid,
             bvid: bvid,
             part: item.history.page,
           )
           case final res?) {
-        cid = res.cid;
-        dimension = res.dimension;
+        cid ??= res.cid;
+        if (cid == res.cid) dimension = res.dimension;
       }
     }
     if (cid != null) {
-      // TODO: dimension
+      if (openVideo != null) return openVideo(cid, dimension);
       PageUtils.toVideoPage(
         aid: aid,
         bvid: bvid,

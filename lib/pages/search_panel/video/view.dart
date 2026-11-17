@@ -56,6 +56,7 @@ mixin SearchVideoPanelMixin<S extends SearchVideoPanel>
   @override
   Widget buildHeader() {
     return SliverFloatingHeaderWidget(
+      glassOnOverlap: true,
       backgroundColor: colorScheme.surface,
       child: Padding(
         padding: const .fromLTRB(12, 0, 12, 4),
@@ -118,6 +119,7 @@ mixin SearchVideoPanelMixin<S extends SearchVideoPanel>
           controller.onLoadMore();
         }
         return VideoCardH(
+          coverMotion: true,
           videoItem: list[index],
           onRemove: () => controller.loadingState
             ..value.data!.removeAt(index)

@@ -11,6 +11,7 @@ import 'package:PiliPlus/models_new/search/search_rcmd/data.dart';
 import 'package:PiliPlus/pages/search/controller.dart';
 import 'package:PiliPlus/pages/search/widgets/hot_keyword.dart';
 import 'package:PiliPlus/pages/search/widgets/search_text.dart';
+import 'package:PiliPlus/router/search_expansion.dart';
 import 'package:PiliPlus/utils/em.dart' show Em;
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -31,6 +32,13 @@ class _SearchPageState extends State<SearchPage> {
   late ThemeData theme;
   late bool isPortrait;
   late EdgeInsets padding;
+  late final _route = ModalRoute.of(context)!;
+  late final _expansion = switch (_route.settings.arguments) {
+    final SearchExpansion expansion => expansion,
+    _ => null,
+  };
+  bool get _expandsFromHome => _expansion != null;
+  Animation<double>? _entrance;
 
   @override
   void initState() {
@@ -44,6 +52,27 @@ class _SearchPageState extends State<SearchPage> {
     theme = Theme.of(context);
     padding = MediaQuery.viewPaddingOf(context);
     isPortrait = MediaQuery.isPortraitOf(context);
+    if (_expandsFromHome && _entrance == null) {
+      final animation = _entrance = _route.animation!
+        ..addStatusListener(_focusWhenExpanded);
+      if (animation.isCompleted) {
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _focusWhenExpanded(animation.status),
+        );
+      }
+    }
+  }
+
+  void _focusWhenExpanded(AnimationStatus status) {
+    if (!mounted || status != AnimationStatus.completed) return;
+    _entrance!.removeStatusListener(_focusWhenExpanded);
+    if (_route.isCurrent) _searchController.searchFocusNode.requestFocus();
+  }
+
+  @override
+  void dispose() {
+    _entrance?.removeStatusListener(_focusWhenExpanded);
+    super.dispose();
   }
 
   @override
@@ -54,37 +83,73 @@ class _SearchPageState extends State<SearchPage> {
     final rcmd = _searchController.enableSearchRcmd
         ? _buildHotSearch(isTrending: false)
         : null;
+    final motion = _expansion?.viewport == MediaQuery.sizeOf(context)
+        ? _route.animation
+        : null;
 
-    return SimpleScaffold(
-      appBar: _buildAppBar,
-      body: Padding(
-        padding: .only(left: padding.left, right: padding.right),
-        child: ViewInsetsSafeArea(
-          child: CustomScrollView(
-            slivers: [
-              if (_searchController.searchSuggestion) _buildSearchSuggest(),
-              if (isPortrait) ...[
-                ?trending,
-                _buildHistory,
-                ?rcmd,
-              ] else if (trending != null || rcmd != null)
-                SliverCrossAxisGroup(
-                  slivers: [
-                    SliverMainAxisGroup(slivers: [?trending, ?rcmd]),
+    return PopScope(
+      canPop: MediaQuery.viewInsetsOf(context).bottom == 0,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _searchController.searchFocusNode.unfocus();
+      },
+      child: SimpleScaffold(
+        backgroundColor: motion == null ? null : Colors.transparent,
+        appBar: _reveal(_buildAppBar(motion), motion, const Interval(.16, .58)),
+        body: _reveal(
+          Padding(
+            padding: .only(left: padding.left, right: padding.right),
+            child: ViewInsetsSafeArea(
+              child: CustomScrollView(
+                slivers: [
+                  if (_searchController.searchSuggestion) _buildSearchSuggest(),
+                  if (isPortrait) ...[
                     _buildHistory,
-                  ],
-                )
-              else
-                _buildHistory,
-              SliverPadding(padding: .only(bottom: padding.bottom)),
-            ],
+                    ?trending,
+                    ?rcmd,
+                  ] else if (trending != null || rcmd != null)
+                    SliverCrossAxisGroup(
+                      slivers: [
+                        _buildHistory,
+                        SliverMainAxisGroup(slivers: [?trending, ?rcmd]),
+                      ],
+                    )
+                  else
+                    _buildHistory,
+                  SliverPadding(padding: .only(bottom: padding.bottom)),
+                ],
+              ),
+            ),
           ),
+          motion,
+          const Interval(.14, .4),
         ),
       ),
     );
   }
 
-  PreferredSizeWidget get _buildAppBar => AppBar(
+  Widget _reveal(Widget child, Animation<double>? motion, Interval interval) =>
+      motion == null
+      ? child
+      : FadeTransition(
+          opacity: motion.drive(CurveTween(curve: interval)),
+          child: child,
+        );
+
+  // The route paints the traveling hint and magnifier. Keep their real widgets
+  // laid out so the painter can use the exact landing positions.
+  Widget _afterExpansion(Widget child, Animation<double>? motion) =>
+      motion == null
+      ? child
+      : AnimatedBuilder(
+          animation: motion,
+          child: child,
+          builder: (context, child) => Opacity(
+            opacity: motion.isCompleted ? 1 : 0,
+            child: child,
+          ),
+        );
+
+  Widget _buildAppBar(Animation<double>? motion) => AppBar(
     shape: Border(
       bottom: BorderSide(
         color: theme.dividerColor.withValues(alpha: 0.08),
@@ -111,22 +176,39 @@ class _SearchPageState extends State<SearchPage> {
       IconButton(
         tooltip: '搜索',
         onPressed: _searchController.submit,
-        icon: const Icon(Icons.search, size: 22),
+        icon: _afterExpansion(
+          Icon(Icons.search, key: _expansion?.submitIconKey, size: 22),
+          motion,
+        ),
       ),
       const SizedBox(width: 10),
     ],
-    title: TextField(
-      autofocus: true,
-      focusNode: _searchController.searchFocusNode,
-      controller: _searchController.controller,
-      textInputAction: TextInputAction.search,
-      onChanged: _searchController.onChange,
-      decoration: InputDecoration(
-        visualDensity: .standard,
-        hintText: _searchController.hintText ?? '搜索',
-        border: InputBorder.none,
+    title: _afterExpansion(
+      TextField(
+        key: _expansion?.fieldKey,
+        autofocus: !_expandsFromHome,
+        focusNode: _searchController.searchFocusNode,
+        controller: _searchController.controller,
+        textInputAction: TextInputAction.search,
+        onChanged: _searchController.onChange,
+        decoration: InputDecoration(
+          visualDensity: .standard,
+          hintText: _expandsFromHome
+              ? null
+              : _searchController.hintText ?? '搜索',
+          hint: _expandsFromHome
+              ? Text(
+                  _searchController.hintText ?? '搜索',
+                  key: _expansion!.hintKey,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                )
+              : null,
+          border: InputBorder.none,
+        ),
+        onSubmitted: (value) => _searchController.submit(),
       ),
-      onSubmitted: (value) => _searchController.submit(),
+      motion,
     ),
   );
 
@@ -293,16 +375,7 @@ class _SearchPageState extends State<SearchPage> {
         }
         final secondary = theme.colorScheme.secondary;
         return SliverPadding(
-          padding: .fromLTRB(
-            10,
-            !isPortrait
-                ? 25
-                : _searchController.enableTrending
-                ? 0
-                : 6,
-            6,
-            25,
-          ),
+          padding: .fromLTRB(10, isPortrait ? 12 : 25, 6, 25),
           sliver: SliverMainAxisGroup(
             slivers: [
               SliverPadding(

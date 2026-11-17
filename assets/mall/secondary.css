@@ -1,0 +1,76 @@
+/* Only signatures selected by the shared adapter. Preserve website query,
+   sorting, stock/price/member signals and the cart's authored business actions. */
+html[data-pp-page="category"], html[data-pp-page="category"] body,
+html[data-pp-page="category"] #app,
+html[data-pp-page="category"] .category-main,
+html[data-pp-page="category"] .header {
+  background-color: var(--pp-surface) !important;
+  color: var(--pp-on-surface);
+  font-family: var(--pp-font-family);
+}
+html[data-pp-page="category"] .search {
+  background-color: var(--pp-search) !important;
+  border: 1px solid var(--pp-outline);
+  border-radius: calc(var(--pp-unit) * 25);
+}
+html[data-pp-page="category"] .search-input,
+html[data-pp-page="category"] .category-title,
+html[data-pp-page="category"] .category-item {
+  color: var(--pp-on-surface) !important;
+  font-family: var(--pp-font-family);
+}
+html[data-pp-page="category"] .search-input {
+  background-color: transparent !important;
+}
+html[data-pp-page="category"] .search-input::placeholder {
+  color: var(--pp-on-surface-variant);
+}
+html[data-pp-page="category"] .category-part-container {
+  background-color: var(--pp-surface) !important;
+}
+html[data-pp-page="category"] .nav-container ul {
+  background-color: var(--pp-search) !important;
+}
+html[data-pp-page="category"] .nav-container li {
+  color: var(--pp-on-surface) !important;
+}
+html[data-pp-page="category"] .nav-container li.active {
+  color: var(--pp-primary) !important;
+  background-color: var(--pp-card) !important;
+}
+html[data-pp-page="category"] .nav-container .icon-bar {
+  background-color: var(--pp-primary) !important;
+}
+html[data-pp-page="category"] .category-part-item {
+  background-color: var(--pp-card) !important;
+  border: 1px solid var(--pp-outline);
+  border-radius: calc(var(--pp-unit) * var(--pp-radius));
+  margin-bottom: calc(var(--pp-unit) * var(--pp-space));
+}
+/* G2 top corners are computed from Weeko's actual curve in adapter.js, once
+   per changed geometry. The fallback radius remains for older WebViews. */
+html[data-pp-page="search"] [data-pp-search-filter] .filter-board {
+  background-color: var(--pp-glass) !important;
+  backdrop-filter: var(--pp-glass-filter, none);
+  border-radius: calc(var(--pp-unit) * 32) calc(var(--pp-unit) * 32) 0 0;
+}
+html[data-pp-page="search"] [data-pp-search-filter] .board-wrapper,
+html[data-pp-page="search"] [data-pp-search-filter] .main-container {
+  background-color: transparent !important;
+}
+html[data-pp-page="search"] [data-pp-search-filter] .filter-list-header {
+  background-color: var(--pp-card) !important;
+}
+html[data-pp-page="search"] [data-pp-search-filter] .filter-board input {
+  background-color: var(--pp-search) !important;
+  color: var(--pp-on-surface) !important;
+  border-color: var(--pp-outline) !important;
+}
+html[data-pp-page="search"] [data-pp-search-filter] .filter-board input::placeholder {
+  color: var(--pp-on-surface-variant);
+}
+html[data-pp-page="search"] [data-pp-search-filter] .filter-board .bottom-btn-group .confirm {
+  background-image: none !important;
+  background-color: var(--pp-primary) !important;
+  color: var(--pp-on-primary) !important;
+}

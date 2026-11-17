@@ -11,6 +11,7 @@ import 'package:PiliPlus/http/init.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/router/app_pages.dart';
+import 'package:PiliPlus/router/layered_page_transition.dart';
 import 'package:PiliPlus/services/account_service.dart';
 import 'package:PiliPlus/services/download/download_service.dart';
 import 'package:PiliPlus/services/logger.dart';
@@ -83,10 +84,6 @@ Future<void> _initDownPath() async {
   }
 }
 
-Future<void> _initTmpPath() async {
-  tmpDirPath = (await getTemporaryDirectory()).path;
-}
-
 Future<void> _initAppPath() async {
   appSupportDirPath = (await getApplicationSupportDirectory()).path;
 }
@@ -103,34 +100,32 @@ void main() async {
     DeviceUtils.exitApp();
   }
   ScaledWidgetsFlutterBinding.instance.scaleFactor = Pref.uiScale;
-  await Future.wait([
-    _initDownPath(),
-    _initTmpPath(),
-    CacheManager.ensureInitialized(),
-    ?FontUtils.init(),
-  ]);
+  LayeredPageTransitions.install();
   Get
     ..lazyPut(AccountService.new)
     ..lazyPut(DownloadService.new);
   HttpOverrides.global = _CustomHttpOverrides();
 
-  if (PlatformUtils.isMobile) {
-    if (Platform.isAndroid) MaxScreenSize.init();
-    await Future.wait([
+  if (Platform.isAndroid) MaxScreenSize.init();
+  await Future.wait([
+    _initDownPath(),
+    CacheManager.ensureInitialized(),
+    ?FontUtils.init(),
+    if (Pref.dynamicColor) MyApp.initPlatformState(),
+    if (PlatformUtils.isMobile)
       if (Pref.horizontalScreen) ?fullMode() else ?portraitUpMode(),
+    if (PlatformUtils.isMobile || Platform.isMacOS || Platform.isLinux)
       setupServiceLocator(),
-      if (Platform.isIOS) IOSPipHelper.init(),
-    ]);
-  } else if (Platform.isWindows) {
-    if (await WebViewEnvironment.getAvailableVersion() != null) {
-      webViewEnvironment = await WebViewEnvironment.create(
-        settings: WebViewEnvironmentSettings(
-          userDataFolder: path.join(appSupportDirPath, 'flutter_inappwebview'),
-        ),
-      );
-    }
-  } else if (Platform.isMacOS || Platform.isLinux) {
-    await setupServiceLocator();
+    if (Platform.isIOS) IOSPipHelper.init(),
+  ]);
+
+  if (Platform.isWindows &&
+      await WebViewEnvironment.getAvailableVersion() != null) {
+    webViewEnvironment = await WebViewEnvironment.create(
+      settings: WebViewEnvironmentSettings(
+        userDataFolder: path.join(appSupportDirPath, 'flutter_inappwebview'),
+      ),
+    );
   }
 
   Request();
@@ -167,10 +162,6 @@ void main() async {
     } else {
       ScreenBrightnessPlatform.instance.setAutoReset(false);
     }
-  }
-
-  if (Pref.dynamicColor) {
-    await MyApp.initPlatformState();
   }
 
   if (Pref.enableLog) {
@@ -255,17 +246,25 @@ void _onBack() {
 }
 
 class MyApp extends StatelessWidget {
+  // Bind one standard Hero observer to the existing GetX Navigator.
+  static final _heroController = MaterialApp.createMaterialHeroController();
   const MyApp({super.key});
 
   static ColorScheme? _light, _dark;
+  static Map<String, Map<String, int>>? _systemColorRoles;
 
   static (ThemeData, ThemeData) getAllTheme() {
     final dynamicColor = _light != null && _dark != null && Pref.dynamicColor;
 
     final ColorScheme lightScheme, darkScheme;
     if (dynamicColor) {
-      lightScheme = _light!;
-      darkScheme = _dark!;
+      if (_systemColorRoles case final roles? when Pref.softDynamicColors) {
+        lightScheme = _light!.withSystemRoles(roles['light']!);
+        darkScheme = _dark!.withSystemRoles(roles['dark']!);
+      } else {
+        lightScheme = _light!;
+        darkScheme = _dark!;
+      }
     } else {
       final customColor = Pref.customColor;
       final brandColor =
@@ -314,6 +313,7 @@ class MyApp extends StatelessWidget {
         builder: _builder,
       ),
       navigatorObservers: [
+        _heroController,
         routeObserver,
         FlutterSmartDialog.observer,
       ],
@@ -360,7 +360,13 @@ class MyApp extends StatelessWidget {
 
   /// from [DynamicColorBuilderState.initPlatformState]
   static Future<bool> initPlatformState() async {
-    if (_light != null || _dark != null) return true;
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      final roles = await const MethodChannel('com.example.piliplus/theme')
+          .invokeMapMethod<String, dynamic>('getSystemColorRoles');
+      _systemColorRoles = roles?.map(
+        (mode, colors) => MapEntry(mode, Map<String, int>.from(colors as Map)),
+      );
+    }
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
       final colors = await DynamicColorPlugin.channel.invokeMethod(

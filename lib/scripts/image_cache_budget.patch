@@ -1,0 +1,234 @@
+--- a/cached_network_image/lib/src/cache/default_cache_manager.dart
++++ b/cached_network_image/lib/src/cache/default_cache_manager.dart
+@@ -139,7 +139,7 @@
+     }
+ 
+     // Run cleanup in background
+-    unawaited(_cleanupOldFiles());
++    _scheduleCleanup(const Duration(seconds: 45));
+ 
+     return this;
+   }
+@@ -393,6 +393,8 @@
+         ),
+       );
+ 
++      _recentlyUsed.add(key.fnvHashStr);
++      _scheduleCleanup();
+       yield FileInfo(finalFile, FileSource.Online, validTill, url);
+     } catch (_) {
+       // Cancel the stream if we still hold a rawResponse that hasn't been consumed.
+@@ -429,13 +431,14 @@
+       return null;
+     }
+ 
+-    final file = io.File(_cacheFilePath(key + metadata.fileExtension));
++    final file = io.File(_cacheFilePath(key + _extension(metadata)));
+     if (!file.existsSync()) {
+       // Metadata exists but file is missing, clean up
+       await _cacheBox!.delete(key);
+       return null;
+     }
+ 
++    _recentlyUsed.add(key);
+     return FileInfo(file, FileSource.Cache, metadata.validTill, metadata.url);
+   }
+ 
+@@ -450,7 +453,8 @@
+   }) async {
+     key ??= url;
+     key = key.fnvHashStr;
+-    final relativePath = '$key.$fileExtension';
++    final extension = fileExtension.startsWith('.') ? fileExtension : '.$fileExtension';
++    final relativePath = key + extension;
+ 
+     await _ensureCacheDirectoryExists();
+ 
+@@ -458,16 +462,18 @@
+     await file.writeAsBytes(fileBytes);
+ 
+     final validTill = DateTime.now().add(maxAge);
+-    _cacheBox!.put(
++    await _cacheBox!.put(
+         key,
+         CacheEntryMetadata(
+           url: url,
+-          fileExtension: fileExtension,
++          fileExtension: extension,
+           validTill: validTill,
+           eTag: eTag,
+           length: fileBytes.length,
+         ));
+ 
++    _recentlyUsed.add(key);
++    _scheduleCleanup();
+     return file;
+   }
+ 
+@@ -476,7 +482,7 @@
+     key = key.fnvHashStr;
+     final metadata = _cacheBox!.get(key);
+     if (metadata != null) {
+-      final file = io.File(_cacheFilePath(key + metadata.fileExtension));
++      final file = io.File(_cacheFilePath(key + _extension(metadata)));
+       if (await file.exists()) {
+         await file.delete();
+       }
+@@ -486,12 +492,21 @@
+ 
+   @override
+   Future<void> emptyCache() {
+-    // Delete all cached files
+-    return Future.wait([_deleteCacheFiles(), _cacheBox!.clear()]);
++    return _clearUnusedFiles();
++  }
++
++  Future<void> _clearUnusedFiles() async {
++    await _cleanup;
++    final cleanup = _cleanupOldFiles(0);
++    _cleanup = cleanup;
++    await cleanup;
+   }
+ 
+   @override
+   Future<void> dispose() async {
++    _closing = true;
++    _cleanupTimer?.cancel();
++    await _cleanup;
+     _httpClient.dispose();
+ 
+     if (_cacheBox != null && _cacheBox!.isOpen) {
+@@ -513,62 +528,79 @@
+     instance = null;
+   }
+ 
+-  /// Clean up files that haven't been used in a while.
+-  Future<void> _cleanupOldFiles() async {
+-    if (maxNrOfCacheLength <= 0) {
+-      return emptyCache();
+-    }
+-    if (_cacheBox!.isEmpty) return;
+-    try {
+-      final now = DateTime.now();
+-
+-      // Remove expired entries
+-      final map = _cacheBox!.toMap();
+-      final keysToRemove = <String>[];
+-      int totalLength = 0;
+-      for (String key in map.keys) {
+-        final value = map[key]!;
+-        if (value.validTill.isBefore(now)) {
+-          final file = io.File(_cacheFilePath(key + value.fileExtension));
+-          if (await file.exists()) {
+-            await file.delete();
+-          }
+-          keysToRemove.add(key);
+-        } else {
+-          totalLength += value.length;
+-        }
+-      }
+-
+-      // If cache is still too large, remove oldest entries
+-      if (totalLength > maxNrOfCacheLength) {
+-        final halfMaxNrOfCacheLength = maxNrOfCacheLength ~/ 2;
+-        for (var key in keysToRemove) {
+-          map.remove(key);
+-        }
+-        final sortedEntries = map.entries.toList()
+-          ..sort((a, b) => a.value.validTill.compareTo(b.value.validTill));
+-
+-        for (var i = 0; i < sortedEntries.length; i++) {
+-          final entry = sortedEntries[i];
+-          final file =
+-              io.File(_cacheFilePath(entry.key + entry.value.fileExtension));
+-          if (await file.exists()) {
+-            await file.delete();
+-          }
+-          keysToRemove.add(entry.key);
+-          totalLength -= entry.value.length;
+-          if (totalLength < halfMaxNrOfCacheLength) {
+-            break;
++  // Keep files around for a full maintenance interval after they are served.
++  Set<String> _recentlyUsed = {};
++  Timer? _cleanupTimer;
++  Future<void>? _cleanup;
++  bool _closing = false;
++  final _startedAt = DateTime.now();
++  bool _legacySweepDone = false;
++
++  static String _extension(CacheEntryMetadata metadata) {
++    final extension = metadata.fileExtension;
++    return extension.isEmpty || extension.startsWith('.')
++        ? extension
++        : '.$extension';
++  }
++
++  void _scheduleCleanup([Duration delay = const Duration(minutes: 2)]) {
++    if (_closing) return;
++    _cleanupTimer ??= Timer(delay, () async {
++      _cleanupTimer = null;
++      await _cleanup;
++      if (_closing) return;
++      final cleanup = _cleanupOldFiles(maxNrOfCacheLength);
++      _cleanup = cleanup;
++      await cleanup;
++    });
++  }
++
++  Future<void> _cleanupOldFiles(int budget) async {
++    final recent = _recentlyUsed;
++    _recentlyUsed = {};
++    final box = _cacheBox!;
++    final now = DateTime.now();
++    final entries = box.toMap().entries.toList()
++      ..sort((a, b) => a.value.validTill.compareTo(b.value.validTill));
++    var remaining = getTotalLength();
++    for (final entry in entries) {
++      final metadata = entry.value;
++      if (remaining <= budget && !metadata.validTill.isBefore(now)) break;
++      final key = entry.key;
++      if (recent.contains(key) || _recentlyUsed.contains(key) ||
++          !identical(box.get(key), metadata)) continue;
++      final file = io.File(_cacheFilePath(key + _extension(metadata)));
++      // Keep the existence check and unlink together; app-side readers cannot
++      // start between them, and readers with an open handle can finish.
++      if (file.existsSync()) file.deleteSync();
++      await box.delete(key);
++      remaining -= metadata.length;
++    }
++    if (!_legacySweepDone) {
++      final marker = io.File(path.join(_cacheDir!, 'hive', 'pili-budget-v1'));
++      if (!await marker.exists()) {
++        final orphanName = RegExp(r'^(-?[0-9a-f]{1,16})(?:\.[^/]+)$');
++        await for (final entity in io.Directory(_cacheDir!).list(followLinks: false)) {
++          if (entity is! io.File) continue;
++          final name = path.basename(entity.path);
++          final match = orphanName.firstMatch(name);
++          if (match == null) continue;
++          final key = match.group(1)!;
++          final stat = await entity.stat();
++          if (stat.type != io.FileSystemEntityType.file ||
++              !stat.modified.isBefore(_startedAt) ||
++              recent.contains(key) || _recentlyUsed.contains(key)) continue;
++          final metadata = box.get(key);
++          if ((metadata == null || name != key + _extension(metadata)) &&
++              entity.existsSync()) {
++            entity.deleteSync();
+           }
+         }
+-      }
+-      if (keysToRemove.isNotEmpty) await _cacheBox!.deleteAll(keysToRemove);
+-    } catch (e) {
+-      cacheLogger.log(
+-        'CacheManager: Error during cleanup: $e',
+-        CacheManagerLogLevel.warning,
+-      );
+-    }
++        await marker.create();
++      }
++      _legacySweepDone = true;
++    }
++    if (remaining > maxNrOfCacheLength) _scheduleCleanup();
+   }
+ 
+   int getTotalLength() {

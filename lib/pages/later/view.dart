@@ -94,7 +94,7 @@ class _LaterPageState extends State<LaterPage>
                               _baseCtr.setIsPlayAll(
                                 details.localPosition.dx < _baseCtr.dx,
                               ),
-                          child: FloatingActionButton.extended(
+                          child: FloatingActionButton(
                             onPressed: () {
                               if (_baseCtr.isPlayAll.value) {
                                 currCtr().toViewPlayAll();
@@ -102,8 +102,8 @@ class _LaterPageState extends State<LaterPage>
                                 _baseCtr.setIsPlayAll(true);
                               }
                             },
-                            label: const Text('播放全部'),
-                            icon: const Icon(Icons.playlist_play),
+                            tooltip: '播放全部',
+                            child: const Icon(Icons.playlist_play),
                           ),
                         ),
                       )

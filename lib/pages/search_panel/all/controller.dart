@@ -45,11 +45,8 @@ class SearchAllController extends SearchVideoController with SearchVideoMixin {
 
   @override
   Future<void> onRefresh() {
+    if (isClosed || isLoading) return Future.value();
     _computeActualSearchType();
-    searchUser = null;
-    searchMedia = null;
-    searchActivity = null;
-    searchEsports = null;
     return super.onRefresh();
   }
 }

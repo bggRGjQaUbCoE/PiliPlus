@@ -1,0 +1,138 @@
+/* Homepage only. Structural navigation/insets stay in adapter.js; business
+   content and other pages retain official styles until separately accepted. */
+html[data-pp-page="home"],
+html[data-pp-page="home"] body,
+html[data-pp-page="home"] #app {
+  background-color: var(--pp-surface) !important;
+}
+/* The identified homepage already pads its actual scrolling content. Remove
+   the official bottom-tab reservation and avoid padding the outer body twice. */
+html[data-pp-page="home"] body[data-pp-scroll] {
+  padding-bottom: 0 !important;
+}
+html[data-pp-page="home"] #app {
+  height: 100% !important;
+  padding-bottom: 0 !important;
+}
+html[data-pp-page="home"] #app > [data-pp-home-title] {
+  display: none !important;
+}
+html[data-pp-page="home"] #app > [data-pp-home-title] ~ .franky-scroll-view {
+  padding-top: 0 !important;
+  height: 100% !important;
+}
+html[data-pp-page="home"] #app > .franky-scroll-view {
+  color: var(--pp-on-surface);
+  font-family: var(--pp-font-family);
+}
+html[data-pp-page="home"] #app .head-container {
+  box-sizing: border-box;
+  width: 100%;
+  padding: calc(var(--pp-unit) * var(--pp-gutter)) calc(var(--pp-unit) * var(--pp-gutter)) 0 !important;
+}
+html[data-pp-page="home"] #app .home-search-bar .bili-search-wrap {
+  display: flex !important;
+  align-items: center;
+  gap: calc(var(--pp-unit) * var(--pp-space));
+  box-sizing: border-box;
+  min-height: calc(var(--pp-unit) * 48);
+  height: auto !important;
+  padding: calc(var(--pp-unit) * var(--pp-space)) calc(var(--pp-unit) * 14);
+  line-height: var(--pp-line-height) !important;
+  text-align: start !important;
+  background: var(--pp-search) !important;
+  color: var(--pp-on-surface-variant) !important;
+  border: 1px solid var(--pp-outline);
+  border-radius: calc(var(--pp-unit) * 25) !important;
+  font-family: var(--pp-font-family);
+  font-size: calc(var(--pp-unit) * var(--pp-font-size));
+}
+html[data-pp-page="home"] #app .home-search-bar {
+  margin: 0;
+}
+html[data-pp-page="home"] #app .home-search-bar .search-text {
+  color: var(--pp-on-surface-variant) !important;
+}
+html[data-pp-page="home"] #app .home-search-bar .search-icon {
+  flex: none;
+  width: calc(var(--pp-unit) * 20);
+  height: calc(var(--pp-unit) * 20);
+  background: var(--pp-on-surface-variant) !important;
+  -webkit-mask: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"%3E%3Cpath fill="black" d="M9.5 3a6.5 6.5 0 1 0 3.98 11.64L19.84 21 21 19.84l-6.36-6.36A6.5 6.5 0 0 0 9.5 3Zm0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z"/%3E%3C/svg%3E') center / contain no-repeat;
+  mask: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"%3E%3Cpath fill="black" d="M9.5 3a6.5 6.5 0 1 0 3.98 11.64L19.84 21 21 19.84l-6.36-6.36A6.5 6.5 0 0 0 9.5 3Zm0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z"/%3E%3C/svg%3E') center / contain no-repeat;
+}
+html[data-pp-page="home"] #app .second-categories {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: calc(var(--pp-unit) * var(--pp-space));
+  box-sizing: border-box;
+  width: 100%;
+  height: auto;
+  margin-top: calc(var(--pp-unit) * var(--pp-space));
+  padding: calc(var(--pp-unit) * var(--pp-space));
+  background: var(--pp-card);
+  border: 1px solid var(--pp-outline);
+  border-radius: calc(var(--pp-unit) * var(--pp-radius));
+}
+html[data-pp-page="home"] #app .second-categories > .item {
+  width: auto;
+  height: auto;
+  min-height: calc(var(--pp-unit) * 48);
+  margin: 0;
+  padding: calc(var(--pp-unit) * 4) 0;
+  border-radius: calc(var(--pp-unit) * var(--pp-radius));
+}
+html[data-pp-page="home"] #app .second-categories .desc {
+  color: var(--pp-on-surface);
+  font-family: var(--pp-font-family);
+  font-size: calc(var(--pp-unit) * var(--pp-label-size));
+  line-height: var(--pp-line-height);
+  height: auto;
+  white-space: normal;
+}
+html[data-pp-page="home"] #app .second-categories > .item:active {
+  background: var(--pp-search);
+}
+html[data-pp-page="home"] #app .home-main {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: calc(var(--pp-unit) * var(--pp-space));
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0 calc(var(--pp-unit) * var(--pp-gutter));
+  margin-top: calc(var(--pp-unit) * var(--pp-gutter));
+  background: transparent;
+}
+html[data-pp-page="home"] #app .home-main > .goods-container {
+  box-sizing: border-box;
+  width: auto;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  background: var(--pp-card);
+  border: 1px solid var(--pp-outline);
+  border-radius: calc(var(--pp-unit) * var(--pp-radius));
+  box-shadow: none;
+}
+html[data-pp-page="home"] #app .home-main > .goods-container > .info-container {
+  padding: calc(var(--pp-unit) * var(--pp-space));
+}
+html[data-pp-page="home"] #app .home-main > .goods-container .desc {
+  color: var(--pp-on-surface);
+  font-family: var(--pp-font-family);
+  font-size: calc(var(--pp-unit) * var(--pp-font-size));
+  font-weight: var(--pp-font-weight);
+  line-height: var(--pp-line-height);
+  height: auto;
+  min-height: calc(var(--pp-unit) * var(--pp-font-size) * var(--pp-line-height) * 2);
+}
+/* Official SVG labels contain their own foreground colors. Keep their original
+   white backing instead of recoloring prices, promotions or member labels. */
+html[data-pp-page="home"] #app .home-main > .goods-container .svg-tag {
+  background-color: #fff;
+}
+html[data-pp-page="home"] #app .bottom-loading,
+html[data-pp-page="home"] #app .bottom-end {
+  color: var(--pp-on-surface-variant);
+  background: var(--pp-surface);
+}

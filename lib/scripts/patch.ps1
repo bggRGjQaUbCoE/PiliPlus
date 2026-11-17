@@ -215,7 +215,7 @@ $TabsPatchMaterial = "lib/scripts/material/tabs.patch"
 
 $patches_material = @($ModalBarrierPatchMaterial, $NavigationDrawerPatchMaterial, $PopupMenuPatchMaterial,
                     $FABPatchMaterial, $TextFieldPatchMaterial, $ScaffoldPatchMaterial, $RefreshIndicatorPatchMaterial,
-                    $TabsPatchMaterial)
+                    $TabsPatchMaterial, "lib/scripts/material/advanced_materials.patch")
 
 $PubCacheDir = "~/.pub-cache"
 
@@ -248,6 +248,12 @@ try {
 }
 
 flutter pub get
+
+& "$PSScriptRoot/apply_layered_transition.ps1"
+& "$PSScriptRoot/apply_video_first_frame.ps1"
+if ($platform.ToLower() -eq 'android') {
+    & "$PSScriptRoot/apply_webview_renderer_fix.ps1"
+}
 
 $MaterialUiDir = Get-ChildItem "$PubCacheDir/hosted/pub.dev" -Directory |
     Where-Object { $_.Name -like "material_ui-*" } |
@@ -319,3 +325,5 @@ foreach ($patch in $patches_cupertino) {
         throw "$LASTEXITCODE"
     }
 }
+
+& "$PSScriptRoot/apply_storage_optimization.ps1"

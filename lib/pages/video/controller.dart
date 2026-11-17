@@ -31,6 +31,7 @@ import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliPlus/models_new/media_list/media_list.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliPlus/models_new/video/video_detail/data.dart';
+import 'package:PiliPlus/models_new/video/video_detail/dimension.dart';
 import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:PiliPlus/models_new/video/video_pbp/data.dart';
 import 'package:PiliPlus/models_new/video/video_play_info/subtitle.dart';
@@ -84,6 +85,7 @@ class VideoDetailController extends GetxController
     with GetTickerProviderStateMixin, BlockMixin {
   /// 路由传参
   late final Map args;
+  late final Dimension? routeDimension;
   late String bvid;
   late int aid;
   late final RxInt cid;
@@ -117,6 +119,9 @@ class VideoDetailController extends GetxController
   // 请求返回的视频信息
   late PlayUrlModel data;
   final RxBool videoState = false.obs;
+  final TransformationController videoTransformController =
+      TransformationController();
+  final RxBool showRestoreScaleBtn = false.obs;
 
   /// 播放器配置 画质 音质 解码格式
   final Rxn<VideoQuality> currentVideoQa = Rxn<VideoQuality>();
@@ -250,8 +255,8 @@ class VideoDetailController extends GetxController
   @pragma('vm:notify-debugger-on-exception')
   void _setVideoHeight() {
     try {
-      var width = firstVideo.width;
-      var height = firstVideo.height;
+      var width = firstVideo.width ?? routeDimension?.width;
+      var height = firstVideo.height ?? routeDimension?.height;
       if (width == null || height == null) {
         if (isUgc && !isFileSource) {
           final cid = this.cid.value;
@@ -401,6 +406,7 @@ class VideoDetailController extends GetxController
   void onInit() {
     super.onInit();
     args = Get.arguments;
+    routeDimension = args['dimension'];
     videoType = args['videoType'];
     if (videoType == VideoType.pgc) {
       if (!isLoginVideo) {
@@ -794,6 +800,7 @@ class VideoDetailController extends GetxController
       height: firstVideo.height,
       volume: volume,
       autoFullScreenFlag: autoFullScreenFlag,
+      freshVideoOutput: args['coverTransition'] != null && !videoState.value,
       rotate: _rotate,
     );
 
@@ -898,7 +905,14 @@ class VideoDetailController extends GetxController
 
     if (result case Success(:final response)) {
       data = response;
-      if (data.dash != null) await _supplementVideoQualities();
+      final dashVideos = data.dash?.video;
+      final deferQualitySupplement =
+          dashVideos != null &&
+          dashVideos.isNotEmpty &&
+          plPlayerController.cacheVideoQa! >= dashVideos.first.id;
+      if (dashVideos != null && !deferQualitySupplement) {
+        await _supplementVideoQualities();
+      }
 
       languages.value = data.language?.items;
       currLang.value = data.curLanguage;
@@ -1013,6 +1027,9 @@ class VideoDetailController extends GetxController
         audioUrl = '';
       }
       await initPlayerIfNeeded(autoFullScreenFlag);
+      if (deferQualitySupplement && !isClosed) {
+        await _supplementVideoQualities();
+      }
     } else {
       _autoPlay.value = false;
       videoState.value = false;
@@ -1292,6 +1309,7 @@ class VideoDetailController extends GetxController
   @override
   void onClose() {
     cid.close();
+    videoTransformController.dispose();
     if (isFileSource) {
       cacheLocalProgress();
     }

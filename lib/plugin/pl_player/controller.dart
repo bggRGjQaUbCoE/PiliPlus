@@ -59,6 +59,7 @@ import 'package:flutter/services.dart'
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/features/watchroom/piliplus_adapter.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:media_kit/media_kit.dart';
@@ -1053,6 +1054,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
         for (final element in _statusListeners) {
           element(playing ? .playing : .paused);
         }
+        WatchroomAdapter.instance.observeNativeState(this);
 
         final seconds = videoPlayerController!.state.position.inSeconds;
         if (seconds != 0) {
@@ -1189,6 +1191,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     try {
       await _videoPlayerController?.seek(position);
       _updateIOSPip(position);
+      WatchroomAdapter.instance.observe(this, 'seek');
     } catch (e) {
       if (kDebugMode) debugPrint('seek failed: $e');
     }
@@ -1230,12 +1233,14 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
     audioSessionHandler?.setActive(true);
 
     playerStatus = .playing;
+    WatchroomAdapter.instance.observe(this, 'play');
   }
 
   /// 暂停播放
   Future<void> pause({bool notify = true, bool isInterrupt = false}) async {
     await _videoPlayerController?.pause();
     playerStatus = .paused;
+    WatchroomAdapter.instance.observe(this, 'pause');
 
     // 主动暂停时让出音频焦点
     if (!isInterrupt) {
@@ -1851,6 +1856,7 @@ class PlPlayerController with BlockConfigMixin, AudioNormalizationMixin {
 
   void onPopInvokedWithResult(bool didPop, Object? result) {
     if (didPop) {
+      WatchroomAdapter.instance.onPlayerExit(this);
       if (playerStatus.isPlaying) {
         pause();
       }

@@ -74,6 +74,7 @@ import 'package:flutter/foundation.dart' show kDebugMode, compute;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/features/watchroom/piliplus_adapter.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:media_kit/media_kit.dart' hide Subtitle;
@@ -412,6 +413,9 @@ class VideoDetailController extends GetxController
     aid = args['aid'];
     cid = RxInt(args['cid']);
     epId = args['epId'];
+    if (WatchroomAdapter.instance.shouldInitialize(epId)) {
+      _autoPlay.value = true;
+    }
     seasonId = args['seasonId'];
     pgcType = args['pgcType'];
     heroTag = args['heroTag'];
@@ -743,6 +747,7 @@ class VideoDetailController extends GetxController
 
   Future<void>? initPlayerIfNeeded(bool autoFullScreenFlag) {
     if (_autoPlay.value ||
+        WatchroomAdapter.instance.shouldInitialize(epId) ||
         (plPlayerController.preInitPlayer && !plPlayerController.processing) &&
             (isFileSource
                 ? true
@@ -759,8 +764,12 @@ class VideoDetailController extends GetxController
     bool autoFullScreenFlag = false,
   }) async {
     Duration? seek = defaultST ?? playedTime;
+    WatchroomAdapter.instance.suspend(heroTag);
+    autoplay ??= WatchroomAdapter.instance.initialPlaying(epId);
+    seek = WatchroomAdapter.instance.startPosition(epId) ?? seek;
     if (seek == .zero) seek = null;
     seek ??= getFirstSegment();
+    seek = WatchroomAdapter.instance.startPosition(epId) ?? seek;
     await plPlayerController.setDataSource(
       isFileSource
           ? FileSource(
@@ -789,6 +798,12 @@ class VideoDetailController extends GetxController
       onInit: () {
         videoState.value = true;
         setSubtitle(vttSubtitlesIndex.value);
+        WatchroomAdapter.instance.bind(
+          identity: heroTag,
+          episodeId: epId,
+          seasonId: seasonId,
+          player: plPlayerController,
+        );
       },
       width: firstVideo.width,
       height: firstVideo.height,
@@ -796,6 +811,7 @@ class VideoDetailController extends GetxController
       autoFullScreenFlag: autoFullScreenFlag,
       rotate: _rotate,
     );
+    WatchroomAdapter.instance.observeNativeState(plPlayerController);
 
     if (isClosed) return;
 
@@ -1292,6 +1308,7 @@ class VideoDetailController extends GetxController
   @override
   void onClose() {
     cid.close();
+    WatchroomAdapter.instance.suspend(heroTag);
     if (isFileSource) {
       cacheLocalProgress();
     }

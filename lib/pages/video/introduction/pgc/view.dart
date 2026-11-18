@@ -25,6 +25,7 @@ import 'package:PiliPlus/utils/num_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/features/watchroom/piliplus_adapter.dart';
 import 'package:material_ui/material_ui.dart';
 
 class PgcIntroPage extends StatefulWidget {
@@ -88,6 +89,15 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
           const SizedBox(height: 6),
           // 点赞收藏转发 布局样式2
           if (introController.isPgc) actionGrid(item.stat!, introController),
+          if (introController.isPgc)
+            WatchroomAdapter.instance.creationCard(
+              context,
+              identity: widget.heroTag,
+              episode: videoDetailCtr.epId,
+              season: videoDetailCtr.seasonId,
+              supported: item.supportsWatchroom,
+              title: item.title ?? '当前剧集',
+            ),
           if (isPortrait ||
               !videoDetailCtr.plPlayerController.horizontalSeasonPanel) ...[
             // seasons

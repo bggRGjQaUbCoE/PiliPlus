@@ -74,6 +74,7 @@ import 'package:flutter/foundation.dart' show kDebugMode, clampDouble;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/features/watchroom/piliplus_adapter.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:screen_brightness_platform_interface/screen_brightness_platform_interface.dart';
 
@@ -150,6 +151,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     videoDetailController = Get.put(VideoDetailController(), tag: heroTag);
 
     introController = _initIntroCtr();
+    _attachWatchroomPage();
 
     _setPlayCallBack();
 
@@ -336,7 +338,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     plPlayerController
       ?..removeStatusLister(playerListener)
       ..removePositionListener(positionListener);
-
+    _detachWatchroomPage();
     Get.delete<HorizontalMemberPageController>(
       tag: videoDetailController.heroTag,
     );
@@ -596,6 +598,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                       hitTestBehavior: .translucent,
                       controller: videoDetailController.tabCtr,
                       children: [
+                        if (_showWatchroomTab) _watchroomPanel,
                         videoIntro(isHorizontal: false, needCtr: false),
                         if (videoDetailController.showReply)
                           videoReplyPanel(isNested: true),
@@ -806,6 +809,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                     child: tabBarView(
                       controller: videoDetailController.tabCtr,
                       children: [
+                        if (_showWatchroomTab) _watchroomPanel,
                         videoIntro(
                           width: introWidth,
                           height: maxHeight,
@@ -869,6 +873,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                           child: tabBarView(
                             controller: videoDetailController.tabCtr,
                             children: [
+                              if (_showWatchroomTab) _watchroomPanel,
                               if (videoDetailController.showReply)
                                 videoReplyPanel(),
                               if (_shouldShowSeasonPanel) seasonPanel,
@@ -957,6 +962,7 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                     child: tabBarView(
                       controller: videoDetailController.tabCtr,
                       children: [
+                        if (_showWatchroomTab) _watchroomPanel,
                         if (videoDetailController.isFileSource)
                           localIntroPanel()
                         else if (showIntro)
@@ -1050,27 +1056,31 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   buildTabBar(needIndicator: false),
-                  Expanded(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: videoIntro(
-                            width: () {
-                              double flex = 1;
-                              if (videoDetailController.showReply) flex++;
-                              if (shouldShowSeasonPanel) flex++;
-                              return maxWidth / flex;
-                            }(),
-                            height: bottomHeight,
+                  if (_showWatchroomTab)
+                    Expanded(child: _watchroomSquareTabs(bottomHeight))
+                  else
+                    Expanded(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: videoIntro(
+                              width: () {
+                                double flex = 1;
+                                if (videoDetailController.showReply) flex++;
+                                if (shouldShowSeasonPanel) flex++;
+                                return maxWidth / flex;
+                              }(),
+                              height: bottomHeight,
+                            ),
                           ),
-                        ),
-                        if (videoDetailController.showReply)
-                          Expanded(child: videoReplyPanel()),
-                        if (shouldShowSeasonPanel) Expanded(child: seasonPanel),
-                      ],
+                          if (videoDetailController.showReply)
+                            Expanded(child: videoReplyPanel()),
+                          if (shouldShowSeasonPanel)
+                            Expanded(child: seasonPanel),
+                        ],
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -1293,6 +1303,111 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
         : child;
   }
 
+  final List<String> _watchroomTabs = [];
+  bool _watchroomRefreshPending = false;
+
+  bool get _showWatchroomTab =>
+      !videoDetailController.isFileSource &&
+      !videoDetailController.isUgc &&
+      WatchroomAdapter.instance.showsRoomFor(
+        heroTag,
+        videoDetailController.epId,
+        videoDetailController.seasonId,
+      );
+
+  void _attachWatchroomPage() {
+    WatchroomAdapter.instance
+      ..attachPage(
+        heroTag,
+        open: _openWatchroomPane,
+        prepare: _prepareWatchroomPlayer,
+      )
+      ..addListener(_onWatchroomChanged);
+  }
+
+  void _detachWatchroomPage() {
+    WatchroomAdapter.instance
+      ..removeListener(_onWatchroomChanged)
+      ..detachPage(heroTag);
+  }
+
+  void _onWatchroomChanged() {
+    if (!mounted || _watchroomRefreshPending) return;
+    _watchroomRefreshPending = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _watchroomRefreshPending = false;
+      if (mounted) setState(() {});
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
+  }
+
+  void _syncWatchroomTabs(List<String> tabs) {
+    if (_watchroomTabs.join('|') == tabs.join('|') &&
+        videoDetailController.tabCtr.length == tabs.length)
+      return;
+    final previous = videoDetailController.tabCtr;
+    final index = RoomTabs.selectedIndex(_watchroomTabs, tabs, previous.index);
+    previous.dispose();
+    videoDetailController.tabCtr = TabController(
+      length: tabs.length,
+      vsync: videoDetailController,
+      initialIndex: index,
+    );
+    _watchroomTabs
+      ..clear()
+      ..addAll(tabs);
+  }
+
+  void _openWatchroomPane() {
+    if (!mounted || !_showWatchroomTab) return;
+    if (isFullScreen || videoDetailController.showVideoSheet) {
+      WatchroomAdapter.instance.showSidePanel(context);
+      return;
+    }
+    setState(() {});
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_showWatchroomTab) return;
+      videoDetailController.tabCtr.animateTo(0);
+      if (isPortrait) videoDetailController.animToTop();
+    });
+  }
+
+  Future<void> _prepareWatchroomPlayer() async {
+    if (!mounted) return;
+    final player = videoDetailController.plPlayerController;
+    if (plPlayerController == null) {
+      plPlayerController = player;
+      player
+        ..addStatusLister(playerListener)
+        ..addPositionListener(positionListener);
+    }
+    if (player.videoPlayerController == null ||
+        !videoDetailController.videoState.value) {
+      if (videoDetailController.videoUrl == null) {
+        throw StateError('视频尚未加载完成，请稍后从放映厅入口返回');
+      }
+      videoDetailController.autoPlay = true;
+      await videoDetailController.playerInit(autoplay: false);
+    }
+    await WatchroomAdapter.instance.bind(
+      identity: heroTag,
+      episodeId: videoDetailController.epId,
+      seasonId: videoDetailController.seasonId,
+      player: player,
+    );
+  }
+
+  Widget get _watchroomPanel => WatchroomAdapter.instance.panel();
+
+  Widget _watchroomSquareTabs(double height) => tabBarView(
+    controller: videoDetailController.tabCtr,
+    children: [
+      _watchroomPanel,
+      videoIntro(width: maxWidth, height: height),
+      if (videoDetailController.showReply) videoReplyPanel(),
+      if (_shouldShowSeasonPanel) seasonPanel,
+    ],
+  );
   Widget buildTabBar({
     bool needIndicator = true,
     String? introText,
@@ -1300,11 +1415,13 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     VoidCallback? onTap,
   }) {
     final tabs = [
+      if (_showWatchroomTab) '放映厅',
       if (showIntro)
         videoDetailController.isFileSource ? '离线视频' : introText ?? '简介',
       if (videoDetailController.showReply) '评论',
       if (_shouldShowSeasonPanel) '播放列表',
     ];
+    _syncWatchroomTabs(tabs);
     if (videoDetailController.tabCtr.length != tabs.length) {
       videoDetailController.tabCtr.dispose();
       videoDetailController.tabCtr = TabController(

@@ -9,6 +9,7 @@ import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:nativeapi/nativeapi.dart' as nativeapi;
 import 'package:window_manager/window_manager.dart';
+import 'package:PiliPlus/features/watchroom/piliplus_adapter.dart';
 
 class WindowController {
   WindowController._();
@@ -140,6 +141,7 @@ class WindowController {
   }
 
   Future<void> onClose() async {
+    if (!await WatchroomAdapter.instance.prepareDesktopExit()) return;
     await GStorage.compact();
     await GStorage.close();
     TrayController.instance.dispose();

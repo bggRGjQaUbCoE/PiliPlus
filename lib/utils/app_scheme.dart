@@ -33,6 +33,7 @@ import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
+import 'package:PiliPlus/features/watchroom/piliplus_adapter.dart';
 import 'package:material_ui/material_ui.dart';
 
 abstract final class PiliScheme {
@@ -126,6 +127,10 @@ abstract final class PiliScheme {
             );
             return true;
           case 'pgc':
+            if (path == '/room') {
+              WatchroomAdapter.open(link: uri.toString());
+              return true;
+            }
             // bilibili://pgc/season/ep/123456?h5_awaken_params=random
             String? id = uriDigitRegExp.firstMatch(path)?.group(1);
             if (id != null) {
@@ -618,7 +623,27 @@ abstract final class PiliScheme {
         ? pathSegments.elementAtOrNull(1)
         : first;
     // if (kDebugMode) debugPrint('area: $area');
+    if (const {
+          'www.bilibili.com',
+          'm.bilibili.com',
+          'bilibili.com',
+        }.contains(uri.host) &&
+        uri.path == '/bangumi/theatre/invite') {
+      WatchroomAdapter.open(link: uri.toString());
+      return true;
+    }
     switch (area) {
+      case 'watchroom':
+        if (const {
+          'www.bilibili.com',
+          'm.bilibili.com',
+          'bilibili.com',
+        }.contains(uri.host)) {
+          WatchroomAdapter.open(link: uri.toString());
+          return true;
+        }
+        launchURL();
+        return false;
       case 'note' || 'note-app':
         String? id = uri.queryParameters['cvid'];
         if (id != null) {

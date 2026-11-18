@@ -13,6 +13,7 @@ import 'package:flutter/services.dart'
     show KeyDownEvent, KeyUpEvent, LogicalKeyboardKey, HardwareKeyboard;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:PiliPlus/features/watchroom/piliplus_adapter.dart';
 
 class PlayerFocus extends StatelessWidget {
   const PlayerFocus({
@@ -47,6 +48,7 @@ class PlayerFocus extends StatelessWidget {
     return Focus(
       autofocus: true,
       onKeyEvent: (node, event) {
+        if (WatchroomAdapter.textInputHasFocus()) return KeyEventResult.ignored;
         final handled = _handleKey(context, event);
         if (handled || _shouldHandle(event.logicalKey)) {
           return KeyEventResult.handled;

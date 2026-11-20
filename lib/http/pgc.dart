@@ -4,7 +4,6 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/pgc_review_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_index_condition/data.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_index_result/data.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_index_result/list.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_review/data.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_timeline/pgc_timeline.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_timeline/result.dart';
@@ -57,7 +56,7 @@ abstract final class PgcHttp {
     }
   }
 
-  static Future<LoadingState<List<PgcIndexItem>?>> pgcIndex({
+  static Future<LoadingState<PgcIndexResult>> pgcIndex({
     int? page,
     int? indexType,
   }) async {
@@ -84,7 +83,7 @@ abstract final class PgcHttp {
       },
     );
     if (res.data['code'] == 0) {
-      return Success(PgcIndexResult.fromJson(res.data['data']).list);
+      return Success(PgcIndexResult.fromJson(res.data['data']));
     } else {
       return Error(res.data['message']);
     }

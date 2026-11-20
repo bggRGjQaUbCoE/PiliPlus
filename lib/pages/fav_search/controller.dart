@@ -8,6 +8,7 @@ import 'package:PiliPlus/pages/common/multi_select/base.dart';
 import 'package:PiliPlus/pages/common/search/common_search_controller.dart';
 import 'package:PiliPlus/pages/fav_detail/controller.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 class FavSearchController
@@ -58,19 +59,26 @@ class FavSearchController
 
   @override
   // TODO: dimension
-  void onViewFav(FavDetailItemModel item, int? index) => PageUtils.toVideoPage(
-    bvid: item.bvid,
-    cid: item.ugc!.firstCid!,
-    cover: item.cover,
-    title: item.title,
-    extraArguments: {
-      'sourceType': SourceType.fav,
-      'mediaId': mediaId,
-      'oid': item.id,
-      'favTitle': title,
-      'count': count,
-      'desc': true,
-      'isContinuePlaying': true,
-    },
-  );
+  void onViewFav(FavDetailItemModel item, int? index) {
+    final cid = item.ugc?.firstCid;
+    if (cid == null) {
+      SmartDialog.showToast('无法打开该视频');
+      return;
+    }
+    PageUtils.toVideoPage(
+      bvid: item.bvid,
+      cid: cid,
+      cover: item.cover,
+      title: item.title,
+      extraArguments: {
+        'sourceType': SourceType.fav,
+        'mediaId': mediaId,
+        'oid': item.id,
+        'favTitle': title,
+        'count': count,
+        'desc': true,
+        'isContinuePlaying': true,
+      },
+    );
+  }
 }

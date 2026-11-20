@@ -1,4 +1,5 @@
 import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/utils/desktop/window_origin.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/rendering.dart' show Offset, Size;
 import 'package:nativeapi/nativeapi.dart' as nativeapi;
@@ -43,10 +44,14 @@ Offset calcWindowPosition(Size windowSize) {
     try {
       final dx = windowPosition[0];
       final dy = windowPosition[1];
-      if (dx >= visibleStartX &&
-          dy >= visibleStartY &&
-          dx < (visibleWidth - 30) &&
-          dy < (visibleHeight - 30)) {
+      if (isWindowOriginInWorkArea(
+        dx: dx,
+        dy: dy,
+        left: visibleStartX,
+        top: visibleStartY,
+        width: visibleWidth,
+        height: visibleHeight,
+      )) {
         return Offset(dx, dy);
       }
     } catch (_) {}

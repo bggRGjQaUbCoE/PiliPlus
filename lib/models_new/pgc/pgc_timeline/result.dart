@@ -33,3 +33,28 @@ class TimelineResult {
     }
   }
 }
+
+void mergeTimelineResults(
+  List<TimelineResult> target,
+  List<TimelineResult> extra,
+) {
+  final indexByDate = <int, int>{};
+  for (final (index, day) in target.indexed) {
+    final dateTs = day.dateTs;
+    if (dateTs != null) {
+      indexByDate[dateTs] = index;
+    }
+  }
+  for (final day in extra) {
+    final dateTs = day.dateTs;
+    final index = dateTs == null ? null : indexByDate[dateTs];
+    if (index == null) {
+      target.add(day);
+      if (dateTs != null) {
+        indexByDate[dateTs] = target.length - 1;
+      }
+    } else {
+      target[index].addAll(day);
+    }
+  }
+}

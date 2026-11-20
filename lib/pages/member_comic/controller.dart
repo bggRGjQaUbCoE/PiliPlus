@@ -37,5 +37,6 @@ class MemberComicController
       MemberHttp.spaceArchive(
         type: ContributeType.comic,
         mid: mid,
+        pn: page,
       );
 }

@@ -7,6 +7,31 @@ import 'package:PiliPlus/utils/extension/file_ext.dart';
 import 'package:PiliPlus/utils/extension/string_ext.dart';
 import 'package:dio/dio.dart';
 
+enum DownloadRangeAction { write, complete, restart }
+
+DownloadRangeAction downloadRangeAction({
+  required int? statusCode,
+  required int received,
+  required int? resourceSize,
+}) {
+  if (statusCode != 416) {
+    return DownloadRangeAction.write;
+  }
+  if (resourceSize != null && received == resourceSize && received > 0) {
+    return DownloadRangeAction.complete;
+  }
+  return DownloadRangeAction.restart;
+}
+
+int? contentRangeSize(String? header) {
+  if (header == null || header.isEmpty) return null;
+  final slash = header.lastIndexOf('/');
+  if (slash < 0 || slash == header.length - 1) return null;
+  final total = header.substring(slash + 1).trim();
+  if (total == '*') return null;
+  return int.tryParse(total);
+}
+
 class DownloadManager {
   final String url;
   final String path;
@@ -74,6 +99,27 @@ class DownloadManager {
       return;
     }
     final data = response.data!;
+    if (response.statusCode == 416) {
+      final resourceSize = contentRangeSize(
+        response.headers.value(HttpHeaders.contentRangeHeader),
+      );
+      await data.stream.drain<void>();
+      switch (downloadRangeAction(
+        statusCode: response.statusCode,
+        received: received,
+        resourceSize: resourceSize,
+      )) {
+        case DownloadRangeAction.complete:
+          await sink.close();
+          _status = DownloadStatus.completed;
+          onDone();
+        case DownloadRangeAction.restart:
+          await onError(const HttpException('HTTP 416'), delete: true);
+        case DownloadRangeAction.write:
+          await onError(const HttpException('HTTP 416'), delete: true);
+      }
+      return;
+    }
     final contentLength = data.contentLength + received;
 
     if (received == 0) {

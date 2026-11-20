@@ -47,8 +47,11 @@ class PackageHeaderRes extends PackageHeader {
   final int totalSize;
   final int headerSize;
 
+  bool isWithin(int length) =>
+      headerSize > 0 && totalSize >= headerSize && totalSize <= length;
+
   static PackageHeaderRes? fromBytesData(Uint8List data) {
-    if (data.length < 10) {
+    if (data.length < 16) {
       logger.w('数据不足以解析PackageHeader');
       return null;
     }
@@ -216,7 +219,7 @@ class LiveMessageStream {
   void _processingData(Uint8List data) {
     try {
       final subHeader = PackageHeaderRes.fromBytesData(data);
-      if (subHeader != null) {
+      if (subHeader != null && subHeader.isWithin(data.length)) {
         if (_eventListeners.isNotEmpty) {
           final msgBody = jsonDecode(
             utf8.decode(

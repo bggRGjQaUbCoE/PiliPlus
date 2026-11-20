@@ -35,10 +35,9 @@ class LikeMeController
   @override
   bool customHandleResponse(bool isRefresh, Success<MsgLikeData> response) {
     MsgLikeData data = response.response;
-    if (data.total?.cursor?.isEnd == true ||
-        data.total?.items.isNullOrEmpty == true) {
-      isEnd = true;
-    }
+    isEnd =
+        data.total?.cursor?.isEnd == true ||
+        data.total?.items.isNullOrEmpty == true;
     cursor = data.total?.cursor?.id;
     cursorTime = data.total?.cursor?.time;
     List<MsgLikeItem> latest = data.latest?.items ?? <MsgLikeItem>[];
@@ -55,6 +54,7 @@ class LikeMeController
 
   @override
   Future<void> onRefresh() {
+    isEnd = false;
     cursor = null;
     cursorTime = null;
     return super.onRefresh();

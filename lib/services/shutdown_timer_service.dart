@@ -111,6 +111,7 @@ class ShutdownTimerService {
       case .pause:
         _isWaiting = false;
         _durationInMinutes = 0;
+        (onPause ?? PlPlayerController.instance?.pause)?.call();
         SmartDialog.showToast('定时时间已到，已暂停');
       case .exit:
         _syncProgressAndExit();

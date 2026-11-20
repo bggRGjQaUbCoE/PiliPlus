@@ -3,6 +3,7 @@ import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/http/pgc.dart';
 import 'package:PiliPlus/models/common/home_tab_type.dart';
 import 'package:PiliPlus/models_new/fav/fav_pgc/list.dart';
+import 'package:PiliPlus/models_new/pgc/pgc_index_result/data.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_index_result/list.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_timeline/result.dart';
 import 'package:PiliPlus/pages/common/common_controller.dart'
@@ -14,8 +15,7 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter/widgets.dart' show ScrollController;
 import 'package:get/get.dart';
 
-class PgcController
-    extends CommonListController<List<PgcIndexItem>?, PgcIndexItem>
+class PgcController extends CommonListController<PgcIndexResult, PgcIndexItem>
     with AccountMixin, RefreshImplMixin {
   PgcController({required this.tabType})
     : indexType = tabType == HomeTabType.cinema ? 102 : null;
@@ -81,9 +81,7 @@ class PgcController
         list2 != null &&
         list1.isNotEmpty &&
         list2.isNotEmpty) {
-      for (var i = 0; i < list1.length; i++) {
-        list1[i].addAll(list2[i]);
-      }
+      mergeTimelineResults(list1, list2);
     }
     timelineState.value = Success(list1 ?? list2);
   }
@@ -103,7 +101,10 @@ class PgcController
 
     if (res case Success(:final response)) {
       final list = response.list;
-      followCount.value = response.total ?? -1;
+      final total = response.total;
+      if (total != null) {
+        followCount.value = total;
+      }
 
       if (list == null || list.isEmpty) {
         followEnd = true;
@@ -115,14 +116,15 @@ class PgcController
       }
 
       if (isRefresh) {
-        if (list.length >= followCount.value) {
+        if (followCount.value != -1 && list.length >= followCount.value) {
           followEnd = true;
         }
         followState.value = Success(list);
         followController.jumpToTop();
       } else if (followState.value case Success(:final response)) {
         final currentList = response!..addAll(list);
-        if (currentList.length >= followCount.value) {
+        if (followCount.value != -1 &&
+            currentList.length >= followCount.value) {
           followEnd = true;
         }
         followState.refresh();
@@ -135,7 +137,15 @@ class PgcController
   }
 
   @override
-  Future<LoadingState<List<PgcIndexItem>?>> customGetData() => PgcHttp.pgcIndex(
+  List<PgcIndexItem>? getDataList(PgcIndexResult response) {
+    if (response.hasNext == null || response.hasNext == 0) {
+      isEnd = true;
+    }
+    return response.list;
+  }
+
+  @override
+  Future<LoadingState<PgcIndexResult>> customGetData() => PgcHttp.pgcIndex(
     page: page,
     indexType: indexType,
   );
